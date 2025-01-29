@@ -13,7 +13,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
     'Notification',
     'dataset_service',
     'inventory_service',
-    'meter_service',
+    'inventory_group_service',
     'cycles',
     'meters',
     'inventory_payload',
@@ -33,7 +33,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       Notification,
       dataset_service,
       inventory_service,
-      meter_service,
+      inventory_group_service,
       cycles,
       meters,
       inventory_payload,
@@ -312,13 +312,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       // according to the selected interval
       $scope.refresh_readings = () => {
         spinner_utility.show();
-        meter_service
-          .property_meter_usage(
-            $scope.inventory.view_id,
-            $scope.organization.id,
-            $scope.interval.selected,
-            [] // Not excluding any meters from the query
-          )
+        inventory_group_service.get_meter_usage($stateParams.group_id, $scope.interval.selected)
           .then((usage) => {
             // update the base data and reset filters
             property_meter_usage = usage;
