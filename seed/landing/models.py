@@ -157,3 +157,9 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         if self.email.lower() != self.username:
             self.email = self.username
         return super().save(*args, **kwargs)
+
+    def serialize(self):
+        from seed.serializers.users import UserSerializer
+
+        serializer = UserSerializer(self)
+        return serializer.data
