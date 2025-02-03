@@ -290,70 +290,70 @@ class AuditTemplate:
             "xsi": XSI_URI,
         }
         nsmap.update(NAMESPACES)
-        E = ElementMaker(namespace=BUILDINGSYNC_URI, nsmap=nsmap)
-        doc = E.BuildingSync(
+        em = ElementMaker(namespace=BUILDINGSYNC_URI, nsmap=nsmap)
+        doc = em.BuildingSync(
             {
                 etree.QName(
                     XSI_URI, "schemaLocation"
                 ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.3.0/BuildingSync.xsd",
                 "version": "2.3.0",
             },
-            E.Facilities(
-                E.Facility(
+            em.Facilities(
+                em.Facility(
                     {"ID": "Facility-69909846999990"},
-                    E.Sites(
-                        E.Site(
+                    em.Sites(
+                        em.Site(
                             {"ID": "SiteType-69909846999991"},
-                            E.Buildings(
-                                E.Building(
+                            em.Buildings(
+                                em.Building(
                                     {"ID": "BuildingType-69909846999992"},
-                                    E.PremisesName(state.property_name),
-                                    E.PremisesNotes("Note-1"),
-                                    E.PremisesIdentifiers(
-                                        E.PremisesIdentifier(
-                                            E.IdentifierLabel("Custom"),
-                                            E.IdentifierCustomName("SEED Property View ID"),
-                                            E.IdentifierValue(str(view.id)),
+                                    em.PremisesName(state.property_name),
+                                    em.PremisesNotes("Note-1"),
+                                    em.PremisesIdentifiers(
+                                        em.PremisesIdentifier(
+                                            em.IdentifierLabel("Custom"),
+                                            em.IdentifierCustomName("SEED Property View ID"),
+                                            em.IdentifierValue(str(view.id)),
                                         )
                                     ),
-                                    E.Address(
-                                        E.StreetAddressDetail(
-                                            E.Simplified(E.StreetAddress(state.address_line_1)),
+                                    em.Address(
+                                        em.StreetAddressDetail(
+                                            em.Simplified(em.StreetAddress(state.address_line_1)),
                                         ),
-                                        E.City(state.city),
-                                        E.State(state.state),
-                                        E.PostalCode(str(state.postal_code)),
+                                        em.City(state.city),
+                                        em.State(state.state),
+                                        em.PostalCode(str(state.postal_code)),
                                     ),
-                                    E.FloorAreas(
-                                        E.FloorArea(
-                                            E.FloorAreaType("Gross"),
-                                            E.FloorAreaValue(gross_floor_area),
+                                    em.FloorAreas(
+                                        em.FloorArea(
+                                            em.FloorAreaType("Gross"),
+                                            em.FloorAreaValue(gross_floor_area),
                                         ),
                                     ),
-                                    E.YearOfConstruction(str(state.year_built)),
+                                    em.YearOfConstruction(str(state.year_built)),
                                 )
                             ),
                         )
                     ),
-                    *_build_measures_element(E, view.property),
-                    E.Reports(
-                        E.Report(
-                            E.Scenarios(
+                    *_build_measures_element(em, view.property),
+                    em.Reports(
+                        em.Report(
+                            em.Scenarios(
                                 {},
-                                E.Scenario(
+                                em.Scenario(
                                     {"ID": "ScenarioType-69817879941680"},
-                                    *_build_resource_uses(E, view.property),
-                                    *build_time_series_data(E, view.property),
+                                    *_build_resource_uses(em, view.property),
+                                    *build_time_series_data(em, view.property),
                                 ),
                             ),
                             {"ID": "ReportType-69909846999993"},
-                            E.LinkedPremisesOrSystem(
-                                E.Building(E.LinkedBuildingID({"IDref": "BuildingType-69909846999992"})),
+                            em.LinkedPremisesOrSystem(
+                                em.Building(em.LinkedBuildingID({"IDref": "BuildingType-69909846999992"})),
                             ),
-                            E.UserDefinedFields(
-                                E.UserDefinedField(
-                                    E.FieldName("Audit Template Report Type"),
-                                    E.FieldValue(report_type),
+                            em.UserDefinedFields(
+                                em.UserDefinedField(
+                                    em.FieldName("Audit Template Report Type"),
+                                    em.FieldValue(report_type),
                                 ),
                             ),
                         )
@@ -370,82 +370,82 @@ class AuditTemplate:
         results[status]["details"].append({"view_id": view_id, **extra_fields})
 
 
-def build_time_series_data(E, property):
-    meter_readings = MeterReading.objects.filter(meter__property=property)
+def build_time_series_data(em, property_id):
+    meter_readings = MeterReading.objects.filter(meter__property_id=property_id)
     if len(meter_readings) == 0:
         return []
 
     return [
-        E.TimeSeriesData(
+        em.TimeSeriesData(
             {},
             *[
-                E.TimeSeries(
+                em.TimeSeries(
                     {"ID": f"TimeSeriesType-{i}"},
-                    E.StartTimestamp(meter_reading.start_time.isoformat()),
-                    E.EndTimestamp(meter_reading.end_time.isoformat()),
-                    E.IntervalReading(str(meter_reading.reading)),
+                    em.StartTimestamp(meter_reading.start_time.isoformat()),
+                    em.EndTimestamp(meter_reading.end_time.isoformat()),
+                    em.IntervalReading(str(meter_reading.reading)),
                 )
-                for i, meter_reading in enumerate(MeterReading.objects.filter(meter__property_id=property))
+                for i, meter_reading in enumerate(MeterReading.objects.filter(meter__property_id=property_id))
             ],
         )
     ]
 
 
-def _build_resource_uses(E, property):
-    meters = Meter.objects.filter(property=property)
+def _build_resource_uses(em, property_id):
+    meters = Meter.objects.filter(property_id=property_id)
     if len(meters) == 0:
         return []
 
     return [
-        E.ResourceUses(
+        em.ResourceUses(
             {},
             *[
-                E.ResourceUse(
+                em.ResourceUse(
                     {"ID": f"ResourceUseType-{meter.id}"},
-                    E.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other")),
-                    E.ResourceUnits(
+                    em.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other")),
+                    em.ResourceUnits(
                         "kBtu"
                         if Meter.ENERGY_TYPE_BY_METER_TYPE.get(meter.type) in Organization._default_display_meter_units
                         else "Gallons"
                     ),
                 )
-                for meter in Meter.objects.filter(property=property)
+                for meter in Meter.objects.filter(property_id=property_id)
             ],
         )
     ]
 
 
-def _build_measures_element(E, property):
-    measure_tuples = _get_measures(property)
+def _build_measures_element(em, property_id):
+    measure_tuples = _get_measures(property_id)
     if len(measure_tuples) == 0:
         return []
 
     return [
-        E.Measures(
+        em.Measures(
             {},
             *[
-                E.Measure(
+                em.Measure(
                     {"ID": f"MeasureType-{i}"},
-                    E.TechnologyCategories(
+                    em.TechnologyCategories(
                         {},
-                        E.TechnologyCategory(
-                            getattr(E, tc)(
+                        em.TechnologyCategory(
+                            getattr(em, tc)(
                                 {},
-                                E.MeasureName(mn),
+                                em.MeasureName(mn),
                             )
                         ),
                     ),
                 )
-                for i, (tc, mn) in enumerate(_get_measures(property))
+                for i, (tc, mn) in enumerate(_get_measures(property_id))
             ],
         )
     ]
 
 
-def _get_measures(property):
-    tkbl_elements = Element.objects.filter(property=property, code__code__in=SCOPE_ONE_EMISSION_CODES).order_by("remaining_service_life")[
-        :3
-    ]
+def _get_measures(property_id):
+    tkbl_elements = Element.objects.filter(property_id=property_id, code__code__in=SCOPE_ONE_EMISSION_CODES).order_by(
+        "remaining_service_life"
+    )[:3]
     bsync_measure_dicts = [x for e in tkbl_elements for x in bsync_by_uniformat_code(e.code.code)]
 
     bsync_measure_tuples = set()
