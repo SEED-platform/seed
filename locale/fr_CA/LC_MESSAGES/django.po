@@ -4388,6 +4388,9 @@ msgstr "Exportations infructueuses"
 msgid "Until last date of"
 msgstr "Jusqu'à la dernière date de"
 
+msgid "Update"
+msgstr "Mise à jour"
+
 msgid "Update Charts"
 msgstr "Mettre à jour les graphiques"
 
@@ -4396,6 +4399,9 @@ msgstr "Mettre à jour les données dérivées"
 
 msgid "Update Filters"
 msgstr "Mise à jour les filtres"
+
+msgid "Update Password"
+msgstr "Mettre à jour le mot de passe"
 
 msgid "Update Property Labels"
 msgstr "Mettre à jour les étiquettes de propriété"

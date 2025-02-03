@@ -4354,6 +4354,9 @@ msgstr "Unsuccessful Exports"
 msgid "Until last date of"
 msgstr "Until last date of"
 
+msgid "Update"
+msgstr "Update"
+
 msgid "Update Charts"
 msgstr "Update Charts"
 
@@ -4362,6 +4365,9 @@ msgstr "Update Derived Data"
 
 msgid "Update Filters"
 msgstr "Update Filters"
+
+msgid "Update Password"
+msgstr "Update Password"
 
 msgid "Update Property Labels"
 msgstr "Update Property Labels"
