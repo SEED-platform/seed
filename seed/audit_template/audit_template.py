@@ -276,6 +276,7 @@ class AuditTemplate:
             return None, messages
 
         view = state.propertyview_set.first()
+        org = view.property.organization
 
         gfa = state.gross_floor_area
         if isinstance(gfa, int):
@@ -335,15 +336,15 @@ class AuditTemplate:
                             ),
                         )
                     ),
-                    *_build_measures_element(em, view.property),
+                    *([] if not org.audit_template_export_measures else _build_measures_element(em, view.property)),
                     em.Reports(
                         em.Report(
                             em.Scenarios(
                                 {},
                                 em.Scenario(
                                     {"ID": "ScenarioType-69817879941680"},
-                                    *_build_resource_uses(em, view.property),
-                                    *build_time_series_data(em, view.property),
+                                    *([] if not org.audit_template_export_meters else _build_resource_uses(em, view.property)),
+                                    *([] if not org.audit_template_export_meters else build_time_series_data(em, view.property)),
                                 ),
                             ),
                             {"ID": "ReportType-69909846999993"},

@@ -153,6 +153,8 @@ def _dict_org(request, organizations):
             "audit_template_user": o.audit_template_user,
             "audit_template_password": decrypt(o.audit_template_password)[0] if o.audit_template_password else "",
             "audit_template_city_id": o.audit_template_city_id,
+            "audit_template_export_meters": o.audit_template_export_meters,
+            "audit_template_export_measures": o.audit_template_export_measures,
             "audit_template_conditional_import": o.audit_template_conditional_import,
             "audit_template_report_type": o.audit_template_report_type,
             "audit_template_status_types": o.audit_template_status_types,
@@ -656,6 +658,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         audit_template_city_id = posted_org.get("audit_template_city_id", False)
         if audit_template_city_id != org.audit_template_city_id:
             org.audit_template_city_id = audit_template_city_id
+
+        audit_template_export_meters = posted_org.get("audit_template_export_meters", False)
+        if audit_template_export_meters != org.audit_template_export_meters:
+            org.audit_template_export_meters = audit_template_export_meters
+
+        audit_template_export_measures = posted_org.get("audit_template_export_measures", False)
+        if audit_template_export_measures != org.audit_template_export_measures:
+            org.audit_template_export_measures = audit_template_export_measures
 
         audit_template_conditional_import = posted_org.get("audit_template_conditional_import", False)
         if audit_template_conditional_import != org.audit_template_conditional_import:
