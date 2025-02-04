@@ -22,6 +22,7 @@ from seed.tests.util import FakeRequest
 from seed.utils.organizations import create_organization
 from seed.utils.users import get_js_role, get_role_from_js
 from seed.views.main import _get_default_org
+from seed.views.main import _get_default_org as get_default_org_for_user
 from seed.views.v3.organizations import _dict_org
 
 
@@ -575,9 +576,34 @@ class AccountsViewTests(TestCase):
             json.dumps(user_data),
             content_type="application/json",
         )
-        self.assertEqual(
-            json.loads(resp.content), {"status": "success", "api_key": "", "email": "some@hgg.com", "first_name": "bob", "last_name": "d"}
-        )
+        (
+            initial_org_id,
+            initial_org_name,
+            initial_org_user_role,
+            access_level_instance_name,
+            access_level_instance_id,
+            is_ali_root,
+            is_ali_leaf,
+        ) = get_default_org_for_user(self.user)
+        profile = {
+            "username": "some@hgg.com",
+            "email": "some@hgg.com",
+            "first_name": "bob",
+            "last_name": "d",
+            "ali_id": access_level_instance_id,
+            "ali_name": access_level_instance_name,
+            "api_key": "",
+            "is_ali_root": is_ali_root,
+            "is_ali_leaf": is_ali_leaf,
+            "org_id": initial_org_id,
+            "org_name": initial_org_name,
+            "org_role": initial_org_user_role,
+            "pk": self.user.pk,
+            "id": self.user.pk,
+            "two_factor_method": "disabled",
+            "is_superuser": self.user.is_superuser,
+        }
+        self.assertEqual(json.loads(resp.content), profile)
 
     def test_get_user_profile(self):
         """test for get_user_profile"""
@@ -585,17 +611,35 @@ class AccountsViewTests(TestCase):
             reverse_lazy("api:v3:user-detail", args=[self.user.pk]),
             content_type="application/json",
         )
-        self.assertEqual(
-            json.loads(resp.content),
-            {
-                "status": "success",
-                "api_key": "",
-                "email": "test_user@demo.com",
-                "first_name": "Johnny",
-                "last_name": "Energy",
-                "two_factor_method": "disabled",
-            },
-        )
+        (
+            initial_org_id,
+            initial_org_name,
+            initial_org_user_role,
+            access_level_instance_name,
+            access_level_instance_id,
+            is_ali_root,
+            is_ali_leaf,
+        ) = get_default_org_for_user(self.user)
+        profile = {
+            "username": "test_user@demo.com",
+            "email": "test_user@demo.com",
+            "first_name": "Johnny",
+            "last_name": "Energy",
+            "ali_id": access_level_instance_id,
+            "ali_name": access_level_instance_name,
+            "api_key": "",
+            "is_ali_root": is_ali_root,
+            "is_ali_leaf": is_ali_leaf,
+            "org_id": initial_org_id,
+            "org_name": initial_org_name,
+            "org_role": initial_org_user_role,
+            "pk": self.user.pk,
+            "id": self.user.pk,
+            "two_factor_method": "disabled",
+            "is_superuser": self.user.is_superuser,
+        }
+
+        self.assertEqual(json.loads(resp.content), profile)
         resp = self.client.post(
             reverse_lazy("api:v3:user-generate-api-key", args=[self.user.pk]),
             content_type="application/json",
@@ -604,17 +648,8 @@ class AccountsViewTests(TestCase):
             reverse_lazy("api:v3:user-detail", args=[self.user.pk]),
             content_type="application/json",
         )
-        self.assertEqual(
-            json.loads(resp.content),
-            {
-                "status": "success",
-                "api_key": User.objects.get(pk=self.user.pk).api_key,
-                "email": "test_user@demo.com",
-                "first_name": "Johnny",
-                "last_name": "Energy",
-                "two_factor_method": "disabled",
-            },
-        )
+        profile["api_key"] = User.objects.get(pk=self.user.pk).api_key
+        self.assertEqual(json.loads(resp.content), profile)
 
     def test_generate_api_key(self):
         """test for generate_api_key

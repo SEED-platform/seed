@@ -76,18 +76,9 @@
         <div class="form-group" id="group-add-container" ng-class="{'has-error': newGroupForm.name.$invalid && newGroupForm.name.$dirty }">
           <div>
             <label class="control-group sectionGroup" style="padding-right: 20px" translate>Create new group</label>
-            <!-- <div class="input-group" style="padding-right: 20px"> -->
             <input id="newGroupName" type="text" name="name" class="form-control" ng-model="new_group.name" placeholder="{$:: 'Group Name' | translate $}" sd-check-label-exists="groups" required />
-            <!-- </div> -->
           </div>
-          <button
-            type="submit"
-            class="btn btn-primary"
-            ng-disabled="newGroupForm.$invalid || disabled || inventory_access_level_instance_count !== 1"
-            style="height: 40px; margin-top: 20px"
-            ng-disabled=""
-            translate
-          >
+          <button type="submit" class="btn btn-primary" ng-disabled="newGroupForm.$invalid || inventory_access_level_instance_count !== 1" style="height: 40px; margin-top: 20px" translate>
             Create group
           </button>
         </div>

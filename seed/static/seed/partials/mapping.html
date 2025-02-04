@@ -197,7 +197,7 @@
               <th><translate>Is Omitted</translate></th>
               <th><translate>Inventory Type</translate></th>
               <th class="mapping_field ellipsis-resizable" sd-resizable><translate>SEED Header</translate></th>
-              <th class="ellipsis-resizable" sd-resizable><translate>Data Type</translate></th>
+              <th class="ellipsis-resizable" sd-resizable style="width: 15rem"><translate>Data Type</translate></th>
               <th><translate>Measurement Units</translate></th>
               <th class="import_column_name ellipsis-resizable" sd-resizable><translate>Data File Header</translate></th>
               <th class="ellipsis-resizable" sd-resizable><translate>Row 1</translate></th>
@@ -254,6 +254,7 @@
                   ng-model="col.data_type"
                   ng-options="type.id as type.label for type in ::data_types"
                   ng-disabled="col.suggestion_column_name || col.is_omitted"
+                  style="padding: 0 8px; width: min-content"
                 ></select>
               </td>
               <td ng-class="{'danger': col.from_units === null && is_pint_column(col), 'omitted': col.is_omitted}">

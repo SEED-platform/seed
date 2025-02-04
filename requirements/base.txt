@@ -27,6 +27,7 @@ django-pint==0.7.3
 
 # API
 djangorestframework==3.15.1  # Update after Django 4.2
+djangorestframework-simplejwt==5.3.1 # Update after Django 4.2
 django-post_office==3.8.0  # Update after Django 4.2
 drf-yasg==1.21.7
 django-filter==22.1  # Update after Django 4.2 and drf-spectacular
