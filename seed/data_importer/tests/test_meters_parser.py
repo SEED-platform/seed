@@ -868,6 +868,39 @@ class MeterUtilTests(TestCase):
         for readings in zipped_readings:
             self.assertEqual(round(readings[0], 5), round(readings[1], 5))
 
+    def test_meters_parser_can_handle_meter_temperature_units(self):
+        raw_meters = []
+        raw_meter = {
+            "Portfolio Manager ID": self.pm_property_id,
+            "Portfolio Manager Meter ID": "1-PMMeterID",
+            "Start Date": "2016-02-01 00:00:00",
+            "End Date": "2016-03-01 00:00:00",
+            "Meter Type": "Average Temperature",
+            "Usage Units": "",
+            "Usage/Quantity": 1,
+        }
+
+        usage_units = [
+            "F (Fahrenheit)",
+        ]
+
+        for usage_unit in usage_units:
+            meter = raw_meter.copy()
+            meter["Usage Units"] = usage_unit
+            raw_meters.append(meter)
+
+        meters_parser = MetersParser(self.org.id, raw_meters)
+
+        expected_readings = [1]
+        actual_readings = [reading["reading"] for reading in meters_parser.meter_and_reading_objs[0]["readings"]]
+
+        self.assertEqual(len(actual_readings), 1)
+
+        zipped_readings = zip(actual_readings, expected_readings)
+        # round to account for binary nature of floating point
+        for readings in zipped_readings:
+            self.assertEqual(round(readings[0], 5), round(readings[1], 5))
+
     def test_meters_parser_ignores_unexpected_meter_water_types(self):
         raw_meters = []
         raw_meter = {
@@ -884,6 +917,38 @@ class MeterUtilTests(TestCase):
             "Potable Indoor",
             "Potable: Mixed Indoor/Outdoor",
             "Potable Outdoor",
+            # invalid types
+            "Potable Invalid",
+            "Other Indoor",
+            "Well Water: Indoor",
+        ]
+
+        for type in meter_types:
+            meter = raw_meter.copy()
+            meter["Meter Type"] = type
+            raw_meters.append(meter)
+
+        meters_parser = MetersParser(self.org.id, raw_meters)
+        actual_readings = meters_parser.meter_and_reading_objs
+
+        self.assertEqual(len(actual_readings), 3)
+
+    def test_meters_parser_ignores_unexpected_meter_temperature_types(self):
+        raw_meters = []
+        raw_meter = {
+            "Portfolio Manager ID": self.pm_property_id,
+            "Portfolio Manager Meter ID": "1-PMMeterID",
+            "Start Date": "2016-02-01 00:00:00",
+            "End Date": "2016-03-01 00:00:00",
+            "Meter Type": "",
+            "Usage Units": "F (Fahrenheit)",
+            "Usage/Quantity": 1,
+        }
+
+        meter_types = [
+            "Heating Degree Days",
+            "Cooling Degree Days",
+            "Average Temperature",
             # invalid types
             "Potable Invalid",
             "Other Indoor",
