@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-01-24 01:19\n"
+"PO-Revision-Date: 2025-02-03 16:29\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -5644,6 +5644,9 @@ msgstr "Exportaciones fallidas"
 msgid "Until last date of"
 msgstr "Hasta la última fecha de"
 
+msgid "Update"
+msgstr "Actualizar"
+
 #, fuzzy
 msgid "Update Charts"
 msgstr "Actualizar gráficos"
@@ -5655,6 +5658,9 @@ msgstr "Actualizar datos derivados"
 #, fuzzy
 msgid "Update Filters"
 msgstr "Actualizar filtros"
+
+msgid "Update Password"
+msgstr "Actualizar contraseña"
 
 #, fuzzy
 msgid "Update Property Labels"

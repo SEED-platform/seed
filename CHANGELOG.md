@@ -1,3 +1,20 @@
+# SEED Version 3.2.4
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.2.4-release-prep -->
+
+## What's Changed
+### New Features 🎉
+* Django settings endpoint by @kflemin in https://github.com/SEED-platform/seed/pull/4936
+### Improvements 📈
+* Move JWT token claims to v3_users_current by @crutan in https://github.com/SEED-platform/seed/pull/4939
+* Add user serializer by @crutan in https://github.com/SEED-platform/seed/pull/4940
+### Bug Fixes 🐛
+* Make data type column wide enough to see completely by @crutan in https://github.com/SEED-platform/seed/pull/4919
+* Fix group meter interval by @haneslinger in https://github.com/SEED-platform/seed/pull/4937
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.2.3...v3.2.4
+
 # SEED Version 3.2.3
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.2.3-release-prep -->
