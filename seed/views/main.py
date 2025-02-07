@@ -14,13 +14,16 @@ from django.core.cache import cache
 from django.db import connection
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 
 from seed.celery import app
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.utils.api import api_endpoint
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.users import get_js_role
 
 _log = logging.getLogger(__name__)
@@ -123,6 +126,42 @@ def celery_queue(request):
     return JsonResponse(results)
 
 
+@swagger_auto_schema(
+    method="GET",
+    responses={
+        200: AutoSchemaHelper.schema_factory(
+            {
+                "status": "string",
+                "postgres": "string",
+                "celery": "string",
+                "redis": "string",
+            },
+            example={
+                "status": "healthy",
+                "postgres": "success",
+                "celery": "success",
+                "redis": "success",
+            },
+        ),
+        418: AutoSchemaHelper.schema_factory(
+            {
+                "status": "string",
+                "postgres": "string",
+                "celery": "string",
+                "redis": "string",
+            },
+            example={
+                "status": "unhealthy",
+                "postgres": "success",
+                "celery": "error",
+                "redis": "success",
+            },
+        ),
+    },
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+@ajax_request
 def health_check(request):
     """
     Perform a health check without requiring authentication
@@ -155,6 +194,29 @@ def health_check(request):
         },
         status=(200 if success else 418),
     )
+
+
+@swagger_auto_schema(
+    method="GET",
+    responses={
+        200: AutoSchemaHelper.schema_factory(
+            {
+                "allow_signup": "boolean",
+            }
+        )
+    },
+)
+@api_view(["GET"])
+@permission_classes([AllowAny])
+@ajax_request
+def config(request):
+    """
+    Returns readonly django settings without requiring authentication
+    """
+
+    return {
+        "allow_signup": settings.INCLUDE_ACCT_REG,
+    }
 
 
 @api_endpoint

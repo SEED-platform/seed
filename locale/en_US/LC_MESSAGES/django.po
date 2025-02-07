@@ -360,6 +360,12 @@ msgstr "Advanced Settings"
 msgid "Alias"
 msgstr "Alias"
 
+msgid "All Canonical Fields"
+msgstr "All Canonical Fields"
+
+msgid "All Extra Data Fields"
+msgstr "All Extra Data Fields"
+
 msgid "An Audit Template organization token, user email and password are required"
 msgstr "An Audit Template organization token, user email and password are required"
 
@@ -969,6 +975,12 @@ msgstr "Create a New Sub-Organization"
 
 msgid "Create a Program to get started!"
 msgstr "Create a Program to get started!"
+
+msgid "Create a Property"
+msgstr "Create a Property"
+
+msgid "Create a Tax Lot"
+msgstr "Create a Tax Lot"
 
 msgid "Create a new rule"
 msgstr "Create a new rule"
@@ -4342,6 +4354,9 @@ msgstr "Unsuccessful Exports"
 msgid "Until last date of"
 msgstr "Until last date of"
 
+msgid "Update"
+msgstr "Update"
+
 msgid "Update Charts"
 msgstr "Update Charts"
 
@@ -4350,6 +4365,9 @@ msgstr "Update Derived Data"
 
 msgid "Update Filters"
 msgstr "Update Filters"
+
+msgid "Update Password"
+msgstr "Update Password"
 
 msgid "Update Property Labels"
 msgstr "Update Property Labels"

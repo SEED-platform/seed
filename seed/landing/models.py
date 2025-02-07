@@ -15,6 +15,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import AccessToken
 
 from seed.lib.superperms.orgs.models import Organization
 
@@ -82,23 +84,29 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
             return None
 
         try:
-            if not auth_header.startswith("Basic"):
-                raise exceptions.AuthenticationFailed("Only Basic HTTP_AUTHORIZATION is supported")
+            if auth_header.startswith("Basic"):
+                auth_header = auth_header.split()[1]
+                auth_header = base64.urlsafe_b64decode(auth_header).decode("utf-8")
+                username, api_key = auth_header.split(":")
 
-            auth_header = auth_header.split()[1]
-            auth_header = base64.urlsafe_b64decode(auth_header).decode("utf-8")
-            username, api_key = auth_header.split(":")
+                valid_api_key = re.search("^[a-f0-9]{40}$", api_key)
+                if not valid_api_key:
+                    raise exceptions.AuthenticationFailed("Invalid API key")
 
-            valid_api_key = re.search("^[a-f0-9]{40}$", api_key)
-            if not valid_api_key:
-                raise exceptions.AuthenticationFailed("Invalid API key")
-
-            user = SEEDUser.objects.get(api_key=api_key, username=username)
-            return user
+                user = SEEDUser.objects.get(api_key=api_key, username=username)
+                return user
+            elif auth_header.startswith("Bearer"):
+                at = AccessToken(auth_header.removeprefix("Bearer "))
+                user = SEEDUser.objects.get(pk=at["user_id"])
+                return user
+            else:
+                raise exceptions.AuthenticationFailed("Only Basic HTTP_AUTHORIZATION or BEARER Tokens are supported")
         except ValueError:
             raise exceptions.AuthenticationFailed("Invalid HTTP_AUTHORIZATION Header")
+        except TokenError:
+            raise exceptions.AuthenticationFailed("Invalid Bearer Token")
         except SEEDUser.DoesNotExist:
-            raise exceptions.AuthenticationFailed("Invalid API key")
+            raise exceptions.AuthenticationFailed("Invalid API key or Bearer Token")
 
     def get_absolute_url(self):
         return f"/users/{quote(self.username)}/"
@@ -149,3 +157,9 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         if self.email.lower() != self.username:
             self.email = self.username
         return super().save(*args, **kwargs)
+
+    def serialize(self):
+        from seed.serializers.users import UserSerializer
+
+        serializer = UserSerializer(self)
+        return serializer.data

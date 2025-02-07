@@ -12,6 +12,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   'auth_payload',
   'property_columns',
   'analyses_service',
+  'modified_service',
   'organization_service',
   'salesforce_mapping_service',
   'salesforce_config_service',
@@ -35,6 +36,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     auth_payload,
     property_columns,
     analyses_service,
+    modified_service,
     organization_service,
     salesforce_mapping_service,
     salesforce_config_service,
@@ -49,6 +51,8 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $translate
   ) {
     $scope.org = organization_payload.organization;
+
+    $scope.$watch('org', (a, b) => (a !== b ? modified_service.setModified() : null), true);
 
     $scope.conf = {};
     if (salesforce_configs_payload.length > 0) {
@@ -360,6 +364,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
           default_reports_y_axis_options: $scope.selected_y_columns
         })
         .then(() => {
+          modified_service.resetModified();
           $scope.settings_updated = true;
           $scope.org_static = angular.copy($scope.org);
           $scope.$emit('organization_list_updated');
@@ -654,6 +659,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       'Denver Energy Audit Report',
       'EE-RLF Template',
       'Energy Trust of Oregon Report',
+      'Federal Energy and Water Audit Report',
       'Los Angeles Report',
       'Minneapolis Energy Evaluation Report',
       'New York City Energy Efficiency Report',

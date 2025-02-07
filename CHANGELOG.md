@@ -1,3 +1,41 @@
+# SEED Version 3.2.4
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.2.4-release-prep -->
+
+## What's Changed
+### New Features 🎉
+* Django settings endpoint by @kflemin in https://github.com/SEED-platform/seed/pull/4936
+### Improvements 📈
+* Move JWT token claims to v3_users_current by @crutan in https://github.com/SEED-platform/seed/pull/4939
+* Add user serializer by @crutan in https://github.com/SEED-platform/seed/pull/4940
+### Bug Fixes 🐛
+* Make data type column wide enough to see completely by @crutan in https://github.com/SEED-platform/seed/pull/4919
+* Fix group meter interval by @haneslinger in https://github.com/SEED-platform/seed/pull/4937
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.2.3...v3.2.4
+
+# SEED Version 3.2.3
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.2.3-release-prep -->
+
+## What's Changed
+### Improvements 📈
+* Add meter of type Electric to BSyncR analysis by @kflemin in https://github.com/SEED-platform/seed/pull/4923
+* Save org settings & 2fa prompt by @perryr16 in https://github.com/SEED-platform/seed/pull/4905
+* Add Simple JWT to authorization setup by @crutan in https://github.com/SEED-platform/seed/pull/4926
+* Portfolio Summary updates by @perryr16 in https://github.com/SEED-platform/seed/pull/4909
+### Maintenance 🧹
+* Remove inventory list `Data` nav item by @axelstudios in https://github.com/SEED-platform/seed/pull/4920
+* Remove server settings from the session cookie by @axelstudios in https://github.com/SEED-platform/seed/pull/4927
+### Bug Fixes 🐛
+* Fix  upgrade recommendation by @haneslinger in https://github.com/SEED-platform/seed/pull/4917
+* Fix inventory groups add inventory bug by @perryr16 in https://github.com/SEED-platform/seed/pull/4932
+* Show default display name on analyses by @perryr16 in https://github.com/SEED-platform/seed/pull/4924
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.2.2...v3.2.3
+
 # SEED Version 3.2.2
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.2.2-release-prep -->
@@ -2385,7 +2423,7 @@ Accepted External Pull Requests: 11
 
 # SEED Version 2.0.0 (2016-06-11 to 2016-10-01)
 
-losed Issues: 21
+Closed Issues: 21
 - Fixed [#30]( https://github.com/SEED-platform/seed/issues/30 ), Multiple Data Files per Building Record
 - Fixed [#59]( https://github.com/SEED-platform/seed/issues/59 ), Column Reordering allowed in Matching Edit Columns view
 - Fixed [#66]( https://github.com/SEED-platform/seed/issues/66 ), Add Ability to handle multiple years of data

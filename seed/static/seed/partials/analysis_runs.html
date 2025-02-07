@@ -13,9 +13,9 @@
         <td><a ui-sref="analysis_run(::{run_id: view.id, analysis_id: analysis.id, organization_id: org.id})" ui-sref-active="active">{$:: view.id $}</a></td>
         <td>
           <a ng-if="original_views[view.id]" ui-sref="inventory_detail({inventory_type: 'properties', view_id: original_views[view.id]})">
-            {$:: view.display_name || 'Property ' + original_views[view.id] $} <i class="glyphicon glyphicon-log-out"></i>
+            {$:: view.display_name || 'Property: Unknown' $} <i class="glyphicon glyphicon-log-out"></i>
           </a>
-          <span ng-if="!original_views[view.id]" uib-tooltip="Property no longer exists"> <i class="fa-solid fa-triangle-exclamation"></i> {$:: view.display_name || 'Unknown' $} </span>
+          <span ng-if="!original_views[view.id]" uib-tooltip="Property no longer exists"> <i class="fa-solid fa-triangle-exclamation"></i> {$:: view.display_name || 'Property: Unknown' $} </span>
         </td>
         <td>
           <ul>

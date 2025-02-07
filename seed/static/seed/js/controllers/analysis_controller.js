@@ -25,14 +25,5 @@ angular.module('SEED.controller.analysis', []).controller('analysis_controller',
     $scope.views = views_payload.views;
     $scope.view_id = $stateParams.view_id;
     $scope.original_views = views_payload.original_views;
-
-    $scope.has_children = (value) => typeof value === 'object';
-
-    $scope.get_display_name = (inventory_state) => organization_service.get_inventory_display_value(
-      $scope.org,
-      // NOTE: hardcoding 'property' b/c you can only run analyses on properties
-      'property',
-      inventory_state
-    );
   }
 ]);
