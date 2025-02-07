@@ -659,6 +659,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       'Denver Energy Audit Report',
       'EE-RLF Template',
       'Energy Trust of Oregon Report',
+      'Federal Energy and Water Audit Report',
       'Los Angeles Report',
       'Minneapolis Energy Evaluation Report',
       'New York City Energy Efficiency Report',
