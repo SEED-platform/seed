@@ -441,6 +441,18 @@ def kgal_water_conversion_factors(coutry):
     return factors
 
 
+def fahrenheit_temperature_conversion_factors(coutry):
+    """
+    Returns water conversion factor provided by Portfolio Manager.
+    Conversion factors taken from: https://www.kylesconverter.com/temperature/
+
+    # should country be considered?
+    """
+    meter_types = ["Heating Degree Days", "Cooling Degree Days", "Average Temperature"]
+
+    return {meter_type: {"F (Fahrenheit)": 1.00} for meter_type in meter_types}
+
+
 def usage_point_id(raw_source_id):
     """
     Extracts and returns the usage point ID of a GreenButton full uri ID.
