@@ -17,17 +17,12 @@
         <td>
           <button
             class="btn btn-default btn-rowform"
-            ng-click="edit_service(system.id, service.id)"
-            translate
+            ui-sref="service_detail(::{inventory_type: inventory_type, group_id: system.group_id, system_id: system.id, service_id: service.id})"
           >
-            <i class="fa-solid fa-pencil"></i>
+            View Details
           </button>
-          <button
-            class="btn btn-danger btn-rowform"
-            ng-click="remove_service(system.id, service.id)"
-          >
-            X
-          </button>
+          <button class="btn btn-default btn-rowform" ng-click="edit_service(system.id, service.id)" translate><i class="fa-solid fa-pencil"></i></button>
+          <button class="btn btn-danger btn-rowform" ng-click="remove_service(system.id, service.id)">X</button>
         </td>
       </tr>
     </tbody>
