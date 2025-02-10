@@ -29,6 +29,7 @@
       <div
         ng-include="::urls.static_url + 'seed/partials/systems_table.html'"
         ng-init="
+          inventory_type=inventory_type;
           system_key=table.system_key;
           headers=table.headers;
           fields=table.fields;
