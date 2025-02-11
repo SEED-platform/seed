@@ -44,6 +44,8 @@ class AuditTemplateViewTests(TestCase):
         self.org.audit_template_password = "fake at password"
         # 'password' encrypted
         self.org.audit_template_password = "InBhc3N3b3JkIg:xIgRoZurgtGDvmVEUL5Tx1vGbAQe-Iepsct5hiQx29Q"
+        self.org.audit_template_export_meters = True
+        self.org.audit_template_export_measures = True
         self.org.save()
 
         self.client.login(**self.user_details)

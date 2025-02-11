@@ -12,11 +12,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="organization",
             name="audit_template_export_measures",
-            field=models.BooleanField(default=True),
+            field=models.BooleanField(default=False),
         ),
         migrations.AddField(
             model_name="organization",
             name="audit_template_export_meters",
-            field=models.BooleanField(default=True),
+            field=models.BooleanField(default=False),
         ),
     ]

@@ -300,8 +300,8 @@ class Organization(models.Model):
     audit_template_city_id = models.IntegerField(blank=True, null=True)
     audit_template_conditional_import = models.BooleanField(default=True)
     audit_template_sync_enabled = models.BooleanField(default=False)
-    audit_template_export_meters = models.BooleanField(default=True)
-    audit_template_export_measures = models.BooleanField(default=True)
+    audit_template_export_meters = models.BooleanField(default=False)
+    audit_template_export_measures = models.BooleanField(default=False)
 
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)

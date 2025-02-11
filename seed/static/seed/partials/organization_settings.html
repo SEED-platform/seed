@@ -250,29 +250,6 @@
           </form>
         </div>
       </div>
-
-      <div class="section_content_container">
-        <div class="section_content with_padding">
-          <h3 translate>Audit Template Fields</h3>
-          <form class="form-horizontal" role="form">
-            <div class="form-group">
-              <div class="col-sm-5">
-                <div class="multi-select-container">
-                  <div class="col-sm-5">
-                    <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_export_meters" ng-disabled="::!auth.requires_owner" />
-                    <h3 translate style="padding-left: 5px; align-content: center;">meters</h3>
-                  </div>
-                  <div class="col-sm-5">
-                    <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_export_measures" ng-disabled="::!auth.requires_owner" />
-                    <h3 translate style="padding-left: 5px; align-content: center;">measures</h3>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate>Conditional Import</h3>
@@ -366,6 +343,26 @@
                 <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
                   <option ng-repeat="report_type in audit_template_report_types">{$ report_type$}</option>
                 </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Optional Data Exports</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <p translate>AT_OPTIONAL_EXPORTS_TEXT</p>
+                <div style="display: flex; vertical-align: middle">
+                  <input type="checkbox" class="form-control" style="width: 20px" ng-model="org.audit_template_export_meters" ng-disabled="::!auth.requires_owner" />
+                  <h3 translate style="padding-left: 5px">Meter Data</h3>
+                </div>
+                <div style="display: flex; vertical-align: middle">
+                  <input type="checkbox" class="form-control" style="width: 20px" ng-model="org.audit_template_export_measures" ng-disabled="::!auth.requires_owner" />
+                  <h3 translate style="padding-left: 5px">BuildingSync Measures</h3>
+                </div>
               </div>
             </div>
           </form>

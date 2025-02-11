@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-02-03 16:29\n"
+"PO-Revision-Date: 2025-02-11 22:34\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -212,6 +212,9 @@ msgstr "Utilice el correo electrónico asociado a su cuenta de <a href=\"{link}/
 #, fuzzy
 msgid "AT_MOST_RECENT_ONLY"
 msgstr "Sólo se importarán los envíos de Plantillas de Auditoría que hayan sido enviados más recientemente que la actualización más reciente del inventario de SEED. Puede configurar esta opción en la página de configuración de su organización de SEED."
+
+msgid "AT_OPTIONAL_EXPORTS_TEXT"
+msgstr "Utilice las casillas de verificación a continuación si desea incluir datos adicionales en sus exportaciones de BuildingSync que crean informes de plantillas de auditoría de código auxiliar."
 
 #, fuzzy
 msgid "AT_PASS_TEXT"
@@ -1111,6 +1114,9 @@ msgstr "Confirme"
 msgid "Confirm Audit Template Building Import?"
 msgstr "¿Confirmar la importación de plantillas de auditoría?"
 
+msgid "Confirm New Password"
+msgstr "Confirmar Nueva Contraseña"
+
 #, fuzzy
 msgid "Confirm Save Mappings?"
 msgstr "¿Confirmar guardar asignaciones?"
@@ -1337,6 +1343,9 @@ msgstr "Método actual"
 #, fuzzy
 msgid "Current Name"
 msgstr "Nombre actual"
+
+msgid "Current Password"
+msgstr "Contraseña Actual"
 
 #, fuzzy
 msgid "Current password"
@@ -3391,6 +3400,9 @@ msgstr "Nuevo Objetivo"
 msgid "New Note"
 msgstr "Nueva Nota"
 
+msgid "New Password"
+msgstr "Nueva Contraseña"
+
 #, fuzzy
 msgid "New User Email"
 msgstr "Correo electrónico de nuevo usuario"
@@ -3560,6 +3572,9 @@ msgstr "Mostrar sólo columnas rellenas"
 #, fuzzy
 msgid "Only one terms of service is allowed to be active"
 msgstr "Sólo se permite que esté activa una condición de servicio"
+
+msgid "Optional Data Exports"
+msgstr "Exportaciones de datos opcionales"
 
 #, fuzzy
 msgid "Options"
@@ -5660,7 +5675,7 @@ msgid "Update Filters"
 msgstr "Actualizar filtros"
 
 msgid "Update Password"
-msgstr "Actualizar contraseña"
+msgstr "Actualizar Contraseña"
 
 #, fuzzy
 msgid "Update Property Labels"

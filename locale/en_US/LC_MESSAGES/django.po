@@ -167,6 +167,9 @@ msgstr "Use the email associated with your account from <a href=\"{link}/\" targ
 msgid "AT_MOST_RECENT_ONLY"
 msgstr "Only Audit Template submissions that have been submitted more recently than the SEED inventory's most recent update will be imported. You can configure this setting in your SEED organization's settings page."
 
+msgid "AT_OPTIONAL_EXPORTS_TEXT"
+msgstr "Use the checkboxes below if you want to include additional data in your BuildingSync exports that create stub Audit Template reports."
+
 msgid "AT_PASS_TEXT"
 msgstr "Use the password associated with your account from <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Building Energy Score website</a>."
 
@@ -864,6 +867,9 @@ msgstr "Confirm"
 msgid "Confirm Audit Template Building Import?"
 msgstr "Confirm Audit Template Building Import?"
 
+msgid "Confirm New Password"
+msgstr "Confirm New Password"
+
 msgid "Confirm Save Mappings?"
 msgstr "Confirm Save Mappings?"
 
@@ -1042,6 +1048,9 @@ msgstr "Current Method"
 
 msgid "Current Name"
 msgstr "Current Name"
+
+msgid "Current Password"
+msgstr "Current Password"
 
 msgid "Current password"
 msgstr "Current password"
@@ -2623,6 +2632,9 @@ msgstr "New Goal"
 msgid "New Note"
 msgstr "New Note"
 
+msgid "New Password"
+msgstr "New Password"
+
 msgid "New User Email"
 msgstr "New User Email"
 
@@ -2752,6 +2764,9 @@ msgstr "Only Show Populated Columns"
 #: src/django-tos-master/tos/models.py:34
 msgid "Only one terms of service is allowed to be active"
 msgstr "Only one terms of service is allowed to be active"
+
+msgid "Optional Data Exports"
+msgstr "Optional Data Exports"
 
 msgid "Options"
 msgstr "Options"
