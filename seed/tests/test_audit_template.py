@@ -92,6 +92,8 @@ class ExportToAuditTemplate(TestCase):
         self.org.at_organization_token = "fake"
         self.org.audit_template_user = "fake@.com"
         self.org.audit_template_password = "InBhc3N3b3JkIg:xIgRoZurgtGDvmVEUL5Tx1vGbAQe-Iepsct5hiQx29Q"
+        self.org.audit_template_export_meters = True
+        self.org.audit_template_export_measures = True
         self.org.property_display_field = "pm_property_id"
         self.org.save()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
@@ -254,12 +256,10 @@ class ExportToAuditTemplate(TestCase):
         # Action
         at = AuditTemplate(self.org.id)
         response = at.build_xml(self.state1, "Demo City Report", self.state1.pm_property_id)
-
         # Assert
         # # is tree
         self.assertEqual(tuple, type(response))
         tree = etree.XML(response[0])
-
         measures = tree.find("auc:Facilities/auc:Facility/auc:Measures", namespaces=tree.nsmap)
         service_hot_water_systems = measures.findall(
             "auc:Measure/auc:TechnologyCategories/auc:TechnologyCategory/auc:ServiceHotWaterSystems", namespaces=tree.nsmap
