@@ -16,6 +16,7 @@ from lxml import etree
 
 # from seed.audit_template.audit_template import build_xml
 from seed.audit_template.audit_template import AuditTemplate
+from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
 from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
 from seed.models import Meter, MeterReading, Uniformat
@@ -178,35 +179,6 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual("error", messages[0])
         self.assertEqual(exp_error, messages[1])
 
-    def test_build_xml_from_property_with_meter(self):
-        # Set Up
-        self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)
-
-        # Action
-        at = AuditTemplate(self.org.id)
-        response = at.build_xml(self.state1, "Demo City Report", self.state1.pm_property_id)
-
-        # Assert
-        # # is tree
-        self.assertEqual(tuple, type(response))
-        tree = etree.XML(response[0])
-
-        # # has 1 scenario
-        scenarios = tree.findall("auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:Scenarios/auc:Scenario", namespaces=tree.nsmap)
-        self.assertEqual(1, len(scenarios))
-        scenario = scenarios[0]
-
-        # # scenario has 1 meter
-        meters = scenario.findall("auc:ResourceUses/auc:ResourceUse", namespaces=tree.nsmap)
-        self.assertEqual(1, len(meters))
-        meter = meters[0]
-
-        # # meter type
-        meter_type = meter.find("auc:EnergyResource", namespaces=tree.nsmap)
-        meter_unit = meter.find("auc:ResourceUnits", namespaces=tree.nsmap)
-        self.assertEqual(meter_type.text, "Electricity")
-        self.assertEqual(meter_unit.text, "kBtu")
-
     def test_build_xml_from_property_with_meter_readings(self):
         # Set Up
         self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)
@@ -227,10 +199,27 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual(tuple, type(response))
         tree = etree.XML(response[0])
 
-        # # has 1 scenario
+        # # has 2 scenario
         scenarios = tree.findall("auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:Scenarios/auc:Scenario", namespaces=tree.nsmap)
-        self.assertEqual(1, len(scenarios))
-        scenario = scenarios[0]
+        self.assertEqual(2, len(scenarios))
+
+        # # First scenario is available energy report
+        scenario1 = scenarios[0]
+        self.assertEqual("Audit Template Available Energy", scenario1.find("auc:ScenarioName", namespaces=tree.nsmap).text)
+        meter_types = scenario1.findall("auc:ResourceUses/auc:ResourceUse", namespaces=tree.nsmap)
+        self.assertEqual(1, len(meter_types))
+        meter_type = meter_types[0]
+        # # Resource Uses has Electricity and kWh
+        resource = meter_type.find("auc:EnergyResource", namespaces=tree.nsmap)
+        meter_unit = meter_type.find("auc:ResourceUnits", namespaces=tree.nsmap)
+        self.assertEqual(resource.text, "Electricity")
+        self.assertEqual(meter_unit.text, "kWh")
+
+        # # 2nd scenario has meter and readings
+        scenario = scenarios[1]
+        # # scenario has 1 meter
+        meters = scenario.findall("auc:ResourceUses/auc:ResourceUse", namespaces=tree.nsmap)
+        self.assertEqual(1, len(meters))
 
         # # scenario has 1 meter reading
         meter_readings = scenario.findall("auc:TimeSeriesData/auc:TimeSeries", namespaces=tree.nsmap)
@@ -239,10 +228,29 @@ class ExportToAuditTemplate(TestCase):
 
         start_time = meter_reading.find("auc:StartTimestamp", namespaces=tree.nsmap)
         end_time = meter_reading.find("auc:EndTimestamp", namespaces=tree.nsmap)
-        reading = meter_reading.find("auc:IntervalReading", namespaces=tree.nsmap)
+        # get the timeseries ID attribute from teh timeseries element
+        timeseries_id = meter_reading.attrib["ID"]
+
         self.assertEqual(start_time.text, datetime(2019, 1, 1, 0, 0, 0, tzinfo=tz.utc).isoformat())
         self.assertEqual(end_time.text, datetime(2019, 2, 1, 0, 0, 0, tzinfo=tz.utc).isoformat())
-        self.assertEqual(float(reading.text), 123)
+
+        # # scenario has 1 all resource total
+        totals = scenario.findall("auc:AllResourceTotals/auc:AllResourceTotal", namespaces=tree.nsmap)
+        self.assertEqual(1, len(totals))
+        total = totals[0]
+        reading = total.find("auc:SiteEnergyUse", namespaces=tree.nsmap)
+        # assert reading has been property converted to kWh from its stored value in kBtu
+        factors = kbtu_thermal_conversion_factors("US")
+        kBtu_to_kWh = factors["Electric"]["kWh (thousand Watt-hours)"]
+        self.assertEqual(float(reading.text), (123 / kBtu_to_kWh))
+        # assert that all resource total user defined field FieldName equal to 'Linked Time Series ID' has
+        # a matching FieldValue of timeseries_id
+        self.assertEqual(
+            timeseries_id,
+            total.find(
+                "auc:UserDefinedFields/auc:UserDefinedField[auc:FieldName='Linked Time Series ID']/auc:FieldValue", namespaces=tree.nsmap
+            ).text,
+        )
 
     def test_build_xml_from_property_with_measures(self):
         # Set Up
@@ -256,6 +264,7 @@ class ExportToAuditTemplate(TestCase):
         # Action
         at = AuditTemplate(self.org.id)
         response = at.build_xml(self.state1, "Demo City Report", self.state1.pm_property_id)
+
         # Assert
         # # is tree
         self.assertEqual(tuple, type(response))
@@ -317,18 +326,9 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual(tuple, type(response))
         tree = etree.XML(response[0])
 
-        # # has 1 scenario
+        # # has 0 scenarios
         scenarios = tree.findall("auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:Scenarios/auc:Scenario", namespaces=tree.nsmap)
-        self.assertEqual(1, len(scenarios))
-        scenario = scenarios[0]
-
-        # # scenario has 0 meters
-        meters = scenario.findall("auc:ResourceUses/auc:ResourceUse", namespaces=tree.nsmap)
-        self.assertEqual(0, len(meters))
-
-        # # scenario has 0 meter readings
-        meter_readings = scenario.findall("auc:TimeSeriesData/auc:TimeSeries", namespaces=tree.nsmap)
-        self.assertEqual(0, len(meter_readings))
+        self.assertEqual(0, len(scenarios))
 
         # # tree has 0 measures
         measures = tree.findall("auc:Facilities/auc:Facility/auc:Measures", namespaces=tree.nsmap)

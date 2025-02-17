@@ -159,6 +159,8 @@ def _dict_org(request, organizations):
             "audit_template_report_type": o.audit_template_report_type,
             "audit_template_status_types": o.audit_template_status_types,
             "audit_template_sync_enabled": o.audit_template_sync_enabled,
+            "audit_template_tracking_id_name": o.audit_template_tracking_id_name,
+            "audit_template_tracking_id_field": o.audit_template_tracking_id_field,
             "salesforce_enabled": o.salesforce_enabled,
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
@@ -642,6 +644,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         audit_template_user = posted_org.get("audit_template_user", False)
         if audit_template_user != org.audit_template_user:
             org.audit_template_user = audit_template_user
+
+        audit_template_tracking_id_name = posted_org.get("audit_template_tracking_id_name", False)
+        if audit_template_tracking_id_name != org.audit_template_tracking_id_name:
+            org.audit_template_tracking_id_name = audit_template_tracking_id_name
+
+        audit_template_tracking_id_field = posted_org.get("audit_template_tracking_id_field", False)
+        if audit_template_tracking_id_field != org.audit_template_tracking_id_field:
+            org.audit_template_tracking_id_field = audit_template_tracking_id_field
 
         audit_template_password = posted_org.get("audit_template_password", False)
         if audit_template_password != org.audit_template_password:

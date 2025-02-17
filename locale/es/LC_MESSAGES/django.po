@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-02-11 22:34\n"
+"PO-Revision-Date: 2025-02-17 18:31\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -189,6 +189,9 @@ msgstr "Documentación API"
 msgid "API Key"
 msgstr "Clave API"
 
+msgid "AT_ADVANCED_SETTINGS_TEXT"
+msgstr "Esta sección contiene las configuraciones necesarias si el flujo de trabajo de su organización incluirá enviar datos desde SEED a Audit Template para crear informes de plantilla de auditoría \"stub\" que luego se pueden completar en Audit Template. Si no desea crear informes de Audit Template stub desde SEED, puede ignorar estas configuraciones."
+
 #, fuzzy
 msgid "AT_ALL_DATA"
 msgstr "Los envíos de Plantillas de Auditoría se importarán independientemente de la fecha de envío. Puede configurar esta opción en la página de configuración de su organización de SEED."
@@ -208,6 +211,10 @@ msgstr "Cuando esta casilla está marcada, SEED sólo importará los envíos de 
 #, fuzzy
 msgid "AT_EMAIL_TEXT"
 msgstr "Utilice el correo electrónico asociado a su cuenta de <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Sitio web de Building Energy Score</a>."
+
+#, fuzzy
+msgid "AT_ID_FIELD_TEXT"
+msgstr "Ingrese el NOMBRE DE COLUMNA (no el nombre para mostrar) del campo SEED que contiene el ID de identificación fiscal personalizado de su organización. El valor predeterminado es 'custom_id_1'. Puede encontrar esta información en la página Configuración de columnas de su organización en SEED."
 
 #, fuzzy
 msgid "AT_MOST_RECENT_ONLY"
@@ -231,6 +238,10 @@ msgstr "Si su organización ha configurado un formulario de informe personalizad
 #, fuzzy
 msgid "AT_SUBMISSION_STATUS"
 msgstr "SEED importará datos para envíos con los siguientes estados en Plantilla de Auditoría."
+
+#, fuzzy
+msgid "AT_TAX_ID_NAME"
+msgstr "Ingrese el nombre de identificación fiscal personalizado que se configuró en la plantilla de informe de auditoría configurable de su jurisdicción. El valor predeterminado es \"City Custom Building ID\"."
 
 #. Helper text for the Audit Template token in organization settings.
 #, fuzzy
@@ -3607,6 +3618,9 @@ msgstr "Configuración de la organización"
 msgid "Organization Sharing"
 msgstr "Organización Compartida"
 
+msgid "Organization's identifier name"
+msgstr "Nombre Identificador de la Organización"
+
 #, fuzzy
 msgid "Organizations"
 msgstr "Organizaciones"
@@ -4408,6 +4422,10 @@ msgstr "Ejecutar Id"
 #, fuzzy
 msgid "Run Status"
 msgstr "Estado de ejecución"
+
+#, fuzzy
+msgid "SEED Field Containing Organization's Identifier"
+msgstr "Campo SEED que contiene el identificador de la organización"
 
 #, fuzzy
 msgid "SEED Field Name"
