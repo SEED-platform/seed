@@ -346,7 +346,7 @@ class ExportToAuditTemplate(TestCase):
         mock_response = mock.Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = json.return_value = {
-            "rp_buildings": {"BuildingType-1": "https://fake.gov/rp/buildings/1111"},
+            "rp_buildings": {"Building-1": "https://fake.gov/rp/buildings/1111"},
             "rp_nyc_properties": {},
         }
         mock_request.return_value = mock_response
@@ -366,7 +366,7 @@ class ExportToAuditTemplate(TestCase):
         # valid property
         response, messages = at.export_to_audit_template(self.state1, token)
         self.assertEqual([], messages)
-        exp = {"rp_buildings": {"BuildingType-1": "https://fake.gov/rp/buildings/1111"}, "rp_nyc_properties": {}}
+        exp = {"rp_buildings": {"Building-1": "https://fake.gov/rp/buildings/1111"}, "rp_nyc_properties": {}}
         self.assertEqual(exp, response.json())
 
     @mock.patch("requests.request")
@@ -383,14 +383,14 @@ class ExportToAuditTemplate(TestCase):
         mock_export1_response = mock.Mock()
         mock_export1_response.status_code = 200
         mock_export1_response.json.return_value = {
-            "rp_buildings": {"BuildingType-1": "https://fake.gov/rp/buildings/1111"},
+            "rp_buildings": {"Building-1": "https://fake.gov/rp/buildings/1111"},
             "rp_nyc_properties": {},
         }
 
         mock_export2_response = mock.Mock()
         mock_export2_response.status_code = 200
         mock_export2_response.json.return_value = {
-            "rp_buildings": {"BuildingType-1": "https://fake.gov/rp/buildings/2222"},
+            "rp_buildings": {"Building-1": "https://fake.gov/rp/buildings/2222"},
             "rp_nyc_properties": {},
         }
         mock_request.side_effect = [mock_authenticate_response, mock_export1_response, mock_export2_response]
