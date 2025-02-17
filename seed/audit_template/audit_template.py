@@ -302,7 +302,7 @@ class AuditTemplate:
         building_id = "Building-1"
         report_id = "Report-1"
 
-        # TODO: double check buildingsync version. isn't it currently 2.4.0?
+        # TODO: BuildingSync version is very hardcoded here...use env var
 
         XSI_URI = "http://www.w3.org/2001/XMLSchema-instance"
         nsmap = {
@@ -314,7 +314,7 @@ class AuditTemplate:
             {
                 etree.QName(
                     XSI_URI, "schemaLocation"
-                ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.3.0/BuildingSync.xsd",
+                ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.4.0/BuildingSync.xsd",
                 "version": "2.4.0",
             },
             em.Facilities(
@@ -759,7 +759,7 @@ def _batch_export_to_audit_template(org_id, view_ids, token, progress_key):
 
         at_building_id = None
         for k, v in response.json()["rp_buildings"].items():
-            if "BuildingType-" in k:
+            if "Building-" in k:
                 at_building_id = v.split("/")[-1]
                 break
 
@@ -768,7 +768,9 @@ def _batch_export_to_audit_template(org_id, view_ids, token, progress_key):
             state.save()
             audit_template.update_export_results(view.id, results, "success", at_building_id=at_building_id)
         else:
-            audit_template.update_export_results(view.id, results, "error", message="Unexpected Response from Audit Template")
+            audit_template.update_export_results(
+                view.id, results, "error", message="Unexpected Response from Audit Template. Could not find AT Building ID in response."
+            )
 
         progress_data.update_summary(results)
         progress_data.step("Exporting properties to Audit Template...")
