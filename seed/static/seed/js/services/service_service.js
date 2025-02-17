@@ -22,6 +22,13 @@ angular.module('SEED.service.service', []).factory('service_service', [
         { params: { organization_id } }
       ).then(({ data }) => data),
 
+    create_meters: (organization_id, group_id, system_id, service_id, data) => $http
+      .post(
+        `/api/v3/inventory_groups/${group_id}/systems/${system_id}/services/${service_id}/create_meters/`,
+        data,
+        { params: { organization_id } }
+      ).then(({ data }) => data),
+
     update_service: (organization_id, group_id, system_id, service) => $http
       .put(
         `/api/v3/inventory_groups/${group_id}/systems/${system_id}/services/${service.id}/`,

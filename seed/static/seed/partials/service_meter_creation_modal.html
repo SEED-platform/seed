@@ -1,0 +1,43 @@
+<div class="modal-header">
+  <h4 translate>Create Meters</h4>
+</div>
+
+<div class="modal-body">
+
+  <!-- TYPE -->
+  <div class="meter-config-selection-container">
+    <label class="control-label" for="on_system" tooltip-placement="right" uib-tooltip="Select the meter type from the list">
+      <span translate>Type</span> <i class="ui-grid-icon-info-circled"></i>
+    </label>
+    <select class="form-control" id="on_system" ng-model="type" ng-options="type for type in types"></select>
+  </div>
+
+  <!-- DIRECTION -->
+  <div class="meter-config-selection-container">
+    <label class="control-label" for="selected_direction" translate>Flow Direction</label>
+    <select class="form-control" id="selected_direction" ng-model="direction"
+      ng-options="option.value as option.display for option in direction_options"></select>
+  </div>
+
+  <!-- PROPERTIES -->
+  <ul class="r-list">
+    <li class="r-list-header" translate>Properties</li>
+    <li ng-repeat="i in selected_property_indices" class="r-row r-row-centered">
+      <span class="r-grow">{$:: properties[i].property_display_name $}</span>
+      <i class="fa-solid fa-xmark r-margin-left-5" ng-click="unselect_property(i)"></i>
+    </li>
+    <li class="r-row r-row-centered">
+      <select class="form-control">
+        <option ng-repeat="i in unselected_property_indices" ng-click="select_property(i)">
+          {$:: properties[i].property_display_name $}
+        </option>
+      </select>
+    </li>
+  </ul>
+
+  <!-- CONFIRM -->
+  <button ng-disable="selected_property_indices.length == 0" type="button" class="btn btn-primary"
+    style="width: 200px;" ng-click="create_meters()">
+    Create Meters
+  </button>
+</div>

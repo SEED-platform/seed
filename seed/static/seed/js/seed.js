@@ -120,6 +120,7 @@
     'SEED.controller.meter_edit_modal',
     'SEED.controller.system_meter_readings_upload_modal',
     'SEED.controller.group_meter_creation_modal',
+    'SEED.controller.service_meter_creation_modal',
     'SEED.controller.modified_modal',
     'SEED.controller.move_inventory_modal',
     'SEED.controller.new_member_modal',
@@ -986,6 +987,7 @@
           templateUrl: `${static_url}seed/partials/service_detail.html`,
           controller: 'service_detail_controller',
           resolve: {
+            organization_id: ['user_service', (user_service) => user_service.get_organization().id],
             service: ['service_service', 'user_service', '$stateParams', (service_service, user_service, $stateParams) => {
               const { group_id,  system_id, service_id } = $stateParams;
               const organization_id = user_service.get_organization().id;
