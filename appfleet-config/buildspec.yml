@@ -1,0 +1,72 @@
+version: 0.2
+
+env:
+  parameter-store:
+    APPFLEET_DEPLOY_VERSION: /nrel/split/appfleet_docker_version_stable
+    NGINX_VER: /nrel/split/split_nginx_version_stable
+  exported-variables:
+    - CODEBUILD_SOURCE_VERSION
+    - CODEBUILD_BUILD_ID
+    - CODEBUILD_SOURCE_VERSION_SHORT
+    - CODEBUILD_BUILD_NUMBER
+    - PROJECT_HANDLE
+    - APP_NAME
+    - APPFLEET_RELEASE_NAME
+    - APPFLEET_TAG_OVERRIDES
+    - APPFLEET_DEPLOY_VERSION
+    - NGINX_VER
+    - MAKEFILE_PATH
+    - BASE_IMAGE_TAG
+    - CONFIG_FILE_URL
+    - DIFF_ONLY
+    - SYNTH_ONLY
+    - APPFLEET_BUILD_ARGS
+    - CACHE_S3_BUCKET
+
+phases:
+  install:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - echo "Build started on `date`"
+      - echo "Checking Docker version..."
+      - docker --version
+      - DOCKER_VERSION=$(docker --version | grep -oP '\d+\.\d+\.\d+')
+      - MIN_VERSION=25.0.0
+      - |
+        if [ "$(printf '%s\n' "$MIN_VERSION" "$DOCKER_VERSION" | sort -V | head -n1)" != "$MIN_VERSION" ]; then
+          echo "Error: Docker version must be 25.0.0 or higher. Current version: $DOCKER_VERSION"
+          exit 1
+        fi
+      - echo "Caching Docker images..."
+      - if [ -d /root/.cache/docker ]; then echo "Docker cache exists"; else echo "Docker cache does not exist"; fi
+
+  pre_build:
+    commands:
+      - CODEBUILD_SOURCE_VERSION_SHORT=$(echo $CODEBUILD_SOURCE_VERSION | head -c 7)
+      - echo "Setting up Docker Buildx..."
+      - docker buildx create --name mybuilder --driver docker-container --use
+      - docker buildx inspect --bootstrap
+  build:
+    commands:
+      - echo "Build started on `date`"
+      - echo "Deploying Docker image to ECS..."
+      - |
+        if [ -f "$MAKEFILE_PATH" ]; then
+          make -f "$MAKEFILE_PATH" V=1 release || { echo "Error: Makefile command failed"; exit 1; }
+        else
+          echo "Error: Makefile not found at $MAKEFILE_PATH."
+          exit 1
+        fi
+      - echo "Running generate_appfleet_tag_overrides.sh to populate APPFLEET_TAG_OVERRIDES..."
+      - APPFLEET_TAG_OVERRIDES=$(./appfleet-config/generate_appfleet_tag_overrides.sh)
+      - echo "APPFLEET_TAG_OVERRIDES $APPFLEET_TAG_OVERRIDES"
+      - make -f "$MAKEFILE_PATH" V=1 APPFLEET_TAG_OVERRIDES="$APPFLEET_TAG_OVERRIDES" deploy
+artifacts:
+  files:
+    - imageDetail.json
+
+cache:
+  paths:
+    - '/root/.cache/docker/**/*'
+    - '/root/.docker'
