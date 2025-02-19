@@ -11,11 +11,22 @@ from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from django.utils import timezone as tz
+from lxml import etree
 
 # from seed.audit_template.audit_template import build_xml
 from seed.audit_template.audit_template import AuditTemplate
+from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
-from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
+from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.models import Meter, MeterReading, Uniformat
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakeElementFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory,
+)
 from seed.utils.organizations import create_organization
 
 # from seed.utils.encrypt import encrypt
@@ -34,6 +45,8 @@ class AuditTemplateViewTests(TestCase):
         self.org.audit_template_password = "fake at password"
         # 'password' encrypted
         self.org.audit_template_password = "InBhc3N3b3JkIg:xIgRoZurgtGDvmVEUL5Tx1vGbAQe-Iepsct5hiQx29Q"
+        self.org.audit_template_export_meters = True
+        self.org.audit_template_export_measures = True
         self.org.save()
 
         self.client.login(**self.user_details)
@@ -80,6 +93,8 @@ class ExportToAuditTemplate(TestCase):
         self.org.at_organization_token = "fake"
         self.org.audit_template_user = "fake@.com"
         self.org.audit_template_password = "InBhc3N3b3JkIg:xIgRoZurgtGDvmVEUL5Tx1vGbAQe-Iepsct5hiQx29Q"
+        self.org.audit_template_export_meters = True
+        self.org.audit_template_export_measures = True
         self.org.property_display_field = "pm_property_id"
         self.org.save()
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
@@ -90,6 +105,7 @@ class ExportToAuditTemplate(TestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.view_factory = FakePropertyViewFactory(organization=self.org)
         self.state_factory = FakePropertyStateFactory(organization=self.org)
+        self.element_factory = FakeElementFactory(organization=self.org)
 
         self.state1 = self.state_factory.get_property_state(
             property_name="property1",
@@ -163,6 +179,161 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual("error", messages[0])
         self.assertEqual(exp_error, messages[1])
 
+    def test_build_xml_from_property_with_meter_readings(self):
+        # Set Up
+        self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)
+        MeterReading.objects.create(
+            start_time=datetime(2019, 1, 1, 0, 0, 0, tzinfo=tz.utc),
+            end_time=datetime(2019, 2, 1, 0, 0, 0, tzinfo=tz.utc),
+            reading=123,
+            meter_id=self.meter.id,
+            conversion_factor=1,
+        )
+
+        # Action
+        at = AuditTemplate(self.org.id)
+        response = at.build_xml(self.state1, "Demo City Report", self.state1.pm_property_id)
+
+        # Assert
+        # # is tree
+        self.assertEqual(tuple, type(response))
+        tree = etree.XML(response[0])
+
+        # # has 2 scenario
+        scenarios = tree.findall("auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:Scenarios/auc:Scenario", namespaces=tree.nsmap)
+        self.assertEqual(2, len(scenarios))
+
+        # # First scenario is available energy report
+        scenario1 = scenarios[0]
+        self.assertEqual("Audit Template Available Energy", scenario1.find("auc:ScenarioName", namespaces=tree.nsmap).text)
+        meter_types = scenario1.findall("auc:ResourceUses/auc:ResourceUse", namespaces=tree.nsmap)
+        self.assertEqual(1, len(meter_types))
+        meter_type = meter_types[0]
+        # # Resource Uses has Electricity and kWh
+        resource = meter_type.find("auc:EnergyResource", namespaces=tree.nsmap)
+        meter_unit = meter_type.find("auc:ResourceUnits", namespaces=tree.nsmap)
+        self.assertEqual(resource.text, "Electricity")
+        self.assertEqual(meter_unit.text, "kWh")
+
+        # # 2nd scenario has meter and readings
+        scenario = scenarios[1]
+        # # scenario has 1 meter
+        meters = scenario.findall("auc:ResourceUses/auc:ResourceUse", namespaces=tree.nsmap)
+        self.assertEqual(1, len(meters))
+
+        # # scenario has 1 meter reading
+        meter_readings = scenario.findall("auc:TimeSeriesData/auc:TimeSeries", namespaces=tree.nsmap)
+        self.assertEqual(1, len(meter_readings))
+        meter_reading = meter_readings[0]
+
+        start_time = meter_reading.find("auc:StartTimestamp", namespaces=tree.nsmap)
+        end_time = meter_reading.find("auc:EndTimestamp", namespaces=tree.nsmap)
+        # get the timeseries ID attribute from teh timeseries element
+        timeseries_id = meter_reading.attrib["ID"]
+
+        self.assertEqual(start_time.text, datetime(2019, 1, 1, 0, 0, 0, tzinfo=tz.utc).isoformat())
+        self.assertEqual(end_time.text, datetime(2019, 2, 1, 0, 0, 0, tzinfo=tz.utc).isoformat())
+
+        # # scenario has 1 all resource total
+        totals = scenario.findall("auc:AllResourceTotals/auc:AllResourceTotal", namespaces=tree.nsmap)
+        self.assertEqual(1, len(totals))
+        total = totals[0]
+        reading = total.find("auc:SiteEnergyUse", namespaces=tree.nsmap)
+        # assert reading has been property converted to kWh from its stored value in kBtu
+        factors = kbtu_thermal_conversion_factors("US")
+        kBtu_to_kWh = factors["Electric"]["kWh (thousand Watt-hours)"]
+        self.assertEqual(float(reading.text), (123 / kBtu_to_kWh))
+        # assert that all resource total user defined field FieldName equal to 'Linked Time Series ID' has
+        # a matching FieldValue of timeseries_id
+        self.assertEqual(
+            timeseries_id,
+            total.find(
+                "auc:UserDefinedFields/auc:UserDefinedField[auc:FieldName='Linked Time Series ID']/auc:FieldValue", namespaces=tree.nsmap
+            ).text,
+        )
+
+    def test_build_xml_from_property_with_measures(self):
+        # Set Up
+        self.element1 = self.element_factory.get_element(
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[1]
+        )
+        self.element2 = self.element_factory.get_element(
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[2]
+        )
+
+        # Action
+        at = AuditTemplate(self.org.id)
+        response = at.build_xml(self.state1, "Demo City Report", self.state1.pm_property_id)
+
+        # Assert
+        # # is tree
+        self.assertEqual(tuple, type(response))
+        tree = etree.XML(response[0])
+        measures = tree.find("auc:Facilities/auc:Facility/auc:Measures", namespaces=tree.nsmap)
+        service_hot_water_systems = measures.findall(
+            "auc:Measure/auc:TechnologyCategories/auc:TechnologyCategory/auc:ServiceHotWaterSystems", namespaces=tree.nsmap
+        )
+        chilled_water_hot_water_and_steam_distribution_systems = measures.findall(
+            "auc:Measure/auc:TechnologyCategories/auc:TechnologyCategory/auc:ChilledWaterHotWaterAndSteamDistributionSystems",
+            namespaces=tree.nsmap,
+        )
+
+        self.assertSetEqual(
+            {
+                "Separate SHW from heating",
+                "Install heat pump SHW system",
+                "Upgrade SHW boiler",
+                "Insulate SHW tank",
+                "Replace tankless coil",
+                "Install tankless water heaters",
+            },
+            {m.find("auc:MeasureName", namespaces=tree.nsmap).text for m in service_hot_water_systems},
+        )
+
+        self.assertSetEqual(
+            {"Replace or upgrade water heater"},
+            {m.find("auc:MeasureName", namespaces=tree.nsmap).text for m in chilled_water_hot_water_and_steam_distribution_systems},
+        )
+
+    def test_build_xml_from_property_with_measures_and_meters_org_settings(self):
+        # Set Up
+        self.org.audit_template_export_meters = False
+        self.org.audit_template_export_measures = False
+        self.org.save()
+
+        self.element1 = self.element_factory.get_element(
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[1]
+        )
+        self.element2 = self.element_factory.get_element(
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[2]
+        )
+
+        self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)
+        MeterReading.objects.create(
+            start_time=datetime(2019, 1, 1, 0, 0, 0, tzinfo=tz.utc),
+            end_time=datetime(2019, 2, 1, 0, 0, 0, tzinfo=tz.utc),
+            reading=123,
+            meter_id=self.meter.id,
+            conversion_factor=1,
+        )
+
+        # Action
+        at = AuditTemplate(self.org.id)
+        response = at.build_xml(self.state1, "Demo City Report", self.state1.pm_property_id)
+
+        # Assert
+        # # is tree
+        self.assertEqual(tuple, type(response))
+        tree = etree.XML(response[0])
+
+        # # has 0 scenarios
+        scenarios = tree.findall("auc:Facilities/auc:Facility/auc:Reports/auc:Report/auc:Scenarios/auc:Scenario", namespaces=tree.nsmap)
+        self.assertEqual(0, len(scenarios))
+
+        # # tree has 0 measures
+        measures = tree.findall("auc:Facilities/auc:Facility/auc:Measures", namespaces=tree.nsmap)
+        self.assertEqual(0, len(measures))
+
     @mock.patch("requests.request")
     def test_export_to_audit_template(self, mock_request):
         """
@@ -175,7 +346,7 @@ class ExportToAuditTemplate(TestCase):
         mock_response = mock.Mock()
         mock_response.status_code = 200
         mock_response.json.return_value = json.return_value = {
-            "rp_buildings": {"BuildingType-1": "https://fake.gov/rp/buildings/1111"},
+            "rp_buildings": {"Building-1": "https://fake.gov/rp/buildings/1111"},
             "rp_nyc_properties": {},
         }
         mock_request.return_value = mock_response
@@ -195,7 +366,7 @@ class ExportToAuditTemplate(TestCase):
         # valid property
         response, messages = at.export_to_audit_template(self.state1, token)
         self.assertEqual([], messages)
-        exp = {"rp_buildings": {"BuildingType-1": "https://fake.gov/rp/buildings/1111"}, "rp_nyc_properties": {}}
+        exp = {"rp_buildings": {"Building-1": "https://fake.gov/rp/buildings/1111"}, "rp_nyc_properties": {}}
         self.assertEqual(exp, response.json())
 
     @mock.patch("requests.request")
@@ -212,14 +383,14 @@ class ExportToAuditTemplate(TestCase):
         mock_export1_response = mock.Mock()
         mock_export1_response.status_code = 200
         mock_export1_response.json.return_value = {
-            "rp_buildings": {"BuildingType-1": "https://fake.gov/rp/buildings/1111"},
+            "rp_buildings": {"Building-1": "https://fake.gov/rp/buildings/1111"},
             "rp_nyc_properties": {},
         }
 
         mock_export2_response = mock.Mock()
         mock_export2_response.status_code = 200
         mock_export2_response.json.return_value = {
-            "rp_buildings": {"BuildingType-1": "https://fake.gov/rp/buildings/2222"},
+            "rp_buildings": {"Building-1": "https://fake.gov/rp/buildings/2222"},
             "rp_nyc_properties": {},
         }
         mock_request.side_effect = [mock_authenticate_response, mock_export1_response, mock_export2_response]

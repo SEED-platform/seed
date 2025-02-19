@@ -151,6 +151,9 @@ msgstr "Documentation de l'API"
 msgid "API Key"
 msgstr "Clé API"
 
+msgid "AT_ADVANCED_SETTINGS_TEXT"
+msgstr "Cette section contient les configurations nécessaires si le flux de travail de votre organisation doit inclure la transmission de données de SEED vers Audit Template pour créer des rapports « ébauche » qui peuvent ensuite être complétés dans Audit Template. Si vous ne souhaitez pas créer de rapports Audit Template ébauche à partir de SEED, vous pouvez ignorer ces paramètres."
+
 msgid "AT_ALL_DATA"
 msgstr "Les soumissions de modèles d’audit seront importées quelle que soit la date de soumission. Vous pouvez configurer ce paramètre dans la page des paramètres de votre organisation SEED."
 
@@ -168,8 +171,15 @@ msgid "AT_EMAIL_TEXT"
 msgstr "Utilisez l'e-mail associé à votre compte depuis <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
 
 #, fuzzy
+msgid "AT_ID_FIELD_TEXT"
+msgstr "Saisissez le NOM DE COLONNE (et non le nom d'affichage) du champ SEED qui contient l'identifiant fiscal personnalisé de votre organisation. La valeur par défaut est « custom_id_1 ». Vous pouvez trouver ces informations sur la page Paramètres de colonne de votre organisation dans SEED."
+
+#, fuzzy
 msgid "AT_MOST_RECENT_ONLY"
 msgstr "Seules les soumissions Audit Template qui ont été soumises plus récemment que la mise à jour la plus récente de l'inventaire SEED seront importées. Vous pouvez configurer ce paramètre dans la page des paramètres de votre organisation SEED."
+
+msgid "AT_OPTIONAL_EXPORTS_TEXT"
+msgstr "Utilisez les cases à cocher ci-dessous si vous souhaitez inclure des données supplémentaires dans vos exportations BuildingSync qui créent des rapports de modèles d'audit de stub."
 
 msgid "AT_PASS_TEXT"
 msgstr "Utilisez le mot de passe associé à votre compte sur le <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
@@ -182,6 +192,10 @@ msgstr "Si votre organisation a configuré un formulaire de rapport personnalis�
 
 msgid "AT_SUBMISSION_STATUS"
 msgstr "SEED importera les données des soumissions avec les statuts suivants dans le modèle d'audit."
+
+#, fuzzy
+msgid "AT_TAX_ID_NAME"
+msgstr "Saisissez le nom d'identifiant fiscal personnalisé qui a été configuré dans le modèle de rapport d'audit configurable de votre juridiction. La valeur par défaut est « City Custom Building ID »."
 
 #. Helper text for the Audit Template token in organization settings.
 msgid "AT_TOKEN_TEXT"
@@ -874,6 +888,9 @@ msgstr "Confirmer"
 msgid "Confirm Audit Template Building Import?"
 msgstr "Confirmer l'importation de la création du modèle d'audit ?"
 
+msgid "Confirm New Password"
+msgstr "Confirmer le Nouveau Mot de Passe"
+
 msgid "Confirm Save Mappings?"
 msgstr "Confirmer enregistrer les mappages?"
 
@@ -1053,6 +1070,9 @@ msgstr "Méthode actuelle"
 
 msgid "Current Name"
 msgstr "Nom Actuel"
+
+msgid "Current Password"
+msgstr "Mot de Passe Actuel"
 
 msgid "Current password"
 msgstr "Mot de passe actuel"
@@ -2641,6 +2661,9 @@ msgstr "Nouvel Objectif"
 msgid "New Note"
 msgstr "Nouvelle note"
 
+msgid "New Password"
+msgstr "Nouveau Mot de Passe"
+
 msgid "New User Email"
 msgstr "E-mail du nouvel utilisateur"
 
@@ -2771,6 +2794,9 @@ msgstr "Afficher uniquement les colonnes remplies"
 msgid "Only one terms of service is allowed to be active"
 msgstr "Un seul des termes du service est autorisé à être actif"
 
+msgid "Optional Data Exports"
+msgstr "Exportations de données facultatives"
+
 msgid "Options"
 msgstr "Options"
 
@@ -2794,6 +2820,9 @@ msgstr "Paramètres de l'organisation"
 
 msgid "Organization Sharing"
 msgstr "Partage de l'organisation"
+
+msgid "Organization's identifier name"
+msgstr "Nom d'Identification de l'Organisation"
 
 msgid "Organizations"
 msgstr "Organisations"
@@ -3415,6 +3444,10 @@ msgstr "ID d'exécution"
 
 msgid "Run Status"
 msgstr "État de l'exécution"
+
+#, fuzzy
+msgid "SEED Field Containing Organization's Identifier"
+msgstr "Champ SEED contenant l'identifiant de l'organisation"
 
 msgid "SEED Field Name"
 msgstr "Nom du champ SEED"
@@ -4401,7 +4434,7 @@ msgid "Update Filters"
 msgstr "Mise à jour les filtres"
 
 msgid "Update Password"
-msgstr "Mettre à jour le mot de passe"
+msgstr "Mettre à Jour le Mot de Passe"
 
 msgid "Update Property Labels"
 msgstr "Mettre à jour les étiquettes de propriété"
