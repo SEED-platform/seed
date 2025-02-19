@@ -55,7 +55,7 @@ target_groups:
       timeout: 60
       threshold_healthy: 2
       threshold_unhealthy: 5
-      http_healthy_status: "200,400"
+      http_healthy_status: "200,301,302,400"
 
 ecs_service:
   name: ${self.project_handle}-${self.app_name}-${release_name}
