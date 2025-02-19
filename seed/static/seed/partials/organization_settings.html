@@ -250,7 +250,6 @@
           </form>
         </div>
       </div>
-
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate>Conditional Import</h3>
@@ -336,6 +335,11 @@
       </div>
       <div class="section_content_container">
         <div class="section_content with_padding">
+          <p class="settings-header" translate>AT_ADVANCED_SETTINGS_TEXT</p>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
           <h3 translate>Audit Template Report Type</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
@@ -344,6 +348,52 @@
                 <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
                   <option ng-repeat="report_type in audit_template_report_types">{$ report_type$}</option>
                 </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Organization's Identifier Name</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <p translate>AT_TAX_ID_NAME</p>
+                <input class="form-control" ng-model="org.audit_template_tracking_id_name" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>SEED Column Containing Organization's Identifier</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <p translate>AT_ID_FIELD_TEXT</p>
+                <input class="form-control" ng-model="org.audit_template_tracking_id_field" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Optional Data Exports</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-5">
+                <p translate>AT_OPTIONAL_EXPORTS_TEXT</p>
+                <div style="display: flex; vertical-align: middle">
+                  <input type="checkbox" class="form-control" style="width: 20px" ng-model="org.audit_template_export_meters" ng-disabled="::!auth.requires_owner" />
+                  <h3 translate style="padding-left: 5px">Meter Data</h3>
+                </div>
+                <div style="display: flex; vertical-align: middle">
+                  <input type="checkbox" class="form-control" style="width: 20px" ng-model="org.audit_template_export_measures" ng-disabled="::!auth.requires_owner" />
+                  <h3 translate style="padding-left: 5px">BuildingSync Measures</h3>
+                </div>
               </div>
             </div>
           </form>
