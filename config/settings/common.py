@@ -342,3 +342,8 @@ GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION = None
 
 # Config self registration
 INCLUDE_ACCT_REG = os.environ.get("INCLUDE_ACCT_REG", "true").lower() == "true"
+
+# 2FA token validity duration in seconds
+OTP_EMAIL_TOKEN_VALIDITY = 300
+# 2FA time before a new token can be emailed
+OTP_EMAIL_COOLDOWN_DURATION = 0
