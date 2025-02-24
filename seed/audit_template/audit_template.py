@@ -260,7 +260,7 @@ class AuditTemplate:
 
     def validate_state_for_xml(self, state, display_field):
         missing_fields = []
-        expected_fields = ["address_line_1", "city", "gross_floor_area", "postal_code", "property_name", "state", "year_built"]
+        expected_fields = ["gross_floor_area", "postal_code", "property_name", "year_built"]
         for field in expected_fields:
             if getattr(state, field) is None:
                 missing_fields.append(field)
@@ -310,6 +310,7 @@ class AuditTemplate:
         }
         nsmap.update(NAMESPACES)
         em = ElementMaker(namespace=BUILDINGSYNC_URI, nsmap=nsmap)
+
         doc = em.BuildingSync(
             {
                 etree.QName(
@@ -334,14 +335,7 @@ class AuditTemplate:
                                             em.IdentifierValue(str(tracking_id)),
                                         )
                                     ),
-                                    em.Address(
-                                        em.StreetAddressDetail(
-                                            em.Simplified(em.StreetAddress(state.address_line_1)),
-                                        ),
-                                        em.City(state.city),
-                                        em.State(state.state),
-                                        em.PostalCode(str(state.postal_code)),
-                                    ),
+                                    _build_address(em, state),
                                     em.FloorAreas(
                                         em.FloorArea(
                                             em.FloorAreaType("Gross"),
@@ -385,6 +379,45 @@ class AuditTemplate:
         results.setdefault(status, {"count": 0, "details": []})
         results[status]["count"] += 1
         results[status]["details"].append({"view_id": view_id, **extra_fields})
+
+def _build_address(em, state):
+    if state.address_line_1 and state.city and state.state:
+        the_xml = em.Address(
+            em.StreetAddressDetail(
+                em.Simplified(em.StreetAddress(state.address_line_1)),
+            ),
+            em.City(state.city),
+            em.State(state.state),
+            em.PostalCode(str(state.postal_code)),
+        )
+    elif state.city and state.state:
+        the_xml = em.Address(
+            em.City(state.city),
+            em.State(state.state),
+            em.PostalCode(str(state.postal_code)),
+        )
+    elif state.address_line_1 and state.city:
+        the_xml = em.Address(
+            em.StreetAddressDetail(
+                em.Simplified(em.StreetAddress(state.address_line_1)),
+            ),
+            em.City(state.city),
+            em.PostalCode(str(state.postal_code)),
+        )
+    elif state.address_line_1 and state.state:
+        the_xml = em.Address(
+            em.StreetAddressDetail(
+                em.Simplified(em.StreetAddress(state.address_line_1)),
+            ),
+            em.State(state.state),
+            em.PostalCode(str(state.postal_code)),
+        )
+    else:
+        the_xml = em.Address(
+            em.PostalCode(str(state.postal_code)),
+        )
+
+    return the_xml
 
 
 def _build_metering_scenarios(em, property_id, building_id):
