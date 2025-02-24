@@ -132,6 +132,7 @@
     'SEED.controller.organization_edit_access_level_instance_modal',
     'SEED.controller.organization_settings',
     'SEED.controller.organization_sharing',
+    'SEED.controller.organization_stats',
     'SEED.controller.pairing',
     'SEED.controller.pairing_settings',
     'SEED.controller.portfolio_summary',
@@ -1231,6 +1232,47 @@
               (organization_service, $stateParams) => {
                 const { organization_id } = $stateParams;
                 return organization_service.get_shared_fields(organization_id);
+              }
+            ],
+            auth_payload: [
+              'auth_service',
+              '$stateParams',
+              '$q',
+              (auth_service, $stateParams, $q) => {
+                const { organization_id } = $stateParams;
+                return auth_service.is_authorized(organization_id, ['requires_owner']).then(
+                  (data) => {
+                    if (data.auth.requires_owner) {
+                      return data;
+                    }
+                    return $q.reject('not authorized');
+                  },
+                  (data) => $q.reject(data.message)
+                );
+              }
+            ]
+          }
+        })
+        .state({
+          name: 'organization_stats',
+          url: '/accounts/{organization_id:int}/stats',
+          templateUrl: `${static_url}seed/partials/organization_stats.html`,
+          controller: 'organization_stats_controller',
+          resolve: {
+            all_columns: [
+              '$stateParams',
+              'analyses_service',
+              ($stateParams, analyses_service) => {
+                const { organization_id } = $stateParams;
+                return analyses_service.get_used_columns(organization_id);
+              }
+            ],
+            organization_payload: [
+              'organization_service',
+              '$stateParams',
+              (organization_service, $stateParams) => {
+                const { organization_id } = $stateParams;
+                return organization_service.get_organization(organization_id);
               }
             ],
             auth_payload: [
