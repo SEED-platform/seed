@@ -87,3 +87,6 @@ docker-compose-dbs.yml
 
 # ruff linting and formatting
 /.ruff_cache
+
+# ignore appfleet config files downloaded at build time
+appfleet-config*
