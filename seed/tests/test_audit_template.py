@@ -175,7 +175,7 @@ class ExportToAuditTemplate(TestCase):
         # property missing required fields
         self.assertIsNone(response3[0])
         messages = response3[1]
-        exp_error = f"Validation Error. {self.state3.pm_property_id} must have address_line_1, property_name"
+        exp_error = f"Validation Error. {self.state3.pm_property_id} must have property_name"
         self.assertEqual("error", messages[0])
         self.assertEqual(exp_error, messages[1])
 
@@ -360,7 +360,7 @@ class ExportToAuditTemplate(TestCase):
         # invalid property
         response, messages = at.export_to_audit_template(self.state3, token)
         self.assertIsNone(response)
-        exp = ["error", f"Validation Error. {self.state3.pm_property_id} must have address_line_1, property_name"]
+        exp = ["error", f"Validation Error. {self.state3.pm_property_id} must have property_name"]
         self.assertEqual(exp, messages)
 
         # valid property
@@ -428,7 +428,7 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual("2222", self.state2.audit_template_building_id)
 
         details = error["details"]
-        exp = f"Validation Error. {self.state3.pm_property_id} must have address_line_1, property_name"
+        exp = f"Validation Error. {self.state3.pm_property_id} must have property_name"
         self.assertEqual(self.view3.id, details[0]["view_id"])
         self.assertEqual(exp, details[0]["message"])
         self.assertIsNone(self.state3.audit_template_building_id)

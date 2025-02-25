@@ -380,6 +380,7 @@ class AuditTemplate:
         results[status]["count"] += 1
         results[status]["details"].append({"view_id": view_id, **extra_fields})
 
+
 def _build_address(em, state):
     if state.address_line_1 and state.city and state.state:
         the_xml = em.Address(
