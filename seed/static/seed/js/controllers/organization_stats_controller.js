@@ -21,7 +21,6 @@ angular.module('SEED.controller.organization_stats', []).controller('organizatio
     if (statistics_payload.length > 0) {
       $scope.conf = statistics_payload[0];
     }
-    console.log('CONF: ', $scope.conf);
 
     // hardcoding these for now but we should make a service for them at some point
     $scope.electric_units = [
@@ -53,7 +52,6 @@ angular.module('SEED.controller.organization_stats', []).controller('organizatio
 
     $scope.save_settings = () => {
       $scope.settings_updated = false;
-      console.log("CONF NOW: ", $scope.conf);
       if ($scope.conf.id) {
         // update
         statistics_service
