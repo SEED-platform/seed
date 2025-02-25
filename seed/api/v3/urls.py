@@ -64,6 +64,7 @@ from seed.views.v3.salesforce_configs import SalesforceConfigViewSet
 from seed.views.v3.salesforce_mappings import SalesforceMappingViewSet
 from seed.views.v3.sensors import SensorViewSet
 from seed.views.v3.services import ServiceViewSet
+from seed.views.v3.statistics import StastisticsSetupViewSet
 from seed.views.v3.systems import SystemViewSet
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 from seed.views.v3.taxlot_views import TaxlotViewViewSet
@@ -114,6 +115,7 @@ api_v3_router.register(r"property_views", PropertyViewViewSet, basename="propert
 api_v3_router.register(r"report_configurations", ReportConfigurationViewSet, basename="report_configurations")
 api_v3_router.register(r"salesforce_configs", SalesforceConfigViewSet, basename="salesforce_configs")
 api_v3_router.register(r"salesforce_mappings", SalesforceMappingViewSet, basename="salesforce_mappings")
+api_v3_router.register(r"statistics", StastisticsSetupViewSet, basename="statistics")
 api_v3_router.register(r"tax_lot_properties", TaxLotPropertyViewSet, basename="tax_lot_properties")
 api_v3_router.register(r"taxlot_views", TaxlotViewViewSet, basename="taxlot_views")
 api_v3_router.register(r"taxlots", TaxlotViewSet, basename="taxlots")

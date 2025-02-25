@@ -9,11 +9,11 @@ angular.module('SEED.controller.organization_stats', []).controller('organizatio
   'auth_payload',
   'statistics_payload',
   'statistics_service',
+  'Notification',
 
   // eslint-disable-next-line func-names
-  function ($scope, all_columns, organization_payload, auth_payload, statistics_payload, statistics_service) {
+  function ($scope, all_columns, organization_payload, auth_payload, statistics_payload, statistics_service, Notification) {
     $scope.fields = all_columns.columns;
-    console.log('fields: ', $scope.fields);
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
 
@@ -21,6 +21,7 @@ angular.module('SEED.controller.organization_stats', []).controller('organizatio
     if (statistics_payload.length > 0) {
       $scope.conf = statistics_payload[0];
     }
+    console.log('CONF: ', $scope.conf);
 
     // hardcoding these for now but we should make a service for them at some point
     $scope.electric_units = [
@@ -52,6 +53,7 @@ angular.module('SEED.controller.organization_stats', []).controller('organizatio
 
     $scope.save_settings = () => {
       $scope.settings_updated = false;
+      console.log("CONF NOW: ", $scope.conf);
       if ($scope.conf.id) {
         // update
         statistics_service
@@ -63,6 +65,7 @@ angular.module('SEED.controller.organization_stats', []).controller('organizatio
               statistics_service.get_statistics($scope.org.id).then((data) => {
                 $scope.conf = data.length > 0 ? data[0] : {};
               });
+              $scope.settings_updated = true;
             }
           })
           .catch((response) => {
@@ -81,6 +84,7 @@ angular.module('SEED.controller.organization_stats', []).controller('organizatio
             statistics_service.get_statistics($scope.org.id).then((data) => {
               $scope.conf = data.length > 0 ? data[0] : {};
             });
+            $scope.settings_updated = true;
           })
           .catch((response) => {
             if (response.data && response.data.status === 'error') {
