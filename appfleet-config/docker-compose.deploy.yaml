@@ -1,9 +1,7 @@
 ---
-
 services:
   appfleet-pipeline:
-    image:
-      991404956194.dkr.ecr.us-west-2.amazonaws.com/nrel-appfleet-pipeline:${APPFLEET_DEPLOY_VERSION:-2.2.0-alpine-e1f2893}
+    image: 991404956194.dkr.ecr.us-west-2.amazonaws.com/nrel-appfleet-pipeline:${APPFLEET_DEPLOY_VERSION:-2.2.0-alpine-e1f2893}
     environment:
       - APPFLEET_TAG_OVERRIDES=${APPFLEET_TAG_OVERRIDES}
       - APPFLEET_RELEASE_NAME=${APPFLEET_RELEASE_NAME:-dev}
