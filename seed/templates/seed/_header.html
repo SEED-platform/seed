@@ -84,6 +84,9 @@
           <a ui-sref="organization_sharing({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Sharing</a>
         </li>
         <li>
+          <a ui-sref="organization_stats({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate>Stats</a>
+        </li>
+        <li>
           <a ui-sref="organization_sub_orgs({organization_id: menu.user.organization.id})" ng-if="menu.user.organization.is_parent && auth.requires_owner" ui-sref-active="active" translate
             >Sub-Organizations</a
           >

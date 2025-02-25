@@ -233,6 +233,7 @@
     'SEED.service.search',
     'SEED.service.sensor',
     'SEED.service.service',
+    'SEED.service.statistics',
     'SEED.service.system',
     'SEED.service.simple_modal',
     'SEED.service.two_factor',
@@ -1290,6 +1291,14 @@
                   },
                   (data) => $q.reject(data.message)
                 );
+              }
+            ],
+            statistics_payload: [
+              'statistics_service',
+              '$stateParams',
+              (statistics_service, $stateParams) => {
+                const { organization_id } = $stateParams;
+                return statistics_service.get_statistics(organization_id);
               }
             ]
           }

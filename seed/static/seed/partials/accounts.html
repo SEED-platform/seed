@@ -45,6 +45,7 @@
                 <a ui-sref="organization_members(::{organization_id: org.id})"><i class="fa-solid fa-user"></i>{$:: 'Members' | translate $}</a>
                 <a ui-sref="organization_settings(::{organization_id: org.id})"><i class="fa-solid fa-gears"></i>Settings</a>
                 <a ui-sref="organization_sharing(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa-solid fa-share-from-square"></i>{$:: 'Sharing' | translate $}</a>
+                <a ui-sref="organization_stats(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa-solid fa-chart"></i>{$:: 'Stats' | translate $}</a>
                 <a ui-sref="organization_sub_orgs(::{organization_id: org.id})" ng-if="::org.is_parent"><i class="fa-solid fa-users"></i>{$:: 'Sub-Organizations' | translate $}</a>
                 <i class="fa-solid fa-gear"></i>
               </td>

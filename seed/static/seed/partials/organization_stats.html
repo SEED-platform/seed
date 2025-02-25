@@ -1,0 +1,93 @@
+<div class="page_header_container">
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
+    </div>
+    <div class="page_title">
+      <h1>{$:: org.name $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
+</div>
+<div class="section_nav_container">
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+</div>
+<div class="section">
+  <div class="section_header_container">
+    <div class="section_header has_no_padding fixed_height_short">
+      <div class="section_action_container left wider-diff">
+        <h2><i class="fa-solid fa-share-from-square"></i> {$:: 'Statistics' | translate $}</h2>
+      </div>
+    </div>
+  </div>
+  <div class="section_content_container">
+    <div class="section_content with_padding" ng-if="::org.is_parent && auth.requires_owner">
+      <p class="pad-top-20"> Here is where you can see stats about your org. You will need to expand the configurations section below to indicate which columns
+        your data is stored in.
+      </p>
+      <div>
+
+        <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#instructions" ng-click="changeText(btnText)">{$ btnText $}</button>
+        <div class="collapse stat_instructions_container" id="instructions">
+          <p class="pad-bot-10">Select the columns where your organization stores the relevant data to generate statistics.
+            Note that quantities will be converted to kWh and ft<sup>2</sup> where appropriate.</sup></p>
+          <form class="form-inline chart-inputs" role="form" style="display: flex">
+            <div style="display: flex; flex-direction: column; flex: 1 1 0">
+              <div class="form-group pad-bottom-10">
+                <label class="control-label col-sm-4" translate>Gross Floor Area</label>
+                <select class="form-control col-sm-8" ng-model="conf.gfa_column" ng-options="col.display_name for col in fields"></select>
+              </div>
+              <div class="form-group pad-bottom-10">
+                <label class="control-label col-sm-4" translate>Annual Electricity Usage</label>
+                <select
+                  class="form-control col-sm-8"
+                  ng-model="conf.electricity_column"
+                  ng-options="col.display_name for col in fields"
+                ></select>
+              </div>
+              <div class="form-group pad-bottom-10">
+                <label class="control-label col-sm-4" translate>Annual Natural Gas Usage</label>
+                <select
+                  class="form-control col-sm-8"
+                  ng-model="conf.natural_gas_column"
+                  ng-options="col.display_name for col in fields"
+                ></select>
+              </div>
+            </div>
+            <div style="display: flex; flex-direction: column; flex: 1 1 0">
+              <div class="form-group pad-bottom-10">
+                <label class="control-label col-sm-4" translate>Gross Floor Area Units</label>
+                <select class="form-control col-sm-8" ng-model="conf.gfa_units" ng-options="unit for unit in area_units"></select>
+              </div>
+              <div class="form-group pad-bottom-10">
+                <label class="control-label col-sm-4" translate>Electricity Units</label>
+                <select
+                  class="form-control col-sm-8"
+                  ng-model="conf.electricity_units"
+                  ng-options="unit for unit in electric_units"
+                ></select>
+              </div>
+              <div class="form-group pad-bottom-10">
+                <label class="control-label col-sm-4" translate>Natural Gas Units</label>
+                <select
+                  class="form-control col-sm-8"
+                  ng-model="conf.natural_gas_units"
+                  ng-options="unit for unit in natural_gas_units"
+                ></select>
+              </div>
+            </div>
+          </form>
+          <div class="section_content_container pad-top-10">
+            <div class="section_content with_padding" ng-if="org.public_feed_enabled">
+              <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i></button>
+            </div>
+          </div>
+        </div>
+        <h3 translate>Statistics</h3>
+
+        <p> charts and tables here</p>
+
+      </div>
+    </div>
+  </div>
+</div>
