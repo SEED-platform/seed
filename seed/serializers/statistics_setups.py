@@ -21,5 +21,9 @@ class StatisticsSetupSerializer(serializers.ModelSerializer):
             "electricity_column",
             "electricity_units",
             "natural_gas_column",
-            "natural_gas_units"
+            "natural_gas_units",
+            "electricity_eui_column",
+            "electricity_eui_units",
+            "natural_gas_eui_column",
+            "natural_gas_eui_units",
         )

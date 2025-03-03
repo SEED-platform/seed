@@ -22,75 +22,178 @@
   </div>
   <div class="section_content_container">
     <div class="section_content with_padding" ng-if="::org.is_parent && auth.requires_owner">
-      <p class="pad-top-20"> Here is where you can see stats about your org. You will need to expand the configurations section below to indicate which columns
-        your data is stored in.
-      </p>
+      <p class="pad-top-20">Here is where you can see stats about your org. You will need to expand the configurations section below to indicate which columns your data is stored in.</p>
       <div>
-
         <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#instructions" ng-click="changeText(btnText)">{$ btnText $}</button>
         <div class="collapse stat_instructions_container" id="instructions">
-          <p class="pad-bot-10">Select the columns where your organization stores the relevant data to generate statistics.
-            Note that quantities will be converted to kWh and ft<sup>2</sup> where appropriate.</sup></p>
+          <p class="pad-bot-10">
+            Select the columns where your organization stores the relevant data to generate statistics. Note that quantities will be converted to calculate EUIs in kBtu/ft<sup>2</sup> where
+            appropriate. Enter EITHER Annual Electricity and Natural Gas usage quantities OR Electricity and Gas EUIs. EUIs will be used if given; otherwise they will be calculated from usage
+            quantities.
+          </p>
           <form class="form-inline chart-inputs" role="form" style="display: flex">
             <div style="display: flex; flex-direction: column; flex: 1 1 0">
               <div class="form-group pad-bottom-10">
-                <label class="control-label col-sm-4" translate>Gross Floor Area</label>
-                <select class="form-control col-sm-8" ng-model="conf.gfa_column"
-                  ng-options="col.id as col.display_name for col in fields">
+                <label for="gfa" class="control-label col-sm-4" translate>Gross Floor Area</label>
+                <select id="gfa" class="form-control col-sm-8" ng-model="conf.gfa_column" ng-options="col.id as col.display_name for col in fields">
+                  <option value=""></option>
                 </select>
               </div>
               <div class="form-group pad-bottom-10">
-                <label class="control-label col-sm-4" translate>Annual Electricity Usage</label>
-                <select
-                  class="form-control col-sm-8"
-                  ng-model="conf.electricity_column"
-                  ng-options="col.id as col.display_name for col in fields"
-                ></select>
+                <label class="control-label col-sm-4" for="e_eui" translate>Electricity EUI</label>
+                <select id="e_eui" class="form-control col-sm-8" ng-model="conf.electricity_eui_column" ng-options="col.id as col.display_name for col in fields">
+                  <option value=""></option>
+                </select>
               </div>
               <div class="form-group pad-bottom-10">
-                <label class="control-label col-sm-4" translate>Annual Natural Gas Usage</label>
-                <select
-                  class="form-control col-sm-8"
-                  ng-model="conf.natural_gas_column"
-                  ng-options="col.id as col.display_name for col in fields"
-                ></select>
+                <label for="g_eui" class="control-label col-sm-4" translate>Natural Gas EUI</label>
+                <select id="g_eui" class="form-control col-sm-8" ng-model="conf.natural_gas_eui_column" ng-options="col.id as col.display_name for col in fields">
+                  <option value=""></option>
+                </select>
+              </div>
+              <div class="form-group pad-bottom-10">
+                <label for="e_usage" class="control-label col-sm-4" translate>Annual Electricity Use</label>
+                <select id="e_usage" class="form-control col-sm-8" ng-model="conf.electricity_column" ng-options="col.id as col.display_name for col in fields">
+                  <option value=""></option>
+                </select>
+              </div>
+              <div class="form-group pad-bottom-10">
+                <label for="g_usage" class="control-label col-sm-4" translate>Annual Natural Gas Use</label>
+                <select id="g_usage" class="form-control col-sm-8" ng-model="conf.natural_gas_column" ng-options="col.id as col.display_name for col in fields">
+                  <option value=""></option>
+                </select>
               </div>
             </div>
             <div style="display: flex; flex-direction: column; flex: 1 1 0">
               <div class="form-group pad-bottom-10">
-                <label class="control-label col-sm-4" translate>Gross Floor Area Units</label>
-                <select class="form-control col-sm-8" ng-model="conf.gfa_units" ng-options="unit for unit in area_units"></select>
+                <label for="gfa_u" class="control-label col-sm-4" translate>Gross Floor Area Units</label>
+                <select id="gfa_u" class="form-control col-sm-8" ng-model="conf.gfa_units" ng-options="unit for unit in area_units"></select>
               </div>
               <div class="form-group pad-bottom-10">
-                <label class="control-label col-sm-4" translate>Electricity Units</label>
-                <select
-                  class="form-control col-sm-8"
-                  ng-model="conf.electricity_units"
-                  ng-options="unit for unit in electric_units"
-                ></select>
+                <label for="e_eui_u" class="control-label col-sm-4" translate>Electricity EUI Units</label>
+                <select id="e_eui_u" class="form-control col-sm-8" ng-model="conf.electricity_eui_units" ng-options="unit for unit in eui_units"></select>
+              </div>
+              <div for="g_eui_u" class="form-group pad-bottom-10">
+                <label class="control-label col-sm-4" translate>Natural Gas EUI Units</label>
+                <select id="g_eui_u" class="form-control col-sm-8" ng-model="conf.natural_gas_units" ng-options="unit for unit in eui_units"></select>
               </div>
               <div class="form-group pad-bottom-10">
-                <label class="control-label col-sm-4" translate>Natural Gas Units</label>
-                <select
-                  class="form-control col-sm-8"
-                  ng-model="conf.natural_gas_units"
-                  ng-options="unit for unit in gas_units"
-                ></select>
+                <label for="e_u" class="control-label col-sm-4" translate>Electricity Use Units</label>
+                <select id="e_u" class="form-control col-sm-8" ng-model="conf.electricity_units" ng-options="unit for unit in electric_units"></select>
+              </div>
+              <div class="form-group pad-bottom-10">
+                <label for="g_u" class="control-label col-sm-4" translate>Natural Gas Use Units</label>
+                <select id="g_u" class="form-control col-sm-8" ng-model="conf.natural_gas_units" ng-options="unit for unit in gas_units"></select>
               </div>
             </div>
           </form>
-          <div class="section_content_container pad-top-10" style="display: flex; justify-content: right;">
+          <div class="section_content_container pad-top-10" style="display: flex; justify-content: right">
             <div class="section_content with_padding">
-              <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">{$:: 'Save Changes' | translate $}
+              <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">
+                {$:: 'Save Changes' | translate $}
                 <i class="fa-solid fa-check" ng-show="settings_updated"></i>
               </button>
             </div>
           </div>
         </div>
         <h3 translate>Statistics</h3>
+        <div class="section_content with_padding">
+          <button type="button" class="pull-right btn btn-primary" ng-click="calculate()">{$:: 'Calculate Statistics' | translate $}</button>
+        </div>
+        <div ng-if="data_fetched">
+          <h3>Overall Statistics - Gross Floor Area</h3>
+          <table class="table table-striped">
+            <tr>
+              <th>Cycle</th>
+              <th>Number of Properties</th>
+              <th>Total Gross Floor Area (ft2)</th>
+            </tr>
+            <tr ng-repeat="item in data.annual_gfa">
+              <td>{$ item.cycle $}</td>
+              <td>{$ item.num_records $}</td>
+              <td>{$ item.GFA | number: 0 $}</td>
+            </tr>
+          </table>
 
-        <p> charts and tables here</p>
+          <h3>Overall Statistics - Electricity</h3>
+          <table class="table table-striped">
+            <tr>
+              <th>Cycle</th>
+              <th>Number of Properties</th>
+              <th>Gross Floor Area Represented (ft2)</th>
+              <th>Electricity Use (kWh)</th>
+            </tr>
+            <tr ng-repeat="item in data.annual_elec">
+              <td>{$ item.cycle $}</td>
+              <td>{$ item.num_records $}</td>
+              <td>{$ item.GFA | number: 0 $}</td>
+              <td>{$ item.Electricity_Use | number: 0 $}</td>
+            </tr>
+          </table>
 
+          <h3>Overall Statistics - Natural Gas</h3>
+          <table class="table table-striped">
+            <tr>
+              <th>Cycle</th>
+              <th>Number of Properties</th>
+              <th>Gross Floor Area Represented (ft2)</th>
+              <th>Natural Gas Use (therms)</th>
+            </tr>
+            <tr ng-repeat="item in data.annual_gas">
+              <td>{$ item.cycle $}</td>
+              <td>{$ item.num_records $}</td>
+              <td>{$ item.GFA | number: 0 $}</td>
+              <td>{$ item.Natural_Gas_Use | number: 0 $}</td>
+            </tr>
+          </table>
+
+          <h3>EUI Quantiles - Electricity</h3>
+          <table class="table table-striped">
+            <tr>
+              <th width="25%">Cycle</th>
+              <th width="15%">5%</th>
+              <th width="15%">25%</th>
+              <th width="15%">50%</th>
+              <th width="15%">75%</th>
+              <th width="15%">95%</th>
+            </tr>
+            <tr ng-repeat="(key, item) in data.elec_quantiles">
+              <td width="25%">{$ key $}</td>
+              <td>{$ item['0.05'] | number: 2 $}</td>
+              <td>{$ item['0.25'] | number: 2 $}</td>
+              <td>{$ item['0.5'] | number: 2 $}</td>
+              <td>{$ item['0.75'] | number: 2 $}</td>
+              <td>{$ item['0.95'] | number: 2 $}</td>
+            </tr>
+          </table>
+
+          <h3>EUI Quantiles - Natural Gas</h3>
+          <table class="table table-striped">
+            <tr>
+              <th width="25%">Cycle</th>
+              <th width="15%">5%</th>
+              <th width="15%">25%</th>
+              <th width="15%">50%</th>
+              <th width="15%">75%</th>
+              <th width="15%">95%</th>
+            </tr>
+            <tr ng-repeat="(key, item) in data.gas_quantiles">
+              <td>{$ key $}</td>
+              <td>{$ item["0.05"] | number: 2 $}</td>
+              <td>{$ item["0.25"] | number: 2 $}</td>
+              <td>{$ item["0.5"] | number: 2 $}</td>
+              <td>{$ item["0.75"] | number: 2 $}</td>
+              <td>{$ item["0.95"] | number: 2 $}</td>
+            </tr>
+          </table>
+
+          <!-- <div id="container" style="width: 50%;">
+            <canvas id="canvas_elec"></canvas>
+          </div>
+          <div id="container" style="width: 50%;">
+            <canvas id="canvas_gas"></canvas>
+          </div> -->
+        </div>
       </div>
     </div>
   </div>

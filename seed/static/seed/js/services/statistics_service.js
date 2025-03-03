@@ -41,11 +41,22 @@ angular.module('SEED.service.statistics', []).factory('statistics_service', [
       .then((response) => response.data.statistic)
       .catch((response) => response.data);
 
+    // calculate statistics
+    const calculate_statistics = (organization_id, id) => $http
+      .post(`/api/v3/statistics/${id}/calculate/`, null, {
+        params: {
+          organization_id
+        }
+      })
+      .then((response) => response)
+      .catch((response) => response);
+
     const statistics_factory = {
       get_statistics,
       get_statistic,
       update_statistic,
-      new_statistic
+      new_statistic,
+      calculate_statistics
     };
 
     return statistics_factory;
