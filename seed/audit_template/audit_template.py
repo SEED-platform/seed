@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 from functools import wraps
+import re
 
 import requests
 from celery import shared_task
@@ -396,7 +397,8 @@ def _build_address(em, state):
         address_elements.append(em.State(state.state))
 
     if state.postal_code:
-        address_elements.append(em.PostalCode(str(state.postal_code)))
+        # add postal code truncated to 5 first digits
+        address_elements.append(em.PostalCode(str(state.postal_code[:5])))
 
     return em.Address(*address_elements)
 
@@ -593,6 +595,8 @@ def _build_measures_element(em, property_id, building_id):
 
 
 def _get_measures(property_id):
+    """ Elements/TKBL implementation specific """
+    # TODO: revise this code to be able to export Recommended measures that were added to SEED via Audit Template import?
     tkbl_elements = Element.objects.filter(property_id=property_id, code__code__in=SCOPE_ONE_EMISSION_CODES).order_by(
         "remaining_service_life"
     )[:3]
@@ -602,6 +606,8 @@ def _get_measures(property_id):
     for bsync_measure_dict in bsync_measure_dicts:
         category = Measure.objects.filter(category_display_name=bsync_measure_dict["cat_lev1"]).first().category
         category = "".join(word.capitalize() for word in category.split("_"))
+        # SPECIAL case: HVAC
+        category = re.sub(r'Hvac', lambda x: x.group().upper(), category)
 
         bsync_measure_tuples.add((category, bsync_measure_dict["eem_name"]))
 
