@@ -99,7 +99,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         name: group_by_level,
         label: group_by_level,
         varName: group_by_level,
-        axisLabel: group_by_level,
+        axisLabel: group_by_level
       });
       $scope.access_level_instance_id = null;
       $scope.setModified();
@@ -308,7 +308,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         name: group_by_level,
         label: group_by_level,
         varName: group_by_level,
-        axisLabel: group_by_level,
+        axisLabel: group_by_level
       });
       $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
       $scope.access_level_instance_id = JSON.parse(localStorage.getItem(localStorageALIID)) || parseInt($scope.users_access_level_instance_id, 10);
