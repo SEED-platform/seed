@@ -189,7 +189,7 @@ class ExportReportALITests(AccessLevelBaseTestCase):
         response = self.client.get(url, data)
         self.assertListEqual(
             response.json()["aggregated_data"]["chart_data"],
-            [{"y": "child", "x": 35.0, "yr_e": "2016"}, {"y": "kid_2", "x": 55.0, "yr_e": "2016"}],
+            [{"y": "kid_2", "x": 55.0, "yr_e": "2016"}, {"y": "child", "x": 35.0, "yr_e": "2016"}],
         )
 
     def test_report_with_access_level(self):
