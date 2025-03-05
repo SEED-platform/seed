@@ -880,7 +880,11 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # annotate properties with fields
         def get_column_model_field(column):
-            if column.is_extra_data:
+            if column in Organization.objects.get(pk=organization_id).access_level_names:
+                return F("property__access_level_instance__path__" + column)
+            elif column == "Count":
+                return Value(1)
+            elif column.is_extra_data:
                 return F("state__extra_data__" + column.column_name)
             elif column.derived_column:
                 return F("state__derived_data__" + column.column_name)
@@ -892,8 +896,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             "x": get_column_model_field(x_var),
             "y": get_column_model_field(y_var),
         }
-        if x_var == "Count":
-            fields["x"] = Value(1)
         for k, v in fields.items():
             all_property_views = all_property_views.annotate(**{k: v})
 
@@ -968,9 +970,20 @@ class OrganizationViewSet(viewsets.ViewSet):
                 {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
+        # x could be an access level, else its a column
+        access_level_names = Organization.objects.get(pk=pk).access_level_names
+        if params["x_var"] not in access_level_names:
+            x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        else:
+            x_var = params["x_var"]
+
+        # y could be count, else its a column
+        if params["y_var"] != "Count":
+            y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        else:
+            y_var = params["y_var"]
+
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
-        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
         report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         axis_data = self.get_axis_data(
@@ -1033,10 +1046,20 @@ class OrganizationViewSet(viewsets.ViewSet):
                 {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # get data
+        # X could be count, else its a column
+        if params["x_var"] != "Count":
+            x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        else:
+            x_var = params["x_var"]
+
+        # y could be an access level, else its a column
+        access_level_names = Organization.objects.get(pk=pk).access_level_names
+        if params["y_var"] not in access_level_names:
+            y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        else:
+            y_var = params["y_var"]
+
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
-        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
         report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         chart_data = []
@@ -1102,7 +1125,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
             results.append({"y": bin, "x": x, "yr_e": yr_e})
 
-        return results
+        return sorted(results, key=lambda d: d["x"], reverse=True)
 
     @swagger_auto_schema(
         manual_parameters=[
