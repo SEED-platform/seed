@@ -7,11 +7,12 @@ import json
 
 from django.http import HttpResponse, JsonResponse
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.audit_template.audit_template import AuditTemplate
 from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.models import PropertyView
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
@@ -99,6 +100,40 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         if progress_data is None:
             return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
         return JsonResponse(progress_data)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("view_id", required=True, description="Property View ID to retrieve"),
+        ]
+    )
+    @has_perm_class("can_modify_data")
+    @action(detail=False, methods=["GET"])
+    def export_buildingsync_at_file(self, request):
+        """
+        Return the BuildingSync XML file that would be sent over to Audit Template.
+        Mostly for testing or manual upload.
+        """
+        pk = request.GET.get("view_id", None)
+        org_id = self.get_organization(self.request)
+
+        try:
+            property_view = PropertyView.objects.select_related("state").get(pk=pk, cycle__organization_id=org_id)
+        except PropertyView.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Cannot match a PropertyView with pk={pk}"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            at = AuditTemplate(self.get_organization(request))
+            xml, message = at.export_to_audit_template(property_view.state, None, file_only=True)
+            if xml:
+                return HttpResponse(xml, content_type="application/xml")
+            else:
+                return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
+
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
