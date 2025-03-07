@@ -456,7 +456,10 @@ def _build_metering_scenarios(em, property_id, building_id):
     root.append(scenario)
 
     # now make the scenarios with meter data in them (1 per meter)
+    print(f"!!!! METER ELECTRICITY GRID: {Meter.ELECTRICITY_GRID}, METER NATURAL GAS: {Meter.NATURAL_GAS}")
     for meter in meters:
+        print(f"METER TYPE:: {meter.type}")
+
         scenario_counter += 1
         scenario = em.Scenario(
             {"ID": scenario_base + str(scenario_counter)},
