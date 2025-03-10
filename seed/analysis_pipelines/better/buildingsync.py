@@ -43,6 +43,7 @@ BETTER_TO_BSYNC_PROPERTY_TYPE = {
 SEED_TO_BSYNC_RESOURCE_TYPE = {
     Meter.ELECTRICITY_GRID: "Electricity",
     Meter.ELECTRICITY_UNKNOWN: "Electricity",
+    Meter.ELECTRICITY: "Electricity",
     Meter.NATURAL_GAS: "Natural gas",
     Meter.DIESEL: "Diesel",
     Meter.PROPANE: "Propane",

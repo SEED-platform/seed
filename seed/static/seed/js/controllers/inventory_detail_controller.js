@@ -716,6 +716,29 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
         });
     };
 
+    $scope.export_building_sync_at_file = () => {
+      $http
+        .get(
+          '/api/v3/audit_template/export_buildingsync_at_file/',
+          {
+            params: {
+              view_id: $stateParams.view_id,
+              organization_id: $scope.organization.id
+            }
+          }
+        )
+        .then(
+          (response) => {
+            const blob2 = new Blob([response.data], { type: 'application/xml;charset=utf-8;' });
+            const filename = `buildingsync_at_property_${$stateParams.view_id}.xml`;
+            saveAs(blob2, filename);
+          },
+          (err) => {
+            $scope.download_error_message = err.data ? err.data : err.toString();
+          }
+        );
+    };
+
     $scope.unpair_property_from_taxlot = (property_id) => {
       pairing_service.unpair_property_from_taxlot($scope.inventory.view_id, property_id);
       $state.reload();
