@@ -1022,6 +1022,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         params = {
             "x_var": request.query_params.get("x_var", None),
             "y_var": request.query_params.get("y_var", None),
+            "aggregation_type": request.query_params.get("aggregationType", None),
             "cycle_ids": request.query_params.getlist("cycle_ids", None),
             "access_level_instance_id": request.query_params.get("access_level_instance_id", None),
         }
@@ -1083,7 +1084,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         for datum in data:
             buildings = datum["chart_data"]
             yr_e = datum["property_counts"]["yr_e"]
-            chart_data.extend(aggregate_data(yr_e, buildings, bins, count=params["x_var"] == "Count"))
+            chart_data.extend(
+                aggregate_data(yr_e, buildings, bins, count=params["x_var"] == "Count", aggregation_type=params["aggregation_type"])
+            )
             property_counts.append(datum["property_counts"])
 
         # Send back to client
@@ -1094,21 +1097,30 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return Response(result, status=status.HTTP_200_OK)
 
-    def continuous_aggregate_data(self, yr_e, buildings, bins, count=False):
+    def continuous_aggregate_data(self, yr_e, buildings, bins, count=False, aggregation_type="Average"):
         buildings = [b for b in buildings if b["x"] is not None and b["y"] is not None]
         binplace = np.digitize([b["y"] for b in buildings], bins)
         xs = [b["x"] for b in buildings]
+
+        if count or aggregation_type == "Sum":
+            aggregate = sum
+        elif aggregation_type == "Average":
+
+            def average(x):
+                return np.average(x).item()
+
+            aggregate = average
 
         results = []
         for i in range(len(bins) - 1):
             bin = f"{round(bins[i], 2)} - {round(bins[i+1], 2)}"
             values = np.array(xs)[np.where(binplace == i + 1)]
-            x = sum(values) if count else np.average(values).item()
+            x = aggregate(values)
             results.append({"y": bin, "x": None if np.isnan(x) else x, "yr_e": yr_e})
 
         return results
 
-    def discrete_aggregate_data(self, yr_e, buildings, bins, count=False):
+    def discrete_aggregate_data(self, yr_e, buildings, bins, count=False, aggregation_type="Average"):
         xs_by_bin = {bin: [] for bin in bins}
 
         for building in buildings:
@@ -1116,12 +1128,15 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         results = []
         for bin, xs in xs_by_bin.items():
-            if count:
+            if count or aggregation_type == "Sum":
                 x = sum(xs)
-            elif len(xs) == 0:
-                x = None
+            elif aggregation_type == "Average":
+                if len(xs) == 0:
+                    x = None
+                else:
+                    x = sum(xs) / len(xs)
             else:
-                x = sum(xs) / len(xs)
+                raise ValueError(f"Bad aggregation_type: {aggregation_type}")
 
             results.append({"y": bin, "x": x, "yr_e": yr_e})
 
