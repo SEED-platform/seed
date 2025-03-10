@@ -230,7 +230,7 @@ class AuditTemplate:
 
         return progress_data.result(), []
 
-    def export_to_audit_template(self, state, token):
+    def export_to_audit_template(self, state, token, file_only=False):
         url = f"{self.API_URL}/building_sync/upload"
         display_field = getattr(state, self.org.property_display_field)
 
@@ -242,6 +242,8 @@ class AuditTemplate:
 
             if not xml_string:
                 return None, messages
+            if file_only:
+                return xml_string, messages
         except Exception as e:
             return None, ["error", f"{display_field}: Unexpected error creating building xml {e}"]
 
