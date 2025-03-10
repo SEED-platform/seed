@@ -9,7 +9,7 @@ from collections import defaultdict
 from rest_framework import serializers
 
 from seed.data_importer.utils import usage_point_id
-from seed.models import BatterySystem, DESSystem, EVSESystem, Service, System
+from seed.models import AggregateMeterSystem, BatterySystem, DESSystem, EVSESystem, Service, System
 from seed.serializers.base import ChoiceField
 from seed.serializers.pint import collapse_unit
 
@@ -56,6 +56,8 @@ class SystemSerializer(serializers.ModelSerializer):
             data = EVSESystemSerializer(instance=instance).data
         elif isinstance(instance, BatterySystem):
             data = BatterySystemSerializer(instance=instance).data
+        elif isinstance(instance, AggregateMeterSystem):
+            data = AggregateMeterSystemSerializer(instance=instance).data
         else:
             raise ValueError
 
@@ -129,4 +131,15 @@ class BatterySystemSerializer(SystemSerializer):
             "energy_capacity": collapse_unit(org, obj.energy_capacity),
             "power_capacity": collapse_unit(org, obj.power_capacity),
             "voltage": collapse_unit(org, obj.voltage),
+        }
+
+
+class AggregateMeterSystemSerializer(SystemSerializer):
+    class Meta:
+        model = AggregateMeterSystem
+        fields = [*SystemSerializer.Meta.fields]
+
+    def to_representation(self, obj):
+        return {
+            "type": "Aggregate Meter",
         }

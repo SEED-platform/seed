@@ -13,8 +13,14 @@ from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import BatterySystem, DESSystem, EVSESystem, System
-from seed.serializers.systems import BatterySystemSerializer, DESSystemSerializer, EVSESystemSerializer, SystemSerializer
+from seed.models import AggregateMeterSystem, BatterySystem, DESSystem, EVSESystem, System
+from seed.serializers.systems import (
+    AggregateMeterSystemSerializer,
+    BatterySystemSerializer,
+    DESSystemSerializer,
+    EVSESystemSerializer,
+    SystemSerializer,
+)
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 
@@ -24,18 +30,21 @@ type_by_class = {
     DESSystem: "DES",
     EVSESystem: "EVSE",
     BatterySystem: "Battery",
+    AggregateMeterSystem: "Aggregate Meter",
 }
 
 class_by_type = {
     "DES": DESSystem,
     "EVSE": EVSESystem,
     "Battery": BatterySystem,
+    "Aggregate Meter": AggregateMeterSystem,
 }
 
 serializer_by_class = {
     DESSystem: DESSystemSerializer,
     EVSESystem: EVSESystemSerializer,
     BatterySystem: BatterySystemSerializer,
+    AggregateMeterSystem: AggregateMeterSystemSerializer,
 }
 
 
