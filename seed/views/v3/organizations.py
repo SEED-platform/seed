@@ -1140,7 +1140,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
             results.append({"y": bin, "x": x, "yr_e": yr_e})
 
-        return sorted(results, key=lambda d: d["x"], reverse=True)
+        return sorted(results, key=lambda d: d["x"] if d["x"] is not None else -np.inf, reverse=True)
 
     @swagger_auto_schema(
         manual_parameters=[
