@@ -1022,7 +1022,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         params = {
             "x_var": request.query_params.get("x_var", None),
             "y_var": request.query_params.get("y_var", None),
-            "aggregation_type": request.query_params.get("aggregationType", None),
+            "aggregation_type": request.query_params.get("aggregationType", "Average"),
             "cycle_ids": request.query_params.getlist("cycle_ids", None),
             "access_level_instance_id": request.query_params.get("access_level_instance_id", None),
         }

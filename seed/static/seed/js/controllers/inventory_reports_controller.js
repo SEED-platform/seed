@@ -550,7 +550,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         interpolationParams = {
           x_axis_label: $translate.instant($scope.xAxisSelectedItem.label),
           y_axis_label: $translate.instant($scope.yAxisSelectedItem.label),
-          aggregationType: $translate.instant( $scope.aggregationType)
+          aggregationType: $translate.instant($scope.aggregationType)
         };
       } catch (e) {
         $log.error('$sce issue... missing translation');
