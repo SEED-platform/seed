@@ -20,23 +20,22 @@ BETTER_TO_BSYNC_PROPERTY_TYPE = {
     "Office": "Office",
     "Hotel": "Lodging",
     "K-12 School": "Education",
+    "Public Library": "Assembly-Public",
     "Hospital (General Medical & Surgical)": "Health care-Inpatient hospital",
     "Bank Branch": "Bank",
     "Courthouse": "Courthouse",
-    "Data Center": "Data Center",
-    "Distribution Center": "Distribution Center",
+    "Data Center": "Data center",
+    "Distribution Center": "Shipping and receiving",
     "Financial Office": "Office-Financial",
     "Multifamily Housing": "Multifamily",
-    "Non-Refrigerated Warehouse": "Warehouse unrefrigerated",
-    "Refrigerated Warehouse": "Warehouse refrigerated",
+    "Non-Refrigerated Warehouse": "Warehouse-Unrefrigerated",
+    "Refrigerated Warehouse": "Warehouse-Refrigerated",
     "Retail Store": "Retail",
     "Senior Care Community": "Health care-Skilled nursing facility",
     "Supermarket/Grocery Store": "Food sales-Grocery store",
     "Restaurant": "Food service",
-    "Public Library": "Assembly-Public",
     "Other": "Other",
 }
-
 
 # maps SEED Meter types to BuildingSync ResourceUse types
 # NOTE: this is semi-redundant with to_energy_type dict in building_sync/mappings.py
