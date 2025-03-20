@@ -28,7 +28,7 @@ from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.search import FilterError, build_view_filters_and_sorts
 
 
-def get_filtered_results(request: Request, inventory_type: Literal["property", "taxlot"], profile_id: int) -> JsonResponse:
+def get_filtered_results(request: Request, inventory_type: Literal["property", "taxlot"], profile_id: int, json=True) -> JsonResponse:
     page = request.query_params.get("page")
     per_page = request.query_params.get("per_page")
     org_id = request.query_params.get("organization_id")
@@ -168,7 +168,10 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
 
     if ids_only:
         id_list = list(views_list.values_list("id", flat=True))
-        return JsonResponse({"results": id_list})
+        if json:
+            return JsonResponse({"results": id_list})
+        else:
+            return {"results": id_list}
 
     paginator = Paginator(views_list, per_page)
 
@@ -260,4 +263,7 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
         "results": unit_collapsed_results,
     }
 
-    return JsonResponse(response)
+    if json:
+        return JsonResponse(response)
+    else:
+        return response
