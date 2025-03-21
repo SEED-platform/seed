@@ -1,13 +1,12 @@
+from django.http import JsonResponse
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import generics, viewsets
+from rest_framework.decorators import action
 
-import contextlib
-from rest_framework import generics, status, viewsets
-from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
-from drf_yasg.utils import no_body, swagger_auto_schema
-from seed.utils.api_schema import AutoSchemaHelper
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from rest_framework.decorators import action
-from django.http import JsonResponse
+from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.v4.inventory_filter import get_filtered_results
 
 

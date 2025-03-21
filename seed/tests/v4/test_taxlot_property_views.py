@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.utils.timezone import (
     get_current_timezone,
 )
+
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
 from seed.models import (
@@ -32,10 +33,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
-from seed.utils.match import match_merge_link
-from seed.utils.merge import merge_properties
 from seed.utils.organizations import create_organization
-from seed.utils.properties import pair_unpair_property_taxlot
 
 COLUMNS_TO_SEND = [
     "project_id",
@@ -87,7 +85,10 @@ class TaxLotPropertyViewTests(DataMappingBaseTestCase):
 
         _, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
 
-        url = reverse("api:v4:tax_lot_properties-filter") + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        url = (
+            reverse("api:v4:tax_lot_properties-filter")
+            + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        )
         response = self.client.post(url, content_type="application/json")
         data = json.loads(response.content)
 
@@ -116,13 +117,14 @@ class TaxLotPropertyViewTests(DataMappingBaseTestCase):
             primary=True, cycle_id=self.cycle.id, property_view_id=PropertyView.objects.get().id, taxlot_view_id=taxlot_view.id
         ).save()
 
-
-
     def test_inventory_filter(self):
-        url = reverse("api:v4:tax_lot_properties-filter") + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        url = (
+            reverse("api:v4:tax_lot_properties-filter")
+            + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        )
         response = self.client.post(url, content_type="application/json")
         data = json.loads(response.content)
-        self.assertEqual(list(data.keys()), ['pagination', 'cycle_id', 'results', 'column_defs'])
+        self.assertEqual(list(data.keys()), ["pagination", "cycle_id", "results", "column_defs"])
         pagination = data["pagination"]
         results = data["results"]
         column_defs = data["column_defs"]
@@ -132,19 +134,27 @@ class TaxLotPropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(list(column_defs[0].keys()), ["field", "headerName"])
         self.assertEqual(list(column_defs[-1].keys()), ["field", "headerName"])
 
-
     def test_merged_indicators_provided_on_filter_endpoint(self):
-        url = reverse("api:v4:tax_lot_properties-filter") + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        url = (
+            reverse("api:v4:tax_lot_properties-filter")
+            + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        )
         response = self.client.post(url, content_type="application/json")
         data = json.loads(response.content)
         self.assertFalse(data["results"][0]["merged_indicator"])
 
-        url = reverse("api:v4:tax_lot_properties-filter") + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        url = (
+            reverse("api:v4:tax_lot_properties-filter")
+            + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        )
         response = self.client.post(url, content_type="application/json")
         data = json.loads(response.content)
         self.assertTrue(data["results"][0]["merged_indicator"])
 
-        url = reverse("api:v4:tax_lot_properties-filter") + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        url = (
+            reverse("api:v4:tax_lot_properties-filter")
+            + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        )
         response = self.client.post(url, content_type="application/json")
         data = json.loads(response.content)
         related = data["results"][0]["related"][0]
@@ -172,7 +182,9 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.view.save()
 
     def test_property_filter(self):
-        url = reverse("api:v4:tax_lot_properties-filter") + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}"
+        url = (
+            reverse("api:v4:tax_lot_properties-filter") + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}"
+        )
 
         # root member can
         self.login_as_root_member()
@@ -185,5 +197,3 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         resp = self.client.post(url, content_type="application/json")
         assert resp.status_code == 200
         assert resp.json()["pagination"]["total"] == 0
-
-    
