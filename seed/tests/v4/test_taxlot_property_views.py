@@ -69,53 +69,19 @@ class TaxLotPropertyViewTests(DataMappingBaseTestCase):
         self.org.save()
 
         _, import_file_1 = self.create_import_file(self.user, self.org, self.cycle)
-        base_details = {
+        self.base_details = {
             "custom_id_1": "CustomID123",
             "import_file_id": import_file_1.id,
             "data_state": DATA_STATE_MAPPING,
             "no_default_data": False,
             "raw_access_level_instance_id": self.org.root.id,
         }
-        self.property_state_factory.get_property_state(**base_details)
+        self.property_state_factory.get_property_state(**self.base_details)
 
         # set import_file_1 mapping done so that record is "created for users to view".
         import_file_1.mapping_done = True
         import_file_1.save()
         geocode_and_match_buildings_task(import_file_1.id)
-
-        _, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
-
-        url = (
-            reverse("api:v4:tax_lot_properties-filter")
-            + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
-        )
-        response = self.client.post(url, content_type="application/json")
-        data = json.loads(response.content)
-
-        self.assertFalse(data["results"][0]["merged_indicator"])
-
-        # make sure merged_indicator is True when merge occurs
-        base_details["city"] = "Denver"
-        base_details["import_file_id"] = import_file_2.id
-        self.property_state_factory.get_property_state(**base_details)
-
-        # set import_file_2 mapping done so that match merging can occur.
-        import_file_2.mapping_done = True
-        import_file_2.save()
-        geocode_and_match_buildings_task(import_file_2.id)
-
-        # Create pairings and check if paired object has indicator as well
-        taxlot_factory = FakeTaxLotFactory(organization=self.org)
-        taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
-
-        taxlot = taxlot_factory.get_taxlot()
-        taxlot_state = taxlot_state_factory.get_taxlot_state()
-        taxlot_view = TaxLotView.objects.create(taxlot=taxlot, cycle=self.cycle, state=taxlot_state)
-
-        # attach pairing to one and only property_view
-        TaxLotProperty(
-            primary=True, cycle_id=self.cycle.id, property_view_id=PropertyView.objects.get().id, taxlot_view_id=taxlot_view.id
-        ).save()
 
     def test_inventory_filter(self):
         url = (
@@ -142,6 +108,40 @@ class TaxLotPropertyViewTests(DataMappingBaseTestCase):
         response = self.client.post(url, content_type="application/json")
         data = json.loads(response.content)
         self.assertFalse(data["results"][0]["merged_indicator"])
+
+        _, import_file_2 = self.create_import_file(self.user, self.org, self.cycle)
+
+        url = (
+            reverse("api:v4:tax_lot_properties-filter")
+            + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        )
+        response = self.client.post(url, content_type="application/json")
+        data = json.loads(response.content)
+
+        self.assertFalse(data["results"][0]["merged_indicator"])
+
+        # make sure merged_indicator is True when merge occurs
+        self.base_details["city"] = "Denver"
+        self.base_details["import_file_id"] = import_file_2.id
+        self.property_state_factory.get_property_state(**self.base_details)
+
+        # set import_file_2 mapping done so that match merging can occur.
+        import_file_2.mapping_done = True
+        import_file_2.save()
+        geocode_and_match_buildings_task(import_file_2.id)
+
+        # Create pairings and check if paired object has indicator as well
+        taxlot_factory = FakeTaxLotFactory(organization=self.org)
+        taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+
+        taxlot = taxlot_factory.get_taxlot()
+        taxlot_state = taxlot_state_factory.get_taxlot_state()
+        taxlot_view = TaxLotView.objects.create(taxlot=taxlot, cycle=self.cycle, state=taxlot_state)
+
+        # attach pairing to one and only property_view
+        TaxLotProperty(
+            primary=True, cycle_id=self.cycle.id, property_view_id=PropertyView.objects.get().id, taxlot_view_id=taxlot_view.id
+        ).save()
 
         url = (
             reverse("api:v4:tax_lot_properties-filter")
@@ -189,11 +189,11 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         # root member can
         self.login_as_root_member()
         resp = self.client.post(url, content_type="application/json")
-        assert resp.status_code == 200
-        assert resp.json()["pagination"]["total"] == 1
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["pagination"]["total"], 1)
 
         # child member cannot
         self.login_as_child_member()
         resp = self.client.post(url, content_type="application/json")
-        assert resp.status_code == 200
-        assert resp.json()["pagination"]["total"] == 0
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["pagination"]["total"], 0)
