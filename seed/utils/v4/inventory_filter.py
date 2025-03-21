@@ -46,7 +46,7 @@ def get_filtered_results(request: Request, profile_id: int) -> JsonResponse:
         views_list = filter_annotate_views_list(request, org, cycle, inventory_type, views_list, columns_from_database, include_related)
         views_list = include_exclude_views_list(request, views_list)
         if ids_only:
-            return get_id_list()
+            return get_id_list(views_list)
         paginator, page, views = get_paginator(views_list, page, per_page)
         show_columns = get_show_columns(org.id, inventory_type, profile_id, shown_column_ids)
         related_results = serialize_views(views, show_columns, columns_from_database, include_related)
