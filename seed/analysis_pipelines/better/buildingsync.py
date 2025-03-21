@@ -37,7 +37,7 @@ BETTER_TO_BSYNC_PROPERTY_TYPE = {
     "Police Station": "Public safety station-Police",
     "Refrigerated Warehouse": "Warehouse-Refrigerated",
     "Retail Store": "Retail",
-    "Self-Storage Facility": 'Warehouse-Self-storage',
+    "Self-Storage Facility": "Warehouse-Self-storage",
     "Senior Care Community": "Health care-Skilled nursing facility",
     "Supermarket/Grocery Store": "Food sales-Grocery store",
     "Restaurant": "Food service",
