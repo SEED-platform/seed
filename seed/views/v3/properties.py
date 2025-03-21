@@ -56,7 +56,6 @@ from seed.models import (
     Analysis,
     BuildingFile,
     Column,
-    ColumnListProfile,
     ColumnMappingProfile,
     Cycle,
     DerivedColumn,
@@ -76,8 +75,6 @@ from seed.models import (
 )
 from seed.models import StatusLabel as Label
 from seed.serializers.analyses import AnalysisSerializer
-from seed.serializers.column_list_profiles import ColumnListProfileSerializer
-from seed.serializers.columns import ColumnSerializer
 from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.properties import (
     PropertySerializer,
@@ -432,77 +429,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             with contextlib.suppress(TypeError):
                 profile_id = int(profile_id)
 
-        return get_filtered_results(request, "property", profile_id=profile_id, json=True)
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("cycle", required=False, description="The ID of the cycle to get properties"),
-            AutoSchemaHelper.query_integer_field("per_page", required=False, description="Number of properties per page"),
-            AutoSchemaHelper.query_integer_field("page", required=False, description="Page to fetch"),
-            AutoSchemaHelper.query_boolean_field(
-                "include_related",
-                required=False,
-                description="If False, related data (i.e., Tax Lot data) is not added to the response (default is True)",
-            ),
-            AutoSchemaHelper.query_boolean_field(
-                "ids_only", required=False, description="Function will return a list of property ids instead of property objects"
-            ),
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "profile_id": "integer",
-                "property_view_ids": ["integer"],
-            },
-            description="Properties:\n"
-            "- profile_id: Either an id of a list settings profile, or undefined\n"
-            "- property_view_ids: List of property view ids",
-        ),
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @action(detail=False, methods=["POST"])
-    def ag_filter(self, request):
-        """
-        List all the properties for angular ag grid
-        """
-        org_id = self.get_organization(request)
-        if "profile_id" not in request.data or request.data["profile_id"] == "None":
-            profile_id = None
-        else:
-            profile_id = request.data["profile_id"]
-
-            # ensure that profile_id is an int
-            with contextlib.suppress(TypeError):
-                profile_id = int(profile_id)
-
-        results = get_filtered_results(request, "property", profile_id=profile_id, json=False)
-        # return if error
-        if isinstance(results, JsonResponse):
-            return results
-
-        if profile_id:
-            profile = ColumnListProfile.objects.get(pk=profile_id)
-            profile = ColumnListProfileSerializer(profile).data
-            columns = profile["columns"]
-
-        else:
-            columns = Column.objects.filter(organization_id=org_id)
-            columns = ColumnSerializer(columns, many=True).data
-
-        column_defs = [
-            {
-                "field": c["name"],
-                "headerName": c["display_name"],
-                # **({"pinned": "left"} if c.get("pinned") else {})
-            }
-            for c in columns
-        ]
-
-        results["column_defs"] = column_defs
-
-        return JsonResponse(results)
+        return get_filtered_results(request, "property", profile_id=profile_id)
 
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],

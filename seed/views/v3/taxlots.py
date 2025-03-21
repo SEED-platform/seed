@@ -3,7 +3,6 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import contextlib
 from collections import namedtuple
 
 from django.db import transaction
@@ -25,7 +24,6 @@ from seed.models import (
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
     Column,
-    ColumnListProfile,
     DerivedColumn,
     InventoryGroupMapping,
     Note,
@@ -37,8 +35,6 @@ from seed.models import (
     TaxLotState,
     TaxLotView,
 )
-from seed.serializers.column_list_profiles import ColumnListProfileSerializer
-from seed.serializers.columns import ColumnSerializer
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import TaxLotSerializer, TaxLotStateSerializer, TaxLotViewSerializer, UpdateTaxLotPayloadSerializer
 from seed.tasks import update_state_derived_data
@@ -190,77 +186,6 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             profile_id = request.data["profile_id"]
 
         return get_filtered_results(request, "taxlot", profile_id=profile_id)
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("cycle", required=True, description="The ID of the cycle to get tax lots"),
-            AutoSchemaHelper.query_integer_field("page", required=False, description="The current page of taxlots to return"),
-            AutoSchemaHelper.query_integer_field("per_page", required=False, description="The number of items per page to return"),
-            AutoSchemaHelper.query_boolean_field(
-                "include_related",
-                required=False,
-                description="If False, related data (i.e., Property data) is not added to the response (default is True)",
-            ),
-            AutoSchemaHelper.query_boolean_field(
-                "ids_only", required=False, description="Function will return a list of tax lot ids instead of tax lot objects"
-            ),
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "profile_id": "integer",
-                "taxlot_view_ids": ["integer"],
-            },
-            required=["profile_id"],
-            description="Properties:\n"
-            "- profile_id: Either an id of a list settings profile, or undefined\n"
-            "- taxlot_view_ids: List of taxlot view ids",
-        ),
-    )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @action(detail=False, methods=["POST"])
-    def ag_filter(self, request):
-        """
-        List all the properties for angular ag grid
-        """
-        org_id = self.get_organization(request)
-        if "profile_id" not in request.data or request.data["profile_id"] == "None":
-            profile_id = None
-        else:
-            profile_id = request.data["profile_id"]
-
-            # ensure that profile_id is an int
-            with contextlib.suppress(TypeError):
-                profile_id = int(profile_id)
-
-        results = get_filtered_results(request, "taxlot", profile_id=profile_id, json=False)
-        # return if error
-        if isinstance(results, JsonResponse):
-            return results
-
-        if profile_id:
-            profile = ColumnListProfile.objects.get(pk=profile_id)
-            profile = ColumnListProfileSerializer(profile).data
-            columns = profile["columns"]
-
-        else:
-            columns = Column.objects.filter(organization_id=org_id)
-            columns = ColumnSerializer(columns, many=True).data
-
-        column_defs = [
-            {
-                "field": c["name"],
-                "headerName": c["display_name"],
-                # **({"pinned": "left"} if c.get("pinned") else {})
-            }
-            for c in columns
-        ]
-
-        results["column_defs"] = column_defs
-
-        return JsonResponse(results)
 
     @swagger_auto_schema(
         manual_parameters=[
