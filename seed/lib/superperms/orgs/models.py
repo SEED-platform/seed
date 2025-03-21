@@ -300,6 +300,10 @@ class Organization(models.Model):
     audit_template_city_id = models.IntegerField(blank=True, null=True)
     audit_template_conditional_import = models.BooleanField(default=True)
     audit_template_sync_enabled = models.BooleanField(default=False)
+    audit_template_export_meters = models.BooleanField(default=False)
+    audit_template_export_measures = models.BooleanField(default=False)
+    audit_template_tracking_id_name = models.CharField(blank=True, max_length=128, default="City Custom Building ID")
+    audit_template_tracking_id_field = models.CharField(blank=True, max_length=128, default="custom_id_1")
 
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)

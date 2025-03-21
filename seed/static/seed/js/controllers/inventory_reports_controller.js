@@ -94,6 +94,13 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       // for (const key in $scope.potential_level_instances) {
       //   $scope.potential_level_instances[key].name = path_to_string($scope.potential_level_instances[key].path);
       // }
+      const group_by_level = $scope.level_names[new_level_instance_depth];
+      $scope.xAxisVars.splice($scope.xAxisVars.length - 1, 1, {
+        name: group_by_level,
+        label: group_by_level,
+        varName: group_by_level,
+        axisLabel: group_by_level
+      });
       $scope.access_level_instance_id = null;
       $scope.setModified();
     };
@@ -296,6 +303,13 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
       $scope.level_name_index = JSON.parse(localStorage.getItem(localStorageALIndex)) || '0';
       const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
+      const group_by_level = $scope.level_names[new_level_instance_depth];
+      $scope.xAxisVars.push({
+        name: group_by_level,
+        label: group_by_level,
+        varName: group_by_level,
+        axisLabel: group_by_level
+      });
       $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
       $scope.access_level_instance_id = JSON.parse(localStorage.getItem(localStorageALIID)) || parseInt($scope.users_access_level_instance_id, 10);
     }
@@ -707,7 +721,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
             };
 
             // new agg chart
-            const the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['acs']);
+            const the_data = $scope.aggChartData.chartData;
             $scope.barChart.data.labels = the_data.map((a) => a.y);
             $scope.barChart.data.datasets[0].data = the_data.map((a) => a.x);
             // add the colors to the datapoints, need to create a hash map first

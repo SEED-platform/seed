@@ -1,0 +1,356 @@
+<auc:BuildingSync xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.4.0/BuildingSync.xsd" version="2.4.0">
+  <auc:Facilities>
+    <auc:Facility ID="Facility-1">
+      <auc:Sites>
+        <auc:Site ID="Site-1">
+          <auc:Buildings>
+            <auc:Building ID="Building-1">
+              <auc:PremisesName>Test Property</auc:PremisesName>
+              <auc:PremisesIdentifiers>
+                <auc:PremisesIdentifier>
+                  <auc:IdentifierLabel>Custom</auc:IdentifierLabel>
+                  <auc:IdentifierCustomName>City Custom Building ID</auc:IdentifierCustomName>
+                  <auc:IdentifierValue>abc123</auc:IdentifierValue>
+                </auc:PremisesIdentifier>
+              </auc:PremisesIdentifiers>
+              <auc:Address>
+                <auc:StreetAddressDetail>
+                  <auc:Simplified>
+                    <auc:StreetAddress>123 Test St</auc:StreetAddress>
+                  </auc:Simplified>
+                </auc:StreetAddressDetail>
+                <auc:City>Beverly Hills</auc:City>
+                <auc:State>CA</auc:State>
+                <auc:PostalCode>90210</auc:PostalCode>
+              </auc:Address>
+              <auc:FloorAreas>
+                <auc:FloorArea>
+                  <auc:FloorAreaType>Gross</auc:FloorAreaType>
+                  <auc:FloorAreaValue>53674.0</auc:FloorAreaValue>
+                </auc:FloorArea>
+              </auc:FloorAreas>
+              <auc:YearOfConstruction>2004</auc:YearOfConstruction>
+            </auc:Building>
+          </auc:Buildings>
+        </auc:Site>
+      </auc:Sites>
+      <auc:Measures>
+        <auc:Measure ID="MeasureType-0">
+          <auc:LinkedPremises>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building-1"></auc:LinkedBuildingID>
+            </auc:Building>
+          </auc:LinkedPremises>
+          <auc:TechnologyCategories>
+            <auc:TechnologyCategory>
+              <auc:ServiceHotWaterSystems>
+                <auc:MeasureName>Install heat pump SHW system</auc:MeasureName>
+              </auc:ServiceHotWaterSystems>
+            </auc:TechnologyCategory>
+          </auc:TechnologyCategories>
+          <auc:CustomMeasureName>Install heat pump SHW system</auc:CustomMeasureName>
+          <auc:LongDescription>Install heat pump SHW system</auc:LongDescription>
+        </auc:Measure>
+      </auc:Measures>
+      <auc:Reports>
+        <auc:Report ID="Report-1">
+          <auc:Scenarios>
+            <auc:Scenario ID="Scenario-1">
+              <auc:ScenarioName>Audit Template Available Energy</auc:ScenarioName>
+              <auc:TemporalStatus>Current</auc:TemporalStatus>
+              <auc:ScenarioType>
+                <auc:Other/>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="ResourceUse-1">
+                  <auc:EnergyResource>Electricity</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>kWh</auc:ResourceUnits>
+                  <auc:EndUse>All end uses</auc:EndUse>
+                </auc:ResourceUse>
+                <auc:ResourceUse ID="ResourceUse-2">
+                  <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>therms</auc:ResourceUnits>
+                  <auc:EndUse>All end uses</auc:EndUse>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="Building-1"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+              <auc:UserDefinedFields>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Other Scenario Type</auc:FieldName>
+                  <auc:FieldValue>Audit Template Available Energy</auc:FieldValue>
+                </auc:UserDefinedField>
+              </auc:UserDefinedFields>
+            </auc:Scenario>
+            <auc:Scenario ID="Scenario-2">
+              <auc:ScenarioName>Audit Template Energy Meter Readings - Electricity</auc:ScenarioName>
+              <auc:TemporalStatus>Current</auc:TemporalStatus>
+              <auc:ScenarioType>
+                <auc:Other/>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="ResourceUse-9">
+                  <auc:EnergyResource>Electricity</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>kWh</auc:ResourceUnits>
+                  <auc:SharedResourceSystem>Not shared</auc:SharedResourceSystem>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:TimeSeriesData>
+                <auc:TimeSeries ID="TimeSeries-9-1">
+                  <auc:ReadingType>Peak</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimestamp>2018-01-06T08:00:00+00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2018-02-06T08:00:00+00:00</auc:EndTimestamp>
+                  <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                  <auc:ResourceUseID IDref="ResourceUse-9"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries ID="TimeSeries-9-2">
+                  <auc:ReadingType>Peak</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimestamp>2018-02-06T08:00:00+00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2018-03-08T08:00:00+00:00</auc:EndTimestamp>
+                  <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                  <auc:ResourceUseID IDref="ResourceUse-9"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries ID="TimeSeries-9-3">
+                  <auc:ReadingType>Peak</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimestamp>2018-03-08T08:00:00+00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2018-04-06T07:00:00+00:00</auc:EndTimestamp>
+                  <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                  <auc:ResourceUseID IDref="ResourceUse-9"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries ID="TimeSeries-9-4">
+                  <auc:ReadingType>Peak</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimestamp>2018-04-06T07:00:00+00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2018-05-08T07:00:00+00:00</auc:EndTimestamp>
+                  <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                  <auc:ResourceUseID IDref="ResourceUse-9"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries ID="TimeSeries-9-5">
+                  <auc:ReadingType>Peak</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimestamp>2018-05-08T07:00:00+00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2018-06-07T07:00:00+00:00</auc:EndTimestamp>
+                  <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                  <auc:ResourceUseID IDref="ResourceUse-9"/>
+                </auc:TimeSeries>
+              </auc:TimeSeriesData>
+              <auc:AllResourceTotals>
+                <auc:AllResourceTotal ID="AllResourceTotal-9-1">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUse>44160.0</auc:SiteEnergyUse>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                      <auc:FieldValue>TimeSeries-9-1</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+                <auc:AllResourceTotal ID="AllResourceTotal-9-2">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUse>44320.0</auc:SiteEnergyUse>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                      <auc:FieldValue>TimeSeries-9-2</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+                <auc:AllResourceTotal ID="AllResourceTotal-9-3">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUse>38880.0</auc:SiteEnergyUse>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                      <auc:FieldValue>TimeSeries-9-3</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+                <auc:AllResourceTotal ID="AllResourceTotal-9-4">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUse>0.0</auc:SiteEnergyUse>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                      <auc:FieldValue>TimeSeries-9-4</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+                <auc:AllResourceTotal ID="AllResourceTotal-9-5">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUse>43360.0</auc:SiteEnergyUse>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                      <auc:FieldValue>TimeSeries-9-5</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+              </auc:AllResourceTotals>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="Building-1"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+              <auc:UserDefinedFields>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Other Scenario Type</auc:FieldName>
+                  <auc:FieldValue>Audit Template Energy Meter Readings</auc:FieldValue>
+                </auc:UserDefinedField>
+              </auc:UserDefinedFields>
+            </auc:Scenario>
+            <auc:Scenario ID="Scenario-3">
+              <auc:ScenarioName>Audit Template Energy Meter Readings - Natural gas</auc:ScenarioName>
+              <auc:TemporalStatus>Current</auc:TemporalStatus>
+              <auc:ScenarioType>
+                <auc:Other/>
+              </auc:ScenarioType>
+              <auc:ResourceUses>
+                <auc:ResourceUse ID="ResourceUse-11">
+                  <auc:EnergyResource>Natural gas</auc:EnergyResource>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:ResourceUnits>therms</auc:ResourceUnits>
+                  <auc:SharedResourceSystem>Not shared</auc:SharedResourceSystem>
+                </auc:ResourceUse>
+              </auc:ResourceUses>
+              <auc:TimeSeriesData>
+                <auc:TimeSeries ID="TimeSeries-11-1">
+                  <auc:ReadingType>Peak</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimestamp>2018-01-19T08:00:00+00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2018-02-20T08:00:00+00:00</auc:EndTimestamp>
+                  <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                  <auc:ResourceUseID IDref="ResourceUse-11"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries ID="TimeSeries-11-2">
+                  <auc:ReadingType>Peak</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimestamp>2018-02-20T08:00:00+00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2018-03-21T07:00:00+00:00</auc:EndTimestamp>
+                  <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                  <auc:ResourceUseID IDref="ResourceUse-11"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries ID="TimeSeries-11-3">
+                  <auc:ReadingType>Peak</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimestamp>2018-03-21T07:00:00+00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2018-04-20T07:00:00+00:00</auc:EndTimestamp>
+                  <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                  <auc:ResourceUseID IDref="ResourceUse-11"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries ID="TimeSeries-11-4">
+                  <auc:ReadingType>Peak</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimestamp>2018-04-20T07:00:00+00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2018-05-21T07:00:00+00:00</auc:EndTimestamp>
+                  <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                  <auc:ResourceUseID IDref="ResourceUse-11"/>
+                </auc:TimeSeries>
+                <auc:TimeSeries ID="TimeSeries-11-5">
+                  <auc:ReadingType>Peak</auc:ReadingType>
+                  <auc:TimeSeriesReadingQuantity>Voltage</auc:TimeSeriesReadingQuantity>
+                  <auc:StartTimestamp>2018-05-21T07:00:00+00:00</auc:StartTimestamp>
+                  <auc:EndTimestamp>2018-06-20T07:00:00+00:00</auc:EndTimestamp>
+                  <auc:IntervalFrequency>Other</auc:IntervalFrequency>
+                  <auc:ResourceUseID IDref="ResourceUse-11"/>
+                </auc:TimeSeries>
+              </auc:TimeSeriesData>
+              <auc:AllResourceTotals>
+                <auc:AllResourceTotal ID="AllResourceTotal-11-1">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUse>37917.888563049855</auc:SiteEnergyUse>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                      <auc:FieldValue>TimeSeries-11-1</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+                <auc:AllResourceTotal ID="AllResourceTotal-11-2">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUse>34310.8504398827</auc:SiteEnergyUse>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                      <auc:FieldValue>TimeSeries-11-2</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+                <auc:AllResourceTotal ID="AllResourceTotal-11-3">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUse>29706.744868035188</auc:SiteEnergyUse>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                      <auc:FieldValue>TimeSeries-11-3</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+                <auc:AllResourceTotal ID="AllResourceTotal-11-4">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUse>26041.055718475072</auc:SiteEnergyUse>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                      <auc:FieldValue>TimeSeries-11-4</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+                <auc:AllResourceTotal ID="AllResourceTotal-11-5">
+                  <auc:EndUse>All end uses</auc:EndUse>
+                  <auc:ResourceBoundary>Site</auc:ResourceBoundary>
+                  <auc:SiteEnergyUse>21818.181818181816</auc:SiteEnergyUse>
+                  <auc:UserDefinedFields>
+                    <auc:UserDefinedField>
+                      <auc:FieldName>Linked Time Series ID</auc:FieldName>
+                      <auc:FieldValue>TimeSeries-11-5</auc:FieldValue>
+                    </auc:UserDefinedField>
+                  </auc:UserDefinedFields>
+                </auc:AllResourceTotal>
+              </auc:AllResourceTotals>
+              <auc:LinkedPremises>
+                <auc:Building>
+                  <auc:LinkedBuildingID IDref="Building-1"/>
+                </auc:Building>
+              </auc:LinkedPremises>
+              <auc:UserDefinedFields>
+                <auc:UserDefinedField>
+                  <auc:FieldName>Other Scenario Type</auc:FieldName>
+                  <auc:FieldValue>Audit Template Energy Meter Readings</auc:FieldValue>
+                </auc:UserDefinedField>
+              </auc:UserDefinedFields>
+            </auc:Scenario>
+          </auc:Scenarios>
+          <auc:LinkedPremisesOrSystem>
+            <auc:Building>
+              <auc:LinkedBuildingID IDref="Building-1"/>
+            </auc:Building>
+          </auc:LinkedPremisesOrSystem>
+          <auc:UserDefinedFields>
+            <auc:UserDefinedField>
+              <auc:FieldName>Audit Template Report Type</auc:FieldName>
+              <auc:FieldValue>Demo City Report</auc:FieldValue>
+            </auc:UserDefinedField>
+          </auc:UserDefinedFields>
+        </auc:Report>
+      </auc:Reports>
+    </auc:Facility>
+  </auc:Facilities>
+</auc:BuildingSync>

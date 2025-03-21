@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 import logging
+import re
 from functools import wraps
 
 import requests
@@ -16,12 +17,16 @@ from django_celery_beat.models import CrontabSchedule, PeriodicTask
 from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
+from tkbl import bsync_by_uniformat_code
 
+from seed.analysis_pipelines.better.buildingsync import SEED_TO_BSYNC_RESOURCE_TYPE
 from seed.building_sync import validation_client
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
+from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
-from seed.models import PropertyView
+from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.models import Element, Measure, Meter, MeterReading, PropertyView
 from seed.utils.encrypt import decrypt
 
 _log = logging.getLogger(__name__)
@@ -225,7 +230,7 @@ class AuditTemplate:
 
         return progress_data.result(), []
 
-    def export_to_audit_template(self, state, token):
+    def export_to_audit_template(self, state, token, file_only=False):
         url = f"{self.API_URL}/building_sync/upload"
         display_field = getattr(state, self.org.property_display_field)
 
@@ -234,8 +239,11 @@ class AuditTemplate:
 
         try:
             xml_string, messages = self.build_xml(state, self.org.audit_template_report_type, display_field)
+
             if not xml_string:
                 return None, messages
+            if file_only:
+                return xml_string, messages
         except Exception as e:
             return None, ["error", f"{display_field}: Unexpected error creating building xml {e}"]
 
@@ -255,7 +263,7 @@ class AuditTemplate:
 
     def validate_state_for_xml(self, state, display_field):
         missing_fields = []
-        expected_fields = ["address_line_1", "city", "gross_floor_area", "postal_code", "property_name", "state", "year_built"]
+        expected_fields = ["gross_floor_area", "postal_code", "property_name", "year_built"]
         for field in expected_fields:
             if getattr(state, field) is None:
                 missing_fields.append(field)
@@ -273,6 +281,15 @@ class AuditTemplate:
             return None, messages
 
         view = state.propertyview_set.first()
+        org = view.property.organization
+
+        # Retrieve unique tax Identifier to use. Default is custom_ID_1.
+        tracking_id = state.custom_id_1
+        if org.audit_template_tracking_id_field:
+            if org.audit_template_tracking_id_field in state._meta.fields:
+                tracking_id = getattr(state, org.audit_template_tracking_id_field)
+            elif org.audit_template_tracking_id_field in state.extra_data:
+                tracking_id = state.extra_data[org.audit_template_tracking_id_field]
 
         gfa = state.gross_floor_area
         if isinstance(gfa, int):
@@ -282,66 +299,75 @@ class AuditTemplate:
         else:
             gross_floor_area = str(gfa.magnitude)
 
+        # set up some IDs for XML
+        facility_id = "Facility-1"
+        site_id = "Site-1"
+        building_id = "Building-1"
+        report_id = "Report-1"
+
+        # TODO: BuildingSync version is very hardcoded here...use env var
+
         XSI_URI = "http://www.w3.org/2001/XMLSchema-instance"
         nsmap = {
             "xsi": XSI_URI,
         }
         nsmap.update(NAMESPACES)
-        E = ElementMaker(namespace=BUILDINGSYNC_URI, nsmap=nsmap)
-        doc = E.BuildingSync(
+        em = ElementMaker(namespace=BUILDINGSYNC_URI, nsmap=nsmap)
+
+        doc = em.BuildingSync(
             {
                 etree.QName(
                     XSI_URI, "schemaLocation"
-                ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.3.0/BuildingSync.xsd",
-                "version": "2.3.0",
+                ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.4.0/BuildingSync.xsd",
+                "version": "2.4.0",
             },
-            E.Facilities(
-                E.Facility(
-                    {"ID": "Facility-69909846999990"},
-                    E.Sites(
-                        E.Site(
-                            {"ID": "SiteType-69909846999991"},
-                            E.Buildings(
-                                E.Building(
-                                    {"ID": "BuildingType-69909846999992"},
-                                    E.PremisesName(state.property_name),
-                                    E.PremisesNotes("Note-1"),
-                                    E.PremisesIdentifiers(
-                                        E.PremisesIdentifier(
-                                            E.IdentifierLabel("Custom"),
-                                            E.IdentifierCustomName("SEED Property View ID"),
-                                            E.IdentifierValue(str(view.id)),
+            em.Facilities(
+                em.Facility(
+                    {"ID": facility_id},
+                    em.Sites(
+                        em.Site(
+                            {"ID": site_id},
+                            em.Buildings(
+                                em.Building(
+                                    {"ID": building_id},
+                                    em.PremisesName(state.property_name),
+                                    em.PremisesIdentifiers(
+                                        em.PremisesIdentifier(
+                                            em.IdentifierLabel("Custom"),
+                                            em.IdentifierCustomName(org.audit_template_tracking_id_name),
+                                            em.IdentifierValue(str(tracking_id)),
                                         )
                                     ),
-                                    E.Address(
-                                        E.StreetAddressDetail(
-                                            E.Simplified(E.StreetAddress(state.address_line_1)),
-                                        ),
-                                        E.City(state.city),
-                                        E.State(state.state),
-                                        E.PostalCode(str(state.postal_code)),
-                                    ),
-                                    E.FloorAreas(
-                                        E.FloorArea(
-                                            E.FloorAreaType("Gross"),
-                                            E.FloorAreaValue(gross_floor_area),
+                                    _build_address(em, state),
+                                    em.FloorAreas(
+                                        em.FloorArea(
+                                            em.FloorAreaType("Gross"),
+                                            em.FloorAreaValue(gross_floor_area),
                                         ),
                                     ),
-                                    E.YearOfConstruction(str(state.year_built)),
+                                    em.YearOfConstruction(str(state.year_built)),
                                 )
                             ),
                         )
                     ),
-                    E.Reports(
-                        E.Report(
-                            {"ID": "ReportType-69909846999993"},
-                            E.LinkedPremisesOrSystem(
-                                E.Building(E.LinkedBuildingID({"IDref": "BuildingType-69909846999992"})),
+                    *([] if not org.audit_template_export_measures else _build_measures_element(em, view.property.id, building_id)),
+                    em.Reports(
+                        em.Report(
+                            {"ID": report_id},
+                            em.Scenarios(
+                                *(
+                                    []
+                                    if not org.audit_template_export_meters
+                                    else _build_metering_scenarios(em, view.property.id, building_id)
+                                ),
                             ),
-                            E.UserDefinedFields(
-                                E.UserDefinedField(
-                                    E.FieldName("Audit Template Report Type"),
-                                    E.FieldValue(report_type),
+                            em.LinkedPremisesOrSystem(
+                                em.Building(em.LinkedBuildingID({"IDref": building_id})),
+                            ),
+                            em.UserDefinedFields(
+                                em.UserDefinedField(
+                                    em.FieldName("Audit Template Report Type"),
+                                    em.FieldValue(report_type),
                                 ),
                             ),
                         )
@@ -356,6 +382,238 @@ class AuditTemplate:
         results.setdefault(status, {"count": 0, "details": []})
         results[status]["count"] += 1
         results[status]["details"].append({"view_id": view_id, **extra_fields})
+
+
+def _build_address(em, state):
+    address_elements = []
+    if state.address_line_1:
+        address_elements.append(
+            em.StreetAddressDetail(
+                em.Simplified(em.StreetAddress(state.address_line_1)),
+            )
+        )
+    if state.city:
+        address_elements.append(em.City(state.city))
+
+    if state.state:
+        address_elements.append(em.State(state.state))
+
+    if state.postal_code:
+        # add postal code truncated to 5 first digits
+        address_elements.append(em.PostalCode(str(state.postal_code[:5])))
+
+    return em.Address(*address_elements)
+
+
+def _build_metering_scenarios(em, property_id, building_id):
+    scenario_base = "Scenario-"
+    scenario_counter = 0
+
+    # grab Electricity_GRID meter. if it doesn't exist, then ELECTRICITY meter (AT wants this in kWh)
+    meters_elec = Meter.objects.filter(property_id=property_id, type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY])
+    if len(meters_elec) > 1:
+        # get ELECTRICITY_GRID
+        meters_elec = Meter.objects.filter(property_id=property_id, type=Meter.ELECTRICITY_GRID)
+
+    # make sure there are meterreadings. Right now we are retrieving all readings for this meter
+    # TODO: should we be looking at dates here? (get meter data that matches the current cycle?)
+    if len(meters_elec) == 0 or meters_elec.first().meter_readings.count() == 0:
+        meters_elec = []
+
+    # then grab NATURAL_GAS (AT wants this in therms)
+    meters_ng = Meter.objects.filter(property_id=property_id, type__in=[Meter.NATURAL_GAS])
+    if len(meters_ng) == 0 or meters_ng.first().meter_readings.count() == 0:
+        meters_ng
+
+    # concatenate the meters_elec and meters results
+    meters = list(meters_elec) + list(meters_ng)
+
+    # make sure there's at least 1 meter, if not return empty list
+    if len(meters) == 0:
+        return []
+
+    # create root element
+    root = em.RootElement()
+
+    # now make the available energy meter
+    scenario_counter += 1
+    scenario = em.Scenario(
+        {"ID": f"{scenario_base}{scenario_counter}"},
+        em.ScenarioName("Audit Template Available Energy"),
+        em.TemporalStatus("Current"),
+        em.ScenarioType(em.Other()),
+        _build_resource_uses(em, property_id, meters, "available", use_meter_ids=False),
+        em.LinkedPremises(
+            em.Building(em.LinkedBuildingID({"IDref": building_id})),
+        ),
+        em.UserDefinedFields(
+            em.UserDefinedField(
+                em.FieldName("Other Scenario Type"),
+                em.FieldValue("Audit Template Available Energy"),
+            ),
+        ),
+    )
+    root.append(scenario)
+
+    # now make the scenarios with meter data in them (1 per meter)
+    for meter in meters:
+        scenario_counter += 1
+        scenario = em.Scenario(
+            {"ID": scenario_base + str(scenario_counter)},
+            em.ScenarioName(f"Audit Template Energy Meter Readings - {SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, 'Other')}"),
+            em.TemporalStatus("Current"),
+            em.ScenarioType(em.Other()),
+            _build_resource_uses(em, property_id, [meter], "meters", True),
+            _build_time_series_data(em, property_id, meter),
+            _build_all_resource_totals(em, meter),
+            em.LinkedPremises(
+                em.Building(em.LinkedBuildingID({"IDref": building_id})),
+            ),
+            em.UserDefinedFields(
+                em.UserDefinedField(
+                    em.FieldName("Other Scenario Type"),
+                    em.FieldValue("Audit Template Energy Meter Readings"),
+                ),
+            ),
+        )
+        root.append(scenario)
+    return root
+
+
+def _build_all_resource_totals(em, meter):
+    resource_total_base = "AllResourceTotal-"
+    timeseries_id_base = "TimeSeries-"
+
+    # all meter readings are stored in kBtu. Need to be converted to send over to AT
+    factors = kbtu_thermal_conversion_factors("US")
+    kBtu_to_kWh = factors["Electric"]["kWh (thousand Watt-hours)"]
+    kBtu_to_therms = factors["Natural Gas"]["therms"]
+
+    meter_readings = MeterReading.objects.filter(meter_id=meter.id)
+    if len(meter_readings) == 0:
+        return []
+
+    return em.AllResourceTotals(
+        {},
+        *[
+            em.AllResourceTotal(
+                {"ID": f"{resource_total_base}{meter.id}-{i+1}"},
+                em.EndUse("All end uses"),
+                em.ResourceBoundary("Site"),
+                em.SiteEnergyUse(
+                    str(meter_reading.reading / kBtu_to_kWh)
+                    if SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other")
+                    else str(meter_reading.reading / kBtu_to_therms)
+                ),
+                em.UserDefinedFields(
+                    em.UserDefinedField(em.FieldName("Linked Time Series ID"), em.FieldValue(f"{timeseries_id_base}{meter.id}-{i+1}"))
+                ),
+            )
+            for i, meter_reading in enumerate(meter_readings)
+        ],
+    )
+
+
+def _build_time_series_data(em, property_id, meter):
+    timeseries_id_base = "TimeSeries-"
+    resource_use_base = "ResourceUse-"
+    meter_readings = MeterReading.objects.filter(meter_id=meter.id)
+
+    if len(meter_readings) == 0:
+        return []
+
+    return em.TimeSeriesData(
+        {},
+        *[
+            em.TimeSeries(
+                {"ID": f"{timeseries_id_base}{meter.id}-{i+1}"},
+                em.ReadingType("Peak"),
+                em.TimeSeriesReadingQuantity("Voltage"),
+                em.StartTimestamp(meter_reading.start_time.isoformat()),
+                em.EndTimestamp(meter_reading.end_time.isoformat()),
+                # em.IntervalReading(str(meter_reading.reading)),
+                em.IntervalFrequency("Other"),
+                em.ResourceUseID(
+                    {"IDref": f"{resource_use_base}{meter.id}"},
+                ),
+            )
+            for i, meter_reading in enumerate(meter_readings)
+        ],
+    )
+
+
+def _build_resource_uses(em, property_id, meters, scenario_type, use_meter_ids=True):
+    resource_use_base = "ResourceUse-"
+    # for now just pass in electricity and natural gas meters
+    # the ResourceUse element in the "Audit Template Available Energy" scenario is slightly
+    # different than the one in the "Audit Template Energy Meter Readings" scenario
+    # TODO: there could be additional meter types we want to send over to AT in the future
+    return em.ResourceUses(
+        {},
+        *[
+            em.ResourceUse(
+                {"ID": f"{resource_use_base}{meter.id}" if use_meter_ids else f"{resource_use_base}{i+1}"},
+                em.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other")),
+                em.ResourceBoundary("Site"),
+                em.ResourceUnits("kWh" if SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other") == "Electricity" else "therms"),
+                em.EndUse("All end uses") if scenario_type == "available" else em.SharedResourceSystem("Not shared"),
+            )
+            for i, meter in enumerate(meters)
+        ],
+    )
+
+
+def _build_measures_element(em, property_id, building_id):
+    measure_base = "Measure-"
+    measure_tuples = _get_measures(property_id)
+    if len(measure_tuples) == 0:
+        return []
+
+    return [
+        em.Measures(
+            {},
+            *[
+                em.Measure(
+                    {"ID": f"{measure_base}{i}"},
+                    em.LinkedPremises(
+                        em.Building(em.LinkedBuildingID({"IDref": building_id})),
+                    ),
+                    em.TechnologyCategories(
+                        {},
+                        em.TechnologyCategory(
+                            getattr(em, tc)(
+                                {},
+                                em.MeasureName(mn),
+                            )
+                        ),
+                    ),
+                    em.CustomMeasureName(mn),
+                    em.LongDescription(mn),
+                )
+                for i, (tc, mn) in enumerate(_get_measures(property_id))
+            ],
+        )
+    ]
+
+
+def _get_measures(property_id):
+    """Elements/TKBL implementation specific"""
+    # TODO: revise this code to be able to export Recommended measures that were added to SEED via Audit Template import?
+    tkbl_elements = Element.objects.filter(property_id=property_id, code__code__in=SCOPE_ONE_EMISSION_CODES).order_by(
+        "remaining_service_life"
+    )[:3]
+    bsync_measure_dicts = [x for e in tkbl_elements for x in bsync_by_uniformat_code(e.code.code)]
+
+    bsync_measure_tuples = set()
+    for bsync_measure_dict in bsync_measure_dicts:
+        category = Measure.objects.filter(category_display_name=bsync_measure_dict["cat_lev1"]).first().category
+        category = "".join(word.capitalize() for word in category.split("_"))
+        # SPECIAL case: HVAC
+        category = re.sub(r"Hvac", lambda x: x.group().upper(), category)
+
+        bsync_measure_tuples.add((category, bsync_measure_dict["eem_name"]))
+
+    return bsync_measure_tuples
 
 
 @shared_task
@@ -394,6 +652,8 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
         property_views = property_views.filter(id__in=view_ids)
 
     xml_data_by_cycle = {}
+    # TODO: fix this to programmatically determine what tax_id maps to from the audit template org settings
+    # TODO: Default is custom_id_1
     for sub in submissions:
         custom_id_1 = sub["tax_id"]
         created_at = parser.parse(sub["created_at"])
@@ -521,7 +781,7 @@ def _batch_export_to_audit_template(org_id, view_ids, token, progress_key):
 
         at_building_id = None
         for k, v in response.json()["rp_buildings"].items():
-            if "BuildingType-" in k:
+            if "Building-" in k:
                 at_building_id = v.split("/")[-1]
                 break
 
@@ -530,7 +790,9 @@ def _batch_export_to_audit_template(org_id, view_ids, token, progress_key):
             state.save()
             audit_template.update_export_results(view.id, results, "success", at_building_id=at_building_id)
         else:
-            audit_template.update_export_results(view.id, results, "error", message="Unexpected Response from Audit Template")
+            audit_template.update_export_results(
+                view.id, results, "error", message="Unexpected Response from Audit Template. Could not find AT Building ID in response."
+            )
 
         progress_data.update_summary(results)
         progress_data.step("Exporting properties to Audit Template...")
