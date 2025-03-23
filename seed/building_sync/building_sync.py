@@ -50,11 +50,13 @@ class BuildingSync:
     BUILDINGSYNC_V2_2_0 = "2.2.0"
     BUILDINGSYNC_V2_3_0 = "2.3.0"
     BUILDINGSYNC_V2_4_0 = "2.4.0"
+    BUILDINGSYNC_V2_6_0 = "2.6.0"
     VERSION_MAPPINGS_DICT = {
         BUILDINGSYNC_V2_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_2_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_3_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_4_0: BASE_MAPPING_V2,
+        BUILDINGSYNC_V2_6_0: BASE_MAPPING_V2,
     }
 
     def __init__(self):
@@ -206,6 +208,7 @@ class BuildingSync:
             cls.BUILDINGSYNC_V2_2_0: "BuildingSync_v2_2_0.xsd",
             cls.BUILDINGSYNC_V2_3_0: "BuildingSync_v2_3_0.xsd",
             cls.BUILDINGSYNC_V2_4_0: "BuildingSync_v2_4_0.xsd",
+            cls.BUILDINGSYNC_V2_6_0: "BuildingSync_v2_6_0.xsd",
         }
         if version in schema_files:
             schema_path = os.path.join(schema_dir, schema_files[version])

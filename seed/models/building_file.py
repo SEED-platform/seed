@@ -170,13 +170,14 @@ class BuildingFile(models.Model):
 
         # add in the measures
         for m in data.get("measures", []):
-            # Find the measure in the database
+            # Find the measure in the database (schema-agnostic? sort by schema desc and get latest)
+
             try:
-                measure = Measure.objects.get(
+                measure = Measure.objects.filter(
                     category=m["category"],
                     name=m["name"],
                     organization_id=organization_id,
-                )
+                ).order_by("-schema_version").first()
             except Measure.DoesNotExist:
                 messages["warnings"].append(f'Measure category and name is not valid {m["category"]}:{m["name"]}')
                 continue

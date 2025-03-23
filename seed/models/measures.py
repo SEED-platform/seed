@@ -61,7 +61,7 @@ class Measure(models.Model):
     class Meta:
         ordering = ["-created"]
         get_latest_by = "created"
-        unique_together = ("organization", "category", "name")
+        unique_together = ("organization", "category", "name", "schema_version")
 
     @classmethod
     def populate_measures(cls, organization_id, schema_type="BuildingSync", schema_version="1.0.0"):
