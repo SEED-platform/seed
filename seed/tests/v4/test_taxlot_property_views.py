@@ -241,42 +241,70 @@ class FilterTests(AccessLevelBaseTestCase):
             state = self.property_state_factory.get_property_state(**get_property_details(i))
             self.property_view_factory.get_property_view(prprty=property, cycle=self.cycle1, state=state)
 
-    def test_filter_contains(self):
-        views = PropertyView.objects.all()
-        self.assertEqual(len(views), 100)
-        
+        # shortcut
+        self.pv_filter = PropertyView.objects.filter
 
-        c = { self.pmpid_name: {"filter": "0", "filterType": "text", "type": "contains"}}
-        nc = { self.pmpid_name: {"filter": "0", "filterType": "text", "type": "notContains"}}
-        c2 = {
-            self.pmpid_name: {"filter": "1", "filterType": "text", "type": "contains"},
-            self.gfa_name: {"filter": 2, "filterType": "number", "type": "contains"}
-        }
-        cnc_or = { self.pmpid_name: {
-            "filterType": 'text',
-            "operator": "OR",
-            "conditions": [
-                {"filterType": 'text', "type": 'contains', "filter": '10'}, # 1
-                {"filterType": 'text', "type": 'notContains', "filter": '1'} # 90
+    def get_filter(self, filter, type):
+        return {"filter": filter, "filterType": "text", "type": type}
+
+    def test_contains(self):
+        c = { self.pmpid_name: self.get_filter("0", "contains")}
+        nc = { self.pmpid_name: self.get_filter("0", "notContains")}
+        c2x = { self.pmpid_name: self.get_filter("1", "contains"), self.gfa_name: self.get_filter(2, "contains")}
+        c_or_nc = { self.pmpid_name: { "filterType": 'text', "operator": "OR", "conditions": [
+                self.get_filter("10", "contains"), 
+                self.get_filter("1", "notContains")
         ]}}
-        cnc_and = { self.pmpid_name: {
-            "filterType": 'text',
-            "operator": "AND",
-            "conditions": [
-                {"filterType": 'text', "type": 'contains', "filter": '0'},
-                {"filterType": 'text', "type": 'notContains', "filter": '1'}
+        c_and_nc = { self.pmpid_name: { "filterType": 'text', "operator": "AND", "conditions": [
+                self.get_filter("1", "contains"), 
+                self.get_filter("2", "notContains")
         ]}}
 
         contain = generate_Q_filters(c)
         not_contain = generate_Q_filters(nc)
-        contain_2x = generate_Q_filters(c2)
-        contain_not_contain_or = generate_Q_filters(cnc_or)
-        contain_not_contain_and = generate_Q_filters(cnc_and)
-
-        self.assertEqual(PropertyView.objects.filter(contain).count(), 10)
-        self.assertEqual(PropertyView.objects.filter(not_contain).count(), 90)
-        self.assertEqual(PropertyView.objects.filter(contain_2x).count(), 2) # 12 and 21
-        self.assertEqual(PropertyView.objects.filter(contain_not_contain_or).count(), 82) # not 1, 11-19, 21, 31, ...91
-        self.assertEqual(PropertyView.objects.filter(contain_not_contain_and).count(), 9) # 0, 20, 30, ...90
+        contain_2x = generate_Q_filters(c2x)
+        contain_or_not_contain = generate_Q_filters(c_or_nc)
+        contain_and_not_contain = generate_Q_filters(c_and_nc)
 
 
+        self.assertEqual(self.pv_filter(contain).count(), 10)
+        self.assertEqual(self.pv_filter(not_contain).count(), 90)
+        self.assertEqual(self.pv_filter(contain_2x).count(), 2) # 12 and 21
+        self.assertEqual(self.pv_filter(contain_or_not_contain).count(), 82) # not 1, 11-19, 21, 31, ...91
+        self.assertEqual(self.pv_filter(contain_and_not_contain).count(), 17) # 1, 10, 11, 13, ...21, 31, ...91
+
+
+    def test_equals(self):
+        e = { self.pmpid_name: self.get_filter("pm-1", "equals")}
+        ne = { self.pmpid_name: self.get_filter("pm-1", "notEqual")}
+        e2x = { self.pmpid_name: self.get_filter("pm-1", "equals"), self.gfa_name: self.get_filter(1002, "equals")}
+
+        equal = generate_Q_filters(e)
+        not_equal = generate_Q_filters(ne)
+        equal_2x = generate_Q_filters(e2x)
+
+        self.assertEqual(self.pv_filter(equal).count(), 1)
+        self.assertEqual(self.pv_filter(not_equal).count(), 99)
+        self.assertEqual(self.pv_filter(equal_2x).count(), 0)
+
+    def test_starts_with(self):
+        bw = { self.pmpid_name: self.get_filter("pm-1", "startsWith")}
+        ew = { self.pmpid_name: self.get_filter("1", "endsWith")}
+        bw_or_ew = { self.pmpid_name: { "filterType": 'text', "operator": "OR", "conditions": [
+                self.get_filter("pm-1", "startsWith"), 
+                self.get_filter("2", "endsWith")
+        ]}}
+        bw_and_ew = { self.pmpid_name: { "filterType": 'text', "operator": "AND", "conditions": [
+                self.get_filter("pm-1", "startsWith"), 
+                self.get_filter("2", "endsWith")
+        ]}}
+
+        begins_with = generate_Q_filters(bw)
+        ends_with = generate_Q_filters(ew)
+        begins_with_or_ends_with = generate_Q_filters(bw_or_ew)
+        begins_with_and_ends_with = generate_Q_filters(bw_and_ew)
+
+        self.assertEqual(self.pv_filter(begins_with).count(), 11)
+        self.assertEqual(self.pv_filter(ends_with).count(), 10)
+        self.assertEqual(self.pv_filter(begins_with_or_ends_with).count(), 20)
+        self.assertEqual(self.pv_filter(begins_with_and_ends_with).count(), 1)

@@ -391,6 +391,10 @@ def build_response(cycle, page, paginator, unit_collapsed_results, column_defs):
 q_map = {
     "contains": lambda name, filter: Q(**{f"state__{name}__icontains": filter}),
     "notContains": lambda name, filter: ~Q(**{f"state__{name}__icontains": filter}),
+    "equals": lambda name, filter: Q(**{f"state__{name}": filter}),
+    "notEqual": lambda name, filter: ~Q(**{f"state__{name}": filter}),
+    "startsWith": lambda name, filter: Q(**{f"state__{name}__istartswith": filter}),
+    "endsWith": lambda name, filter: Q(**{f"state__{name}__iendswith": filter}),
 }
 
 def generate_Q_filters(filters_dict):
