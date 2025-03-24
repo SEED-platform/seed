@@ -40,22 +40,21 @@ class InventoryFilterError(Exception):
 def get_filtered_results(request: Request, profile_id: int) -> JsonResponse:
     """Parent function to format inventory to display in the forntend on an AgGrid"""
     try:
-        org, cycle, inventory_type, page, per_page, ids_only, views_list, include_related, columns_from_database, shown_column_ids = (
-            validate_request(request, profile_id)
-        )
-        views_list = filter_annotate_views_list(request, org, cycle, inventory_type, views_list, columns_from_database, include_related)
+        request_data = validate_request(request, profile_id)
+        org, cycle, inventory_type, page, per_page, ali, ids_only, include_related, cols_from_database, shown_col_ids = request_data
+        views_list = get_views_list(inventory_type, org.id, cycle, ali)
+        views_list = filter_annotate_views_list(request, org, cycle, inventory_type, views_list, cols_from_database, include_related)
         views_list = include_exclude_views_list(request, views_list)
         if ids_only:
             return get_id_list(views_list)
         paginator, page, views = get_paginator(views_list, page, per_page)
-        show_columns = get_show_columns(org.id, inventory_type, profile_id, shown_column_ids)
-        related_results = serialize_views(views, show_columns, columns_from_database, include_related)
+        show_columns = get_show_columns(org.id, inventory_type, profile_id, shown_col_ids)
+        related_results = serialize_views(views, show_columns, cols_from_database, include_related)
     except InventoryFilterError as e:
         return e.response
 
     unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
     column_defs = get_column_defs(org.id, profile_id)
-
     response = build_response(cycle, page, paginator, unit_collapsed_results, column_defs)
 
     return response
@@ -111,7 +110,6 @@ def validate_request(request, profile_id):
             )
         )
 
-    views_list = get_views_list(inventory_type, org_id, cycle, access_level_instance)
     include_related = str(request.query_params.get("include_related", "true")).lower() == "true"
     # Retrieve all the columns that are in the db for this organization
     columns_from_database = Column.retrieve_all(
@@ -121,7 +119,18 @@ def validate_request(request, profile_id):
         include_related=include_related,
     )
 
-    return (org, cycle, inventory_type, page, per_page, ids_only, views_list, include_related, columns_from_database, shown_column_ids)
+    return (
+        org,
+        cycle,
+        inventory_type,
+        page,
+        per_page,
+        access_level_instance,
+        ids_only,
+        include_related,
+        columns_from_database,
+        shown_column_ids,
+    )
 
 
 def get_views_list(inventory_type, org_id, cycle, access_level_instance):
