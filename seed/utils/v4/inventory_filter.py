@@ -3,9 +3,12 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from functools import reduce
+from operator import and_, or_
 from typing import Literal, Optional, Union
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.db.models import Q
 from django.db.utils import DataError
 from django.http import JsonResponse
 from rest_framework import status
@@ -43,6 +46,7 @@ def get_filtered_results(request: Request, profile_id: int) -> JsonResponse:
         request_data = validate_request(request, profile_id)
         org, cycle, inventory_type, page, per_page, ali, ids_only, include_related, cols_from_database, shown_col_ids = request_data
         views_list = get_views_list(inventory_type, org.id, cycle, ali)
+        test_list = ag_filter_annotate_views_list(request, org, cycle, inventory_type, views_list, cols_from_database)
         views_list = filter_annotate_views_list(request, org, cycle, inventory_type, views_list, cols_from_database, include_related)
         views_list = include_exclude_views_list(request, views_list)
         if ids_only:
@@ -160,6 +164,11 @@ def get_views_list(inventory_type, org_id, cycle, access_level_instance):
         )
 
     return views_list
+
+def ag_filter_annotate_views_list(request, org, cycle, inventory_type, views_list, cols_from_database):
+
+    pass
+
 
 
 def filter_annotate_views_list(request, org, cycle, inventory_type, views_list, columns_from_database, include_related):
@@ -377,3 +386,61 @@ def build_response(cycle, page, paginator, unit_collapsed_results, column_defs):
     }
 
     return response
+
+# -------- NEW FILTER FXNS --------
+q_map = {
+    "contains": lambda name, filter: Q(**{f"state__{name}__icontains": filter}),
+    "notContains": lambda name, filter: ~Q(**{f"state__{name}__icontains": filter}),
+}
+
+def generate_Q_filters(filters_dict):
+    qs = [ generate_Q(k, v) for k, v in filters_dict.items() ]
+    combined_Q = reduce(and_, qs)
+    return combined_Q
+
+def generate_Q(name_id, filter_dict):
+        name = strip_id(name_id)
+        conditions = filter_dict.get("conditions")
+        operator = filter_dict.get("operator")
+        filter = filter_dict.get("filter")
+        type = filter_dict.get("type")
+
+        if conditions and operator:
+            q = parse_conditions(name, conditions, operator)
+        elif filter and type:
+            q = parse_filter(name, type, filter)
+        else: 
+            raise InventoryFilterError(
+                JsonResponse(
+                    {"status": "error", "message": f"Invalid filter"}, status=status.HTTP_400_BAD_REQUEST
+                )
+            )
+        return q
+
+def parse_filter(name, type, filter):
+    return q_map[type](name, filter)
+
+def parse_conditions(name, conditions, operator):
+    operator_map = { "AND": and_, "OR": or_ }   
+    qs = []
+
+    for condition in conditions:
+        type = condition.get("type")
+        filter = condition.get("filter")
+        q = q_map[type](name, filter)
+        qs.append(q)
+
+    combine_Q = reduce(operator_map[operator], qs)
+    return combine_Q
+    
+    pass
+
+def strip_id(name_id):
+    parts = name_id.rsplit("_", 1)
+    if len(parts) != 2:
+        raise InventoryFilterError(
+            JsonResponse(
+                {"status": "error", "message": f"Invalid column name: {name_id}"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        )
+    return parts[0]

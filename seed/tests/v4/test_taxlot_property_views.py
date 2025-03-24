@@ -10,13 +10,16 @@ from django.urls import reverse
 from django.utils.timezone import (
     get_current_timezone,
 )
+from django.db.models import Q
 
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     DATA_STATE_MAPPING,
+    Column,
     ColumnMappingProfile,
     Property,
+    PropertyState,
     PropertyView,
     StatusLabel,
     TaxLotProperty,
@@ -32,8 +35,13 @@ from seed.test_helpers.fake import (
     FakeTaxLotFactory,
     FakeTaxLotStateFactory,
 )
+from seed.serializers.columns import ColumnSerializer
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
+from seed.utils.v4.inventory_filter import generate_Q_filters
+
+
+
 
 COLUMNS_TO_SEND = [
     "project_id",
@@ -197,3 +205,78 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         resp = self.client.post(url, content_type="application/json")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["pagination"]["total"], 0)
+
+
+class FilterTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+
+        # cycles
+        self.cycle1 = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
+        # columns with column name as formatted by frontend: {column_name}_{column_id}
+        Column.objects.create(table_name="PropertyState", column_name="extra_eui", organization=self.org, is_extra_data=True)
+        def get_column_name(column_name):
+            return ColumnSerializer(Column.objects.get(column_name=column_name)).data["name"]
+        self.pmpid_name = get_column_name("pm_property_id")
+        self.gfa_name = get_column_name("gross_floor_area")
+        self.extra_eui_name = get_column_name("extra_eui")
+
+        # create a 100 properties
+        property_details = self.property_state_factory.get_details()
+        def get_property_details(i):
+            property_details.update({
+                "pm_property_id": f"pm-{i}",
+                "gross_floor_area": 1000 + i,
+                "extra_data": {"extra_eui": 100 + i},
+            })
+            return property_details
+
+        for i in range(100):
+            property = self.property_factory.get_property()
+            state = self.property_state_factory.get_property_state(**get_property_details(i))
+            self.property_view_factory.get_property_view(prprty=property, cycle=self.cycle1, state=state)
+
+    def test_filter_contains(self):
+        views = PropertyView.objects.all()
+        self.assertEqual(len(views), 100)
+        
+
+        c = { self.pmpid_name: {"filter": "0", "filterType": "text", "type": "contains"}}
+        nc = { self.pmpid_name: {"filter": "0", "filterType": "text", "type": "notContains"}}
+        c2 = {
+            self.pmpid_name: {"filter": "1", "filterType": "text", "type": "contains"},
+            self.gfa_name: {"filter": 2, "filterType": "number", "type": "contains"}
+        }
+        cnc_or = { self.pmpid_name: {
+            "filterType": 'text',
+            "operator": "OR",
+            "conditions": [
+                {"filterType": 'text', "type": 'contains', "filter": '10'}, # 1
+                {"filterType": 'text', "type": 'notContains', "filter": '1'} # 90
+        ]}}
+        cnc_and = { self.pmpid_name: {
+            "filterType": 'text',
+            "operator": "AND",
+            "conditions": [
+                {"filterType": 'text', "type": 'contains', "filter": '0'},
+                {"filterType": 'text', "type": 'notContains', "filter": '1'}
+        ]}}
+
+        contain = generate_Q_filters(c)
+        not_contain = generate_Q_filters(nc)
+        contain_2x = generate_Q_filters(c2)
+        contain_not_contain_or = generate_Q_filters(cnc_or)
+        contain_not_contain_and = generate_Q_filters(cnc_and)
+
+        self.assertEqual(PropertyView.objects.filter(contain).count(), 10)
+        self.assertEqual(PropertyView.objects.filter(not_contain).count(), 90)
+        self.assertEqual(PropertyView.objects.filter(contain_2x).count(), 2) # 12 and 21
+        self.assertEqual(PropertyView.objects.filter(contain_not_contain_or).count(), 82) # not 1, 11-19, 21, 31, ...91
+        self.assertEqual(PropertyView.objects.filter(contain_not_contain_and).count(), 9) # 0, 20, 30, ...90
+
+
