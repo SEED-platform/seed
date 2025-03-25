@@ -44,16 +44,16 @@ def get_filtered_results(request: Request, profile_id: int) -> JsonResponse:
     """Parent function to format inventory to display in the forntend on an AgGrid"""
     try:
         request_data = validate_request(request, profile_id)
-        org, cycle, inventory_type, page, per_page, ali, ids_only, include_related, cols_from_database, shown_col_ids = request_data
+        org, cycle, inventory_type, page, per_page, ali, ids_only, include_related, db_columns, shown_col_ids = request_data
         views_list = get_views_list(inventory_type, org.id, cycle, ali)
-        test_list = ag_filter_annotate_views_list(request, org, cycle, inventory_type, views_list, cols_from_database)
-        views_list = filter_annotate_views_list(request, org, cycle, inventory_type, views_list, cols_from_database, include_related)
+        views_list = ag_filter_sort_views_list(request, views_list, db_columns)
+        # views_list = filter_annotate_views_list(request, org, cycle, inventory_type, views_list, columns, include_related)
         views_list = include_exclude_views_list(request, views_list)
         if ids_only:
             return get_id_list(views_list)
         paginator, page, views = get_paginator(views_list, page, per_page)
         show_columns = get_show_columns(org.id, inventory_type, profile_id, shown_col_ids)
-        related_results = serialize_views(views, show_columns, cols_from_database, include_related)
+        related_results = serialize_views(views, show_columns, db_columns, include_related)
     except InventoryFilterError as e:
         return e.response
 
@@ -165,10 +165,15 @@ def get_views_list(inventory_type, org_id, cycle, access_level_instance):
 
     return views_list
 
-def ag_filter_annotate_views_list(request, org, cycle, inventory_type, views_list, cols_from_database):
+def ag_filter_sort_views_list(request, views_list, db_columns):
+    extra_data_column_names = [c["column_name"] for c in db_columns if c["is_extra_data"]]
+    ag_filters = request.data.get("filters")
+    ag_sorts = request.data.get("sorts")
+    filters = generate_Q_filters(ag_filters, extra_data_column_names)
+    sorts = generate_sorts(ag_sorts, extra_data_column_names)
+    views_list = views_list.filter(filters).order_by(*sorts)
 
-    pass
-
+    return views_list
 
 
 def filter_annotate_views_list(request, org, cycle, inventory_type, views_list, columns_from_database, include_related):
@@ -387,7 +392,25 @@ def build_response(cycle, page, paginator, unit_collapsed_results, column_defs):
 
     return response
 
-# -------- NEW FILTER FXNS --------
+# -------- NEW FILTER SORT FXNS --------
+
+def generate_sorts(ag_sorts, extra_data_column_names):
+    """ 
+    Generates an array of sort strings for the django orm 
+    sorts = ['state__field', '-state__field', 'state__extra_data__field', '-state__extra_data__field']
+    """
+    sorts = []
+    for sort in ag_sorts:
+        direction = '-' if sort[0] == '-' else ''
+
+        column_name = sort[1:] if direction else sort
+        column_name = strip_id(column_name)
+
+        prefix = 'state__' + prefix_name(column_name, extra_data_column_names)
+
+        sorts.append(f'{direction}{prefix}{column_name}')
+
+    return sorts
 
 # Convert the ag grid filter object to a Django Q object
 q_map = {
@@ -406,33 +429,41 @@ q_map = {
     "inRange": lambda name, filter, filter_to: Q(**{f"state__{name}__gt": filter, f"state__{name}__lt": filter_to}),
 }
 
-def generate_Q_filters(filters_dict):
-    qs = [ generate_Q(k, v) for k, v in filters_dict.items() ]
+def generate_Q_filters(filters_dict, extra_data_column_names):
+    """ generates a Q object for all incoming filters """
+    if not filters_dict:
+        return Q()
+    qs = [ generate_Q(k, v, extra_data_column_names) for k, v in filters_dict.items() ]
     combined_Q = reduce(and_, qs)
     return combined_Q
 
-def generate_Q(name_id, filter_dict):
-        name = strip_id(name_id)
-        conditions = filter_dict.get("conditions")
-        operator = filter_dict.get("operator")
-        filter = filter_dict.get("filter")
-        filter_to = filter_dict.get("filterTo")
-        type = filter_dict.get("type")
+def generate_Q(name_with_id, filter_dict, extra_data_column_names):
+    """ generate a Q object from a filter dict """
+    name = strip_id(name_with_id)
+    name = prefix_name(name, extra_data_column_names)
 
-        if conditions and operator:
-            q = parse_conditions(name, conditions, operator)
-        elif type:
-            q = parse_filter(name, type, filter, filter_to)
-        else: 
-            raise InventoryFilterError(
-                JsonResponse({"status": "error", "message": f"Invalid filter"}, status=status.HTTP_400_BAD_REQUEST)
-            )
-        return q
+    conditions = filter_dict.get("conditions")
+    operator = filter_dict.get("operator")
+    filter = filter_dict.get("filter")
+    filter_to = filter_dict.get("filterTo")
+    type = filter_dict.get("type")
+
+    if conditions and operator:
+        q = parse_conditions(name, conditions, operator)
+    elif type:
+        q = parse_filter(name, type, filter, filter_to)
+    else: 
+        raise InventoryFilterError(
+            JsonResponse({"status": "error", "message": f"Invalid filter"}, status=status.HTTP_400_BAD_REQUEST)
+        )
+    return q
 
 def parse_filter(name, type, filter, filter_to=None):
+    """ convert a single filter to a Q object """
     return q_map[type](name, filter, filter_to)
 
 def parse_conditions(name, conditions, operator):
+    """ handle multiple conditions and convert to a single Q object """
     operator_map = { "AND": and_, "OR": or_ }   
     qs = []
 
@@ -446,14 +477,19 @@ def parse_conditions(name, conditions, operator):
     combine_Q = reduce(operator_map[operator], qs)
     return combine_Q
     
-    pass
-
-def strip_id(name_id):
-    parts = name_id.rsplit("_", 1)
+def strip_id(name_with_id):
+    """ strips the _id from the end of the column name """
+    parts = name_with_id.rsplit("_", 1)
     if len(parts) != 2:
         raise InventoryFilterError(
             JsonResponse(
-                {"status": "error", "message": f"Invalid column name: {name_id}"}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "message": f"Invalid column name: {name_with_id}"}, status=status.HTTP_400_BAD_REQUEST
             )
         )
     return parts[0]
+
+def prefix_name(name, extra_data_columns):
+    """ adds 'extra_data__' to name if its an extra data field """
+    if name in extra_data_columns:
+        return f"extra_data__{name}"
+    return name
