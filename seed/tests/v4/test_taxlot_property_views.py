@@ -221,7 +221,9 @@ class FilterTests(AccessLevelBaseTestCase):
         # columns with column name as formatted by frontend: {column_name}_{column_id}
         Column.objects.create(table_name="PropertyState", column_name="extra_eui", organization=self.org, is_extra_data=True)
         def get_column_name(column_name):
-            return ColumnSerializer(Column.objects.get(column_name=column_name)).data["name"]
+            return ColumnSerializer(Column.objects.filter(column_name=column_name).first()).data["name"]
+        self.al1_name = get_column_name("address_line_1")
+        self.cid1_name = get_column_name("custom_id_1")
         self.pmpid_name = get_column_name("pm_property_id")
         self.gfa_name = get_column_name("gross_floor_area")
         self.extra_eui_name = get_column_name("extra_eui")
@@ -229,9 +231,12 @@ class FilterTests(AccessLevelBaseTestCase):
         # create a 100 properties
         property_details = self.property_state_factory.get_details()
         def get_property_details(i):
+            
             property_details.update({
-                "pm_property_id": f"pm-{i}",
+                "address_line_1": f"address{i}" if i % 2 != 0 else "",
+                "custom_id_1": f"custom_id{i}" if i % 5 != 0 else None,
                 "gross_floor_area": 1000 + i,
+                "pm_property_id": f"pm-{i}",
                 "extra_data": {"extra_eui": 100 + i},
             })
             return property_details
@@ -244,20 +249,23 @@ class FilterTests(AccessLevelBaseTestCase):
         # shortcut
         self.pv_filter = PropertyView.objects.filter
 
-    def get_filter(self, filter, type):
-        return {"filter": filter, "filterType": "text", "type": type}
+    def get_filter(self, type, filter=None):
+        filter_dict = {"filterType": "text", "type": type}
+        if filter:
+            filter_dict["filter"] = filter
+        return filter_dict
 
     def test_contains(self):
-        c = { self.pmpid_name: self.get_filter("0", "contains")}
-        nc = { self.pmpid_name: self.get_filter("0", "notContains")}
-        c2x = { self.pmpid_name: self.get_filter("1", "contains"), self.gfa_name: self.get_filter(2, "contains")}
+        c = { self.pmpid_name: self.get_filter("contains", "0")}
+        nc = { self.pmpid_name: self.get_filter("notContains", "0")}
+        c2x = { self.pmpid_name: self.get_filter("contains", "1"), self.gfa_name: self.get_filter("contains", 2)}
         c_or_nc = { self.pmpid_name: { "filterType": 'text', "operator": "OR", "conditions": [
-                self.get_filter("10", "contains"), 
-                self.get_filter("1", "notContains")
+                self.get_filter("contains", "10"), 
+                self.get_filter("notContains", "1")
         ]}}
         c_and_nc = { self.pmpid_name: { "filterType": 'text', "operator": "AND", "conditions": [
-                self.get_filter("1", "contains"), 
-                self.get_filter("2", "notContains")
+                self.get_filter("contains", "1"), 
+                self.get_filter("notContains", "2")
         ]}}
 
         contain = generate_Q_filters(c)
@@ -275,9 +283,9 @@ class FilterTests(AccessLevelBaseTestCase):
 
 
     def test_equals(self):
-        e = { self.pmpid_name: self.get_filter("pm-1", "equals")}
-        ne = { self.pmpid_name: self.get_filter("pm-1", "notEqual")}
-        e2x = { self.pmpid_name: self.get_filter("pm-1", "equals"), self.gfa_name: self.get_filter(1002, "equals")}
+        e = { self.pmpid_name: self.get_filter("equals", "pm-1")}
+        ne = { self.pmpid_name: self.get_filter("notEqual", "pm-1")}
+        e2x = { self.pmpid_name: self.get_filter("equals", "pm-1"), self.gfa_name: self.get_filter("equals", 1002)}
 
         equal = generate_Q_filters(e)
         not_equal = generate_Q_filters(ne)
@@ -288,15 +296,15 @@ class FilterTests(AccessLevelBaseTestCase):
         self.assertEqual(self.pv_filter(equal_2x).count(), 0)
 
     def test_starts_with(self):
-        bw = { self.pmpid_name: self.get_filter("pm-1", "startsWith")}
-        ew = { self.pmpid_name: self.get_filter("1", "endsWith")}
+        bw = { self.pmpid_name: self.get_filter("startsWith", "pm-1")}
+        ew = { self.pmpid_name: self.get_filter("endsWith", "1")}
         bw_or_ew = { self.pmpid_name: { "filterType": 'text', "operator": "OR", "conditions": [
-                self.get_filter("pm-1", "startsWith"), 
-                self.get_filter("2", "endsWith")
+                self.get_filter("startsWith", "pm-1"), 
+                self.get_filter("endsWith", "2")
         ]}}
         bw_and_ew = { self.pmpid_name: { "filterType": 'text', "operator": "AND", "conditions": [
-                self.get_filter("pm-1", "startsWith"), 
-                self.get_filter("2", "endsWith")
+                self.get_filter("startsWith", "pm-1"), 
+                self.get_filter("endsWith", "2")
         ]}}
 
         begins_with = generate_Q_filters(bw)
@@ -308,3 +316,42 @@ class FilterTests(AccessLevelBaseTestCase):
         self.assertEqual(self.pv_filter(ends_with).count(), 10)
         self.assertEqual(self.pv_filter(begins_with_or_ends_with).count(), 20)
         self.assertEqual(self.pv_filter(begins_with_and_ends_with).count(), 1)
+    
+    def test_blank(self):
+        b_str = { self.al1_name: self.get_filter("blank")}
+        b_null = { self.cid1_name: self.get_filter("blank")}
+        nb_str = { self.al1_name: self.get_filter("notBlank")}
+        nb_null = { self.cid1_name: self.get_filter("notBlank")}
+        bs_and_bn = { self.cid1_name: self.get_filter("blank"), self.al1_name: self.get_filter("blank")}
+
+        blank_str = generate_Q_filters(b_str)
+        blank_null = generate_Q_filters(b_null)
+        not_blank_str = generate_Q_filters(nb_str)
+        not_blank_null = generate_Q_filters(nb_null)
+        blank_str_and_blank_null = generate_Q_filters(bs_and_bn)
+
+        self.assertEqual(self.pv_filter(blank_str).count(), 50) # evens
+        self.assertEqual(self.pv_filter(blank_null).count(), 20) # 5s & 10s
+        self.assertEqual(self.pv_filter(not_blank_str).count(), 50) # odds
+        self.assertEqual(self.pv_filter(not_blank_null).count(), 80) # not 5s or 10s
+        self.assertEqual(self.pv_filter(blank_str_and_blank_null).count(), 10) # 10s
+
+    def test_range(self):
+        # >, >=, <, <=, between
+        gt = { self.gfa_name: self.get_filter("greaterThan", 1010)}
+        gte = { self.gfa_name: self.get_filter("greaterThanOrEqual", 1010)}
+        lt = { self.gfa_name: self.get_filter("lessThan", 1010)}
+        lte = { self.gfa_name: self.get_filter("lessThanOrEqual", 1010)}
+        bt = { self.gfa_name: { "filter": 1010, "filterTo": 1020, "filterType": 'number', "type": "inRange" }}
+
+        greater_than = generate_Q_filters(gt)
+        greater_than_or_equal = generate_Q_filters(gte)
+        less_than = generate_Q_filters(lt)
+        less_than_or_equal = generate_Q_filters(lte)
+        between = generate_Q_filters(bt)
+
+        self.assertEqual(self.pv_filter(greater_than).count(), 89) # 11-99
+        self.assertEqual(self.pv_filter(greater_than_or_equal).count(), 90) # 10-99
+        self.assertEqual(self.pv_filter(less_than).count(), 10) # 0-9
+        self.assertEqual(self.pv_filter(less_than_or_equal).count(), 11) # 0-10
+        self.assertEqual(self.pv_filter(between).count(), 9) # 11-19

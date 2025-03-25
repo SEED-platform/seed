@@ -388,13 +388,22 @@ def build_response(cycle, page, paginator, unit_collapsed_results, column_defs):
     return response
 
 # -------- NEW FILTER FXNS --------
+
+# Convert the ag grid filter object to a Django Q object
 q_map = {
-    "contains": lambda name, filter: Q(**{f"state__{name}__icontains": filter}),
-    "notContains": lambda name, filter: ~Q(**{f"state__{name}__icontains": filter}),
-    "equals": lambda name, filter: Q(**{f"state__{name}": filter}),
-    "notEqual": lambda name, filter: ~Q(**{f"state__{name}": filter}),
-    "startsWith": lambda name, filter: Q(**{f"state__{name}__istartswith": filter}),
-    "endsWith": lambda name, filter: Q(**{f"state__{name}__iendswith": filter}),
+    "contains": lambda name, filter, _: Q(**{f"state__{name}__icontains": filter}),
+    "notContains": lambda name, filter, _: ~Q(**{f"state__{name}__icontains": filter}),
+    "equals": lambda name, filter, _: Q(**{f"state__{name}": filter}),
+    "notEqual": lambda name, filter, _: ~Q(**{f"state__{name}": filter}),
+    "startsWith": lambda name, filter, _: Q(**{f"state__{name}__istartswith": filter}),
+    "endsWith": lambda name, filter, _: Q(**{f"state__{name}__iendswith": filter}),
+    "blank": lambda name, *_: Q(**{f"state__{name}__isnull": True}) | Q(**{f"state__{name}": ""}),
+    "notBlank": lambda name, *_: Q(**{f"state__{name}__isnull": False}) & ~Q(**{f"state__{name}": ""}),
+    "greaterThan": lambda name, filter, _: Q(**{f"state__{name}__gt": filter}),
+    "greaterThanOrEqual": lambda name, filter, _: Q(**{f"state__{name}__gte": filter}),
+    "lessThan": lambda name, filter, _: Q(**{f"state__{name}__lt": filter}),
+    "lessThanOrEqual": lambda name, filter, _: Q(**{f"state__{name}__lte": filter}),
+    "inRange": lambda name, filter, filter_to: Q(**{f"state__{name}__gt": filter, f"state__{name}__lt": filter_to}),
 }
 
 def generate_Q_filters(filters_dict):
@@ -407,22 +416,21 @@ def generate_Q(name_id, filter_dict):
         conditions = filter_dict.get("conditions")
         operator = filter_dict.get("operator")
         filter = filter_dict.get("filter")
+        filter_to = filter_dict.get("filterTo")
         type = filter_dict.get("type")
 
         if conditions and operator:
             q = parse_conditions(name, conditions, operator)
-        elif filter and type:
-            q = parse_filter(name, type, filter)
+        elif type:
+            q = parse_filter(name, type, filter, filter_to)
         else: 
             raise InventoryFilterError(
-                JsonResponse(
-                    {"status": "error", "message": f"Invalid filter"}, status=status.HTTP_400_BAD_REQUEST
-                )
+                JsonResponse({"status": "error", "message": f"Invalid filter"}, status=status.HTTP_400_BAD_REQUEST)
             )
         return q
 
-def parse_filter(name, type, filter):
-    return q_map[type](name, filter)
+def parse_filter(name, type, filter, filter_to=None):
+    return q_map[type](name, filter, filter_to)
 
 def parse_conditions(name, conditions, operator):
     operator_map = { "AND": and_, "OR": or_ }   
@@ -431,7 +439,8 @@ def parse_conditions(name, conditions, operator):
     for condition in conditions:
         type = condition.get("type")
         filter = condition.get("filter")
-        q = q_map[type](name, filter)
+        filter_to = condition.get("filterTo")
+        q = q_map[type](name, filter, filter_to)
         qs.append(q)
 
     combine_Q = reduce(operator_map[operator], qs)
