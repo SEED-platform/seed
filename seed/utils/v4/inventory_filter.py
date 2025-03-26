@@ -40,15 +40,16 @@ class InventoryFilterError(Exception):
     def __init__(self, response: JsonResponse):
         self.response = response
 
-
+    
+# should this be a class? could create a bunch of class variables instead of passing around args
 def get_filtered_results(request: Request, profile_id: int) -> JsonResponse:
     """Parent function to format inventory to display in the forntend on an AgGrid"""
     try:
         request_data = validate_request(request, profile_id)
         org, cycle, inventory_type, page, per_page, ali, ids_only, include_related, db_columns, shown_col_ids = request_data
         views_list = get_views_list(inventory_type, org.id, cycle, ali)
-        # views_list = ag_filter_sort_views_list(request, views_list, db_columns)
-        views_list = filter_annotate_views_list(request, org, cycle, inventory_type, views_list, db_columns, include_related)
+        views_list = ag_filter_sort_views_list(request, views_list, inventory_type, db_columns)
+        # views_list = filter_annotate_views_list(request, org, cycle, inventory_type, views_list, db_columns, include_related)
         views_list = include_exclude_views_list(request, views_list)
         if ids_only:
             return get_id_list(views_list)
@@ -61,7 +62,7 @@ def get_filtered_results(request: Request, profile_id: int) -> JsonResponse:
     
     unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
     results = parse_related_results(unit_collapsed_results, include_related)
-    column_defs = get_column_defs(org.id, profile_id)
+    column_defs = get_column_defs(org.id, profile_id, inventory_type)
     response = build_response(cycle, page, paginator, results, column_defs)
 
     return response
@@ -167,17 +168,23 @@ def get_views_list(inventory_type, org_id, cycle, access_level_instance):
 
     return views_list
 
-def ag_filter_sort_views_list(request, views_list, db_columns):
-    extra_data_column_names = [c["column_name"] for c in db_columns if c["is_extra_data"]]
+def ag_filter_sort_views_list(request, views_list, inventory_type, db_columns):
     ag_filters = request.data.get("filters")
     ag_sorts = request.data.get("sorts")
-    filters = generate_Q_filters(ag_filters, extra_data_column_names)
+
+    other_table = "PropertyState" if inventory_type == 'taxlot' else "TaxLotState"
+    # generate list of other tables column names with ids (as passed by ag grid), ex: pm_property_id_123
+    other_column_names_with_id = [f"{c['column_name']}_{c['id']}" for c in db_columns if c["table_name"] == other_table]
+    extra_data_column_names = [c["column_name"] for c in db_columns if c["is_extra_data"]]
+
+    filters = generate_Q_filters(ag_filters, inventory_type, extra_data_column_names, other_column_names_with_id)
     sorts = generate_sorts(ag_sorts, extra_data_column_names)
-    views_list = views_list.filter(filters).order_by(*sorts)
+
+    views_list = views_list.filter(filters).order_by(*sorts).distinct()
 
     return views_list
 
-
+# OLD FILLTER FXN - no longer used - keep as reference to required functionality until complete
 def filter_annotate_views_list(request, org, cycle, inventory_type, views_list, columns_from_database, include_related):
     try:
         filters, annotations, order_by = build_view_filters_and_sorts(
@@ -254,7 +261,7 @@ def include_exclude_views_list(request, views_list):
     if include_property_ids := request.data.get("include_property_ids"):
         views_list = views_list.filter(property__id__in=include_property_ids)
 
-    return views_list
+    return list(views_list)
 
 
 def get_id_list(views_list):
@@ -369,7 +376,7 @@ def parse_related_results(results, include_related):
 
         # convert sets to semicolon-separated strings
         for field, values in parsed_fields.items():
-            result[field] = ";".join(str(v) for v in sorted(values))
+            result[field] = "; ".join(str(v) for v in sorted(values))
 
     return results
 
@@ -396,14 +403,20 @@ def valid_related_field(field, value):
     return bool(re.search(r"_\d+$", field))
 
 
-def get_column_defs(org_id, profile_id):
+def get_column_defs(org_id, profile_id, inventory_type):
+    table_map = {"property": ["PropertyState", "TaxLotState", "(Tax Lot)"], "taxlot": ["TaxLotState", "PropertyState", "(Property)"]}
+    table, other_table, other_suffix = table_map.get(inventory_type, ["PropertyState", "TaxLotState"])
+
     if profile_id:
         profile = ColumnListProfile.objects.get(pk=profile_id)
         profile = ColumnListProfileSerializer(profile).data
-        columns = profile["columns"]
+        columns = [c for c in profile["columns"] if c["table_name"] == table]
+        other_columns = [c for c in profile["columns"] if c["table_name"] == other_table]
     else:
-        columns = Column.objects.filter(organization_id=org_id)
+        columns = Column.objects.filter(organization_id=org_id, table_name=table)
         columns = ColumnSerializer(columns, many=True).data
+        other_columns = Column.objects.filter(organization_id=org_id, table_name=other_table)
+        other_columns = ColumnSerializer(other_columns, many=True).data
 
     column_defs = [
         {
@@ -413,6 +426,17 @@ def get_column_defs(org_id, profile_id):
         }
         for c in columns
     ]
+
+    other_column_defs = [
+        {
+            "field": c["name"],
+            "headerName": f"{c['display_name']} {other_suffix}",
+            "sortable": False
+        }
+        for c in other_columns
+    ]
+
+    column_defs.extend(other_column_defs)
 
     return column_defs
 
@@ -443,13 +467,16 @@ def generate_sorts(ag_sorts, extra_data_column_names):
     sorts = ['state__field', '-state__field', 'state__extra_data__field', '-state__extra_data__field']
     """
     sorts = []
+    if not ag_sorts:
+         return sorts
+
     for sort in ag_sorts:
         direction = '-' if sort[0] == '-' else ''
 
         column_name = sort[1:] if direction else sort
         column_name = strip_id(column_name)
 
-        prefix = 'state__' + prefix_name(column_name, extra_data_column_names)
+        prefix = prefix_name(column_name, extra_data_column_names)
 
         sorts.append(f'{direction}{prefix}{column_name}')
 
@@ -457,55 +484,54 @@ def generate_sorts(ag_sorts, extra_data_column_names):
 
 # Convert the ag grid filter object to a Django Q object
 q_map = {
-    "contains": lambda name, filter, _: Q(**{f"state__{name}__icontains": filter}),
-    "notContains": lambda name, filter, _: ~Q(**{f"state__{name}__icontains": filter}),
-    "equals": lambda name, filter, _: Q(**{f"state__{name}": filter}),
-    "notEqual": lambda name, filter, _: ~Q(**{f"state__{name}": filter}),
-    "startsWith": lambda name, filter, _: Q(**{f"state__{name}__istartswith": filter}),
-    "endsWith": lambda name, filter, _: Q(**{f"state__{name}__iendswith": filter}),
-    "blank": lambda name, *_: Q(**{f"state__{name}__isnull": True}) | Q(**{f"state__{name}": ""}),
-    "notBlank": lambda name, *_: Q(**{f"state__{name}__isnull": False}) & ~Q(**{f"state__{name}": ""}),
-    "greaterThan": lambda name, filter, _: Q(**{f"state__{name}__gt": filter}),
-    "greaterThanOrEqual": lambda name, filter, _: Q(**{f"state__{name}__gte": filter}),
-    "lessThan": lambda name, filter, _: Q(**{f"state__{name}__lt": filter}),
-    "lessThanOrEqual": lambda name, filter, _: Q(**{f"state__{name}__lte": filter}),
-    "inRange": lambda name, filter, filter_to: Q(**{f"state__{name}__gt": filter, f"state__{name}__lt": filter_to}),
+    "contains": lambda name, filter, _: Q(**{f"{name}__icontains": filter}),
+    "notContains": lambda name, filter, _: ~Q(**{f"{name}__icontains": filter}),
+    "equals": lambda name, filter, _: Q(**{f"{name}": filter}),
+    "notEqual": lambda name, filter, _: ~Q(**{f"{name}": filter}),
+    "startsWith": lambda name, filter, _: Q(**{f"{name}__istartswith": filter}),
+    "endsWith": lambda name, filter, _: Q(**{f"{name}__iendswith": filter}),
+    "blank": lambda name, *_: Q(**{f"{name}__isnull": True}) | Q(**{f"{name}": ""}),
+    "notBlank": lambda name, *_: Q(**{f"{name}__isnull": False}) & ~Q(**{f"{name}": ""}),
+    "greaterThan": lambda name, filter, _: Q(**{f"{name}__gt": filter}),
+    "greaterThanOrEqual": lambda name, filter, _: Q(**{f"{name}__gte": filter}),
+    "lessThan": lambda name, filter, _: Q(**{f"{name}__lt": filter}),
+    "lessThanOrEqual": lambda name, filter, _: Q(**{f"{name}__lte": filter}),
+    "inRange": lambda name, filter, filter_to: Q(**{f"{name}__gt": filter, f"{name}__lt": filter_to}),
 }
 
-def generate_Q_filters(filters_dict, extra_data_column_names):
+def generate_Q_filters(filters_dict, inventory_type, extra_data_column_names, other_column_names_with_id):
     """ generates a Q object for all incoming filters """
     if not filters_dict:
         return Q()
-    qs = [ generate_Q(k, v, extra_data_column_names) for k, v in filters_dict.items() ]
+    qs = [ generate_Q(k, v, inventory_type, extra_data_column_names, other_column_names_with_id) for k, v in filters_dict.items() ]
     combined_Q = reduce(and_, qs)
     return combined_Q
 
-def generate_Q(name_with_id, filter_dict, extra_data_column_names):
+def generate_Q(name_with_id, filter_dict, inventory_type, extra_data_column_names, other_column_names_with_id):
     """ generate a Q object from a filter dict """
-    name = strip_id(name_with_id)
-    name = prefix_name(name, extra_data_column_names)
-
     conditions = filter_dict.get("conditions")
     operator = filter_dict.get("operator")
     filter = filter_dict.get("filter")
     filter_to = filter_dict.get("filterTo")
     type = filter_dict.get("type")
+    # handles cases when filtering on other table
+    prefixed_name = parse_name(name_with_id, inventory_type, extra_data_column_names, other_column_names_with_id)
 
     if conditions and operator:
-        q = parse_conditions(name, conditions, operator)
+        q = parse_conditions(prefixed_name, conditions, operator)
     elif type:
-        q = parse_filter(name, type, filter, filter_to)
+        q = parse_filter(prefixed_name, type, filter, filter_to)
     else: 
         raise InventoryFilterError(
             JsonResponse({"status": "error", "message": f"Invalid filter"}, status=status.HTTP_400_BAD_REQUEST)
         )
     return q
 
-def parse_filter(name, type, filter, filter_to=None):
+def parse_filter(prefixed_name, type, filter, filter_to=None):
     """ convert a single filter to a Q object """
-    return q_map[type](name, filter, filter_to)
+    return q_map[type](prefixed_name, filter, filter_to)
 
-def parse_conditions(name, conditions, operator):
+def parse_conditions(prefixed_name, conditions, operator):
     """ handle multiple conditions and convert to a single Q object """
     operator_map = { "AND": and_, "OR": or_ }   
     qs = []
@@ -514,7 +540,7 @@ def parse_conditions(name, conditions, operator):
         type = condition.get("type")
         filter = condition.get("filter")
         filter_to = condition.get("filterTo")
-        q = q_map[type](name, filter, filter_to)
+        q = q_map[type](prefixed_name, filter, filter_to)
         qs.append(q)
 
     combine_Q = reduce(operator_map[operator], qs)
@@ -531,8 +557,24 @@ def strip_id(name_with_id):
         )
     return parts[0]
 
-def prefix_name(name, extra_data_columns):
-    """ adds 'extra_data__' to name if its an extra data field """
+def prefix_name(name, extra_data_columns, related_prefix=""):
+    """ 
+    adds 'extra_data__' to name if its an extra data field
+    if its a related filter (property -> taxlot) add the related prefix ('taxlotproperty__taxlot_view__')
+    else it ignores the related_prefix
+    """
     if name in extra_data_columns:
-        return f"extra_data__{name}"
-    return name
+        return f"{related_prefix}state__extra_data__{name}"
+    return f"{related_prefix}state__{name}"
+
+def parse_name(name_with_id, inventory_type, extra_data_column_names, other_column_names_with_id):
+    """ If filtering on related table (property -> taxlot) add the related prefix """
+    other_type = "property" if inventory_type == 'taxlot' else "taxlot"
+
+    name = strip_id(name_with_id)
+    args = [name, extra_data_column_names]
+    # conditionally add related prefix to the args
+    if name_with_id in other_column_names_with_id:
+        args.append(f"taxlotproperty__{other_type}_view__")
+
+    return prefix_name(*args)

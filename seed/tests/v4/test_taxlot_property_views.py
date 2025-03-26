@@ -231,25 +231,29 @@ class FilterTests(AccessLevelBaseTestCase):
         self.gfa_name = get_column_name("gross_floor_area")
         self.extra_eui_name = get_column_name("extra_eui")
 
+
+        columns = Column.objects.filter(organization=self.org)
+        self.extra_data_column_names = list(columns.filter(is_extra_data=True).values_list("column_name", flat=True))
+        
+        other_columns = columns.filter(table_name="TaxLotState").values("column_name", "id")
+        self.other_column_names_with_id = [f"{c['column_name']}_{c['id']}" for c in other_columns]
+
         # create a 100 properties
-        property_details = self.property_state_factory.get_details()
         def get_property_details(i):
-            
-            property_details.update({
-                "address_line_1": f"address{i}" if i % 2 != 0 else "",
-                "custom_id_1": f"custom_id{i}" if i % 5 != 0 else None,
+            return {
+                "address_line_1": f"address{i}" if i % 2 != 0 else "", # evens blank
+                "custom_id_1": f"custom_id{i}" if i % 5 != 0 else None, # 5s and 10s None
                 "gross_floor_area": 1000 + i,
                 "pm_property_id": f"pm-{i}",
                 "extra_data": {"extra_eui": 100 + i},
-            })
-            return property_details
-
+            }
+        
         for i in range(100):
-            property = self.property_factory.get_property()
-            state = self.property_state_factory.get_property_state(**get_property_details(i))
-            self.property_view_factory.get_property_view(prprty=property, cycle=self.cycle1, state=state)
+            self.property_view_factory.get_property_view(cycle=self.cycle1, **get_property_details(i))
 
-        # shortcut
+
+        # shortcuts
+        self.q_args = ['property', self.extra_data_column_names, self.other_column_names_with_id]
         self.pv_filter = PropertyView.objects.filter
 
     def get_filter(self, type, filter=None):
@@ -271,12 +275,13 @@ class FilterTests(AccessLevelBaseTestCase):
                 self.get_filter("notContains", "2")
         ]}}
 
-        contain = generate_Q_filters(c)
-        not_contain = generate_Q_filters(nc)
-        contain_2x = generate_Q_filters(c2x)
-        contain_or_not_contain = generate_Q_filters(c_or_nc)
-        contain_and_not_contain = generate_Q_filters(c_and_nc)
 
+
+        contain = generate_Q_filters(c, *self.q_args)
+        not_contain = generate_Q_filters(nc, *self.q_args)
+        contain_2x = generate_Q_filters(c2x, *self.q_args)
+        contain_or_not_contain = generate_Q_filters(c_or_nc, *self.q_args)
+        contain_and_not_contain = generate_Q_filters(c_and_nc, *self.q_args)
 
         self.assertEqual(self.pv_filter(contain).count(), 10)
         self.assertEqual(self.pv_filter(not_contain).count(), 90)
@@ -290,9 +295,9 @@ class FilterTests(AccessLevelBaseTestCase):
         ne = { self.pmpid_name: self.get_filter("notEqual", "pm-1")}
         e2x = { self.pmpid_name: self.get_filter("equals", "pm-1"), self.gfa_name: self.get_filter("equals", 1002)}
 
-        equal = generate_Q_filters(e)
-        not_equal = generate_Q_filters(ne)
-        equal_2x = generate_Q_filters(e2x)
+        equal = generate_Q_filters(e, *self.q_args)
+        not_equal = generate_Q_filters(ne, *self.q_args)
+        equal_2x = generate_Q_filters(e2x, *self.q_args)
 
         self.assertEqual(self.pv_filter(equal).count(), 1)
         self.assertEqual(self.pv_filter(not_equal).count(), 99)
@@ -310,10 +315,10 @@ class FilterTests(AccessLevelBaseTestCase):
                 self.get_filter("endsWith", "2")
         ]}}
 
-        begins_with = generate_Q_filters(bw)
-        ends_with = generate_Q_filters(ew)
-        begins_with_or_ends_with = generate_Q_filters(bw_or_ew)
-        begins_with_and_ends_with = generate_Q_filters(bw_and_ew)
+        begins_with = generate_Q_filters(bw, *self.q_args)
+        ends_with = generate_Q_filters(ew, *self.q_args)
+        begins_with_or_ends_with = generate_Q_filters(bw_or_ew, *self.q_args)
+        begins_with_and_ends_with = generate_Q_filters(bw_and_ew, *self.q_args)
 
         self.assertEqual(self.pv_filter(begins_with).count(), 11)
         self.assertEqual(self.pv_filter(ends_with).count(), 10)
@@ -327,11 +332,11 @@ class FilterTests(AccessLevelBaseTestCase):
         nb_null = { self.cid1_name: self.get_filter("notBlank")}
         bs_and_bn = { self.cid1_name: self.get_filter("blank"), self.al1_name: self.get_filter("blank")}
 
-        blank_str = generate_Q_filters(b_str)
-        blank_null = generate_Q_filters(b_null)
-        not_blank_str = generate_Q_filters(nb_str)
-        not_blank_null = generate_Q_filters(nb_null)
-        blank_str_and_blank_null = generate_Q_filters(bs_and_bn)
+        blank_str = generate_Q_filters(b_str, *self.q_args)
+        blank_null = generate_Q_filters(b_null, *self.q_args)
+        not_blank_str = generate_Q_filters(nb_str, *self.q_args)
+        not_blank_null = generate_Q_filters(nb_null, *self.q_args)
+        blank_str_and_blank_null = generate_Q_filters(bs_and_bn, *self.q_args)
 
         self.assertEqual(self.pv_filter(blank_str).count(), 50) # evens
         self.assertEqual(self.pv_filter(blank_null).count(), 20) # 5s & 10s
@@ -347,11 +352,11 @@ class FilterTests(AccessLevelBaseTestCase):
         lte = { self.gfa_name: self.get_filter("lessThanOrEqual", 1010)}
         bt = { self.gfa_name: { "filter": 1010, "filterTo": 1020, "filterType": 'number', "type": "inRange" }}
 
-        greater_than = generate_Q_filters(gt)
-        greater_than_or_equal = generate_Q_filters(gte)
-        less_than = generate_Q_filters(lt)
-        less_than_or_equal = generate_Q_filters(lte)
-        between = generate_Q_filters(bt)
+        greater_than = generate_Q_filters(gt, *self.q_args)
+        greater_than_or_equal = generate_Q_filters(gte, *self.q_args)
+        less_than = generate_Q_filters(lt, *self.q_args)
+        less_than_or_equal = generate_Q_filters(lte, *self.q_args)
+        between = generate_Q_filters(bt, *self.q_args)
 
         self.assertEqual(self.pv_filter(greater_than).count(), 89) # 11-99
         self.assertEqual(self.pv_filter(greater_than_or_equal).count(), 90) # 10-99
@@ -360,7 +365,13 @@ class FilterTests(AccessLevelBaseTestCase):
         self.assertEqual(self.pv_filter(between).count(), 9) # 11-19
 
     def test_extra_data(self):
-        self.assertTrue(False)
+        gt = { self.extra_eui_name: self.get_filter("greaterThan", 120)}
+        lt = { self.extra_eui_name: self.get_filter("lessThan", 120)}
+        greater_than = generate_Q_filters(gt, *self.q_args)
+        less_than = generate_Q_filters(lt, *self.q_args)
+
+        self.assertEqual(self.pv_filter(greater_than).count(), 79) # 21-99
+        self.assertEqual(self.pv_filter(less_than).count(), 20) # 0-19
 
 class RelatedTests(AccessLevelBaseTestCase):
     def setUp(self):
@@ -382,12 +393,12 @@ class RelatedTests(AccessLevelBaseTestCase):
         tlv1 = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle, jurisdiction_tax_lot_id="jt-1") # multiple properties
         tlv2a = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle, jurisdiction_tax_lot_id="jt-2a")
         tlv2b = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle, jurisdiction_tax_lot_id="jt-2b")
-        tlv3 = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle, jurisdiction_tax_lot_id="jt-3") # no properties
+        self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle, jurisdiction_tax_lot_id="jt-3") # no properties
 
         pv1a = self.property_view_factory.get_property_view(cycle=self.cycle, pm_property_id="pm-1a", site_eui=10)
         pv1b = self.property_view_factory.get_property_view(cycle=self.cycle, pm_property_id="pm-1b", site_eui=11)
         pv2 = self.property_view_factory.get_property_view(cycle=self.cycle, pm_property_id="pm-2", site_eui=20) # multiple taxlots
-        pv3 = self.property_view_factory.get_property_view(cycle=self.cycle, pm_property_id="pm-3", site_eui=30) # no taxlots
+        self.property_view_factory.get_property_view(cycle=self.cycle, pm_property_id="pm-3", site_eui=30) # no taxlots
 
         self.taxlot_property_factory.get_taxlot_property(cycle=self.cycle, property_view=pv1a, taxlot_view=tlv1)
         self.taxlot_property_factory.get_taxlot_property(cycle=self.cycle, property_view=pv1b, taxlot_view=tlv1)
@@ -402,10 +413,18 @@ class RelatedTests(AccessLevelBaseTestCase):
         self.seui_name = get_column_name("site_eui")
         self.jtlid_name = get_column_name("jurisdiction_tax_lot_id")
 
+        self.extra_data_column_names = list(Column.objects.filter(organization=self.org, is_extra_data=True).values_list("column_name", flat=True))
+
         # shortcut
         self.pv_filter = PropertyView.objects.filter
 
-    def test_format_related(self):
+    def get_filter(self, type, filter=None):
+        filter_dict = {"filterType": "text", "type": type}
+        if filter:
+            filter_dict["filter"] = filter
+        return filter_dict
+
+    def test_related_results(self):
         query_string = {
             "cycle": self.cycle.id,
             "ids_only": False,
@@ -427,7 +446,7 @@ class RelatedTests(AccessLevelBaseTestCase):
         pv3 = [p for p in results if p.get(self.pmpid_name) == 'pm-3'][0]
 
         self.assertEqual(pv1a.get(self.jtlid_name), 'jt-1')
-        self.assertEqual(pv2.get(self.jtlid_name), 'jt-2a;jt-2b')
+        self.assertEqual(pv2.get(self.jtlid_name), 'jt-2a; jt-2b')
         self.assertEqual(pv3.get(self.jtlid_name), None)
 
         query_string["inventory_type"] = "taxlot"
@@ -440,6 +459,36 @@ class RelatedTests(AccessLevelBaseTestCase):
         tlv2a = [t for t in results if t.get(self.jtlid_name) == 'jt-2a'][0]
         tlv3 = [t for t in results if t.get(self.jtlid_name) == 'jt-3'][0]
 
-        self.assertEqual(tlv1.get(self.pmpid_name), 'pm-1a;pm-1b')
+        self.assertEqual(tlv1.get(self.pmpid_name), 'pm-1a; pm-1b')
         self.assertEqual(tlv2a.get(self.pmpid_name), 'pm-2')
         self.assertEqual(tlv3.get(self.pmpid_name), None)
+
+    def test_related_filter(self):
+        # filter on taxlot given properties
+        query_string = {
+            "cycle": self.cycle.id,
+            "ids_only": False,
+            "inventory_type": "property",
+            "include_related": True,
+            "organization_id": self.org.id,
+            "page": 1,
+            "per_page": 100,
+        }
+        filter = { self.jtlid_name: self.get_filter("contains", "jt")}
+        data = { "filters": filter }
+
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(query_string)
+        response = self.client.post(url, data=data, content_type='application/json')
+        data = response.json()
+        results = data['results']
+        self.assertEqual(len(results), 4)
+    
+        filter = { self.jtlid_name: self.get_filter("contains", "2")}
+        data = { "filters": filter }
+
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(query_string)
+        response = self.client.post(url, data=data, content_type='application/json')
+        data = response.json()
+        results = data['results']
+        self.assertEqual(len(results), 2)
+    
