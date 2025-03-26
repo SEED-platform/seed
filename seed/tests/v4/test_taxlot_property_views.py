@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 from datetime import datetime
+from urllib.parse import urlencode
 
 from django.urls import reverse
 from django.utils.timezone import (
@@ -33,6 +34,8 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
     FakeTaxLotFactory,
+    FakeTaxLotPropertyFactory,
+    FakeTaxLotViewFactory,
     FakeTaxLotStateFactory,
 )
 from seed.serializers.columns import ColumnSerializer
@@ -355,3 +358,88 @@ class FilterTests(AccessLevelBaseTestCase):
         self.assertEqual(self.pv_filter(less_than).count(), 10) # 0-9
         self.assertEqual(self.pv_filter(less_than_or_equal).count(), 11) # 0-10
         self.assertEqual(self.pv_filter(between).count(), 9) # 11-19
+
+    def test_extra_data(self):
+        self.assertTrue(False)
+
+class RelatedTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.root_owner_user)
+        self.column_factory = FakeColumnFactory(organization=self.org)
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.taxlot_factory = FakeTaxLotFactory(organization=self.org)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
+        self.taxlot_property_factory = FakeTaxLotPropertyFactory(organization=self.org, user=self.superuser)
+        
+        # cycles
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1), end=datetime(2002, 1, 1))
+        
+        # create related taxlot and property views
+        tlv1 = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle, jurisdiction_tax_lot_id="jt-1") # multiple properties
+        tlv2a = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle, jurisdiction_tax_lot_id="jt-2a")
+        tlv2b = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle, jurisdiction_tax_lot_id="jt-2b")
+        tlv3 = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle, jurisdiction_tax_lot_id="jt-3") # no properties
+
+        pv1a = self.property_view_factory.get_property_view(cycle=self.cycle, pm_property_id="pm-1a", site_eui=10)
+        pv1b = self.property_view_factory.get_property_view(cycle=self.cycle, pm_property_id="pm-1b", site_eui=11)
+        pv2 = self.property_view_factory.get_property_view(cycle=self.cycle, pm_property_id="pm-2", site_eui=20) # multiple taxlots
+        pv3 = self.property_view_factory.get_property_view(cycle=self.cycle, pm_property_id="pm-3", site_eui=30) # no taxlots
+
+        self.taxlot_property_factory.get_taxlot_property(cycle=self.cycle, property_view=pv1a, taxlot_view=tlv1)
+        self.taxlot_property_factory.get_taxlot_property(cycle=self.cycle, property_view=pv1b, taxlot_view=tlv1)
+        self.taxlot_property_factory.get_taxlot_property(cycle=self.cycle, property_view=pv2, taxlot_view=tlv2a)
+        self.taxlot_property_factory.get_taxlot_property(cycle=self.cycle, property_view=pv2, taxlot_view=tlv2b)
+
+
+        def get_column_name(column_name):
+            return ColumnSerializer(Column.objects.filter(column_name=column_name).first()).data["name"]
+        
+        self.pmpid_name = get_column_name("pm_property_id")
+        self.seui_name = get_column_name("site_eui")
+        self.jtlid_name = get_column_name("jurisdiction_tax_lot_id")
+
+        # shortcut
+        self.pv_filter = PropertyView.objects.filter
+
+    def test_format_related(self):
+        query_string = {
+            "cycle": self.cycle.id,
+            "ids_only": False,
+            "inventory_type": "property",
+            "include_related": True,
+            "organization_id": self.org.id,
+            "page": 1,
+            "per_page": 100,
+        }
+
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(query_string)
+        response = self.client.post(url)
+        data = response.json()
+        results = data['results']
+        self.assertEqual(len(results), 4)
+
+        pv1a = [p for p in results if p.get(self.pmpid_name) == 'pm-1a'][0]
+        pv2 = [p for p in results if p.get(self.pmpid_name) == 'pm-2'][0]
+        pv3 = [p for p in results if p.get(self.pmpid_name) == 'pm-3'][0]
+
+        self.assertEqual(pv1a.get(self.jtlid_name), 'jt-1')
+        self.assertEqual(pv2.get(self.jtlid_name), 'jt-2a;jt-2b')
+        self.assertEqual(pv3.get(self.jtlid_name), None)
+
+        query_string["inventory_type"] = "taxlot"
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(query_string)
+        response = self.client.post(url)
+        data = response.json()
+        results = data['results']
+
+        tlv1 = [t for t in results if t.get(self.jtlid_name) == 'jt-1'][0]
+        tlv2a = [t for t in results if t.get(self.jtlid_name) == 'jt-2a'][0]
+        tlv3 = [t for t in results if t.get(self.jtlid_name) == 'jt-3'][0]
+
+        self.assertEqual(tlv1.get(self.pmpid_name), 'pm-1a;pm-1b')
+        self.assertEqual(tlv2a.get(self.pmpid_name), 'pm-2')
+        self.assertEqual(tlv3.get(self.pmpid_name), None)

@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from functools import reduce
 from operator import and_, or_
+import re
 from typing import Literal, Optional, Union
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
@@ -46,23 +47,24 @@ def get_filtered_results(request: Request, profile_id: int) -> JsonResponse:
         request_data = validate_request(request, profile_id)
         org, cycle, inventory_type, page, per_page, ali, ids_only, include_related, db_columns, shown_col_ids = request_data
         views_list = get_views_list(inventory_type, org.id, cycle, ali)
-        views_list = ag_filter_sort_views_list(request, views_list, db_columns)
-        # views_list = filter_annotate_views_list(request, org, cycle, inventory_type, views_list, columns, include_related)
+        # views_list = ag_filter_sort_views_list(request, views_list, db_columns)
+        views_list = filter_annotate_views_list(request, org, cycle, inventory_type, views_list, db_columns, include_related)
         views_list = include_exclude_views_list(request, views_list)
         if ids_only:
             return get_id_list(views_list)
         paginator, page, views = get_paginator(views_list, page, per_page)
         show_columns = get_show_columns(org.id, inventory_type, profile_id, shown_col_ids)
         related_results = serialize_views(views, show_columns, db_columns, include_related)
+        # results = concat_related_fields()
     except InventoryFilterError as e:
         return e.response
-
+    
     unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
+    results = parse_related_results(unit_collapsed_results, include_related)
     column_defs = get_column_defs(org.id, profile_id)
-    response = build_response(cycle, page, paginator, unit_collapsed_results, column_defs)
+    response = build_response(cycle, page, paginator, results, column_defs)
 
     return response
-
 
 def validate_request(request, profile_id):
     page = request.query_params.get("page", 1)
@@ -351,6 +353,47 @@ def serialize_views(views, show_columns, columns_from_database, include_related)
         )
 
     return related_results
+
+def parse_related_results(results, include_related):
+    """ add related data as a semicolon separated list """
+    if not include_related:
+        return results
+    
+    for result in results:
+        parsed_fields = {}
+        for related in result.get("related", []):
+            # create a set of unique values for each valid field
+            for (field, val) in related.items():
+                if valid_related_field(field, val):
+                    parsed_fields.setdefault(field, set()).add(val)
+
+        # convert sets to semicolon-separated strings
+        for field, values in parsed_fields.items():
+            result[field] = ";".join(str(v) for v in sorted(values))
+
+    return results
+
+
+def valid_related_field(field, value):
+    """ determine if column has format {column_name}_{id} """
+    excluded_fields = [
+        'bounding_box',
+        'centroid',
+        'id',
+        'long_lat',
+        'merged_indicator',
+        'notes_count',
+        'taxlot_state_id',
+        'taxlot_view_id',
+        'property_state_id',
+        'property_view_id'
+    ]
+    if field in excluded_fields:
+        return False
+    if not isinstance(value, (str, int, float)): # IS THIS NECESSARY? are booleans no ignored?
+        return False
+    # Regex check if field ends with _{int}
+    return bool(re.search(r"_\d+$", field))
 
 
 def get_column_defs(org_id, profile_id):
