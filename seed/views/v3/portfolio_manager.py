@@ -430,7 +430,7 @@ class PortfolioManagerImport:
         new_authenticated_headers["Content-Type"] = "application/x-www-form-urlencoded"
 
         try:
-            response = requests.post(update_report_url, headers=self.authenticated_headers, timeout=300)
+            response = requests.get(update_report_url, headers=self.authenticated_headers, timeout=300)
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == status.HTTP_200_OK:
@@ -462,7 +462,7 @@ class PortfolioManagerImport:
         template_report_id = matched_template["id"]
         generation_url = f"https://portfoliomanager.energystar.gov/pm/reports/generateData/{template_report_id}"
         try:
-            response = requests.post(generation_url, headers=self.authenticated_headers, timeout=300)
+            response = requests.get(generation_url, headers=self.authenticated_headers, timeout=300)
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if not response.status_code == status.HTTP_200_OK:
