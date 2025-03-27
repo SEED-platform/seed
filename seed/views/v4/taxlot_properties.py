@@ -7,7 +7,7 @@ from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
-from seed.utils.v4.inventory_filter import get_filtered_results
+from seed.utils.v4.inventory_filter import InventoryFilter
 
 
 class TaxLotPropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, ProfileIdMixin):
@@ -51,5 +51,5 @@ class TaxLotPropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin,
         except (TypeError, ValueError):
             profile_id = None
 
-        results = get_filtered_results(request, profile_id)
+        results = InventoryFilter(request, profile_id).get_filtered_results()
         return JsonResponse(results)
