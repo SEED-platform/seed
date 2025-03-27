@@ -118,7 +118,12 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           { field: 'source_id' },
           { field: 'scenario_id' },
           { field: 'connection_type' },
-          { field: 'property_display_field', displayName: property_display_name },
+          {
+            field: 'property_display_field',
+            displayName: property_display_name,
+            cellTemplate: '<a id="inventory-summary" ui-sref="inventory_detail_meters({inventory_type: \'properties\', view_id: row.entity.view_id})" ui-sref-active="active">{$ row.entity.property_display_field $}</a>'
+            // cellTemplate: `<a id="inventory-summary"  ui-sref="inventory_detail_meters({inventory_type: 'properties', view_id: row.entity.view_id})" ui-sref-active="active">{$ hoi $}</a>`
+          },
           { field: 'system_name' },
           { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
           { field: 'is_virtual' },
