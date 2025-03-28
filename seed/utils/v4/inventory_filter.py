@@ -305,9 +305,9 @@ class InventoryFilter:
             column_name = sort[1:] if direction else sort
             column_name = self.strip_id(column_name)
 
-            prefix = self.prefix_name(column_name)
+            prefixed_name = self.prefix_name(column_name)
 
-            sorts.append(f"{direction}{prefix}{column_name}")
+            sorts.append(f"{direction}{prefixed_name}")
 
         return sorts
 
