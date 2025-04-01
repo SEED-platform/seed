@@ -597,7 +597,7 @@ class AccountsViewTests(TestCase):
             is_ali_root,
             is_ali_leaf,
             org_user_id,
-            settings
+            settings,
         ) = get_default_org_for_user(self.user)
         profile = {
             "username": "some@hgg.com",
@@ -636,7 +636,7 @@ class AccountsViewTests(TestCase):
             is_ali_root,
             is_ali_leaf,
             org_user_id,
-            settings
+            settings,
         ) = get_default_org_for_user(self.user)
         profile = {
             "username": "test_user@demo.com",

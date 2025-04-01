@@ -59,6 +59,7 @@ class SharedFieldsReturnSerializer(serializers.Serializer):
     shared_fields = SharedFieldSerializer(many=True)
     public_fields = SharedFieldSerializer(many=True)
 
+
 class OrganizationUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrganizationUser
