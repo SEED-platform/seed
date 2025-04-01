@@ -59,13 +59,6 @@ class SharedFieldsReturnSerializer(serializers.Serializer):
     shared_fields = SharedFieldSerializer(many=True)
     public_fields = SharedFieldSerializer(many=True)
 
-
-# class OrganizationUserSerializer(serializers.Serializer):
-#     email = serializers.CharField(max_length=100)
-#     first_name = serializers.CharField(max_length=100)
-#     last_name = serializers.CharField(max_length=100)
-#     user_id = serializers.IntegerField()
-#     role = serializers.CharField(max_length=100)
 class OrganizationUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrganizationUser

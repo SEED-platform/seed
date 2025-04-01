@@ -596,6 +596,8 @@ class AccountsViewTests(TestCase):
             access_level_instance_id,
             is_ali_root,
             is_ali_leaf,
+            org_user_id,
+            settings
         ) = get_default_org_for_user(self.user)
         profile = {
             "username": "some@hgg.com",
@@ -614,6 +616,8 @@ class AccountsViewTests(TestCase):
             "id": self.user.pk,
             "two_factor_method": "disabled",
             "is_superuser": self.user.is_superuser,
+            "org_user_id": org_user_id,
+            "settings": settings,
         }
         self.assertEqual(json.loads(resp.content), profile)
 
@@ -631,6 +635,8 @@ class AccountsViewTests(TestCase):
             access_level_instance_id,
             is_ali_root,
             is_ali_leaf,
+            org_user_id,
+            settings
         ) = get_default_org_for_user(self.user)
         profile = {
             "username": "test_user@demo.com",
@@ -649,6 +655,8 @@ class AccountsViewTests(TestCase):
             "id": self.user.pk,
             "two_factor_method": "disabled",
             "is_superuser": self.user.is_superuser,
+            "org_user_id": org_user_id,
+            "settings": settings,
         }
 
         self.assertEqual(json.loads(resp.content), profile)
@@ -979,7 +987,7 @@ class AuthViewTests(TestCase):
 
     def test__get_default_org(self):
         """test seed.views.main._get_default_org"""
-        org_id, org_name, org_role, ali_name, ali_id, _is_ali_root, _is_ali_leaf = _get_default_org(self.user)
+        org_id, org_name, org_role, ali_name, ali_id, *_ = _get_default_org(self.user)
 
         # check standard case
         self.assertEqual(org_id, self.org.id)
@@ -997,7 +1005,7 @@ class AuthViewTests(TestCase):
             username="tester@be.com",
             email="tester@be.com",
         )
-        org_id, org_name, org_role, ali_name, ali_id, _is_ali_root, _is_ali_leaf = _get_default_org(other_user)
+        org_id, org_name, org_role, ali_name, ali_id, *_ = _get_default_org(other_user)
         self.assertEqual(org_id, "")
         self.assertEqual(org_name, "")
         self.assertEqual(org_role, "")
@@ -1009,7 +1017,7 @@ class AuthViewTests(TestCase):
         self.assertEqual(other_user.default_organization, self.org)
         # _get_default_org should remove the user from the org and set the
         # next available org as default or set to ''
-        org_id, org_name, org_role, ali_name, ali_id, _is_ali_root, _is_ali_leaf = _get_default_org(other_user)
+        org_id, org_name, org_role, ali_name, ali_id, *_ = _get_default_org(other_user)
         self.assertEqual(org_id, "")
         self.assertEqual(org_name, "")
         self.assertEqual(org_role, "")
