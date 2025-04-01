@@ -69,6 +69,8 @@ def faq_page(request):
             access_level_instance_id,
             is_ali_root,
             is_ali_leaf,
+            org_user_id,
+            settings,
         ) = _get_default_org(request.user)
     debug = settings.DEBUG
 

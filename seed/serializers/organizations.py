@@ -5,8 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from rest_framework import serializers
 
-from seed.models import Organization
-
+from seed.models import Organization, OrganizationUser
 
 class SaveSettingsOrgFieldSerializer(serializers.Serializer):
     sort_column = serializers.CharField()
@@ -60,12 +59,23 @@ class SharedFieldsReturnSerializer(serializers.Serializer):
     public_fields = SharedFieldSerializer(many=True)
 
 
-class OrganizationUserSerializer(serializers.Serializer):
-    email = serializers.CharField(max_length=100)
-    first_name = serializers.CharField(max_length=100)
-    last_name = serializers.CharField(max_length=100)
-    user_id = serializers.IntegerField()
-    role = serializers.CharField(max_length=100)
+# class OrganizationUserSerializer(serializers.Serializer):
+#     email = serializers.CharField(max_length=100)
+#     first_name = serializers.CharField(max_length=100)
+#     last_name = serializers.CharField(max_length=100)
+#     user_id = serializers.IntegerField()
+#     role = serializers.CharField(max_length=100)
+class OrganizationUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrganizationUser
+        fields = ['settings', 'role_level', 'status', 'organization', 'user']
+
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+        result['email'] = instance.user.email
+        result['first_name'] = instance.user.first_name
+        result['last_name'] = instance.user.last_name
+        return result
 
 
 class OrganizationUsersSerializer(serializers.Serializer):
