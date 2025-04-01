@@ -7,6 +7,7 @@ from rest_framework import serializers
 
 from seed.models import Organization, OrganizationUser
 
+
 class SaveSettingsOrgFieldSerializer(serializers.Serializer):
     sort_column = serializers.CharField()
 
@@ -68,13 +69,13 @@ class SharedFieldsReturnSerializer(serializers.Serializer):
 class OrganizationUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrganizationUser
-        fields = ['settings', 'role_level', 'status', 'organization', 'user']
+        fields = ["settings", "role_level", "status", "organization", "user"]
 
     def to_representation(self, instance):
         result = super().to_representation(instance)
-        result['email'] = instance.user.email
-        result['first_name'] = instance.user.first_name
-        result['last_name'] = instance.user.last_name
+        result["email"] = instance.user.email
+        result["first_name"] = instance.user.first_name
+        result["last_name"] = instance.user.last_name
         return result
 
 

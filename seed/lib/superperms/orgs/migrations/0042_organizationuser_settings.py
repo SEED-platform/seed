@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0041_add_at_tracking_fields'),
+        ("orgs", "0041_add_at_tracking_fields"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organizationuser',
-            name='settings',
+            model_name="organizationuser",
+            name="settings",
             field=models.JSONField(blank=True, default=dict, null=True),
         ),
     ]
