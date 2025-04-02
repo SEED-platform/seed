@@ -34,6 +34,7 @@ _log = logging.getLogger(__name__)
 AUTO_SYNC_NAME = "audit_template_sync_org-"
 AT_BUILDINGSYNC_VERSION = "2.6.0"
 
+
 def require_token(fn):
     """Decorator to get an AT api token"""
 
@@ -606,7 +607,7 @@ def _get_measures(property_id):
 
     bsync_measure_tuples = set()
     for bsync_measure_dict in bsync_measure_dicts:
-        category = Measure.objects.filter(category_display_name=bsync_measure_dict["cat_lev1"]).order_by('-schema_version').first().category
+        category = Measure.objects.filter(category_display_name=bsync_measure_dict["cat_lev1"]).order_by("-schema_version").first().category
         category = "".join(word.capitalize() for word in category.split("_"))
         # SPECIAL case: HVAC
         category = re.sub(r"Hvac", lambda x: x.group().upper(), category)

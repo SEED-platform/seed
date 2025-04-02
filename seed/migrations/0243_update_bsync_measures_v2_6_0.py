@@ -20,6 +20,7 @@ def _snake_case(display_name):
     str = re.sub("([a-z0-9])([A-Z])", r"\1_\2", str).lower()
     return re.sub(" +", "_", str)
 
+
 def populate_measures(apps, organization_id, schema_type="BuildingSync", schema_version="2.6.0"):
     """
     Populate the list of measures from BuildingSync version 2.6.0
@@ -66,20 +67,19 @@ def forwards(apps, schema_editor):
         print(f"Org: {c.name}, Name: {c.id}")
 
         # call populate_measures
-        populate_measures(apps, c.id, '2.6.0')
+        populate_measures(apps, c.id, "2.6.0")
 
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('orgs', '0041_add_at_tracking_fields'),
+        ("orgs", "0041_add_at_tracking_fields"),
         ("seed", "0242_add_meter_types"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='measure',
-            unique_together={('organization', 'category', 'name', 'schema_version')},
+            name="measure",
+            unique_together={("organization", "category", "name", "schema_version")},
         ),
-        migrations.RunPython(forwards)
+        migrations.RunPython(forwards),
     ]
-

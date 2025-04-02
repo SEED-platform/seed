@@ -67,8 +67,8 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet, OrgMixin):
         if not organization_id:
             return JsonResponse({"status": "error", "message": "organization_id not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        Measure.populate_measures(organization_id) # this will repopulate the default buildingsync version
-        Measure.populate_measures(organization_id, schema_version="2.6.0") # also repopulate the latest version
+        Measure.populate_measures(organization_id)  # this will repopulate the default buildingsync version
+        Measure.populate_measures(organization_id, schema_version="2.6.0")  # also repopulate the latest version
         # TODO: this should be improved!
         data = {
             "measures": list(Measure.objects.filter(organization_id=organization_id).order_by("id").values()),
