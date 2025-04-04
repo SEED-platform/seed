@@ -72,7 +72,9 @@ class Measure(models.Model):
         :param organization_id: integer, ID of the organization to populate measures
         :return:
         """
-        filename = "seed/building_sync/lib/enumerations.json"
+        # find enumerations.json file matching schema version
+        # filename syntax convention is enumerations_v1_0_0.json (replace dots with underscores)
+        filename = f"seed/building_sync/enumerations/enumerations_v{schema_version.replace('.', '_')}.json"
         with open(filename, encoding=locale.getpreferredencoding(False)) as f:
             data = json.load(f)
 

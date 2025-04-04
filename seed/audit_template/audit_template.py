@@ -32,7 +32,10 @@ from seed.utils.encrypt import decrypt
 _log = logging.getLogger(__name__)
 
 AUTO_SYNC_NAME = "audit_template_sync_org-"
-AT_BUILDINGSYNC_VERSION = "2.6.0"
+
+# Currently default version is the latest version.
+# Need to keep this version in sync with Audit Template
+AT_BUILDINGSYNC_VERSION = settings.BUILDINGSYNC_VERSION
 
 
 def require_token(fn):

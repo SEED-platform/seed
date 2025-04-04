@@ -15,6 +15,7 @@ from io import BytesIO, StringIO
 
 import xmlschema
 from buildingsync_asset_extractor.processor import BSyncProcessor
+from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist
 from lxml import etree
 from quantityfield.units import ureg
@@ -127,7 +128,7 @@ class BuildingSync:
 
         clone_subtree(original_root, new_root)
 
-    def init_tree(self, version=BUILDINGSYNC_V2_0):
+    def init_tree(self, version=settings.BUILDINGSYNC_VERSION):
         """Initializes the tree with a BuildingSync root node
 
         :param version: string, should be one of the valid BuildingSync versions
@@ -162,7 +163,7 @@ class BuildingSync:
             return etree.tostring(self.element_tree, pretty_print=True).decode()
 
         if not self.element_tree:
-            self.init_tree(version=BuildingSync.BUILDINGSYNC_V2_0)
+            self.init_tree(version=settings.BUILDINGSYNC_VERSION)
 
         schema = self.get_schema(self.version)
 

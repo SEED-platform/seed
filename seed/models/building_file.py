@@ -7,6 +7,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import logging
 
+import semantic_version
 from django.db import models
 
 from seed.building_sync.building_sync import BuildingSync, ParsingError
@@ -145,12 +146,17 @@ class BuildingFile(models.Model):
             return False, None, None, f"File format was not one of: {acceptable_file_types}"
 
         parser = Parser()
+        bsync_version = None
+
         try:
             parser.import_file(self.file.path)
             parser_args = []
             parser_kwargs = {}
             # TODO: use table_mappings for BuildingSync process method
             data, messages = parser.process(*parser_args, **parser_kwargs)
+            # for buildingsync only (not HPXML)
+            if self.file_type == self.BUILDINGSYNC:
+                bsync_version = parser.version
 
         except ParsingError as e:
             return False, None, None, [str(e)]
@@ -169,21 +175,32 @@ class BuildingFile(models.Model):
         self.save()
 
         # add in the measures
-        for m in data.get("measures", []):
-            # Find the measure in the database (schema-agnostic? sort by schema desc and get latest)
+        # do this based on bsync_version: Starting with 2.6.0 use exact version,
+        # otherwise use version 1.0.0.
+        # TODO: why do we do this for HPXML? (right now it will attempt to pull from 1.0.0)
+        version_string = "1.0.0"
+        try:
+            if bsync_version:
+                the_version = semantic_version.Version(bsync_version)
+                if the_version < semantic_version.Version("2.6.0"):
+                    version_string = "1.0.0"
+                else:
+                    version_string = bsync_version
+        except Exception:
+            # if there is an error parsing the version, just use 1.0.0
+            version_string = "1.0.0"
 
+        for m in data.get("measures", []):
+            # find measure in db (by schema_version)
             try:
-                measure = (
-                    Measure.objects.filter(
-                        category=m["category"],
-                        name=m["name"],
-                        organization_id=organization_id,
-                    )
-                    .order_by("-schema_version")
-                    .first()
+                measure = Measure.objects.get(
+                    category=m["category"], name=m["name"], organization_id=organization_id, schema_version=version_string
                 )
+
             except Measure.DoesNotExist:
-                messages["warnings"].append(f'Measure category and name is not valid {m["category"]}:{m["name"]}')
+                messages["warnings"].append(
+                    f'Measure category and name is not valid {m["category"]}:{m["name"]} for schema version {version_string}'
+                )
                 continue
 
             # Add the measure to the join table.
