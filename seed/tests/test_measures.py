@@ -18,12 +18,15 @@ class TestMeasures(TestCase):
         Measure.populate_measures(self.org.id)
 
     def test_populate_measures(self):
+        # Populate measure calls for every schema version run automatically when an org is created
         # BuildingSync v1.0.0 has 222 enums
-        self.assertEqual(Measure.objects.count(), 222)
+        # BuildingSync v2.6.0 has 329 enums
+        # total is 551
+        self.assertEqual(Measure.objects.count(), 551)
 
         # if we run it again, it shouldn't add anything new
         Measure.populate_measures(self.org.id)
-        self.assertEqual(Measure.objects.count(), 222)
+        self.assertEqual(Measure.objects.count(), 551)
 
     def test_snake_case(self):
         self.assertEqual(_snake_case("AbCdEf"), "ab_cd_ef")
@@ -43,7 +46,7 @@ class TestMeasures(TestCase):
 
         objs = []
         for m in measures:
-            objs.append(Measure.objects.get(category=m[0], name=m[1]))
+            objs.append(Measure.objects.get(category=m[0], name=m[1], schema_version="2.6.0"))
 
         obj_ids = [m.id for m in objs]
         obj_names = [f"{m.category}.{m.name}" for m in objs]
@@ -100,9 +103,3 @@ class TestPropertyMeasures(TestCase):
         self.assertEqual(PropertyMeasure.str_to_application_scale("Entire facility"), 5)
         self.assertEqual(PropertyMeasure.str_to_application_scale(None), 5)
 
-    def test_populate_measures(self):
-        self.assertEqual(Measure.objects.count(), 222)
-
-        # if we run it again, it shouldn't add anything new
-        Measure.populate_measures(self.org.id)
-        self.assertEqual(Measure.objects.count(), 222)
