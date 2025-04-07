@@ -135,6 +135,7 @@
     'SEED.controller.pairing',
     'SEED.controller.pairing_settings',
     'SEED.controller.portfolio_summary',
+    'SEED.controller.facilities_plan',
     'SEED.controller.postoffice_modal',
     'SEED.controller.profile',
     'SEED.controller.program_setup',
@@ -2941,6 +2942,13 @@
               }
             ]
           }
+        })
+        .state({
+          name: 'facilities_plan',
+          url: '/insights/facilities_plan',
+          templateUrl: `${static_url}seed/partials/facilities_plan.html`,
+          controller: 'facilities_plan_controller',
+          resolve: {}
         })
         .state({
           name: 'data_view',
