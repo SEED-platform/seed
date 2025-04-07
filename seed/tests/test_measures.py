@@ -102,4 +102,3 @@ class TestPropertyMeasures(TestCase):
         self.assertEqual(PropertyMeasure.str_to_application_scale("Nothing entirely"), 5)
         self.assertEqual(PropertyMeasure.str_to_application_scale("Entire facility"), 5)
         self.assertEqual(PropertyMeasure.str_to_application_scale(None), 5)
-
