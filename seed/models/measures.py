@@ -126,7 +126,7 @@ class Measure(models.Model):
                             continue
 
                         measure = d.split(".")
-                        resp.append(Measure.objects.get(category=measure[0], name=measure[1]).pk, schema_version=schema_version)
+                        resp.append(Measure.objects.get(category=measure[0], name=measure[1], schema_version=schema_version).pk)
                 except Measure.DoesNotExist:
                     _log.error(f"Could not find measure for {d}")
             return resp
