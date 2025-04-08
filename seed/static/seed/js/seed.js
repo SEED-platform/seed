@@ -205,6 +205,7 @@
     'SEED.service.element',
     'SEED.service.espm',
     'SEED.service.event',
+    'SEED.service.facilities_plan',
     'SEED.service.filter_groups',
     'SEED.service.flippers',
     'SEED.service.geocode',
@@ -1193,7 +1194,8 @@
                 );
               }
             ],
-            property_columns: ['inventory_service', 'user_service', (inventory_service) => inventory_service.get_property_columns()]
+            property_columns: ['inventory_service', 'user_service', (inventory_service) => inventory_service.get_property_columns()],
+            facilities_plans: ['facilities_plan_service', (facilities_plan_service) => facilities_plan_service.get_facilities_plans()]
           }
         })
         .state({
@@ -2948,7 +2950,9 @@
           url: '/insights/facilities_plan',
           templateUrl: `${static_url}seed/partials/facilities_plan.html`,
           controller: 'facilities_plan_controller',
-          resolve: {}
+          resolve: {
+            facilities_plans: ['facilities_plan_service', (facilities_plan_service) => facilities_plan_service.get_facilities_plans()],
+          }
         })
         .state({
           name: 'data_view',

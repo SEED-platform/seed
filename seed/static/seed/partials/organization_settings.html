@@ -401,6 +401,42 @@
       </div>
     </uib-tab>
 
+    <uib-tab index="10" heading="Facilities Plan Setup">
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+        </div>
+      </div>
+      <div class="section_content_container">
+
+        <div class="r-column r-shrink r-panel">
+          <ul class="r-list">
+            <li class="r-list-header" translate>Facilities Plan</li>
+            <li ng-show="selected_facilities_plan" class="r-selected r-row r-row-centered">
+              <span class="r-grow">{$ selected_facilities_plan.name $}</span>
+              <!-- <i class="fa-solid fa-xmark r-margin-left-5" ng-if="selected_facilities_plan.id" ng-click="click_delete(facilities_plan)"></i> -->
+            </li>
+          </ul>
+          <ul class="r-list r-scrollable">
+            <li
+              ng-show="!selected_facilities_plan || facilities_plan.id != selected_facilities_plan.id"
+              ng-repeat-start="facilities_plan in facilities_plans"
+              ng-repeat-end
+              class="r-row r-row-centered"
+            >
+              <a ng-click="set_facilities_plan(facilities_plan.id)" class="r-grow">{$:: facilities_plan.name $}</a>
+              <!-- <i class="fa-solid fa-xmark r-margin-left-5" ng-click="click_delete(facilities_plan)"></i> -->
+            </li>
+          </ul>
+          <ul class="r-list">
+            <li>
+              <!-- <button class="btn btn-success r-grow" ng-click="click_new_facilities_plan()"><i class="fa-solid fa-circle-plus r-pad-right-5"></i>New Facilities Plan</button> -->
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </uib-tab>
+
     <uib-tab index="3" heading="{$:: 'Default Display Fields' | translate $}">
       <div class="section_content_container">
         <div class="section_content with_padding">

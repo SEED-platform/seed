@@ -23,6 +23,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   'salesforce_configs_payload',
   'audit_template_configs_payload',
   'meters_service',
+  'facilities_plans',
   'Notification',
   '$translate',
   // eslint-disable-next-line func-names
@@ -47,6 +48,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     salesforce_configs_payload,
     audit_template_configs_payload,
     meters_service,
+    facilities_plans,
     Notification,
     $translate
   ) {
@@ -690,5 +692,12 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       $scope.at_status_types[status] = !$scope.at_status_types[status];
       $scope.org.audit_template_status_types = Object.keys($scope.at_status_types).filter((key) => $scope.at_status_types[key]).sort().join(',');
     };
+
+    $scope.facilities_plans = facilities_plans.data;
+    $scope.selected_facilities_plan = null;
+    $scope.set_facilities_plan = (id) => {
+      $scope.selected_facilities_plan = $scope.facilities_plans.find(fp => fp.id == id);
+      console.log($scope.selected_facilities_plan)
+    }
   }
 ]);
