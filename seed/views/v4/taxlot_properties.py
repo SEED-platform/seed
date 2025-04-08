@@ -1,4 +1,3 @@
-from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
@@ -52,4 +51,4 @@ class TaxLotPropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin,
             profile_id = None
 
         results = InventoryFilter(request, profile_id).get_filtered_results()
-        return JsonResponse(results)
+        return results

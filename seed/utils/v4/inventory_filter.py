@@ -80,10 +80,10 @@ class InventoryFilter:
             self.validate_request()
             views_qs = self.get_views_list()
             views_qs = self.ag_filter_sort_views_list(views_qs)
-            views_list = self.include_exclude_views_list(views_qs)
+            views_qs = self.include_exclude_views_list(views_qs)
             if self.ids_only:
-                return self.get_id_list(views_list)
-            views_paginated = self.get_paginator(views_list)
+                return self.get_id_list(views_qs)
+            views_paginated = self.get_paginator(views_qs)
             show_columns = self.get_show_columns()
             related_results = self.serialize_views(views_paginated, show_columns)
 
@@ -95,7 +95,7 @@ class InventoryFilter:
         column_defs = self.get_column_defs()
         response = self.build_response(results, column_defs)
 
-        return response
+        return JsonResponse(response)
 
     def validate_request(self):
         """validates request, assigns class variables"""
@@ -137,14 +137,6 @@ class InventoryFilter:
             raise InventoryFilterError(
                 JsonResponse(
                     {"status": "error", "message": "Could not locate cycle", "pagination": {"total": 0}, "cycle_id": None, "results": []}
-                )
-            )
-
-        if ids_only and (per_page or page):
-            raise InventoryFilterError(
-                JsonResponse(
-                    {"success": False, "message": 'Cannot pass query parameter "ids_only" with "per_page" or "page"'},
-                    status=status.HTTP_400_BAD_REQUEST,
                 )
             )
 
@@ -311,21 +303,21 @@ class InventoryFilter:
 
         return sorts
 
-    def include_exclude_views_list(self, views_list):
+    def include_exclude_views_list(self, views_qs):
         """applies include and exclude ids to the views list"""
         # return property views limited to the 'include_view_ids' list if not empty
         if self.request.data.get("include_view_ids"):
-            views_list = views_list.filter(id__in=self.request.data["include_view_ids"])
+            views_qs = views_qs.filter(id__in=self.request.data["include_view_ids"])
 
         # exclude property views limited to the 'exclude_view_ids' list if not empty
         if self.request.data.get("exclude_view_ids"):
-            views_list = views_list.exclude(id__in=self.request.data["exclude_view_ids"])
+            views_qs = views_qs.exclude(id__in=self.request.data["exclude_view_ids"])
 
         # return property views limited to the 'include_property_ids' list if not empty
         if include_property_ids := self.request.data.get("include_property_ids"):
-            views_list = views_list.filter(property__id__in=include_property_ids)
+            views_qs = views_qs.filter(property__id__in=include_property_ids)
 
-        return list(views_list)
+        return views_qs
 
     def get_id_list(self, views_list):
         id_list = list(views_list.values_list("id", flat=True))
