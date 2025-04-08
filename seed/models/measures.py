@@ -9,6 +9,7 @@ import logging
 import re
 import string
 
+from django.conf import settings
 from django.db import models
 
 from seed.models import Organization
@@ -102,11 +103,12 @@ class Measure(models.Model):
                         )
 
     @classmethod
-    def validate_measures(cls, data):
+    def validate_measures(cls, data, schema_version=settings.BUILDINGSYNC_VERSION):
         """
         Take a list of measure ids or measure names and return just a list of ids.
 
         :param data: list, either category.name of measure or primary key
+        :param schema_version: defaults to Default Version specified in settings file
         :return: list of integers, the list are primary key of measures
         """
         if len(data) > 0:
@@ -124,7 +126,7 @@ class Measure(models.Model):
                             continue
 
                         measure = d.split(".")
-                        resp.append(Measure.objects.get(category=measure[0], name=measure[1]).pk)
+                        resp.append(Measure.objects.get(category=measure[0], name=measure[1]).pk, schema_version=schema_version)
                 except Measure.DoesNotExist:
                     _log.error(f"Could not find measure for {d}")
             return resp
