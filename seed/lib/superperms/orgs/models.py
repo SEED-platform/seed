@@ -72,6 +72,7 @@ class OrganizationUser(models.Model):
     status = models.CharField(max_length=12, default=STATUS_PENDING, choices=STATUS_CHOICES)
     role_level = models.IntegerField(default=ROLE_OWNER, choices=ROLE_LEVEL_CHOICES)
     access_level_instance = models.ForeignKey("AccessLevelInstance", on_delete=models.CASCADE, null=False, related_name="users")
+    settings = models.JSONField(default=dict, blank=True, null=True)
 
     def delete(self, *args, **kwargs):
         """Ensure we preserve at least one Owner for this org."""
