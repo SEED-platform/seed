@@ -95,7 +95,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
                 if not valid_api_key:
                     raise exceptions.AuthenticationFailed("Invalid API key")
 
-                # SEED should be storing the username in lowercase format, always. 
+                # SEED should be storing the username in lowercase format, always.
                 user = SEEDUser.objects.get(api_key=api_key, username=username)
                 return user
             elif auth_header.startswith("Bearer"):
