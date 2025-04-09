@@ -988,7 +988,7 @@ class Column(models.Model):
         except (ValidationError, DataError, ValueError):
             return [
                 False,
-                "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.).",
+                "The column data aren't formatted properly for the new column due to type constraints (e.g., Datetime, Quantities, etc.).",
             ]
         except DimensionalityError:
             return [
