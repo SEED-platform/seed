@@ -88,15 +88,15 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
                 auth_header = auth_header.split()[1]
                 auth_header = base64.urlsafe_b64decode(auth_header).decode("utf-8")
                 username, api_key = auth_header.split(":")
-                # lower case the username in case the user is sending in mixed-case (typically an email address)
-                username = username.lower()
 
                 valid_api_key = re.search("^[a-f0-9]{40}$", api_key)
                 if not valid_api_key:
                     raise exceptions.AuthenticationFailed("Invalid API key")
 
-                # SEED should be storing the username in lowercase format, always.
-                user = SEEDUser.objects.get(api_key=api_key, username=username)
+                # SEED should be storing the username in lowercase format, always, but just in
+                # case, do a username check that is case insensitive since user's are sometimes
+                # sending email addresses as their usernames with mixed-cases.
+                user = SEEDUser.objects.get(api_key=api_key, username__iexact=username)
                 return user
             elif auth_header.startswith("Bearer"):
                 at = AccessToken(auth_header.removeprefix("Bearer "))
