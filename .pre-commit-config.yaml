@@ -33,6 +33,6 @@ repos:
     hooks:
       # Run the linter
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix, --output-format=full]
+        args: [--fix, --exit-non-zero-on-fix, --output-format=full] #, --unsafe-fixes]
       # Run the formatter
       - id: ruff-format
