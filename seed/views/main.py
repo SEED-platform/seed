@@ -62,9 +62,10 @@ def _get_default_org(user):
         ali_id = ou.access_level_instance.id
         is_ali_root = ou.access_level_instance == ou.organization.root
         is_ali_leaf = ou.access_level_instance.is_leaf()
-        return org_id, org_name, org_user_role, ali_name, ali_id, is_ali_root, is_ali_leaf
+        settings = ou.settings or {}
+        return org_id, org_name, org_user_role, ali_name, ali_id, is_ali_root, is_ali_leaf, ou.id, settings
     else:
-        return "", "", "", "", "", "", ""
+        return "", "", "", "", "", "", "", "", {}
 
 
 @login_required
@@ -81,6 +82,8 @@ def home(request):
         access_level_instance_id,
         is_ali_root,
         is_ali_leaf,
+        organization_user_id,
+        user_settings,
     ) = _get_default_org(request.user)
     debug = settings.DEBUG
     return render(request, "seed/index.html", locals())
