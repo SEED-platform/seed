@@ -324,7 +324,7 @@ class InventoryFilter:
         return JsonResponse({"results": id_list})
 
     def get_paginator(self, views_list):
-        """pagineates the views list, returns views as a paginator object"""
+        """paginates the views list, returns views as a paginator object"""
         self.paginator = Paginator(views_list, self.per_page)
 
         try:

@@ -139,6 +139,6 @@ def add_org_to_data(org_id, data):
 
 
 def changes_detected(old, new):
-    """Identify the need to update the instnace"""
+    """Identify the need to update the instance"""
     fields = ["organization", "update_at_day", "update_at_hour", "update_at_minute"]
     return any(old.get(field) != new.get(field) for field in fields)

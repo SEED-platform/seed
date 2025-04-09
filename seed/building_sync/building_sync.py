@@ -225,7 +225,7 @@ class BuildingSync:
         measures = []
         for measure in result["measures"]:
             if measure["category"] == "":
-                messages["warnings"].append(f'Skipping measure {measure["name"]} due to missing category')
+                messages["warnings"].append(f"Skipping measure {measure['name']} due to missing category")
                 continue
 
             measures.append(measure)
@@ -236,7 +236,7 @@ class BuildingSync:
             meters = {}
             for resource_use in scenario["resource_uses"]:
                 if resource_use["type"] is None or resource_use["units"] is None:
-                    messages["warnings"].append(f'Skipping resource use {resource_use.get("source_id")} due to missing type or units')
+                    messages["warnings"].append(f"Skipping resource use {resource_use.get('source_id')} due to missing type or units")
                     continue
 
                 meter = {
@@ -281,7 +281,7 @@ class BuildingSync:
 
                         # if the meter doesn't exist yet, copy it
                         original_meter = meters[meter_reading["source_id"]]
-                        other_meter_source_id = f'Site Energy Use {original_meter["source_id"]}'
+                        other_meter_source_id = f"Site Energy Use {original_meter['source_id']}"
                         if other_meter_source_id not in meters:
                             meters[other_meter_source_id] = {**original_meter, "source_id": other_meter_source_id, "readings": []}
 
@@ -337,7 +337,7 @@ class BuildingSync:
 
             if self._is_from_audit_template_tool() and not seed_scenario["measures"] and not seed_scenario["meters"]:
                 # Skip this scenario!
-                messages["warnings"].append(f'Skipping Scenario {scenario["id"]} because it doesn\'t include ' 'measures or meter data.')
+                messages["warnings"].append(f"Skipping Scenario {scenario['id']} because it doesn't include measures or meter data.")
                 continue
 
             #

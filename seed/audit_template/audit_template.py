@@ -268,7 +268,7 @@ class AuditTemplate:
             if getattr(state, field) is None:
                 missing_fields.append(field)
 
-        if len(missing_fields):
+        if missing_fields:
             missing_fields = ", ".join(missing_fields)
             messages = ["error", f"Validation Error. {display_field} must have {missing_fields}"]
             return False, messages
@@ -497,7 +497,7 @@ def _build_all_resource_totals(em, meter):
         {},
         *[
             em.AllResourceTotal(
-                {"ID": f"{resource_total_base}{meter.id}-{i+1}"},
+                {"ID": f"{resource_total_base}{meter.id}-{i + 1}"},
                 em.EndUse("All end uses"),
                 em.ResourceBoundary("Site"),
                 em.SiteEnergyUse(
@@ -506,7 +506,7 @@ def _build_all_resource_totals(em, meter):
                     else str(meter_reading.reading / kBtu_to_therms)
                 ),
                 em.UserDefinedFields(
-                    em.UserDefinedField(em.FieldName("Linked Time Series ID"), em.FieldValue(f"{timeseries_id_base}{meter.id}-{i+1}"))
+                    em.UserDefinedField(em.FieldName("Linked Time Series ID"), em.FieldValue(f"{timeseries_id_base}{meter.id}-{i + 1}"))
                 ),
             )
             for i, meter_reading in enumerate(meter_readings)
@@ -526,7 +526,7 @@ def _build_time_series_data(em, property_id, meter):
         {},
         *[
             em.TimeSeries(
-                {"ID": f"{timeseries_id_base}{meter.id}-{i+1}"},
+                {"ID": f"{timeseries_id_base}{meter.id}-{i + 1}"},
                 em.ReadingType("Peak"),
                 em.TimeSeriesReadingQuantity("Voltage"),
                 em.StartTimestamp(meter_reading.start_time.isoformat()),
@@ -552,7 +552,7 @@ def _build_resource_uses(em, property_id, meters, scenario_type, use_meter_ids=T
         {},
         *[
             em.ResourceUse(
-                {"ID": f"{resource_use_base}{meter.id}" if use_meter_ids else f"{resource_use_base}{i+1}"},
+                {"ID": f"{resource_use_base}{meter.id}" if use_meter_ids else f"{resource_use_base}{i + 1}"},
                 em.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other")),
                 em.ResourceBoundary("Site"),
                 em.ResourceUnits("kWh" if SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other") == "Electricity" else "therms"),
