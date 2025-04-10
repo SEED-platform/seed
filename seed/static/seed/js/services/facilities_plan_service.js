@@ -27,6 +27,26 @@ angular.module('SEED.service.facilities_plan', []).factory('facilities_plan_serv
       .then((response) => response.data)
       .catch((response) => response);
 
+    facilities_plan_service.create_facilities_plan = (data) => $http.post('/api/v3/facilities_plans/',
+      data,
+      {params: {organization_id: user_service.get_organization().id}
+    })
+      .then((response) => response.data)
+      .catch((response) => response);
+
+    facilities_plan_service.update_facilities_plan = (facilities_plan_id, data) => $http.put(`/api/v3/facilities_plans/${facilities_plan_id}/`,
+      data,
+      {params: {organization_id: user_service.get_organization().id}
+    })
+      .then((response) => response.data)
+      .catch((response) => response);
+
+    facilities_plan_service.delete_facilities_plan = (facilities_plan_id) => $http.delete(`/api/v3/facilities_plans/${facilities_plan_id}/`,
+      {params: {organization_id: user_service.get_organization().id}
+    })
+      .then((response) => response.data)
+      .catch((response) => response);
+
     return facilities_plan_service;
   }
 ]);

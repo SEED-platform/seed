@@ -24,6 +24,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   'audit_template_configs_payload',
   'meters_service',
   'facilities_plans',
+  'facilities_plan_service',
   'Notification',
   '$translate',
   // eslint-disable-next-line func-names
@@ -49,6 +50,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     audit_template_configs_payload,
     meters_service,
     facilities_plans,
+    facilities_plan_service,
     Notification,
     $translate
   ) {
@@ -320,6 +322,9 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
     // filtered columns should include derived columns
     const filtered_columns = _.filter($scope.columns, (column) => column.derived_column || _.includes(acceptable_column_types, column.data_type));
+    $scope.eui_columns = $scope.columns.filter(column => column.derived_column || column.data_type == 'eui');
+    $scope.boolean_columns = $scope.columns.filter(column => column.derived_column || column.data_type == 'boolean');
+    $scope.numeric_columns = $scope.columns.filter(column => column.derived_column || ['float', 'integer'].includes(column.data_type));
 
     $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map((c) => c.id);
     $scope.available_x_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
@@ -695,9 +700,27 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
 
     $scope.facilities_plans = facilities_plans.data;
     $scope.selected_facilities_plan = null;
+
     $scope.set_facilities_plan = (id) => {
       $scope.selected_facilities_plan = $scope.facilities_plans.find(fp => fp.id == id);
-      console.log($scope.selected_facilities_plan)
+      $scope.dirty_facilities_plan = {...$scope.selected_facilities_plan}
+    }
+
+    $scope.create_new_facilities_plan = () => {
+      $scope.selected_facilities_plan = null;
+      $scope.dirty_facilities_plan = {"name": "New Facility Plan"};
+    }
+
+    $scope.save_facilities_plan = () => {
+      if($scope.selected_facilities_plan == null){
+        facilities_plan_service.create_facilities_plan({...$scope.dirty_facilities_plan, organization: $scope.org.id})
+      } else {
+        facilities_plan_service.update_facilities_plan($scope.selected_facilities_plan.id, {...$scope.dirty_facilities_plan, organization: $scope.org.id})
+      }
+    }
+
+    $scope.delete_facilities_plan = (facilities_plan) => {
+      facilities_plan_service.delete_facilities_plan(facilities_plan.id)
     }
   }
 ]);
