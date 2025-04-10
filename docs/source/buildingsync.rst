@@ -13,7 +13,7 @@ Update Process
 
 This process should be followed in the future when a new version of BuildingSync is released and needs to be added to SEED.
 
-1. **Default BuildingSync version** - Update the BUILDINGSYNC_VERSION variable in config/settings/common.py.  This will be considered the “Default BuildingSync Version” throughout SEED (BETTER, BSYnc Import File, Audit Template).  This update must be coordinated with Audit Template or functionality could break.
+1. **Default BuildingSync version** - Update the BUILDINGSYNC_VERSION variable in config/settings/common.py.  This will be considered the “Default BuildingSync Version” throughout SEED (BETTER, BSync Import File, Audit Template).  This update must be coordinated with Audit Template or functionality could break.
 
 2. Add the new buildingsync schema xsd file to: seed/building_sync/schema
 
