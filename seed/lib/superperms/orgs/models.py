@@ -335,7 +335,10 @@ class Organization(models.Model):
         Cycle.get_or_create_default(self)
         from seed.models import Measure
 
-        Measure.populate_measures(self.id)
+        # TODO: this could get messy and could be better implemented
+        # TODO: add additional calls to populate measure here when default version is incremented
+        Measure.populate_measures(self.id)  # this populates bsync v1.0.0 (default) measures
+        Measure.populate_measures(self.id, schema_version="2.6.0")  # this populates bsync v2.6.0 measures
 
     def is_member(self, user):
         """Return True if user object has a relation to this organization."""
