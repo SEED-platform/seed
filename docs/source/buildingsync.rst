@@ -17,7 +17,7 @@ This process should be followed in the future when a new version of BuildingSync
 
 2. Add the new buildingsync schema xsd file to: seed/building_sync/schema
 
-3. Retrieve the enumerations.json from the BUildingSync schema release assets on github (it's not in the repo, but it's in the 'assets' section of the  release in the Releases page). Add a version to the filename and store in seed/building_sync/enumerations.
+3. Retrieve the enumerations.json from the BuildingSync schema release assets on GitHub (it's not in the repo, but it's in the 'assets' section of the  release in the Releases page). Add a version to the filename and store in seed/building_sync/enumerations.
 
 4. Write a migration to add the new buildingsync measures from the new schema to the Measures table. This migration will reference the enumerations.json file you just added. As a guide, look at existing migration 0243.
 
