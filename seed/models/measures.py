@@ -9,6 +9,7 @@ import logging
 import re
 import string
 
+from django.conf import settings
 from django.db import models
 
 from seed.models import Organization
@@ -61,7 +62,7 @@ class Measure(models.Model):
     class Meta:
         ordering = ["-created"]
         get_latest_by = "created"
-        unique_together = ("organization", "category", "name")
+        unique_together = ("organization", "category", "name", "schema_version")
 
     @classmethod
     def populate_measures(cls, organization_id, schema_type="BuildingSync", schema_version="1.0.0"):
@@ -72,7 +73,9 @@ class Measure(models.Model):
         :param organization_id: integer, ID of the organization to populate measures
         :return:
         """
-        filename = "seed/building_sync/lib/enumerations.json"
+        # find enumerations.json file matching schema version
+        # filename syntax convention is enumerations_v1_0_0.json (replace dots with underscores)
+        filename = f"seed/building_sync/enumerations/enumerations_v{schema_version.replace('.', '_')}.json"
         with open(filename, encoding=locale.getpreferredencoding(False)) as f:
             data = json.load(f)
 
@@ -100,11 +103,12 @@ class Measure(models.Model):
                         )
 
     @classmethod
-    def validate_measures(cls, data):
+    def validate_measures(cls, data, schema_version=settings.BUILDINGSYNC_VERSION):
         """
         Take a list of measure ids or measure names and return just a list of ids.
 
         :param data: list, either category.name of measure or primary key
+        :param schema_version: defaults to Default Version specified in settings file
         :return: list of integers, the list are primary key of measures
         """
         if len(data) > 0:
@@ -122,7 +126,7 @@ class Measure(models.Model):
                             continue
 
                         measure = d.split(".")
-                        resp.append(Measure.objects.get(category=measure[0], name=measure[1]).pk)
+                        resp.append(Measure.objects.get(category=measure[0], name=measure[1], schema_version=schema_version).pk)
                 except Measure.DoesNotExist:
                     _log.error(f"Could not find measure for {d}")
             return resp

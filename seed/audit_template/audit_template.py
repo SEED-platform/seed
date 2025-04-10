@@ -33,6 +33,10 @@ _log = logging.getLogger(__name__)
 
 AUTO_SYNC_NAME = "audit_template_sync_org-"
 
+# Currently default version is the latest version.
+# Need to keep this version in sync with Audit Template
+AT_BUILDINGSYNC_VERSION = settings.BUILDINGSYNC_VERSION
+
 
 def require_token(fn):
     """Decorator to get an AT api token"""
@@ -318,8 +322,8 @@ class AuditTemplate:
             {
                 etree.QName(
                     XSI_URI, "schemaLocation"
-                ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.4.0/BuildingSync.xsd",
-                "version": "2.4.0",
+                ): f"http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v{AT_BUILDINGSYNC_VERSION}/BuildingSync.xsd",
+                "version": AT_BUILDINGSYNC_VERSION,
             },
             em.Facilities(
                 em.Facility(
@@ -606,7 +610,7 @@ def _get_measures(property_id):
 
     bsync_measure_tuples = set()
     for bsync_measure_dict in bsync_measure_dicts:
-        category = Measure.objects.filter(category_display_name=bsync_measure_dict["cat_lev1"]).first().category
+        category = Measure.objects.filter(category_display_name=bsync_measure_dict["cat_lev1"]).order_by("-schema_version").first().category
         category = "".join(word.capitalize() for word in category.split("_"))
         # SPECIAL case: HVAC
         category = re.sub(r"Hvac", lambda x: x.group().upper(), category)
