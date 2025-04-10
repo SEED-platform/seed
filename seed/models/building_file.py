@@ -198,7 +198,9 @@ class BuildingFile(models.Model):
                 )
 
             except Measure.DoesNotExist:
-                messages["warnings"].append(f"Measure category and name is not valid {m['category']}:{m['name']} for schema version {version_string}")
+                messages["warnings"].append(
+                    f"Measure category and name is not valid {m['category']}:{m['name']} for schema version {version_string}"
+                )
                 continue
 
             # Add the measure to the join table.
