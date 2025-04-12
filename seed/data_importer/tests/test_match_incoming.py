@@ -1190,7 +1190,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         )
         PropertyMeasure.objects.create(
             property_measure_name="My Original PropertyMeasure",
-            measure_id=Measure.objects.filter(organization=self.org).first().id,
+            measure_id=Measure.objects.filter(organization=self.org).order_by("-schema_version").first().id,
             property_state_id=ps_orig.id,
         )
         meter = Meter.objects.create(

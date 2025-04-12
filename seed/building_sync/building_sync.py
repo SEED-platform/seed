@@ -15,6 +15,7 @@ from io import BytesIO, StringIO
 
 import xmlschema
 from buildingsync_asset_extractor.processor import BSyncProcessor
+from django.conf import settings
 from django.core.exceptions import FieldDoesNotExist
 from lxml import etree
 from quantityfield.units import ureg
@@ -50,11 +51,13 @@ class BuildingSync:
     BUILDINGSYNC_V2_2_0 = "2.2.0"
     BUILDINGSYNC_V2_3_0 = "2.3.0"
     BUILDINGSYNC_V2_4_0 = "2.4.0"
+    BUILDINGSYNC_V2_6_0 = "2.6.0"
     VERSION_MAPPINGS_DICT = {
         BUILDINGSYNC_V2_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_2_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_3_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_4_0: BASE_MAPPING_V2,
+        BUILDINGSYNC_V2_6_0: BASE_MAPPING_V2,
     }
 
     def __init__(self):
@@ -125,7 +128,7 @@ class BuildingSync:
 
         clone_subtree(original_root, new_root)
 
-    def init_tree(self, version=BUILDINGSYNC_V2_0):
+    def init_tree(self, version=settings.BUILDINGSYNC_VERSION):
         """Initializes the tree with a BuildingSync root node
 
         :param version: string, should be one of the valid BuildingSync versions
@@ -160,7 +163,7 @@ class BuildingSync:
             return etree.tostring(self.element_tree, pretty_print=True).decode()
 
         if not self.element_tree:
-            self.init_tree(version=BuildingSync.BUILDINGSYNC_V2_0)
+            self.init_tree(version=settings.BUILDINGSYNC_VERSION)
 
         schema = self.get_schema(self.version)
 
@@ -206,6 +209,7 @@ class BuildingSync:
             cls.BUILDINGSYNC_V2_2_0: "BuildingSync_v2_2_0.xsd",
             cls.BUILDINGSYNC_V2_3_0: "BuildingSync_v2_3_0.xsd",
             cls.BUILDINGSYNC_V2_4_0: "BuildingSync_v2_4_0.xsd",
+            cls.BUILDINGSYNC_V2_6_0: "BuildingSync_v2_6_0.xsd",
         }
         if version in schema_files:
             schema_path = os.path.join(schema_dir, schema_files[version])
