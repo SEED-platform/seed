@@ -31,7 +31,7 @@ def _snake_case(display_name):
     Convert the BuildingSync measure display names into reasonable snake_case for storing into
     database.
 
-    :param display_name: BuildingSync measure displayname
+    :param display_name: BuildingSync measure display name
     :return: string
     """
     str_re = re.compile(f"[{re.escape(string.punctuation)}]")

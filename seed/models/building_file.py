@@ -199,7 +199,7 @@ class BuildingFile(models.Model):
 
             except Measure.DoesNotExist:
                 messages["warnings"].append(
-                    f'Measure category and name is not valid {m["category"]}:{m["name"]} for schema version {version_string}'
+                    f"Measure category and name is not valid {m['category']}:{m['name']} for schema version {version_string}"
                 )
                 continue
 
@@ -289,7 +289,7 @@ class BuildingFile(models.Model):
                 except PropertyMeasure.DoesNotExist:
                     # PropertyMeasure is not in database, skipping silently
                     messages["warnings"].append(
-                        f'Measure associated with scenario not found. Scenario: {s.get("name")}, Measure name: {measure_name}'
+                        f"Measure associated with scenario not found. Scenario: {s.get('name')}, Measure name: {measure_name}"
                     )
                     continue
 
@@ -312,13 +312,13 @@ class BuildingFile(models.Model):
 
                 if len(valid_readings) == 0:
                     # skip this meter
-                    messages["warnings"].append(f'Skipped meter {m.get("source_id")} because it had no valid readings')
+                    messages["warnings"].append(f"Skipped meter {m.get('source_id')} because it had no valid readings")
                     continue
 
                 if num_skipped_readings > 0:
                     messages["warnings"].append(
-                        f'Skipped {num_skipped_readings} readings due to missing start time,'
-                        f' end time, or reading value for meter {m.get("source_id")}'
+                        f"Skipped {num_skipped_readings} readings due to missing start time,"
+                        f" end time, or reading value for meter {m.get('source_id')}"
                     )
 
                 # print("BUILDING FILE METER: {}".format(m))
