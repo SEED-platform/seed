@@ -37,7 +37,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "default-ns=nb-w)#2ue-mtu!s&2krzfee1-t
 
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 # Default to expiring cookies after 2 weeks
-SESSION_COOKIE_AGE = int(os.environ.get("COOKIE_EXPIRATION", 1_209_600))
+SESSION_COOKIE_AGE = int(os.environ.get("COOKIE_EXPIRATION", 1_209_600))  # noqa: PLW1508
 
 TEMPLATES = [
     {

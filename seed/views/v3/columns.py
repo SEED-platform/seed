@@ -57,7 +57,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             AutoSchemaHelper.query_string_field(
                 name="inventory_type",
                 required=False,
-                description="Which inventory type is being matched (for related fields and naming)" '\nDefault: "property"',
+                description='Which inventory type is being matched (for related fields and naming)\nDefault: "property"',
             ),
             AutoSchemaHelper.query_boolean_field(
                 name="only_used",
@@ -69,9 +69,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             AutoSchemaHelper.query_boolean_field(
                 name="display_units",
                 required=False,
-                description="If true, any columns that have units will have them"
-                " added as a suffix to the display_name"
-                '\nDefault: "false"',
+                description='If true, any columns that have units will have them added as a suffix to the display_name\nDefault: "false"',
             ),
         ],
     )
