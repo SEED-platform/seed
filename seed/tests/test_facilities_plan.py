@@ -314,3 +314,48 @@ class FacilitiesPlanTests(TestCase):
                 },
             ],
         )
+
+
+class FacilitiesPlanRunTests(FacilitiesPlanTests):
+    def setUp(self):
+        super().setUp()
+        self.facilities_plan_run = self.facilities_plan.get_selected_properties(self.ali, self.cycle)
+
+    def test_list(self):
+        response = self.client.get(
+            reverse("api:v3:facilities_plan_runs-list") + "?organization_id=" + str(self.org.id), content_type="application/json"
+        )
+
+        self.assertDictEqual(
+            response.json(),
+            {
+                "status": "success",
+                "data": [
+                    {
+                        "id": self.facilities_plan_run.id,
+                        "facilities_plan": self.facilities_plan.id,
+                        "cycle": self.cycle.id,
+                        "ali": self.ali.id,
+                    },
+                ],
+            },
+        )
+
+    def test_retrieve(self):
+        response = self.client.get(
+            reverse("api:v3:facilities_plan_runs-detail", args=[self.facilities_plan_run.id]) + "?organization_id=" + str(self.org.id),
+            content_type="application/json",
+        )
+
+        self.assertDictEqual(
+            response.json(),
+            {
+                "status": "success",
+                "data": {
+                    "id": self.facilities_plan_run.id,
+                    "facilities_plan": self.facilities_plan.id,
+                    "cycle": self.cycle.id,
+                    "ali": self.ali.id,
+                },
+            },
+        )

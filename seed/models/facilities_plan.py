@@ -70,7 +70,9 @@ class FacilitiesPlan(models.Model):
         )
 
         # calculate properties percentage of total energy usage
-        properties_included_in_denominator = properties.filter(**{_get_column_model_field(self.include_in_total_denominator_column): True})
+        properties_included_in_denominator = properties.exclude(
+            **{_get_column_model_field(self.include_in_total_denominator_column): False}
+        )
         denominator = properties_included_in_denominator.aggregate(Sum("total_energy_usage"))["total_energy_usage__sum"]
         properties = properties.annotate(
             percentage_of_total_energy_usage=Cast(F("total_energy_usage"), FloatField()) / denominator,
@@ -134,6 +136,8 @@ class FacilitiesPlanRun(models.Model):
     facilities_plan = models.ForeignKey(FacilitiesPlan, on_delete=models.CASCADE, related_name="runs")
     cycle = models.ForeignKey(Cycle, on_delete=models.SET_NULL, null=True)
     ali = models.ForeignKey(AccessLevelInstance, on_delete=models.SET_NULL, null=True)
+    # name
+    # run at
 
 
 class FacilitiesPlanRunProperty(models.Model):
