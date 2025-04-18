@@ -28,7 +28,7 @@ def populate_measures(apps, organization_id, schema_type="BuildingSync", schema_
     :param organization_id: integer, ID of the organization to populate measures
     :return:
     """
-    filename = "seed/building_sync/enumerations/enumerations_v2.6.0.json"
+    filename = "seed/building_sync/enumerations/enumerations_v2_6_0.json"
     with open(filename, encoding=locale.getpreferredencoding(False)) as f:
         data = json.load(f)
 
