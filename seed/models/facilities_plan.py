@@ -142,7 +142,7 @@ class FacilitiesPlanRun(models.Model):
 
 class FacilitiesPlanRunProperty(models.Model):
     run = models.ForeignKey(FacilitiesPlanRun, on_delete=models.SET_NULL, null=True, related_name="property_rankings")
-    view = models.ForeignKey(PropertyView, on_delete=models.SET_NULL, null=True)
+    view = models.ForeignKey(PropertyView, on_delete=models.SET_NULL, null=True, related_name="facility_plan_runs")
 
     total_energy_usage = models.FloatField()
     percentage_of_total_energy_usage = models.FloatField()

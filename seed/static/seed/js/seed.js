@@ -206,6 +206,7 @@
     'SEED.service.espm',
     'SEED.service.event',
     'SEED.service.facilities_plan',
+    'SEED.service.facilities_plan_run',
     'SEED.service.filter_groups',
     'SEED.service.flippers',
     'SEED.service.geocode',
@@ -2952,6 +2953,7 @@
           controller: 'facilities_plan_controller',
           resolve: {
             facilities_plans: ['facilities_plan_service', (facilities_plan_service) => facilities_plan_service.get_facilities_plans()],
+            facilities_plan_runs: ['facilities_plan_run_service', (facilities_plan_run_service) => facilities_plan_run_service.get_facilities_plan_runs()],
           }
         })
         .state({

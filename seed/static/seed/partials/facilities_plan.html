@@ -14,7 +14,7 @@
 
 <div class="form-group col-md-12" style="display: flex;">
   <label class="control-label">{$:: 'Facilities Plan' | translate $}:</label>
-  <select class="form-control col-sm-8" ng-model="current_facilities_plan_id" ng-change="change_facilities_pan()">
-    <option ng-repeat="facilities_plan in facilities_plans track by facilities_plan.id" value="{$ facilities_plan.id $}">{$ facilities_plan.name $}</option>
+  <select class="form-control col-sm-8" ng-model="current_facilities_plan_run_id" ng-change="change_facilities_pan()">
+    <option ng-repeat="facilities_plan_run in facilities_plan_runs track by facilities_plan_run.id" value="{$ facilities_plan_run.id $}">{$ facilities_plan_run.id $}</option>
   </select>
 </div>
