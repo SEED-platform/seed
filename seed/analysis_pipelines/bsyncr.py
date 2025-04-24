@@ -237,8 +237,8 @@ def _build_bsyncr_input(analysis_property_view, meter):
         {
             etree.QName(
                 XSI_URI, "schemaLocation"
-            ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.2.0/BuildingSync.xsd",
-            "version": "2.2.0",
+            ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.6.0/BuildingSync.xsd",
+            "version": "2.6.0",
         },
         E.Facilities(
             E.Facility(
