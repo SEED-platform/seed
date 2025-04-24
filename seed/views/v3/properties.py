@@ -278,9 +278,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 "excluded_meter_ids": ["integer"],
             },
             required=["property_view_id", "interval", "excluded_meter_ids"],
-            description="Properties:\n"
-            '- interval: one of "Exact", "Month", or "Year"\n'
-            "- excluded_meter_ids: array of meter IDs to exclude",
+            description='Properties:\n- interval: one of "Exact", "Month", or "Year"\n- excluded_meter_ids: array of meter IDs to exclude',
         ),
     )
     @ajax_request_class
@@ -436,7 +434,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         request_body=AutoSchemaHelper.schema_factory(
             {"property_view_ids": ["integer"]},
             required=["property_view_ids"],
-            description="Properties:\n" "- property_view_ids: array containing Property view IDs.",
+            description="Properties:\n- property_view_ids: array containing Property view IDs.",
         ),
     )
     @api_endpoint_class
@@ -1393,7 +1391,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         results = {"success": 0, "failure": 0, "data": []}
         for property in properties:
             formatted_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
-            blob = ContentFile(property["xml"], name=f'at_{property["matching_field"]}_{formatted_time}.xml')
+            blob = ContentFile(property["xml"], name=f"at_{property['matching_field']}_{formatted_time}.xml")
             response = self._update_with_building_sync(blob, 1, org_id, cycle_id, property["property_view"], property["updated_at"])
             response = json.loads(response.content)
             results["success" if response["success"] else "failure"] += 1
