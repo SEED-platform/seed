@@ -33,7 +33,7 @@ This process should be followed in the future when a new version of BuildingSync
 
 10. **BETTER** (seed/analysis_pipelines/better/buildingsync.py) - this pulls the buildingsync version from the settings file. Updating the version should just work, but test anyway and let BETTER team know so they can test/adjust the version on their end too. We want SEED-AT-BETTER all coordinated.
 
-11. **BSYNCR Server** - Update bsyncr-server to latest version of BuildingSync. Then update seed/analysis_pipelines/bsyncr.py to v2.6.0.
+11. **BSYNCR Server** - Update bsyncr-server to latest version of BuildingSync by updating the building sync files in the bsyncr tests to v2.6.0 and running the test. Then update seed/analysis_pipelines/bsyncr.py to v2.6.0.
 
 12. **BuildingSync Asset Extractor** - ok for now. It is currently on v2.4.0 of buildingsync but isn't checking versions. If breaking changes occur in the future, it will have to be updated to support multiple versions of BuildingSync to match what SEED does for BuildingSync File Import. https://github.com/BuildingSync/BuildingSync-asset-extractor
 
