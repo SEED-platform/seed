@@ -64,10 +64,10 @@ def forwards(apps, schema_editor):
 
     # find all organizations
     for c in Organization.objects.all():
-        print(f"Org: {c.name}, Name: {c.id}")
+        # print(f"Org: {c.name}, Name: {c.id}")
 
         # call populate_measures
-        populate_measures(apps, c.id, "2.6.0")
+        populate_measures(apps, c.id, "BuildingSync", "2.6.0")
 
 
 class Migration(migrations.Migration):
