@@ -28,7 +28,7 @@ from seed.views.v3.portfolio_manager import PortfolioManagerImport
 PM_UN = "SEED_PM_UN"
 PM_PW = "SEED_PM_PW"
 pm_skip_test_check = skipIf(
-    not os.environ.get(PM_UN, False) and not os.environ.get(PM_PW, False),
+    not os.environ.get(PM_UN, False) and not os.environ.get(PM_PW, False),  # noqa: PLW1508
     f'Cannot run "expect-pass" PM unit tests without {PM_UN} and {PM_PW} in environment',
 )
 
@@ -144,8 +144,8 @@ class PortfolioManagerTemplateListViewTestsSuccess(TestCase):
     def test_template_views(self):
         # if we get into this test, the PM_UN and PM_PW variables should be available
         # we'll still check of course
-        pm_un = os.environ.get(PM_UN, False)
-        pm_pw = os.environ.get(PM_PW, False)
+        pm_un = os.environ.get(PM_UN, False)  # noqa: PLW1508
+        pm_pw = os.environ.get(PM_PW, False)  # noqa: PLW1508
         if not pm_un or not pm_pw:
             self.fail(f"Somehow PM test was initiated without {PM_UN} or {PM_PW} in the environment")
 
@@ -280,8 +280,8 @@ class PortfolioManagerReportGenerationViewTestsSuccess(TestCase):
 
         # if we get into this test, the PM_UN and PM_PW variables should be available
         # we'll still check of course
-        self.pm_un = os.environ.get(PM_UN, False)
-        self.pm_pw = os.environ.get(PM_PW, False)
+        self.pm_un = os.environ.get(PM_UN, False)  # noqa: PLW1508
+        self.pm_pw = os.environ.get(PM_PW, False)  # noqa: PLW1508
         if not self.pm_un or not self.pm_pw:
             self.fail(f"Somehow PM test was initiated without {PM_UN} or {PM_PW} in the environment")
 
@@ -379,8 +379,8 @@ class PortfolioManagerReportSinglePropertyUploadTest(TestCase):
         dataset = response.json()
         self.dataset_id = dataset["id"]
 
-        self.pm_un = os.environ.get(PM_UN, False)
-        self.pm_pw = os.environ.get(PM_PW, False)
+        self.pm_un = os.environ.get(PM_UN, False)  # noqa: PLW1508
+        self.pm_pw = os.environ.get(PM_PW, False)  # noqa: PLW1508
         if not self.pm_un or not self.pm_pw:
             self.fail(f"Somehow PM test was initiated without {PM_UN} or {PM_PW} in the environment")
 
@@ -470,8 +470,8 @@ class PortfolioManagerSingleReportXSLX(TestCase):
         self.org, _, _ = create_organization(self.user)
         self.client.login(**user_details)
 
-        self.pm_un = os.environ.get(PM_UN, False)
-        self.pm_pw = os.environ.get(PM_PW, False)
+        self.pm_un = os.environ.get(PM_UN, False)  # noqa: PLW1508
+        self.pm_pw = os.environ.get(PM_PW, False)  # noqa: PLW1508
         if not self.pm_un or not self.pm_pw:
             self.fail(f"Somehow PM test was initiated without {PM_UN} or {PM_PW} in the environment")
 

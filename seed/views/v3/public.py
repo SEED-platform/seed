@@ -106,9 +106,9 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 
         page_controls = f"""
             <div class='table-controls'>
-                <div class='page-num'>Page {data['pagination']['page']} of {data['pagination']['total_pages']}</div>
-                <div class='nav-links'> {page_navigation_link(base_url, data['pagination'], query_params, False)}
-                {page_navigation_link(base_url, data['pagination'], query_params, True)}</div>
+                <div class='page-num'>Page {data["pagination"]["page"]} of {data["pagination"]["total_pages"]}</div>
+                <div class='nav-links'> {page_navigation_link(base_url, data["pagination"], query_params, False)}
+                {page_navigation_link(base_url, data["pagination"], query_params, True)}</div>
             </div>
         """
         content = f"""

@@ -31,7 +31,7 @@ class UserSerializer(serializers.ModelSerializer):
         additional_fields = dict(
             list(
                 zip(
-                    ("org_id", "org_name", "org_role", "ali_name", "ali_id", "is_ali_root", "is_ali_leaf"),
+                    ("org_id", "org_name", "org_role", "ali_name", "ali_id", "is_ali_root", "is_ali_leaf", "org_user_id", "settings"),
                     get_default_org_for_user(instance),
                 )
             )

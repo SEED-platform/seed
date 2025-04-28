@@ -3,6 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from django.conf import settings
 from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
@@ -122,12 +123,15 @@ def _build_better_input(analysis_property_view, meters_and_readings):
     nsmap.update(NAMESPACES)
     E = ElementMaker(namespace=BUILDINGSYNC_URI, nsmap=nsmap)
 
+    # retrieve default buildingsync version (should match Audit Template version)
+    BUILDINGSYNC_VERSION = settings.BUILDINGSYNC_VERSION
+
     doc = E.BuildingSync(
         {
             etree.QName(
                 XSI_URI, "schemaLocation"
-            ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.3.0/BuildingSync.xsd",
-            "version": "2.3.0",
+            ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v{BUILDINGSYNC_VERSION}/BuildingSync.xsd",
+            "version": BUILDINGSYNC_VERSION,
         },
         E.Facilities(
             E.Facility(

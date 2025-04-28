@@ -185,7 +185,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
         columns = Column.objects.filter(id__in=data["columns"])
         if len(columns) != len(data["columns"]):
             return JsonResponse(
-                {"status": "error", "message": f'Columns with ids {data["columns"]} do not exist'}, status=status.HTTP_404_NOT_FOUND
+                {"status": "error", "message": f"Columns with ids {data['columns']} do not exist"}, status=status.HTTP_404_NOT_FOUND
             )
 
         user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
