@@ -202,4 +202,8 @@ angular.module('SEED.controller.facilities_plan', [])
         });
       };
 
+      $scope.run_the_run = () => {
+        facilities_plan_run_service.run_the_run($scope.current_facilities_plan_run_id)
+      };
+
     }]);

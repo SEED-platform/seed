@@ -139,6 +139,27 @@ class FacilitiesPlanRun(models.Model):
     # name
     # run at
 
+    def run(self):
+        FacilitiesPlanRunProperty.objects.filter(run=self).all().delete()
+
+        all_properties = self.facilities_plan.calculate_properties_percentage_of_total_energy_usage(self.ali, self.cycle).order_by(
+            "-required_in_plan", "-percentage_of_total_energy_usage"
+        )
+        energy_running_sum_percentage = 0
+
+        for rank, p in enumerate(all_properties):
+            energy_running_sum_percentage += p.percentage_of_total_energy_usage
+
+            FacilitiesPlanRunProperty.objects.create(
+                run=self,
+                view=p,
+                total_energy_usage=p.total_energy_usage,
+                percentage_of_total_energy_usage=p.percentage_of_total_energy_usage,
+                rank=rank,
+                running_percentage=energy_running_sum_percentage,
+                running_square_footage=0,
+            )
+
 
 class FacilitiesPlanRunProperty(models.Model):
     run = models.ForeignKey(FacilitiesPlanRun, on_delete=models.SET_NULL, null=True, related_name="property_rankings")

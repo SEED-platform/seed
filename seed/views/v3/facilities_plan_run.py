@@ -203,3 +203,18 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 "properties": properties,
             }
         )
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_member")
+    @has_hierarchy_access(facilities_plan_run_id_kwarg="pk")
+    @action(detail=True, methods=["POST"])
+    def run(self, request, pk):
+        try:
+            fpr = FacilitiesPlanRun.objects.get(pk=pk)
+        except (Organization.DoesNotExist, FacilitiesPlanRun.DoesNotExist):
+            return JsonResponse({"status": "error", "message": "No such resource."})
+
+        fpr.run()
+
+        return JsonResponse({"status": "success"})

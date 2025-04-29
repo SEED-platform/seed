@@ -48,6 +48,13 @@ angular.module('SEED.service.facilities_plan_run', []).factory('facilities_plan_
       .then((response) => response.data)
       .catch((response) => response);
 
+    facilities_plan_run_service.run_the_run = (facilities_plan_run_id) => $http.post(`/api/v3/facilities_plan_runs/${facilities_plan_run_id}/run/`,
+      {},
+      {params: {organization_id: user_service.get_organization().id}
+    })
+      .then((response) => response.data)
+      .catch((response) => response);
+
     return facilities_plan_run_service;
   }
 ]);
