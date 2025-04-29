@@ -11,9 +11,10 @@ angular.module('SEED.service.facilities_plan_run', []).factory('facilities_plan_
   ) => {
     const facilities_plan_run_service = {};
 
-    facilities_plan_run_service.get_facilities_plan_run_properties = (facilities_plan_run_id) => $http.get(`/api/v3/facilities_plan_runs/${facilities_plan_run_id}/properties/`, {
+    facilities_plan_run_service.get_facilities_plan_run_properties = (facilities_plan_run_id, data) => $http.get(`/api/v3/facilities_plan_runs/${facilities_plan_run_id}/properties/`, {
       params: {
-        organization_id: user_service.get_organization().id
+        organization_id: user_service.get_organization().id,
+        ...data
       }
     })
       .then((response) => response.data)

@@ -398,6 +398,12 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       params: { organization_id: user_service.get_organization().id }
     });
 
+    inventory_service.update_property_states = (property_view_ids, values_by_column_id) => $http.put(
+      '/api/v3/properties/batch_update/',
+      { property_view_ids, values_by_column_id },
+      { params: { organization_id: user_service.get_organization().id } },
+    );
+
     inventory_service.delete_taxlot_states = (taxlot_view_ids) => $http.delete('/api/v3/taxlots/batch_delete/', {
       headers: {
         'Content-Type': 'application/json;charset=utf-8'

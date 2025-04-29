@@ -40,6 +40,7 @@
     'SEED.controller.analysis_run',
     'SEED.controller.at_submission_import_modal',
     'SEED.controller.bulk_edit_goalnotes_modal',
+    'SEED.controller.bulk_edit_properties_modal',
     'SEED.controller.column_mapping_profile_modal',
     'SEED.controller.column_mappings',
     'SEED.controller.column_settings',
@@ -50,6 +51,7 @@
     'SEED.controller.system_modal',
     'SEED.controller.create_organization_modal',
     'SEED.controller.create_sub_organization_modal',
+    'SEED.controller.create_facilities_plan_run_modal',
     'SEED.controller.cycle_admin',
     'SEED.controller.data_logger_upload_or_update_modal',
     'SEED.controller.data_quality_admin',
@@ -2954,6 +2956,14 @@
           resolve: {
             facilities_plans: ['facilities_plan_service', (facilities_plan_service) => facilities_plan_service.get_facilities_plans()],
             facilities_plan_runs: ['facilities_plan_run_service', (facilities_plan_run_service) => facilities_plan_run_service.get_facilities_plan_runs()],
+            access_level_tree: [
+              'organization_service',
+              'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_organization_access_level_tree(organization_id);
+              }
+            ],
           }
         })
         .state({

@@ -80,8 +80,8 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         except (Organization.DoesNotExist, FacilitiesPlanRun.DoesNotExist):
             return JsonResponse({"status": "error", "message": "No such resource."})
 
-        page = request.data.get("page", 1)
-        per_page = request.data.get("per_page", 100)
+        page = request.query_params.get("page", 1)
+        per_page = request.query_params.get("per_page", 100)
         inventory_type = "property"
         access_level_instance = fpr.ali
         columns_from_database = Column.retrieve_all(
@@ -110,13 +110,15 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         ]
 
         # get views and views run info for later
-        views = fpr.cycle.propertyview_set.filter(
-            property__access_level_instance__lft__gte=access_level_instance.lft,
-            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        views = (
+            fpr.cycle.propertyview_set.filter(
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
+            .annotate(run_info=FilteredRelation("facility_plan_runs", condition=(Q(facility_plan_runs__run_id=fpr.id))))
+            .order_by("run_info__rank")
         )
-        view_run_infos = views.annotate(
-            run_info=FilteredRelation("facility_plan_runs", condition=(Q(facility_plan_runs__run_id=fpr.id)))
-        ).values(
+        view_run_infos = views.values(
             "run_info__rank",
             "run_info__total_energy_usage",
             "run_info__percentage_of_total_energy_usage",
@@ -125,10 +127,10 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         )
 
         try:
-            filters, annotations, order_by = build_view_filters_and_sorts(
+            _, annotations, _ = build_view_filters_and_sorts(
                 request.query_params, columns_from_database, inventory_type, org.access_level_names
             )
-            views = views.annotate(**annotations).filter(filters).order_by(*order_by)
+            views = views.annotate(**annotations)
         except FilterError as e:
             return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
