@@ -84,9 +84,9 @@ angular.module('SEED.service.inventory_reports', []).factory('inventory_reports_
        }
      }
      */
-    const get_aggregated_report_data = (xVar, yVar, cycle_ids, access_level_instance_id, filter_group_id) => {
+    const get_aggregated_report_data = (xVar, yVar, cycle_ids, access_level_instance_id, filter_group_id, aggregationType) => {
       // Error checks
-      if ([xVar, yVar, cycle_ids].includes(null)) {
+      if ([xVar, yVar, cycle_ids, aggregationType].includes(null)) {
         $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
         throw new Error('Invalid Parameter');
       }
@@ -99,7 +99,8 @@ angular.module('SEED.service.inventory_reports', []).factory('inventory_reports_
             y_var: yVar,
             cycle_ids,
             access_level_instance_id,
-            filter_group_id
+            filter_group_id,
+            aggregationType
           }
         })
         .then((response) => response.data)
