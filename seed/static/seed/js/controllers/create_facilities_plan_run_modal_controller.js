@@ -14,6 +14,7 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
     'inventory_service',
     'user_service',
     'ah_service',
+    'facilities_plan_run_service',
     // eslint-disable-next-line func-names
     function (
       $scope,
@@ -26,11 +27,13 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
       inventory_service,
       user_service,
       ah_service,
+      facilities_plan_run_service,
     ) {
       cycle_service.get_cycles_for_org($scope.org_id).then((cycles) => {
         $scope.cycles = cycles.cycles;
       });
       $scope.facilities_plans = facilities_plans;
+      console.log($scope.facilities_plans)
 
       $scope.users_access_level_instance_id = user_service.get_access_level_instance().id;
       $scope.access_level_instance_id = parseInt($scope.users_access_level_instance_id, 10);
@@ -52,13 +55,21 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
         $scope.access_level_instance_id = null;
       };
 
-
+      console.log("here@")
 
       $scope.save = () => {
-        console.log("$scope.access_level_instance_id", $scope.access_level_instance_id)
-        console.log("$scope.facilities_plan", $scope.facilities_plan)
-        console.log("$scope.run_name", $scope.run_name)
-        console.log("$scope.baseline_cycle", $scope.baseline_cycle)
+        payload = {
+          ali: $scope.access_level_instance_id,
+          facilities_plan: $scope.facilities_plan,
+          name: $scope.run_name,
+          cycle: $scope.baseline_cycle
+        }
+        console.log($scope.facilities_plan)
+        console.log(payload)
+        facilities_plan_run_service.create_facilities_plan_run(payload).then(data => {
+          console.log(data)
+
+        });
       };
 
       $scope.close = () => {

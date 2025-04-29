@@ -47,6 +47,13 @@ logger = logging.getLogger(__name__)
         # has_hierarchy_access(facilities_plan_run_id_kwarg="pk"),
     ],
 )
+@method_decorator(
+    name="create",
+    decorator=[
+        has_perm_class("requires_member"),
+        has_hierarchy_access(body_ali_id="ali"),
+    ],
+)
 class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     serializer_class = FacilitiesPlanRunSerializer
     model = FacilitiesPlanRun
