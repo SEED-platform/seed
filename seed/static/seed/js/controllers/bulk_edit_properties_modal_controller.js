@@ -70,6 +70,7 @@ angular.module('SEED.controller.bulk_edit_properties_modal', [])
         console.log(update_patch);
 
         inventory_service.update_property_states(property_view_ids, update_patch).then(() => {
+          $state.reload();
           $uibModalInstance.dismiss()
         })
       }

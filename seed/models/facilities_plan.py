@@ -27,20 +27,9 @@ class FacilitiesPlan(models.Model):
     exclude_from_plan_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
     require_in_plan_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
 
-    gross_floor_area_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
-    building_category_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
-
-    electric_eui_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
-    gas_eui_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
-    steam_eui_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
-    total_eui_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
-
     electric_energy_usage_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
     gas_energy_usage_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
     steam_energy_usage_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
-
-    electric_data_source_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
-    gas_data_source_column = models.ForeignKey(Column, on_delete=models.SET_NULL, blank=True, null=True, related_name="+")
 
     class Meta:
         ordering = ["name"]
