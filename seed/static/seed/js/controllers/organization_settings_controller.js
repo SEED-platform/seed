@@ -6,6 +6,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   '$scope',
   '$sce',
   '$uibModal',
+  '$state',
   'urls',
   'organization_payload',
   'audit_template_service',
@@ -32,6 +33,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $scope,
     $sce,
     $uibModal,
+    $state,
     urls,
     organization_payload,
     audit_template_service,
@@ -717,6 +719,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       } else {
         facilities_plan_service.update_facilities_plan($scope.selected_facilities_plan.id, {...$scope.dirty_facilities_plan, organization: $scope.org.id})
       }
+      $state.reload();
     }
 
     $scope.delete_facilities_plan = (facilities_plan) => {

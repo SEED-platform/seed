@@ -9,6 +9,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import BooleanField, Case, F, FloatField, Sum, Value, When
 from django.db.models.functions import Cast
+from django.utils import timezone as tz
 
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models import Column, Cycle, PropertyView
@@ -136,11 +137,14 @@ class FacilitiesPlanRun(models.Model):
     facilities_plan = models.ForeignKey(FacilitiesPlan, on_delete=models.CASCADE, related_name="runs")
     cycle = models.ForeignKey(Cycle, on_delete=models.SET_NULL, null=True)
     ali = models.ForeignKey(AccessLevelInstance, on_delete=models.SET_NULL, null=True)
-    run_at = models.DateTimeField(auto_now=True, blank=True)
+    run_at = models.DateTimeField(auto_now=False, blank=True, null=True)
     name = models.CharField(max_length=255, blank=True, null=True)
+    display_columns = models.ManyToManyField(Column)
 
     def run(self):
         FacilitiesPlanRunProperty.objects.filter(run=self).all().delete()
+        self.run_at = tz.now()
+        self.save()
 
         all_properties = self.facilities_plan.calculate_properties_percentage_of_total_energy_usage(self.ali, self.cycle).order_by(
             "-required_in_plan", "-percentage_of_total_energy_usage"

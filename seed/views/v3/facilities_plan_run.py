@@ -114,7 +114,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 fpr.facilities_plan.steam_energy_usage_column,
             ]
             if c is not None
-        ]
+        ] + list(fpr.display_columns.values_list("id", flat=True))
 
         # get views and views run info for later
         views = (

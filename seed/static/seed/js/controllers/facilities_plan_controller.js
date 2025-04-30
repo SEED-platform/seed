@@ -8,10 +8,12 @@ angular.module('SEED.controller.facilities_plan', [])
     '$window',
     '$translate',
     '$uibModal',
+    '$state',
     'urls',
     'facilities_plans',
     'facilities_plan_runs',
     'access_level_tree',
+    'property_columns',
     'facilities_plan_run_service',
     'spinner_utility',
     'uiGridConstants',
@@ -20,10 +22,12 @@ angular.module('SEED.controller.facilities_plan', [])
       $window,
       $translate,
       $uibModal,
+      $state,
       urls,
       facilities_plans,
       facilities_plan_runs,
       access_level_tree,
+      property_columns,
       facilities_plan_run_service,
       spinner_utility,
       uiGridConstants,
@@ -68,6 +72,7 @@ angular.module('SEED.controller.facilities_plan', [])
             visible: true,
             width: 30
           },
+          ...Object.values($scope.current_facilities_plan_run.display_columns).map(c => {return {displayName: (c.display_name?? "" == "")? c.display_name: c.column_name, name: c.column_name + "_" + c.id}}),
           ...Object.values($scope.current_facilities_plan_run.columns).map(c => {return {displayName: (c.display_name?? "" == "")? c.display_name: c.column_name, name: c.column_name + "_" + c.id}}),
           {displayName: "rank", name: "rank"},
           {displayName: "total_energy_usage", name: "total_energy_usage"},
@@ -197,13 +202,15 @@ angular.module('SEED.controller.facilities_plan', [])
           controller: 'create_facilities_plan_run_modal_controller',
           resolve: {
             access_level_tree: () => access_level_tree,
-            facilities_plans: () => facilities_plans.data
+            facilities_plans: () => facilities_plans.data,
+            columns: () => property_columns,
           }
         });
       };
 
       $scope.run_the_run = () => {
-        facilities_plan_run_service.run_the_run($scope.current_facilities_plan_run_id)
-      };
-
+        spinner_utility.show();
+        facilities_plan_run_service.run_the_run($scope.current_facilities_plan_run_id).then(() => {
+          $state.reload()
+      })};
     }]);

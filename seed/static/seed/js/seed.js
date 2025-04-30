@@ -2964,6 +2964,14 @@
                 return organization_service.get_organization_access_level_tree(organization_id);
               }
             ],
+            property_columns: [
+              'inventory_service',
+              'user_service',
+              (inventory_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return inventory_service.get_property_columns_for_org(organization_id);
+              }
+            ],
           }
         })
         .state({

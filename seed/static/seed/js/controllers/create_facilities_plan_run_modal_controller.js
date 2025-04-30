@@ -10,6 +10,7 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
     'Notification',
     'access_level_tree',
     'facilities_plans',
+    'columns',
     'cycle_service',
     'inventory_service',
     'user_service',
@@ -23,6 +24,7 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
       Notification,
       access_level_tree,
       facilities_plans,
+      columns,
       cycle_service,
       inventory_service,
       user_service,
@@ -34,6 +36,23 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
       });
       $scope.facilities_plans = facilities_plans;
       console.log($scope.facilities_plans)
+
+
+      $scope.selected_columns = [];
+      $scope.available_columns = () => columns.filter(({ id }) => !$scope.selected_columns.includes(id));
+
+      $scope.select_column = () => {
+        const selection = $scope.column_selection;
+        $scope.column_selection = '';
+        if (!$scope.selected_columns) {
+          $scope.selected_columns = [];
+        }
+        $scope.selected_columns.push(selection);
+      };
+
+      $scope.click_remove_column = (id) => {
+        $scope.selected_columns = $scope.selected_columns.filter((item) => item !== id);
+      };
 
       $scope.users_access_level_instance_id = user_service.get_access_level_instance().id;
       $scope.access_level_instance_id = parseInt($scope.users_access_level_instance_id, 10);
@@ -57,17 +76,26 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
 
       console.log("here@")
 
+
+      $scope.get_column_display = (id) => {
+        const record = _.find(columns, { id });
+        if (record) {
+          return record.displayName;
+        }
+      };
+
       $scope.save = () => {
         payload = {
           ali: $scope.access_level_instance_id,
           facilities_plan: $scope.facilities_plan,
           name: $scope.run_name,
-          cycle: $scope.baseline_cycle
+          cycle: $scope.baseline_cycle,
+          display_columns: $scope.selected_columns,
         }
-        console.log($scope.facilities_plan)
-        console.log(payload)
+
         facilities_plan_run_service.create_facilities_plan_run(payload).then(data => {
-          console.log(data)
+          $state.reload();
+          $uibModalInstance.dismiss();
 
         });
       };
