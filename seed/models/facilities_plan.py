@@ -136,8 +136,8 @@ class FacilitiesPlanRun(models.Model):
     facilities_plan = models.ForeignKey(FacilitiesPlan, on_delete=models.CASCADE, related_name="runs")
     cycle = models.ForeignKey(Cycle, on_delete=models.SET_NULL, null=True)
     ali = models.ForeignKey(AccessLevelInstance, on_delete=models.SET_NULL, null=True)
-    # name
-    # run at
+    run_at = models.DateTimeField(auto_now=True, blank=True)
+    name = models.CharField(max_length=255, blank=True, null=True)
 
     def run(self):
         FacilitiesPlanRunProperty.objects.filter(run=self).all().delete()

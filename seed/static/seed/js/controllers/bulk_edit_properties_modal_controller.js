@@ -54,12 +54,20 @@ angular.module('SEED.controller.bulk_edit_properties_modal', [])
 
         update_patch = {
           [compliance_cycle_year_column?.id]: $scope.compliance_cycle_year_column_new_value,
-          [include_in_total_denominator_column?.id]: $scope.include_in_total_denominator_column_new_value,
-          [exclude_from_plan_column?.id]: $scope.exclude_from_plan_column_new_value,
-          [require_in_plan_column?.id]: $scope.require_in_plan_column_new_value,
+          [include_in_total_denominator_column?.id]: $scope.include_in_total_denominator_column_new_value == null? null: $scope.include_in_total_denominator_column_new_value == "true",
+          [exclude_from_plan_column?.id]:  $scope.exclude_from_plan_column_new_value == null? null:$scope.exclude_from_plan_column_new_value == "true",
+          [require_in_plan_column?.id]:  $scope.require_in_plan_column_new_value == null? null: $scope.require_in_plan_column_new_value == "true",
         }
-        Object.keys(update_patch).forEach(key => (key === undefined || update_patch[key] == null) ? delete update_patch[key] : {});
+        console.log(update_patch);
+        Object.keys(update_patch).forEach(key => {
+          if (update_patch[key] == null){
+            delete update_patch[key]
+          }
+        });
+        delete update_patch[undefined]
 
+
+        console.log(update_patch);
 
         inventory_service.update_property_states(property_view_ids, update_patch).then(() => {
           $uibModalInstance.dismiss()
