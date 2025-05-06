@@ -5,7 +5,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
+<<<<<<< Updated upstream
 "PO-Revision-Date: 2025-02-17 18:31\n"
+=======
+"PO-Revision-Date: 2025-05-06 22:14\n"
+>>>>>>> Stashed changes
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -497,6 +501,9 @@ msgstr "Análisis"
 msgid "Analysis"
 msgstr "Análisis"
 
+msgid "Analysis Deleted Successfully"
+msgstr "Análisis eliminado correctamente"
+
 #, fuzzy
 msgid "Analysis Name"
 msgstr "Análisis Nombre"
@@ -710,10 +717,6 @@ msgid "Building Filters"
 msgstr "Filtros para edificios"
 
 #, fuzzy
-msgid "Building Performance Standard (BPS) Compliance Pathway Support"
-msgstr "Apoyo para el cumplimiento de las normas de rendimiento de edificios (BPS)"
-
-#, fuzzy
 msgid "Building Square Footage Threshold"
 msgstr "Umbral de metros cuadrados del edificio"
 
@@ -731,6 +734,15 @@ msgstr "Edificios"
 #, fuzzy
 msgid "By clicking the Log In button you accept the NREL Data Terms."
 msgstr "Al hacer clic en el botón Iniciar sesión, acepta las Condiciones de datos del NREL."
+
+msgid "CEWE_ELEMENTS_COMMENT"
+msgstr "(Generado por la biblioteca de base de conocimientos de ESTCP Technologies)"
+
+msgid "CEWE_ELEMENTS_SUBTITLE"
+msgstr "Incluye elementos de construcción aplicables con los valores RSL más bajos"
+
+msgid "CEWE_ELEMENTS_TITLE"
+msgstr "Apoyo a la vía de cumplimiento de la Evaluación Integral de Energía y Agua (CEWE)  "
 
 #, fuzzy
 msgid "CLICK_LEGEND"
@@ -1452,6 +1464,9 @@ msgstr "Mapeo y validación de datos ({filename})"
 msgid "DELETED_LABEL_NAMED"
 msgstr "Etiqueta borrada {label_name}"
 
+msgid "DELETE_ANALYSIS_TEXT"
+msgstr "¿Está seguro de que desea eliminar este análisis? Esta acción no se puede deshacer."
+
 #, fuzzy
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "¿Suprimir la etiqueta \"{nombre_etiqueta}\" y eliminarla de todos los edificios a los que se haya aplicado?"
@@ -1614,6 +1629,9 @@ msgstr "Borrar instancia de nivel de acceso"
 #, fuzzy
 msgid "Delete All Mappings"
 msgstr "Borrar todas las asignaciones"
+
+msgid "Delete Analysis"
+msgstr "Eliminar análisis"
 
 msgid "Delete Group"
 msgstr "Eliminar grupo"
@@ -2709,9 +2727,6 @@ msgstr "Incluir encabezado de etiqueta CSV"
 #, fuzzy
 msgid "Include Notes"
 msgstr "Incluir notas"
-
-msgid "Includes Elements with Scope 1 Emissions Only"
-msgstr "Incluye sólo elementos con emisiones de Alcance 1"
 
 #, fuzzy
 msgid "Indication Label"

@@ -396,6 +396,9 @@ msgstr "Analyses"
 msgid "Analysis"
 msgstr "Analyse"
 
+msgid "Analysis Deleted Successfully"
+msgstr "Analyse supprimée avec succès"
+
 msgid "Analysis Name"
 msgstr "Nom de l'analyse"
 
@@ -563,9 +566,6 @@ msgstr "Dossiers de construction (État principal uniquement)"
 msgid "Building Filters"
 msgstr "Filtres de bâtiments"
 
-msgid "Building Performance Standard (BPS) Compliance Pathway Support"
-msgstr "Assistance au parcours de conformité aux normes de performance des bâtiments (BPS)"
-
 msgid "Building Square Footage Threshold"
 msgstr "Seuil de superficie en pieds carrés du bâtiment"
 
@@ -580,6 +580,15 @@ msgstr "Bâtiments"
 
 msgid "By clicking the Log In button you accept the NREL Data Terms."
 msgstr "En cliquant sur le bouton Connexion, vous acceptez les conditions d'utilisation des données NREL."
+
+msgid "CEWE_ELEMENTS_COMMENT"
+msgstr "(Généré par la bibliothèque de la base de connaissances des technologies ESTCP)"
+
+msgid "CEWE_ELEMENTS_SUBTITLE"
+msgstr "Inclut les éléments de construction applicables avec les valeurs RSL les plus basses"
+
+msgid "CEWE_ELEMENTS_TITLE"
+msgstr "Soutien au parcours de conformité de l'évaluation complète de l'énergie et de l'eau (CEWE)  "
 
 msgid "CLICK_LEGEND"
 msgstr "Cliquez sur une étiquette ci-dessous pour l'afficher/masquer sur le graphique"
@@ -1146,6 +1155,9 @@ msgstr "Mappage des données et Validation ({filename})"
 msgid "DELETED_LABEL_NAMED"
 msgstr "Supprimée étiquette {label_name}"
 
+msgid "DELETE_ANALYSIS_TEXT"
+msgstr "Êtes-vous sûr de vouloir supprimer cette analyse ? Cette action est irréversible."
+
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Supprimer l'étiquette '{label_name}' et le retirer de tous les bâtiments auxquels il a été appliqué?"
 
@@ -1271,6 +1283,9 @@ msgstr "Supprimer une instance de niveau d'accès"
 
 msgid "Delete All Mappings"
 msgstr "Supprimer tous les mappages"
+
+msgid "Delete Analysis"
+msgstr "Supprimer l'analyse"
 
 msgid "Delete Group"
 msgstr "Supprimer le groupe"
@@ -2123,9 +2138,6 @@ msgstr "Inclure l'en-tête d'étiquette CSV"
 
 msgid "Include Notes"
 msgstr "Inclure des notes"
-
-msgid "Includes Elements with Scope 1 Emissions Only"
-msgstr "Comprend uniquement les éléments dont les émissions relèvent du champ d'application 1"
 
 msgid "Indication Label"
 msgstr "Étiquette d'indication"
