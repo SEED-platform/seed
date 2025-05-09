@@ -84,7 +84,6 @@ angular.module('SEED.controller.facilities_plan', [])
           },
           ...Object.values($scope.current_facilities_plan_run.display_columns).map(c => {return {displayName: (c.display_name?? "" == "")? c.display_name: c.column_name, name: c.column_name + "_" + c.id}}),
           ...Object.values($scope.current_facilities_plan_run.columns).map(c => {return {displayName: (c.display_name?? "" == "")? c.display_name: c.column_name, name: c.column_name + "_" + c.id}}),
-          {displayName: "rank", name: "rank"},
           {displayName: "total_energy_usage", name: "total_energy_usage"},
           {displayName: "percentage_of_total_energy_usage", name: "percentage_of_total_energy_usage"},
           {displayName: "running_percentage", name: "running_percentage"},
