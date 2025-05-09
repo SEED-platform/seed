@@ -2752,6 +2752,9 @@ msgstr "Number Properties"
 msgid "Number of Properties"
 msgstr "Number of Properties"
 
+msgid "Number of Runs"
+msgstr "Number of Runs"
+
 msgid "Number of Tax Lots"
 msgstr "Number of Tax Lots"
 

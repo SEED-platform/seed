@@ -900,6 +900,7 @@
     "Number": "Nombre",
     "Number Properties": "Propriétés du nombre",
     "Number of Properties": "Nombre de propriétés",
+    "Number of Runs": "Nombre de courses",
     "Number of Tax Lots": "Nombre de lots d'impôt",
     "Number of decimal places to display": "Nombre de décimales à afficher",
     "OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS": "Voulez-vous vraiment supprimer {num_properties,plural,one{<strong>1<\/strong> propriété} other{<strong>#<\/strong> propriétés}} et {num_taxlots,plural,one{<strong>1<\/strong>lot d'impôt} other{<strong>#<\/strong> lots d'impôt}}?",

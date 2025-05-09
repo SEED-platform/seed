@@ -900,6 +900,7 @@
     "Number": "Number",
     "Number Properties": "Number Properties",
     "Number of Properties": "Number of Properties",
+    "Number of Runs": "Number of Runs",
     "Number of Tax Lots": "Number of Tax Lots",
     "Number of decimal places to display": "Number of decimal places to display",
     "OK_TO_DELETE_NUM_PROPERTIES_AND_TAXLOTS": "Are you sure you want to delete {num_properties,plural, one{<strong>1<\/strong> property} other{<strong>#<\/strong> properties}} and {num_taxlots,plural,one{<strong>1<\/strong> tax lot} other{<strong>#<\/strong> tax lots}}?",

@@ -2772,6 +2772,9 @@ msgstr "Propriétés du nombre"
 msgid "Number of Properties"
 msgstr "Nombre de propriétés"
 
+msgid "Number of Runs"
+msgstr "Nombre de courses"
+
 msgid "Number of Tax Lots"
 msgstr "Nombre de lots d'impôt"
 

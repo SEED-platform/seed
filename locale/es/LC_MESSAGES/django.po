@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-05-06 22:14\n"
+"PO-Revision-Date: 2025-05-07 19:23\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -3549,6 +3549,9 @@ msgstr "Número Propiedades"
 #, fuzzy
 msgid "Number of Properties"
 msgstr "Número de inmuebles"
+
+msgid "Number of Runs"
+msgstr "Número de carreras"
 
 #, fuzzy
 msgid "Number of Tax Lots"

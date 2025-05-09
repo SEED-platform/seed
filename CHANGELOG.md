@@ -1,3 +1,35 @@
+# SEED Version 3.2.5
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.2.5-release-prep -->
+
+## What's Changed
+### New Features 🎉
+* Add temperature meters by @haneslinger in https://github.com/SEED-platform/seed/pull/4922
+* Appfleet config by @dhaley in https://github.com/SEED-platform/seed/pull/4942
+### Improvements 📈
+* Add Federal Energy and Water Audit Report by @haneslinger in https://github.com/SEED-platform/seed/pull/4941
+* Add meters to Audit Template export by @haneslinger in https://github.com/SEED-platform/seed/pull/4938
+* Remove address, city, state requirements for Audit Template export by @kflemin in https://github.com/SEED-platform/seed/pull/4944
+* Add Access Level to Insights charts by @haneslinger in https://github.com/SEED-platform/seed/pull/4948
+* Download Audit Template xml by @kflemin in https://github.com/SEED-platform/seed/pull/4950
+* Create v4 Filter endpoint by @perryr16 in https://github.com/SEED-platform/seed/pull/4960
+* Update BuildingSync to version 2.6.0 by @kflemin in https://github.com/SEED-platform/seed/pull/4958
+* Update bsyncr to use version 2.6.0 of BuildingSync by @kflemin in https://github.com/SEED-platform/seed/pull/4973
+* Update BETTER BuildingSync mappings by @kflemin in https://github.com/SEED-platform/seed/pull/4956
+### Maintenance 🧹
+* Update precommit, a few dependencies, and spelling issues by @nllong in https://github.com/SEED-platform/seed/pull/4967
+### Bug Fixes 🐛
+* Fix compliance filter groups by @haneslinger in https://github.com/SEED-platform/seed/pull/4929
+* Remove appfleet config by @dhaley in https://github.com/SEED-platform/seed/pull/4947
+* Modified Audit Template export: Truncate zipcode to 5 digits and handle SentenceCasing HVAC by @kflemin in https://github.com/SEED-platform/seed/pull/4949
+* Fix for ordering bar chart bars by quantity on default reports by @haneslinger in https://github.com/SEED-platform/seed/pull/4952
+* Fix groups meters property column by @haneslinger in https://github.com/SEED-platform/seed/pull/4955
+* Fix ESPM download, change generateData from POST to GET by @haneslinger in https://github.com/SEED-platform/seed/pull/4959
+* Use case-insensitive lookup of username in the API by @nllong in https://github.com/SEED-platform/seed/pull/4966
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.2.4...v3.2.5
+
 # SEED Version 3.2.4
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.2.4-release-prep -->
