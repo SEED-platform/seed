@@ -5,11 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-<<<<<<< Updated upstream
-"PO-Revision-Date: 2025-02-17 18:31\n"
-=======
 "PO-Revision-Date: 2025-05-06 22:14\n"
->>>>>>> Stashed changes
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
