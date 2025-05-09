@@ -283,11 +283,12 @@ def _build_bsyncr_input(analysis_property_view, meter):
                                         E.TimeSeries(
                                             {"ID": f"TimeSeries-{i}"},
                                             E.StartTimestamp(reading.start_time.isoformat()),
+                                            E.EndTimestamp(reading.end_time.isoformat()),
                                             E.IntervalFrequency("Month"),
                                             E.IntervalReading(str(reading.reading)),
                                             E.ResourceUseID({"IDref": elec_resource_id}),
                                         )
-                                        for i, reading in enumerate(meter.meter_readings.all())
+                                        for i, reading in enumerate(meter.meter_readings.all().order_by("start_time"))
                                     ]
                                 ),
                             )
