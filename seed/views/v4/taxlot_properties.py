@@ -1,15 +1,20 @@
+from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
+from seed.models import Cycle
+from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
+from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.v4.inventory_filter import InventoryFilter
 
 
-class TaxLotPropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, ProfileIdMixin):
+class TaxLotPropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin):
+    serializer_class = TaxLotPropertySerializer
+
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
@@ -52,3 +57,37 @@ class TaxLotPropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin,
 
         results = InventoryFilter(request, profile_id).get_filtered_results()
         return results
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="Cycle ID"),
+            AutoSchemaHelper.query_string_field("inventory_type", required=True, description="properties or taxlots"),
+        ]
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("requires_viewer")
+    @action(detail=False, methods=["GET"])
+    def record_count(self, request):
+        """
+        Get the total number of records for the given cycle and inventory type
+        """
+        org_id = self.get_organization(request)
+        inventory_type = self.request.query_params.get("inventory_type", None)
+        cycle_id = self.request.query_params.get("cycle_id", None)
+
+        if inventory_type not in ["properties", "taxlots"]:
+            return JsonResponse({"status": "error", "message": "inventory_type must be 'properties' or 'taxlots'"}, status=400)
+
+        try:
+            cycle = Cycle.objects.get(id=cycle_id, organization_id=org_id)
+        except Cycle.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."})
+
+        if inventory_type == "properties":
+            record_count = cycle.propertyview_set.count()
+        else:
+            record_count = cycle.taxlotview_set.count()
+
+        return JsonResponse({"status": "succes", "data": record_count}, status=200)
