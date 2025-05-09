@@ -326,7 +326,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     const filtered_columns = _.filter($scope.columns, (column) => column.derived_column || _.includes(acceptable_column_types, column.data_type));
     $scope.eui_columns = $scope.columns.filter(column => column.derived_column || column.data_type == 'eui');
     $scope.boolean_columns = $scope.columns.filter(column => column.derived_column || column.data_type == 'boolean');
-    $scope.numeric_columns = $scope.columns.filter(column => column.derived_column || ['float', 'integer'].includes(column.data_type));
+    $scope.numeric_columns = $scope.columns.filter(column => column.derived_column || ['float', 'integer', 'number'].includes(column.data_type));
 
     $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map((c) => c.id);
     $scope.available_x_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));

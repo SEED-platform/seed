@@ -11,6 +11,7 @@ from seed.serializers.columns import ColumnSerializer
 
 class FacilitiesPlanRunSerializer(serializers.ModelSerializer):
     columns = serializers.SerializerMethodField("get_columns", read_only=False)
+    property_display_field = serializers.SerializerMethodField("get_property_display_field", read_only=False)
     run_at = serializers.DateTimeField("%Y-%m-%d %H:%M:%S %Z", read_only=True)
     display_columns = serializers.PrimaryKeyRelatedField(queryset=Column.objects.all(), many=True)
 
@@ -37,6 +38,13 @@ class FacilitiesPlanRunSerializer(serializers.ModelSerializer):
         ).data
 
         return dict(zip(nonnull_column_names, nonnull_columns))
+    
+
+    def get_property_display_field(self, obj):
+        org = obj.facilities_plan.organization
+        property_display_field = Column.objects.filter(table_name="PropertyState", column_name=org.property_display_field, organization=org).first()
+
+        return ColumnSerializer(property_display_field).data
 
     def to_representation(self, obj):
         result = super().to_representation(obj)

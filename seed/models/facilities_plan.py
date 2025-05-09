@@ -50,7 +50,11 @@ class FacilitiesPlan(models.Model):
             raise ValueError(f"`calculate_properties_selected_by_plan` requires the following null columns: {missing_columns}")
 
         # get relevant properties
-        properties = PropertyView.objects.filter(property__access_level_instance=ali, cycle=cycle)
+        properties = PropertyView.objects.filter(                
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
+            cycle=cycle
+        )
 
         # calculate properties total energy usage
         properties = properties.annotate(
@@ -64,6 +68,11 @@ class FacilitiesPlan(models.Model):
             **{_get_column_model_field(self.include_in_total_denominator_column): False}
         )
         denominator = properties_included_in_denominator.aggregate(Sum("total_energy_usage"))["total_energy_usage__sum"]
+        logger.error("+++")
+        logger.error(properties.count())
+        logger.error(properties_included_in_denominator.count())
+        logger.error(denominator)
+        logger.error("+++")
         properties = properties.annotate(
             percentage_of_total_energy_usage=Cast(F("total_energy_usage"), FloatField()) / denominator,
         )
@@ -78,28 +87,6 @@ class FacilitiesPlan(models.Model):
         )
 
         return properties
-
-    def get_selected_properties(self, ali: AccessLevelInstance, cycle: Cycle):
-        run = FacilitiesPlanRun.objects.create(facilities_plan=self, cycle=cycle, ali=ali)
-        all_properties = self.calculate_properties_percentage_of_total_energy_usage(ali, cycle).order_by(
-            "-required_in_plan", "-percentage_of_total_energy_usage"
-        )
-        energy_running_sum_percentage = 0
-
-        for rank, p in enumerate(all_properties):
-            energy_running_sum_percentage += p.percentage_of_total_energy_usage
-
-            FacilitiesPlanRunProperty.objects.create(
-                run=run,
-                view=p,
-                total_energy_usage=p.total_energy_usage,
-                percentage_of_total_energy_usage=p.percentage_of_total_energy_usage,
-                rank=rank,
-                running_percentage=energy_running_sum_percentage,
-                running_square_footage=0,
-            )
-
-        return run
 
 
 def _get_column_or_zero(column):

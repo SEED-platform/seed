@@ -23,6 +23,7 @@ from seed.models import (
     FacilitiesPlanRun,
     Organization,
     TaxLotProperty,
+    Cycle,
 )
 from seed.serializers.facilities_plan_run import FacilitiesPlanRunSerializer
 from seed.serializers.pint import apply_display_unit_preferences
@@ -100,6 +101,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         show_columns = [
             c.id
             for c in [
+                Column.objects.filter(table_name="PropertyState", column_name=org.property_display_field, organization=org).first(),
                 fpr.facilities_plan.compliance_cycle_year_column,
                 fpr.facilities_plan.include_in_total_denominator_column,
                 fpr.facilities_plan.exclude_from_plan_column,
@@ -120,6 +122,12 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             .annotate(run_info=FilteredRelation("facility_plan_runs", condition=(Q(facility_plan_runs__run_id=fpr.id))))
             .order_by("run_info__rank")
         )
+
+        if request.query_params.get("only_ids", "false") == "true":
+            return JsonResponse({
+                "ids": list(views.values_list("id", flat=True))
+            })
+
         view_run_infos = views.values(
             "run_info__rank",
             "run_info__total_energy_usage",
@@ -166,23 +174,16 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         properties = TaxLotProperty.serialize(views, show_columns, columns_from_database, False, pk)
         properties = [apply_display_unit_preferences(org, x) for x in properties]
 
-        # views = PropertyView.objects.filter(id__in=[v.id for v in views])
-        # view_run_infos = views.values("run_info__rank")
 
-        for property_json, run_info in zip(properties, view_run_infos):
-            property_json["rank"] = run_info["run_info__rank"]
+        cycle_name_by_id = dict(Cycle.objects.filter(organization=org).values_list("id", "name"))
+
+        for property_json, run_info in zip(properties, view_run_infos[paginator.page(page).start_index(): paginator.page(page).end_index()+1]):
             property_json["total_energy_usage"] = run_info["run_info__total_energy_usage"]
             property_json["percentage_of_total_energy_usage"] = run_info["run_info__percentage_of_total_energy_usage"]
             property_json["running_percentage"] = run_info["run_info__running_percentage"]
             property_json["running_square_footage"] = run_info["run_info__running_square_footage"]
-
-            (
-                "run_info__rank",
-                "run_info__total_energy_usage",
-                "run_info__percentage_of_total_energy_usage",
-                "run_info__running_percentage",
-                "run_info__running_square_footage",
-            )
+            # compliance_cycle_year_column = fpr.facilities_plan.compliance_cycle_year_column
+            # column_name = compliance_cycle_year_column.display_name if compliance_cycle_year_column.display_name else compliance_cycle_year_column.column_name
 
         return JsonResponse(
             {

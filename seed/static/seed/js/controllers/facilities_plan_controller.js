@@ -17,6 +17,7 @@ angular.module('SEED.controller.facilities_plan', [])
     'facilities_plan_run_service',
     'spinner_utility',
     'uiGridConstants',
+    'uiGridGridMenuService',
     function (
       $scope,
       $window,
@@ -31,10 +32,12 @@ angular.module('SEED.controller.facilities_plan', [])
       facilities_plan_run_service,
       spinner_utility,
       uiGridConstants,
+      uiGridGridMenuService,
     ) {
       $scope.facilities_plan_runs = facilities_plan_runs.data;
       $scope.current_facilities_plan_run_id = null;
       $scope.current_facilities_plan_run = null;
+      $scope.selected_count = 0;
 
       $scope.change_facilities_pan = () => {
         $scope.current_facilities_plan_run = $scope.facilities_plan_runs.find(fp => fp.id == $scope.current_facilities_plan_run_id);
@@ -42,7 +45,7 @@ angular.module('SEED.controller.facilities_plan', [])
       }
 
       const selected_columns = () => {
-        console.log($scope.current_facilities_plan_run.columns);
+        property_display_field = $scope.current_facilities_plan_run.property_display_field;
         return [
           {
             name: 'id',
@@ -72,6 +75,13 @@ angular.module('SEED.controller.facilities_plan', [])
             visible: true,
             width: 30
           },
+          {displayName: (property_display_field.display_name?? "" == "")? property_display_field.display_name: property_display_field.column_name, name: property_display_field.column_name + "_" + property_display_field.id,
+            cellClass: (grid, row) => {
+              console.log(row.entity.running_percentage)
+              return 'portfolio-summary-current-cell';
+            }
+
+          },
           ...Object.values($scope.current_facilities_plan_run.display_columns).map(c => {return {displayName: (c.display_name?? "" == "")? c.display_name: c.column_name, name: c.column_name + "_" + c.id}}),
           ...Object.values($scope.current_facilities_plan_run.columns).map(c => {return {displayName: (c.display_name?? "" == "")? c.display_name: c.column_name, name: c.column_name + "_" + c.id}}),
           {displayName: "rank", name: "rank"},
@@ -97,7 +107,7 @@ angular.module('SEED.controller.facilities_plan', [])
 
       const load_data = (page) => {
         $scope.data_loading = true;
-        const per_page = 50;
+        const per_page = 100;
         const data = {
           page,
           per_page,
@@ -206,6 +216,21 @@ angular.module('SEED.controller.facilities_plan', [])
             columns: () => property_columns,
           }
         });
+      };
+
+      $scope.select_all = () => {
+        // select all rows to visibly support everything has been selected
+        $scope.gridApi.selection.selectAllRows();
+        $scope.selected_count = $scope.inventory_pagination.total;
+        facilities_plan_run_service.get_all_ids($scope.current_facilities_plan_run_id).then((response) => {
+            $scope.selected_ids = response.ids;
+        });
+      };
+
+      $scope.select_none = () => {
+        $scope.gridApi.selection.clearSelectedRows();
+        $scope.selected_count = 0;
+        $scope.update_selected_display();
       };
 
       $scope.run_the_run = () => {
