@@ -10,15 +10,16 @@ from django.urls import reverse
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.models import Column, Cycle, FacilitiesPlan, PropertyView
+from seed.models import Column, Cycle, FacilitiesPlan, FacilitiesPlanRun, PropertyView
 from seed.test_helpers.fake import (
     FakePropertyViewFactory,
 )
 from seed.utils.organizations import create_organization
 
 
-class FacilitiesPlanTests(TestCase):
+class BaseFacilitiesPlanTests(TestCase):
     def setUp(self):
+        # login
         user_details = {
             "username": "test_user@demo.com",
             "password": "test_pass",
@@ -27,9 +28,7 @@ class FacilitiesPlanTests(TestCase):
         self.org, _, _ = create_organization(self.user)
         self.client.login(**user_details)
 
-        self.cycle = Cycle.objects.first()
-        self.ali = AccessLevelInstance.objects.first()
-
+        # create FacilitiesPlan
         col_args = {"table_name": "PropertyState", "organization": self.org, "is_extra_data": True}
         self.electric_energy_usage_column = Column.objects.create(
             column_name="electric_energy_usage_column", data_type="number", **col_args
@@ -48,9 +47,11 @@ class FacilitiesPlanTests(TestCase):
             require_in_plan_column=self.require_in_plan_column,
             energy_running_sum_percentage=0.60,
         )
-        self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
 
-        self.maxDiff = None
+
+class FacilitiesPlanAPITests(BaseFacilitiesPlanTests):
+    def setUp(self):
+        super().setUp()
 
     def test_list(self):
         response = self.client.get(
@@ -105,7 +106,84 @@ class FacilitiesPlanTests(TestCase):
             },
         )
 
-    def test_get_selected_properties(self):
+
+class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
+    def setUp(self):
+        super().setUp()
+
+        # create facilities_plan_run
+        self.cycle = Cycle.objects.first()
+        self.ali = AccessLevelInstance.objects.first()
+        self.facilities_plan_run = FacilitiesPlanRun.objects.create(
+            facilities_plan=self.facilities_plan,
+            cycle=self.cycle,
+            ali=self.ali,
+            name="Test Facilities Plan Run",
+        )
+
+        self.maxDiff = None
+
+    def test_list(self):
+        # Action
+        response = self.client.get(
+            reverse("api:v3:facilities_plan_runs-list") + "?organization_id=" + str(self.org.id), content_type="application/json"
+        )
+        data = response.json()["data"][0]
+
+        # Assertion
+        self.assertEqual(data["id"], self.facilities_plan_run.id)
+        self.assertEqual(data["facilities_plan"], self.facilities_plan.id)
+        self.assertEqual(data["cycle"], self.cycle.id)
+        self.assertEqual(data["ali"], self.ali.id)
+        self.assertEqual(data["name"], "Test Facilities Plan Run")
+        self.assertListEqual(
+            list(data["columns"].keys()),
+            ["include_in_total_denominator_column", "require_in_plan_column", "electric_energy_usage_column", "gas_energy_usage_column"],
+        )
+        self.assertListEqual(data["display_columns"], [])
+        self.assertEqual(data["property_display_field"]["column_name"], "address_line_1")
+        self.assertEqual(data["run_at"], None)
+
+    def test_retrieve(self):
+        # Action
+        response = self.client.get(
+            reverse("api:v3:facilities_plan_runs-detail", args=[self.facilities_plan_run.id]) + "?organization_id=" + str(self.org.id),
+            content_type="application/json",
+        )
+        data = response.json()["data"]
+
+        # Assertion
+        self.assertEqual(data["id"], self.facilities_plan_run.id)
+        self.assertEqual(data["facilities_plan"], self.facilities_plan.id)
+        self.assertEqual(data["cycle"], self.cycle.id)
+        self.assertEqual(data["ali"], self.ali.id)
+        self.assertEqual(data["name"], "Test Facilities Plan Run")
+        self.assertListEqual(
+            list(data["columns"].keys()),
+            ["include_in_total_denominator_column", "require_in_plan_column", "electric_energy_usage_column", "gas_energy_usage_column"],
+        )
+        self.assertListEqual(data["display_columns"], [])
+        self.assertEqual(data["property_display_field"]["column_name"], "address_line_1")
+        self.assertEqual(data["run_at"], None)
+
+
+class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):
+    def setUp(self):
+        super().setUp()
+
+        # create facilities_plan_run
+        self.cycle = Cycle.objects.first()
+        self.ali = AccessLevelInstance.objects.first()
+        self.facilities_plan_run = FacilitiesPlanRun.objects.create(
+            facilities_plan=self.facilities_plan,
+            cycle=self.cycle,
+            ali=self.ali,
+            name="Test Facilities Plan Run",
+        )
+
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
+
+    def test_run(self):
         # Setup
         PropertyView.objects.all().delete()
         for e in [10, 20, 30, 40]:
@@ -120,7 +198,7 @@ class FacilitiesPlanTests(TestCase):
             )
 
         # Action
-        results = self.facilities_plan.get_selected_properties(self.ali, self.cycle)
+        self.facilities_plan_run.run()
 
         # Assert
         self.assertListEqual(
@@ -132,7 +210,7 @@ class FacilitiesPlanTests(TestCase):
                     "running_percentage": round(r.running_percentage, 2),
                     "running_square_footage": round(r.running_square_footage, 2),
                 }
-                for r in results.property_rankings.all()
+                for r in self.facilities_plan_run.property_rankings.all()
             ],
             [
                 {
@@ -166,7 +244,7 @@ class FacilitiesPlanTests(TestCase):
             ],
         )
 
-    def test_get_selected_properties_missing_columns(self):
+    def test_run_missing_columns(self):
         # Setup
         PropertyView.objects.all().delete()
         for e in [10, 20, 30, 40]:
@@ -181,7 +259,7 @@ class FacilitiesPlanTests(TestCase):
             )
 
         # Action
-        results = self.facilities_plan.get_selected_properties(self.ali, self.cycle)
+        self.facilities_plan_run.run()
 
         # Assert
         self.assertListEqual(
@@ -193,7 +271,7 @@ class FacilitiesPlanTests(TestCase):
                     "running_percentage": round(r.running_percentage, 2),
                     "running_square_footage": round(r.running_square_footage, 2),
                 }
-                for r in results.property_rankings.all()
+                for r in self.facilities_plan_run.property_rankings.all()
             ],
             [
                 {
@@ -227,7 +305,7 @@ class FacilitiesPlanTests(TestCase):
             ],
         )
 
-    def test_get_selected_properties_require_in_plan(self):
+    def test_run_require_in_plan(self):
         # Setup
         PropertyView.objects.all().delete()
         properties = []
@@ -253,7 +331,7 @@ class FacilitiesPlanTests(TestCase):
         properties[2].state.save()
 
         # Action
-        results = self.facilities_plan.get_selected_properties(self.ali, self.cycle)
+        self.facilities_plan_run.run()
 
         # Assert
         self.assertListEqual(
@@ -265,7 +343,7 @@ class FacilitiesPlanTests(TestCase):
                     "running_percentage": round(r.running_percentage, 2),
                     "running_square_footage": round(r.running_square_footage, 2),
                 }
-                for r in results.property_rankings.all()
+                for r in self.facilities_plan_run.property_rankings.all()
             ],
             [
                 {
@@ -297,49 +375,4 @@ class FacilitiesPlanTests(TestCase):
                     "running_square_footage": 0.0,
                 },
             ],
-        )
-
-
-class FacilitiesPlanRunTests(FacilitiesPlanTests):
-    def setUp(self):
-        super().setUp()
-        self.facilities_plan_run = self.facilities_plan.get_selected_properties(self.ali, self.cycle)
-
-    def test_list(self):
-        response = self.client.get(
-            reverse("api:v3:facilities_plan_runs-list") + "?organization_id=" + str(self.org.id), content_type="application/json"
-        )
-
-        self.assertDictEqual(
-            response.json(),
-            {
-                "status": "success",
-                "data": [
-                    {
-                        "id": self.facilities_plan_run.id,
-                        "facilities_plan": self.facilities_plan.id,
-                        "cycle": self.cycle.id,
-                        "ali": self.ali.id,
-                    },
-                ],
-            },
-        )
-
-    def test_retrieve(self):
-        response = self.client.get(
-            reverse("api:v3:facilities_plan_runs-detail", args=[self.facilities_plan_run.id]) + "?organization_id=" + str(self.org.id),
-            content_type="application/json",
-        )
-
-        self.assertDictEqual(
-            response.json(),
-            {
-                "status": "success",
-                "data": {
-                    "id": self.facilities_plan_run.id,
-                    "facilities_plan": self.facilities_plan.id,
-                    "cycle": self.cycle.id,
-                    "ali": self.ali.id,
-                },
-            },
         )

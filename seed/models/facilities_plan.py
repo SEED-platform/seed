@@ -37,57 +37,6 @@ class FacilitiesPlan(models.Model):
             models.UniqueConstraint(fields=["organization", "name"], name="unique_name_for_plan"),
         ]
 
-    def calculate_properties_percentage_of_total_energy_usage(self, ali: AccessLevelInstance, cycle: Cycle):
-        # check that we have all the required columns
-        required_columns = [
-            "electric_energy_usage_column",
-            "gas_energy_usage_column",
-            "steam_energy_usage_column",
-            "include_in_total_denominator_column",
-        ]
-        missing_columns = [c for c in required_columns if getattr(self, c) is None]
-        if missing_columns:
-            raise ValueError(f"`calculate_properties_selected_by_plan` requires the following null columns: {missing_columns}")
-
-        # get relevant properties
-        properties = PropertyView.objects.filter(                
-            property__access_level_instance__lft__gte=ali.lft,
-            property__access_level_instance__rgt__lte=ali.rgt,
-            cycle=cycle
-        )
-
-        # calculate properties total energy usage
-        properties = properties.annotate(
-            total_energy_usage=_get_column_or_zero(self.electric_energy_usage_column)
-            + _get_column_or_zero(self.gas_energy_usage_column)
-            + _get_column_or_zero(self.steam_energy_usage_column)
-        )
-
-        # calculate properties percentage of total energy usage
-        properties_included_in_denominator = properties.exclude(
-            **{_get_column_model_field(self.include_in_total_denominator_column): False}
-        )
-        denominator = properties_included_in_denominator.aggregate(Sum("total_energy_usage"))["total_energy_usage__sum"]
-        logger.error("+++")
-        logger.error(properties.count())
-        logger.error(properties_included_in_denominator.count())
-        logger.error(denominator)
-        logger.error("+++")
-        properties = properties.annotate(
-            percentage_of_total_energy_usage=Cast(F("total_energy_usage"), FloatField()) / denominator,
-        )
-
-        # calculate required_in_plan (We're weeding out the nones, which mess up ordering later)
-        properties = properties.annotate(
-            required_in_plan=Case(
-                When(**{_get_column_model_field(self.require_in_plan_column): True}, then=Value(True)),
-                default=Value(False),
-                output_field=BooleanField(),
-            )
-        )
-
-        return properties
-
 
 def _get_column_or_zero(column):
     c = _get_column_model_field(column)
@@ -117,12 +66,56 @@ class FacilitiesPlanRun(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     display_columns = models.ManyToManyField(Column)
 
+    def _calculate_properties_percentage_of_total_energy_usage(self, ali: AccessLevelInstance, cycle: Cycle):
+        # check that we have all the required columns
+        required_columns = [
+            "electric_energy_usage_column",
+            "gas_energy_usage_column",
+            "steam_energy_usage_column",
+            "include_in_total_denominator_column",
+        ]
+        missing_columns = [c for c in required_columns if getattr(self.facilities_plan, c) is None]
+        if missing_columns:
+            raise ValueError(f"`calculate_properties_selected_by_plan` requires the following null columns: {missing_columns}")
+
+        # get relevant properties
+        properties = PropertyView.objects.filter(
+            property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt, cycle=cycle
+        )
+
+        # calculate properties total energy usage
+        properties = properties.annotate(
+            total_energy_usage=_get_column_or_zero(self.facilities_plan.electric_energy_usage_column)
+            + _get_column_or_zero(self.facilities_plan.gas_energy_usage_column)
+            + _get_column_or_zero(self.facilities_plan.steam_energy_usage_column)
+        )
+
+        # calculate properties percentage of total energy usage
+        properties_included_in_denominator = properties.exclude(
+            **{_get_column_model_field(self.facilities_plan.include_in_total_denominator_column): False}
+        )
+        denominator = properties_included_in_denominator.aggregate(Sum("total_energy_usage"))["total_energy_usage__sum"]
+        properties = properties.annotate(
+            percentage_of_total_energy_usage=Cast(F("total_energy_usage"), FloatField()) / denominator,
+        )
+
+        # calculate required_in_plan (We're weeding out the nones, which mess up ordering later)
+        properties = properties.annotate(
+            required_in_plan=Case(
+                When(**{_get_column_model_field(self.facilities_plan.require_in_plan_column): True}, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            )
+        )
+
+        return properties
+
     def run(self):
         FacilitiesPlanRunProperty.objects.filter(run=self).all().delete()
         self.run_at = tz.now()
         self.save()
 
-        all_properties = self.facilities_plan.calculate_properties_percentage_of_total_energy_usage(self.ali, self.cycle).order_by(
+        all_properties = self._calculate_properties_percentage_of_total_energy_usage(self.ali, self.cycle).order_by(
             "-required_in_plan", "-percentage_of_total_energy_usage"
         )
         energy_running_sum_percentage = 0
