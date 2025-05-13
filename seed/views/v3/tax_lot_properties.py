@@ -241,7 +241,11 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
                 # Try grabbing the value out of the related field if not found yet.
                 if row_result is None and datum.get("related"):
-                    row_result = datum["related"][0].get(column, None)
+                    # Join all non-null related values for this column with ';'
+                    row_result = "; ".join(
+                        val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val := related.get(column), datetime.datetime) else str(val)
+                        for related in datum["related"]
+                    )
 
                 # Convert quantities (this is typically handled in the JSON Encoder, but that isn't here).
                 if isinstance(row_result, ureg.Quantity):
@@ -352,7 +356,11 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
                 # Try grabbing the value out of the related field if not found yet.
                 if row_result is None and datum.get("related"):
-                    row_result = datum["related"][0].get(column, None)
+                    # Join all non-null related values for this column with ';'
+                    row_result = "; ".join(
+                        val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val := related.get(column), datetime.datetime) else str(val)
+                        for related in datum["related"]
+                    )
 
                 # Convert quantities (this is typically handled in the JSON Encoder, but that isn't here).
                 if isinstance(row_result, ureg.Quantity):
