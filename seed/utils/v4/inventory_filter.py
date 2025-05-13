@@ -41,19 +41,19 @@ class InventoryFilterError(Exception):
 
 class InventoryFilter:
     Q_MAP = {
-        "contains": lambda name, filter, _: Q(**{f"{name}__icontains": filter}),
-        "notContains": lambda name, filter, _: ~Q(**{f"{name}__icontains": filter}),
-        "equals": lambda name, filter, _: Q(**{f"{name}": filter}),
-        "notEqual": lambda name, filter, _: ~Q(**{f"{name}": filter}),
-        "startsWith": lambda name, filter, _: Q(**{f"{name}__istartswith": filter}),
-        "endsWith": lambda name, filter, _: Q(**{f"{name}__iendswith": filter}),
+        "contains": lambda name, filter, _: Q(**{f"{name}__icontains": filter}),  # noqa: A006
+        "notContains": lambda name, filter, _: ~Q(**{f"{name}__icontains": filter}),  # noqa: A006
+        "equals": lambda name, filter, _: Q(**{f"{name}": filter}),  # noqa: A006
+        "notEqual": lambda name, filter, _: ~Q(**{f"{name}": filter}),  # noqa: A006
+        "startsWith": lambda name, filter, _: Q(**{f"{name}__istartswith": filter}),  # noqa: A006
+        "endsWith": lambda name, filter, _: Q(**{f"{name}__iendswith": filter}),  # noqa: A006
         "blank": lambda name, *_: Q(**{f"{name}__isnull": True}) | Q(**{f"{name}": ""}),
         "notBlank": lambda name, *_: Q(**{f"{name}__isnull": False}) & ~Q(**{f"{name}": ""}),
-        "greaterThan": lambda name, filter, _: Q(**{f"{name}__gt": filter}),
-        "greaterThanOrEqual": lambda name, filter, _: Q(**{f"{name}__gte": filter}),
-        "lessThan": lambda name, filter, _: Q(**{f"{name}__lt": filter}),
-        "lessThanOrEqual": lambda name, filter, _: Q(**{f"{name}__lte": filter}),
-        "inRange": lambda name, filter, filter_to: Q(**{f"{name}__gt": filter, f"{name}__lt": filter_to}),
+        "greaterThan": lambda name, filter, _: Q(**{f"{name}__gt": filter}),  # noqa: A006
+        "greaterThanOrEqual": lambda name, filter, _: Q(**{f"{name}__gte": filter}),  # noqa: A006
+        "lessThan": lambda name, filter, _: Q(**{f"{name}__lt": filter}),  # noqa: A006
+        "lessThanOrEqual": lambda name, filter, _: Q(**{f"{name}__lte": filter}),  # noqa: A006
+        "inRange": lambda name, filter, filter_to: Q(**{f"{name}__gt": filter, f"{name}__lt": filter_to}),  # noqa: A006
     }
 
     def __init__(self, request, profile_id=None):
@@ -324,7 +324,7 @@ class InventoryFilter:
         return JsonResponse({"results": id_list})
 
     def get_paginator(self, views_list):
-        """pagineates the views list, returns views as a paginator object"""
+        """paginates the views list, returns views as a paginator object"""
         self.paginator = Paginator(views_list, self.per_page)
 
         try:

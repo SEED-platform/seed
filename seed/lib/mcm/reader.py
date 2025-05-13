@@ -420,7 +420,7 @@ class ExcelParser:
                 return date.strftime("%Y-%m-%d %H:%M:%S")
             except XLDateAmbiguous:
                 raise Exception(
-                    "Date fields are not in a format that SEED can interpret. " "A possible solution is to save as a CSV file and reimport."
+                    "Date fields are not in a format that SEED can interpret. A possible solution is to save as a CSV file and reimport."
                 )
 
         if item.ctype == XL_CELL_NUMBER:

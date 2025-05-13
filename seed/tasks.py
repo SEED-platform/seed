@@ -225,7 +225,7 @@ def _finish_delete_column(column_id, prog_key):
     column.delete()
 
     progress_data = ProgressData.from_key(prog_key)
-    return progress_data.finish_with_success(f'Removed {column.column_name} from {progress_data.data["total_records"]} records')
+    return progress_data.finish_with_success(f"Removed {column.column_name} from {progress_data.data['total_records']} records")
 
 
 @shared_task
@@ -400,7 +400,7 @@ def _finish_update_multiple_columns(changes, prog_key):
         return progress_data.finish_with_success(f"Updated {len(changes.keys())} columns.")
     else:
         return progress_data.finish_with_success(
-            f'Updated {len(changes.keys())} columns.  Rebuilt {progress_data.data["total_records"]} records'
+            f"Updated {len(changes.keys())} columns.  Rebuilt {progress_data.data['total_records']} records"
         )
 
 

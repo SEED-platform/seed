@@ -1,6 +1,5 @@
 .cache
 .coverage
-.cspell.txt
 .DS_Store
 .env
 .hypothesis

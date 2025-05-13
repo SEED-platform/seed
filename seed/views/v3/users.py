@@ -400,7 +400,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory({"first_name": "string", "last_name": "string", "email": "string"}),
-        description="An object containing meta data for a updated user: \n" "- Required - first_name, last_name, email",
+        description="An object containing meta data for a updated user: \n- Required - first_name, last_name, email",
         responses={
             200: user_response_schema,
         },
