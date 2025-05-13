@@ -73,6 +73,8 @@ class FacilitiesPlanRun(models.Model):
             "gas_energy_usage_column",
             "steam_energy_usage_column",
             "include_in_total_denominator_column",
+            "require_in_plan_column",
+            "exclude_from_plan_column",
         ]
         missing_columns = [c for c in required_columns if getattr(self.facilities_plan, c) is None]
         if missing_columns:
@@ -81,7 +83,7 @@ class FacilitiesPlanRun(models.Model):
         # get relevant properties
         properties = PropertyView.objects.filter(
             property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt, cycle=cycle
-        )
+        ).exclude(**{_get_column_model_field(self.facilities_plan.include_in_total_denominator_column): False})
 
         # calculate properties total energy usage
         properties = properties.annotate(
@@ -91,10 +93,7 @@ class FacilitiesPlanRun(models.Model):
         )
 
         # calculate properties percentage of total energy usage
-        properties_included_in_denominator = properties.exclude(
-            **{_get_column_model_field(self.facilities_plan.include_in_total_denominator_column): False}
-        )
-        denominator = properties_included_in_denominator.aggregate(Sum("total_energy_usage"))["total_energy_usage__sum"]
+        denominator = properties.aggregate(Sum("total_energy_usage"))["total_energy_usage__sum"]
         properties = properties.annotate(
             percentage_of_total_energy_usage=Cast(F("total_energy_usage"), FloatField()) / denominator,
         )
@@ -103,6 +102,13 @@ class FacilitiesPlanRun(models.Model):
         properties = properties.annotate(
             required_in_plan=Case(
                 When(**{_get_column_model_field(self.facilities_plan.require_in_plan_column): True}, then=Value(True)),
+                default=Value(False),
+                output_field=BooleanField(),
+            )
+        )
+        properties = properties.annotate(
+            exclude_from_plan_column=Case(
+                When(**{_get_column_model_field(self.facilities_plan.exclude_from_plan_column): True}, then=Value(True)),
                 default=Value(False),
                 output_field=BooleanField(),
             )
@@ -116,7 +122,7 @@ class FacilitiesPlanRun(models.Model):
         self.save()
 
         all_properties = self._calculate_properties_percentage_of_total_energy_usage(self.ali, self.cycle).order_by(
-            "-required_in_plan", "-percentage_of_total_energy_usage"
+            "exclude_from_plan_column", "-required_in_plan", "-percentage_of_total_energy_usage"
         )
         energy_running_sum_percentage = 0
 

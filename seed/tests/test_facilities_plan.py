@@ -37,6 +37,7 @@ class BaseFacilitiesPlanTests(TestCase):
         self.steam_energy_usage_column = Column.objects.create(column_name="steam_energy_usage_column", data_type="number", **col_args)
         self.include_in_total_denominator_column = Column.objects.create(column_name="include_in_total_denominator_column", **col_args)
         self.require_in_plan_column = Column.objects.create(column_name="require_in_plan_column", **col_args)
+        self.exclude_from_plan_column = Column.objects.create(column_name="exclude_from_plan_column", **col_args)
         self.facilities_plan = FacilitiesPlan.objects.create(
             organization=self.org,
             name="test",
@@ -45,6 +46,7 @@ class BaseFacilitiesPlanTests(TestCase):
             steam_energy_usage_column=self.steam_energy_usage_column,
             include_in_total_denominator_column=self.include_in_total_denominator_column,
             require_in_plan_column=self.require_in_plan_column,
+            exclude_from_plan_column=self.exclude_from_plan_column,
             energy_running_sum_percentage=0.60,
         )
 
@@ -121,8 +123,6 @@ class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
             name="Test Facilities Plan Run",
         )
 
-        self.maxDiff = None
-
     def test_list(self):
         # Action
         response = self.client.get(
@@ -182,6 +182,8 @@ class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):
         )
 
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
+
+        self.maxDiff = None
 
     def test_run(self):
         # Setup
@@ -371,6 +373,138 @@ class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):
                     "total_energy_usage": 30.0,
                     "percentage_of_total_energy_usage": 0.3,
                     "rank": 3,
+                    "running_percentage": 1.0,
+                    "running_square_footage": 0.0,
+                },
+            ],
+        )
+
+    def test_run_exclude_from_plan(self):
+        # Setup
+        PropertyView.objects.all().delete()
+        properties = []
+        for e in [10, 20, 30, 40]:
+            properties.append(
+                self.property_view_factory.get_property_view(
+                    cycle=self.cycle,
+                    extra_data={
+                        "electric_energy_usage_column": e,
+                        "gas_energy_usage_column": 0,
+                        "steam_energy_usage_column": 0,
+                        "include_in_total_denominator_column": True,
+                    },
+                )
+            )
+
+        # the first two properties must be included in the plan
+        properties[2].state.extra_data["exclude_from_plan_column"] = True
+        properties[2].state.save()
+        properties[1].state.extra_data["exclude_from_plan_column"] = True
+        properties[1].state.save()
+        properties[0].state.extra_data["exclude_from_plan_column"] = False
+        properties[0].state.save()
+
+        # Action
+        self.facilities_plan_run.run()
+
+        # Assert
+        self.assertListEqual(
+            [
+                {
+                    "total_energy_usage": round(r.total_energy_usage, 2),
+                    "percentage_of_total_energy_usage": round(r.percentage_of_total_energy_usage, 2),
+                    "rank": round(r.rank, 2),
+                    "running_percentage": round(r.running_percentage, 2),
+                    "running_square_footage": round(r.running_square_footage, 2),
+                }
+                for r in self.facilities_plan_run.property_rankings.all()
+            ],
+            [
+                {
+                    "total_energy_usage": 40.0,
+                    "percentage_of_total_energy_usage": 0.4,
+                    "rank": 0,
+                    "running_percentage": 0.4,
+                    "running_square_footage": 0.0,
+                },
+                {
+                    "total_energy_usage": 10.0,
+                    "percentage_of_total_energy_usage": 0.1,
+                    "rank": 1,
+                    "running_percentage": 0.5,
+                    "running_square_footage": 0.0,
+                },
+                {
+                    "total_energy_usage": 30.0,
+                    "percentage_of_total_energy_usage": 0.3,
+                    "rank": 2,
+                    "running_percentage": 0.8,
+                    "running_square_footage": 0.0,
+                },
+                {
+                    "total_energy_usage": 20.0,
+                    "percentage_of_total_energy_usage": 0.2,
+                    "rank": 3,
+                    "running_percentage": 1.0,
+                    "running_square_footage": 0.0,
+                },
+            ],
+        )
+
+    def test_run_include_in_total_denominator_column(self):
+        # Setup
+        PropertyView.objects.all().delete()
+        properties = []
+        for e in [10, 20, 30, 40]:
+            properties.append(
+                self.property_view_factory.get_property_view(
+                    cycle=self.cycle,
+                    extra_data={
+                        "electric_energy_usage_column": e,
+                        "gas_energy_usage_column": 0,
+                        "steam_energy_usage_column": 0,
+                        "include_in_total_denominator_column": True,
+                    },
+                )
+            )
+
+        properties[3].state.extra_data["include_in_total_denominator_column"] = False
+        properties[3].state.save()
+
+        # Action
+        self.facilities_plan_run.run()
+
+        # Assert
+        self.assertListEqual(
+            [
+                {
+                    "total_energy_usage": round(r.total_energy_usage, 2),
+                    "percentage_of_total_energy_usage": round(r.percentage_of_total_energy_usage, 2),
+                    "rank": round(r.rank, 2),
+                    "running_percentage": round(r.running_percentage, 2),
+                    "running_square_footage": round(r.running_square_footage, 2),
+                }
+                for r in self.facilities_plan_run.property_rankings.all()
+            ],
+            [
+                {
+                    "total_energy_usage": 30.0,
+                    "percentage_of_total_energy_usage": 0.5,
+                    "rank": 0,
+                    "running_percentage": 0.5,
+                    "running_square_footage": 0.0,
+                },
+                {
+                    "total_energy_usage": 20.0,
+                    "percentage_of_total_energy_usage": 0.33,
+                    "rank": 1,
+                    "running_percentage": 0.83,
+                    "running_square_footage": 0.0,
+                },
+                {
+                    "total_energy_usage": 10.0,
+                    "percentage_of_total_energy_usage": 0.17,
+                    "rank": 2,
                     "running_percentage": 1.0,
                     "running_square_footage": 0.0,
                 },
