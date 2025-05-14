@@ -52,7 +52,9 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet, OrgMixin):
 
     def get_queryset(self):
         org_id = self.get_organization(self.request)
-        return Measure.objects.filter(organization_id=org_id)
+        # TODO: there could be multiple versions of each measure. Do we retrieve them all or a specific version of them?
+        # TODO: I set this to latest version for now. I'm not sure this functionality is used.
+        return Measure.objects.filter(organization_id=org_id, schema_version="2.6.0")
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()], request_body=no_body)
     @has_perm_class("can_modify_data")
@@ -65,7 +67,9 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet, OrgMixin):
         if not organization_id:
             return JsonResponse({"status": "error", "message": "organization_id not provided"}, status=status.HTTP_400_BAD_REQUEST)
 
-        Measure.populate_measures(organization_id)
+        Measure.populate_measures(organization_id)  # this will repopulate the default buildingsync version
+        Measure.populate_measures(organization_id, schema_version="2.6.0")  # also repopulate the latest version
+        # TODO: this should be improved!
         data = {
             "measures": list(Measure.objects.filter(organization_id=organization_id).order_by("id").values()),
             "status": "success",

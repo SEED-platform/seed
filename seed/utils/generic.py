@@ -55,7 +55,7 @@ def median(lst):
 
 
 def round_down_hundred_thousand(x):
-    return int(math.floor(x / 100000.0)) * 100000
+    return math.floor(x / 100000.0) * 100000
 
 
 def obj_to_dict(obj, include_m2m=True):

@@ -779,7 +779,7 @@ class FakeAnalysisFactory(BaseFake):
             "name": name if name is not None else self.fake.text(),
             "organization": organization if organization is not None else self.organization,
             "access_level_instance": access_level_instance if access_level_instance is not None else self.organization.root,
-            "user": user if user is not None else user,
+            "user": user if user is not None else user,  # noqa: RUF034
             "service": service if service is not None else Analysis.BSYNCR,
             "start_time": datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
             "configuration": configuration if configuration is not None else {},
@@ -803,7 +803,7 @@ class FakeAnalysisPropertyViewFactory(BaseFake):
         self, analysis=None, property_obj=None, cycle=None, property_state=None, organization=None, user=None, **kwargs
     ):
         organization = organization if organization is not None else self.organization
-        user = user if user is not None else user
+        user = user if user is not None else user  # noqa: RUF034
         if analysis is None:
             if self.analysis is None:
                 analysis = FakeAnalysisFactory(organization, user).get_analysis(**kwargs)
