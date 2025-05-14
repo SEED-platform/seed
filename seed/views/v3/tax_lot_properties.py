@@ -244,8 +244,9 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                     # Join all non-null non-duplicate related values for this column with ';'
                     row_result = "; ".join(
                         {
-                            val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val := related.get(column), datetime.datetime) else str(val)
+                            val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val, datetime.datetime) else str(val)
                             for related in datum["related"]
+                            if (val := related.get(column)) not in (None, "")
                         }
                     )
 
@@ -361,8 +362,9 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                     # Join all non-null non-duplicate related values for this column with ';'
                     row_result = "; ".join(
                         {
-                            val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val := related.get(column), datetime.datetime) else str(val)
+                            val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val, datetime.datetime) else str(val)
                             for related in datum["related"]
+                            if (val := related.get(column)) not in (None, "")
                         }
                     )
 

@@ -194,8 +194,10 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         idx_adr = headers.index("Address Line 1 (Tax Lot)")
         idx_jtl = headers.index("Jurisdiction Tax Lot ID (Tax Lot)")
         row1 = data[1].split(",")
-        self.assertEqual(row1[idx_adr], "111 Main St; 222 Main St; 333 Main St")
-        self.assertEqual(row1[idx_jtl], "111; 222; 333")
+        exp_address_set = {"111 Main St", "222 Main St", "333 Main St"}
+        exp_id_set = {"111", "222", "333"}
+        self.assertEqual(set(row1[idx_adr].split("; ")), exp_address_set)
+        self.assertEqual(set(row1[idx_jtl].split("; ")), exp_id_set)
 
         # Taxlot export
         url = reverse_lazy("api:v3:tax_lot_properties-export") + f"?organization_id={self.org.id!s}&inventory_type=taxlots"
@@ -205,7 +207,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         headers = data[0].split(",")
         idx_adr = headers.index("Address Line 1 (Property)")
         row1 = data[1].split(",")
-        self.assertEqual(row1[idx_adr], "1 Main St; 2 Main St; 3 Main St")
+        exp_address_set = {"1 Main St", "2 Main St", "3 Main St"}
+        self.assertEqual(set(row1[idx_adr].split("; ")), exp_address_set)
 
     def test_csv_export_with_notes(self):
         multi_line_note = self.property_view.notes.create(name="Manually Created", note_type=Note.NOTE, text="multi\nline\nnote")
