@@ -33,6 +33,8 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
     FakeStatusLabelFactory,
+    FakeTaxLotPropertyFactory,
+    FakeTaxLotStateFactory,
     FakeTaxLotViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
@@ -57,6 +59,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
         self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org, user=self.user)
+        self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        self.taxlot_property_factory = FakeTaxLotPropertyFactory(organization=self.org, user=self.user)
         self.label_factory = FakeStatusLabelFactory(organization=self.org)
         self.property_view = self.property_view_factory.get_property_view()
         self.urls = ["http://example.com", "http://example.org"]
@@ -149,6 +153,62 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         self.assertEqual(len(data), 53)
         # last row should be blank
         self.assertEqual(data[52], "")
+
+    def test_paired_export(self):
+        """Ensure paired inventory is exported correctly"""
+        col_names = ["address_line_1", "jurisdiction_tax_lot_id", "pm_property_id", "id"]
+
+        p_details = [
+            {"pm_property_id": 1, "address_line_1": "1 Main St"},
+            {"pm_property_id": 2, "address_line_1": "2 Main St"},
+            {"pm_property_id": 3, "address_line_1": "3 Main St"},
+        ]
+        t_details = [
+            {"jurisdiction_tax_lot_id": "111", "address_line_1": "111 Main St"},
+            {"jurisdiction_tax_lot_id": "222", "address_line_1": "222 Main St"},
+            {"jurisdiction_tax_lot_id": "333", "address_line_1": "333 Main St"},
+        ]
+        pss = [self.property_state_factory.get_property_state(**details) for details in p_details]
+        tss = [self.taxlot_state_factory.get_taxlot_state(**details) for details in t_details]
+
+        pvs = [self.property_view_factory.get_property_view(state=ps) for ps in pss]
+        tvs = [self.taxlot_view_factory.get_taxlot_view(state=ts) for ts in tss]
+
+        # all properties are paired with the first taxlot
+        # all taxlots are paired with the first property
+        self.taxlot_property_factory.get_taxlot_property(property_view=pvs[0], taxlot_view=tvs[0])
+        self.taxlot_property_factory.get_taxlot_property(property_view=pvs[0], taxlot_view=tvs[1])
+        self.taxlot_property_factory.get_taxlot_property(property_view=pvs[0], taxlot_view=tvs[2])
+        self.taxlot_property_factory.get_taxlot_property(property_view=pvs[1], taxlot_view=tvs[0])
+        self.taxlot_property_factory.get_taxlot_property(property_view=pvs[2], taxlot_view=tvs[0])
+
+        pv_ids = [pv.id for pv in pvs]
+        tv_ids = [tv.id for tv in tvs]
+
+        # Property export
+        url = reverse_lazy("api:v3:tax_lot_properties-export") + f"?organization_id={self.org.id!s}&inventory_type=properties"
+        data = json.dumps({"columns": col_names, "export_type": "csv", "ids": pv_ids})
+        response = self.client.post(url, data=data, content_type="application/json")
+        data = response.content.decode("utf-8").split("\n")
+        headers = data[0].split(",")
+        idx_adr = headers.index("Address Line 1 (Tax Lot)")
+        idx_jtl = headers.index("Jurisdiction Tax Lot ID (Tax Lot)")
+        row1 = data[1].split(",")
+        exp_address_set = {"111 Main St", "222 Main St", "333 Main St"}
+        exp_id_set = {"111", "222", "333"}
+        self.assertEqual(set(row1[idx_adr].split("; ")), exp_address_set)
+        self.assertEqual(set(row1[idx_jtl].split("; ")), exp_id_set)
+
+        # Taxlot export
+        url = reverse_lazy("api:v3:tax_lot_properties-export") + f"?organization_id={self.org.id!s}&inventory_type=taxlots"
+        data = json.dumps({"columns": col_names, "export_type": "csv", "ids": tv_ids})
+        response = self.client.post(url, data=data, content_type="application/json")
+        data = response.content.decode("utf-8").split("\n")
+        headers = data[0].split(",")
+        idx_adr = headers.index("Address Line 1 (Property)")
+        row1 = data[1].split(",")
+        exp_address_set = {"1 Main St", "2 Main St", "3 Main St"}
+        self.assertEqual(set(row1[idx_adr].split("; ")), exp_address_set)
 
     def test_csv_export_with_notes(self):
         multi_line_note = self.property_view.notes.create(name="Manually Created", note_type=Note.NOTE, text="multi\nline\nnote")
