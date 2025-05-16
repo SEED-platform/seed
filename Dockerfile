@@ -6,7 +6,7 @@ ARG NGINX_LISTEN_OPTS
 
 FROM node:20-alpine3.16 AS node
 
-FROM alpine:3.14
+FROM alpine:3.19 AS alpine
 
 ARG NGINX_LISTEN_OPTS
 
