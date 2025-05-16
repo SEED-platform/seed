@@ -1,15 +1,13 @@
-
 from django.http import JsonResponse
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import generics, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.models import Analysis, Column, Cycle, PropertyView, PropertyState, AccessLevelInstance
+from seed.models import AccessLevelInstance, Analysis, Column, Cycle, PropertyState, PropertyView
+from seed.models.columns import EXCLUDED_API_FIELDS
 from seed.serializers.analyses import AnalysisSerializer
 from seed.utils.api import OrgMixin, api_endpoint_class
-from seed.models.columns import EXCLUDED_API_FIELDS
 
 
 class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
@@ -21,7 +19,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class("requires_viewer")
     @action(detail=False, methods=["GET"])
     def stats(self, request):
-        """ Get all property and taxlot columns that have data in them for an org """
+        """Get all property and taxlot columns that have data in them for an org"""
         org_id = self.get_organization(request)
         cycle_id = request.query_params.get("cycle_id")
 
@@ -51,17 +49,16 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         )
 
         extra_data_columns = [c.column_name for c in columns if c.is_extra_data]
-        stats = []
         num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, PropertyState, columns)
-
-        for column in columns:
-            stat = {
-                "column_name": column.column_name,
-                "display_name": column.display_name,
-                "is_extra_data": column.is_extra_data,
-                "count": num_of_nonnulls_by_column_name.get(column.column_name, 0),
+        stats = [
+            {
+                "column_name": c.column_name,
+                "display_name": c.display_name or c.column_name.replace("_", " "),
+                "is_extra_data": c.is_extra_data,
+                "count": num_of_nonnulls_by_column_name.get(c.column_name, 0),
             }
-            stats.append(stat)    
+            for c in columns
+        ]
 
         return JsonResponse(
             {

@@ -15,7 +15,6 @@ from seed.tests.util import AccessLevelBaseTestCase
 
 
 class TestAnalysisViews(AccessLevelBaseTestCase):
-
     def setUp(self):
         super().setUp()
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
@@ -23,7 +22,7 @@ class TestAnalysisViews(AccessLevelBaseTestCase):
         self.cycle_factory = FakeCycleFactory(organization=self.org)
         self.cycle = self.cycle_factory.get_cycle()
 
-        Column.objects.create( table_name="PropertyState", column_name="extra_field", organization=self.org, is_extra_data=True )
+        Column.objects.create(table_name="PropertyState", column_name="extra_field", organization=self.org, is_extra_data=True)
 
         for i in range(5):
             self.property_view_factory.get_property_view(cycle=self.cycle)
@@ -33,7 +32,7 @@ class TestAnalysisViews(AccessLevelBaseTestCase):
             self.property_view_factory.get_property_view(cycle=self.cycle, state=state)
 
     def test_stats(self):
-        url =  reverse_lazy("api:v4:analyses-stats") + f"?organization_id={self.org.id}&cycle_id={self.cycle.id}"
+        url = reverse_lazy("api:v4:analyses-stats") + f"?organization_id={self.org.id}&cycle_id={self.cycle.id}"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         response = response.json()
@@ -52,5 +51,3 @@ class TestAnalysisViews(AccessLevelBaseTestCase):
         self.assertEqual(custom_id_1["count"], 5)
         self.assertEqual(extra_field["count"], 5)
         self.assertEqual(extra_field["is_extra_data"], True)
-
-
