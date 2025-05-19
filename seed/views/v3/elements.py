@@ -12,7 +12,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
-from tkbl import bsync_by_uniformat_code, federal_bps_by_uniformat_code, filter_by_uniformat_code
+from tkbl import bsync_by_uniformat_code, filter_by_uniformat_code
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
@@ -209,13 +209,12 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             sftool_links = [link for link in links if link["category"] != "ESTCP"]
             estcp_links = [link for link in links if link["category"] == "ESTCP"]
             bsync = [x["eem_name"] for x in bsync_by_uniformat_code(e.code.code)]
-            federal_bps = [x["Federal BPS Prescriptive Measures"] for x in federal_bps_by_uniformat_code(e.code.code)]
             results.append(
                 {
                     "code": e.code.code,
                     "remaining_service_life": e.remaining_service_life,
                     "description": e.description,
-                    "tkbl": {"sftool": sftool_links, "estcp": estcp_links, "bsync_measures": bsync, "federal_bps_measures": federal_bps},
+                    "tkbl": {"sftool": sftool_links, "estcp": estcp_links, "bsync_measures": bsync},
                 }
             )
 

@@ -254,9 +254,13 @@ class ExportToAuditTemplate(TestCase):
 
     def test_build_xml_from_property_with_measures(self):
         # Set Up
+        # NOTE: when the tkbl is rebuilt, the SCOPE_ONE_EMISSION_CODES ordering might change
+        # currently, first element is: A101090 - Building Envelope Modifications - Insulate foundation
         self.element1 = self.element_factory.get_element(
             property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[1]
         )
+        # second element is: Increase floor insulation - Building Envelope Modifications - Increase floor insulation
+        # (both have same technology category)
         self.element2 = self.element_factory.get_element(
             property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[2]
         )
@@ -270,29 +274,19 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual(tuple, type(response))
         tree = etree.XML(response[0])
         measures = tree.find("auc:Facilities/auc:Facility/auc:Measures", namespaces=tree.nsmap)
-        service_hot_water_systems = measures.findall(
-            "auc:Measure/auc:TechnologyCategories/auc:TechnologyCategory/auc:ServiceHotWaterSystems", namespaces=tree.nsmap
-        )
-        chilled_water_hot_water_and_steam_distribution_systems = measures.findall(
-            "auc:Measure/auc:TechnologyCategories/auc:TechnologyCategory/auc:ChilledWaterHotWaterAndSteamDistributionSystems",
-            namespaces=tree.nsmap,
+        building_envelope_mods = measures.findall(
+            "auc:Measure/auc:TechnologyCategories/auc:TechnologyCategory/auc:BuildingEnvelopeModifications", namespaces=tree.nsmap
         )
 
         self.assertSetEqual(
             {
-                "Separate SHW from heating",
-                "Install heat pump SHW system",
-                "Upgrade SHW boiler",
-                "Insulate SHW tank",
-                "Replace tankless coil",
-                "Install tankless water heaters",
+                "Air seal envelope",
+                "Add attic/knee wall insulation",
+                "Insulate thermal bypasses",
+                "Increase wall insulation",
+                "Increase floor insulation",
             },
-            {m.find("auc:MeasureName", namespaces=tree.nsmap).text for m in service_hot_water_systems},
-        )
-
-        self.assertSetEqual(
-            {"Replace or upgrade water heater"},
-            {m.find("auc:MeasureName", namespaces=tree.nsmap).text for m in chilled_water_hot_water_and_steam_distribution_systems},
+            {m.find("auc:MeasureName", namespaces=tree.nsmap).text for m in building_envelope_mods},
         )
 
     def test_build_xml_from_property_with_measures_and_meters_org_settings(self):

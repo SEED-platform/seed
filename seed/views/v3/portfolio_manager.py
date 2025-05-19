@@ -312,7 +312,7 @@ class PortfolioManagerImport:
 
         # Prepare the fully authenticated headers
         self.authenticated_headers = {
-            "Cookie": "JSESSIONID=" + cookie + "; org.springframework.web.servlet.i18n.CookieLocaleResolver.LOCALE=en"
+            "Cookie": "SESSION=" + cookie + "; org.springframework.web.servlet.i18n.CookieLocaleResolver.LOCALE=en"
         }
 
     def get_list_of_report_templates(self):
