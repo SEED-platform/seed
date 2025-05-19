@@ -303,6 +303,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return exporter.readings_and_column_defs(interval)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=no_body,
+    )
     @ajax_request_class
     @has_perm_class("requires_viewer")
     @action(detail=True, methods=["GET"])
