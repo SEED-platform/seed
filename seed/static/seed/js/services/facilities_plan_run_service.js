@@ -38,30 +38,34 @@ angular.module('SEED.service.facilities_plan_run', []).factory('facilities_plan_
       .then((response) => response.data)
       .catch((response) => response);
 
-    facilities_plan_run_service.create_facilities_plan_run = (data) => $http.post('/api/v3/facilities_plan_runs/',
+    facilities_plan_run_service.create_facilities_plan_run = (data) => $http.post(
+      '/api/v3/facilities_plan_runs/',
       data,
-      {params: {organization_id: user_service.get_organization().id}
-    })
+      { params: { organization_id: user_service.get_organization().id } }
+    )
       .then((response) => response.data)
       .catch((response) => response);
 
-    facilities_plan_run_service.update_facilities_plan_run = (facilities_plan_run_id, data) => $http.put(`/api/v3/facilities_plan_runs/${facilities_plan_run_id}/`,
+    facilities_plan_run_service.update_facilities_plan_run = (facilities_plan_run_id, data) => $http.put(
+      `/api/v3/facilities_plan_runs/${facilities_plan_run_id}/`,
       data,
-      {params: {organization_id: user_service.get_organization().id}
-    })
+      { params: { organization_id: user_service.get_organization().id } }
+    )
       .then((response) => response.data)
       .catch((response) => response);
 
-    facilities_plan_run_service.delete_facilities_plan_run = (facilities_plan_run_id) => $http.delete(`/api/v3/facilities_plan_runs/${facilities_plan_run_id}/`,
-      {params: {organization_id: user_service.get_organization().id}
-    })
+    facilities_plan_run_service.delete_facilities_plan_run = (facilities_plan_run_id) => $http.delete(
+      `/api/v3/facilities_plan_runs/${facilities_plan_run_id}/`,
+      { params: { organization_id: user_service.get_organization().id } }
+    )
       .then((response) => response.data)
       .catch((response) => response);
 
-    facilities_plan_run_service.run_the_run = (facilities_plan_run_id) => $http.post(`/api/v3/facilities_plan_runs/${facilities_plan_run_id}/run/`,
+    facilities_plan_run_service.run_the_run = (facilities_plan_run_id) => $http.post(
+      `/api/v3/facilities_plan_runs/${facilities_plan_run_id}/run/`,
       {},
-      {params: {organization_id: user_service.get_organization().id}
-    })
+      { params: { organization_id: user_service.get_organization().id } }
+    )
       .then((response) => response.data)
       .catch((response) => response);
 
