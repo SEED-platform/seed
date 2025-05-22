@@ -12,76 +12,109 @@
   <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"></div>
 </div>
 
-<button type="button" class="btn btn-primary col-md-2" ng-click="create_facilities_plan_run()" style="margin-top: 1em;">
-  {$:: 'Create Facilities Plan Run' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
-</button>
-
-<div class="form-group col-md-12" style="display: flex;">
-  <label class="control-label">{$:: 'Facilities Plan' | translate $}:</label>
-  <select class="form-control col-sm-8" ng-model="current_facilities_plan_run_id" ng-change="change_facilities_pan()">
-    <option ng-repeat="facilities_plan_run in facilities_plan_runs track by facilities_plan_run.id" value="{$ facilities_plan_run.id $}">{$ facilities_plan_run.name $}</option>
-  </select>
-</div>
-
-
-<div class="wide-900" ng-if="data_valid">
-  <div ng-if="data_valid">
-    <div style="display: flex">
-      <div uib-dropdown class="goal-actions-dropdown" ng-if="!viewer">
-        <button id="btnCreateNew" type="button" class="btn actions-toggle" uib-dropdown-toggle>
-          <span translate>Actions</span>
-          <i class="fa-solid fa-chevron-down"></i>
-        </button>
-        <ul uib-dropdown-menu class="dropdown-menu" role="menu">
-          <li class="dropdown-header goal-action">
-            <a ng-if="selected_count !== inventory_pagination.total" ng-click="select_all()" translate>Select All</a>
-            <span ng-if="selected_count === inventory_pagination.total" class="disabled-action" translate>Select All</span>
-          </li>
-          <li class="dropdown-header goal-action">
-            <a ng-if="!selected_count < 1" ng-click="select_none()" translate>Select None</a>
-            <span ng-if="selected_count < 1" class="disabled-action" translate>Select None</span>
-          </li>
-          <li class="dropdown-header goal-action">
-            <a ng-if="!selected_count < 1" ng-click="open_update_labels_modal()" translate>Add/Remove Labels</a>
-            <span ng-if="selected_count < 1" class="disabled-action" translate>Add/Remove Labels</span>
-          </li>
-          <li class="dropdown-header goal-action">
-            <a ng-if="!selected_count < 1" ng-click="open_bulk_edit_properties_modal()" translate>Bulk Edit</a>
-            <span ng-if="selected_count < 1" class="disabled-action" translate></span>
-          </li>
-        </ul>
+<div class="section_content_container">
+  <div class="section_content container-fluid">
+    <div class="content_block row less_pad">
+      <div class="col-md-10">
+        <div class="title-row">
+          <h2 style="font-size: 18px">{$:: 'Facilities Plan' | translate $}</h2>
+        </div>
+        <div ng-if="auth.requires_member" class="pad-bottom-10" style="margin-bottom: 10px;">
+          <div class="col-md-9 pad-bottom-10 text" ng-if="facilities_plan_runs.length > 0">
+            <p>FACILITIES_PLAN_EXISTS_DESC</p>
+          </div>
+          <div class="col-md-9 pad-bottom-10" ng-if="facilities_plan_runs.length == 0">
+            <p>FACILITIES_PLAN_NOT_EXISTS_DESC</p>
+          </div>
+          <div class="col-md-2">
+            <button type="button" class="btn btn-primary" ng-click="create_facilities_plan_run()">
+              {$:: 'Create New Plan Run' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div ng-if="!auth.requires_member && facilities_plan_runs.length > 0" class="pad-bottom-10 col-md-10">
+        <p class="pad-bottom-10">Select a Facilities Plan Run from the dropdown below</p>
       </div>
     </div>
+    <div ng-if="facilities_plan_runs.length > 0" class="row">
+      <div class="col-md-7" style="margin-bottom:10px;">
+        <label style="padding-right: 10px;">{$:: 'Selected Facilities Plan' | translate $}:</label>
+        <!-- <select class="form-control" ng-model="current_facilities_plan_run_id" ng-change="change_facilities_plan()">
+          <option ng-repeat="facilities_plan_run in facilities_plan_runs track by facilities_plan_run.id" value="{$ facilities_plan_run.id $}">{$ facilities_plan_run.name $}</option>
+        </select> -->
+        <select
+          class="form-control" style="width:50%; display:inline;"
+          id="current_facilities_plan_run_id"
+          ng-model="current_facilities_plan_run_id"
+          ng-options="plan.id as plan.name for plan in facilities_plan_runs"
+          ng-change="change_facilities_plan(current_facilities_plan_run_id)">
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="margin-bottom:10px; display: flex; align-items: flex-end;" ng-if="data_valid">
+      <div class="col-md-3">
+        <div uib-dropdown class="goal-actions-dropdown" ng-if="!viewer">
+          <button id="btnCreateNew" type="button" class="btn actions-toggle" uib-dropdown-toggle>
+            <span translate>Actions</span>
+            <i class="fa-solid fa-chevron-down"></i>
+          </button>
+          <ul uib-dropdown-menu class="dropdown-menu" role="menu">
+            <li class="dropdown-header goal-action">
+              <a ng-if="selected_count !== inventory_pagination.total" ng-click="select_all()" translate>Select All</a>
+              <span ng-if="selected_count === inventory_pagination.total" class="disabled-action" translate>Select All</span>
+            </li>
+            <li class="dropdown-header goal-action">
+              <a ng-if="!selected_count < 1" ng-click="select_none()" translate>Select None</a>
+              <span ng-if="selected_count < 1" class="disabled-action" translate>Select None</span>
+            </li>
+            <li class="dropdown-header goal-action">
+              <a ng-if="!selected_count < 1" ng-click="open_update_labels_modal()" translate>Add/Remove Labels</a>
+              <span ng-if="selected_count < 1" class="disabled-action" translate>Add/Remove Labels</span>
+            </li>
+            <li class="dropdown-header goal-action">
+              <a ng-if="!selected_count < 1" ng-click="open_bulk_edit_properties_modal()" translate>Bulk Edit</a>
+              <span ng-if="selected_count < 1" class="disabled-action" translate></span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-4">
+          <span ng-show="current_facilities_plan_run.run_at"> {$:: 'Plan last Run at' | translate $}: {$ current_facilities_plan_run.run_at $}</span>
+          <span ng-show="current_facilities_plan_run.run_at == null" translate> This plan has not yet been run</span>
+      </div>
+      <div class="col-md-2">
+        <button type="button" class="btn btn-primary" ng-click="run_the_run()">
+            {$:: 'Calculate the Plan' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
+          </button>
+      </div>
+      <div class="col-md-3">
+        {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
+        <i ng-if="selected_count > 0">
+          <span>({$ selected_count $} selected</span><span ng-if="selected_count < inventory_pagination.total"> - <a ng-click="select_all()" translate>Select All</a></span
+          ><span ng-if="selected_count === inventory_pagination.total"> - <a ng-click="select_none()" translate>Select None</a></span
+          ><span>)</span>
+        </i>
+        <button ng-click="page_change(inventory_pagination.page - 1)" ng-disabled="!inventory_pagination.has_previous" class="btn btn-default btn-sm">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button ng-click="page_change(inventory_pagination.page + 1)" ng-disabled="!inventory_pagination.has_next" class="btn btn-default btn-sm">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+    </div>
+    <!-- Data Table -->
+    <div id="portfolio-summary-grid" ng-if="data_valid">
+      <div id="portfolioSummary-gridOptions-wrapper" class="wide-900">
+        <div ui-grid="gridOptions" ui-grid-save-state ui-grid-pinning ui-grid-resize-columns ui-grid-exporter ui-grid-edit ui-grid-selection style="display: flex; width: 100%; overflow: auto"></div>
+      </div>
+    </div>
+    <div class="portfolio-summary-loading" ng-if="data_loading && !data_valid" style="margin: 100px 20px">
+      <h4 translate>Loading data...</h4>
+      <uib-progress class="progress-striped active">
+        <uib-bar value="100" type="info"></uib-bar>
+      </uib-progress>
+    </div>
   </div>
-  <div>
-    {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
-    <i ng-if="selected_count > 0">
-      <span>({$ selected_count $} selected</span><span ng-if="selected_count < inventory_pagination.total"> - <a ng-click="select_all()" translate>Select All</a></span
-      ><span ng-if="selected_count === inventory_pagination.total"> - <a ng-click="select_none()" translate>Select None</a></span
-      ><span>)</span>
-    </i>
-    <button ng-click="page_change(inventory_pagination.page - 1)" ng-disabled="!inventory_pagination.has_previous" class="btn btn-default btn-sm">
-      <i class="fa-solid fa-chevron-left"></i>
-    </button>
-    <button ng-click="page_change(inventory_pagination.page + 1)" ng-disabled="!inventory_pagination.has_next" class="btn btn-default btn-sm">
-      <i class="fa-solid fa-chevron-right"></i>
-    </button>
-  </div>
-  <button type="button" class="btn btn-primary col-md-2" ng-click="run_the_run()" style="margin-top: 1em;">
-    {$:: 'Run the Run' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
-  </button>
-  <div ng-show="current_facilities_plan_run.run_at"> Run at: {$ current_facilities_plan_run.run_at $}</div>
-  <div ng-show="current_facilities_plan_run.run_at == null"> This has never been run</div>
-</div>
-<!-- Data Table -->
-<div id="portfolio-summary-grid" ng-if="data_valid">
-  <div id="portfolioSummary-gridOptions-wrapper" class="wide-900">
-    <div ui-grid="gridOptions" ui-grid-save-state ui-grid-pinning ui-grid-resize-columns ui-grid-exporter ui-grid-edit ui-grid-selection style="display: flex; width: 100%; overflow: auto"></div>
-  </div>
-</div>
-<div class="portfolio-summary-loading" ng-if="data_loading && !data_valid" style="margin: 100px 20px">
-  <h4 translate>Loading data...</h4>
-  <uib-progress class="progress-striped active">
-    <uib-bar value="100" type="info"></uib-bar>
-  </uib-progress>
 </div>

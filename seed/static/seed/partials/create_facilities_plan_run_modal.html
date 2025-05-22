@@ -1,43 +1,60 @@
 <div class="modal-header">
-  <h3 translate>Create Facilities Run Plan</h3>
+  <h3 translate>New Facilities Run Plan</h3>
 </div>
 <div class="modal-body">
+  <ul class="r-list">
 
-  <!-- facilities plan -->
-  <label for="facilities_plan" class="r-no-wrap r-margin-right-5" translate>Facilities Plans</label>
-  <select id="facilities_plan" class="form-control" ng-model="facilities_plan">
-    <option ng-repeat="facilities_plan in facilities_plans" ng-value="facilities_plan.id">{$:: facilities_plan.name $}
-  </select>
+    <!-- facilities plan -->
+    <li class="r-row r-row-centered">
+      <label for="facilities_plan" class="r-no-wrap r-margin-right-5" translate>Generic Facilities Plan Selection</label>
+      <select id="facilities_plan" class="form-control" ng-model="facilities_plan">
+        <option ng-repeat="facilities_plan in facilities_plans" ng-value="facilities_plan.id">{$:: facilities_plan.name $}</option>
+      </select>
+    </li>
+    <li class="r-info">
+      <i class="fa-solid fa-arrow-up r-pad-right-5"></i
+      ><span translate>Select a Generic Facilities Plan created in Organization Settings. If you do not have access, ask your admin to create one.</span>
+    </li>
+    <li class="r-row r-row-centered">
+      <!-- Name -->
+      <label for="name" class="r-no-wrap r-margin-right-5" translate>Name</label>
+      <input id="name" type="text" class="form-control r-margin-bottom-10"
+        ng-model="run_name"/>
+    </li>
+    <li class="r-info">
+      <i class="fa-solid fa-arrow-up r-pad-right-5"></i
+      ><span translate>Unique name which will be displayed in the dropdown selector.</span>
+    </li>
+    <!-- cycle -->
+    <li class="r-row r-row-centered">
+      <label for="baseline_cycle" class="r-no-wrap r-margin-right-5" translate>Baseline Cycle</label>
+      <select id="baseline_cycle" class="form-control" ng-model="baseline_cycle">
+        <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$:: cycle.name $}</option>
+      </select>
+    </li>
+    <li class="r-info">
+      <i class="fa-solid fa-arrow-up r-pad-right-5"></i
+      ><span translate>Select the cycle to use for the calculations.</span>
+    </li>
 
-  <!-- Name -->
-  <label for="name" class="r-no-wrap r-margin-right-5" translate>Name</label>
-  <input id="name" type="text" class="form-control r-margin-bottom-10"
-    ng-model="run_name"/>
-
-  <!-- cycle -->
-  <label for="baseline_cycle" class="r-no-wrap r-margin-right-5" translate>Baseline Cycle</label>
-  <select id="baseline_cycle" class="form-control" ng-model="baseline_cycle">
-    <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$:: cycle.name $}
-  </select>
-
-  <!-- Access Level -->
-  <div style="display: flex; flex-direction: column; flex: 1 1 0" class="right-bar">
-    <div class="form-group pad-bottom-10">
+    <!-- Access Level -->
+    <li class="r-row r-row-centered">
       <label class="control-label col-sm-4" translate>Access Level:</label>
       <select class="form-control col-sm-8" ng-model="level_name_index" ng-change="change_selected_level_index()" ng-options="i as name for (i, name) in level_names"></select>
-    </div>
-    <div class="form-group">
+    </li>
+    <li class="r-row r-row-centered">
       <label class="control-label col-sm-4" translate>Access Level Instance:</label>
       <select
         class="form-control col-sm-8"
         ng-model="access_level_instance_id"
         ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
       ></select>
-    </div>
-  </div>
+    </li>
+    <li class="r-info">
+      <i class="fa-solid fa-arrow-up r-pad-right-5"></i
+      ><span translate>Select the Access Level and Instance of the data to include in the calculations.</span>
+    </li>
 
-
-  <ul class="r-list">
     <li class="r-list-header" translate>Display Columns</li>
     <li ng-repeat="selected_column in selected_columns" class="r-row r-row-centered">
       <span class="r-grow">{$:: get_column_display(selected_column) $}</span>
@@ -48,8 +65,11 @@
         <option ng-repeat="available_column in available_columns()" ng-value="available_column.id">{$:: available_column.displayName $}</option>
       </select>
     </li>
+    <li class="r-info">
+      <i class="fa-solid fa-arrow-up r-pad-right-5"></i
+      ><span translate>Select data columns to include in the Plan table, if desired.</span>
+    </li>
   </ul>
-
 </div>
 <div class="modal-footer">
   <button class="btn btn-primary r-margin-right-5" ng-click="save()" ng-disabled="save_disabled()" translate>Save</button>

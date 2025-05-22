@@ -2972,6 +2972,14 @@
                 return inventory_service.get_property_columns_for_org(organization_id);
               }
             ],
+            auth_payload: [
+              'auth_service',
+              'user_service',
+              (auth_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return auth_service.is_authorized(organization_id, ['requires_member']);
+              }
+            ],
           }
         })
         .state({
