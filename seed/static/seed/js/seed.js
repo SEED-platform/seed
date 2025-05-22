@@ -2979,7 +2979,7 @@
                 const organization_id = user_service.get_organization().id;
                 return auth_service.is_authorized(organization_id, ['requires_member']);
               }
-            ],
+            ]
           }
         })
         .state({

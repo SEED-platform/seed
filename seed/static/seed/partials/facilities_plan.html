@@ -19,7 +19,7 @@
         <div class="title-row">
           <h2 style="font-size: 18px">{$:: 'Facilities Plan' | translate $}</h2>
         </div>
-        <div ng-if="auth.requires_member" class="pad-bottom-10" style="margin-bottom: 10px;">
+        <div ng-if="auth.requires_member" class="pad-bottom-10" style="margin-bottom: 10px">
           <div class="col-md-9 pad-bottom-10 text" ng-if="facilities_plan_runs.length > 0">
             <p>FACILITIES_PLAN_EXISTS_DESC</p>
           </div>
@@ -38,22 +38,23 @@
       </div>
     </div>
     <div ng-if="facilities_plan_runs.length > 0" class="row">
-      <div class="col-md-7" style="margin-bottom:10px;">
-        <label style="padding-right: 10px;">{$:: 'Selected Facilities Plan' | translate $}:</label>
+      <div class="col-md-7" style="margin-bottom: 10px">
+        <label style="padding-right: 10px">{$:: 'Selected Facilities Plan' | translate $}:</label>
         <!-- <select class="form-control" ng-model="current_facilities_plan_run_id" ng-change="change_facilities_plan()">
           <option ng-repeat="facilities_plan_run in facilities_plan_runs track by facilities_plan_run.id" value="{$ facilities_plan_run.id $}">{$ facilities_plan_run.name $}</option>
         </select> -->
         <select
-          class="form-control" style="width:50%; display:inline;"
+          class="form-control"
+          style="width: 50%; display: inline"
           id="current_facilities_plan_run_id"
           ng-model="current_facilities_plan_run_id"
           ng-options="plan.id as plan.name for plan in facilities_plan_runs"
-          ng-change="change_facilities_plan(current_facilities_plan_run_id)">
-        </select>
+          ng-change="change_facilities_plan(current_facilities_plan_run_id)"
+        ></select>
       </div>
     </div>
 
-    <div class="row" style="margin-bottom:10px; display: flex; align-items: flex-end;" ng-if="data_valid">
+    <div class="row" style="margin-bottom: 10px; display: flex; align-items: flex-end" ng-if="data_valid">
       <div class="col-md-3">
         <div uib-dropdown class="goal-actions-dropdown" ng-if="!viewer">
           <button id="btnCreateNew" type="button" class="btn actions-toggle" uib-dropdown-toggle>
@@ -81,13 +82,11 @@
         </div>
       </div>
       <div class="col-md-4">
-          <span ng-show="current_facilities_plan_run.run_at"> {$:: 'Plan last Run at' | translate $}: {$ current_facilities_plan_run.run_at $}</span>
-          <span ng-show="current_facilities_plan_run.run_at == null" translate> This plan has not yet been run</span>
+        <span ng-show="current_facilities_plan_run.run_at"> {$:: 'Plan last Run at' | translate $}: {$ current_facilities_plan_run.run_at $}</span>
+        <span ng-show="current_facilities_plan_run.run_at == null" translate> This plan has not yet been run</span>
       </div>
       <div class="col-md-2">
-        <button type="button" class="btn btn-primary" ng-click="run_the_run()">
-            {$:: 'Calculate the Plan' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
-          </button>
+        <button type="button" class="btn btn-primary" ng-click="run_the_run()">{$:: 'Calculate the Plan' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i></button>
       </div>
       <div class="col-md-3">
         {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>

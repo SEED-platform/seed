@@ -38,11 +38,12 @@ class FacilitiesPlanRunSerializer(serializers.ModelSerializer):
         ).data
 
         return dict(zip(nonnull_column_names, nonnull_columns))
-    
 
     def get_property_display_field(self, obj):
         org = obj.facilities_plan.organization
-        property_display_field = Column.objects.filter(table_name="PropertyState", column_name=org.property_display_field, organization=org).first()
+        property_display_field = Column.objects.filter(
+            table_name="PropertyState", column_name=org.property_display_field, organization=org
+        ).first()
 
         return ColumnSerializer(property_display_field).data
 
