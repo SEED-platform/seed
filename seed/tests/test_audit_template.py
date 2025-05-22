@@ -18,7 +18,7 @@ from lxml import etree
 from seed.audit_template.audit_template import AuditTemplate
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
-from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.models import Meter, MeterReading, Uniformat
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -255,10 +255,10 @@ class ExportToAuditTemplate(TestCase):
     def test_build_xml_from_property_with_measures(self):
         # Set Up
         self.element1 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[1]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[1]
         )
         self.element2 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[2]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[2]
         )
 
         # Action
@@ -302,10 +302,10 @@ class ExportToAuditTemplate(TestCase):
         self.org.save()
 
         self.element1 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[1]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[1]
         )
         self.element2 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[2]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[2]
         )
 
         self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)

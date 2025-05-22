@@ -25,7 +25,7 @@ from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
-from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.models import Element, Measure, Meter, MeterReading, PropertyView
 from seed.utils.encrypt import decrypt
 
@@ -603,7 +603,7 @@ def _build_measures_element(em, property_id, building_id):
 def _get_measures(property_id):
     """Elements/TKBL implementation specific"""
     # TODO: revise this code to be able to export Recommended measures that were added to SEED via Audit Template import?
-    tkbl_elements = Element.objects.filter(property_id=property_id, code__code__in=SCOPE_ONE_EMISSION_CODES).order_by(
+    tkbl_elements = Element.objects.filter(property_id=property_id, code__code__in=EISA432_CODES).order_by(
         "remaining_service_life"
     )[:3]
     bsync_measure_dicts = [x for e in tkbl_elements for x in bsync_by_uniformat_code(e.code.code)]
