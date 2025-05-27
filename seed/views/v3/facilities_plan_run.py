@@ -20,10 +20,10 @@ from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_c
 from seed.models import (
     AccessLevelInstance,
     Column,
+    Cycle,
     FacilitiesPlanRun,
     Organization,
     TaxLotProperty,
-    Cycle,
 )
 from seed.serializers.facilities_plan_run import FacilitiesPlanRunSerializer
 from seed.serializers.pint import apply_display_unit_preferences
@@ -124,9 +124,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         )
 
         if request.query_params.get("only_ids", "false") == "true":
-            return JsonResponse({
-                "ids": list(views.values_list("id", flat=True))
-            })
+            return JsonResponse({"ids": list(views.values_list("id", flat=True))})
 
         view_run_infos = views.values(
             "run_info__rank",
@@ -174,10 +172,11 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         properties = TaxLotProperty.serialize(views, show_columns, columns_from_database, False, pk)
         properties = [apply_display_unit_preferences(org, x) for x in properties]
 
-
         cycle_name_by_id = dict(Cycle.objects.filter(organization=org).values_list("id", "name"))
 
-        for property_json, run_info in zip(properties, view_run_infos[paginator.page(page).start_index(): paginator.page(page).end_index()+1]):
+        for property_json, run_info in zip(
+            properties, view_run_infos[paginator.page(page).start_index() : paginator.page(page).end_index() + 1]
+        ):
             property_json["total_energy_usage"] = run_info["run_info__total_energy_usage"]
             property_json["percentage_of_total_energy_usage"] = run_info["run_info__percentage_of_total_energy_usage"]
             property_json["running_percentage"] = run_info["run_info__running_percentage"]

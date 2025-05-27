@@ -29,14 +29,13 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
       inventory_service,
       user_service,
       ah_service,
-      facilities_plan_run_service,
+      facilities_plan_run_service
     ) {
       cycle_service.get_cycles_for_org($scope.org_id).then((cycles) => {
         $scope.cycles = cycles.cycles;
       });
       $scope.facilities_plans = facilities_plans;
-      console.log($scope.facilities_plans)
-
+      console.log($scope.facilities_plans);
 
       $scope.selected_columns = [];
       $scope.available_columns = () => columns.filter(({ id }) => !$scope.selected_columns.includes(id));
@@ -74,8 +73,7 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
         $scope.access_level_instance_id = null;
       };
 
-      console.log("here@")
-
+      console.log('here@');
 
       $scope.get_column_display = (id) => {
         const record = _.find(columns, { id });
@@ -90,13 +88,12 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
           facilities_plan: $scope.facilities_plan,
           name: $scope.run_name,
           cycle: $scope.baseline_cycle,
-          display_columns: $scope.selected_columns,
-        }
+          display_columns: $scope.selected_columns
+        };
 
-        facilities_plan_run_service.create_facilities_plan_run(payload).then(data => {
+        facilities_plan_run_service.create_facilities_plan_run(payload).then((data) => {
           $state.reload();
           $uibModalInstance.dismiss();
-
         });
       };
 

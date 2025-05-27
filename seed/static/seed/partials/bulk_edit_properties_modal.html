@@ -8,20 +8,17 @@
     <option ng-repeat="cycle in cycles" ng-value="cycle">{$:: cycle $}
   </select>
   <label for="include_in_total_denominator_column" class="r-no-wrap r-margin-right-5" translate>Include In Total Denominator Column</label>
-  <select id="include_in_total_denominator_column" class="form-control" ng-model="include_in_total_denominator_column_new_value"
-    ng-change="(c_id) => {}">
+  <select id="include_in_total_denominator_column" class="form-control" ng-model="include_in_total_denominator_column_new_value" ng-change="(c_id) => {}">
     <option value="true">True</option>
     <option value="false">False</option>
   </select>
   <label for="exclude_from_plan_column" class="r-no-wrap r-margin-right-5" translate>Exclude From Plan Column</label>
-  <select id="exclude_from_plan_column" class="form-control" ng-model="exclude_from_plan_column_new_value"
-    ng-change="(c_id) => {}">
+  <select id="exclude_from_plan_column" class="form-control" ng-model="exclude_from_plan_column_new_value" ng-change="(c_id) => {}">
     <option value="true">True</option>
     <option value="false">False</option>
   </select>
   <label for="require_in_plan_column" class="r-no-wrap r-margin-right-5" translate>Require In Plan Column</label>
-  <select id="require_in_plan_column" class="form-control" ng-model="require_in_plan_column_new_value"
-    ng-change="(c_id) => {}">
+  <select id="require_in_plan_column" class="form-control" ng-model="require_in_plan_column_new_value" ng-change="(c_id) => {}">
     <option value="true">True</option>
     <option value="false">False</option>
   </select>

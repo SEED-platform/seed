@@ -404,13 +404,13 @@
     <uib-tab index="10" heading="Facilities Plan Setup">
       <div class="section_content_container">
         <div class="section_content with_padding">
+          <p class="settings-header" translate>FACILITIES_PLAN_SETUP_DESC</p>
         </div>
       </div>
-      <div class="section_content_container">
-
+      <div class="section_content_container r-columns">
         <div class="r-column r-shrink r-panel">
           <ul class="r-list">
-            <li class="r-list-header" translate>Facilities Plan</li>
+            <li class="r-list-header" translate>Facilities Plan Generic Configurations</li>
             <li ng-show="selected_facilities_plan" class="r-selected r-row r-row-centered">
               <span class="r-grow">{$ dirty_facilities_plan.name $}</span>
               <i class="fa-solid fa-xmark r-margin-left-5" ng-if="selected_facilities_plan.id" ng-click="delete_facilities_plan(selected_facilities_plan)"></i>
@@ -429,7 +429,7 @@
           </ul>
           <ul class="r-list">
             <li>
-              <button class="btn btn-success r-grow" ng-click="create_new_facilities_plan()"><i class="fa-solid fa-circle-plus r-pad-right-5"></i>New Facilities Plan</button>
+              <button class="btn btn-success r-grow" ng-click="create_new_facilities_plan()"><i class="fa-solid fa-circle-plus r-pad-right-5"></i><span translate>New Facilities Plan</span></button>
             </li>
           </ul>
         </div>
@@ -437,85 +437,86 @@
         <div ng-show="dirty_facilities_plan">
           <ul class="r-list">
             <!-- GENERAL CONFIG -->
-            <li class="r-list-header" translate>General Config</li>
+            <li class="r-list-header" translate>General Configurations</li>
             <li class="r-row r-row-centered">
               <label for="name" class="r-no-wrap r-margin-right-5" translate>Name</label>
-              <input id="name" type="text" class="form-control r-margin-bottom-10"
-                ng-model="dirty_facilities_plan.name" ng-change="(c_id) => {}" />
+              <input id="name" type="text" class="form-control r-margin-bottom-10" ng-model="dirty_facilities_plan.name" ng-change="(c_id) => {}" />
             </li>
             <li class="r-row r-row-centered">
               <label for="energy_running_sum_percentage" class="r-no-wrap r-margin-right-5" translate>Energy Running Sum Percentage</label>
-              <input id="energy_running_sum_percentage" class="form-control goal-form-control" type="number" ng-model="dirty_facilities_plan.energy_running_sum_percentage"
-                min="0" max="1" style="padding-left: 5px" required />
+              <input
+                id="energy_running_sum_percentage"
+                class="form-control goal-form-control"
+                type="number"
+                ng-model="dirty_facilities_plan.energy_running_sum_percentage"
+                min="0"
+                max="1"
+                style="padding-left: 5px"
+                required
+              />
             </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>RUNNING_SUM_PERCENTAGE_DESC</span></li>
             <li class="r-row r-row-centered">
               <label for="compliance_cycle_year_column" class="r-no-wrap r-margin-right-5" translate>Compliance Cycle Year Column</label>
-              <select id="compliance_cycle_year_column" class="form-control" ng-model="dirty_facilities_plan.compliance_cycle_year_column"
-                ng-change="(c_id) => {}">
+              <select id="compliance_cycle_year_column" class="form-control" ng-model="dirty_facilities_plan.compliance_cycle_year_column" ng-change="(c_id) => {}">
                 <option value=""></option>
-                <option ng-repeat="property_column in columns" ng-value="property_column.id">{$:: property_column.displayName $}
-                </option>
+                <option ng-repeat="property_column in columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
               </select>
             </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>COMPLIANCE_CYCLE_YEAR_DESC</span></li>
             <li class="r-row r-row-centered">
               <label for="include_in_total_denominator_column" class="r-no-wrap r-margin-right-5" translate>Include In Total Denominator Column</label>
-              <select id="include_in_total_denominator_column" class="form-control" ng-model="dirty_facilities_plan.include_in_total_denominator_column"
-                ng-change="(c_id) => {}">
+              <select id="include_in_total_denominator_column" class="form-control" ng-model="dirty_facilities_plan.include_in_total_denominator_column" ng-change="(c_id) => {}">
                 <option value=""></option>
-                <option ng-repeat="property_column in boolean_columns" ng-value="property_column.id">{$:: property_column.displayName $}
-                </option>
+                <option ng-repeat="property_column in boolean_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
               </select>
             </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>INCLUDE_IN_DENOMINATOR_DESC</span></li>
             <li class="r-row r-row-centered">
               <label for="exclude_from_plan_column" class="r-no-wrap r-margin-right-5" translate>Exclude From Plan Column</label>
-              <select id="exclude_from_plan_column" class="form-control" ng-model="dirty_facilities_plan.exclude_from_plan_column"
-                ng-change="(c_id) => {}">
+              <select id="exclude_from_plan_column" class="form-control" ng-model="dirty_facilities_plan.exclude_from_plan_column" ng-change="(c_id) => {}">
                 <option value=""></option>
-                <option ng-repeat="property_column in boolean_columns" ng-value="property_column.id">{$:: property_column.displayName $}
-                </option>
+                <option ng-repeat="property_column in boolean_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
               </select>
             </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>EXCLUDE_FROM_PLAN_DESC</span></li>
             <li class="r-row r-row-centered">
               <label for="require_in_plan_column" class="r-no-wrap r-margin-right-5" translate>Require In Plan Column</label>
-              <select id="require_in_plan_column" class="form-control" ng-model="dirty_facilities_plan.require_in_plan_column"
-                ng-change="(c_id) => {}">
+              <select id="require_in_plan_column" class="form-control" ng-model="dirty_facilities_plan.require_in_plan_column" ng-change="(c_id) => {}">
                 <option value=""></option>
-                <option ng-repeat="property_column in boolean_columns" ng-value="property_column.id">{$:: property_column.displayName $}
-                </option>
+                <option ng-repeat="property_column in boolean_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
               </select>
             </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>REQUIRE_IN_PLAN_DESC</span></li>
 
-          <!-- Energy Usage Column-->
-          <li class="r-list-header" translate>Energy Usage Column</li>
-          <li class="r-row r-row-centered">
-            <label for="electric_energy_usage_column" class="r-no-wrap r-margin-right-5" translate>Electric Energy Usage Column</label>
-            <select id="electric_energy_usage_column" class="form-control" ng-model="dirty_facilities_plan.electric_energy_usage_column"
-              ng-change="(c_id) => {}">
-              <option value=""></option>
-              <option ng-repeat="property_column in numeric_columns" ng-value="property_column.id">{$:: property_column.displayName $}
-              </option>
-            </select>
-          </li>
-          <li class="r-row r-row-centered">
-            <label for="gas_energy_usage_column" class="r-no-wrap r-margin-right-5" translate>Gas Energy Usage Column</label>
-            <select id="gas_energy_usage_column" class="form-control" ng-model="dirty_facilities_plan.gas_energy_usage_column"
-              ng-change="(c_id) => {}">
-              <option value=""></option>
-              <option ng-repeat="property_column in numeric_columns" ng-value="property_column.id">{$:: property_column.displayName $}
-              </option>
-            </select>
-          </li>
-          <li class="r-row r-row-centered">
-            <label for="steam_energy_usage_column" class="r-no-wrap r-margin-right-5" translate>Steam Energy Usage Column</label>
-            <select id="steam_energy_usage_column" class="form-control" ng-model="dirty_facilities_plan.steam_energy_usage_column"
-              ng-change="(c_id) => {}">
-              <option value=""></option>
-              <option ng-repeat="property_column in numeric_columns" ng-value="property_column.id">{$:: property_column.displayName $}
-              </option>
-            </select>
-          </li>
-
-          <button type="button" class="btn btn-primary" ng-click="save_facilities_plan()" style="margin-top: 1em;">
+            <!-- Energy Usage Column-->
+            <li class="r-list-header" translate>Energy Usage Columns</li>
+            <li class="r-row r-row-centered">
+              <label for="electric_energy_usage_column" class="r-no-wrap r-margin-right-5" translate>Electric Energy Usage Column</label>
+              <select id="electric_energy_usage_column" class="form-control" ng-model="dirty_facilities_plan.electric_energy_usage_column" ng-change="(c_id) => {}">
+                <option value=""></option>
+                <option ng-repeat="property_column in numeric_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+              </select>
+            </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>ELECTRIC_ENERGY_USAGE_DESC</span></li>
+            <li class="r-row r-row-centered">
+              <label for="gas_energy_usage_column" class="r-no-wrap r-margin-right-5" translate>Gas Energy Usage Column</label>
+              <select id="gas_energy_usage_column" class="form-control" ng-model="dirty_facilities_plan.gas_energy_usage_column" ng-change="(c_id) => {}">
+                <option value=""></option>
+                <option ng-repeat="property_column in numeric_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+              </select>
+            </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>GAS_ENERGY_USAGE_DESC</span></li>
+            <li class="r-row r-row-centered">
+              <label for="steam_energy_usage_column" class="r-no-wrap r-margin-right-5" translate>Steam Energy Usage Column</label>
+              <select id="steam_energy_usage_column" class="form-control" ng-model="dirty_facilities_plan.steam_energy_usage_column" ng-change="(c_id) => {}">
+                <option value=""></option>
+                <option ng-repeat="property_column in numeric_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
+              </select>
+            </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>STEAM_ENERGY_USAGE_DESC</span></li>
+          </ul>
+          <button type="button" class="btn btn-primary" ng-click="save_facilities_plan()" style="margin-top: 1em">
             {$:: 'Save Facilities Plan' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
           </button>
         </div>
