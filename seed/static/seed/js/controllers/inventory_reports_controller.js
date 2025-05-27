@@ -615,11 +615,11 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
             // if categorical, sort by most x of recent cycle, then by cycle
             is_category = data.chart_data.every((d) => typeof d.y === 'number') ? 'linear' : 'category';
-            if (is_category){
+            if (is_category) {
               data.chart_data = data.chart_data.sort((a, b) => {
-                if (a.y == b.y) return a.yr_e < b.yr_e
-                return $scope.order_by_x[a.y] > $scope.order_by_x[b.y]
-              })
+                if (a.y == b.y) return a.yr_e < b.yr_e;
+                return $scope.order_by_x[a.y] > $scope.order_by_x[b.y];
+              });
             }
 
             const propertyCounts = data.property_counts;
@@ -725,18 +725,18 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
             // if categorical, sort by most x of recent cycle, then by cycle
             is_category = data.chart_data.every((d) => typeof d.y === 'number') ? 'linear' : 'category';
-            if (is_category){
-              most_recent_year_end = Math.max(...data.chart_data.map(d => Number(d.yr_e)))
-              data_from_most_recent_year = data.chart_data.filter(d => d.yr_e == String(most_recent_year_end))
-              $scope.order_by_x = data_from_most_recent_year.sort(d => -d.x).reduce((acc, curr, i) => {
-                acc[curr.y] = i
-                return acc
-              }, {})
+            if (is_category) {
+              most_recent_year_end = Math.max(...data.chart_data.map((d) => Number(d.yr_e)));
+              data_from_most_recent_year = data.chart_data.filter((d) => d.yr_e == String(most_recent_year_end));
+              $scope.order_by_x = data_from_most_recent_year.sort((d) => -d.x).reduce((acc, curr, i) => {
+                acc[curr.y] = i;
+                return acc;
+              }, {});
 
               data.chart_data = data.chart_data.sort((a, b) => {
-                if (a.y == b.y) return a.yr_e < b.yr_e
-                return $scope.order_by_x[a.y] > $scope.order_by_x[b.y]
-              })
+                if (a.y == b.y) return a.yr_e < b.yr_e;
+                return $scope.order_by_x[a.y] > $scope.order_by_x[b.y];
+              });
             }
 
             $scope.aggPropertyCounts = data.property_counts;

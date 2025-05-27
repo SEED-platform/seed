@@ -603,9 +603,7 @@ def _build_measures_element(em, property_id, building_id):
 def _get_measures(property_id):
     """Elements/TKBL implementation specific"""
     # TODO: revise this code to be able to export Recommended measures that were added to SEED via Audit Template import?
-    tkbl_elements = Element.objects.filter(property_id=property_id, code__code__in=EISA432_CODES).order_by(
-        "remaining_service_life"
-    )[:3]
+    tkbl_elements = Element.objects.filter(property_id=property_id, code__code__in=EISA432_CODES).order_by("remaining_service_life")[:3]
     bsync_measure_dicts = [x for e in tkbl_elements for x in bsync_by_uniformat_code(e.code.code)]
 
     bsync_measure_tuples = set()
