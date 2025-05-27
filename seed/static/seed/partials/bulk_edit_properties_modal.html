@@ -5,7 +5,7 @@
   <label for="compliance_cycle_year_column" class="r-no-wrap r-margin-right-5" translate>Compliance Cycle Year Column</label>
   <select id="compliance_cycle_year_column" class="form-control" ng-model="compliance_cycle_year_column_new_value">
     <option value=""></option>
-    <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$:: cycle.name $}</option>
+    <option ng-repeat="cycle in cycles" ng-value="cycle">{$:: cycle $}
   </select>
   <label for="include_in_total_denominator_column" class="r-no-wrap r-margin-right-5" translate>Include In Total Denominator Column</label>
   <select id="include_in_total_denominator_column" class="form-control" ng-model="include_in_total_denominator_column_new_value" ng-change="(c_id) => {}">
