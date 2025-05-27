@@ -374,7 +374,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             tcolumns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="TaxLotState").exclude(
                 column_name__in=EXCLUDED_API_FIELDS
             )
-            num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, TaxLotState, columns)
+            num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(tstate_ids, TaxLotState, tcolumns)
 
         # properties and taxlots together
         num_of_nonnulls_by_column_name.update(tnum_of_nonnulls_by_column_name)
