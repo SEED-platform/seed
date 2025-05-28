@@ -175,7 +175,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         properties = [apply_display_unit_preferences(org, x) for x in properties]
 
         for property_json, run_info in zip(
-            properties, view_run_infos[paginator.page(page).start_index() : paginator.page(page).end_index() + 1]
+            properties, view_run_infos[paginator.page(page).start_index() - 1 : paginator.page(page).end_index() + 1]
         ):
             property_json["total_energy_usage"] = run_info["run_info__total_energy_usage"]
             property_json["percentage_of_total_energy_usage"] = run_info["run_info__percentage_of_total_energy_usage"]
