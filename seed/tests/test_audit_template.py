@@ -18,7 +18,7 @@ from lxml import etree
 from seed.audit_template.audit_template import AuditTemplate
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
-from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.models import Meter, MeterReading, Uniformat
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -257,12 +257,12 @@ class ExportToAuditTemplate(TestCase):
         # NOTE: when the tkbl is rebuilt, the SCOPE_ONE_EMISSION_CODES ordering might change
         # currently, first element is: A101090 - Building Envelope Modifications - Insulate foundation
         self.element1 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[1]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[1]
         )
         # second element is: Increase floor insulation - Building Envelope Modifications - Increase floor insulation
         # (both have same technology category)
         self.element2 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[2]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[2]
         )
 
         # Action
@@ -296,10 +296,10 @@ class ExportToAuditTemplate(TestCase):
         self.org.save()
 
         self.element1 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[1]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[1]
         )
         self.element2 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[2]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[2]
         )
 
         self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)
