@@ -983,7 +983,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             y_var = params["y_var"]
 
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
+        cycles = Cycle.objects.filter(id__in=params["cycle_ids"]).order_by("-end")
         report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         axis_data = self.get_axis_data(
@@ -1059,7 +1059,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             y_var = params["y_var"]
 
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
+        cycles = Cycle.objects.filter(id__in=params["cycle_ids"]).order_by("-end")
         report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         chart_data = []
