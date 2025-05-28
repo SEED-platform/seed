@@ -51,7 +51,7 @@ angular.module('SEED.controller.facilities_plan', [])
         // Store to localStorage
         localStorage.setItem(LAST_PLAN_RUN_ID_KEY, id);
         // also looking current facilities plan from current_facilities_plan_run.facilities_plan
-        $scope.current_facilities_plan = $scope.facilities_plans.find((fp) => fp.id === $scope.current_facilities_plan_run.facilities_plan);
+        $scope.current_facilities_plan = $scope.facilities_plans.find((fp) => fp.id === $scope.current_facilities_plan_run?.facilities_plan);
         load_data(1); // get the first page of the selected run
       };
 
@@ -78,7 +78,7 @@ angular.module('SEED.controller.facilities_plan', [])
             enableColumnMenu: false,
             enableColumnMoving: false,
             enableColumnResizing: false,
-            enableFiltering: false,
+            enableFiltering: true,
             enableHiding: false,
             enableSorting: false,
             exporterSuppressExport: true,
@@ -89,16 +89,23 @@ angular.module('SEED.controller.facilities_plan', [])
           {
             displayName: (property_display_field.display_name ?? '' === '') ? property_display_field.display_name : property_display_field.column_name,
             name: `${property_display_field.column_name}_${property_display_field.id}`,
-            cellClass: (grid, row) => 'portfolio-summary-current-cell'
+            cellClass: (grid, row) => 'portfolio-summary-current-cell',
+            enableFiltering: true,
+            cellFilter: 'number',
           },
-          ...Object.values($scope.current_facilities_plan_run.display_columns).map((c) => ({ displayName: (c.display_name ?? '' === '') ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}` })),
-          ...Object.values($scope.current_facilities_plan_run.columns).map((c) => ({ displayName: (c.display_name ?? '' === '') ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}` })),
-          { displayName: 'total_energy_usage', name: 'total_energy_usage' },
-          { displayName: 'percentage_of_total_energy_usage', name: 'percentage_of_total_energy_usage' },
-          { displayName: 'running_percentage', name: 'running_percentage' },
-          { displayName: 'running_square_footage', name: 'running_square_footage' }
+          ...Object.values($scope.current_facilities_plan_run.display_columns).map((c) => ({ displayName: (c.display_name ?? '' === '') ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}`, enableFiltering: true })),
+          ...Object.values($scope.current_facilities_plan_run.columns).map((c) => ({ displayName: (c.display_name ?? '' === '') ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}`, enableFiltering: true })),
+          { displayName: 'Total Energy Usage', name: 'total_energy_usage', enableFiltering: false},
+          { displayName: 'Percentage Of Total Energy Usage', name: 'percentage_of_total_energy_usage', enableFiltering: false},
+          { displayName: 'Running Percentage', name: 'running_percentage', enableFiltering: false},
+          { displayName: 'Running Square Footage', name: 'running_square_footage', enableFiltering: false}
         ];
       };
+
+      $scope.columnDisplayByName = {};
+      for (const col of $scope.facilities_plan_runs.map(fpr => Object.values(fpr.columns)).flat()) {
+        $scope.columnDisplayByName[col.name] = col.displayName;
+      }
 
       $scope.updateHeight = () => {
         let height = 0;
@@ -112,15 +119,17 @@ angular.module('SEED.controller.facilities_plan', [])
       };
 
       const load_data = (page) => {
+        if ($scope.current_facilities_plan_run_id == undefined) return;
+
         $scope.data_loading = true;
         const per_page = 100;
         const data = {
           page,
           per_page
         };
-        // const column_filters = $scope.column_filters;
-        // const order_by = $scope.column_sorts;
-        facilities_plan_run_service.get_facilities_plan_run_properties($scope.current_facilities_plan_run_id, data).then((data) => {
+        const column_filters = $scope.column_filters;
+        const order_by = $scope.column_sorts;
+        facilities_plan_run_service.get_facilities_plan_run_properties($scope.current_facilities_plan_run_id, data, column_filters, order_by).then((data) => {
           $scope.inventory_pagination = data.pagination;
           $scope.data = data.properties;
           // get_all_labels();
@@ -140,8 +149,10 @@ angular.module('SEED.controller.facilities_plan', [])
           rowTemplate:
             `<div ng-style="grid.appScope.getRowStyle(row)" ng-repeat="(colRenderIndex, col) in colContainer.renderedColumns track by col.colDef.name"
               class="ui-grid-cell" ui-grid-cell></div>`,
-          enableFiltering: false,
-          enableSorting: false,
+          enableFiltering: true,
+          enableSorting: true,
+          useExternalFiltering: true,
+          useExternalSorting: true,
           enableHorizontalScrollbar: uiGridConstants.scrollbars.WHEN_NEEDED,
           cellWidth: 200,
           enableGridMenu: true,
@@ -157,6 +168,20 @@ angular.module('SEED.controller.facilities_plan', [])
             $scope.gridApi = gridApi;
 
             _.delay($scope.updateHeight, 150);
+
+            gridApi.core.on.sortChanged($scope, () => {
+              spinner_utility.show();
+              _.debounce(() => {
+                updateColumnFilterSort();
+                load_data(1);
+              }, 500)();
+            });
+
+            gridApi.core.on.filterChanged($scope, _.debounce(() => {
+              spinner_utility.show();
+              updateColumnFilterSort();
+              load_data(1);
+            }, 2000));
 
             const debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
             angular.element($window).on('resize', debouncedHeightUpdate);
@@ -176,6 +201,134 @@ angular.module('SEED.controller.facilities_plan', [])
             gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue) => {});
           }
         };
+      };
+
+          // https://regexr.com/6cka2
+      const combinedRegex = /^(!?)=\s*(-?\d+(?:\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
+      const parseFilter = (expression) => {
+        // parses an expression string into an object containing operator and value
+        const filterData = expression.match(combinedRegex);
+        if (filterData) {
+          if (!_.isUndefined(filterData[2])) {
+            // Numeric Equality
+            const operator = filterData[1];
+            const value = Number(filterData[2].replace('\\.', '.'));
+            if (operator === '!') {
+              return { string: 'is not', operator: 'ne', value };
+            }
+            return { string: 'is', operator: 'exact', value };
+          }
+          if (!_.isUndefined(filterData[4])) {
+            // Text Equality
+            const operator = filterData[3];
+            const value = filterData[4];
+            if (operator === '!') {
+              return { string: 'is not', operator: 'ne', value };
+            }
+            return { string: 'is', operator: 'exact', value };
+          }
+          if (!_.isUndefined(filterData[7])) {
+            // Numeric Comparison
+            const operator = filterData[5];
+            const value = Number(filterData[6].replace('\\.', '.'));
+            switch (operator) {
+              case '<':
+                return { string: '<', operator: 'lt', value };
+              case '<=':
+                return { string: '<=', operator: 'lte', value };
+              case '>':
+                return { string: '>', operator: 'gt', value };
+              case '>=':
+                return { string: '>=', operator: 'gte', value };
+            }
+          } else {
+            // Date Comparison
+            const operator = filterData[5];
+            const value = filterData[8];
+            switch (operator) {
+              case '<':
+                return { string: '<', operator: 'lt', value };
+              case '<=':
+                return { string: '<=', operator: 'lte', value };
+              case '>':
+                return { string: '>', operator: 'gt', value };
+              case '>=':
+                return { string: '>=', operator: 'gte', value };
+            }
+          }
+        } else {
+          // Case-insensitive Contains
+          return { string: 'contains', operator: 'icontains', value: expression };
+        }
+      };
+
+      const operatorLookup = {
+        ne: '!=',
+        exact: '=',
+        lt: '<',
+        lte: '<=',
+        gt: '>',
+        gte: '>=',
+        icontains: ''
+      };
+      const operatorArr = ['>', '<', '=', '!', '!=', '<=', '>='];
+
+      const updateColumnFilterSort = () => {
+        const columns = _.filter($scope.gridApi.saveState.save().columns, (col) => _.keys(col.sort).filter((key) => key !== 'ignoreSort').length + (_.get(col, 'filters[0].term', '') || '').length > 0);
+
+        // inventory_service.saveGridSettings(`${localStorageKey}.sort`, {
+        //   columns
+        // });
+
+        $scope.column_filters = [];
+        $scope.column_sorts = [];
+        // parse the filters and sorts
+        for (const column of columns) {
+          const { name, filters, sort } = column;
+          // remove the column id at the end of the name
+          const column_name = name.split('_').slice(0, -1).join('_');
+
+          for (const filter of filters) {
+            if (_.isEmpty(filter)) {
+              continue;
+            }
+
+            // a filter can contain many comma-separated filters
+            const subFilters = _.map(_.split(filter.term, ','), _.trim);
+            for (const subFilter of subFilters) {
+              if (subFilter) {
+                // ignore filters with only an operator. user is not done typing
+                if (operatorArr.includes(subFilter)) {
+                  continue;
+                }
+
+                const { string, operator, value } = parseFilter(subFilter);
+                const display = [$scope.columnDisplayByName[name], string, value].join(' ');
+                $scope.column_filters.push({
+                  name,
+                  column_name,
+                  operator,
+                  value,
+                  display
+                });
+              }
+            }
+          }
+
+          if (sort.direction) {
+            // remove the column id at the end of the name
+            const column_name = name.split('_').slice(0, -1).join('_');
+            const display = [$scope.columnDisplayByName[name], sort.direction].join(' ');
+            $scope.column_sorts.push({
+              name,
+              column_name,
+              direction: sort.direction,
+              display,
+              priority: sort.priority
+            });
+            $scope.column_sorts.sort((a, b) => a.priority > b.priority);
+          }
+        }
       };
 
       $scope.getRowStyle = function (row) {
@@ -262,6 +415,6 @@ angular.module('SEED.controller.facilities_plan', [])
         $scope.change_facilities_plan(Number(lastSelectedId));
       } else if ($scope.facilities_plan_runs) {
         // use first one if nothing in storage
-        $scope.change_facilities_plan($scope.facilities_plan_runs[0].id);
+        $scope.change_facilities_plan($scope.facilities_plan_runs[0]?.id);
       }
     }]);

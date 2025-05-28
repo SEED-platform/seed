@@ -11,10 +11,37 @@ angular.module('SEED.service.facilities_plan_run', []).factory('facilities_plan_
   ) => {
     const facilities_plan_run_service = {};
 
-    facilities_plan_run_service.get_facilities_plan_run_properties = (facilities_plan_run_id, data) => $http.get(`/api/v3/facilities_plan_runs/${facilities_plan_run_id}/properties/`, {
+    const format_column_filters = (column_filters) => {
+      if (!column_filters) {
+        return {};
+      }
+      const filters = {};
+      for (const { name, operator, value } of column_filters) {
+        filters[`${name}__${operator}`] = value;
+      }
+      return filters;
+    };
+
+    const format_column_sorts = (column_sorts) => {
+      if (!column_sorts) {
+        return [];
+      }
+
+      const result = [];
+      for (const { name, direction } of column_sorts) {
+        const direction_operator = direction === 'desc' ? '-' : '';
+        result.push(`${direction_operator}${name}`);
+      }
+
+      return { order_by: result };
+    };
+
+    facilities_plan_run_service.get_facilities_plan_run_properties = (facilities_plan_run_id, data, filters, sorts) => $http.get(`/api/v3/facilities_plan_runs/${facilities_plan_run_id}/properties/`, {
       params: {
         organization_id: user_service.get_organization().id,
-        ...data
+        ...data,
+        ...format_column_filters(filters),
+        ...format_column_sorts(sorts)
       }
     })
       .then((response) => response.data)

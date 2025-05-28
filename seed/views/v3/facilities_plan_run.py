@@ -20,7 +20,6 @@ from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_c
 from seed.models import (
     AccessLevelInstance,
     Column,
-    Cycle,
     FacilitiesPlanRun,
     Organization,
     TaxLotProperty,
@@ -113,7 +112,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             if c is not None
         ] + list(fpr.display_columns.values_list("id", flat=True))
 
-        # get views and views run info for later
+        # get views
         views = (
             fpr.cycle.propertyview_set.filter(
                 property__access_level_instance__lft__gte=access_level_instance.lft,
@@ -126,6 +125,19 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         if request.query_params.get("only_ids", "false") == "true":
             return JsonResponse({"ids": list(views.values_list("id", flat=True))})
 
+        try:
+            filters, annotations, order_by = build_view_filters_and_sorts(
+                request.query_params, columns_from_database, inventory_type, org.access_level_names
+            )
+            if order_by == ["id"]:
+                order_by = ["run_info__rank"]
+            views = views.annotate(**annotations).filter(filters).order_by(*order_by)
+        except FilterError as e:
+            return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as e:
+            return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # get views run info for later
         view_run_infos = views.values(
             "run_info__rank",
             "run_info__total_energy_usage",
@@ -133,16 +145,6 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             "run_info__running_percentage",
             "run_info__running_square_footage",
         )
-
-        try:
-            _, annotations, _ = build_view_filters_and_sorts(
-                request.query_params, columns_from_database, inventory_type, org.access_level_names
-            )
-            views = views.annotate(**annotations)
-        except FilterError as e:
-            return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
-        except ValueError as e:
-            return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Paginate results
         paginator = Paginator(views, per_page)
@@ -171,8 +173,6 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         # collapse pint quantity units to their magnitudes
         properties = TaxLotProperty.serialize(views, show_columns, columns_from_database, False, pk)
         properties = [apply_display_unit_preferences(org, x) for x in properties]
-
-        cycle_name_by_id = dict(Cycle.objects.filter(organization=org).values_list("id", "name"))
 
         for property_json, run_info in zip(
             properties, view_run_infos[paginator.page(page).start_index() : paginator.page(page).end_index() + 1]
