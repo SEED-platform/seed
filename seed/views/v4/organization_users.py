@@ -9,6 +9,8 @@ from seed.utils.api import OrgMixin, api_endpoint_class
 
 
 class OrganizationUserViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin):
+    serializer_class = OrganizationUserSerializer
+
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class("requires_viewer")
@@ -25,6 +27,7 @@ class OrganizationUserViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixi
         data = request.data
         data["settings"] = request.data.get("settings", {})
         serializer = OrganizationUserSerializer(org_user, data=data, partial=True)
+
         if serializer.is_valid():
             serializer.save()
             return JsonResponse({"status": "success", "data": serializer.data})

@@ -65,6 +65,7 @@ class TaxLotPropertyViewTests(DataMappingBaseTestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
         self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.client.login(**user_details)
@@ -168,6 +169,31 @@ class TaxLotPropertyViewTests(DataMappingBaseTestCase):
         related = data["results"][0]["related"][0]
         self.assertTrue("merged_indicator" in related)
         self.assertFalse(related["merged_indicator"])
+
+    def test_record_count(self):
+        cycle2 = self.cycle_factory.get_cycle()
+        # create 100 properties for each cycle, 50 taxlots in first cycle
+        for i in range(100):
+            self.property_view_factory.get_property_view(cycle=self.cycle)
+            self.property_view_factory.get_property_view(cycle=cycle2)
+            if i < 50:
+                self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle)
+
+        url = (
+            reverse("api:v4:tax_lot_properties-record-count")
+            + f"?organization_id={self.org.pk}&cycle_id={self.cycle.pk}&inventory_type=properties"
+        )
+        response = self.client.get(url)
+        data = json.loads(response.content)
+        self.assertEqual(data["data"], 101)
+
+        url = (
+            reverse("api:v4:tax_lot_properties-record-count")
+            + f"?organization_id={self.org.pk}&cycle_id={self.cycle.pk}&inventory_type=taxlots"
+        )
+        response = self.client.get(url)
+        data = json.loads(response.content)
+        self.assertEqual(data["data"], 50)
 
 
 class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
