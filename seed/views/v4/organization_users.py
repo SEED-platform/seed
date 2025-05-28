@@ -25,10 +25,6 @@ class OrganizationUserViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixi
         data = request.data
         data["settings"] = request.data.get("settings", {})
         serializer = OrganizationUserSerializer(org_user, data=data, partial=True)
-        import logging
-
-        logging.error(">>> request.data %s", data)
-        logging.error(">>> settings %s", data["settings"])
         if serializer.is_valid():
             serializer.save()
             return JsonResponse({"status": "success", "data": serializer.data})
