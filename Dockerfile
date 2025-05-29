@@ -4,9 +4,9 @@ ARG NGINX_LISTEN_OPTS
 # DESCRIPTION:      Image with seed platform and dependencies running in development mode
 # TO_BUILD_AND_RUN: docker compose build && docker compose up
 
-FROM node:20-alpine3.16 AS node
+FROM node:20-alpine3.19 AS node
 
-FROM alpine:3.14
+FROM alpine:3.19 as build
 
 ARG NGINX_LISTEN_OPTS
 
@@ -16,7 +16,6 @@ COPY --from=node /usr/local/include /usr/local/include
 COPY --from=node /usr/local/bin /usr/local/bin
 
 RUN apk add --no-cache \
-        python3-dev \
         postgresql-dev \
         coreutils \
         alpine-sdk \
@@ -33,18 +32,20 @@ RUN apk add --no-cache \
         openssl-dev \
         geos-dev \
         gdal \
+        gdal-dev \
         gcc \
         musl-dev \
         cargo \
-        tzdata && \
-    ln -sf /usr/bin/python3 /usr/bin/python && \
-    python -m ensurepip && \
-    rm -r /usr/lib/python*/ensurepip && \
-    ln -sf /usr/bin/pip3 /usr/bin/pip && \
-    pip install --upgrade pip setuptools && \
-    pip install supervisor==4.2.5 && \
+        tzdata \
+        bzip2-dev \
+        readline-dev \
+        sqlite-dev \
+        ncurses-dev \
+        xz-dev \
+        zlib-dev \
+        libxml2-dev && \
     mkdir -p /var/log/supervisord && \
-    rm -r /root/.cache && \
+    rm -r /root/.cache || true && \
     addgroup -g 1000 uwsgi && \
     adduser -G uwsgi -H -u 1000 -S uwsgi && \
     mkdir -p /run/nginx
@@ -55,6 +56,27 @@ RUN apk add --no-cache \
 ##   - pip install --upgrade pip overwrites the pip so it is no longer a symlink
 ##   - coreutils is required due to an issue with our wait-for-it.sch script:
 ##     https://github.com/vishnubob/wait-for-it/issues/71
+
+# Install pyenv and Python globally
+ENV PYTHON_VERSION=3.9.17
+ENV PYENV_ROOT="/opt/pyenv"
+ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
+
+RUN git clone https://github.com/pyenv/pyenv.git $PYENV_ROOT && \
+    $PYENV_ROOT/bin/pyenv install $PYTHON_VERSION && \
+    $PYENV_ROOT/bin/pyenv global $PYTHON_VERSION && \
+    ln -sf $PYENV_ROOT/shims/python /usr/local/bin/python && \
+    ln -sf $PYENV_ROOT/shims/python3 /usr/local/bin/python3 && \
+    ln -sf $PYENV_ROOT/shims/pip /usr/local/bin/pip && \
+    ln -sf $PYENV_ROOT/shims/pip3 /usr/local/bin/pip3
+
+# Make sure non-root users inherit pyenv paths
+ENV PYENV_ROOT="/opt/pyenv"
+ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
+
+# Install pip 24.2 for Python
+RUN bash -c "python3 -m ensurepip --upgrade && python3 -m pip install --upgrade pip setuptools && \
+    pip install supervisor==4.2.5"
 
 ### Install python requirements
 WORKDIR /seed
@@ -106,4 +128,4 @@ ENTRYPOINT ["seed-entrypoint"]
 
 EXPOSE 80
 
-CMD ["supervisord"]
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
