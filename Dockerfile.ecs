@@ -102,7 +102,7 @@ COPY ./package.json /seed/package.json
 COPY ./vendors/package.json /seed/vendors/package.json
 COPY ./README.md /seed/README.md
 # unsafe-perm allows the package.json postinstall script to run with the elevated permissions
-RUN npm install --unsafe-perm
+RUN npm install --unsafe-perm && npm prune --production
 
 ### Copy over the remaining part of the SEED application and some helpers
 WORKDIR /seed
