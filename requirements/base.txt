@@ -1,5 +1,5 @@
 # Django
-django==3.2.25  # TODO update
+django==4.2.22  # TODO update
 
 # Used by django-filter. See here: https://github.com/carltongibson/django-filter/blob/fe90e3a5fdeaff0983d1325a3e9dcf3458ef078f/docs/guide/rest_framework.txt#L210
 django-crispy-forms==1.8.1  # Update to major version 2
