@@ -32,7 +32,7 @@
     <!-- Access Level -->
     <li class="r-row r-row-centered">
       <label class="control-label col-sm-4" translate>Access Level:</label>
-      <select class="form-control col-sm-8" ng-model="level_name_index" ng-change="change_selected_level_index()" ng-options="i as name for (i, name) in level_names"></select>
+      <select class="form-control col-sm-8" ng-model="level_name_index" ng-change="change_selected_level_index()" ng-options="i as name for (i, name) in level_names" ng-disabled="editing_existing_fpr"></select>
     </li>
     <li class="r-row r-row-centered">
       <label class="control-label col-sm-4" translate>Access Level Instance:</label>
@@ -40,6 +40,7 @@
         class="form-control col-sm-8"
         ng-model="access_level_instance_id"
         ng-options="potential_level_instance.id as potential_level_instance.name for potential_level_instance in potential_level_instances"
+        ng-disabled="editing_existing_fpr"
       ></select>
     </li>
     <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Select the Access Level and Instance of the data to include in the calculations.</span></li>
@@ -58,6 +59,7 @@
   </ul>
 </div>
 <div class="modal-footer">
+  <button class="btn btn-primary r-margin-right-5" ng-click="save()" ng-disabled="save_disabled()" translate>Save</button>
   <button class="btn btn-primary r-margin-right-5" ng-click="save()" ng-disabled="save_disabled()" translate>Save</button>
   <button class="btn btn-default r-margin-right-5" ng-click="close()" translate>Dismiss</button>
 </div>

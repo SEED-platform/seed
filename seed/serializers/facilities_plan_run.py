@@ -14,6 +14,8 @@ class FacilitiesPlanRunSerializer(serializers.ModelSerializer):
     property_display_field = serializers.SerializerMethodField("get_property_display_field", read_only=False)
     run_at = serializers.DateTimeField("%Y-%m-%d %H:%M:%S %Z", read_only=True)
     display_columns = serializers.PrimaryKeyRelatedField(queryset=Column.objects.all(), many=True)
+    ali_name = serializers.CharField(source="ali.name", read_only=True)
+    ali_level = serializers.SerializerMethodField("get_ali_level", read_only=True)
 
     column_names = [
         "compliance_cycle_year_column",
@@ -55,3 +57,6 @@ class FacilitiesPlanRunSerializer(serializers.ModelSerializer):
         ).data
 
         return result
+
+    def get_ali_level(self, obj):
+        return obj.ali.organization.access_level_names[obj.ali.depth - 1]

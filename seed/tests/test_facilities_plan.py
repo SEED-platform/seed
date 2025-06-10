@@ -123,6 +123,8 @@ class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
             name="Test Facilities Plan Run",
         )
 
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
+
     def test_list(self):
         # Action
         response = self.client.get(
@@ -165,6 +167,55 @@ class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
         self.assertListEqual(data["display_columns"], [])
         self.assertEqual(data["property_display_field"]["column_name"], "address_line_1")
         self.assertEqual(data["run_at"], None)
+
+    def test_get_properties(self):
+        # Setup
+        PropertyView.objects.all().delete()
+        for e in [10, 20, 30, 40]:
+            self.property_view_factory.get_property_view(
+                cycle=self.cycle,
+                extra_data={
+                    "electric_energy_usage_column": e,
+                    "gas_energy_usage_column": 0,
+                    "steam_energy_usage_column": 0,
+                    "include_in_total_denominator_column": True,
+                },
+            )
+
+        # Action
+        response = self.client.get(
+            reverse("api:v3:facilities_plan_runs-properties", args=[self.facilities_plan_run.id]) + "?organization_id=" + str(self.org.id),
+            content_type="application/json",
+        )
+        properties = response.json()["properties"]
+
+        # Assert
+        self.assertEqual(len(properties), 4)
+
+    def test_run(self):
+        # Setup
+        PropertyView.objects.all().delete()
+        for e in [10, 20, 30, 40]:
+            self.property_view_factory.get_property_view(
+                cycle=self.cycle,
+                extra_data={
+                    "electric_energy_usage_column": e,
+                    "gas_energy_usage_column": 0,
+                    "steam_energy_usage_column": 0,
+                    "include_in_total_denominator_column": True,
+                },
+            )
+        self.assertEqual(len(self.facilities_plan_run.property_rankings.all()), 0)
+
+        # Action
+        response = self.client.post(
+            reverse("api:v3:facilities_plan_runs-run", args=[self.facilities_plan_run.id]) + "?organization_id=" + str(self.org.id),
+            content_type="application/json",
+        )
+
+        # Assert
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(self.facilities_plan_run.property_rankings.all()), 4)
 
 
 class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):

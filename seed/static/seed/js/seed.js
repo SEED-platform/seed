@@ -68,6 +68,7 @@
     'SEED.controller.delete_data_logger_upload_or_update_modal',
     'SEED.controller.delete_dataset_modal',
     'SEED.controller.delete_document_modal',
+    'SEED.controller.delete_facilities_plan_run_modal',
     'SEED.controller.delete_file_modal',
     'SEED.controller.delete_modal',
     'SEED.controller.update_derived_data_modal',
