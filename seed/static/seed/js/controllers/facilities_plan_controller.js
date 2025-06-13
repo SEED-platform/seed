@@ -415,7 +415,7 @@ angular.module('SEED.controller.facilities_plan', [])
         // select all rows to visibly support everything has been selected
         $scope.gridApi.selection.selectAllRows();
         $scope.selected_count = $scope.inventory_pagination.total;
-        facilities_plan_run_service.get_all_ids($scope.current_facilities_plan_run_id).then((response) => {
+        facilities_plan_run_service.get_all_ids($scope.current_facilities_plan_run_id, $scope.column_filters).then((response) => {
           $scope.selected_ids = response.ids;
         });
       };

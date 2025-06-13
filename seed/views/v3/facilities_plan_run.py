@@ -122,9 +122,6 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             .order_by("run_info__rank")
         )
 
-        if request.query_params.get("only_ids", "false") == "true":
-            return JsonResponse({"ids": list(views.values_list("id", flat=True))})
-
         try:
             filters, annotations, order_by = build_view_filters_and_sorts(
                 request.query_params, columns_from_database, inventory_type, org.access_level_names
@@ -136,6 +133,9 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
         except ValueError as e:
             return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.query_params.get("only_ids", "false") == "true":
+            return JsonResponse({"ids": list(views.values_list("id", flat=True))})
 
         # get views run info for later
         view_run_infos = views.values(
