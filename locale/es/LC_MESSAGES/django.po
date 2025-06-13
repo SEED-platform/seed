@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-05-07 19:23\n"
+"PO-Revision-Date: 2025-05-27 19:27\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -175,7 +175,7 @@ msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "El análisis EUI sumará las lecturas de los contadores de la propiedad de los últimos doce meses para calcular el consumo de energía por metro cuadrado al año. Si faltan lecturas de contadores, el análisis devolverá una cobertura inferior al 100% para alertar al usuario de que falta una lectura de contador."
 
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
-msgstr "El análisis de estadísticas de elementos analiza los datos de elementos de una propiedad (si los hay) para contar la cantidad de elementos del tipo \"Panel de control DDC\". También genera los valores de índice de condición agregados (promedio) para los elementos de emisión de alcance 1 y guarda esas cantidades en la propiedad."
+msgstr "El análisis de estadísticas de elementos analiza los datos de elementos de una propiedad (si los hay) para contar la cantidad de elementos del tipo \"Panel de control DDC\". También genera los valores de índice de condición agregados (promedio) para los elementos de EISA 2007-432 y guarda esas cantidades en la propiedad."
 
 #, fuzzy
 msgid "AND"
@@ -508,6 +508,9 @@ msgstr "Análisis Nombre"
 msgid "Analysis Name (User Defined)"
 msgstr "Nombre del análisis (definido por el usuario)"
 
+msgid "Analysis Run"
+msgstr "Ejecución de análisis"
+
 #, fuzzy
 msgid "Analysis State"
 msgstr "Análisis Estado"
@@ -727,6 +730,12 @@ msgstr "BuildingSync Medidas recomendadas"
 msgid "Buildings"
 msgstr "Edificios"
 
+msgid "By Analysis"
+msgstr "Por análisis"
+
+msgid "By Property"
+msgstr "Por propiedad"
+
 #, fuzzy
 msgid "By clicking the Log In button you accept the NREL Data Terms."
 msgstr "Al hacer clic en el botón Iniciar sesión, acepta las Condiciones de datos del NREL."
@@ -824,6 +833,9 @@ msgstr "Normalmente, cuando un registro importado se combina con otro, el valor 
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Completar y actualizar la página"
 
+msgid "COMPLIANCE_CYCLE_YEAR_DESC"
+msgstr "Identifique la columna SEED que se utiliza para almacenar la información del año del ciclo de cumplimiento. Si aún no existe, créela en la página Configuración de columnas."
+
 #, fuzzy
 msgid "CONDITION_INDEX_THRESHOLD_HELP"
 msgstr "El índice de condición que se utilizará como umbral de comparación en los cálculos."
@@ -884,6 +896,9 @@ msgstr "Crear un registrador de datos"
 #, fuzzy
 msgid "CURRENTLY_GEOCODING"
 msgstr "Geocodificación actual"
+
+msgid "Calculate the Plan"
+msgstr "Calcular el plan"
 
 #, fuzzy
 msgid "Campus"
@@ -1065,6 +1080,9 @@ msgstr "Complete"
 msgid "Compliance"
 msgstr "Conformidad"
 
+msgid "Compliance Cycle Year Column"
+msgstr "Columna del año del ciclo de cumplimiento"
+
 #, fuzzy
 msgid "Compliance Information"
 msgstr "Información sobre el cumplimiento"
@@ -1229,6 +1247,9 @@ msgstr "Crear grupo"
 
 msgid "Create Meter"
 msgstr "Crear medidor"
+
+msgid "Create New Plan Run"
+msgstr "Crear nueva ejecución de plan"
 
 #, fuzzy
 msgid "Create New Sub-Organization"
@@ -1742,6 +1763,9 @@ msgstr "Dominio"
 msgid "Done"
 msgstr "Hecho"
 
+msgid "Download Output Files"
+msgstr "Descargar archivos de salida"
+
 #, fuzzy
 msgid "Download Sample Data"
 msgstr "Descargar datos de muestra"
@@ -1785,6 +1809,9 @@ msgstr "Duplicados"
 #, fuzzy
 msgid "EDIT_GOAL_NOTES"
 msgstr "Editar campos para las propiedades seleccionadas"
+
+msgid "ELECTRIC_ENERGY_USAGE_DESC"
+msgstr "Identifique la columna SEED utilizada para almacenar el uso de energía eléctrica."
 
 msgid "EMAIL_TEMPLATE_EXAMPLE"
 msgstr "\"¡La latitud y longitud de tu edificio es \\{\\{latitud\\}\\}, \\{\\{longitud\\}\\}!\""
@@ -1858,6 +1885,9 @@ msgstr "Tipo EVSE"
 msgid "EXCLUDE"
 msgstr "EXCLUIR"
 
+msgid "EXCLUDE_FROM_PLAN_DESC"
+msgstr "Identifique la columna SEED (booleana) que indica si una propiedad debe excluirse del plan. Un valor de verdadero (1) indica que la propiedad debe ser despriorizada independientemente del consumo de energía, mientras que un valor de falso (0) indica que la propiedad debe considerarse para su inclusión en el porcentaje de instalaciones configurado anteriormente. Si esta columna aún no existe, créela en la página Configuración de columnas."
+
 #, fuzzy
 msgid "EXTRA_DATA_COL_TYPE_CHANGE"
 msgstr "Para los campos de \"datos adicionales\", esto permite al usuario establecer el tipo, como Texto, Número, Fecha, etc."
@@ -1904,6 +1934,9 @@ msgstr "Transcurrido:"
 #, fuzzy
 msgid "Electric EUI Field"
 msgstr "Campo eléctrico EUI"
+
+msgid "Electric Energy Usage Column"
+msgstr "Columna de consumo de energía eléctrica"
 
 #: seed/landing/forms.py:13
 #, fuzzy
@@ -1973,6 +2006,12 @@ msgstr "Capacidad energética (kWh)"
 msgid "Energy Metric"
 msgstr "Métrica energética"
 
+msgid "Energy Running Sum Percentage"
+msgstr "Porcentaje de suma acumulada de energía"
+
+msgid "Energy Usage Columns"
+msgstr "Columnas de consumo de energía"
+
 #, fuzzy
 msgid "Energy data file"
 msgstr "Fichero de datos sobre energía"
@@ -2037,6 +2076,9 @@ msgstr "Ejemplo de uso"
 #, fuzzy
 msgid "Exclude"
 msgstr "Excluir"
+
+msgid "Exclude From Plan Column"
+msgstr "Excluir de la columna del plan"
 
 #, fuzzy
 msgid "Exclude From Uniqueness"
@@ -2133,6 +2175,15 @@ msgstr "Exportación de propiedades a su cuenta de Plantilla de Auditoría"
 msgid "Exporting selected properties..."
 msgstr "Exportar propiedades seleccionadas..."
 
+msgid "FACILITIES_PLAN_EXISTS_DESC"
+msgstr "Seleccione una ejecución de plan de instalaciones del menú desplegable a continuación o cree una nueva ejecución de plan"
+
+msgid "FACILITIES_PLAN_NOT_EXISTS_DESC"
+msgstr "Crear una nueva ejecución del plan de instalaciones"
+
+msgid "FACILITIES_PLAN_SETUP_DESC"
+msgstr "Utilice la configuración a continuación para configurar un Plan de Instalaciones que identifique las instalaciones que representan un porcentaje específico del consumo energético total de la organización. Originalmente desarrollado para identificar las instalaciones cubiertas por la Sección 432 de la Ley de Independencia y Seguridad Energética de 2007 (EISA 432), puede utilizarse para otros fines de planificación. Esta sección contiene la configuración básica requerida. Se pueden realizar configuraciones adicionales por nivel de acceso o ciclo en la pestaña Plan de Instalaciones de la sección Información."
+
 #, fuzzy
 msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
 msgstr "Error de geocodificación - Su clave API de MapQuest no es válida. Actualice su clave API de MapQuest o desactive la geocodificación en los ajustes de la organización."
@@ -2175,6 +2226,9 @@ msgstr "Tipos de archivo admitidos: <strong>.csv</strong>, <strong>.xls</strong>
 
 msgid "FOSSIL_FUEL_EUI_HELP"
 msgstr "Umbral EUI de combustibles fósiles para el edificio (incluye gas, etc.)"
+
+msgid "Facilities Plan"
+msgstr "Plan de Instalaciones"
 
 #, fuzzy
 msgid "Failed to delete inventory"
@@ -2341,6 +2395,9 @@ msgstr "En la tabla siguiente, seleccione las reglas que desea: 1) activar/desac
 msgid "Funding from"
 msgstr "Financiación de"
 
+msgid "GAS_ENERGY_USAGE_DESC"
+msgstr "Identifique la columna SEMILLA utilizada para almacenar el consumo de energía del gas."
+
 #, fuzzy
 msgid "GEOCODED_MANUALLY"
 msgstr "geocodificado manualmente"
@@ -2444,6 +2501,12 @@ msgstr "Guía SFTool de la GSA"
 #, fuzzy
 msgid "Gas EUI Field"
 msgstr "Gas EUI Campo"
+
+msgid "Gas Energy Usage Column"
+msgstr "Columna de consumo de energía de gas"
+
+msgid "General Configurations"
+msgstr "Configuraciones generales"
 
 #, fuzzy
 msgid "Generate Token"
@@ -2599,6 +2662,9 @@ msgstr "<label class=\"label label-danger\">Duplicados</label> -- si los campos 
 msgid "IMPORT_ANOTHER_QUESTION"
 msgstr "¿Desea añadir otro archivo?"
 
+msgid "INCLUDE_IN_DENOMINATOR_DESC"
+msgstr "Identifique la columna SEED (booleana) que indica si una propiedad debe incluirse en el cálculo del consumo energético total. Un valor de verdadero (1) indica que el consumo energético de la propiedad debe utilizarse para calcular el consumo energético total de la organización, mientras que un valor de falso (0) indica que la propiedad no debe incluirse en los cálculos del consumo energético total y no formará parte del plan. Si esta columna aún no existe, créela en la página Configuración de columnas."
+
 #, fuzzy
 msgid "INCLUDE_SHARED_PROPERTIES"
 msgstr "Incluya en su Lista de propiedades todas las propiedades compartidas con usted."
@@ -2719,6 +2785,9 @@ msgstr "Incluir cualquier"
 #, fuzzy
 msgid "Include CSV Label Header"
 msgstr "Incluir encabezado de etiqueta CSV"
+
+msgid "Include In Total Denominator Column"
+msgstr "Incluir en la columna del denominador total"
 
 #, fuzzy
 msgid "Include Notes"
@@ -3414,6 +3483,9 @@ msgstr "Nuevo análisis"
 msgid "New Build or Acquisition"
 msgstr "Nueva construcción o adquisición"
 
+msgid "New Facilities Plan"
+msgstr "Nuevo Plan de Instalaciones"
+
 #, fuzzy
 msgid "New Goal"
 msgstr "Nuevo Objetivo"
@@ -3551,7 +3623,7 @@ msgid "Number of Properties"
 msgstr "Número de inmuebles"
 
 msgid "Number of Runs"
-msgstr "Número de carreras"
+msgstr "Número de Ejecuciones"
 
 #, fuzzy
 msgid "Number of Tax Lots"
@@ -3851,6 +3923,9 @@ msgstr "Porcentaje (%)"
 #, fuzzy
 msgid "Permanently delete extra_data columns and all associated data"
 msgstr "Eliminar permanentemente las columnas extra_data y todos los datos asociados"
+
+msgid "Plan last Run at"
+msgstr "Planificar la última ejecución en"
 
 #: seed/landing/templates/landing/password_set.html:16
 #, fuzzy
@@ -4171,6 +4246,9 @@ msgstr "Renombrar columna"
 msgid "RENAME_SYS_LEVEL_COL"
 msgstr "Renombrar permite a los usuarios cambiar el nombre del campo subyacente mostrado en Nombre de columna / Nombre de campo. Cambiar el nombre de un campo significa que ese campo se cambiará en todos los datos de la organización."
 
+msgid "REQUIRE_IN_PLAN_DESC"
+msgstr "Identifique la columna SEED (booleana) que se utiliza para indicar si una propiedad debe ser obligatoria en el plan, independientemente de su consumo energético. Un valor de verdadero (1) indica que la propiedad se priorizará y aparecerá en primer lugar en el porcentaje de instalaciones configurado anteriormente. Un valor de falso (0) indica que la propiedad puede considerarse para su inclusión en el porcentaje de instalaciones, pero es posible que no se incluya en el plan debido a su consumo energético. Si esta columna aún no existe, créela en la página Configuración de columnas."
+
 #, fuzzy
 msgid "REVIEW YOUR DATA MAPPINGS"
 msgstr "REVISE SUS ASIGNACIONES DE DATOS"
@@ -4178,6 +4256,9 @@ msgstr "REVISE SUS ASIGNACIONES DE DATOS"
 #, fuzzy
 msgid "REVIEW_MATCHING_CRITERIA"
 msgstr "Revise sus criterios de correspondencia en la página Configuración de columna antes de importar datos por primera vez. No podrá eliminar campos de los criterios de correspondencia después de añadir los datos a su organización."
+
+msgid "RUNNING_SUM_PERCENTAGE_DESC"
+msgstr "Establezca la fracción porcentual (entre 0 y 1) de instalaciones a incluir en el plan en función del uso total de energía."
 
 #, fuzzy
 msgid "Read more here."
@@ -4309,6 +4390,9 @@ msgstr "Plazo de presentación de informes"
 msgid "Reports"
 msgstr "Informes"
 
+msgid "Require In Plan Column"
+msgstr "Requerir columna en el plan"
+
 msgid "Require two-factor authentication"
 msgstr "Exigir autenticación de dos factores"
 
@@ -4436,6 +4520,9 @@ msgstr "Ejecutar Id"
 #, fuzzy
 msgid "Run Status"
 msgstr "Estado de ejecución"
+
+msgid "Runs"
+msgstr "Ejecuciones"
 
 #, fuzzy
 msgid "SEED Field Containing Organization's Identifier"
@@ -4709,6 +4796,9 @@ msgstr "Haga clic en los botones de edición para editar etiquetas individuales.
 msgid "SQUARE_FOOTAGE_THRESHOLD_HELP"
 msgstr "Los metros cuadrados brutos que se utilizarán como umbral de comparación en los cálculos"
 
+msgid "STEAM_ENERGY_USAGE_DESC"
+msgstr "Identifique la columna SEMILLA utilizada para almacenar el uso de energía de vapor."
+
 #, fuzzy
 msgid "STEP 1: Map Your Data"
 msgstr "PASO 1: Mapee sus datos"
@@ -4775,6 +4865,9 @@ msgstr "Guardar cambios"
 #, fuzzy
 msgid "Save Concatenation"
 msgstr "Guardar concatenación"
+
+msgid "Save Facilities Plan"
+msgstr "Plan de instalaciones de ahorro"
 
 #, fuzzy
 msgid "Save Mappings"
@@ -4850,6 +4943,9 @@ msgstr "Seleccione las propiedades que desea actualizar"
 msgid "Select a Custom Report to get started!"
 msgstr "Seleccione un informe personalizado para empezar"
 
+msgid "Select a Facilities Plan Run from the dropdown below"
+msgstr "Seleccione una ejecución de plan de instalaciones del menú desplegable a continuación"
+
 msgid "Select a Goal Type. A Standard goal will calculate a standard EUI per sqft. A Transaction goal will also calculate an EUI per transaction."
 msgstr "Seleccione un tipo de objetivo. Un objetivo estándar calculará un EUI estándar por pie cuadrado. Un objetivo de transacción también calculará un EUI por transacción."
 
@@ -4902,6 +4998,9 @@ msgstr "Seleccione el tipo de archivo(s) que desea añadir a"
 #, fuzzy
 msgid "Select which columns to include in the list:"
 msgstr "Seleccione las columnas que desea incluir en la lista:"
+
+msgid "Selected Facilities Plan"
+msgstr "Plan de Instalaciones Seleccionadas"
 
 #, fuzzy
 msgid "Selected Properties"
@@ -5073,6 +5172,9 @@ msgstr "Estado (Propiedad)"
 #, fuzzy
 msgid "State (Tax Lot)"
 msgstr "Estado (Lote fiscal)"
+
+msgid "Steam Energy Usage Column"
+msgstr "Columna de consumo de energía de vapor"
 
 #, fuzzy
 msgid "Step 1: Add Access Levels"
@@ -5424,6 +5526,9 @@ msgstr "Este nombre de etiqueta ya está ocupado."
 #, fuzzy
 msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "Esta contraseña debe contener al menos %(quantity)d %(type)s caracteres."
+
+msgid "This plan has not yet been run"
+msgstr "Este plan aún no se ha ejecutado"
 
 #, fuzzy
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
@@ -5883,6 +5988,9 @@ msgstr "Ver el seguimiento del cumplimiento"
 #, fuzzy
 msgid "View Project"
 msgstr "Ver proyecto"
+
+msgid "View Report"
+msgstr "Ver informe"
 
 #, fuzzy
 msgid "View by Property"

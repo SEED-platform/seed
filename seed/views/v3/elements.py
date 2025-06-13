@@ -17,7 +17,7 @@ from tkbl import bsync_by_uniformat_code, filter_by_uniformat_code
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.lib.uniformat.uniformat import uniformat_codes
 from seed.models import Element, Uniformat
 from seed.serializers.elements import ElementPropertySerializer, ElementSerializer
@@ -201,7 +201,7 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         Technologies Knowledge Base Library recommendations for Elements belonging to a Property with the lowest remaining service life
         """
 
-        tkbl_elements = self.get_queryset().filter(code__code__in=SCOPE_ONE_EMISSION_CODES).order_by("remaining_service_life")[:3]
+        tkbl_elements = self.get_queryset().filter(code__code__in=EISA432_CODES).order_by("remaining_service_life")[:3]
 
         results = []
         for e in tkbl_elements:
