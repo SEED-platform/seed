@@ -34,7 +34,7 @@ rm -rf /seed/collected_static/CACHE
 ./manage.py compress --force
 
 # set the permissions in the /seed/collected_static folder
-chown -R uwsgi /seed/collected_static
+chown -R 1000 /seed/collected_static
 
 # Run any migrations before starting -- always for now
 ./manage.py migrate

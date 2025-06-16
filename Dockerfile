@@ -4,16 +4,9 @@ ARG NGINX_LISTEN_OPTS
 # DESCRIPTION:      Image with seed platform and dependencies running in development mode
 # TO_BUILD_AND_RUN: docker compose build && docker compose up
 
-FROM node:20-alpine3.19 AS node
-
-FROM alpine:3.19 as build
+FROM node:22-alpine3.19
 
 ARG NGINX_LISTEN_OPTS
-
-COPY --from=node /usr/lib /usr/lib
-COPY --from=node /usr/local/lib /usr/local/lib
-COPY --from=node /usr/local/include /usr/local/include
-COPY --from=node /usr/local/bin /usr/local/bin
 
 RUN apk add --no-cache \
         postgresql-dev \
@@ -45,20 +38,14 @@ RUN apk add --no-cache \
         zlib-dev \
         libxml2-dev && \
     mkdir -p /var/log/supervisord && \
-    rm -r /root/.cache || true && \
-    addgroup -g 1000 uwsgi && \
-    adduser -G uwsgi -H -u 1000 -S uwsgi && \
     mkdir -p /run/nginx
 
 ## Note on some of the commands above:
-##   - create the uwsgi user and group to have id of 1000
-##   - copy over python3 as python
-##   - pip install --upgrade pip overwrites the pip so it is no longer a symlink
 ##   - coreutils is required due to an issue with our wait-for-it.sch script:
 ##     https://github.com/vishnubob/wait-for-it/issues/71
 
 # Install pyenv and Python globally
-ENV PYTHON_VERSION=3.9.17
+ENV PYTHON_VERSION=3.9.22
 ENV PYENV_ROOT="/opt/pyenv"
 ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 
@@ -74,7 +61,7 @@ RUN git clone https://github.com/pyenv/pyenv.git $PYENV_ROOT && \
 ENV PYENV_ROOT="/opt/pyenv"
 ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 
-# Install pip 24.2 for Python
+# Install pip
 RUN bash -c "python3 -m ensurepip --upgrade && python3 -m pip install --upgrade pip setuptools && \
     pip install supervisor==4.2.5"
 
@@ -85,14 +72,16 @@ COPY ./requirements/*.txt /seed/requirements/
 RUN pip uninstall -y enum34
 RUN pip install -r requirements/aws.txt
 
-### Install JavaScript requirements - do this first because they take awhile
+### Install JavaScript requirements - do this first because they take a while
 ### and the dependencies will probably change slower than python packages.
 ### README.md stops the no readme warning
 COPY ./package.json /seed/package.json
+COPY ./package-lock.json /seed/package-lock.json
 COPY ./vendors/package.json /seed/vendors/package.json
+COPY ./vendors/package-lock.json /seed/vendors/package-lock.json
 COPY ./README.md /seed/README.md
 # unsafe-perm allows the package.json postinstall script to run with the elevated permissions
-RUN npm install --unsafe-perm
+RUN npm install --omit=dev --unsafe-perm
 
 ### Copy over the remaining part of the SEED application and some helpers
 WORKDIR /seed
