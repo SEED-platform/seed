@@ -70,6 +70,7 @@ from seed.models import (
     Column,
     ColumnMapping,
     Cycle,
+    CycleGoal,
     DataLogger,
     Goal,
     Meter,
@@ -96,7 +97,7 @@ STR_TO_CLASS = {"TaxLotState": TaxLotState, "PropertyState": PropertyState}
 
 
 @shared_task(ignore_result=True)
-def check_data_chunk(org_id, model, ids, dq_id, goal_id=None):
+def check_data_chunk(org_id, model, ids, dq_id, cycle_goal_id=None):
     try:
         organization = Organization.objects.get(id=org_id)
         super_organization = organization.get_parent()
@@ -107,15 +108,15 @@ def check_data_chunk(org_id, model, ids, dq_id, goal_id=None):
         qs = PropertyState.objects.filter(id__in=ids)
     elif model == "TaxLotState":
         qs = TaxLotState.objects.filter(id__in=ids)
-    elif model == "Property" and goal_id:
+    elif model == "Property" and cycle_goal_id:
         # return a list of dicts with property, basseline_state, and current_state
-        state_pairs = get_state_pairs(ids, goal_id)
+        state_pairs = get_state_pairs(ids, cycle_goal_id)
 
     d = DataQualityCheck.retrieve(super_organization.id)
-    if not goal_id:
+    if not cycle_goal_id:
         d.check_data(model, qs.iterator())
     else:
-        d.check_data_cross_cycle(goal_id, state_pairs)
+        d.check_data_cross_cycle(cycle_goal_id, state_pairs)
     d.save_to_cache(dq_id, organization.id)
 
 
@@ -132,17 +133,22 @@ def finish_checking(progress_key):
     return progress_data.result()
 
 
-def do_checks(org_id, propertystate_ids, taxlotstate_ids, goal_id, import_file_id=None):
+def do_checks(org_id, propertystate_ids, taxlotstate_ids, cycle_goal_id, import_file_id=None):
     """
     Run the dq checks on the data
 
     :param org_id:
     :param propertystate_ids:
     :param taxlotstate_ids:
-    :param goal_id:
+    :param cycle_goal_id:
     :param import_file_id: int, if present, find the data to check by the import file id
     :return:
     """
+    _log.error("++++")
+    _log.error(org_id)
+    _log.error(propertystate_ids)
+    _log.error(cycle_goal_id)
+    _log.error("++++")
     # If import_file_id, then use that as the identifier, otherwise, initialize_cache will
     # create a new random id
     _cache_key, dq_id = DataQualityCheck.initialize_cache(import_file_id, org_id)
@@ -162,7 +168,7 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, goal_id, import_file_i
             .values_list("id", flat=True)
         )
 
-    tasks = _data_quality_check_create_tasks(org_id, propertystate_ids, taxlotstate_ids, goal_id, dq_id)
+    tasks = _data_quality_check_create_tasks(org_id, propertystate_ids, taxlotstate_ids, cycle_goal_id, dq_id)
     progress_data.total = len(tasks)
     progress_data.save()
     if tasks:
@@ -600,7 +606,7 @@ def _map_data_create_tasks(import_file_id, progress_key):
     return tasks
 
 
-def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_ids, goal_id, dq_id):
+def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_ids, cycle_goal, dq_id):
     """
     Entry point into running data quality checks.
 
@@ -630,14 +636,17 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
         for ids in id_chunks_tl:
             tasks.append(check_data_chunk.s(org_id, "TaxLotState", ids, dq_id))
 
-    if goal_id:
-        # If goal_id is passed, treat as a cross cycle data quality check.
+    if cycle_goal:
+        # If cycle_goal is passed, treat as a cross cycle data quality check.
         try:
-            goal = Goal.objects.get(id=goal_id)
-            property_ids = goal.properties().values_list("id", flat=True)
+            cycle_goal = CycleGoal.objects.get(id=cycle_goal)
+            property_ids = cycle_goal.properties().values_list("id", flat=True)
+            _log.error("+++++")
+            _log.error(property_ids)
+            _log.error("+++++")
             id_chunks = [list(chunk) for chunk in batch(property_ids, 100)]
             for ids in id_chunks:
-                tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, goal.id))
+                tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, cycle_goal.id))
         except Goal.DoesNotExist:
             pass
 

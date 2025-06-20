@@ -757,14 +757,14 @@ class DataQualityCheck(models.Model):
         # Prune the results will remove any entries that have zero data_quality_results
         self.prune_results()
 
-    def check_data_cross_cycle(self, goal_id, state_pairs):
+    def check_data_cross_cycle(self, cycle_goal_id, state_pairs):
         """
         Send in data as properties and their goal state pairs. Update GoalNote.passed_checks with data quality check return
         :param goal:
         :param state_pairs: [{property: Property, baseline: PropertyState, current: PropertyState}, {}, ...]
         """
         rules = self.rules.filter(enabled=True, table_name="Goal")
-        goal_notes = GoalNote.objects.filter(goal=goal_id)
+        goal_notes = GoalNote.objects.filter(cycle_goal=cycle_goal_id)
         goal_notes = {note.property.id: note for note in goal_notes}
         goal_notes_to_update = []
         fields = self.get_fieldnames("PropertyState")
@@ -945,7 +945,7 @@ class DataQualityCheck(models.Model):
         if not goal_note or not row["current"]:
             # NEED TO MAKE SURE MISSING DATA IS APPLIED
             return
-        goal = goal_note.goal
+        goal = goal_note.cycle_goal.goal
         baseline_view = row["baseline"].propertyview_set.first() if row["baseline"] else None
         current_view = row["current"].propertyview_set.first() if row["current"] else None
 

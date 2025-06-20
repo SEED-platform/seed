@@ -12,8 +12,8 @@ from rest_framework.decorators import action
 
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, Column, Goal, GoalNote, HistoricalNote, Organization, Property, TaxLotProperty
-from seed.serializers.goals import GoalSerializer
+from seed.models import AccessLevelInstance, Column, CycleGoal, Goal, GoalNote, HistoricalNote, Organization, Property, TaxLotProperty
+from seed.serializers.goals import CycleGoalSerializer, GoalSerializer
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -74,7 +74,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
 
         try:
-            goal = Goal.objects.select_related("current_cycle").get(
+            goal = Goal.objects.get(
                 pk=pk,
                 organization=organization_id,
                 access_level_instance__lft__gte=access_level_instance.lft,
@@ -84,8 +84,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
 
         goal_data = self.serializer_class(goal).data
-        property_view_ids = goal.current_cycle.propertyview_set.all().values_list("id", flat=True)
-        goal_data["current_cycle_property_view_ids"] = list(property_view_ids)
 
         return JsonResponse({"status": "success", "goal": goal_data})
 
@@ -136,19 +134,51 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         summary = get_portfolio_summary(org, goal)
         return JsonResponse(summary)
 
+
+@method_decorator(
+    name="destroy",
+    decorator=[
+        swagger_auto_schema_org_query_param,
+        has_perm_class("requires_member"),
+        has_perm_class("requires_non_leaf_access"),
+        has_hierarchy_access(goal_id_kwarg="goal_pk"),
+    ],
+)
+class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
+    serializer_class = CycleGoalSerializer
+    queryset = CycleGoal.objects.all()
+
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_member")
+    @has_perm_class("requires_non_leaf_access")
+    @has_hierarchy_access(goal_id_kwarg="goal_pk")
+    def create(self, request, goal_pk):
+        cycle_goal = CycleGoal.objects.create(goal_id=goal_pk, current_cycle_id=request.data.get("current_cycle"))
+
+        return JsonResponse(CycleGoalSerializer(cycle_goal).data, status=status.HTTP_201_CREATED)
+
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(goal_id_kwarg="goal_pk")
+    def list(self, request, goal_pk):
+        cycle_goals = CycleGoal.objects.filter(
+            goal_id=goal_pk,
+        )
+        return JsonResponse({"status": "success", "cycle_goals": self.serializer_class(cycle_goals, many=True).data})
+
     @has_perm_class("requires_member")
     @action(detail=True, methods=["PUT"])
-    def bulk_update_goal_notes(self, request, pk):
+    def bulk_update_goal_notes(self, request, goal_pk, pk):
         """Bulk updates Goal-related fields for a given goal and property view ids"""
         org_id = self.get_organization(request)
         try:
-            goal = Goal.objects.get(pk=pk, organization=org_id)
-        except Goal.DoesNotExist:
+            cycle_goal = CycleGoal.objects.get(pk=pk, goal__organization=org_id)
+        except CycleGoal.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
 
         property_view_ids = request.data.get("property_view_ids", [])
         properties = Property.objects.filter(views__in=property_view_ids).select_related("historical_notes")
-        goal_notes = GoalNote.objects.filter(goal=goal, property__in=properties)
+        goal_notes = GoalNote.objects.filter(cycle_goal=cycle_goal, property__in=properties)
 
         data = request.data.get("data", {})
 
@@ -166,9 +196,31 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @ajax_request_class
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="pk")
+    @has_hierarchy_access(goal_id_kwarg="goal_pk")
+    @action(detail=True, methods=["GET"])
+    def portfolio_summary(self, request, goal_pk, pk):
+        """
+        Gets a Portfolio Summary dictionary given a goal
+        """
+        org_id = int(self.get_organization(request))
+        try:
+            org = Organization.objects.get(pk=org_id)
+            cycle_goal = CycleGoal.objects.get(pk=pk)
+        except (Organization.DoesNotExist, CycleGoal.DoesNotExist):
+            return JsonResponse({"status": "error", "message": "No such resource."})
+
+        # If new properties heave been uploaded, create goal_notes
+        get_or_create_goal_notes(cycle_goal)
+
+        summary = get_portfolio_summary(org, cycle_goal)
+        return JsonResponse(summary)
+
+    @ajax_request_class
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(goal_id_kwarg="goal_pk")
     @action(detail=True, methods=["PUT"])
-    def data(self, request, pk):
+    def data(self, request, goal_pk, pk):
         """
         Gets goal data for the main grid
         """
@@ -176,7 +228,8 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         org_id = int(self.get_organization(request))
         try:
             org = Organization.objects.get(pk=org_id)
-            goal = Goal.objects.get(pk=pk)
+            cycle_goal = CycleGoal.objects.get(pk=pk)
+            goal = cycle_goal.goal
         except (Organization.DoesNotExist, Goal.DoesNotExist):
             return JsonResponse({"status": "error", "message": "No such resource."})
         page = request.data.get("page")
@@ -193,10 +246,10 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             include_related=False,
         )
         show_columns = list(Column.objects.filter(organization_id=org_id).values_list("id", flat=True))
-        key1, key2 = ("baseline", "current") if baseline_first else ("current", "baseline")
 
-        cycle1 = getattr(goal, f"{key1}_cycle")
-        cycle2 = getattr(goal, f"{key2}_cycle")
+        baseline_cycle, current_cycle = (cycle_goal.goal.baseline_cycle, cycle_goal.current_cycle)
+        key1, key2 = ("baseline", "current") if baseline_first else ("current", "baseline")
+        cycle1, cycle2 = (baseline_cycle, current_cycle) if baseline_first else (current_cycle, baseline_cycle)
         views1 = cycle1.propertyview_set.filter(
             property__access_level_instance__lft__gte=access_level_instance.lft,
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
@@ -205,7 +258,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         try:
             # Sorts initiated from Portfolio Summary that contain related model names (goal_note, historical_note) require custom handling
             if related_model_sort:
-                views1 = filter_views_on_related(views1, goal, request.query_params, cycle1)
+                views1 = filter_views_on_related(views1, cycle_goal, request.query_params, cycle1)
             else:
                 filters, annotations, order_by = build_view_filters_and_sorts(
                     request.query_params, columns_from_database, inventory_type, org.access_level_names

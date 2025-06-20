@@ -76,7 +76,7 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
         body = request.data
         property_view_ids = body.get("property_view_ids", [])
         taxlot_view_ids = body.get("taxlot_view_ids", [])
-        goal_id = body.get("goal_id", None)
+        cycle_goal_id = body.get("cycle_goal_id", None)
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
         property_state_ids = PropertyView.objects.filter(
@@ -93,7 +93,7 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
         ).values_list("state_id", flat=True)
 
         # For now, organization_id is the only key currently used to identify DataQualityChecks
-        return_value = do_checks(organization_id, property_state_ids, taxlot_state_ids, goal_id)
+        return_value = do_checks(organization_id, property_state_ids, taxlot_state_ids, cycle_goal_id)
 
         return JsonResponse(
             {

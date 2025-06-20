@@ -96,6 +96,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         const per_page = 50;
         const data = {
           goal_id: $scope.goal.id,
+          cycle_goal_id: $scope.cycle_goal.id,
           page,
           per_page,
           baseline_first,
@@ -125,8 +126,6 @@ angular.module('SEED.controller.portfolio_summary', [])
             $scope.goals.find((goal) => goal.name === goal_name) :
             $scope.goals[0];
           format_goal_details();
-          load_summary();
-          load_data(1);
         });
       };
       get_goals();
@@ -140,8 +139,21 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.goal = selected_goal;
       };
 
-      // If goal changes, reset grid filters and repopulate ui-grids
+      $scope.select_cycle_goal = (selected_cycle_goal) => {
+        $scope.cycle_goal = selected_cycle_goal;
+      }
+
       $scope.$watch('goal', (cur, old) => {
+        if (Object.keys(cur).length == 0) return;
+        goal_service.get_cycle_goals(cur.id).then(data => {
+          $scope.cycle_goals = data.cycle_goals
+        })
+
+      });
+
+      // If goal changes, reset grid filters and repopulate ui-grids
+      $scope.$watch('cycle_goal', (cur, old) => {
+        if (!$scope.cycle_goal) return;
         if ($scope.gridApi) $scope.reset_sorts_filters();
         $scope.data_valid = false;
         $scope.valid = true;
@@ -163,9 +175,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           { // column 1
             Type: capitalize($scope.goal.type),
             'Baseline Cycle': $scope.goal.baseline_cycle_name,
-            'Current Cycle': $scope.goal.current_cycle_name,
             [$scope.goal.level_name]: access_level_instance,
-            'Total Properties': null,
             'Portfolio Target': `${$scope.goal.target_percentage} %`
           },
           { // column 2
@@ -259,7 +269,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.show_access_level_instances = false;
         $scope.summary_valid = false;
 
-        goal_service.get_portfolio_summary($scope.goal.id).then((result) => {
+        goal_service.get_portfolio_summary($scope.goal.id, $scope.cycle_goal.id).then((result) => {
           const summary = result.data;
           set_summary_grid_options(summary);
         }).then(() => {
@@ -313,7 +323,7 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       // retrieve labels, key = 'baseline' or 'current'
       const get_labels = (key) => {
-        label_service.get_property_view_labels_by_goal($scope.organization.id, $scope.goal.id, key).then((labels) => {
+        label_service.get_property_view_labels_by_cycle_goal($scope.organization.id, $scope.cycle_goal.id, key).then((labels) => {
           if (key === 'baseline') {
             $scope.baseline_labels = labels;
             $scope.build_labels(key, $scope.baseline_labels);
@@ -1122,7 +1132,6 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       const set_summary_grid_options = (summary) => {
-        $scope.goal_details[0]['Total Properties'] = summary.total_properties.toLocaleString();
         get_goal_stats(summary);
         $scope.summary_data = [summary];
         $scope.summaryGridOptions = {
@@ -1138,10 +1147,21 @@ angular.module('SEED.controller.portfolio_summary', [])
         };
       };
 
+      $scope.create_cycle_goal = () => {
+        const modalInstance = $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/create_cycle_goal_modal.html`,
+          controller: 'create_cycle_goal_modal_controller',
+          resolve: {
+            goal: () => $scope.goal,
+            cycles: () => $scope.cycles,
+          }
+        });
+      }
+
       // --- DATA QUALITY ---
       $scope.run_data_quality_check = () => {
         spinner_utility.show();
-        data_quality_service.start_data_quality_checks([], [], $scope.goal.id)
+        data_quality_service.start_data_quality_checks([], [], $scope.cycle_goal.id)
           .then((response) => {
             data_quality_service.data_quality_checks_status(response.progress_key)
               .then((result) => {

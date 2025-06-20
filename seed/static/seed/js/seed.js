@@ -48,6 +48,7 @@
     'SEED.controller.create_column_modal',
     'SEED.controller.service_modal',
     'SEED.controller.system_modal',
+    'SEED.controller.create_cycle_goal_modal',
     'SEED.controller.create_organization_modal',
     'SEED.controller.create_sub_organization_modal',
     'SEED.controller.cycle_admin',

@@ -10,7 +10,7 @@ from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce
 from quantityfield.units import ureg
 
-from seed.models import Goal, GoalNote, Property, PropertyView
+from seed.models import CycleGoal, GoalNote, Property, PropertyView
 from seed.serializers.pint import collapse_unit
 from seed.utils.generic import get_int
 
@@ -123,45 +123,46 @@ def percentage(a, b):
     return int(b / a * 100) or 0
 
 
-def get_or_create_goal_notes(goal):
+def get_or_create_goal_notes(cycle_goal):
     """
     If properties are added after goals have been created they wont have goal_notes. Create those goal_notes.
     """
 
     # Find properties without goal_notes
-    property_ids = goal.properties().exclude(goalnote__goal=goal).values_list("id", flat=True)
-    new_goal_notes = [GoalNote(goal=goal, property_id=id) for id in property_ids]
+    property_ids = cycle_goal.properties().exclude(goalnote__cycle_goal=cycle_goal).values_list("id", flat=True)
+    new_goal_notes = [GoalNote(goal=cycle_goal.goal, property_id=id) for id in property_ids]
     GoalNote.objects.bulk_create(new_goal_notes)
 
 
-def get_portfolio_summary(org, goal):
+def get_portfolio_summary(org, cycle_goal):
     """
     Gets a Portfolio Summary dictionary given a goal
     """
     summary = {}
-    transaction_goal = goal.type == "transaction"
+    transaction_goal = cycle_goal.goal.type == "transaction"
+    goal = cycle_goal.goal
 
-    for current, cycle in enumerate([goal.baseline_cycle, goal.current_cycle]):
+    for current, cycle in enumerate([goal.baseline_cycle, cycle_goal.current_cycle]):
         # Return all properties
         property_views = PropertyView.objects.select_related("property", "state").filter(
             property__organization_id=org.id,
             cycle_id=cycle.id,
             property__access_level_instance__lft__gte=goal.access_level_instance.lft,
             property__access_level_instance__rgt__lte=goal.access_level_instance.rgt,
-            property__goalnote__goal__id=goal.id,
+            property__goalnote__cycle_goal__id=cycle_goal.id,
         )
         # Shared area is area of all properties regardless of valid status
         property_views = property_views.annotate(area=get_column_expression(goal.area_column))
         if current:
             summary["total_properties"] = property_views.count()
             summary["shared_sqft"] = property_views.aggregate(shared_sqft=Sum("area"))["shared_sqft"]
-            summary["total_passing"] = GoalNote.objects.filter(goal=goal, passed_checks=True).count()
-            summary["total_new_or_acquired"] = GoalNote.objects.filter(goal=goal, new_or_acquired=True).count()
+            summary["total_passing"] = GoalNote.objects.filter(cycle_goal=cycle_goal, passed_checks=True).count()
+            summary["total_new_or_acquired"] = GoalNote.objects.filter(cycle_goal=cycle_goal, new_or_acquired=True).count()
 
         # Remaining calculations are restricted to passing check
         # New builds in the baseline year will be excluded from calculations
         # use goal notes relation to properties to get valid properties views
-        goal_notes = GoalNote.objects.filter(goal=goal)
+        goal_notes = GoalNote.objects.filter(cycle_goal=cycle_goal)
         new_property_ids = goal_notes.filter(new_or_acquired=True).values_list("property__id", flat=True)
         valid_property_ids = goal_notes.filter(passed_checks=True).values_list("property__id", flat=True)
         property_views = property_views.filter(property__id__in=valid_property_ids).exclude(
@@ -231,15 +232,17 @@ def set_transaction_summary_data(summary):
     summary["eui_t_change"] = percentage_difference(summary["baseline_weighted_eui_t"], summary["current_weighted_eui_t"])
 
 
-def get_state_pairs(property_ids, goal_id):
+def get_state_pairs(property_ids, cycle_goal_id):
     """Given a list of property ids, return a dictionary containing baseline and current states"""
     # Prefetch PropertyView objects
     try:
-        goal = Goal.objects.get(id=goal_id)
-    except Goal.DoesNotExist:
+        cycle_goal = CycleGoal.objects.get(id=cycle_goal_id)
+    except CycleGoal.DoesNotExist:
         return []
 
-    property_views = PropertyView.objects.filter(cycle__in=[goal.baseline_cycle, goal.current_cycle], property__in=property_ids)
+    property_views = PropertyView.objects.filter(
+        cycle__in=[cycle_goal.goal.baseline_cycle, cycle_goal.current_cycle], property__in=property_ids
+    )
     prefetch = Prefetch("views", queryset=property_views, to_attr="prefetched_views")
 
     # Fetch properties and related PropertyView objects
@@ -248,8 +251,8 @@ def get_state_pairs(property_ids, goal_id):
     state_pairs = []
     for property in qs:
         # find related view from prefetched views
-        baseline_view = next((pv for pv in property.prefetched_views if pv.cycle == goal.baseline_cycle), None)
-        current_view = next((pv for pv in property.prefetched_views if pv.cycle == goal.current_cycle), None)
+        baseline_view = next((pv for pv in property.prefetched_views if pv.cycle == cycle_goal.goal.baseline_cycle), None)
+        current_view = next((pv for pv in property.prefetched_views if pv.cycle == cycle_goal.current_cycle), None)
 
         baseline_state = baseline_view.state if baseline_view else None
         current_state = current_view.state if current_view else None

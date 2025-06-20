@@ -281,9 +281,9 @@ angular.module('SEED.service.label', []).factory('label_service', [
       }
     ];
 
-    const get_property_view_labels_by_goal = (org_id, goal_id, cycle) => $http.get(
-      '/api/v3/property_view_labels/list_by_goal/',
-      { params: { organization_id: org_id, goal_id, cycle } }
+    const get_property_view_labels_by_cycle_goal = (org_id, cycle_goal_id) => $http.get(
+      '/api/v3/property_view_labels/list_by_cycle_goal/',
+      { params: { organization_id: org_id, cycle_goal_id } }
     )
       .then(map_labels);
 
@@ -307,7 +307,7 @@ angular.module('SEED.service.label', []).factory('label_service', [
       update_property_labels,
       update_taxlot_labels,
       get_available_colors,
-      get_property_view_labels_by_goal,
+      get_property_view_labels_by_cycle_goal,
       lookup_label
     };
   }

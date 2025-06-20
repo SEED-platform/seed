@@ -5,7 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.db import models
 
-from seed.models import Goal, Property
+from seed.models import CycleGoal, Property
 
 
 class GoalNote(models.Model):
@@ -17,7 +17,7 @@ class GoalNote(models.Model):
         ("Other or multiple flags; explain in Additional Notes field", "Other or multiple flags; explain in Additional Notes field"),
     )
 
-    goal = models.ForeignKey(Goal, on_delete=models.CASCADE)
+    cycle_goal = models.ForeignKey(CycleGoal, on_delete=models.CASCADE)
     property = models.ForeignKey(Property, on_delete=models.CASCADE)
 
     question = models.CharField(max_length=1024, choices=QUESTION_CHOICES, blank=True, null=True)

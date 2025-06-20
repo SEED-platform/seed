@@ -91,19 +91,6 @@
                       required
                     ></select>
                   </li>
-                  <!-- Current Cycle -->
-                  <li class="r-row r-row-centered">
-                    <label for="select-current-cycle" class="r-pad-right-5 goal-label" translate>Current Cycle</label>
-                    <select
-                      id="select-current-cycle"
-                      class="form-control goal-form-control"
-                      ng-options="cycle.id as cycle.name for cycle in cycles"
-                      ng-change=""
-                      ng-model="goal.current_cycle"
-                      required
-                    ></select>
-                  </li>
-                  <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Current Cycle will be measured against Baseline Cycle</span></li>
                 </ul>
                 <!-- Access Level Selection -->
                 <ul class="r-list">

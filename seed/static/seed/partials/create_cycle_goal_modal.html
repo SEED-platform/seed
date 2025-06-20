@@ -1,0 +1,18 @@
+<div class="modal-header">
+  <h3 translate>Add Cycle to Goal</h3>
+</div>
+<div class="modal-body">
+  <!-- Current Cycle -->
+  <li class="r-row r-row-centered">
+    <label for="select-current-cycle" class="r-pad-right-5 goal-label" translate>Current Cycle</label>
+    <select id="select-current-cycle" class="form-control goal-form-control"
+      ng-options="cycle.id as cycle.name for cycle in cycles" ng-change="" ng-model="current_cycle"
+      required></select>
+  </li>
+  <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Current Cycle will be measured
+      against Baseline Cycle</span></li>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-default r-margin-right-5" ng-click="save()" translate>Savb</button>
+  <button class="btn btn-default r-margin-right-5" ng-click="close()" translate>Dismiss</button>
+</div>

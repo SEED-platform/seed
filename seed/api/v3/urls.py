@@ -33,7 +33,7 @@ from seed.views.v3.filter_group import FilterGroupViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
 from seed.views.v3.geocode import GeocodeViewSet
 from seed.views.v3.goal_notes import GoalNoteViewSet
-from seed.views.v3.goals import GoalViewSet
+from seed.views.v3.goals import CycleGoalViewSet, GoalViewSet
 from seed.views.v3.green_assessment_properties import GreenAssessmentPropertyViewSet
 from seed.views.v3.green_assessment_urls import GreenAssessmentURLViewSet
 from seed.views.v3.green_assessments import GreenAssessmentViewSet
@@ -139,6 +139,9 @@ analysis_messages_router.register(r"messages", AnalysisMessageViewSet, basename=
 analysis_view_messages_router = nested_routers.NestedSimpleRouter(analysis_views_router, r"views", lookup="views")
 analysis_view_messages_router.register(r"views_messages", AnalysisMessageViewSet, basename="analysis-messages")
 
+goals_router = nested_routers.NestedSimpleRouter(api_v3_router, r"goals", lookup="goal")
+goals_router.register(r"cycles", CycleGoalViewSet, basename="goal-cycles")
+
 properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r"properties", lookup="property")
 properties_router.register(r"meters", MeterViewSet, basename="property-meters")
 properties_router.register(r"notes", NoteViewSet, basename="property-notes")
@@ -202,6 +205,7 @@ urlpatterns = [
     path("", include(system_router.urls)),
     path("", include(public_organizations_router.urls)),
     path("", include(public_cycles_router.urls)),
+    path("", include(goals_router.urls)),
     path("celery_queue/", celery_queue, name="celery_queue"),
     path("media/<path:filepath>", MediaViewSet.as_view()),
 ]

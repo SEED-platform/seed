@@ -46,7 +46,7 @@
         <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
       </div>
       <!-- GOAL DETAILS -->
-      <div class="goal-details-container" ng-if="valid">
+      <div class="goal-details-container" ng-if="goal">
         <div class="goal-details-column" style="margin-left: 10px">
           <div ng-repeat="(k, v) in goal_details[0]" class="goal-detail">
             <div class="goal-detail-key" style="width: 120px">{$ k $}:</div>
@@ -60,7 +60,14 @@
           </div>
         </div>
       </div>
+      <!-- cycles -->
+      <div style="display: flex; flex-direction: row;">
+        <button ng-repeat="cycle_goal in cycle_goals" ng-click="select_cycle_goal(cycle_goal)" class="btn btn-light">{$ cycle_goal.cycle_name $}</button>
+        <button ng-click="create_cycle_goal()" class="btn btn-light">Add Cycle</button>
+      </div>
     </div>
+
+
 
     <div class="goal-header-column" ng-if="valid">
       <table class="table table-striped table-bordered">
