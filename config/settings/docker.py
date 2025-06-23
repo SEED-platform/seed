@@ -95,6 +95,9 @@ DATABASES = {
     }
 }
 
+# Setting all redis key timeouts to 15 minutes (in seconds)
+REDIS_KEY_TIMEOUT = 900
+
 # Redis / Celery config
 if "REDIS_AWS_ELASTICACHE" in os.environ:
     CELERY_BROKER_URL = f"rediss://:{env_var('REDIS_PASSWORD')}@{env_var('REDIS_HOST')}:6379/1?ssl_cert_reqs=required"
@@ -103,6 +106,7 @@ if "REDIS_AWS_ELASTICACHE" in os.environ:
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
             "LOCATION": CELERY_BROKER_URL,
+            "TIMEOUT": REDIS_KEY_TIMEOUT,
         }
     }
 elif "REDIS_PASSWORD" in os.environ:
@@ -112,6 +116,7 @@ elif "REDIS_PASSWORD" in os.environ:
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
             "LOCATION": CELERY_BROKER_URL,
+            "TIMEOUT": REDIS_KEY_TIMEOUT,
         }
     }
 else:
@@ -121,6 +126,7 @@ else:
         "default": {
             "BACKEND": "django_redis.cache.RedisCache",
             "LOCATION": CELERY_BROKER_URL,
+            "TIMEOUT": REDIS_KEY_TIMEOUT,
         }
     }
 
