@@ -144,11 +144,6 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, cycle_goal_id, import_
     :param import_file_id: int, if present, find the data to check by the import file id
     :return:
     """
-    _log.error("++++")
-    _log.error(org_id)
-    _log.error(propertystate_ids)
-    _log.error(cycle_goal_id)
-    _log.error("++++")
     # If import_file_id, then use that as the identifier, otherwise, initialize_cache will
     # create a new random id
     _cache_key, dq_id = DataQualityCheck.initialize_cache(import_file_id, org_id)
@@ -641,9 +636,6 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
         try:
             cycle_goal = CycleGoal.objects.get(id=cycle_goal)
             property_ids = cycle_goal.properties().values_list("id", flat=True)
-            _log.error("+++++")
-            _log.error(property_ids)
-            _log.error("+++++")
             id_chunks = [list(chunk) for chunk in batch(property_ids, 100)]
             for ids in id_chunks:
                 tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, cycle_goal.id))
