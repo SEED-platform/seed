@@ -337,7 +337,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 return JsonResponse(
                     {
                         "status": "error",
-                        "message": "Your SEED account is not associated with any organizations. " "Please contact a SEED administrator.",
+                        "message": "Your SEED account is not associated with any organizations. Please contact a SEED administrator.",
                     },
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
@@ -354,7 +354,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 return JsonResponse(
                     {
                         "status": "error",
-                        "message": "Your SEED account is not associated with any organizations. " "Please contact a SEED administrator.",
+                        "message": "Your SEED account is not associated with any organizations. Please contact a SEED administrator.",
                     },
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
@@ -983,7 +983,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             y_var = params["y_var"]
 
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
+        cycles = Cycle.objects.filter(id__in=params["cycle_ids"]).order_by("-end")
         report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         axis_data = self.get_axis_data(
@@ -1059,7 +1059,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             y_var = params["y_var"]
 
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
+        cycles = Cycle.objects.filter(id__in=params["cycle_ids"]).order_by("-end")
         report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         chart_data = []
@@ -1101,7 +1101,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         results = []
         for i in range(len(bins) - 1):
-            bin = f"{round(bins[i], 2)} - {round(bins[i+1], 2)}"
+            bin = f"{round(bins[i], 2)} - {round(bins[i + 1], 2)}"
             values = np.array(xs)[np.where(binplace == i + 1)]
             x = sum(values) if count else np.average(values).item()
             results.append({"y": bin, "x": None if np.isnan(x) else x, "yr_e": yr_e})

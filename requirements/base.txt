@@ -45,7 +45,7 @@ street-address==0.4.0
 xlrd<2.0.0  # Version 2 removes xlsx support
 xlsxwriter==3.2.0
 xmltodict==0.13.0
-requests==2.32.3
+requests==2.32.4
 probablepeople==0.5.5
 xmlschema==3.4.2
 lark==1.2.2
@@ -75,4 +75,6 @@ pyotp==2.9.0
 # This dependency can be removed once a version newer than 8.5.0 has been released that fixes Django autoreload
 importlib_metadata==8.4.0
 
-tkbl==0.6
+tkbl==0.7
+
+semantic_version==2.10.0

@@ -239,7 +239,7 @@ class PortfolioManagerViewSet(GenericViewSet):
         username = request.data["username"]
         password = request.data["password"]
         if "filename" not in request.data:
-            filename = f'pm_{pk}_{datetime.strftime(datetime.now(), "%Y%m%d_%H%M%S")}.xlsx'
+            filename = f"pm_{pk}_{datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')}.xlsx"
         else:
             filename = request.data["filename"]
 
@@ -312,7 +312,7 @@ class PortfolioManagerImport:
 
         # Prepare the fully authenticated headers
         self.authenticated_headers = {
-            "Cookie": "JSESSIONID=" + cookie + "; org.springframework.web.servlet.i18n.CookieLocaleResolver.LOCALE=en"
+            "Cookie": "SESSION=" + cookie + "; org.springframework.web.servlet.i18n.CookieLocaleResolver.LOCALE=en"
         }
 
     def get_list_of_report_templates(self):
@@ -356,7 +356,7 @@ class PortfolioManagerImport:
             _log.debug("Found template,\n id=" + str(t["id"]) + "\n name=" + str(t["name"]))
             if t.get("hasChildrenRows"):
                 _log.debug("Template row has children data request rows, trying to get them now")
-                children_url = f'https://portfoliomanager.energystar.gov/pm/reports/templateChildrenRows/TEMPLATE/{t["id"]}'
+                children_url = f"https://portfoliomanager.energystar.gov/pm/reports/templateChildrenRows/TEMPLATE/{t['id']}"
 
                 # SSL errors would have been caught earlier in this function and raised, so this should be ok
                 children_response = requests.get(children_url, headers=self.authenticated_headers, timeout=300)
@@ -514,7 +514,7 @@ class PortfolioManagerImport:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
         if response.status_code != status.HTTP_200_OK:
             error_message = "Unsuccessful response from GET trying to download generated report;"
-            error_message += f' Generated report name: {matched_template["name"]};'
+            error_message += f" Generated report name: {matched_template['name']};"
             error_message += f"Tried to download report from URL: {self.download_url(template_report_id)};"
             error_message += f"Returned with a status code = {response.status_code};"
             raise PMError(error_message)

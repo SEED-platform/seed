@@ -30,7 +30,7 @@ BOOL_SYNONYMS = (
     ("_", "y"),
     ("_", "1"),
 )
-PUNCT_REGEX = re.compile(f'[{re.escape(string.punctuation.replace(".", "").replace("-", ""))}]')
+PUNCT_REGEX = re.compile(f"[{re.escape(string.punctuation.replace('.', '').replace('-', ''))}]")
 # Mapping of specific characters to their normalized versions (need to expand this list)
 CHAR_MAPPING = {
     ord("“"): '"',
