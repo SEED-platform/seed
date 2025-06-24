@@ -248,15 +248,20 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
         assert response.status_code == 400
         errors = response.json()
-        assert errors["name"] == ["goal with this name already exists."]
         assert errors["baseline_cycle"] == ['Invalid pk "9999" - object does not exist.']
         assert errors["eui_column1"] == ['Invalid pk "9998" - object does not exist.']
         assert Goal.objects.count() == goal_count
 
+        # name must be unique within organization
+        goal_data = reset_goal_data("child_goal 2")
+        response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
+        assert response.status_code == 400
+        errors = response.json()
+        assert errors["non_field_errors"] == ["The fields organization, name must make a unique set."]
+
         # cycles must be unique
         goal_data = reset_goal_data("child_goal 3")
         goal_data["current_cycle"] = self.cycle1.id
-
         response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
         assert response.status_code == 400
         assert response.json()["non_field_errors"] == ["Cycles must be unique."]
@@ -264,7 +269,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
         # columns must be unique
         goal_data = reset_goal_data("child_goal 3")
         goal_data["eui_column2"] = goal_columns[1]
-
         response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
         assert response.status_code == 400
         assert response.json()["non_field_errors"] == ["Columns must be unique."]
