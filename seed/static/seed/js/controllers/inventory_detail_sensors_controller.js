@@ -157,7 +157,8 @@ angular.module('SEED.controller.inventory_detail_sensors', []).controller('inven
         enableHiding: false
       },
       {
-        field: 'type',
+        field: 'sensor_type',
+        displayName: 'Type',
         enableHiding: false
       },
       {
@@ -298,7 +299,7 @@ angular.module('SEED.controller.inventory_detail_sensors', []).controller('inven
 
       // filter according to sensor selections
       const selectedSensorLabels = sensors
-        .filter((sensor) => selectedDataLoggerDisplayNames.includes(sensor.data_logger) && selectedSensorType.includes(sensor.type))
+        .filter((sensor) => selectedDataLoggerDisplayNames.includes(sensor.data_logger) && selectedSensorType.includes(sensor.sensor_type))
         .map((sensor) => getSensorLabel(sensor));
 
       return filterBySensorLabels(readings, columnDefs, selectedSensorLabels);

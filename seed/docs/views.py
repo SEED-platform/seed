@@ -71,6 +71,6 @@ def faq_page(request):
             org_user_id,
             settings,
         ) = _get_default_org(request.user)
-    debug = settings.DEBUG
+    debug = settings.get("DEBUG")
 
     return render(request, "docs/faq.html", locals())
