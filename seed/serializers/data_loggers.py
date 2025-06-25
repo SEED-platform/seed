@@ -11,4 +11,4 @@ from seed.models import DataLogger
 class DataLoggerSerializer(serializers.ModelSerializer):
     class Meta:
         model = DataLogger
-        fields = ["property", "display_name", "is_occupied_data"]
+        fields = "__all__"

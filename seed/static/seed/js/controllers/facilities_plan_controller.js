@@ -109,11 +109,12 @@ angular.module('SEED.controller.facilities_plan', [])
 
       $scope.updateHeight = () => {
         let height = 0;
-        for (const selector of ['.header', '.page_header_container', '.section_nav_container', '.goals-header-text', '.goal-actions-wrapper', '.goal-details-container', '#portfolio-summary-selection-wrapper', '.portfolio-summary-item-count']) {
+        for (const selector of ['.header', '.page_header_container', '.section_nav_container', '.grid-header']) {
           const [element] = angular.element(selector);
           height += element?.offsetHeight ?? 0;
         }
         angular.element('#portfolioSummary-gridOptions-wrapper').css('height', `calc(100vh - ${height}px)`);
+        angular.element('#gridOptions').css('height', `calc(100vh - ${height}px)`);
         $scope.gridApi.core.handleWindowResize();
         $scope.gridApi.grid.refresh();
       };
@@ -197,8 +198,6 @@ angular.module('SEED.controller.facilities_plan', [])
             };
             gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
             gridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
-
-            gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue) => {});
           }
         };
       };
@@ -370,6 +369,31 @@ angular.module('SEED.controller.facilities_plan', [])
         });
       };
 
+      $scope.delete_facilities_plan_run = () => {
+        console.log("delete_facilties_plan")
+        const modalInstance = $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/delete_facilities_plan_run_modal.html`,
+          controller: 'delete_facilities_plan_run_modal_controller',
+          resolve: {
+            facilities_plan_run: () => $scope.current_facilities_plan_run
+          }
+        });
+      }
+
+      $scope.update_facilities_plan_run = () => {
+        const modalInstance = $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/create_facilities_plan_run_modal.html`,
+          controller: 'create_facilities_plan_run_modal_controller',
+          resolve: {
+            access_level_tree: () => access_level_tree,
+            facilities_plans: () => facilities_plans.data,
+            columns: () => property_columns,
+            existing_fpr: () => $scope.current_facilities_plan_run,
+            level_name_index: () => access_level_tree.access_level_names.findIndex(n => n == $scope.current_facilities_plan_run.ali_level)
+          }
+        });
+      }
+
       /**
        Opens a modal to create facilities plan run
       * */
@@ -380,7 +404,9 @@ angular.module('SEED.controller.facilities_plan', [])
           resolve: {
             access_level_tree: () => access_level_tree,
             facilities_plans: () => facilities_plans.data,
-            columns: () => property_columns
+            columns: () => property_columns,
+            existing_fpr: () => null,
+            level_name_index: () => null
           }
         });
       };
@@ -389,7 +415,7 @@ angular.module('SEED.controller.facilities_plan', [])
         // select all rows to visibly support everything has been selected
         $scope.gridApi.selection.selectAllRows();
         $scope.selected_count = $scope.inventory_pagination.total;
-        facilities_plan_run_service.get_all_ids($scope.current_facilities_plan_run_id).then((response) => {
+        facilities_plan_run_service.get_all_ids($scope.current_facilities_plan_run_id, $scope.column_filters).then((response) => {
           $scope.selected_ids = response.ids;
         });
       };

@@ -3,6 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from django.conf import settings
 from lxml import etree
 from lxml.builder import ElementMaker
 from quantityfield.units import ureg
@@ -16,27 +17,34 @@ from seed.models import Meter
 PREMISES_ID_NAME = "seed_analysis_property_view_id"
 
 # BETTER and ESPM use different names for property types than BEDES and BSync
+# This maps the BETTER SpaceTypeEnums to valid BuildingSync OccupancyClassificationTypes
+# This mapping must be kept in sync with the BETTER mappings to ensure a working connection between the 2 tools
 BETTER_TO_BSYNC_PROPERTY_TYPE = {
     "Office": "Office",
     "Hotel": "Lodging",
     "K-12 School": "Education",
+    "Multifamily Housing": "Multifamily",
+    "Worship Facility": "Assembly-Religious",
     "Hospital (General Medical & Surgical)": "Health care-Inpatient hospital",
+    "Museum": "Assembly-Cultural entertainment",
     "Bank Branch": "Bank",
     "Courthouse": "Courthouse",
-    "Data Center": "Data Center",
-    "Distribution Center": "Distribution Center",
+    "Data Center": "Data center",
+    "Distribution Center": "Shipping and receiving",
+    "Fast Food Restaurant": "Food service-Fast",
     "Financial Office": "Office-Financial",
-    "Multifamily Housing": "Multifamily",
-    "Non-Refrigerated Warehouse": "Warehouse unrefrigerated",
-    "Refrigerated Warehouse": "Warehouse refrigerated",
+    "Fire Station": "Public safety station-Fire",
+    "Non-Refrigerated Warehouse": "Warehouse-Unrefrigerated",
+    "Police Station": "Public safety station-Police",
+    "Refrigerated Warehouse": "Warehouse-Refrigerated",
     "Retail Store": "Retail",
+    "Self-Storage Facility": "Warehouse-Self-storage",
     "Senior Care Community": "Health care-Skilled nursing facility",
     "Supermarket/Grocery Store": "Food sales-Grocery store",
     "Restaurant": "Food service",
     "Public Library": "Assembly-Public",
     "Other": "Other",
 }
-
 
 # maps SEED Meter types to BuildingSync ResourceUse types
 # NOTE: this is semi-redundant with to_energy_type dict in building_sync/mappings.py
@@ -115,12 +123,15 @@ def _build_better_input(analysis_property_view, meters_and_readings):
     nsmap.update(NAMESPACES)
     E = ElementMaker(namespace=BUILDINGSYNC_URI, nsmap=nsmap)
 
+    # retrieve default buildingsync version (should match Audit Template version)
+    BUILDINGSYNC_VERSION = settings.BUILDINGSYNC_VERSION
+
     doc = E.BuildingSync(
         {
             etree.QName(
                 XSI_URI, "schemaLocation"
-            ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.3.0/BuildingSync.xsd",
-            "version": "2.3.0",
+            ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v{BUILDINGSYNC_VERSION}/BuildingSync.xsd",
+            "version": BUILDINGSYNC_VERSION,
         },
         E.Facilities(
             E.Facility(

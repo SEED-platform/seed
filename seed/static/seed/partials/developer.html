@@ -35,7 +35,7 @@
                     <pre ng-if="user.api_key">{$ user.api_key $}</pre>
                     <span ng-if="!user.api_key" style="font-style: italic; opacity: 0.6">&lt;generate a key&gt;</span>
                   </td>
-                  <td>{$:: user.email $}</td>
+                  <td>{$:: user.username $}</td>
                 </tr>
               </tbody>
             </table>
@@ -49,7 +49,7 @@
 curl -X GET \
   '{$:: getHost() $}/api/version/' \
   -H 'Accept: application/json' \
-  -u {$ user.email.toLowerCase() + ':' + user.api_key $}</pre
+  -u {$ user.username + ':' + user.api_key $}</pre
             >
           </div>
         </div>

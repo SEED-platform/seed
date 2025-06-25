@@ -314,6 +314,10 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             property__access_level_instance__lft__gte=access_level_instance.lft,
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
         ).values_list("state_id", flat=True)
+
+        if not state_ids:
+            return JsonResponse({"success": False, "message": "No properties found for the given cycle"}, status=status.HTTP_404_NOT_FOUND)
+
         columns = (
             Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState")
             .exclude(column_name__in=EXCLUDED_API_FIELDS)
@@ -374,7 +378,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             tcolumns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="TaxLotState").exclude(
                 column_name__in=EXCLUDED_API_FIELDS
             )
-            num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, TaxLotState, columns)
+            num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(tstate_ids, TaxLotState, tcolumns)
 
         # properties and taxlots together
         num_of_nonnulls_by_column_name.update(tnum_of_nonnulls_by_column_name)

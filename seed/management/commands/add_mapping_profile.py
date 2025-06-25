@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
         parser.add_argument(
             "--csv_file",
-            help="Mapping profile CSV file, must follow specific format. Relative to location " "of manage.py call.",
+            help="Mapping profile CSV file, must follow specific format. Relative to location of manage.py call.",
             action="store",
             required=True,
         )

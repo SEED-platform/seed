@@ -55,10 +55,7 @@ autodoc_mock_imports = [
 templates_path = ["_templates"]
 
 # Location of word list.
-# convert the spelling list to a text file and save
-with open("../../.cspell.txt", "w", encoding="utf-8") as cspell_txt, open("../../.cspell.json", encoding="utf-8") as cspell_json:
-    cspell_txt.write("\n".join(json.load(cspell_json)["words"]))
-spelling_word_list_filename = "../../.cspell.txt"
+spelling_word_list_filename = "../../.spelling.dic"
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:

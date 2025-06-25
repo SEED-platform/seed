@@ -273,6 +273,8 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             # add cycle specific and aggregated goal stats
             property[f"{key1}_cycle"] = cycle1.name
             property[f"{key2}_cycle"] = cycle2.name
+            property[f"{key1}_view_id"] = p1["property_view_id"]
+            property[f"{key2}_view_id"] = p2.get("property_view_id", None)
             property[f"{key1}_sqft"] = get_int(sqft1)
             property[f"{key2}_sqft"] = get_int(sqft2)
             property[f"{key1}_eui"] = get_preferred(p1, eui_columns)

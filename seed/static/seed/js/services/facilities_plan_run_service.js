@@ -47,11 +47,11 @@ angular.module('SEED.service.facilities_plan_run', []).factory('facilities_plan_
       .then((response) => response.data)
       .catch((response) => response);
 
-    facilities_plan_run_service.get_all_ids = (facilities_plan_run_id, data) => $http.get(`/api/v3/facilities_plan_runs/${facilities_plan_run_id}/properties/`, {
+    facilities_plan_run_service.get_all_ids = (facilities_plan_run_id, filters) => $http.get(`/api/v3/facilities_plan_runs/${facilities_plan_run_id}/properties/`, {
       params: {
         only_ids: true,
         organization_id: user_service.get_organization().id,
-        ...data
+        ...format_column_filters(filters),
       }
     })
       .then((response) => response.data)

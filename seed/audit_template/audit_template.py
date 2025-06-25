@@ -25,13 +25,17 @@ from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
-from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.models import Element, Measure, Meter, MeterReading, PropertyView
 from seed.utils.encrypt import decrypt
 
 _log = logging.getLogger(__name__)
 
 AUTO_SYNC_NAME = "audit_template_sync_org-"
+
+# Currently default version is the latest version.
+# Need to keep this version in sync with Audit Template
+AT_BUILDINGSYNC_VERSION = settings.BUILDINGSYNC_VERSION
 
 
 def require_token(fn):
@@ -268,7 +272,7 @@ class AuditTemplate:
             if getattr(state, field) is None:
                 missing_fields.append(field)
 
-        if len(missing_fields):
+        if missing_fields:
             missing_fields = ", ".join(missing_fields)
             messages = ["error", f"Validation Error. {display_field} must have {missing_fields}"]
             return False, messages
@@ -318,8 +322,8 @@ class AuditTemplate:
             {
                 etree.QName(
                     XSI_URI, "schemaLocation"
-                ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.4.0/BuildingSync.xsd",
-                "version": "2.4.0",
+                ): f"http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v{AT_BUILDINGSYNC_VERSION}/BuildingSync.xsd",
+                "version": AT_BUILDINGSYNC_VERSION,
             },
             em.Facilities(
                 em.Facility(
@@ -497,7 +501,7 @@ def _build_all_resource_totals(em, meter):
         {},
         *[
             em.AllResourceTotal(
-                {"ID": f"{resource_total_base}{meter.id}-{i+1}"},
+                {"ID": f"{resource_total_base}{meter.id}-{i + 1}"},
                 em.EndUse("All end uses"),
                 em.ResourceBoundary("Site"),
                 em.SiteEnergyUse(
@@ -506,7 +510,7 @@ def _build_all_resource_totals(em, meter):
                     else str(meter_reading.reading / kBtu_to_therms)
                 ),
                 em.UserDefinedFields(
-                    em.UserDefinedField(em.FieldName("Linked Time Series ID"), em.FieldValue(f"{timeseries_id_base}{meter.id}-{i+1}"))
+                    em.UserDefinedField(em.FieldName("Linked Time Series ID"), em.FieldValue(f"{timeseries_id_base}{meter.id}-{i + 1}"))
                 ),
             )
             for i, meter_reading in enumerate(meter_readings)
@@ -526,7 +530,7 @@ def _build_time_series_data(em, property_id, meter):
         {},
         *[
             em.TimeSeries(
-                {"ID": f"{timeseries_id_base}{meter.id}-{i+1}"},
+                {"ID": f"{timeseries_id_base}{meter.id}-{i + 1}"},
                 em.ReadingType("Peak"),
                 em.TimeSeriesReadingQuantity("Voltage"),
                 em.StartTimestamp(meter_reading.start_time.isoformat()),
@@ -552,7 +556,7 @@ def _build_resource_uses(em, property_id, meters, scenario_type, use_meter_ids=T
         {},
         *[
             em.ResourceUse(
-                {"ID": f"{resource_use_base}{meter.id}" if use_meter_ids else f"{resource_use_base}{i+1}"},
+                {"ID": f"{resource_use_base}{meter.id}" if use_meter_ids else f"{resource_use_base}{i + 1}"},
                 em.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other")),
                 em.ResourceBoundary("Site"),
                 em.ResourceUnits("kWh" if SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other") == "Electricity" else "therms"),
@@ -599,14 +603,12 @@ def _build_measures_element(em, property_id, building_id):
 def _get_measures(property_id):
     """Elements/TKBL implementation specific"""
     # TODO: revise this code to be able to export Recommended measures that were added to SEED via Audit Template import?
-    tkbl_elements = Element.objects.filter(property_id=property_id, code__code__in=SCOPE_ONE_EMISSION_CODES).order_by(
-        "remaining_service_life"
-    )[:3]
+    tkbl_elements = Element.objects.filter(property_id=property_id, code__code__in=EISA432_CODES).order_by("remaining_service_life")[:3]
     bsync_measure_dicts = [x for e in tkbl_elements for x in bsync_by_uniformat_code(e.code.code)]
 
     bsync_measure_tuples = set()
     for bsync_measure_dict in bsync_measure_dicts:
-        category = Measure.objects.filter(category_display_name=bsync_measure_dict["cat_lev1"]).first().category
+        category = Measure.objects.filter(category_display_name=bsync_measure_dict["cat_lev1"]).order_by("-schema_version").first().category
         category = "".join(word.capitalize() for word in category.split("_"))
         # SPECIAL case: HVAC
         category = re.sub(r"Hvac", lambda x: x.group().upper(), category)

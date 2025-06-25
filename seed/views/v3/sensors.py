@@ -70,10 +70,11 @@ class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profile
                         "display_name": sensor.display_name,
                         "location_description": sensor.location_description,
                         "description": sensor.description,
-                        "type": sensor.sensor_type,
+                        "sensor_type": sensor.sensor_type,
                         "units": sensor.units,
                         "column_name": sensor.column_name,
                         "data_logger": data_logger.display_name,
+                        "data_logger_id": data_logger.id,
                     }
                 )
 
