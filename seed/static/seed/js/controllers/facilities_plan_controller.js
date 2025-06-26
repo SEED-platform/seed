@@ -91,19 +91,19 @@ angular.module('SEED.controller.facilities_plan', [])
             name: `${property_display_field.column_name}_${property_display_field.id}`,
             cellClass: (grid, row) => 'portfolio-summary-current-cell',
             enableFiltering: true,
-            cellFilter: 'number',
+            cellFilter: 'number'
           },
           ...Object.values($scope.current_facilities_plan_run.display_columns).map((c) => ({ displayName: (c.display_name ?? '' === '') ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}`, enableFiltering: true })),
           ...Object.values($scope.current_facilities_plan_run.columns).map((c) => ({ displayName: (c.display_name ?? '' === '') ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}`, enableFiltering: true })),
-          { displayName: 'Total Energy Usage', name: 'total_energy_usage', enableFiltering: false},
-          { displayName: 'Percentage Of Total Energy Usage', name: 'percentage_of_total_energy_usage', enableFiltering: false},
-          { displayName: 'Running Percentage', name: 'running_percentage', enableFiltering: false},
-          { displayName: 'Running Square Footage', name: 'running_square_footage', enableFiltering: false}
+          { displayName: 'Total Energy Usage', name: 'total_energy_usage', enableFiltering: false },
+          { displayName: 'Percentage Of Total Energy Usage', name: 'percentage_of_total_energy_usage', enableFiltering: false },
+          { displayName: 'Running Percentage', name: 'running_percentage', enableFiltering: false },
+          { displayName: 'Running Square Footage', name: 'running_square_footage', enableFiltering: false }
         ];
       };
 
       $scope.columnDisplayByName = {};
-      for (const col of $scope.facilities_plan_runs.map(fpr => Object.values(fpr.columns)).flat()) {
+      for (const col of $scope.facilities_plan_runs.map((fpr) => Object.values(fpr.columns)).flat()) {
         $scope.columnDisplayByName[col.name] = col.displayName;
       }
 
@@ -202,7 +202,7 @@ angular.module('SEED.controller.facilities_plan', [])
         };
       };
 
-          // https://regexr.com/6cka2
+      // https://regexr.com/6cka2
       const combinedRegex = /^(!?)=\s*(-?\d+(?:\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
       const parseFilter = (expression) => {
         // parses an expression string into an object containing operator and value
@@ -370,7 +370,7 @@ angular.module('SEED.controller.facilities_plan', [])
       };
 
       $scope.delete_facilities_plan_run = () => {
-        console.log("delete_facilties_plan")
+        console.log('delete_facilties_plan');
         const modalInstance = $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/delete_facilities_plan_run_modal.html`,
           controller: 'delete_facilities_plan_run_modal_controller',
@@ -378,7 +378,7 @@ angular.module('SEED.controller.facilities_plan', [])
             facilities_plan_run: () => $scope.current_facilities_plan_run
           }
         });
-      }
+      };
 
       $scope.update_facilities_plan_run = () => {
         const modalInstance = $uibModal.open({
@@ -389,10 +389,10 @@ angular.module('SEED.controller.facilities_plan', [])
             facilities_plans: () => facilities_plans.data,
             columns: () => property_columns,
             existing_fpr: () => $scope.current_facilities_plan_run,
-            level_name_index: () => access_level_tree.access_level_names.findIndex(n => n == $scope.current_facilities_plan_run.ali_level)
+            level_name_index: () => access_level_tree.access_level_names.findIndex((n) => n == $scope.current_facilities_plan_run.ali_level)
           }
         });
-      }
+      };
 
       /**
        Opens a modal to create facilities plan run

@@ -76,17 +76,17 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
         $scope.access_level_instance_id = null;
       };
 
-      if (existing_fpr){
-        $scope.level_name_index = String(level_name_index)
+      if (existing_fpr) {
+        $scope.level_name_index = String(level_name_index);
         $scope.change_selected_level_index();
-        $scope.access_level_instance_id = existing_fpr.ali
-        $scope.run_name = existing_fpr.name
-        $scope.facilities_plan = existing_fpr.facilities_plan
-        $scope.baseline_cycle = existing_fpr.cycle
-        $scope.selected_columns = existing_fpr.display_columns.map(c => c.id)
+        $scope.access_level_instance_id = existing_fpr.ali;
+        $scope.run_name = existing_fpr.name;
+        $scope.facilities_plan = existing_fpr.facilities_plan;
+        $scope.baseline_cycle = existing_fpr.cycle;
+        $scope.selected_columns = existing_fpr.display_columns.map((c) => c.id);
 
-        console.log(existing_fpr.ali, $scope.access_level_instance_id)
-        console.log(level_name_index, $scope.level_name_index)
+        console.log(existing_fpr.ali, $scope.access_level_instance_id);
+        console.log(level_name_index, $scope.level_name_index);
         $scope.editing_existing_fpr = true;
       }
 
@@ -106,10 +106,10 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
           display_columns: $scope.selected_columns
         };
 
-        if (existing_fpr){
-          fn =  facilities_plan_run_service.update_facilities_plan_run(existing_fpr.id, payload)
+        if (existing_fpr) {
+          fn = facilities_plan_run_service.update_facilities_plan_run(existing_fpr.id, payload);
         } else {
-          fn =  facilities_plan_run_service.create_facilities_plan_run(payload)
+          fn = facilities_plan_run_service.create_facilities_plan_run(payload);
         }
         fn.then((data) => {
           $state.reload();

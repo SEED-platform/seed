@@ -51,7 +51,7 @@ angular.module('SEED.service.facilities_plan_run', []).factory('facilities_plan_
       params: {
         only_ids: true,
         organization_id: user_service.get_organization().id,
-        ...format_column_filters(filters),
+        ...format_column_filters(filters)
       }
     })
       .then((response) => response.data)

@@ -40,7 +40,7 @@ angular.module('SEED.controller.bulk_edit_properties_modal', [])
       $scope.exclude_from_plan_column_new_value = null;
       $scope.require_in_plan_column_new_value = null;
 
-      $scope.cycles = [1,2,3,4];
+      $scope.cycles = [1, 2, 3, 4];
 
       $scope.update_properties = () => {
         // console.log('property_view_ids', property_view_ids);

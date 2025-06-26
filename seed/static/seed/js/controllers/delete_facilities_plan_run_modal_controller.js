@@ -17,7 +17,7 @@ angular.module('SEED.controller.delete_facilities_plan_run_modal', [])
       $uibModalInstance,
       Notification,
       facilities_plan_run,
-      facilities_plan_run_service,
+      facilities_plan_run_service
     ) {
       $scope.facilities_plan_run = facilities_plan_run;
 
@@ -26,7 +26,7 @@ angular.module('SEED.controller.delete_facilities_plan_run_modal', [])
           $state.reload();
           $uibModalInstance.dismiss();
         });
-      }
+      };
 
       $scope.close = () => {
         $uibModalInstance.dismiss();

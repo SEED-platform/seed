@@ -32,7 +32,13 @@
     <!-- Access Level -->
     <li class="r-row r-row-centered">
       <label class="control-label col-sm-4" translate>Access Level:</label>
-      <select class="form-control col-sm-8" ng-model="level_name_index" ng-change="change_selected_level_index()" ng-options="i as name for (i, name) in level_names" ng-disabled="editing_existing_fpr"></select>
+      <select
+        class="form-control col-sm-8"
+        ng-model="level_name_index"
+        ng-change="change_selected_level_index()"
+        ng-options="i as name for (i, name) in level_names"
+        ng-disabled="editing_existing_fpr"
+      ></select>
     </li>
     <li class="r-row r-row-centered">
       <label class="control-label col-sm-4" translate>Access Level Instance:</label>
