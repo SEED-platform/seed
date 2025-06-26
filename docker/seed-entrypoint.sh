@@ -8,6 +8,6 @@ mkdir -p /seed/media/uploads && chmod 777 /seed/media/uploads
 mkdir -p /seed/media/uploads/pm_imports && chmod 777 /seed/media/uploads/pm_imports
 
 # set the owner to uwsgi
-chown -R uwsgi /seed/collected_static
+chown -R 1000 /seed/collected_static
 
 exec "$@"
