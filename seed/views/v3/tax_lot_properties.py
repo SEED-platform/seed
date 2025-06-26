@@ -496,7 +496,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 else:
                     formatted_value = value
 
-                if formatted_value and any(k in key for k in polygon_fields):
+                if formatted_value and key in polygon_fields:
                     """
                     If object is a polygon and is populated, add the 'geometry'
                     key-value-pair in the appropriate GeoJSON format.
