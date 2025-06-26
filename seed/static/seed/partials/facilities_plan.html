@@ -35,7 +35,7 @@
           </div>
         </div>
         <div ng-if="!auth.requires_member && facilities_plan_runs.length > 0" class="pad-bottom-10 col-md-10">
-          <p class="pad-bottom-10">Select a Facilities Plan Run from the dropdown below</p>
+          <p class="pad-bottom-10" translate>Select a Facilities Plan Run from the dropdown below</p>
         </div>
       </div>
 
@@ -93,19 +93,19 @@
               </li>
               <li class="dropdown-header goal-action">
                 <a ng-if="!selected_count < 1" ng-click="open_bulk_edit_properties_modal()" translate>Bulk Edit</a>
-                <span ng-if="selected_count < 1" class="disabled-action" translate></span>
+                <span ng-if="selected_count < 1" class="disabled-action" translate>Bulk Edit</span>
               </li>
             </ul>
           </div>
         </div>
         <div class="col-md-5">
           <!-- <span style="color: #808080">Current Access Level:</span>{$ current_facilities_plan_run.ali_level $}<br/> -->
-          <span style="color: #808080; padding-left: 5px">Access Level Instance:</span> {$ current_facilities_plan_run.ali_name $}
+          <span style="color: #808080; padding-left: 5px" translate>Access Level Instance:</span> {$ current_facilities_plan_run.ali_name $}
         </div>
         <!-- Plan run info  -->
         <div class="col-md-4">
           <span ng-show="current_facilities_plan_run.run_at"><span style="color: #808080"> {$:: 'Last Run' | translate $}:</span> {$ current_facilities_plan_run.run_at $}</span>
-          <span ng-show="current_facilities_plan_run.run_at == null" translate> This plan has not yet been run</span>
+          <span ng-show="current_facilities_plan_run.run_at == null" translate>This plan has not yet been run</span>
         </div>
         <div class="col-md-2">
           <button type="button" class="btn btn-primary" ng-click="run_the_run()">{$:: 'Calculate the Plan' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i></button>

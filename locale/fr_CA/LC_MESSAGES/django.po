@@ -581,6 +581,9 @@ msgstr "Mesures recommandées par BuildingSync"
 msgid "Buildings"
 msgstr "Bâtiments"
 
+msgid "Bulk Edit"
+msgstr "Modification en masse"
+
 msgid "By Analysis"
 msgstr "Par analyse"
 
@@ -589,6 +592,16 @@ msgstr "Par propriété"
 
 msgid "By clicking the Log In button you accept the NREL Data Terms."
 msgstr "En cliquant sur le bouton Connexion, vous acceptez les conditions d'utilisation des données NREL."
+
+msgid "CALC_ACCESS_LEVEL_DESC"
+msgstr "Sélectionnez le niveau d’accès et l’instance des données à inclure dans les calculs."
+
+#, fuzzy
+msgid "CALC_CYCLE_DESC"
+msgstr "Sélectionnez le cycle à utiliser pour les calculs."
+
+msgid "CALC_DATA_COLS_DESC"
+msgstr "Sélectionnez des colonnes de données supplémentaires à inclure dans le tableau Plan des installations, si vous le souhaitez."
 
 msgid "CEWE_ELEMENTS_COMMENT"
 msgstr "(Généré par la bibliothèque de la base de connaissances des technologies ESTCP)"
@@ -1376,6 +1389,9 @@ msgstr "Équipe de développement"
 msgid "Dismiss"
 msgstr "Rejeter"
 
+msgid "Display Columns"
+msgstr "Colonnes d'Affichage"
+
 msgid "Display Name"
 msgstr "Afficher un nom"
 
@@ -1765,6 +1781,9 @@ msgstr "Le seuil d'IEC en matière de combustibles fossiles pour le bâtiment (y
 msgid "Facilities Plan"
 msgstr "Plan des installations"
 
+msgid "Facilities Plan Run"
+msgstr "Planification des installations"
+
 msgid "Failed to delete inventory"
 msgstr "Échec de la suppression de l'inventaire"
 
@@ -1898,6 +1917,9 @@ msgstr "Financement à partir de"
 msgid "GAS_ENERGY_USAGE_DESC"
 msgstr "Identifiez la colonne SEED utilisée pour stocker la consommation d’énergie du gaz."
 
+msgid "GENERIC_FP_DESC"
+msgstr "Sélectionnez un plan d'installations générique créé dans les paramètres de l'organisation. Si vous n'y avez pas accès, demandez à votre administrateur d'en créer un."
+
 msgid "GEOCODED_MANUALLY"
 msgstr "géocodé manuellement"
 
@@ -1988,6 +2010,9 @@ msgstr "Configurations générales"
 
 msgid "Generate Token"
 msgstr "Générer un jeton"
+
+msgid "Generic Facilities Plan Selection"
+msgstr "Sélection du plan d'installations génériques"
 
 msgid "Geocode"
 msgstr "Géocodage"
@@ -2738,6 +2763,9 @@ msgstr "Nouvelle construction ou acquisition"
 
 msgid "New Facilities Plan"
 msgstr "Nouveau plan d'installations"
+
+msgid "New Facilities Run Plan"
+msgstr "Plan de gestion des nouvelles installations"
 
 msgid "New Goal"
 msgstr "Nouvel Objectif"
@@ -4525,6 +4553,9 @@ msgstr "Calculs de résumé de portefeuille inattendus ?"
 
 msgid "Uniformat Category"
 msgstr "Catégorie Uniformat"
+
+msgid "Unique name which will be displayed in the dropdown selector"
+msgstr "Nom unique qui sera affiché dans le sélecteur déroulant"
 
 msgid "Units"
 msgstr "Unités"
