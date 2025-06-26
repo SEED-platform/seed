@@ -324,8 +324,8 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
     // filtered columns should include derived columns
     const filtered_columns = _.filter($scope.columns, (column) => column.derived_column || _.includes(acceptable_column_types, column.data_type));
-    $scope.eui_columns = $scope.columns.filter((column) => column.derived_column || column.data_type == 'eui');
-    $scope.boolean_columns = $scope.columns.filter((column) => column.derived_column || column.data_type == 'boolean');
+    $scope.eui_columns = $scope.columns.filter((column) => column.derived_column || column.data_type === 'eui');
+    $scope.boolean_columns = $scope.columns.filter((column) => column.derived_column || column.data_type === 'boolean');
     $scope.numeric_columns = $scope.columns.filter((column) => column.derived_column || ['float', 'integer', 'number'].includes(column.data_type));
 
     $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map((c) => c.id);
@@ -704,7 +704,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $scope.selected_facilities_plan = null;
 
     $scope.set_facilities_plan = (id) => {
-      $scope.selected_facilities_plan = $scope.facilities_plans.find((fp) => fp.id == id);
+      $scope.selected_facilities_plan = $scope.facilities_plans.find((fp) => fp.id === id);
       $scope.dirty_facilities_plan = { ...$scope.selected_facilities_plan };
     };
 

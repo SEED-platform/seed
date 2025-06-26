@@ -98,7 +98,7 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
       };
 
       $scope.save = () => {
-        payload = {
+        const payload = {
           ali: $scope.access_level_instance_id,
           facilities_plan: $scope.facilities_plan,
           name: $scope.run_name,
@@ -106,12 +106,13 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
           display_columns: $scope.selected_columns
         };
 
+        let fn = null;
         if (existing_fpr) {
           fn = facilities_plan_run_service.update_facilities_plan_run(existing_fpr.id, payload);
         } else {
           fn = facilities_plan_run_service.create_facilities_plan_run(payload);
         }
-        fn.then((data) => {
+        fn.then(() => {
           $state.reload();
           $uibModalInstance.dismiss();
         });

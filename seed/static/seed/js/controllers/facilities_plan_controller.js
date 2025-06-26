@@ -18,7 +18,7 @@ angular.module('SEED.controller.facilities_plan', [])
     'facilities_plan_run_service',
     'spinner_utility',
     'uiGridConstants',
-    'uiGridGridMenuService',
+    // eslint-disable-next-line func-names
     function (
       $scope,
       $window,
@@ -33,8 +33,7 @@ angular.module('SEED.controller.facilities_plan', [])
       auth_payload,
       facilities_plan_run_service,
       spinner_utility,
-      uiGridConstants,
-      uiGridGridMenuService
+      uiGridConstants
     ) {
       $scope.auth = auth_payload.auth;
       // TODO: should we refactor to return facilities plan within facilities_plan_run response?
@@ -56,7 +55,7 @@ angular.module('SEED.controller.facilities_plan', [])
       };
 
       const selected_columns = () => {
-        property_display_field = $scope.current_facilities_plan_run.property_display_field;
+        const property_display_field = $scope.current_facilities_plan_run.property_display_field;
         return [
           {
             name: 'id',
@@ -87,14 +86,22 @@ angular.module('SEED.controller.facilities_plan', [])
             width: 30
           },
           {
-            displayName: (property_display_field.display_name ?? '' === '') ? property_display_field.display_name : property_display_field.column_name,
+            displayName: property_display_field.display_name ? property_display_field.display_name : property_display_field.column_name,
             name: `${property_display_field.column_name}_${property_display_field.id}`,
-            cellClass: (grid, row) => 'portfolio-summary-current-cell',
+            cellClass: () => 'portfolio-summary-current-cell',
             enableFiltering: true,
             cellFilter: 'number'
           },
-          ...Object.values($scope.current_facilities_plan_run.display_columns).map((c) => ({ displayName: (c.display_name ?? '' === '') ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}`, enableFiltering: true })),
-          ...Object.values($scope.current_facilities_plan_run.columns).map((c) => ({ displayName: (c.display_name ?? '' === '') ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}`, enableFiltering: true })),
+          ...Object.values($scope.current_facilities_plan_run.display_columns).map((c) => ({
+            displayName: c.display_name && c.display_name !== '' ? c.display_name : c.column_name,
+            name: `${c.column_name}_${c.id}`,
+            enableFiltering: true
+          })),
+          ...Object.values($scope.current_facilities_plan_run.columns).map((c) => ({
+            displayName: c.display_name && c.display_name !== '' ? c.display_name : c.column_name,
+            name: `${c.column_name}_${c.id}`,
+            enableFiltering: true
+          })),
           { displayName: 'Total Energy Usage', name: 'total_energy_usage', enableFiltering: false },
           { displayName: 'Percentage Of Total Energy Usage', name: 'percentage_of_total_energy_usage', enableFiltering: false },
           { displayName: 'Running Percentage', name: 'running_percentage', enableFiltering: false },
@@ -120,7 +127,7 @@ angular.module('SEED.controller.facilities_plan', [])
       };
 
       const load_data = (page) => {
-        if ($scope.current_facilities_plan_run_id == undefined) return;
+        if ($scope.current_facilities_plan_run_id === undefined) return;
 
         $scope.data_loading = true;
         const per_page = 100;
@@ -261,15 +268,15 @@ angular.module('SEED.controller.facilities_plan', [])
         }
       };
 
-      const operatorLookup = {
-        ne: '!=',
-        exact: '=',
-        lt: '<',
-        lte: '<=',
-        gt: '>',
-        gte: '>=',
-        icontains: ''
-      };
+      // const operatorLookup = {
+      //   ne: '!=',
+      //   exact: '=',
+      //   lt: '<',
+      //   lte: '<=',
+      //   gt: '>',
+      //   gte: '>=',
+      //   icontains: ''
+      // };
       const operatorArr = ['>', '<', '=', '!', '!=', '<=', '>='];
 
       const updateColumnFilterSort = () => {
@@ -330,7 +337,7 @@ angular.module('SEED.controller.facilities_plan', [])
         }
       };
 
-      $scope.getRowStyle = function (row) {
+      $scope.getRowStyle = (row) => {
         const val = row.entity.running_percentage;
         if (val !== null && val <= $scope.current_facilities_plan.energy_running_sum_percentage) {
           return { background: '#d4edda' }; // light green
@@ -364,14 +371,14 @@ angular.module('SEED.controller.facilities_plan', [])
           $scope.selected_option = 'none';
           $scope.selected_count = 0;
           $scope.gridApi.selection.clearSelectedRows();
-          load_summary();
+          // load_summary();
           load_data();
         });
       };
 
       $scope.delete_facilities_plan_run = () => {
-        console.log('delete_facilties_plan');
-        const modalInstance = $uibModal.open({
+        // console.log('delete_facilties_plan');
+        $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/delete_facilities_plan_run_modal.html`,
           controller: 'delete_facilities_plan_run_modal_controller',
           resolve: {
@@ -381,7 +388,7 @@ angular.module('SEED.controller.facilities_plan', [])
       };
 
       $scope.update_facilities_plan_run = () => {
-        const modalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/create_facilities_plan_run_modal.html`,
           controller: 'create_facilities_plan_run_modal_controller',
           resolve: {
@@ -389,7 +396,7 @@ angular.module('SEED.controller.facilities_plan', [])
             facilities_plans: () => facilities_plans.data,
             columns: () => property_columns,
             existing_fpr: () => $scope.current_facilities_plan_run,
-            level_name_index: () => access_level_tree.access_level_names.findIndex((n) => n == $scope.current_facilities_plan_run.ali_level)
+            level_name_index: () => access_level_tree.access_level_names.findIndex((n) => n === $scope.current_facilities_plan_run.ali_level)
           }
         });
       };
@@ -398,7 +405,7 @@ angular.module('SEED.controller.facilities_plan', [])
        Opens a modal to create facilities plan run
       * */
       $scope.create_facilities_plan_run = () => {
-        const modalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/create_facilities_plan_run_modal.html`,
           controller: 'create_facilities_plan_run_modal_controller',
           resolve: {
