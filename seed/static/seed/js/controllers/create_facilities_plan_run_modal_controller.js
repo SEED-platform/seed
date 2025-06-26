@@ -85,8 +85,8 @@ angular.module('SEED.controller.create_facilities_plan_run_modal', [])
         $scope.baseline_cycle = existing_fpr.cycle;
         $scope.selected_columns = existing_fpr.display_columns.map((c) => c.id);
 
-        console.log(existing_fpr.ali, $scope.access_level_instance_id);
-        console.log(level_name_index, $scope.level_name_index);
+        // console.log(existing_fpr.ali, $scope.access_level_instance_id);
+        // console.log(level_name_index, $scope.level_name_index);
         $scope.editing_existing_fpr = true;
       }
 

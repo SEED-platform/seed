@@ -198,10 +198,10 @@ angular.module('SEED.controller.facilities_plan', [])
             });
 
             const selectionChanged = () => {
-              console.log(gridApi.selection.getSelectedRows());
+              // console.log(gridApi.selection.getSelectedRows());
               $scope.selected_ids = gridApi.selection.getSelectedRows().map((row) => row.property_view_id);
               $scope.selected_count = $scope.selected_ids.length;
-              console.log($scope.selected_ids);
+              // console.log($scope.selected_ids);
             };
             gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
             gridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
