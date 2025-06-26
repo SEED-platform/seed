@@ -332,7 +332,7 @@ angular.module('SEED.controller.facilities_plan', [])
 
       $scope.getRowStyle = function (row) {
         const val = row.entity.running_percentage;
-        if (val <= $scope.current_facilities_plan.energy_running_sum_percentage) {
+        if (val !== null && val <= $scope.current_facilities_plan.energy_running_sum_percentage) {
           return { background: '#d4edda' }; // light green
         }
         return {};

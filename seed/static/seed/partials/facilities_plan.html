@@ -28,11 +28,12 @@
             </div>
             <div class="col-md-9 pad-bottom-10" ng-if="facilities_plan_runs.length == 0">
               <p translate>FACILITIES_PLAN_NOT_EXISTS_DESC</p>
+              <button type="button" class="btn btn-primary" ng-click="create_facilities_plan_run()">
+              {$:: 'Create New Plan Run' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
+              </button>
             </div>
             <div class="col-md-2">
-              <button type="button" class="btn btn-primary" ng-click="create_facilities_plan_run()">
-                {$:: 'Create New Plan Run' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
-              </button>
+             
             </div>
           </div>
         </div>
@@ -42,24 +43,41 @@
       </div>
 
       <!-- select and CRUD runs -->
-      <div ng-if="facilities_plan_runs.length > 0" class="row">
-        <div class="col-md-7" style="margin-bottom: 10px">
-          <label style="padding-right: 10px">{$:: 'Selected Facilities Plan' | translate $}:</label>
-          <select class="form-control" style="width: 50%; display: inline" id="current_facilities_plan_run_id"
+      <div ng-if="facilities_plan_runs.length > 0" class="row pad-bot-10 align-bottom">
+        <div class="col-md-1 text-right">
+          <label style="padding-top:5px;">{$:: 'Facilities Plan Run' | translate $}:</label>
+        </div>
+        <div class="col-md-4">
+          <select class="form-control" id="current_facilities_plan_run_id"
             ng-model="current_facilities_plan_run_id" ng-options="plan.id as plan.name for plan in facilities_plan_runs"
-            ng-change="change_facilities_plan(current_facilities_plan_run_id)"></select>
-          <span style="color: #808080">Current Organization:</span> {$ current_facilities_plan_run.ali_level $}
-          <a style="color: #808080; padding-left: 5px">Access Level:</a> {$ current_facilities_plan_run.ali_name $}
-          <button type="button" class="btn-info" aria-label="edit sensor" style="border-radius: 4px;"
-            ng-click="update_facilities_plan_run()"><i class="fa-solid fa-pencil"></i></button>
-          <button type="button" class="btn-info" aria-label="edit sensor" style="border-radius: 4px;"
-            ng-click="delete_facilities_plan_run()"><i class="fa-solid fa-trash-can"></i></button>
+            ng-change="change_facilities_plan(current_facilities_plan_run_id)">    
+          </select>
+        </div>
+        <div class="col-md-5">
+           <span class="pad-right-5" ng-if="current_facilities_plan_run_id">
+            <button type="button" class="btn btn-info" aria-label="edit sensor"
+            ng-click="update_facilities_plan_run()"><i class="fa-solid fa-pencil"></i>
+            </button>
+          </span>
+          <span class="pad-right-5" ng-if="current_facilities_plan_run_id">
+            <button type="button" class="btn btn-danger" aria-label="edit sensor"
+              ng-click="delete_facilities_plan_run()"><i class="fa-solid fa-x"></i></button>
+          </span>
+          <span class="pad-right-5">
+            <button type="button" class="btn btn-primary" ng-click="create_facilities_plan_run()">
+              {$:: 'Create New Plan Run' | translate $} <i class="fa-solid fa-check" ng-show="settings_updated"></i>
+            </button>
+          </span>
         </div>
       </div>
-
-      <div class="row" style="padding-bottom: 10px; display: flex; align-items: flex-end" ng-if="data_valid">
+      <div class="row" ng-if="current_facilities_plan_run_id">
+        <div class="col-md-6 col-md-offset-2" style="padding-bottom:10px;">
+         
+        </div>
+      </div>
+      <div class="row" style="padding-top: 10px; padding-bottom: 15px; display: flex; align-items: flex-end" ng-if="data_valid">
         <!-- Actions -->
-        <div class="col-md-3">
+        <div class="col-md-2">
           <div uib-dropdown class="goal-actions-dropdown" ng-if="!viewer">
             <button id="btnCreateNew" type="button" class="btn actions-toggle" uib-dropdown-toggle>
               <span translate>Actions</span>
@@ -87,9 +105,13 @@
             </ul>
           </div>
         </div>
+        <div class="col-md-5">
+          <!-- <span style="color: #808080">Current Access Level:</span>{$ current_facilities_plan_run.ali_level $}<br/> -->
+          <span style="color: #808080; padding-left: 5px">Access Level Instance:</span> {$ current_facilities_plan_run.ali_name $}
+        </div>
         <!-- Plan run info  -->
         <div class="col-md-4">
-          <span ng-show="current_facilities_plan_run.run_at"> {$:: 'Plan last Run at' | translate $}: {$
+          <span ng-show="current_facilities_plan_run.run_at" ><span style="color: #808080"> {$:: 'Last Run' | translate $}:</span> {$
             current_facilities_plan_run.run_at $}</span>
           <span ng-show="current_facilities_plan_run.run_at == null" translate> This plan has not yet been run</span>
         </div>
@@ -99,7 +121,7 @@
         </div>
 
         <!-- pagination -->
-        <div class="col-md-3">
+        <div class="col-md-3 text-right">
           {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span
             ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>
           <i ng-if="selected_count > 0">
