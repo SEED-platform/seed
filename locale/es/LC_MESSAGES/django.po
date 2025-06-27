@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-05-27 19:27\n"
+"PO-Revision-Date: 2025-06-27 00:29\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -730,6 +730,9 @@ msgstr "BuildingSync Medidas recomendadas"
 msgid "Buildings"
 msgstr "Edificios"
 
+msgid "Bulk Edit"
+msgstr "Edición masiva"
+
 msgid "By Analysis"
 msgstr "Por análisis"
 
@@ -739,6 +742,16 @@ msgstr "Por propiedad"
 #, fuzzy
 msgid "By clicking the Log In button you accept the NREL Data Terms."
 msgstr "Al hacer clic en el botón Iniciar sesión, acepta las Condiciones de datos del NREL."
+
+msgid "CALC_ACCESS_LEVEL_DESC"
+msgstr "Seleccione el nivel de acceso y la instancia de los datos que se incluirán en los cálculos."
+
+#, fuzzy
+msgid "CALC_CYCLE_DESC"
+msgstr "Seleccione el ciclo a utilizar para los cálculos."
+
+msgid "CALC_DATA_COLS_DESC"
+msgstr "Seleccione columnas de datos adicionales para incluir en la tabla del Plan de Instalaciones, si lo desea."
 
 msgid "CEWE_ELEMENTS_COMMENT"
 msgstr "(Generado por la biblioteca de base de conocimientos de ESTCP Technologies)"
@@ -1739,6 +1752,9 @@ msgstr "Equipo de desarrollo"
 msgid "Dismiss"
 msgstr "Desestimar"
 
+msgid "Display Columns"
+msgstr "Columnas de visualización"
+
 #, fuzzy
 msgid "Display Name"
 msgstr "Mostrar nombre"
@@ -2230,6 +2246,9 @@ msgstr "Umbral EUI de combustibles fósiles para el edificio (incluye gas, etc.)
 msgid "Facilities Plan"
 msgstr "Plan de Instalaciones"
 
+msgid "Facilities Plan Run"
+msgstr "Ejecución del plan de instalaciones"
+
 #, fuzzy
 msgid "Failed to delete inventory"
 msgstr "Error al borrar inventario"
@@ -2398,6 +2417,9 @@ msgstr "Financiación de"
 msgid "GAS_ENERGY_USAGE_DESC"
 msgstr "Identifique la columna SEMILLA utilizada para almacenar el consumo de energía del gas."
 
+msgid "GENERIC_FP_DESC"
+msgstr "Seleccione un Plan de Instalaciones Genérico creado en la Configuración de la Organización. Si no tiene acceso, pídale a su administrador que lo cree."
+
 #, fuzzy
 msgid "GEOCODED_MANUALLY"
 msgstr "geocodificado manualmente"
@@ -2511,6 +2533,9 @@ msgstr "Configuraciones generales"
 #, fuzzy
 msgid "Generate Token"
 msgstr "Generar token"
+
+msgid "Generic Facilities Plan Selection"
+msgstr "Selección de planes de instalaciones genéricas"
 
 #, fuzzy
 msgid "Geocode"
@@ -3485,6 +3510,9 @@ msgstr "Nueva construcción o adquisición"
 
 msgid "New Facilities Plan"
 msgstr "Nuevo Plan de Instalaciones"
+
+msgid "New Facilities Run Plan"
+msgstr "Plan de Ejecución de Nuevas Instalaciones"
 
 #, fuzzy
 msgid "New Goal"
@@ -5776,6 +5804,9 @@ msgstr "¿Cálculos de resumen de cartera inesperados?"
 #, fuzzy
 msgid "Uniformat Category"
 msgstr "Categoría Uniformat"
+
+msgid "Unique name which will be displayed in the dropdown selector"
+msgstr "Nombre único que se mostrará en el selector desplegable"
 
 #, fuzzy
 msgid "Units"

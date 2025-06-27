@@ -99,7 +99,8 @@ describe('controller: organization_settings_controller', () => {
           table_name: 'PropertyState',
           column_name: 'test'
         }
-      ]
+      ],
+      facilities_plans: []
     });
   }
 
