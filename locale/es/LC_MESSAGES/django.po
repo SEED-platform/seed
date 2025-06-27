@@ -6178,7 +6178,7 @@ msgstr "{x_axis_label} vs. {y_axis_label}"
 
 #, fuzzy
 msgid "X_VERSUS_Y_AGGREGATED"
-msgstr "{x_axis_label} vs. {y_axis_label} (Agregado)"
+msgstr "{x_axis_label} vs. {y_axis_label} ({aggregationType})"
 
 #, fuzzy
 msgid "Y Axis"

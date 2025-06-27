@@ -1568,7 +1568,7 @@
     "X-Axis Field Options": "Opciones de campo del eje X",
     "XSS_TEST": "Texto acentuado. <script>alert(\"XSS FAIL IN BASE TRANSLATION STRING\");<\/script>{injectedText}",
     "X_VERSUS_Y": "{x_axis_label} vs. {y_axis_label}",
-    "X_VERSUS_Y_AGGREGATED": "{x_axis_label} vs. {y_axis_label} (Agregado)",
+    "X_VERSUS_Y_AGGREGATED": "{x_axis_label} vs. {y_axis_label} ({aggregationType})",
     "Y Axis": "Eje Y",
     "YEAR_BUILT_THRESHOLD_HELP": "El año construido que se utilizará como umbral de comparación en los cálculos",
     "Year": "Año",

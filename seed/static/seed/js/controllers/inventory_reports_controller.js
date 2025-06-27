@@ -289,6 +289,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
     const localStorageXAxisKey = `${base_storage_key}.xaxis`;
     const localStorageYAxisKey = `${base_storage_key}.yaxis`;
+    const localStorageAggregationTypeKey = `${base_storage_key}.aggregationType`;
     const localStorageALIndex = `${base_storage_key}.ALIndex`;
     const localStorageALIID = `${base_storage_key}.ALIID`;
     const localStorageReportConfigID = `${base_storage_key}.RCID`;
@@ -301,6 +302,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       // Currently selected x and y variables - check local storage first, otherwise initialize to first choice
       $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
       $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
+      $scope.aggregationType = JSON.parse(localStorage.getItem(localStorageAggregationTypeKey)) || 'Sum';
 
       $scope.level_name_index = JSON.parse(localStorage.getItem(localStorageALIndex)) || '0';
       const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
@@ -548,13 +550,15 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       try {
         interpolationParams = {
           x_axis_label: $translate.instant($scope.xAxisSelectedItem.label),
-          y_axis_label: $translate.instant($scope.yAxisSelectedItem.label)
+          y_axis_label: $translate.instant($scope.yAxisSelectedItem.label),
+          aggregationType: $translate.instant($scope.aggregationType)
         };
       } catch (e) {
         $log.error('$sce issue... missing translation');
         interpolationParams = {
           x_axis_label: $scope.xAxisSelectedItem.label,
-          y_axis_label: $scope.yAxisSelectedItem.label
+          y_axis_label: $scope.yAxisSelectedItem.label,
+          aggregationType: $scope.aggregationType
         };
       }
       $scope.chart1Title = $translate.instant('X_VERSUS_Y', interpolationParams);
@@ -709,7 +713,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
       $scope.aggChartIsLoading = true;
       inventory_reports_service
-        .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id, $scope.filter_group_id)
+        .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id, $scope.filter_group_id, $scope.aggregationType)
         .then(
           (data) => {
             data = data.aggregated_data;
@@ -782,6 +786,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       // Save axis and cycle selections
       localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem ?? ''));
       localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem ?? ''));
+      localStorage.setItem(localStorageAggregationTypeKey, JSON.stringify($scope.aggregationType ?? ''));
       localStorage.setItem(localStorageSelectedCycles, JSON.stringify($scope.selected_cycles));
       localStorage.setItem(localStorageALIndex, JSON.stringify($scope.level_name_index));
       localStorage.setItem(localStorageALIID, JSON.stringify($scope.access_level_instance_id));
