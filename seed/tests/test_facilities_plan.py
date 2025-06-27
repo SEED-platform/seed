@@ -72,7 +72,7 @@ class FacilitiesPlanAPITests(BaseFacilitiesPlanTests):
                         "energy_running_sum_percentage": 0.6,
                         "compliance_cycle_year_column": None,
                         "include_in_total_denominator_column": self.include_in_total_denominator_column.id,
-                        "exclude_from_plan_column": None,
+                        "exclude_from_plan_column": self.exclude_from_plan_column.id,
                         "require_in_plan_column": self.require_in_plan_column.id,
                         "electric_energy_usage_column": self.electric_energy_usage_column.id,
                         "gas_energy_usage_column": self.gas_energy_usage_column.id,
@@ -99,7 +99,7 @@ class FacilitiesPlanAPITests(BaseFacilitiesPlanTests):
                     "energy_running_sum_percentage": 0.6,
                     "compliance_cycle_year_column": None,
                     "include_in_total_denominator_column": self.include_in_total_denominator_column.id,
-                    "exclude_from_plan_column": None,
+                    "exclude_from_plan_column": self.exclude_from_plan_column.id,
                     "require_in_plan_column": self.require_in_plan_column.id,
                     "electric_energy_usage_column": self.electric_energy_usage_column.id,
                     "gas_energy_usage_column": self.gas_energy_usage_column.id,
@@ -140,7 +140,7 @@ class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
         self.assertEqual(data["name"], "Test Facilities Plan Run")
         self.assertListEqual(
             list(data["columns"].keys()),
-            ["include_in_total_denominator_column", "require_in_plan_column", "electric_energy_usage_column", "gas_energy_usage_column"],
+            ["include_in_total_denominator_column", "exclude_from_plan_column", "require_in_plan_column", "electric_energy_usage_column", "gas_energy_usage_column"],
         )
         self.assertListEqual(data["display_columns"], [])
         self.assertEqual(data["property_display_field"]["column_name"], "address_line_1")
@@ -162,7 +162,7 @@ class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
         self.assertEqual(data["name"], "Test Facilities Plan Run")
         self.assertListEqual(
             list(data["columns"].keys()),
-            ["include_in_total_denominator_column", "require_in_plan_column", "electric_energy_usage_column", "gas_energy_usage_column"],
+            ["include_in_total_denominator_column", "exclude_from_plan_column", "require_in_plan_column", "electric_energy_usage_column", "gas_energy_usage_column"],
         )
         self.assertListEqual(data["display_columns"], [])
         self.assertEqual(data["property_display_field"]["column_name"], "address_line_1")
