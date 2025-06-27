@@ -301,7 +301,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       // Currently selected x and y variables - check local storage first, otherwise initialize to first choice
       $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
       $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
-      $scope.aggregationType = JSON.parse(localStorage.getItem(localStorageAggregationTypeKey)) || $scope.xAxisVars[0];
+      $scope.aggregationType = JSON.parse(localStorage.getItem(localStorageAggregationTypeKey)) || 'Sum';
 
       $scope.level_name_index = JSON.parse(localStorage.getItem(localStorageALIndex)) || '0';
       const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
