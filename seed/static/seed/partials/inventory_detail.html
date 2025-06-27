@@ -410,8 +410,9 @@
         <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
           <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container" style="width: 75%">
-              <h2><i class="fa-solid fa-atom"></i><span translate>Building Performance Standard (BPS) Compliance Pathway Support</span></h2>
-              <p translate style="padding-left: 24px">Includes Elements with Scope 1 Emissions Only</p>
+              <h2><i class="fa-solid fa-atom"></i><span translate>CEWE_ELEMENTS_TITLE</span></h2>
+              <p translate style="padding-left: 24px">CEWE_ELEMENTS_SUBTITLE</p>
+              <p translate style="padding-left: 24px">CEWE_ELEMENTS_COMMENT</p>
             </div>
           </div>
         </div>
@@ -426,7 +427,6 @@
                   <th translate>GSA SFTool Guidance</th>
                   <th translate>ESTCP Report</th>
                   <th translate>Available BuildingSync Measures</th>
-                  <th translate>Federal BPS Prescriptive Measures</th>
                   <th translate>Auditor Recommended Measures</th>
                 </tr>
               </thead>
@@ -452,11 +452,6 @@
                   <td>
                     <ul ng-if="element.tkbl.bsync_measures.length > 0">
                       <li ng-repeat="entry in ::element.tkbl.bsync_measures">{$:: entry $}</li>
-                    </ul>
-                  </td>
-                  <td class="col-sm-4">
-                    <ul ng-if="element.tkbl.federal_bps_measures.length > 0">
-                      <li class="elements-wrap" ng-repeat="entry in ::element.tkbl.federal_bps_measures">{$:: entry $}</li>
                     </ul>
                   </td>
                   <td></td>

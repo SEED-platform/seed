@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v5.0.0
     hooks:
       - id: check-added-large-files
         args: ["--maxkb=2000"]
@@ -29,10 +29,10 @@ repos:
         types_or: [yaml, markdown, css, scss]
   # https://docs.astral.sh/ruff/integrations/#pre-commit
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.3
+    rev: v0.11.7
     hooks:
       # Run the linter
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix, --output-format=full]
+        args: [--fix, --exit-non-zero-on-fix, --output-format=full] #, --unsafe-fixes]
       # Run the formatter
       - id: ruff-format

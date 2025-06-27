@@ -278,9 +278,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 "excluded_meter_ids": ["integer"],
             },
             required=["property_view_id", "interval", "excluded_meter_ids"],
-            description="Properties:\n"
-            '- interval: one of "Exact", "Month", or "Year"\n'
-            "- excluded_meter_ids: array of meter IDs to exclude",
+            description='Properties:\n- interval: one of "Exact", "Month", or "Year"\n- excluded_meter_ids: array of meter IDs to exclude',
         ),
     )
     @ajax_request_class
@@ -305,6 +303,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return exporter.readings_and_column_defs(interval)
 
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=no_body,
+    )
     @ajax_request_class
     @has_perm_class("requires_viewer")
     @action(detail=True, methods=["GET"])
@@ -436,7 +438,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         request_body=AutoSchemaHelper.schema_factory(
             {"property_view_ids": ["integer"]},
             required=["property_view_ids"],
-            description="Properties:\n" "- property_view_ids: array containing Property view IDs.",
+            description="Properties:\n- property_view_ids: array containing Property view IDs.",
         ),
     )
     @api_endpoint_class
@@ -1393,7 +1395,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         results = {"success": 0, "failure": 0, "data": []}
         for property in properties:
             formatted_time = time.strftime("%Y%m%d_%H%M%S", time.localtime(time.time()))
-            blob = ContentFile(property["xml"], name=f'at_{property["matching_field"]}_{formatted_time}.xml')
+            blob = ContentFile(property["xml"], name=f"at_{property['matching_field']}_{formatted_time}.xml")
             response = self._update_with_building_sync(blob, 1, org_id, cycle_id, property["property_view"], property["updated_at"])
             response = json.loads(response.content)
             results["success" if response["success"] else "failure"] += 1
@@ -1949,6 +1951,45 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         response.write(xlsx_data)
 
         return response
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("can_modify_data")
+    @action(detail=False, methods=["PUT"])
+    def batch_update(self, request):
+        """
+        Batch update several properties
+        """
+        org_id = self.get_organization(request)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        values_by_column_id = request.data.get("values_by_column_id", {})
+
+        property_view_ids = request.data.get("property_view_ids", [])
+        property_views = PropertyView.objects.filter(
+            id__in=property_view_ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
+            cycle__organization_id=org_id,
+        )
+
+        logger.error("+++++++")
+        logger.error(request.data)
+        logger.error(request.data.get("values_by_column_id"))
+        logger.error(values_by_column_id)
+        logger.error("+++++++")
+
+        for property_view in property_views:
+            state = property_view.state
+            for column_id, value in values_by_column_id.items():
+                column = Column.objects.get(id=column_id)
+                if column.is_extra_data:
+                    state.extra_data[column.column_name] = value
+                else:
+                    setattr(state, column.column_name, value)
+
+            state.save()
+
+        return JsonResponse({"status": "success"})
 
 
 def _row_from_views(views):

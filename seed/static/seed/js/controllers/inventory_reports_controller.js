@@ -65,6 +65,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $scope.filter_groups = filter_groups;
     $scope.report_configurations = report_configurations;
     $scope.filter_group_id = null;
+    $scope.order_by_x = null;
 
     $scope.has_children = (obj) => {
       // check if the access level selected has children levels for stats table
@@ -501,8 +502,8 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       clearChartData();
       $scope.chartStatusMessage = 'Loading data...';
       $scope.aggChartStatusMessage = 'Loading data...';
-      getChartData();
       getAggChartData();
+      getChartData();
       updateChartTitlesAndAxes();
       updateStorage();
     };
@@ -615,6 +616,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         .then(
           (data) => {
             data = data.data;
+
             const propertyCounts = data.property_counts;
             const colorsArr = mapColors(propertyCounts);
             $scope.propertyCounts = propertyCounts;
@@ -652,7 +654,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
               // restore title text as this syntax overwrites it
               $scope.scatterChart.options.scales.x = {
                 type: 'category',
-                labels: Array.from([...new Set($scope.chartData.chartData.map((d) => d.x))]).sort(),
+                labels: Object.entries($scope.order_by_x).sort(([, a], [, b]) => a > b).map(([k]) => k),
                 title: {
                   display: true,
                   text: $scope.xAxisSelectedItem.label
@@ -715,6 +717,23 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         .then(
           (data) => {
             data = data.aggregated_data;
+
+            // if categorical, sort by most x of recent cycle, then by cycle
+            const is_category = data.chart_data.every((d) => typeof d.y === 'number') ? 'linear' : 'category';
+            if (is_category) {
+              const most_recent_year_end = Math.max(...data.chart_data.map((d) => Number(d.yr_e)));
+              const data_from_most_recent_year = data.chart_data.filter((d) => d.yr_e === String(most_recent_year_end));
+              $scope.order_by_x = data_from_most_recent_year.sort((a, b) => a.x < b.x).reduce((acc, curr, i) => {
+                acc[curr.y] = i;
+                return acc;
+              }, {});
+
+              data.chart_data = data.chart_data.sort((a, b) => {
+                if (a.y === b.y) return a.yr_e < b.yr_e;
+                return $scope.order_by_x[a.y] > $scope.order_by_x[b.y];
+              });
+            }
+
             $scope.aggPropertyCounts = data.property_counts;
             const propertyCounts = data.property_counts;
             const colorsArr = mapColors(propertyCounts);

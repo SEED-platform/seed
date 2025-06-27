@@ -241,7 +241,14 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
                 # Try grabbing the value out of the related field if not found yet.
                 if row_result is None and datum.get("related"):
-                    row_result = datum["related"][0].get(column, None)
+                    # Join all non-null non-duplicate related values for this column with ';'
+                    row_result = "; ".join(
+                        {
+                            val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val, datetime.datetime) else str(val)
+                            for related in datum["related"]
+                            if (val := related.get(column)) not in (None, "")
+                        }
+                    )
 
                 # Convert quantities (this is typically handled in the JSON Encoder, but that isn't here).
                 if isinstance(row_result, ureg.Quantity):
@@ -352,7 +359,14 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
                 # Try grabbing the value out of the related field if not found yet.
                 if row_result is None and datum.get("related"):
-                    row_result = datum["related"][0].get(column, None)
+                    # Join all non-null non-duplicate related values for this column with ';'
+                    row_result = "; ".join(
+                        {
+                            val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val, datetime.datetime) else str(val)
+                            for related in datum["related"]
+                            if (val := related.get(column)) not in (None, "")
+                        }
+                    )
 
                 # Convert quantities (this is typically handled in the JSON Encoder, but that isn't here).
                 if isinstance(row_result, ureg.Quantity):
@@ -482,7 +496,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
                 else:
                     formatted_value = value
 
-                if formatted_value and any(k in key for k in polygon_fields):
+                if formatted_value and key in polygon_fields:
                     """
                     If object is a polygon and is populated, add the 'geometry'
                     key-value-pair in the appropriate GeoJSON format.

@@ -11,13 +11,13 @@ psutil==6.0.0
 Faker==29.0.0
 mock==5.1.0
 vcrpy==6.0.1
-pytest==8.3.3
-pytest-django==4.9.0
+pytest==8.3.5
+pytest-django==4.11.1
 urllib3==1.26.20  # TODO update after vcrpy supports v2
 
 # static code analysis
-pre-commit==3.8.0
-ruff==0.8.3
+pre-commit==4.2.0
+ruff==0.11.4
 
 # documentation and spelling
 Sphinx==7.4.7  # TODO update after python 3.9

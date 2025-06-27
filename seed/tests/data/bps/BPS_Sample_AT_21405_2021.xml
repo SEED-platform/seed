@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" version="2.3.0">
+<auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" version="2.6.0">
   <auc:Facilities>
     <auc:Facility ID="Facility-70339460442140">
       <auc:Sites>

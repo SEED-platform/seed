@@ -49,7 +49,7 @@ class TestDecorators(TestCase):
         expected = 50.0
         self.assertEqual(float(get_cache(test_key)["progress"]), expected)
 
-        # This should put us well over 100.0 in incrementation w/o bounds check.
+        # This should put us well over 100.0 in increments w/o bounds check.
         for i in range(10):
             increment_cache(test_key, increment)
 
