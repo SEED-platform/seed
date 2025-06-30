@@ -75,8 +75,12 @@ COPY ./package.json /seed/package.json
 COPY ./package-lock.json /seed/package-lock.json
 COPY ./vendors/package.json /seed/vendors/package.json
 COPY ./vendors/package-lock.json /seed/vendors/package-lock.json
+COPY ./ng_seed/seed-angular/package.json /seed/ng_seed/seed-angular/package.json
+COPY ./ng_seed/seed-angular/pnpm-lock.yaml /seed/ng_seed/seed-angular/pnpm-lock.yaml
+COPY ./ng_seed/seed-angular/pnpm-workspace.yaml /seed/ng_seed/seed-angular/pnpm-workspace.yaml
 COPY ./README.md /seed/README.md
 # unsafe-perm allows the package.json postinstall script to run with the elevated permissions
+RUN npm install -g pnpm
 RUN npm install --unsafe-perm
 
 ### Copy over the remaining part of the SEED application and some helpers
@@ -84,6 +88,9 @@ WORKDIR /seed
 COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 RUN git config --system --add safe.directory /seed
+
+### Build SEED Angular
+RUN pnpm -C /seed/ng_seed/seed-angular build
 
 EXPOSE 80
 

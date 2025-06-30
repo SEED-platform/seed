@@ -29,9 +29,6 @@ fi
 # collect static resources before starting
 ./manage.py collectstatic --no-input -i package.json -i package-lock.json -i node_modules/openlayers-ext/index.html
 
-# build seed-angular
-pnpm -C ng_seed/seed-angular build
-
 # clean up previously-generated assets and re-compress
 rm -rf /seed/collected_static/CACHE
 ./manage.py compress --force
