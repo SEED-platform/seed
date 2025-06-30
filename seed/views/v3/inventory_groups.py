@@ -9,6 +9,7 @@ from django.db.models import Count, F, Q, Sum
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.utils.timezone import make_aware
+from drf_yasg.utils import swagger_auto_schema
 from pint import Quantity
 from pytz import timezone
 from rest_framework import response, status
@@ -20,9 +21,10 @@ from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_c
 from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, PropertyView
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api import OrgMixin
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.meters import PropertyMeterReadingsExporter, update_meter_connection
-from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+from seed.utils.viewsets import ModelViewSetWithoutPatch, SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 logger = logging.getLogger()
 
@@ -30,7 +32,7 @@ logger = logging.getLogger()
 @method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer")])
 @method_decorator(name="create", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
 @method_decorator(name="update", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
-class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
+class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = InventoryGroupSerializer
     model = InventoryGroup
     filter_backends = (ColumnListProfileFilterBackend,)
@@ -66,6 +68,16 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_string_field("inventory_type", required=True, description="property or tax_lot"),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {"selected": ["integer"]},
+            description="selected: optional list of inventory ids. [] returns all groups.",
+        ),
+    )
     @has_perm_class("requires_viewer")
     @action(detail=False, methods=["POST"])
     def filter(self, request):
@@ -222,7 +234,7 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return JsonResponse({}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
+    @has_perm_class("requires_member")
     @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
     def create(self, request, inventory_group_pk):
         meter_serializer = MeterSerializer(

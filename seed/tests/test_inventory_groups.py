@@ -98,9 +98,10 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
         url = reverse_lazy("api:v3:inventory_groups-list") + f"?organization_id={self.org.id}"
         data = {"name": "test1", "organization": self.org.id, "access_level_instance": self.org.root.id, "inventory_type": "Property"}
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
+
         assert response.status_code == 400
         response = response.json()
-        assert response == {"status": "error", "message": {"non_field_errors": ["The fields name, organization must make a unique set."]}}
+        assert response == {"non_field_errors": ["The fields name, organization must make a unique set."]}
 
         data["name"] = "test3"
         response = self.client.post(url, data=json.dumps(data), content_type="application/json")
@@ -111,7 +112,7 @@ class InventoryGroupViewTests(AccessLevelBaseTestCase):
 
         assert response.status_code == 400
         response = response.json()
-        assert response == {"status": "error", "message": {"non_field_errors": ["The fields name, organization must make a unique set."]}}
+        assert response == {"non_field_errors": ["The fields name, organization must make a unique set."]}
 
     def test_group_mapping_constraints(self):
         self.property_factory = FakePropertyFactory(organization=self.org)

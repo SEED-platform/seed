@@ -1956,12 +1956,7 @@
               const currentInventoryGroup = _.first(inventory_groups);
               if (currentInventoryGroup) inventory_service.save_last_inventory_group(currentInventoryGroup.id, $stateParams.inventory_type);
               return currentInventoryGroup;
-            }],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ]
+            }]
           }
         })
         .state({

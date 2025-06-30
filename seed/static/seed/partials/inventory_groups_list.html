@@ -18,7 +18,7 @@
       <h2><i class="fa fa-sitemap"></i> <span>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Groups' : 'Property Groups') | translate $}</span></h2>
     </div>
     <div class="section_action_container right_40 section_action_btn pull-right">
-      <button class="btn btn-primary" ng-click="create_inventory_group()" translate>Create Group</button>
+      <button class="btn btn-primary" ng-if="org.user_role !== 'viewer'" ng-click="create_inventory_group()" translate>Create Group</button>
     </div>
   </div>
 </div>

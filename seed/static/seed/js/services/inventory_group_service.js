@@ -50,7 +50,7 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
         inventory_type
       }
     }).then((response) => {
-      const groups = response.data.data.sort((a, b) => naturalSort(a.name, b.name));
+      const groups = response.data.sort((a, b) => naturalSort(a.name, b.name));
       return groups;
     });
 
