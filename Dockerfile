@@ -84,7 +84,6 @@ COPY ./ng_seed/seed-angular/pnpm-lock.yaml /seed/ng_seed/seed-angular/pnpm-lock.
 COPY ./ng_seed/seed-angular/pnpm-workspace.yaml /seed/ng_seed/seed-angular/pnpm-workspace.yaml
 COPY ./README.md /seed/README.md
 # unsafe-perm allows the package.json postinstall script to run with the elevated permissions
-RUN npm install -g pnpm
 RUN npm install --omit=dev --unsafe-perm
 
 ### Copy over the remaining part of the SEED application and some helpers
@@ -94,6 +93,8 @@ COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 RUN git config --system --add safe.directory /seed
 
 ### Build SEED Angular then cleanup
+RUN npm install -g pnpm
+RUN pnpm -C /seed/ng_seed/seed-angular install
 RUN pnpm -C /seed/ng_seed/seed-angular build
 RUN rm -rf /seed/ng_seed/seed-angular/node_modules
 RUN pnpm store prune

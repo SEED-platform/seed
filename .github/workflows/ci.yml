@@ -64,6 +64,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
+          pnpm -C ng_seed/seed-angular install
           sudo apt update
           sudo apt install -y xvfb
       - name: Test Django
@@ -116,10 +117,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
       - name: Install deps
         run: |
           pip install --upgrade pip
