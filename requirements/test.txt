@@ -4,7 +4,7 @@
 # general
 coverage==7.6.10
 coveralls==4.0.1  # https://github.com/TheKevJames/coveralls-python/pull/542
-tox==4.23.2  # Keep this in sync with ci.yml
+tox==4.27.0  # Keep this in sync with ci.yml
 psutil==6.1.1
 
 # python testing

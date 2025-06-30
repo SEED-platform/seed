@@ -1,13 +1,14 @@
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import generics, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Cycle
 from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.v4.inventory_filter import InventoryFilter
 
@@ -41,9 +42,13 @@ class TaxLotPropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin)
             "- property_view_ids: List of property view ids",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def filter(self, request):
         """
@@ -65,9 +70,13 @@ class TaxLotPropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin)
             AutoSchemaHelper.query_string_field("inventory_type", required=True, description="properties or taxlots"),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def record_count(self, request):
         """

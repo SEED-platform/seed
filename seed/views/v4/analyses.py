@@ -1,22 +1,27 @@
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import AccessLevelInstance, Analysis, Column, Cycle, PropertyState, PropertyView
 from seed.models.columns import EXCLUDED_API_FIELDS
 from seed.serializers.analyses import AnalysisSerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 
 
 class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = AnalysisSerializer
     model = Analysis
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def stats(self, request):
         """Get all property and taxlot columns that have data in them for an org"""

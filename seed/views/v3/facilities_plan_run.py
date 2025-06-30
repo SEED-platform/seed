@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
+from typing import Literal, Union
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import FilteredRelation, Q
@@ -15,8 +16,8 @@ from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import (
     AccessLevelInstance,
     Column,
@@ -26,7 +27,7 @@ from seed.models import (
 )
 from seed.serializers.facilities_plan_run import FacilitiesPlanRunSerializer
 from seed.serializers.pint import apply_display_unit_preferences
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint
 from seed.utils.search import FilterError, build_view_filters_and_sorts
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
@@ -34,25 +35,25 @@ logger = logging.getLogger(__name__)
 
 
 @method_decorator(
-    name="retrieve",
-    decorator=[
-        has_perm_class("requires_viewer"),
+    [
+        has_perm("requires_viewer"),
         has_hierarchy_access(facilities_plan_run_id_kwarg="pk"),
     ],
+    name="retrieve",
 )
 @method_decorator(
-    name="list",
-    decorator=[
-        has_perm_class("requires_viewer"),
+    [
+        has_perm("requires_viewer"),
         # has_hierarchy_access(facilities_plan_run_id_kwarg="pk"),
     ],
+    name="list",
 )
 @method_decorator(
-    name="create",
-    decorator=[
-        has_perm_class("requires_member"),
+    [
+        has_perm("requires_member"),
         has_hierarchy_access(body_ali_id="ali"),
     ],
+    name="create",
 )
 class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     serializer_class = FacilitiesPlanRunSerializer
@@ -70,10 +71,14 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         return fprs
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(facilities_plan_run_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(facilities_plan_run_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def properties(self, request, pk):
         """
@@ -89,7 +94,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         page = request.query_params.get("page", 1)
         per_page = request.query_params.get("per_page", 100)
-        inventory_type = "property"
+        inventory_type: Union[Literal["property", "taxlot"]] = "property"
         access_level_instance = fpr.ali
         columns_from_database = Column.retrieve_all(
             org_id=org_id,
@@ -200,10 +205,14 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             }
         )
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(facilities_plan_run_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(facilities_plan_run_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def run(self, request, pk):
         try:
