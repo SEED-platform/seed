@@ -122,9 +122,13 @@
                   <label for="xAxisSelector">{$:: 'X Axis' | translate $}:</label>
                   <select class="form-control" id="xAxisSelector" ng-change="setModified()" ng-model="xAxisSelectedItem" ng-options="x.name for x in xAxisVars track by x.varName"></select>
                 </div>
-                <div class="form-group">
+                <div class="form-group pad-bottom-10">
                   <label for="yAxisSelector">{$:: 'Y Axis' | translate $}:</label>
                   <select class="form-control" id="yAxisSelector" ng-model="yAxisSelectedItem" ng-change="setModified()" ng-options="y.name for y in yAxisVars track by y.varName"></select>
+                </div>
+                <div class="form-group">
+                  <label for="aggregationTypeTypeSelector">{$:: 'Aggregation Type' | translate $}:</label>
+                  <select class="form-control" id="aggregationTypeSelector" ng-model="aggregationType" ng-change="setModified()" ng-options="t for t in ['Sum', 'Average']"></select>
                 </div>
                 <div class="form-group pad-top-10">
                   <p>

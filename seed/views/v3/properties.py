@@ -1952,6 +1952,45 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return response
 
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class("can_modify_data")
+    @action(detail=False, methods=["PUT"])
+    def batch_update(self, request):
+        """
+        Batch update several properties
+        """
+        org_id = self.get_organization(request)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        values_by_column_id = request.data.get("values_by_column_id", {})
+
+        property_view_ids = request.data.get("property_view_ids", [])
+        property_views = PropertyView.objects.filter(
+            id__in=property_view_ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
+            cycle__organization_id=org_id,
+        )
+
+        logger.error("+++++++")
+        logger.error(request.data)
+        logger.error(request.data.get("values_by_column_id"))
+        logger.error(values_by_column_id)
+        logger.error("+++++++")
+
+        for property_view in property_views:
+            state = property_view.state
+            for column_id, value in values_by_column_id.items():
+                column = Column.objects.get(id=column_id)
+                if column.is_extra_data:
+                    state.extra_data[column.column_name] = value
+                else:
+                    setattr(state, column.column_name, value)
+
+            state.save()
+
+        return JsonResponse({"status": "success"})
+
 
 def _row_from_views(views):
     data = pd.Series()
