@@ -1,0 +1,4 @@
+[submodule "ng_seed/seed-angular"]
+	path = ng_seed/seed-angular
+	url = https://github.com/SEED-platform/seed-angular.git
+	branch = task/angular-20
