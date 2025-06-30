@@ -41,7 +41,7 @@
     "lint:fix": "run-p -c eslint:fix prettier:fix stylelint:fix",
     "postinstall": "pnpm -C ng_seed/seed-angular install && cd vendors && npm install",
     "prettier": "prettier -c seed/static/seed/partials",
-    "prettier:fix": "npm run prettier -- -w",
+    "prettier:fix": "prettier -w seed/static/seed/partials",
     "stylelint": "stylelint seed/landing/static/landing/scss/landing.scss seed/static/seed/scss/style.scss",
     "stylelint:fix": "npm run stylelint -- --fix",
     "test": "node seed/static/seed/tests/run_jasmine.js"

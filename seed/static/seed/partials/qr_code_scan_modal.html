@@ -4,28 +4,60 @@
 <div class="modal-body row">
   <div>
     <div ng-if="qr_code_img" style="font-size: 14px; margin: 20px">
-      <h4><strong>IMPORTANT</strong> - Scan the QR code below using your authenticator app of choice (ex: Google Authenticator, Microsoft Authenticator, Authy, etc...)</h4>
+      <h4>
+        <strong>IMPORTANT</strong> - Scan the QR code below using your
+        authenticator app of choice (ex: Google Authenticator, Microsoft
+        Authenticator, Authy, etc...)
+      </h4>
       <div><img ng-src="{$ qr_code_img $}" alt="QR Code" /></div>
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <p style="margin-bottom: 10px">Enter the 6-digit code from your authenticator app</p>
+          <p style="margin-bottom: 10px">
+            Enter the 6-digit code from your authenticator app
+          </p>
           <form class="form-horizontal" role="form" lang="en-US">
             <div class="form-group">
-              <label class="control-label col-md-1" style="width: fit-content" for="verify-token-form" translate>Code: </label>
+              <label
+                class="control-label col-md-1"
+                style="width: fit-content"
+                for="verify-token-form"
+                translate
+                >Code:
+              </label>
               <div class="col-sm-3">
-                <input id="verify-token-form" class="form-control" type="number" ng-model="code" />
+                <input
+                  id="verify-token-form"
+                  class="form-control"
+                  type="number"
+                  ng-model="code"
+                />
               </div>
-              <button class="btn btn-primary" ng-click="verify_token(code)">Verify</button>
+              <button class="btn btn-primary" ng-click="verify_token(code)">
+                Verify
+              </button>
             </div>
           </form>
         </div>
 
-        <p>If you are unable to scan the QR code, <a ng-click="other_method()">select a different method.</a></p>
+        <p>
+          If you are unable to scan the QR code,
+          <a ng-click="other_method()">select a different method.</a>
+        </p>
       </div>
     </div>
   </div>
   <div class="modal-footer">
-    <button class="btn btn-default" ng-click="generate_qr_code()">Re-Generate Token</button>
-    <button type="button" class="btn btn-info" ng-click="close()" autofocus translate>Cancel</button>
+    <button class="btn btn-default" ng-click="generate_qr_code()">
+      Re-Generate Token
+    </button>
+    <button
+      type="button"
+      class="btn btn-info"
+      ng-click="close()"
+      autofocus
+      translate
+    >
+      Cancel
+    </button>
   </div>
 </div>

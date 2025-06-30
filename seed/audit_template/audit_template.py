@@ -726,7 +726,7 @@ def _get_city_submission_xml(org_id, city_id, custom_id_1, progress_key):
     progress_data.save()
 
     submissions = [sub for sub in submissions if sub["tax_id"] == custom_id_1]
-    if not len(submissions):
+    if not submissions:
         return progress_data.finish_with_error(f"No matching submissions for custom id: {custom_id_1}")
     sub = submissions[0]
     created_at = parser.parse(sub["created_at"])

@@ -17,14 +17,30 @@
       </div>
       <div class="section_content_container">
         <div class="section_content">
-          <div class="table_list_container" style="max-height: 400px; overflow-y: scroll">
-            <table class="table sortable tbody-striped" style="margin-bottom: 0">
+          <div
+            class="table_list_container"
+            style="max-height: 400px; overflow-y: scroll"
+          >
+            <table
+              class="table sortable tbody-striped"
+              style="margin-bottom: 0"
+            >
               <thead>
                 <tr>
-                  <th ng-repeat="c in ::columns" ng-click="c.toggle_sort()" ng-class="c.sorted_class()">{$:: c.title | translate $}</th>
+                  <th
+                    ng-repeat="c in ::columns"
+                    ng-click="c.toggle_sort()"
+                    ng-class="c.sorted_class()"
+                  >
+                    {$:: c.title | translate $}
+                  </th>
                 </tr>
                 <tr class="sub_head">
-                  <th class="sub_head" ng-repeat="c in ::columns" style="min-width: 140px">
+                  <th
+                    class="sub_head"
+                    ng-repeat="c in ::columns"
+                    style="min-width: 140px"
+                  >
                     <!-- for string & numeric filters -->
                     <input
                       ng-if=":: _.includes(['string', 'link', 'number', 'floor_area'], c.data_type)"
@@ -62,13 +78,20 @@
                   </th>
                 </tr>
               </thead>
-              <tbody ng-repeat="row in dataQualityResults | filter: {visible: true}">
+              <tbody
+                ng-repeat="row in dataQualityResults | filter: {visible: true}"
+              >
                 <tr
                   ng-repeat="result in row.data_quality_results | filter: {visible: true}"
                   ng-class="::{'data-quality-error': result.severity === 'error', 'data-quality-warning': result.severity === 'warning'}"
                 >
-                  <td ng-repeat="c in ::columns" ng-class="{sorted: search.sort_column === c.sort_column}">
-                    {$:: (_.includes(['detailed_message', 'formatted_field', 'table_name', 'label'], c.sort_column) ? result[c.sort_column] : row[c.sort_column]) || '--' $}
+                  <td
+                    ng-repeat="c in ::columns"
+                    ng-class="{sorted: search.sort_column === c.sort_column}"
+                  >
+                    {$:: (_.includes(['detailed_message', 'formatted_field',
+                    'table_name', 'label'], c.sort_column) ?
+                    result[c.sort_column] : row[c.sort_column]) || '--' $}
                   </td>
                 </tr>
               </tbody>
@@ -81,7 +104,17 @@
 </div>
 <div class="modal-footer">
   <a>
-    <button type="button" class="btn btn-default" ng-show="::run_id" translate ng-click="download_results_csv()">Export</button>
+    <button
+      type="button"
+      class="btn btn-default"
+      ng-show="::run_id"
+      translate
+      ng-click="download_results_csv()"
+    >
+      Export
+    </button>
   </a>
-  <button type="button" class="btn btn-default" ng-click="close()" translate>Close</button>
+  <button type="button" class="btn btn-default" ng-click="close()" translate>
+    Close
+  </button>
 </div>
