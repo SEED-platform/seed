@@ -14,6 +14,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from two_factor.urls import urlpatterns as tf_urls
 
 from config.views import robots_txt
+from ng_seed.views import seed_angular
 from seed.api.base.urls import urlpatterns as api
 from seed.landing.views import CustomLoginView, password_reset_complete, password_reset_confirm, password_reset_done
 from seed.views.main import angular_js_tests, config, health_check, version
@@ -48,6 +49,7 @@ urlpatterns = [
     # Application
     re_path(r"^", include(("seed.landing.urls", "seed.landing"), namespace="landing")),
     re_path(r"^app/", include(("seed.urls", "seed"), namespace="seed")),
+    re_path(r"^ng-app(?:/.*)?$", seed_angular, name="seed-angular"),
     re_path(r"^documentation/", include(("seed.docs.urls", "seed.docs"), namespace="docs")),
     # root configuration items
     re_path(r"^i18n/", include("django.conf.urls.i18n")),

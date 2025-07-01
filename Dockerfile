@@ -79,6 +79,9 @@ COPY ./package.json /seed/package.json
 COPY ./package-lock.json /seed/package-lock.json
 COPY ./vendors/package.json /seed/vendors/package.json
 COPY ./vendors/package-lock.json /seed/vendors/package-lock.json
+COPY ./ng_seed/seed-angular/package.json /seed/ng_seed/seed-angular/package.json
+COPY ./ng_seed/seed-angular/pnpm-lock.yaml /seed/ng_seed/seed-angular/pnpm-lock.yaml
+COPY ./ng_seed/seed-angular/pnpm-workspace.yaml /seed/ng_seed/seed-angular/pnpm-workspace.yaml
 COPY ./README.md /seed/README.md
 # unsafe-perm allows the package.json postinstall script to run with the elevated permissions
 RUN npm install --omit=dev --unsafe-perm
@@ -88,6 +91,13 @@ WORKDIR /seed
 COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 RUN git config --system --add safe.directory /seed
+
+### Build SEED Angular then cleanup
+RUN npm install -g pnpm
+RUN pnpm -C /seed/ng_seed/seed-angular install
+RUN pnpm -C /seed/ng_seed/seed-angular build
+RUN rm -rf /seed/ng_seed/seed-angular/node_modules
+RUN pnpm store prune
 
 # nginx configuration - replace the root/default nginx config file and add included files
 COPY ./docker/nginx/*.conf /etc/nginx/

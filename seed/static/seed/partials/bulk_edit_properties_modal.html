@@ -2,28 +2,76 @@
   <h3 translate>EDIT_GOAL_NOTES</h3>
 </div>
 <div class="modal-body">
-  <label for="compliance_cycle_year_column" class="r-no-wrap r-margin-right-5" translate>Compliance Cycle Year Column</label>
-  <select id="compliance_cycle_year_column" class="form-control" ng-model="compliance_cycle_year_column_new_value">
+  <label
+    for="compliance_cycle_year_column"
+    class="r-no-wrap r-margin-right-5"
+    translate
+    >Compliance Cycle Year Column</label
+  >
+  <select
+    id="compliance_cycle_year_column"
+    class="form-control"
+    ng-model="compliance_cycle_year_column_new_value"
+  >
     <option value=""></option>
     <option ng-repeat="cycle in cycles" ng-value="cycle">{$:: cycle $}</option>
   </select>
-  <label for="include_in_total_denominator_column" class="r-no-wrap r-margin-right-5" translate>Include In Total Denominator Column</label>
-  <select id="include_in_total_denominator_column" class="form-control" ng-model="include_in_total_denominator_column_new_value" ng-change="(c_id) => {}">
+  <label
+    for="include_in_total_denominator_column"
+    class="r-no-wrap r-margin-right-5"
+    translate
+    >Include In Total Denominator Column</label
+  >
+  <select
+    id="include_in_total_denominator_column"
+    class="form-control"
+    ng-model="include_in_total_denominator_column_new_value"
+    ng-change="(c_id) => {}"
+  >
     <option value="true">True</option>
     <option value="false">False</option>
   </select>
-  <label for="exclude_from_plan_column" class="r-no-wrap r-margin-right-5" translate>Exclude From Plan Column</label>
-  <select id="exclude_from_plan_column" class="form-control" ng-model="exclude_from_plan_column_new_value" ng-change="(c_id) => {}">
+  <label
+    for="exclude_from_plan_column"
+    class="r-no-wrap r-margin-right-5"
+    translate
+    >Exclude From Plan Column</label
+  >
+  <select
+    id="exclude_from_plan_column"
+    class="form-control"
+    ng-model="exclude_from_plan_column_new_value"
+    ng-change="(c_id) => {}"
+  >
     <option value="true">True</option>
     <option value="false">False</option>
   </select>
-  <label for="require_in_plan_column" class="r-no-wrap r-margin-right-5" translate>Require In Plan Column</label>
-  <select id="require_in_plan_column" class="form-control" ng-model="require_in_plan_column_new_value" ng-change="(c_id) => {}">
+  <label
+    for="require_in_plan_column"
+    class="r-no-wrap r-margin-right-5"
+    translate
+    >Require In Plan Column</label
+  >
+  <select
+    id="require_in_plan_column"
+    class="form-control"
+    ng-model="require_in_plan_column_new_value"
+    ng-change="(c_id) => {}"
+  >
     <option value="true">True</option>
     <option value="false">False</option>
   </select>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-primary r-margin-right-5" ng-click="update_properties()" ng-disabled="save_disabled()" translate>Save</button>
-  <button class="btn btn-default r-margin-right-5" ng-click="close()" translate>Dismiss</button>
+  <button
+    class="btn btn-primary r-margin-right-5"
+    ng-click="update_properties()"
+    ng-disabled="save_disabled()"
+    translate
+  >
+    Save
+  </button>
+  <button class="btn btn-default r-margin-right-5" ng-click="close()" translate>
+    Dismiss
+  </button>
 </div>

@@ -1,41 +1,109 @@
 <div class="page_header_container" ng-cloak>
   <div class="page_header">
     <div class="left page_action_container">
-      <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+      <a
+        ui-sref="inventory_list(::{inventory_type: inventory_type})"
+        class="page_action"
+      >
         <i class="fa-solid fa-chevron-left"></i>
-        {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+        {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') |
+        translate $}
       </a>
     </div>
     <div class="page_title">
-      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+      <h1>
+        {$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property
+        Detail') | translate $}
+      </h1>
     </div>
     <div class="right page_action_container"></div>
   </div>
 </div>
 <div class="section_nav_container">
-  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+  <div
+    class="section_nav"
+    ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"
+  ></div>
 </div>
 <div class="section">
   <div class="section_header_container">
     <div class="section_header fixed_height_short has_no_padding">
-      <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"></div>
-      <div id="inventory-detail-edit" class="section_action_container right" ng-hide="edit_form_showing">
-        <a ng-show="menu.user.organization.user_role !== 'viewer'" ng-click="on_edit()"><i class="fa-solid fa-pencil"></i> {$:: 'Edit' | translate $}</a>
+      <div
+        ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"
+      ></div>
+      <div
+        id="inventory-detail-edit"
+        class="section_action_container right"
+        ng-hide="edit_form_showing"
+      >
+        <a
+          ng-show="menu.user.organization.user_role !== 'viewer'"
+          ng-click="on_edit()"
+          ><i class="fa-solid fa-pencil"></i> {$:: 'Edit' | translate $}</a
+        >
       </div>
-      <div id="inventory-detail-buttons" class="section_action_container right section_action_btn" ng-show="edit_form_showing">
-        <a role="button" class="btn btn-primary btn-sm" ng-click="on_save()" ng-disabled="!modified()" translate>Save Changes</a>
-        <a role="button" class="btn btn-default btn-sm" ng-click="on_cancel()" translate>Cancel</a>
+      <div
+        id="inventory-detail-buttons"
+        class="section_action_container right section_action_btn"
+        ng-show="edit_form_showing"
+      >
+        <a
+          role="button"
+          class="btn btn-primary btn-sm"
+          ng-click="on_save()"
+          ng-disabled="!modified()"
+          translate
+          >Save Changes</a
+        >
+        <a
+          role="button"
+          class="btn btn-default btn-sm"
+          ng-click="on_cancel()"
+          translate
+          >Cancel</a
+        >
       </div>
     </div>
   </div>
 
   <div class="section_content_container">
-    <div class="section_content with_padding" style="display: flex; margin: 10px 0">
-      <div style="flex-grow: 1; display: flex; flex-direction: column; row-gap: 10px">
-        <div ng-show="menu.user.organization.user_role !== 'viewer'" uib-dropdown class="btn-group">
-          <button id="btnInventoryActions" type="button" uib-dropdown-toggle class="btn btn-default btn-sm">{$:: 'Actions' | translate $} <span class="caret"></span></button>
-          <ul id="#inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
-            <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
+    <div
+      class="section_content with_padding"
+      style="display: flex; margin: 10px 0"
+    >
+      <div
+        style="
+          flex-grow: 1;
+          display: flex;
+          flex-direction: column;
+          row-gap: 10px;
+        "
+      >
+        <div
+          ng-show="menu.user.organization.user_role !== 'viewer'"
+          uib-dropdown
+          class="btn-group"
+        >
+          <button
+            id="btnInventoryActions"
+            type="button"
+            uib-dropdown-toggle
+            class="btn btn-default btn-sm"
+          >
+            {$:: 'Actions' | translate $} <span class="caret"></span>
+          </button>
+          <ul
+            id="#inventory-actions-dropdown"
+            uib-dropdown-menu
+            class="dropdown-menu"
+            role="menu"
+            aria-labelledby="btnInventoryActions"
+          >
+            <li
+              role="menuitem"
+              ng-if="::inventory_type === 'properties'"
+              class="upload-list-item"
+            >
               <div
                 sd-uploader
                 sourcetype="BuildingSyncUpdate"
@@ -50,52 +118,85 @@
               </div>
             </li>
 
-            <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
-              <a ng-click="open_data_upload_audit_template_modal()">{$:: 'Update with Audit Template' | translate $}</a>
+            <li
+              role="menuitem"
+              ng-if="::inventory_type === 'properties'"
+              class="upload-list-item"
+            >
+              <a ng-click="open_data_upload_audit_template_modal()"
+                >{$:: 'Update with Audit Template' | translate $}</a
+              >
             </li>
 
-            <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
-              <a ng-click="open_data_upload_espm_modal()">{$:: 'Update with ESPM' | translate $}</a>
+            <li
+              role="menuitem"
+              ng-if="::inventory_type === 'properties'"
+              class="upload-list-item"
+            >
+              <a ng-click="open_data_upload_espm_modal()"
+                >{$:: 'Update with ESPM' | translate $}</a
+              >
             </li>
 
             <li ng-if="::inventory_type === 'properties'" role="menuitem">
-              <a ng-click="export_building_sync()">{$:: 'Export BuildingSync' | translate $}</a>
+              <a ng-click="export_building_sync()"
+                >{$:: 'Export BuildingSync' | translate $}</a
+              >
             </li>
 
             <li ng-if="::inventory_type === 'properties'" role="menuitem">
-              <a ng-click="export_building_sync_xlsx()">Export BuildingSync (Excel)</a>
+              <a ng-click="export_building_sync_xlsx()"
+                >Export BuildingSync (Excel)</a
+              >
             </li>
 
             <li ng-if="::inventory_type === 'properties'" role="menuitem">
-              <a ng-click="export_building_sync_at_file()">Export Audit Template File (XML)</a>
+              <a ng-click="export_building_sync_at_file()"
+                >Export Audit Template File (XML)</a
+              >
             </li>
 
             <li ng-if="::inventory_type === 'properties'" role="menuitem">
-              <a ng-click="open_export_to_audit_template_modal()">Export to Audit Template</a>
+              <a ng-click="open_export_to_audit_template_modal()"
+                >Export to Audit Template</a
+              >
             </li>
 
             <li role="menuitem">
-              <a ng-click="open_update_labels_modal()">{$:: 'Add/Remove Labels' | translate $}</a>
+              <a ng-click="open_update_labels_modal()"
+                >{$:: 'Add/Remove Labels' | translate $}</a
+              >
             </li>
 
             <li role="menuitem">
-              <a ng-click="open_update_inventory_groups_modal()">{$:: 'Add to/Remove from Groups' | translate $}</a>
+              <a ng-click="open_update_inventory_groups_modal()"
+                >{$:: 'Add to/Remove from Groups' | translate $}</a
+              >
             </li>
 
             <li role="menuitem">
-              <a ng-click="open_analyses_modal()">{$:: 'Run Analysis' | translate $}</a>
+              <a ng-click="open_analyses_modal()"
+                >{$:: 'Run Analysis' | translate $}</a
+              >
             </li>
 
             <li role="menuitem" ng-if="::historical_items.length > 1">
-              <a ng-click="unmerge()" class="yellow-bg">{$:: 'Unmerge Last' | translate $}</a>
+              <a ng-click="unmerge()" class="yellow-bg"
+                >{$:: 'Unmerge Last' | translate $}</a
+              >
             </li>
 
             <li role="menuitem">
-              <a ng-click="open_match_merge_link_warning_modal(match_merge_link_record, 'manual')">Merge and Link Matches</a>
+              <a
+                ng-click="open_match_merge_link_warning_modal(match_merge_link_record, 'manual')"
+                >Merge and Link Matches</a
+              >
             </li>
 
             <li role="menuitem" ng-if="organization.salesforce_enabled">
-              <a ng-click="update_salesforce()">{$:: 'Update Salesforce' | translate $}</a>
+              <a ng-click="update_salesforce()"
+                >{$:: 'Update Salesforce' | translate $}</a
+              >
             </li>
 
             <li role="menuitem">
@@ -105,31 +206,59 @@
             <li class="divider"></li>
 
             <li role="menuitem">
-              <a ng-click="open_show_populated_columns_modal()" translate>Only Show Populated Columns</a>
+              <a ng-click="open_show_populated_columns_modal()" translate
+                >Only Show Populated Columns</a
+              >
             </li>
           </ul>
           <div ng-if="::inventory_type === 'properties'">
-            <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
-            <div class="alert alert-danger" ng-show="uploader.invalid_xlsx_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
+            <div
+              class="alert alert-danger"
+              ng-show="uploader.invalid_xml_extension_alert"
+              translate="INVALID_XML_EXTENSION_ALERT"
+            ></div>
+            <div
+              class="alert alert-danger"
+              ng-show="uploader.invalid_xlsx_extension_alert"
+              translate="INVALID_EXTENSION_ALERT"
+            ></div>
           </div>
         </div>
         <div class="ellipsis">
           <span style="display: flex; align-items: baseline; gap: 1rem">
             <strong>{$:: 'Cycle' | translate $}:</strong>
-            <select class="form-control" ng-model="selected_view.view_id" ng-change="changeView()" style="width: auto">
-              <option ng-repeat="view in views" ng-value="view.view_id">{$ view.cycle_name $}</option>
+            <select
+              class="form-control"
+              ng-model="selected_view.view_id"
+              ng-change="changeView()"
+              style="width: auto"
+            >
+              <option ng-repeat="view in views" ng-value="view.view_id">
+                {$ view.cycle_name $}
+              </option>
             </select>
           </span>
         </div>
         <div style="display: flex; align-items: center">
-          <strong style="padding-right: 5px">{$:: 'Labels' | translate $}:</strong>
-          <span ng-if="!labels.length" style="color: #999" translate>(no labels applied)</span>
+          <strong style="padding-right: 5px"
+            >{$:: 'Labels' | translate $}:</strong
+          >
+          <span ng-if="!labels.length" style="color: #999" translate
+            >(no labels applied)</span
+          >
           <div ng-if="labels.length">
-            <span ng-repeat="label in labels" class="label label-{$:: label.label $}" style="padding: 4.6px 7px">{$:: label.name $}</span>
+            <span
+              ng-repeat="label in labels"
+              class="label label-{$:: label.label $}"
+              style="padding: 4.6px 7px"
+              >{$:: label.name $}</span
+            >
           </div>
         </div>
         <div class="groups_nav_container">
-          <strong style="padding-right: 5px; padding-top: 10px">{$:: 'Groups' | translate $}:</strong>
+          <strong style="padding-right: 5px; padding-top: 10px"
+            >{$:: 'Groups' | translate $}:</strong
+          >
           <div class="groups_nav">
             <a
               class="btn btn btn-default"
@@ -142,17 +271,32 @@
           </div>
         </div>
         <div class="access-level-info-section">
-          <strong style="padding-right: 5px; padding-top: 10px">{$:: 'Access Level Instance Information' | translate $}:</strong>
+          <strong style="padding-right: 5px; padding-top: 10px"
+            >{$:: 'Access Level Instance Information' | translate $}:</strong
+          >
           <div>
-            <table id="ali-detail-table" class="table table-striped table_highlight_first" style="width: fit-content">
+            <table
+              id="ali-detail-table"
+              class="table table-striped table_highlight_first"
+              style="width: fit-content"
+            >
               <thead>
                 <tr>
-                  <th ng-repeat="(level, name) in organization.access_level_names">{$:: 'Level' | translate $} {$ level+1 $} - {$:: name $}</th>
+                  <th
+                    ng-repeat="(level, name) in organization.access_level_names"
+                  >
+                    {$:: 'Level' | translate $} {$ level+1 $} - {$:: name $}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <td style="border: 1px solid #ddd" ng-repeat="(level, name) in organization.access_level_names">{$:: ali_path[name] $}</td>
+                  <td
+                    style="border: 1px solid #ddd"
+                    ng-repeat="(level, name) in organization.access_level_names"
+                  >
+                    {$:: ali_path[name] $}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -162,7 +306,11 @@
           <span ng-show="profiles.length > 0">
             <label>{$:: 'Detail Column List Profile' | translate $}:</label>
             <div style="display: inline-block">
-              <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
+              <select
+                class="form-control input-sm"
+                ng-model="currentProfile"
+                ng-options="option.name for option in profiles track by option.id"
+              ></select>
             </div>
           </span>
         </div>
@@ -174,25 +322,56 @@
       </div>
       <!-- NOTE: This is bad, using a controller created for someone else but it will work
                      we should refactor this into a AnalysisCard component. -->
-      <div ng-if="analysis" ng-controller="analysis_details_controller" ng-include="::urls.static_url + 'seed/partials/analysis_card.html'" class="tab-content-card"></div>
+      <div
+        ng-if="analysis"
+        ng-controller="analysis_details_controller"
+        ng-include="::urls.static_url + 'seed/partials/analysis_card.html'"
+        class="tab-content-card"
+      ></div>
     </div>
 
     <div ng-if="::inventory_type === 'properties'">
-      <div class="alert alert-danger" ng-show="uploader.invalid_xml_extension_alert" translate="INVALID_XML_EXTENSION_ALERT"></div>
+      <div
+        class="alert alert-danger"
+        ng-show="uploader.invalid_xml_extension_alert"
+        translate="INVALID_XML_EXTENSION_ALERT"
+      ></div>
     </div>
 
-    <div ng-if="::inventory_type === 'properties'" style="margin: 10px 10px 10px 0; padding: 0 10px; display: flex; justify-content: space-between">
+    <div
+      ng-if="::inventory_type === 'properties'"
+      style="
+        margin: 10px 10px 10px 0;
+        padding: 0 10px;
+        display: flex;
+        justify-content: space-between;
+      "
+    >
       <div class="progress_bar_container" ng-show="uploader.in_progress">
-        <div class="progress_bar_copy_top" translate="UPLOADING_PROGRESS" translate-values="{ dataset_filename: uploader.filename, cycle_name: cycle.name }"></div>
+        <div
+          class="progress_bar_copy_top"
+          translate="UPLOADING_PROGRESS"
+          translate-values="{ dataset_filename: uploader.filename, cycle_name: cycle.name }"
+        ></div>
 
-        <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
-        <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
+        <uib-progressbar
+          class="progress-striped active"
+          value="uploader.progress"
+          type="success"
+        ></uib-progressbar>
+        <div class="progress_bar_copy_bottom">
+          {$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$
+          uploader.status_message ? ': ' + uploader.status_message : '' $}
+        </div>
       </div>
     </div>
 
     <div id="pin" class="section_content_container table-xscroll-unfrozen">
       <div class="table_list_container table_item_detail">
-        <table id="inventory-detail-table" class="table table-striped table_highlight_first fixed-layout">
+        <table
+          id="inventory-detail-table"
+          class="table table-striped table_highlight_first fixed-layout"
+        >
           <thead>
             <tr>
               <th id="building-fields">{$:: 'Field' | translate $}</th>
@@ -212,7 +391,12 @@
                   popover-placement="top-left"
                 >
                   {$:: historical_item.filename $}
-                  <a ng-if="::historical_item.file" style="padding-left: 8px" href="{$:: historical_item.file $}" download="{$:: historical_item.filename $}">
+                  <a
+                    ng-if="::historical_item.file"
+                    style="padding-left: 8px"
+                    href="{$:: historical_item.file $}"
+                    download="{$:: historical_item.filename $}"
+                  >
                     <i class="fa-solid fa-download" aria-hidden="true"></i>
                   </a>
                 </div>
@@ -222,52 +406,135 @@
           <tbody>
             <tr ng-repeat="col in ::columns">
               <!-- Column name -->
-              <td ng-attr-title="{$:: col.column_name $}"><i ng-if="col.derived_column" class="fa-solid fa-link"></i> {$:: col.displayName | translate $}</td>
+              <td ng-attr-title="{$:: col.column_name $}">
+                <i ng-if="col.derived_column" class="fa-solid fa-link"></i> {$::
+                col.displayName | translate $}
+              </td>
 
               <!-- Show read-only current 'regular' field value -->
-              <td ng-if="edit_form_showing===false && !col.is_extra_data && !col.derived_column && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
-                <span class="sd-data-content" uib-popover="{$:: item_state[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                  <span>{$:: displayValue(col, item_state[col.column_name]) $}</span>
+              <td
+                ng-if="edit_form_showing===false && !col.is_extra_data && !col.derived_column && col.table_name.toLowerCase().includes('state')"
+                ng-class="{highlight: col.changed}"
+                class="ellipsis"
+              >
+                <span
+                  class="sd-data-content"
+                  uib-popover="{$:: item_state[col.column_description] $}"
+                  popover-trigger="'outsideClick'"
+                  popover-animation="false"
+                  popover-placement="top-left"
+                >
+                  <span
+                    >{$:: displayValue(col, item_state[col.column_name])
+                    $}</span
+                  >
                 </span>
               </td>
 
               <!-- Show read-only current 'extra_data' field value -->
-              <td ng-if="edit_form_showing===false && col.is_extra_data && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
-                <span class="sd-data-content" uib-popover="{$ item_state.extra_data[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                  <span>{$:: displayValue(col, item_state.extra_data[col.column_name]) $}</span>
+              <td
+                ng-if="edit_form_showing===false && col.is_extra_data && col.table_name.toLowerCase().includes('state')"
+                ng-class="{highlight: col.changed}"
+                class="ellipsis"
+              >
+                <span
+                  class="sd-data-content"
+                  uib-popover="{$ item_state.extra_data[col.column_description] $}"
+                  popover-trigger="'outsideClick'"
+                  popover-animation="false"
+                  popover-placement="top-left"
+                >
+                  <span
+                    >{$:: displayValue(col,
+                    item_state.extra_data[col.column_name]) $}</span
+                  >
                 </span>
               </td>
 
               <!-- Show read-only current 'property / taxlot' fields -->
-              <td ng-if="edit_form_showing===false && !col.table_name.toLowerCase().includes('state') && !col.derived_column" ng-class="{highlight: col.changed}" class="ellipsis">
-                <span class="sd-data-content" uib-popover="{$ item_parent[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                  <span>{$:: displayValue(col, item_parent[col.column_name]) $}</span>
+              <td
+                ng-if="edit_form_showing===false && !col.table_name.toLowerCase().includes('state') && !col.derived_column"
+                ng-class="{highlight: col.changed}"
+                class="ellipsis"
+              >
+                <span
+                  class="sd-data-content"
+                  uib-popover="{$ item_parent[col.column_description] $}"
+                  popover-trigger="'outsideClick'"
+                  popover-animation="false"
+                  popover-placement="top-left"
+                >
+                  <span
+                    >{$:: displayValue(col, item_parent[col.column_name])
+                    $}</span
+                  >
                 </span>
               </td>
 
               <!-- Show read-only derived column value -->
-              <td ng-if="edit_form_showing===false && col.derived_column" class="ellipsis">
-                <span class="sd-data-content" uib-popover="{$ item_derived_values[col.column_description] $}" popover-trigger="'outsideClick'" popover-animation="false" popover-placement="top-left">
-                  <span>{$:: displayValue(col, item_state.derived_data[col.column_name]) $}</span>
+              <td
+                ng-if="edit_form_showing===false && col.derived_column"
+                class="ellipsis"
+              >
+                <span
+                  class="sd-data-content"
+                  uib-popover="{$ item_derived_values[col.column_description] $}"
+                  popover-trigger="'outsideClick'"
+                  popover-animation="false"
+                  popover-placement="top-left"
+                >
+                  <span
+                    >{$:: displayValue(col,
+                    item_state.derived_data[col.column_name]) $}</span
+                  >
                 </span>
               </td>
 
               <!-- Show input form to edit current field value -->
               <td ng-if="edit_form_showing" ng-class="{highlight: col.changed}">
-                <div ng-if="::!col.is_extra_data && !col.derived_column && col.table_name.toLowerCase().includes('state')">
-                  <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_state[col.column_name]" ng-disabled="::isDisabledField(col.column_name)" />
+                <div
+                  ng-if="::!col.is_extra_data && !col.derived_column && col.table_name.toLowerCase().includes('state')"
+                >
+                  <input
+                    id="edit_attribute_id"
+                    class="form-control input-sm"
+                    type="text"
+                    ng-model="item_state[col.column_name]"
+                    ng-disabled="::isDisabledField(col.column_name)"
+                  />
                 </div>
-                <div ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')">
-                  <input id="edit_property_attribute_id" class="form-control input-sm" type="text" ng-model="item_state.extra_data[col.column_name]" />
+                <div
+                  ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')"
+                >
+                  <input
+                    id="edit_property_attribute_id"
+                    class="form-control input-sm"
+                    type="text"
+                    ng-model="item_state.extra_data[col.column_name]"
+                  />
                 </div>
-                <div ng-if="::!col.is_extra_data && !col.derived_column && !col.table_name.toLowerCase().includes('state')">
-                  <input id="edit_attribute_id" class="form-control input-sm" type="text" ng-model="item_parent[col.column_name]" ng-disabled="::isDisabledField(col.column_name)" />
+                <div
+                  ng-if="::!col.is_extra_data && !col.derived_column && !col.table_name.toLowerCase().includes('state')"
+                >
+                  <input
+                    id="edit_attribute_id"
+                    class="form-control input-sm"
+                    type="text"
+                    ng-model="item_parent[col.column_name]"
+                    ng-disabled="::isDisabledField(col.column_name)"
+                  />
                 </div>
-                <div ng-if="::col.derived_column">{$ item_derived_values[col.id] $}</div>
+                <div ng-if="::col.derived_column">
+                  {$ item_derived_values[col.id] $}
+                </div>
               </td>
 
               <!-- Show read-only historical field value -->
-              <td ng-repeat="historical_item in historical_items" ng-class="{highlight: col.changed}" class="ellipsis">
+              <td
+                ng-repeat="historical_item in historical_items"
+                ng-class="{highlight: col.changed}"
+                class="ellipsis"
+              >
                 <span
                   ng-if="::!col.is_extra_data && col.table_name.toLowerCase().includes('state')"
                   class="sd-data-content"
@@ -276,7 +543,10 @@
                   popover-animation="false"
                   popover-placement="top-left"
                 >
-                  <span>{$:: displayValue(col, historical_item.state[col.column_name]) $}</span>
+                  <span
+                    >{$:: displayValue(col,
+                    historical_item.state[col.column_name]) $}</span
+                  >
                 </span>
                 <span
                   ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')"
@@ -286,7 +556,10 @@
                   popover-animation="false"
                   popover-placement="top-left"
                 >
-                  <span>{$:: displayValue(col, historical_item.state.extra_data[col.column_name]) $}</span>
+                  <span
+                    >{$:: displayValue(col,
+                    historical_item.state.extra_data[col.column_name]) $}</span
+                  >
                 </span>
               </td>
             </tr>
@@ -298,12 +571,21 @@
 
   <!-- Paired Items Section -->
   <div class="section">
-    <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
+    <div
+      class="section_header_container"
+      style="margin-top: 20px; border-bottom: 0"
+    >
       <div class="section_header fixed_height_short has_no_padding">
         <div class="section_action_container left">
           <span>
-            <h2 ng-if="::inventory_type==='taxlots'"><i class="fa-regular fa-building"></i> {$:: 'Paired Properties' | translate $}</h2>
-            <h2 ng-if="::inventory_type==='properties'"><i class="fa-regular fa-map"></i> {$:: 'Paired Tax Lots' | translate $}</h2>
+            <h2 ng-if="::inventory_type==='taxlots'">
+              <i class="fa-regular fa-building"></i> {$:: 'Paired Properties' |
+              translate $}
+            </h2>
+            <h2 ng-if="::inventory_type==='properties'">
+              <i class="fa-regular fa-map"></i> {$:: 'Paired Tax Lots' |
+              translate $}
+            </h2>
           </span>
         </div>
       </div>
@@ -312,51 +594,111 @@
   <div class="section_content_container" style="margin-bottom: 200px">
     <!-- List of paired items -->
     <div class="section_content">
-      <div class="table_list_container table_item_detail" style="max-width: 700px">
-        <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom: -1px">
+      <div
+        class="table_list_container table_item_detail"
+        style="max-width: 700px"
+      >
+        <table
+          class="table table-striped table_highlight_first fixed-layout"
+          style="margin-bottom: -1px"
+        >
           <thead>
             <tr>
-              <th sd-resizable width="120" ng-if="::inventory_type==='properties'">{$:: 'Tax Lot ID' | translate $}</th>
-              <th sd-resizable width="120" ng-if="::inventory_type==='taxlots'">{$:: 'PM Property ID' | translate $}</th>
-              <th sd-resizable class="ellipsis-resizable">{$:: 'Address Line 1' | translate $}</th>
-              <th ng-if="::inventory_type==='taxlots'" sd-resizable class="ellipsis-resizable">{$:: 'Custom ID 1' | translate $}</th>
-              <th ng-if="::inventory_type==='taxlots'" sd-resizable class="ellipsis-resizable">{$:: 'UBID' | translate $}</th>
+              <th
+                sd-resizable
+                width="120"
+                ng-if="::inventory_type==='properties'"
+              >
+                {$:: 'Tax Lot ID' | translate $}
+              </th>
+              <th sd-resizable width="120" ng-if="::inventory_type==='taxlots'">
+                {$:: 'PM Property ID' | translate $}
+              </th>
+              <th sd-resizable class="ellipsis-resizable">
+                {$:: 'Address Line 1' | translate $}
+              </th>
+              <th
+                ng-if="::inventory_type==='taxlots'"
+                sd-resizable
+                class="ellipsis-resizable"
+              >
+                {$:: 'Custom ID 1' | translate $}
+              </th>
+              <th
+                ng-if="::inventory_type==='taxlots'"
+                sd-resizable
+                class="ellipsis-resizable"
+              >
+                {$:: 'UBID' | translate $}
+              </th>
               <th width="60">Unpair</th>
             </tr>
           </thead>
           <tbody ng-if="::inventory_type==='properties'">
             <tr ng-repeat="taxlotView in ::inventory.related">
               <td>
-                <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', view_id: taxlotView.id})">{$:: taxlotView.state.jurisdiction_tax_lot_id $}</a>
+                <a
+                  ui-sref="inventory_detail(::{inventory_type: 'taxlots', view_id: taxlotView.id})"
+                  >{$:: taxlotView.state.jurisdiction_tax_lot_id $}</a
+                >
               </td>
               <td>
-                <a ui-sref="inventory_detail(::{inventory_type: 'taxlots', view_id: taxlotView.id})">{$:: taxlotView.state.address_line_1 ? taxlotView.state.address_line_1 : '(no address 1)' $}</a>
+                <a
+                  ui-sref="inventory_detail(::{inventory_type: 'taxlots', view_id: taxlotView.id})"
+                  >{$:: taxlotView.state.address_line_1 ?
+                  taxlotView.state.address_line_1 : '(no address 1)' $}</a
+                >
               </td>
               <td>
-                <div ng-show="menu.user.organization.user_role !== 'viewer'" class="unpair-child" ng-click="unpair_taxlot_from_property(taxlotView.id)" style="text-align: center">&#10006;</div>
+                <div
+                  ng-show="menu.user.organization.user_role !== 'viewer'"
+                  class="unpair-child"
+                  ng-click="unpair_taxlot_from_property(taxlotView.id)"
+                  style="text-align: center"
+                >
+                  &#10006;
+                </div>
               </td>
             </tr>
           </tbody>
           <tbody ng-if="::inventory_type==='taxlots'">
             <tr ng-repeat="propertyView in ::inventory.related">
               <td>
-                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})">{$:: propertyView.state.pm_property_id $}</a>
-              </td>
-              <td>
-                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})"
-                  >{$:: propertyView.state.address_line_1 ? propertyView.state.address_line_1 : '(no address 1)' $}</a
+                <a
+                  ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})"
+                  >{$:: propertyView.state.pm_property_id $}</a
                 >
               </td>
               <td>
-                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})"
-                  >{$:: propertyView.state.custom_id_1 ? propertyView.state.custom_id_1 : '(no custom id 1)' $}</a
+                <a
+                  ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})"
+                  >{$:: propertyView.state.address_line_1 ?
+                  propertyView.state.address_line_1 : '(no address 1)' $}</a
                 >
               </td>
               <td>
-                <a ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})">{$:: propertyView.state.ubid ? propertyView.state.ubid : '(no UBID)' $}</a>
+                <a
+                  ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})"
+                  >{$:: propertyView.state.custom_id_1 ?
+                  propertyView.state.custom_id_1 : '(no custom id 1)' $}</a
+                >
               </td>
               <td>
-                <div ng-show="menu.user.organization.user_role !== 'viewer'" class="unpair-child" ng-click="unpair_property_from_taxlot(propertyView.id)" style="text-align: center">&#10006;</div>
+                <a
+                  ui-sref="inventory_detail(::{inventory_type: 'properties', view_id: propertyView.id})"
+                  >{$:: propertyView.state.ubid ? propertyView.state.ubid : '(no
+                  UBID)' $}</a
+                >
+              </td>
+              <td>
+                <div
+                  ng-show="menu.user.organization.user_role !== 'viewer'"
+                  class="unpair-child"
+                  ng-click="unpair_property_from_taxlot(propertyView.id)"
+                  style="text-align: center"
+                >
+                  &#10006;
+                </div>
               </td>
             </tr>
           </tbody>
@@ -367,16 +709,30 @@
     <div ng-if="::inventory_type==='properties'">
       <!-- Elements Section -->
       <div class="section" ng-if="::elements.length > 0">
-        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
+        <div
+          class="section_header_container"
+          style="margin-top: 20px; border-bottom: 0"
+        >
           <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container left" style="width: 50%">
-              <h2><i class="fa-solid fa-atom"></i>{$:: 'Property Elements' | translate $}<span ng-if="::elements.length > 0"> ({$:: elements.length | number $})</span></h2>
+              <h2>
+                <i class="fa-solid fa-atom"></i>{$:: 'Property Elements' |
+                translate $}<span ng-if="::elements.length > 0">
+                  ({$:: elements.length | number $})</span
+                >
+              </h2>
             </div>
           </div>
         </div>
         <div class="section_content">
-          <div class="table_list_container table_item_detail" style="overflow: auto; max-height: 508px">
-            <table class="table table-striped" style="border-collapse: separate; margin-bottom: 0">
+          <div
+            class="table_list_container table_item_detail"
+            style="overflow: auto; max-height: 508px"
+          >
+            <table
+              class="table table-striped"
+              style="border-collapse: separate; margin-bottom: 0"
+            >
               <thead style="position: sticky; top: 0">
                 <tr>
                   <th translate>Uniformat Category</th>
@@ -386,19 +742,35 @@
                   <th translate>Condition Index</th>
                   <th translate>Remaining Service Life</th>
                   <th translate>Replacement Cost</th>
-                  <th ng-repeat="column in ::element_extra_data_columns">{$:: column $}</th>
+                  <th ng-repeat="column in ::element_extra_data_columns">
+                    {$:: column $}
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 <tr ng-repeat="element in ::elements">
-                  <td><span ng-attr-title="{$:: uniformat_hierarchy(element.code) $} ({$:: element.code $})">{$:: uniformat[element.code].category | startCase $}</span></td>
+                  <td>
+                    <span
+                      ng-attr-title="{$:: uniformat_hierarchy(element.code) $} ({$:: element.code $})"
+                      >{$:: uniformat[element.code].category | startCase
+                      $}</span
+                    >
+                  </td>
                   <td>{$:: element.description $}</td>
                   <td>{$:: element.installation_date $}</td>
                   <td>{$:: element.manufacturing_date $}</td>
-                  <td ng-attr-title="{$:: element.condition_index $}">{$:: element.condition_index | number:2 $}</td>
-                  <td ng-attr-title="{$:: element.remaining_service_life $}">{$:: element.remaining_service_life | number:2 $}</td>
-                  <td ng-attr-title="{$:: element.replacement_cost $}">{$:: element.replacement_cost | currency:'$':0 $}</td>
-                  <td ng-repeat="column in ::element_extra_data_columns">{$:: element.extra_data[column] $}</td>
+                  <td ng-attr-title="{$:: element.condition_index $}">
+                    {$:: element.condition_index | number:2 $}
+                  </td>
+                  <td ng-attr-title="{$:: element.remaining_service_life $}">
+                    {$:: element.remaining_service_life | number:2 $}
+                  </td>
+                  <td ng-attr-title="{$:: element.replacement_cost $}">
+                    {$:: element.replacement_cost | currency:'$':0 $}
+                  </td>
+                  <td ng-repeat="column in ::element_extra_data_columns">
+                    {$:: element.extra_data[column] $}
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -407,22 +779,37 @@
       </div>
 
       <div ng-if="::tkbl.length > 0">
-        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
+        <div
+          class="section_header_container"
+          style="margin-top: 20px; border-bottom: 0"
+        >
           <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container" style="width: 75%">
-              <h2><i class="fa-solid fa-atom"></i><span translate>CEWE_ELEMENTS_TITLE</span></h2>
+              <h2>
+                <i class="fa-solid fa-atom"></i
+                ><span translate>CEWE_ELEMENTS_TITLE</span>
+              </h2>
               <p translate style="padding-left: 24px">CEWE_ELEMENTS_SUBTITLE</p>
               <p translate style="padding-left: 24px">CEWE_ELEMENTS_COMMENT</p>
             </div>
           </div>
         </div>
         <div class="section_content">
-          <div class="table_list_container table_item_detail" style="overflow: auto">
-            <table class="table table-striped tkbl-table" style="margin-bottom: 0">
+          <div
+            class="table_list_container table_item_detail"
+            style="overflow: auto"
+          >
+            <table
+              class="table table-striped tkbl-table"
+              style="margin-bottom: 0"
+            >
               <thead>
                 <tr>
                   <th translate>Uniformat Category</th>
-                  <th style="display: flex; align-items: end; gap: 4px"><span translate>Remaining Service Life</span><i class="fa-solid fa-sort-up"></i></th>
+                  <th style="display: flex; align-items: end; gap: 4px">
+                    <span translate>Remaining Service Life</span
+                    ><i class="fa-solid fa-sort-up"></i>
+                  </th>
                   <th translate>Description</th>
                   <th translate>GSA SFTool Guidance</th>
                   <th translate>ESTCP Report</th>
@@ -432,26 +819,44 @@
               </thead>
               <tbody>
                 <tr ng-repeat="element in tkbl">
-                  <td ng-attr-title="{$:: uniformat_hierarchy(element.code) $} ({$:: element.code $})">{$:: uniformat[element.code].category | startCase $}</td>
-                  <td ng-attr-title="{$:: element.remaining_service_life $}">{$:: element.remaining_service_life | number:2 $}</td>
+                  <td
+                    ng-attr-title="{$:: uniformat_hierarchy(element.code) $} ({$:: element.code $})"
+                  >
+                    {$:: uniformat[element.code].category | startCase $}
+                  </td>
+                  <td ng-attr-title="{$:: element.remaining_service_life $}">
+                    {$:: element.remaining_service_life | number:2 $}
+                  </td>
                   <td>{$:: element.description $}</td>
                   <td>
                     <ul ng-if="element.tkbl.sftool.length > 0">
                       <li ng-repeat="entry in ::element.tkbl.sftool">
-                        <a ng-href="{$:: entry.url $}" target="_blank" rel="noopener noreferrer">{$:: entry.subcategory $}</a>
+                        <a
+                          ng-href="{$:: entry.url $}"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          >{$:: entry.subcategory $}</a
+                        >
                       </li>
                     </ul>
                   </td>
                   <td>
                     <ul ng-if="element.tkbl.estcp.length > 0">
                       <li ng-repeat="entry in ::element.tkbl.estcp">
-                        <a ng-href="{$:: entry.url $}" target="_blank" rel="noopener noreferrer">{$:: entry.title $}</a>
+                        <a
+                          ng-href="{$:: entry.url $}"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          >{$:: entry.title $}</a
+                        >
                       </li>
                     </ul>
                   </td>
                   <td>
                     <ul ng-if="element.tkbl.bsync_measures.length > 0">
-                      <li ng-repeat="entry in ::element.tkbl.bsync_measures">{$:: entry $}</li>
+                      <li ng-repeat="entry in ::element.tkbl.bsync_measures">
+                        {$:: entry $}
+                      </li>
                     </ul>
                   </td>
                   <td></td>
@@ -464,16 +869,29 @@
 
       <!-- Inventory Document Section -->
       <div class="section">
-        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
+        <div
+          class="section_header_container"
+          style="margin-top: 20px; border-bottom: 0"
+        >
           <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container left" style="width: 50%">
               <span>
-                <h2><i class="fa-solid fa-paperclip"></i>{$:: 'Inventory Documents' | translate $}</h2>
+                <h2>
+                  <i class="fa-solid fa-paperclip"></i>{$:: 'Inventory
+                  Documents' | translate $}
+                </h2>
               </span>
             </div>
           </div>
-          <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="btn btn-info" ng-click="open_doc_upload_modal()" style="margin: 15px">
-            <i class="fa-solid fa-paperclip"></i> <span translate>Add a Document</span>
+          <button
+            ng-show="menu.user.organization.user_role !== 'viewer'"
+            type="button"
+            class="btn btn-info"
+            ng-click="open_doc_upload_modal()"
+            style="margin: 15px"
+          >
+            <i class="fa-solid fa-paperclip"></i>
+            <span translate>Add a Document</span>
           </button>
         </div>
       </div>
@@ -481,20 +899,37 @@
         <!-- List of Documents -->
         <div class="section_content">
           <div class="table_list_container table_item_detail">
-            <table class="table table-striped table_highlight_first" style="margin-bottom: -1px">
+            <table
+              class="table table-striped table_highlight_first"
+              style="margin-bottom: -1px"
+            >
               <thead>
                 <tr>
-                  <th sd-resizable class="ellipsis-resizable" colspan="2">File Name</th>
+                  <th sd-resizable class="ellipsis-resizable" colspan="2">
+                    File Name
+                  </th>
                   <th sd-resizable>File Type</th>
                   <th sd-resizable class="ellipsis-resizable">Created</th>
                 </tr>
               </thead>
               <tbody>
                 <tr ng-repeat="file in inventory_docs">
-                  <td class="data_file_name" style="border-right: 0px">{$:: file.filename $}</td>
+                  <td class="data_file_name" style="border-right: 0px">
+                    {$:: file.filename $}
+                  </td>
                   <td style="border-left: 0px; text-align: right">
-                    <a style="margin-right: 8px" href="{$ file.file $}" download="{$ file.filename $}"><i class="fa-solid fa-download" aria-hidden="true"></i></a>
-                    <a ng-show="menu.user.organization.user_role !== 'viewer'" class="delete_link" ng-click="confirm_delete(file)"><i class="fa-solid fa-trash-can"></i></a>
+                    <a
+                      style="margin-right: 8px"
+                      href="{$ file.file $}"
+                      download="{$ file.filename $}"
+                      ><i class="fa-solid fa-download" aria-hidden="true"></i
+                    ></a>
+                    <a
+                      ng-show="menu.user.organization.user_role !== 'viewer'"
+                      class="delete_link"
+                      ng-click="confirm_delete(file)"
+                      ><i class="fa-solid fa-trash-can"></i
+                    ></a>
                   </td>
                   <td>{$ file.file_type $}</td>
                   <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</td>
@@ -506,11 +941,17 @@
       </div>
       <!-- Building Files Section -->
       <div class="section">
-        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
+        <div
+          class="section_header_container"
+          style="margin-top: 20px; border-bottom: 0"
+        >
           <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container left" style="width: 50%">
               <span>
-                <h2><i class="fa-solid fa-file"></i>{$:: 'Building Files (Main State Only)' | translate $}</h2>
+                <h2>
+                  <i class="fa-solid fa-file"></i>{$:: 'Building Files (Main
+                  State Only)' | translate $}
+                </h2>
               </span>
             </div>
           </div>
@@ -520,7 +961,10 @@
         <!-- List of files -->
         <div class="section_content">
           <div class="table_list_container table_item_detail">
-            <table class="table table-striped table_highlight_first fixed-layout" style="margin-bottom: -1px">
+            <table
+              class="table table-striped table_highlight_first fixed-layout"
+              style="margin-bottom: -1px"
+            >
               <thead>
                 <tr>
                   <th sd-resizable>File Type</th>
@@ -531,7 +975,11 @@
               <tbody>
                 <tr ng-repeat="file in item_state.files">
                   <td>{$ file.file_type $}</td>
-                  <td><a href="{$ file.file $}" download="{$ file.filename $}">{$ file.filename $}</a></td>
+                  <td>
+                    <a href="{$ file.file $}" download="{$ file.filename $}"
+                      >{$ file.filename $}</a
+                    >
+                  </td>
                   <td>{$ file.created | date: 'yyyy-MM-dd h:mm a' $}</td>
                 </tr>
               </tbody>
@@ -541,14 +989,24 @@
       </div>
       <!-- Scenarios and Measures Section -->
       <div class="section">
-        <div class="section_header_container" style="margin-top: 20px; border-bottom: 0">
+        <div
+          class="section_header_container"
+          style="margin-top: 20px; border-bottom: 0"
+        >
           <div class="section_header fixed_height_short has_no_padding">
             <div class="section_action_container left" style="width: 50%">
               <span>
                 <h2>
                   <!-- <i class="fa-solid fa-bolt"></i> -->
-                  <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_electricity.svg" />
-                  <img class="icon-small-black" ng-src="{$ static_url $}seed/images/timeline_natural_gas.svg" style="margin-right: 0" />
+                  <img
+                    class="icon-small-black"
+                    ng-src="{$ static_url $}seed/images/timeline_electricity.svg"
+                  />
+                  <img
+                    class="icon-small-black"
+                    ng-src="{$ static_url $}seed/images/timeline_natural_gas.svg"
+                    style="margin-right: 0"
+                  />
 
                   Scenarios & Measures
                 </h2>
@@ -557,7 +1015,12 @@
           </div>
         </div>
         <span style="margin: 10px">
-          <button class="btn btn-primary" type="button" ng-click="collapseAccordions(!accordionsCollapsed)" style="padding: 1px 10px; margin-bottom: 2px">
+          <button
+            class="btn btn-primary"
+            type="button"
+            ng-click="collapseAccordions(!accordionsCollapsed)"
+            style="padding: 1px 10px; margin-bottom: 2px"
+          >
             {$ accordionsCollapsed ? 'Expand All' : 'Collapse All' $}
           </button>
         </span>
@@ -567,16 +1030,38 @@
       <div class="section_content_container">
         <div ng-repeat="historical_item in historical_items_with_scenarios">
           <div class="accordion-header" style="margin: 2px 0">
-            <button class="accordion-button at-date" type="button" data-toggle="collapse" data-target="#historical-item-{$ $index $}">
-              <i class="fa-solid fa-chevron-down accordion-indicator-default-open" id="indicator-{$ $index  $}"></i>
-              <span class="event-detail">Audit Date: {$ historical_item.state.extra_data.audit_date $}</span>
-              <span class="event-detail">Upload Date: {$ format_epoch(historical_item.date_edited) $}</span>
-              <span class="event-detail">{$ historical_item.state.extra_data.audit_date_type $}</span>
+            <button
+              class="accordion-button at-date"
+              type="button"
+              data-toggle="collapse"
+              data-target="#historical-item-{$ $index $}"
+            >
+              <i
+                class="fa-solid fa-chevron-down accordion-indicator-default-open"
+                id="indicator-{$ $index  $}"
+              ></i>
+              <span class="event-detail"
+                >Audit Date: {$ historical_item.state.extra_data.audit_date
+                $}</span
+              >
+              <span class="event-detail"
+                >Upload Date: {$ format_epoch(historical_item.date_edited)
+                $}</span
+              >
+              <span class="event-detail"
+                >{$ historical_item.state.extra_data.audit_date_type $}</span
+              >
             </button>
           </div>
 
-          <div id="historical-item-{$ $index $}" class="accordion-body event-collapse collapse in">
-            <div ng-include="::urls.static_url + 'seed/partials/at_scenarios.html'" ng-init="scenarios = historical_item.state.scenarios"></div>
+          <div
+            id="historical-item-{$ $index $}"
+            class="accordion-body event-collapse collapse in"
+          >
+            <div
+              ng-include="::urls.static_url + 'seed/partials/at_scenarios.html'"
+              ng-init="scenarios = historical_item.state.scenarios"
+            ></div>
           </div>
         </div>
       </div>
