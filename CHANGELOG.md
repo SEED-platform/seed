@@ -16,6 +16,7 @@
 * Bump requests from 2.32.3 to 2.32.4 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/5005
 * Upgrade from Alpine 3.14 to 3.19 by @dhaley in https://github.com/SEED-platform/seed/pull/4993
 * Update development dependencies by @nllong in https://github.com/SEED-platform/seed/pull/5016
+* Django v4.2 by @axelstudios in https://github.com/SEED-platform/seed/pull/4931
 ### Bug Fixes 🐛
 * Remove developer logs by @perryr16 in https://github.com/SEED-platform/seed/pull/4972
 * Fix default report scatter chart ordering of data by @haneslinger in https://github.com/SEED-platform/seed/pull/4992
