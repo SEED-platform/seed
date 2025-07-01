@@ -15,7 +15,6 @@ from pathlib import Path
 
 import numpy as np
 from django.conf import settings
-from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
@@ -37,7 +36,14 @@ from seed.data_importer.tasks import save_raw_data
 from seed.decorators import ajax_request
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
-from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, AccessLevelInstance, Organization, OrganizationUser
+from seed.lib.superperms.orgs.models import (
+    ROLE_MEMBER,
+    ROLE_OWNER,
+    ROLE_VIEWER,
+    AccessLevelInstance,
+    Organization,
+    OrganizationUser,
+)
 from seed.models import (
     AUDIT_IMPORT,
     GREEN_BUTTON,
@@ -468,8 +474,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         [
             api_endpoint,
             ajax_request,
-            has_perm("requires_viewer"),
-            permission_required("seed.can_access_admin"),
+            has_perm("requires_superuser"),
         ]
     )
     @action(detail=True, methods=["DELETE"])

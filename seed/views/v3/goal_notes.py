@@ -29,10 +29,10 @@ class GoalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
     @method_decorator(
         [
             has_perm("requires_member"),
+            # should this be nested under the goal or properties router?
             has_hierarchy_access(property_id_kwarg="property_pk"),
         ]
     )
-    # should this be nested under the goal or properties router?
     def update(self, request, property_pk, pk):
         try:
             goal_note = GoalNote.objects.get(property=property_pk, pk=pk)

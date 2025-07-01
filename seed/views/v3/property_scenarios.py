@@ -36,14 +36,14 @@ from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
 )
 @method_decorator(
     [
-        has_perm("requires_viewer"),
+        has_perm("requires_member"),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
     name="update",
 )
 @method_decorator(
     [
-        has_perm("requires_viewer"),
+        has_perm("requires_member"),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
     name="destroy",

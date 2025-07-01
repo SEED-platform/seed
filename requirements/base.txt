@@ -5,9 +5,9 @@ django==4.2.23
 psycopg2-binary==2.9.10
 
 # Background process management
-celery==5.4.0
-django-celery-beat==2.7.0
-django-redis==5.4.0
+celery==5.5.3
+django-celery-beat==2.8.1
+django-redis==6.0.0
 hiredis==3.0.0
 
 brotli==1.1.0
@@ -24,7 +24,7 @@ django-pint==0.7.3  # https://github.com/hgrecco/pint/issues/2065
 
 # API
 djangorestframework==3.16.0
-djangorestframework-simplejwt==5.5.0
+djangorestframework-simplejwt==5.3.1
 django-post-office==3.9.0
 drf-yasg==1.21.8
 django-filter==22.1  # Update after drf-spectacular

@@ -75,6 +75,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     )
     @method_decorator(
         [
+            api_endpoint,
+            ajax_request,
             has_perm("requires_viewer"),
         ]
     )

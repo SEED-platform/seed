@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
-from django.urls import include, path
+from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
@@ -49,7 +49,7 @@ urlpatterns = [
     # Application
     path("", include(("seed.landing.urls", "seed.landing"), namespace="landing")),
     path("app/", include(("seed.urls", "seed"), namespace="seed")),
-    path("ng-app/", seed_angular, name="seed-angular"),
+    re_path(r"^ng-app(?:/.*)?$", seed_angular, name="seed-angular"),
     path("documentation/", include(("seed.docs.urls", "seed.docs"), namespace="docs")),
     # root configuration items
     path("i18n/", include("django.conf.urls.i18n")),
