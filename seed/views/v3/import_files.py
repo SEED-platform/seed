@@ -9,6 +9,7 @@ from datetime import datetime
 import xlrd
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from django.utils.timezone import make_aware
 from drf_yasg.utils import swagger_auto_schema
 from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
@@ -23,10 +24,10 @@ from seed.data_importer.tasks import do_checks, geocode_and_match_buildings_task
 from seed.data_importer.tasks import save_raw_data as task_save_raw
 from seed.data_importer.tasks import validate_use_cases as task_validate_use_cases
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
-from seed.decorators import ajax_request_class
+from seed.decorators import ajax_request
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper, reader
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance, OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (
@@ -56,7 +57,7 @@ from seed.models import (
     obj_to_dict,
 )
 from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 _log = logging.getLogger(__name__)
@@ -139,10 +140,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
     queryset = ImportFile.objects.all()
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     def retrieve(self, request, pk=None):
         """
         Retrieves details about an ImportFile.
@@ -181,10 +186,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         )
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def check_meters_tab_exists(self, request, pk=None):
         """
@@ -209,10 +218,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         ],
         request_body=AutoSchemaHelper.schema_factory({"import_file_id": "integer"}),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(body_import_file_id="import_file_id")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(body_import_file_id="import_file_id"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def reuse_inventory_file_for_meters(self, request):
         org_id = self.get_organization(request)
@@ -238,10 +251,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({"status": "success", "import_file_id": new_file.id})
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def first_five_rows(self, request, pk=None):
         """
@@ -271,10 +288,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({"status": "success", "first_five_rows": convert_first_five_rows_to_list(header, data)})
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def raw_column_names(self, request, pk=None):
         """
@@ -297,10 +318,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         ],
         responses={200: MappingResultsResponseSerializer},
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"], url_path="mapping_results")
     def mapping_results(self, request, pk=None):
         """
@@ -450,10 +475,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             }
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def map(self, request, pk=None):
         """
@@ -475,10 +504,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse(map_data(pk, remap, mark_as_done))
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def start_system_matching_and_geocoding(self, request, pk=None):
         """
@@ -497,10 +530,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return geocode_and_match_buildings_task(pk)
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def start_data_quality_checks(self, request, pk=None):
         """
@@ -526,10 +563,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         )
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def validate_use_cases(self, request, pk=None):
         """
@@ -553,10 +594,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         ],
         request_body=AutoSchemaHelper.schema_factory({"cycle_id": "string"}),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def start_save_data(self, request, pk=None):
         """
@@ -599,10 +644,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse(task_save_raw(import_file.id))
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def mapping_done(self, request, pk=None):
         """
@@ -625,10 +674,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({"status": "success", "message": ""})
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def matching_and_geocoding_results(self, request, pk=None):
         """
@@ -802,10 +855,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         }
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def mapping_suggestions(self, request, pk):
         """
@@ -890,10 +947,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse(result)
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     def destroy(self, request, pk):
         """
         Deletes an import file
@@ -928,8 +989,12 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_integer_field("view_id", required=True, description="ID for property view"),
         ]
     )
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def greenbutton_meters_preview(self, request, pk):
         """
@@ -991,9 +1056,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return result
 
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(param_property_view_id="view_id")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(param_property_view_id="view_id"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def sensors_preview(self, request, pk):
         """
@@ -1025,9 +1094,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return result
 
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def sensor_readings_preview(self, request, pk):
         org_id = self.get_organization(request)
@@ -1053,9 +1126,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return result
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def pm_meters_preview(self, request, pk):
         """
@@ -1082,9 +1159,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return result
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def system_meter_upload(self, request, pk):
         org_id = self.get_organization(request)

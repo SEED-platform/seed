@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import Meter, PropertyView
 from seed.serializers.meters import MeterSerializer
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
@@ -21,26 +21,23 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
 @method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
     name="list",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_viewer"),
-        has_hierarchy_access(property_view_id_kwarg="property_pk"),
-    ],
 )
 @method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
     name="retrieve",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_viewer"),
-        has_hierarchy_access(property_view_id_kwarg="property_pk"),
-    ],
 )
 @method_decorator(
-    name="create",
-    decorator=[
-        has_perm_class("requires_member"),
-        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    [
         swagger_auto_schema(
             manual_parameters=[
                 AutoSchemaHelper.query_org_id_field(),
@@ -65,23 +62,26 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
                 description="New meter to add. The type must be taken from a constrained list.",
             ),
         ),
+        has_perm("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
+    name="create",
 )
 @method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="property_pk"),
+    ],
     name="update",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
-        has_hierarchy_access(property_view_id_kwarg="property_pk"),
-    ],
 )
 @method_decorator(
-    name="destroy",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
+        has_perm("requires_member"),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
+    name="destroy",
 )
 class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for managing meters."""
@@ -117,9 +117,13 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         else:
             raise Exception("No property_pk (property view id) provided in URL to create the meter")
 
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+            has_hierarchy_access(property_view_id_kwarg="property_pk"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(property_view_id_kwarg="property_pk")
     def update_connection(self, request, property_pk, pk):
         meter = self.get_queryset().filter(pk=pk).first()
         meter_config = request.data.get("meter_config")

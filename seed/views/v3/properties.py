@@ -22,6 +22,7 @@ from django.core.files.storage import FileSystemStorage
 from django.db import transaction
 from django.db.models import Exists, F, OuterRef, Q, Subquery
 from django.http import HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
 from drf_yasg.utils import no_body, swagger_auto_schema
@@ -38,10 +39,10 @@ from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import _save_pm_meter_usage_data_task
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
-from seed.decorators import ajax_request_class
+from seed.decorators import ajax_request
 from seed.hpxml.hpxml import HPXML
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import (
     AUDIT_USER_CREATE,
@@ -86,7 +87,7 @@ from seed.serializers.properties import (
 )
 from seed.serializers.taxlots import TaxLotViewSerializer
 from seed.tasks import update_state_derived_data
-from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
@@ -173,7 +174,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             AutoSchemaHelper.query_org_id_field(required=True),
         ]
     )
-    @has_perm_class("requires_viewer")
+    @method_decorator([has_perm("requires_viewer")])
     @action(detail=False, filter_backends=[PropertyViewFilterBackend])
     def search(self, request):
         """
@@ -247,7 +248,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             "- label_names: list of label names to query",
         ),
     )
-    @has_perm_class("requires_viewer")
+    @method_decorator([has_perm("requires_viewer")])
     @action(detail=False, methods=["POST"])
     def labels(self, request):
         """
@@ -281,9 +282,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             description='Properties:\n- interval: one of "Exact", "Month", or "Year"\n- excluded_meter_ids: array of meter IDs to exclude',
         ),
     )
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def meter_usage(self, request, pk):
         """
@@ -307,10 +312,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=no_body,
     )
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(property_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
-    @has_hierarchy_access(property_id_kwarg="pk")
     def analyses(self, request, pk):
         organization_id = self.get_organization(request)
         cycle_id = request.query_params.get("cycle_id")
@@ -341,9 +350,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             ),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     def list(self, request):
         """
         List all the properties	with all columns
@@ -360,14 +373,17 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             required=["organization_id", "cycle_ids"],
             description="Properties:\n"
             "- organization_id: ID of organization\n"
-            "- profile_id: Either an id of a list settings profile, "
-            "or undefined\n"
+            "- profile_id: Either an id of a list settings profile, or undefined\n"
             "- cycle_ids: The IDs of the cycle to get properties",
         )
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def filter_by_cycle(self, request):
         """
@@ -414,9 +430,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             "- property_view_ids: List of property view ids",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def filter(self, request):
         """
@@ -441,9 +461,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             description="Properties:\n- property_view_ids: array containing Property view IDs.",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def meters_exist(self, request):
         """
@@ -465,7 +489,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return Meter.objects.filter(property_id__in=Subquery(property_views.values("property_id"))).exists()
 
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def valid_meter_types_and_units(self, request):
         """
@@ -489,9 +517,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             {"property_view_ids": ["integer"]}, required=["property_view_ids"], description="Array containing property view ids to merge"
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def merge(self, request):
         """
@@ -545,9 +577,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=no_body,
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def unmerge(self, request, pk=None):
         """
@@ -673,10 +709,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         return {"status": "success", "view_id": new_view1.id}
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def links(self, request, pk=None):
         """
@@ -711,10 +751,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse(result)
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()], request_body=no_body)
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def match_merge_link(self, request, pk=None):
         """
@@ -763,10 +807,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         ],
         request_body=no_body,
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def pair(self, request, pk=None):
         """
@@ -788,10 +836,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         ],
         request_body=no_body,
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def unpair(self, request, pk=None):
         """
@@ -808,9 +860,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             {"property_view_ids": ["integer"]}, required=["property_view_ids"], description="A list of property view ids to delete"
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["DELETE"])
     def batch_delete(self, request):
         """
@@ -881,10 +937,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         return history, master
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_view_data")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_view_data"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     def retrieve(self, request, pk=None):
         """
         Get property details
@@ -923,9 +983,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             required=["cycle_id", "state"],
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     def create(self, request):
         """
         Create a propertyState and propertyView via promote for given cycle
@@ -1074,9 +1138,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             )
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_view_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_view_data"),
+        ]
+    )
     @action(detail=False, methods=["post"])
     def get_canonical_properties(self, request):
         """
@@ -1105,10 +1173,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=UpdatePropertyPayloadSerializer,
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     def update(self, request, pk=None):
         """
         Update a property and run the updated record through a match and merge
@@ -1277,8 +1349,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             AutoSchemaHelper.query_integer_field("profile_id", required=True, description="ID of a BuildingSync ColumnMappingProfile"),
         ]
     )
-    @has_perm_class("can_view_data")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            has_perm("can_view_data"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def building_sync(self, request, pk):
         """
@@ -1321,8 +1397,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @has_perm_class("can_view_data")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            has_perm("can_view_data"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def hpxml(self, request, pk):
         """
@@ -1364,9 +1444,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         ],
         request_body=no_body,
     )
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["PUT"], parser_classes=(MultiPartParser,))
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
     def update_with_building_sync(self, request, pk):
         """
         Update an existing PropertyView with a building file. Currently only supports BuildingSync.
@@ -1496,9 +1580,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         ],
         request_body=no_body,
     )
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["PUT"], parser_classes=(MultiPartParser,))
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
     def update_with_espm(self, request, pk):
         """Update an existing PropertyView with an exported singular ESPM file."""
         if len(request.FILES) == 0:
@@ -1656,8 +1744,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse({"status": "error", "message": "Could not process ESPM file"}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["PUT"], parser_classes=(MultiPartParser,))
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     def upload_inventory_document(self, request, pk):
         """
         Upload an inventory document on a property. Currently only supports PDFs.
@@ -1698,10 +1790,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             description="A list of property view ids to sync with Salesforce",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
-    @has_perm_class("can_modify_data")
     def update_salesforce(self, request):
         """
         Update an existing PropertyView's Salesforce Benchmark object.
@@ -1745,9 +1841,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         else:
             return JsonResponse({"status": "error", "message": "failed to sync with Salesforce"}, status=status.HTTP_400_BAD_REQUEST)
 
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+            has_hierarchy_access(property_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["DELETE"])
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(property_view_id_kwarg="pk")
     def delete_inventory_document(self, request, pk):
         """
         Deletes an inventory document from a property
@@ -1798,11 +1898,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             description="A list of property view ids to move between alis",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(body_ali_id="access_level_instance_id"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(body_ali_id="access_level_instance_id")
     def move_properties_to(self, request):
         """
         Move properties to a different ali
@@ -1843,9 +1947,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             }
         )
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def evaluation_export_to_cts(self, request):
         """
@@ -1894,9 +2002,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return response
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def facility_bps_export_to_cts(self, request):
         """
@@ -1952,9 +2064,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return response
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["PUT"])
     def batch_update(self, request):
         """

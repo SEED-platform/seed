@@ -7,9 +7,9 @@ import ast
 import copy
 import json
 from datetime import datetime
+from datetime import timezone as tz
 
 from django.urls import reverse
-from django.utils import timezone as tz
 
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.landing.models import SEEDUser as User
@@ -718,7 +718,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
                     "end_time": values[1],
                     "reading": values[2],
                     "source_unit": "Wh (Watt-hours)",
-                    # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+                    # conversion_factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
                     "conversion_factor": 0.00341,
                 }
             )

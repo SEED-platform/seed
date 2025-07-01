@@ -7,17 +7,18 @@ from copy import deepcopy
 
 import django.core.exceptions
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request, require_organization_id
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Column, DerivedColumn, PropertyView, TaxLotView
 from seed.serializers.derived_columns import DerivedColumnSerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 
@@ -26,10 +27,14 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
     model = DerivedColumn
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     def list(self, request):
         org = self.get_organization(request)
 
@@ -50,10 +55,14 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({"status": "success", "derived_columns": DerivedColumnSerializer(queryset, many=True).data})
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     def retrieve(self, request, pk):
         org = self.get_organization(request)
 
@@ -67,10 +76,14 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
             )
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def create(self, request):
         org_id = self.get_organization(request)
 
@@ -115,10 +128,14 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
             )
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def update(self, request, pk):
         org_id = self.get_organization(request)
 
@@ -175,10 +192,14 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
             )
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def destroy(self, request, pk):
         org_id = self.get_organization(request)
 
@@ -211,10 +232,14 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
         ],
         request_body=no_body,
     )
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def evaluate(self, request, pk):
         org = self.get_organization(request)

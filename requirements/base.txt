@@ -1,20 +1,17 @@
 # Django
-django==3.2.25  # TODO update
-
-# Used by django-filter. See here: https://github.com/carltongibson/django-filter/blob/fe90e3a5fdeaff0983d1325a3e9dcf3458ef078f/docs/guide/rest_framework.txt#L210
-django-crispy-forms==1.8.1  # Update to major version 2
+django==4.2.23
 
 # Persistence stores
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.10
 
 # Background process management
-celery==5.4.0
-django-celery-beat==2.7.0
-django-redis==5.4.0
+celery==5.5.3
+django-celery-beat==2.8.1
+django-redis==6.0.0
 hiredis==3.0.0
 
 brotli==1.1.0
-django-compressor==4.4  # Update after Django 4.2
+django-compressor==4.5.1
 django-extensions==3.2.3
 django-model-utils==5.0.0
 
@@ -23,15 +20,15 @@ pytz==2024.2
 python-dateutil==2.9.0.post0
 
 # Metric/imperial units support
-django-pint==0.7.3
+django-pint==0.7.3  # https://github.com/hgrecco/pint/issues/2065
 
 # API
-djangorestframework==3.15.1  # Update after Django 4.2
-djangorestframework-simplejwt==5.3.1 # Update after Django 4.2
-django-post_office==3.8.0  # Update after Django 4.2
+djangorestframework==3.16.0
+djangorestframework-simplejwt==5.3.1
+django-post-office==3.9.0
 drf-yasg==1.21.8
-django-filter==22.1  # Update after Django 4.2 and drf-spectacular
-drf-nested-routers==0.94.0  # Update after Django 4.2
+django-filter==22.1  # Update after drf-spectacular
+drf-nested-routers==0.94.2
 
 # Server monitoring
 sentry-sdk==2.14.0
@@ -49,26 +46,26 @@ requests==2.32.4
 probablepeople==0.5.5
 xmlschema==3.4.2
 lark==1.2.2
-pandas==2.2.2
+pandas==2.2.3
 
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
 geojson==3.1.0
 
 # BuildingSync Asset Extractor
 # this also includes the lxml dependency required by SEED
-buildingsync-asset-extractor==v0.2.0
+buildingsync-asset-extractor==v0.2.1
 
 # Salesforce Integration
 seed-salesforce==0.1.1
 
 # geospatial and pnnl/buildingid-py
 shapely==2.0.6
-usaddress==0.5.10
-pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@bdb0a6e
+usaddress==0.5.14
+pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@df04c15
 
 django-treebeard==4.7.1
 
-django-two-factor-auth[phonenumbers]==1.16.0  # Update after Django 4.2
+django-two-factor-auth[phonenumbers]==1.17.0
 qrcode[pil]==7.4.2
 pyotp==2.9.0
 

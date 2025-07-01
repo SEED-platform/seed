@@ -426,12 +426,11 @@ class TestRenameColumns(TestCase):
 
         new_col_name = "recent_sale_date"
 
-        for i in range(9, 11):  # range is purposely set to cause errors in the date format but not immediately
-            date = f"2018-04-02T19:53:0{i}+00:00"
+        for d in ["2018-04-02T19:53:09+00:00", "2018-04-02T19:53:010:00"]:  # Valid datetime, invalid datetime
             self.property_state_factory.get_property_state(
-                data_state=DATA_STATE_MATCHING, extra_data={self.extra_data_column.column_name: date}
+                data_state=DATA_STATE_MATCHING, extra_data={self.extra_data_column.column_name: d}
             )
-            expected_data.append(date)
+            expected_data.append(d)
 
         result = self.extra_data_column.rename_column(new_col_name, force=True)
         self.assertEqual(

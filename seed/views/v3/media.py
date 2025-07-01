@@ -9,10 +9,11 @@ import re
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.utils.decorators import method_decorator
 from rest_framework import generics
 
 from seed.models import Analysis, AnalysisOutputFile, BuildingFile, ImportFile, InventoryDocument, Organization
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -93,7 +94,9 @@ def check_file_permission(user, filepath):
 
 
 class MediaViewSet(generics.RetrieveAPIView, OrgMixin):
-    @api_endpoint_class
+    @method_decorator(
+        api_endpoint,
+    )
     def retrieve(self, request, filepath):
         filepath = os.path.normpath(filepath)
         try:

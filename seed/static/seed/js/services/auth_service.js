@@ -38,6 +38,11 @@ angular.module('SEED.service.auth', []).factory('auth_service', [
       )
       .then((response) => response.data));
 
+    auth_factory.logout = async () => {
+      await $http.post('/accounts/logout/');
+      window.location.href = '/account/login/';
+    };
+
     return auth_factory;
   }
 ]);

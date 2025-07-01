@@ -6,12 +6,13 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 
 from django.http import HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.audit_template.audit_template import AuditTemplate
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import PropertyView
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
@@ -27,7 +28,11 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_string_field("report_format", False, "Report format Valid values are: xml, pdf. Defaults to pdf."),
         ]
     )
-    @has_perm_class("can_view_data")
+    @method_decorator(
+        [
+            has_perm("can_view_data"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def get_submission(self, request, pk):
         """
@@ -86,7 +91,11 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         ],
         request_body=AutoSchemaHelper.schema_factory({"property_view_ids": ["integer"]}, description="PropertyView IDs to be exported"),
     )
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def batch_export_to_audit_template(self, request):
         """
@@ -107,7 +116,11 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_integer_field("view_id", required=True, description="Property View ID to retrieve"),
         ]
     )
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def export_buildingsync_at_file(self, request):
         """
@@ -142,7 +155,11 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             description="if view_ids is empty [] all SEED properties will be used to determine the correct PropertyView",
         ),
     )
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["PUT"])
     def batch_get_city_submission_xml(self, request):
         """
@@ -161,7 +178,11 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory({"city_id": "integer", "custom_id_1": "string"}),
     )
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["PUT"])
     def get_city_submission_xml(self, request):
         """

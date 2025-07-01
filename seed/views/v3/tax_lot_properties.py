@@ -13,15 +13,16 @@ from random import randint
 
 import xlsxwriter
 from django.http import HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from quantityfield.units import ureg
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
-from seed.decorators import ajax_request_class
+from seed.decorators import ajax_request
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import AccessLevelInstance, Column, ColumnListProfile, DerivedColumn, PropertyView, TaxLotProperty, TaxLotView
 from seed.models.meters import Meter, MeterReading
 from seed.models.property_measures import PropertyMeasure
@@ -30,7 +31,7 @@ from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.serializers.meters import MeterSerializer
 from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
 from seed.tasks import set_update_to_now
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.match import update_sub_progress_total
 
@@ -75,9 +76,13 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             "- include_meter_readings: (Optional) Include notes in the export. Defaults to False.",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def export(self, request):
         """
@@ -205,9 +210,13 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         elif export_type == "xlsx":
             return self._spreadsheet_response(filename, data, column_name_mappings)
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def start_export(self, request):
         """
@@ -613,9 +622,13 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         return unique
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def start_set_update_to_now(self, request):
         """
@@ -625,9 +638,13 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         progress_data = ProgressData(func_name="set_update_to_now", unique_id=f"metadata{randint(10000, 99999)}")
         return progress_data.result()
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def set_update_to_now(self, request):
         """
@@ -655,9 +672,13 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         set_update_to_now.subtask([property_view_ids, taxlot_view_ids, progress_key]).apply_async()
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def update_derived_data(self, request):
         from seed.tasks import update_state_derived_data

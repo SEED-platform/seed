@@ -11,20 +11,26 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import DATA_STATE_IMPORT, UbidModel
 from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
 from seed.serializers.ubid_models import UbidModelSerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.ubid import decode_unique_ids, get_jaccard_index, validate_ubid
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
-@method_decorator(name="destroy", decorator=[has_perm_class("requires_member"), has_hierarchy_access(ubid_id_kwarg="pk")])
+@method_decorator(
+    [
+        has_perm("requires_member"),
+        has_hierarchy_access(ubid_id_kwarg="pk"),
+    ],
+    name="destroy",
+)
 class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     model = UbidModel
     pagination_class = None
@@ -41,9 +47,13 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
             description="IDs by inventory type for records to have their UBID decoded.",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def decode_by_ids(self, request):
         """
@@ -87,8 +97,12 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
             description="IDs by inventory type for records to be used in building a UBID decoding summary.",
         ),
     )
-    @ajax_request_class
-    @has_perm_class("can_view_data")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("can_view_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def decode_results(self, request):
         """
@@ -152,9 +166,13 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
             required=["ubid1", "ubid2"],
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_view_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_view_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def get_jaccard_index(self, request):
         """
@@ -186,9 +204,13 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
             required=["ubid"],
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_view_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_view_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def validate_ubid(self, request):
         """
@@ -199,9 +221,13 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         return JsonResponse({"status": "success", "data": {"valid": validate_ubid(ubid), "ubid": ubid}})
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     def list(self, request):
         org_id = self.get_organization(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
@@ -223,10 +249,14 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         return JsonResponse({"status": "success", "data": self.serializer_class(ubid_models, many=True).data})
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(ubid_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(ubid_id_kwarg="pk"),
+        ]
+    )
     def retrieve(self, request, pk):
         org_id = self.get_organization(request)
         try:
@@ -236,10 +266,14 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
             return JsonResponse({"status": "error", "message": f"UBID with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(body_property_state_id="property", body_taxlot_state_id="taxlot")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(body_property_state_id="property", body_taxlot_state_id="taxlot"),
+        ]
+    )
     def create(self, request):
         org_id = self.get_organization(request)
         serializer = UbidModelSerializer(data=request.data)
@@ -307,10 +341,14 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
             },
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(ubid_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(ubid_id_kwarg="pk"),
+        ]
+    )
     def update(self, request, pk):
         org_id = self.get_organization(request)
 
@@ -353,9 +391,13 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
             description="Retrieve UBIDs for a Property or TaxLot State associated with a specific view",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_view_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_view_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def ubids_by_view(self, request):
         body = dict(request.data)

@@ -22,7 +22,7 @@ from seed.models import Column, DerivedColumn, GoalNote, PropertyView, PropertyV
 from seed.serializers.pint import pretty_units
 from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.goals import get_area_value, get_eui_value, percentage_difference
-from seed.utils.time import convert_datestr
+from seed.utils.time_utils import convert_datestr
 
 _log = logging.getLogger(__name__)
 

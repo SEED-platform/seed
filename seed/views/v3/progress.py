@@ -6,10 +6,11 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 
-from seed.decorators import ajax_request_class
-from seed.utils.api import api_endpoint_class
+from seed.decorators import ajax_request
+from seed.utils.api import api_endpoint
 from seed.utils.cache import get_cache
 
 _log = logging.getLogger(__name__)
@@ -18,8 +19,12 @@ _log = logging.getLogger(__name__)
 class ProgressViewSet(viewsets.ViewSet):
     raise_exception = True
 
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     def retrieve(self, request, pk):
         """
         Get the progress (percent complete) for a task.

@@ -5,7 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.utils.decorators import method_decorator
 
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import HistoricalNote
 from seed.serializers.historical_notes import HistoricalNoteSerializer
 from seed.utils.api import OrgMixin
@@ -14,12 +14,12 @@ from seed.utils.viewsets import UpdateWithoutPatchModelMixin
 
 
 @method_decorator(
-    name="update",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
+        has_perm("requires_member"),
         has_hierarchy_access(property_id_kwarg="property_pk"),
     ],
+    name="update",
 )
 class HistoricalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
     # Update is the only necessary endpoint

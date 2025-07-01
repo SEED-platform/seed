@@ -4,13 +4,14 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
+from seed.decorators import ajax_request
 from seed.models import EeejCejst
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 
 
@@ -31,8 +32,12 @@ class EEEJViewSet(viewsets.ViewSet):
             )
         },
     )
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def filter_disadvantaged_tracts(self, request):
         """

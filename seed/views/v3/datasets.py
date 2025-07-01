@@ -7,18 +7,19 @@ import logging
 
 from django.http import JsonResponse
 from django.utils import timezone
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.data_importer.models import ImportRecord
-from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.decorators import ajax_request, require_organization_id
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization, OrganizationUser
 from seed.models import obj_to_dict
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
-from seed.utils.time import convert_to_js_timestamp
+from seed.utils.time_utils import convert_to_js_timestamp
 
 _log = logging.getLogger(__name__)
 
@@ -27,10 +28,14 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_view_data")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("can_view_data"),
+        ]
+    )
     def list(self, request):
         """
         Retrieves all datasets for the user's organization.
@@ -65,10 +70,14 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory({"dataset": "string"}, description="The new name for this dataset"),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_record_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_record_id_kwarg="pk"),
+        ]
+    )
     def update(self, request, pk=None):
         """
         Updates the name of a dataset (ImportRecord).
@@ -105,10 +114,14 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
         )
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_view_data")
-    @has_hierarchy_access(import_record_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_view_data"),
+            has_hierarchy_access(import_record_id_kwarg="pk"),
+        ]
+    )
     def retrieve(self, request, pk=None):
         """
         Retrieves a dataset (ImportRecord).
@@ -171,10 +184,14 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
         )
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(import_record_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(import_record_id_kwarg="pk"),
+        ]
+    )
     def destroy(self, request, pk=None):
         """
         Deletes a dataset (ImportRecord).
@@ -207,10 +224,14 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
             )
         },
     )
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     def create(self, request):
         """
         Creates a new empty dataset (ImportRecord).
@@ -246,10 +267,14 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
             )
         },
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @require_organization_id_class
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def count(self, request):
         """
