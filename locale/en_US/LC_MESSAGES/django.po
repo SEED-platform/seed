@@ -4805,7 +4805,7 @@ msgid "X_VERSUS_Y"
 msgstr "{x_axis_label} vs. {y_axis_label}"
 
 msgid "X_VERSUS_Y_AGGREGATED"
-msgstr "{x_axis_label} vs. {y_axis_label} ({aggregationType})"
+msgstr "{x_axis_label} vs. {y_axis_label} (Averaged)"
 
 msgid "Y Axis"
 msgstr "Y Axis"
