@@ -6,6 +6,7 @@
 ### New Features 🎉
 * Adds a record count endpoint by @perryr16 in https://github.com/SEED-platform/seed/pull/4978
 * Implement New Facilities Plan Feature by @haneslinger in https://github.com/SEED-platform/seed/pull/5015
+* Add Angular UI by @axelstudios in https://github.com/SEED-platform/seed/pull/5018
 ### Improvements 📈
 * Update EISA432 and Scope 1 emission code enums. Set order of bars in default reports charts for categorical data by @haneslinger in https://github.com/SEED-platform/seed/pull/4990
 * Update redis key timeout to 15 minutes by @kflemin in https://github.com/SEED-platform/seed/pull/4991
@@ -14,12 +15,14 @@
 * Bump tar-fs from 3.0.8 to 3.0.9 by @dependabot in https://github.com/SEED-platform/seed/pull/5001
 * Bump requests from 2.32.3 to 2.32.4 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/5005
 * Upgrade from Alpine 3.14 to 3.19 by @dhaley in https://github.com/SEED-platform/seed/pull/4993
+* Update development dependencies by @nllong in https://github.com/SEED-platform/seed/pull/5016
 ### Bug Fixes 🐛
 * Remove developer logs by @perryr16 in https://github.com/SEED-platform/seed/pull/4972
 * Fix default report scatter chart ordering of data by @haneslinger in https://github.com/SEED-platform/seed/pull/4992
 * Fix scatter chart ordering for all browsers by @haneslinger in https://github.com/SEED-platform/seed/pull/5000
 * Fix portfolio and sensor bugs by @perryr16 in https://github.com/SEED-platform/seed/pull/5007
 * Fix exporting GeoJSON records with invalid footprints by @axelstudios in https://github.com/SEED-platform/seed/pull/5014
+
 
 **Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.2.5...v3.3.0
 
