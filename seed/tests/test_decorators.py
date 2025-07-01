@@ -193,7 +193,10 @@ class ClassDecoratorTests(TestCase):
 
         result = func(True, request)
         self.assertEqual(result.status_code, 400)
-        self.assertEqual(result.content, b"Valid organization_id is required in the query parameters.")
+        self.assertEqual(result["content-type"], "application/json")
+        self.assertEqual(
+            json.loads(result.content), {"status": "error", "message": "Invalid organization_id: either blank or not an integer"}
+        )
 
     def test_require_organization_id_org_id_not_int(self):
         request = APIRequestFactory().get("", data={"organization_id": "bad"})
@@ -205,11 +208,14 @@ class ClassDecoratorTests(TestCase):
 
         result = func(True, request)
         self.assertEqual(result.status_code, 400)
-        self.assertEqual(result.content, b"Invalid organization_id in the query parameters, must be integer")
+        self.assertEqual(result["content-type"], "application/json")
+        self.assertEqual(
+            json.loads(result.content), {"status": "error", "message": "Invalid organization_id: either blank or not an integer"}
+        )
 
     def test_ajax_request_format_type(self):
         request = RequestFactory().get("")
-        request.META["HTTP_ACCEPT"] = "text/json"
+        request.META["HTTP_ACCEPT"] = "application/json"
 
         @method_decorator(ajax_request)
         def func(mock_self, request):
@@ -217,5 +223,5 @@ class ClassDecoratorTests(TestCase):
 
         result = func(True, request)
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result["content-type"], "text/json")
+        self.assertEqual(result["content-type"], "application/json")
         self.assertEqual(json.loads(result.content), {"success": True, "key": "val"})

@@ -718,7 +718,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
                     "end_time": values[1],
                     "reading": values[2],
                     "source_unit": "Wh (Watt-hours)",
-                    # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+                    # conversion_factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
                     "conversion_factor": 0.00341,
                 }
             )
