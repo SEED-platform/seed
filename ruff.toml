@@ -51,6 +51,7 @@ ignore = [
     "E501",    # line-too-long
     "ISC001",  # single-line-implicit-string-concatenation
     "N806",    # non-lowercase-variable-in-function
+    "PLC0415", # import-outside-top-level
     "PLC1901", # compare-to-empty-string (preview)
     "PLC0415", # `import` should be at the top-level of a file
     "PLR0402", # manual-from-import

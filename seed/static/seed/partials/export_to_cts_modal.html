@@ -4,17 +4,35 @@
 
 <div class="modal-body">
   <div>
-    <h5>Select a reporting template to export for the Federal Energy Management Program (FEMP) Energy Independence and Security Act of 2007 (EISA) Compliance Tracking System (CTS)</h5>
+    <h5>
+      Select a reporting template to export for the Federal Energy Management
+      Program (FEMP) Energy Independence and Security Act of 2007 (EISA)
+      Compliance Tracking System (CTS)
+    </h5>
   </div>
   <div class="cts-export-buttons" ng-if="!export_selection">
-    <button type="button" class="btn btn-primary" ng-click="set_selection('evaluation_template')">CTS Comprehensive Evaluation Upload Template</button>
-    <button type="button" class="btn btn-primary" ng-click="set_selection('facility_bps_template')">CTS Facility Upload Template for Federal BPS</button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      ng-click="set_selection('evaluation_template')"
+    >
+      CTS Comprehensive Evaluation Upload Template
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      ng-click="set_selection('facility_bps_template')"
+    >
+      CTS Facility Upload Template for Federal BPS
+    </button>
   </div>
 
   <div ng-if="export_selection">
     <div class="section_content_container" ng-if="!exporting">
       <div class="section_content with_padding">
-        <label class="control-label col-sm-4" for="fileName" translate>Export File Name</label>
+        <label class="control-label col-sm-4" for="fileName" translate
+          >Export File Name</label
+        >
         <form class="form-horizontal" role="form">
           <div class="form-group">
             <div class="col-sm-6">
@@ -35,12 +53,28 @@
 
     <div class="progress_bar_container export_progress" ng-if="exporting">
       <div class="progress_bar_copy_top">Exporting...</div>
-      <uib-progressbar class="progress-striped active" value="100" type="success" style="margin-bottom: 20px"></uib-progressbar>
+      <uib-progressbar
+        class="progress-striped active"
+        value="100"
+        type="success"
+        style="margin-bottom: 20px"
+      ></uib-progressbar>
     </div>
   </div>
 </div>
 
 <div class="modal-footer" ng-show="!exporting">
-  <button type="button" class="btn btn-primary" ng-click="export()" ng-if="export_selection" ng-disabled="!export_name" translate>Export</button>
-  <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
+  <button
+    type="button"
+    class="btn btn-primary"
+    ng-click="export()"
+    ng-if="export_selection"
+    ng-disabled="!export_name"
+    translate
+  >
+    Export
+  </button>
+  <button type="button" class="btn btn-default" ng-click="cancel()" translate>
+    Cancel
+  </button>
 </div>

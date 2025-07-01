@@ -1,10 +1,18 @@
 <div class="modal-header">
   <div class="modal-links">
     <span ng-show="!is_show_reorder" translate>Show/Hide Columns</span>
-    <a href ng-click="is_show_reorder=false" ng-show="is_show_reorder" translate>Show/Hide Columns</a>
+    <a href ng-click="is_show_reorder=false" ng-show="is_show_reorder" translate
+      >Show/Hide Columns</a
+    >
     |
     <span ng-show="is_show_reorder" translate>Reorder Columns</span>
-    <a href ng-click="on_show_reorder_fields()" ng-show="!is_show_reorder" translate>Reorder Columns</a>
+    <a
+      href
+      ng-click="on_show_reorder_fields()"
+      ng-show="!is_show_reorder"
+      translate
+      >Reorder Columns</a
+    >
   </div>
 </div>
 
@@ -16,7 +24,12 @@
         <thead>
           <tr>
             <th class="check is_aligned_center">
-              <input type="checkbox" ng-model="controls.select_all" ng-change="select_all_clicked()" name="select-all" />
+              <input
+                type="checkbox"
+                ng-model="controls.select_all"
+                ng-change="select_all_clicked()"
+                name="select-all"
+              />
               <label for="select-all" translate>Select All Columns</label>
             </th>
             <th class="sub_head">
@@ -38,7 +51,11 @@
             <li ng-repeat="f in fields | filter:filter_columns:strict">
               <div class="checkbox">
                 <label>
-                  <input type="checkbox" ng-model="f.checked" ng-disabled="f.static" />
+                  <input
+                    type="checkbox"
+                    ng-model="f.checked"
+                    ng-disabled="f.static"
+                  />
                   {$ f.title | translate $}
                 </label>
               </div>
@@ -50,11 +67,16 @@
 
     <div class="col-sm-12" ng-show="is_show_reorder">
       <div class="section_content with_padding">
-        <p translate>Drag the columns below to change the order that they appear in the table.</p>
+        <p translate>
+          Drag the columns below to change the order that they appear in the
+          table.
+        </p>
       </div>
       <div class="section_content with_padding">
         <div class="table_list_container has_borders">
-          <table class="table table-striped has_no_btm_margin table_highlight_first">
+          <table
+            class="table table-striped has_no_btm_margin table_highlight_first"
+          >
             <thead>
               <tr>
                 <th translate>Column Name</th>
@@ -62,9 +84,14 @@
             </thead>
           </table>
           <div class="vert_table_scroll_container">
-            <table id="sort" class="table has_no_btm_margin table-striped table_scroll">
+            <table
+              id="sort"
+              class="table has_no_btm_margin table-striped table_scroll"
+            >
               <tbody ui-sortable="sortable_options" ng-model="fields">
-                <tr ng-repeat="field in fields | filter:{ checked: true }  | filter:filter_params:strict">
+                <tr
+                  ng-repeat="field in fields | filter:{ checked: true }  | filter:filter_params:strict"
+                >
                   <td>
                     <span>{$ field.title | translate $}</span>
                   </td>
@@ -79,6 +106,20 @@
 </div>
 
 <div class="modal-footer">
-  <button type="button" class="btn btn-primary" ng-click="save_settings()" translate>Save Settings</button>
-  <button type="button" class="btn btn-default" ng-click="cancel_settings()" translate>Cancel</button>
+  <button
+    type="button"
+    class="btn btn-primary"
+    ng-click="save_settings()"
+    translate
+  >
+    Save Settings
+  </button>
+  <button
+    type="button"
+    class="btn btn-default"
+    ng-click="cancel_settings()"
+    translate
+  >
+    Cancel
+  </button>
 </div>

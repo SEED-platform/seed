@@ -1,7 +1,10 @@
 <div class="page_header_container">
   <div class="page_header">
     <div class="left page_action_container">
-      <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
+      <a ui-sref="organizations" class="page_action"
+        ><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' |
+        translate $}</a
+      >
     </div>
     <div class="page_title">
       <h1>{$:: org.name $}</h1>
@@ -10,15 +13,32 @@
   </div>
 </div>
 <div class="section_nav_container">
-  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+  <div
+    class="section_nav"
+    ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"
+  ></div>
 </div>
 <div id="cycle_admin" class="section">
   <div class="section_content_container">
     <div class="section_content">
       <div class="newCycleInput">
-        <form name="newCycleForm" class="form-inline" role="form" ng-submit="submitNewCycleForm(newCycleForm)" novalidate>
-          <div class="form-group" ng-class="{'has-error': newCycleForm.name.$invalid && newCycleForm.name.$dirty }">
-            <label class="control-label sectionLabel" style="padding-right: 20px" translate>Create new cycle</label>
+        <form
+          name="newCycleForm"
+          class="form-inline"
+          role="form"
+          ng-submit="submitNewCycleForm(newCycleForm)"
+          novalidate
+        >
+          <div
+            class="form-group"
+            ng-class="{'has-error': newCycleForm.name.$invalid && newCycleForm.name.$dirty }"
+          >
+            <label
+              class="control-label sectionLabel"
+              style="padding-right: 20px"
+              translate
+              >Create new cycle</label
+            >
             <div class="input-group" style="padding-right: 20px">
               <input
                 type="text"
@@ -51,7 +71,13 @@
                   ng-required="true"
                 />
                 <span class="input-group-btn">
-                  <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa-regular fa-calendar-days"></i></button>
+                  <button
+                    type="button"
+                    class="btn btn-default"
+                    ng-click="openStartDatePicker($event)"
+                  >
+                    <i class="fa-regular fa-calendar-days"></i>
+                  </button>
                 </span>
               </div>
             </div>
@@ -72,13 +98,31 @@
                   ng-required="true"
                 />
                 <span class="input-group-btn">
-                  <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa-regular fa-calendar-days"></i></button>
+                  <button
+                    type="button"
+                    class="btn btn-default"
+                    ng-click="openEndDatePicker($event)"
+                  >
+                    <i class="fa-regular fa-calendar-days"></i>
+                  </button>
                 </span>
               </div>
             </div>
-            <button id="btnCreateCycle" class="btn btn-primary" ng-disabled="newCycleForm.$invalid || invalidDates" translate>Create Cycle</button>
+            <button
+              id="btnCreateCycle"
+              class="btn btn-primary"
+              ng-disabled="newCycleForm.$invalid || invalidDates"
+              translate
+            >
+              Create Cycle
+            </button>
             <div class="help-block">
-              <span class="has-error" ng-show="newCycleForm.name.$error.sdCheckCycleExists" translate>This cycle name is already taken.</span>
+              <span
+                class="has-error"
+                ng-show="newCycleForm.name.$error.sdCheckCycleExists"
+                translate
+                >This cycle name is already taken.</span
+              >
             </div>
           </div>
         </form>
@@ -130,7 +174,9 @@
                 e-required
                 >{$:: cycle.start | date : 'yyyy-MM-dd' $}</span
               >
-              <span ng-show="!rowform.$visible">{$:: format_date(cycle.start) $}</span>
+              <span ng-show="!rowform.$visible"
+                >{$:: format_date(cycle.start) $}</span
+              >
             </td>
             <td>
               <span
@@ -145,16 +191,52 @@
                 e-required
                 >{$:: cycle.end | date : 'yyyy-MM-dd' $}</span
               >
-              <span ng-show="!rowform.$visible">{$:: format_date(cycle.end) $}</span>
+              <span ng-show="!rowform.$visible"
+                >{$:: format_date(cycle.end) $}</span
+              >
             </td>
             <td style="text-align: right; white-space: nowrap">
-              <form editable-form name="rowform" onbeforesave="saveCycle($data, cycle.id)" ng-show="rowform.$visible" class="form-buttons form-inline" shown="inserted == cycle">
-                <button type="submit" ng-disabled="rowform.$waiting" class="btn btn-primary btn-rowform" translate>Save</button>
-                <button type="button" ng-disabled="rowform.$waiting" ng-click="rowform.$cancel()" class="btn btn-default btn-rowform" translate>Cancel</button>
+              <form
+                editable-form
+                name="rowform"
+                onbeforesave="saveCycle($data, cycle.id)"
+                ng-show="rowform.$visible"
+                class="form-buttons form-inline"
+                shown="inserted == cycle"
+              >
+                <button
+                  type="submit"
+                  ng-disabled="rowform.$waiting"
+                  class="btn btn-primary btn-rowform"
+                  translate
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  ng-disabled="rowform.$waiting"
+                  ng-click="rowform.$cancel()"
+                  class="btn btn-default btn-rowform"
+                  translate
+                >
+                  Cancel
+                </button>
               </form>
               <div class="buttons" ng-show="!rowform.$visible">
-                <button class="btn btn-default btn-rowform" ng-click="rowform.$show()" translate>Edit</button>
-                <button class="btn btn-danger" ng-click="showDeleteCycleModal(cycle.id)" translate>Delete</button>
+                <button
+                  class="btn btn-default btn-rowform"
+                  ng-click="rowform.$show()"
+                  translate
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-danger"
+                  ng-click="showDeleteCycleModal(cycle.id)"
+                  translate
+                >
+                  Delete
+                </button>
               </div>
             </td>
           </tr>

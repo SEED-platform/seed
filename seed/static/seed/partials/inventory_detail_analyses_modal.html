@@ -1,11 +1,23 @@
 <div>
   <div class="modal-header">
-    <h4 class="modal-title" id="manageLabelsModalLabel" translate>Run Analysis</h4>
-    <div>An analysis will be created for cycle <span style="font-weight: bold">{$ current_cycle.name $}</span></div>
+    <h4 class="modal-title" id="manageLabelsModalLabel" translate>
+      Run Analysis
+    </h4>
+    <div>
+      An analysis will be created for cycle
+      <span style="font-weight: bold">{$ current_cycle.name $}</span>
+    </div>
   </div>
   <div class="modal-body">
     <div class="newAnalysisInput" style="margin-top: 0">
-      <form ng-if="!error" id="newAnalysisForm" name="newAnalysisForm" role="form" ng-submit="submitNewAnalysisForm(newAnalysisForm)" novalidate>
+      <form
+        ng-if="!error"
+        id="newAnalysisForm"
+        name="newAnalysisForm"
+        role="form"
+        ng-submit="submitNewAnalysisForm(newAnalysisForm)"
+        novalidate
+      >
         <div class="form-group">
           <label class="control-label sectionLabel" translate>Name</label>
           <input
@@ -22,27 +34,64 @@
         </div>
         <div class="form-group">
           <label class="control-label sectionLabel">Type</label>
-          <select class="form-control" ng-model="new_analysis.service" ng-dropdown ng-change="initializeAnalysisConfig()" required>
+          <select
+            class="form-control"
+            ng-model="new_analysis.service"
+            ng-dropdown
+            ng-change="initializeAnalysisConfig()"
+            required
+          >
             <option ng-option value="BSyncr" selected="selected">BSyncr</option>
             <option ng-option value="BETTER" selected="selected">BETTER</option>
             <option ng-option value="EUI" selected="selected">EUI</option>
-            <option ng-option value="CO2" selected="selected">Average Annual CO2</option>
-            <option ng-option value="EEEJ" selected="selected">Energy Equity & Environmental Justice (EEEJ)</option>
-            <option ng-option value="Element Statistics" selected="selected">Element Statistics</option>
-            <option ng-option value="Building Upgrade Recommendation" selected="selected">Building Upgrade Recommendation</option>
+            <option ng-option value="CO2" selected="selected">
+              Average Annual CO2
+            </option>
+            <option ng-option value="EEEJ" selected="selected">
+              Energy Equity & Environmental Justice (EEEJ)
+            </option>
+            <option ng-option value="Element Statistics" selected="selected">
+              Element Statistics
+            </option>
+            <option
+              ng-option
+              value="Building Upgrade Recommendation"
+              selected="selected"
+            >
+              Building Upgrade Recommendation
+            </option>
           </select>
         </div>
-        <div class="form-group" ng-if="new_analysis.service" translate="ANALYSIS_DESCRIPTION_{$new_analysis.service.split(' ').join('')$}"></div>
+        <div
+          class="form-group"
+          ng-if="new_analysis.service"
+          translate="ANALYSIS_DESCRIPTION_{$new_analysis.service.split(' ').join('')$}"
+        ></div>
 
         <div class="form-group" ng-if="new_analysis.service == 'BSyncr'">
-          <label class="control-label sectionLabel">BSyncr Model Selection</label>
-          <select class="form-control" ng-model="new_analysis.configuration.model_type" ng-dropdown required>
-            <option ng-repeat="model in bsyncr_models" selected="selected" ng-value="model">{$:: model $}</option>
+          <label class="control-label sectionLabel"
+            >BSyncr Model Selection</label
+          >
+          <select
+            class="form-control"
+            ng-model="new_analysis.configuration.model_type"
+            ng-dropdown
+            required
+          >
+            <option
+              ng-repeat="model in bsyncr_models"
+              selected="selected"
+              ng-value="model"
+            >
+              {$:: model $}
+            </option>
           </select>
         </div>
 
         <div class="form-group" ng-if="new_analysis.service == 'BETTER'">
-          <label class="control-label sectionLabel">BETTER Analysis Inputs (Under active development)</label>
+          <label class="control-label sectionLabel"
+            >BETTER Analysis Inputs (Under active development)</label
+          >
           <div class="form-group" style="padding-top: 1em">
             <div class="container-fluid">
               <div class="row" style="padding-bottom: 1em">
@@ -54,8 +103,19 @@
                       uib-tooltip-html="'Conservative: The savings goal will be one standard deviation worse than the median performance of the benchmarking peer group.<br><br>Nominal: The savings goal will be equal to the median performance of the benchmarking peer group.<br><br>Aggressive: The savings goal will be one half standard deviation better than the median performance of the benchmarking peer group.'"
                     ></i>
                   </label>
-                  <select class="form-control" ng-model="new_analysis.configuration.savings_target" ng-dropdown required>
-                    <option ng-repeat="model in better_savings_targets" selected="selected" ng-value="model">{$:: model $}</option>
+                  <select
+                    class="form-control"
+                    ng-model="new_analysis.configuration.savings_target"
+                    ng-dropdown
+                    required
+                  >
+                    <option
+                      ng-repeat="model in better_savings_targets"
+                      selected="selected"
+                      ng-value="model"
+                    >
+                      {$:: model $}
+                    </option>
                   </select>
                 </div>
                 <div class="col-md-6">
@@ -66,8 +126,19 @@
                       uib-tooltip-html="'Default: BETTER will benchmark your building(s) against built-in benchmark statistics derived from a sample of U.S. buildings that match your property types.<br><br>Generate: BETTER will generate benchmark statistics based on the set of buildings being analyzed, so your buildings will be compared against others in your portfolio. This option will provide more accurate statistics if you selected at least 30 buildings for analysis.'"
                     ></i>
                   </label>
-                  <select class="form-control" ng-model="new_analysis.configuration.benchmark_data_type" ng-dropdown required>
-                    <option ng-repeat="model in better_benchmark_options" selected="selected" ng-value="model">{$:: model $}</option>
+                  <select
+                    class="form-control"
+                    ng-model="new_analysis.configuration.benchmark_data_type"
+                    ng-dropdown
+                    required
+                  >
+                    <option
+                      ng-repeat="model in better_benchmark_options"
+                      selected="selected"
+                      ng-value="model"
+                    >
+                      {$:: model $}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -99,26 +170,61 @@
                       uib-tooltip-html="'If the BETTER analysis continues to fail for your property, it might be worth enabling this option. When selected, SEED will process your meter data before sending it to BETTER. Note that this might result in different reported energy usage than when this option is not enabled.'"
                     ></i>
                   </label>
-                  <input ng-model="new_analysis.configuration.preprocess_meters" type="checkbox" class="form-control" style="width: 34px; cursor: pointer" />
+                  <input
+                    ng-model="new_analysis.configuration.preprocess_meters"
+                    type="checkbox"
+                    class="form-control"
+                    style="width: 34px; cursor: pointer"
+                  />
                 </div>
                 <div class="col-md-3">
                   <label class="control-label sectionLabel text-muted">
                     Run Portfolio Analysis
-                    <i class="ui-grid-icon-info-circled" uib-tooltip-html="'Only available if more than one properties were selected for analysis from the inventory list page'"></i>
+                    <i
+                      class="ui-grid-icon-info-circled"
+                      uib-tooltip-html="'Only available if more than one properties were selected for analysis from the inventory list page'"
+                    ></i>
                   </label>
-                  <input ng-model="new_analysis.configuration.portfolio_analysis" ng-disabled="inventory_count == 1" type="checkbox" class="form-control" style="width: 34px; cursor: pointer" />
+                  <input
+                    ng-model="new_analysis.configuration.portfolio_analysis"
+                    ng-disabled="inventory_count == 1"
+                    type="checkbox"
+                    class="form-control"
+                    style="width: 34px; cursor: pointer"
+                  />
                 </div>
               </div>
             </div>
             <div class="btn-group">
-              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select_cycle'">Select Cycle</label>
-              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
-              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
+              <label
+                class="btn btn-primary"
+                ng-model="new_analysis.configuration.select_meters"
+                uib-btn-radio="'select_cycle'"
+                >Select Cycle</label
+              >
+              <label
+                class="btn btn-primary"
+                ng-model="new_analysis.configuration.select_meters"
+                uib-btn-radio="'date_range'"
+                >Select Meter Data Range</label
+              >
+              <label
+                class="btn btn-primary"
+                ng-model="new_analysis.configuration.select_meters"
+                uib-btn-radio="'all'"
+                >Use All Meter Data</label
+              >
             </div>
-            <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-top: 1em">
+            <div
+              class="container-fluid"
+              ng-if="new_analysis.configuration.select_meters == 'date_range'"
+              style="padding-top: 1em"
+            >
               <div class="row">
                 <div class="col-md-6" ng-class="{'has-error' : invalidDates }">
-                  <label for="from-date">{$:: 'From date' | translate $}:</label>
+                  <label for="from-date"
+                    >{$:: 'From date' | translate $}:</label
+                  >
                   <div class="input-group date-input">
                     <input
                       id="from-date"
@@ -134,7 +240,13 @@
                       ng-required="true"
                     />
                     <span class="input-group-btn">
-                      <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa-regular fa-calendar-days"></i></button>
+                      <button
+                        type="button"
+                        class="btn btn-default"
+                        ng-click="openStartDatePicker($event)"
+                      >
+                        <i class="fa-regular fa-calendar-days"></i>
+                      </button>
                     </span>
                   </div>
                 </div>
@@ -155,18 +267,35 @@
                       ng-required="true"
                     />
                     <span class="input-group-btn">
-                      <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa-regular fa-calendar-days"></i></button>
+                      <button
+                        type="button"
+                        class="btn btn-default"
+                        ng-click="openEndDatePicker($event)"
+                      >
+                        <i class="fa-regular fa-calendar-days"></i>
+                      </button>
                     </span>
                   </div>
                 </div>
               </div>
             </div>
-            <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'select_cycle'" style="padding-top: 1em">
+            <div
+              class="container-fluid"
+              ng-if="new_analysis.configuration.select_meters == 'select_cycle'"
+              style="padding-top: 1em"
+            >
               <div class="row">
                 <div class="col-md-12">
                   <label class="control-label sectionLabel">Cycle</label>
-                  <select class="form-control" ng-model="new_analysis.configuration.cycle_id" ng-change="changeCycle(new_analysis.configuration.cycle_id)" required>
-                    <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$ cycle.name $}</option>
+                  <select
+                    class="form-control"
+                    ng-model="new_analysis.configuration.cycle_id"
+                    ng-change="changeCycle(new_analysis.configuration.cycle_id)"
+                    required
+                  >
+                    <option ng-repeat="cycle in cycles" ng-value="cycle.id">
+                      {$ cycle.name $}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -178,15 +307,36 @@
           <label class="control-label sectionLabel">EUI Analysis Options</label>
           <div class="form-group" style="padding: 1em 0">
             <div class="btn-group">
-              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'all'">Use All Meter Data</label>
-              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'date_range'">Select Meter Data Range</label>
-              <label class="btn btn-primary" ng-model="new_analysis.configuration.select_meters" uib-btn-radio="'select_cycle'">Select Cycle</label>
+              <label
+                class="btn btn-primary"
+                ng-model="new_analysis.configuration.select_meters"
+                uib-btn-radio="'all'"
+                >Use All Meter Data</label
+              >
+              <label
+                class="btn btn-primary"
+                ng-model="new_analysis.configuration.select_meters"
+                uib-btn-radio="'date_range'"
+                >Select Meter Data Range</label
+              >
+              <label
+                class="btn btn-primary"
+                ng-model="new_analysis.configuration.select_meters"
+                uib-btn-radio="'select_cycle'"
+                >Select Cycle</label
+              >
             </div>
 
-            <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'date_range'" style="padding-top: 1em">
+            <div
+              class="container-fluid"
+              ng-if="new_analysis.configuration.select_meters == 'date_range'"
+              style="padding-top: 1em"
+            >
               <div class="row">
                 <div class="col-md-6" ng-class="{'has-error' : invalidDates }">
-                  <label for="from-date">{$:: 'From date' | translate $}:</label>
+                  <label for="from-date"
+                    >{$:: 'From date' | translate $}:</label
+                  >
                   <div class="input-group date-input">
                     <input
                       id="from-date"
@@ -202,7 +352,13 @@
                       ng-required="true"
                     />
                     <span class="input-group-btn">
-                      <button type="button" class="btn btn-default" ng-click="openStartDatePicker($event)"><i class="fa-solid fa-calendar"></i></button>
+                      <button
+                        type="button"
+                        class="btn btn-default"
+                        ng-click="openStartDatePicker($event)"
+                      >
+                        <i class="fa-solid fa-calendar"></i>
+                      </button>
                     </span>
                   </div>
                 </div>
@@ -223,19 +379,36 @@
                       ng-required="true"
                     />
                     <span class="input-group-btn">
-                      <button type="button" class="btn btn-default" ng-click="openEndDatePicker($event)"><i class="fa-solid fa-calendar"></i></button>
+                      <button
+                        type="button"
+                        class="btn btn-default"
+                        ng-click="openEndDatePicker($event)"
+                      >
+                        <i class="fa-solid fa-calendar"></i>
+                      </button>
                     </span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="container-fluid" ng-if="new_analysis.configuration.select_meters == 'select_cycle'" style="padding-top: 1em">
+            <div
+              class="container-fluid"
+              ng-if="new_analysis.configuration.select_meters == 'select_cycle'"
+              style="padding-top: 1em"
+            >
               <div class="row">
                 <div class="col-md-12">
                   <label class="control-label sectionLabel">Cycle</label>
-                  <select class="form-control" ng-model="new_analysis.configuration.cycle_id" ng-change="changeCycle(new_analysis.configuration.cycle_id)" required>
-                    <option ng-repeat="cycle in cycles" ng-value="cycle.id">{$ cycle.name $}</option>
+                  <select
+                    class="form-control"
+                    ng-model="new_analysis.configuration.cycle_id"
+                    ng-change="changeCycle(new_analysis.configuration.cycle_id)"
+                    required
+                  >
+                    <option ng-repeat="cycle in cycles" ng-value="cycle.id">
+                      {$ cycle.name $}
+                    </option>
                   </select>
                 </div>
               </div>
@@ -248,84 +421,267 @@
             <div class="form-row">
               <label class="control-label sectionLabel text-muted">
                 Save Results to Property
-                <i class="ui-grid-icon-info-circled" uib-tooltip-html="'If checked, the results from the analysis will be saved to the property, overriding any existing values or defaults.'"></i>
+                <i
+                  class="ui-grid-icon-info-circled"
+                  uib-tooltip-html="'If checked, the results from the analysis will be saved to the property, overriding any existing values or defaults.'"
+                ></i>
               </label>
-              <input ng-model="new_analysis.configuration.save_co2_results" type="checkbox" class="form-control" style="width: 34px; cursor: pointer" checked="checked" />
+              <input
+                ng-model="new_analysis.configuration.save_co2_results"
+                type="checkbox"
+                class="form-control"
+                style="width: 34px; cursor: pointer"
+                checked="checked"
+              />
             </div>
           </div>
         </div>
 
-        <div class="form-group" ng-if="new_analysis.service == 'Building Upgrade Recommendation'">
+        <div
+          class="form-group"
+          ng-if="new_analysis.service == 'Building Upgrade Recommendation'"
+        >
           <div class="form-group" style="padding-top: 1em">
             <div class="container-fluid">
-              <label class="control-label sectionLabel" translate>Total EUI Field</label>
-              <select class="form-control" ng-model="new_analysis.configuration.column_params.total_eui" ng-dropdown required>
-                <option ng-repeat="col in eui_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              <label class="control-label sectionLabel" translate
+                >Total EUI Field</label
+              >
+              <select
+                class="form-control"
+                ng-model="new_analysis.configuration.column_params.total_eui"
+                ng-dropdown
+                required
+              >
+                <option
+                  ng-repeat="col in eui_columns"
+                  selected="selected"
+                  ng-value="col.id"
+                >
+                  {$:: col.displayName $}
+                </option>
               </select>
-              <label class="control-label sectionLabel pad-top-10" translate>Gas EUI Field</label>
-              <select class="form-control" ng-model="new_analysis.configuration.column_params.gas_eui" ng-dropdown required>
-                <option ng-repeat="col in eui_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              <label class="control-label sectionLabel pad-top-10" translate
+                >Gas EUI Field</label
+              >
+              <select
+                class="form-control"
+                ng-model="new_analysis.configuration.column_params.gas_eui"
+                ng-dropdown
+                required
+              >
+                <option
+                  ng-repeat="col in eui_columns"
+                  selected="selected"
+                  ng-value="col.id"
+                >
+                  {$:: col.displayName $}
+                </option>
               </select>
-              <label class="control-label sectionLabel pad-top-10" translate>Electric EUI Field</label>
-              <select class="form-control" ng-model="new_analysis.configuration.column_params.electric_eui" ng-dropdown required>
-                <option ng-repeat="col in eui_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              <label class="control-label sectionLabel pad-top-10" translate
+                >Electric EUI Field</label
+              >
+              <select
+                class="form-control"
+                ng-model="new_analysis.configuration.column_params.electric_eui"
+                ng-dropdown
+                required
+              >
+                <option
+                  ng-repeat="col in eui_columns"
+                  selected="selected"
+                  ng-value="col.id"
+                >
+                  {$:: col.displayName $}
+                </option>
               </select>
-              <label class="control-label sectionLabel pad-top-10" translate>Target Gas EUI Field</label>
-              <select class="form-control" ng-model="new_analysis.configuration.column_params.target_gas_eui" ng-dropdown required>
-                <option ng-repeat="col in eui_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              <label class="control-label sectionLabel pad-top-10" translate
+                >Target Gas EUI Field</label
+              >
+              <select
+                class="form-control"
+                ng-model="new_analysis.configuration.column_params.target_gas_eui"
+                ng-dropdown
+                required
+              >
+                <option
+                  ng-repeat="col in eui_columns"
+                  selected="selected"
+                  ng-value="col.id"
+                >
+                  {$:: col.displayName $}
+                </option>
               </select>
-              <label class="control-label sectionLabel pad-top-10" translate>Target Electric EUI Field</label>
-              <select class="form-control" ng-model="new_analysis.configuration.column_params.target_electric_eui" ng-dropdown required>
-                <option ng-repeat="col in eui_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              <label class="control-label sectionLabel pad-top-10" translate
+                >Target Electric EUI Field</label
+              >
+              <select
+                class="form-control"
+                ng-model="new_analysis.configuration.column_params.target_electric_eui"
+                ng-dropdown
+                required
+              >
+                <option
+                  ng-repeat="col in eui_columns"
+                  selected="selected"
+                  ng-value="col.id"
+                >
+                  {$:: col.displayName $}
+                </option>
               </select>
-              <label class="control-label sectionLabel pad-top-10" translate>Condition Index Field</label>
-              <select class="form-control" ng-model="new_analysis.configuration.column_params.condition_index" ng-dropdown required>
-                <option ng-repeat="col in property_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              <label class="control-label sectionLabel pad-top-10" translate
+                >Condition Index Field</label
+              >
+              <select
+                class="form-control"
+                ng-model="new_analysis.configuration.column_params.condition_index"
+                ng-dropdown
+                required
+              >
+                <option
+                  ng-repeat="col in property_columns"
+                  selected="selected"
+                  ng-value="col.id"
+                >
+                  {$:: col.displayName $}
+                </option>
               </select>
-              <label class="control-label sectionLabel pad-top-10" translate>Building has BAS field</label>
-              <select class="form-control" ng-model="new_analysis.configuration.column_params.has_bas" ng-dropdown required>
-                <option ng-repeat="col in property_columns" selected="selected" ng-value="col.id">{$:: col.displayName $}</option>
+              <label class="control-label sectionLabel pad-top-10" translate
+                >Building has BAS field</label
+              >
+              <select
+                class="form-control"
+                ng-model="new_analysis.configuration.column_params.has_bas"
+                ng-dropdown
+                required
+              >
+                <option
+                  ng-repeat="col in property_columns"
+                  selected="selected"
+                  ng-value="col.id"
+                >
+                  {$:: col.displayName $}
+                </option>
               </select>
-              <div class="analysis-help-text"><small class="form-text text-muted" translate>HAS_BAS_HELP</small></div>
+              <div class="analysis-help-text">
+                <small class="form-text text-muted" translate
+                  >HAS_BAS_HELP</small
+                >
+              </div>
             </div>
-            <label class="control-label sectionLabel pad-top-10" translate>Total EUI Threshold </label>
-            <input ng-model="new_analysis.configuration.total_eui_goal" type="number" ng-init="new_analysis.configuration.total_eui_goal=40" class="form-control" />
+            <label class="control-label sectionLabel pad-top-10" translate
+              >Total EUI Threshold
+            </label>
+            <input
+              ng-model="new_analysis.configuration.total_eui_goal"
+              type="number"
+              ng-init="new_analysis.configuration.total_eui_goal=40"
+              class="form-control"
+            />
             <div class="analysis-help-text">
-              <small class="form-text text-muted" translate>TOTAL_EUI_HELP</small>
+              <small class="form-text text-muted" translate
+                >TOTAL_EUI_HELP</small
+              >
             </div>
-            <label class="control-label sectionLabel" translate>Fossil Fuel EUI Threshold</label>
-            <input ng-model="new_analysis.configuration.ff_eui_goal" ng-init="new_analysis.configuration.ff_eui_goal=20" type="number" class="form-control" />
-            <div class="analysis-help-text"><small class="form-text text-muted" translate>FOSSIL_FUEL_EUI_HELP</small></div>
+            <label class="control-label sectionLabel" translate
+              >Fossil Fuel EUI Threshold</label
+            >
+            <input
+              ng-model="new_analysis.configuration.ff_eui_goal"
+              ng-init="new_analysis.configuration.ff_eui_goal=20"
+              type="number"
+              class="form-control"
+            />
+            <div class="analysis-help-text">
+              <small class="form-text text-muted" translate
+                >FOSSIL_FUEL_EUI_HELP</small
+              >
+            </div>
 
-            <label class="control-label sectionLabel" translate>Year Built Threshold</label>
-            <input ng-model="new_analysis.configuration.year_built_threshold" type="number" ng-init="new_analysis.configuration.year_built_threshold=2008" class="form-control" />
-            <div class="analysis-help-text"><small class="form-text text-muted" translate>YEAR_BUILT_THRESHOLD_HELP</small></div>
+            <label class="control-label sectionLabel" translate
+              >Year Built Threshold</label
+            >
+            <input
+              ng-model="new_analysis.configuration.year_built_threshold"
+              type="number"
+              ng-init="new_analysis.configuration.year_built_threshold=2008"
+              class="form-control"
+            />
+            <div class="analysis-help-text">
+              <small class="form-text text-muted" translate
+                >YEAR_BUILT_THRESHOLD_HELP</small
+              >
+            </div>
 
-            <label class="control-label sectionLabel" translate>Fair Actual to Benchmark EUI Ratio</label>
+            <label class="control-label sectionLabel" translate
+              >Fair Actual to Benchmark EUI Ratio</label
+            >
             <input
               ng-model="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio"
               type="number"
               class="form-control"
               ng-init="new_analysis.configuration.fair_actual_to_benchmark_eui_ratio=1.2"
             />
-            <div class="analysis-help-text"><small class="form-text text-muted" translate>FAIR_BENCHMARK_RATIO_HELP</small></div>
-            <label class="control-label sectionLabel" translate>Poor Actual to Benchmark EUI Ratio</label>
+            <div class="analysis-help-text">
+              <small class="form-text text-muted" translate
+                >FAIR_BENCHMARK_RATIO_HELP</small
+              >
+            </div>
+            <label class="control-label sectionLabel" translate
+              >Poor Actual to Benchmark EUI Ratio</label
+            >
             <input
               ng-model="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio"
               ng-init="new_analysis.configuration.poor_actual_to_benchmark_eui_ratio=1.3"
               type="number"
               class="form-control"
             />
-            <div class="analysis-help-text"><small class="form-text text-muted" translate>POOR_BENCHMARK_RATIO_HELP</small></div>
-            <label class="control-label sectionLabel" translate>Building Square Footage Threshold</label>
-            <input ng-model="new_analysis.configuration.building_sqft_threshold" ng-init="new_analysis.configuration.building_sqft_threshold=10000" type="number" class="form-control" />
-            <div class="analysis-help-text"><small class="form-text text-muted" translate>SQUARE_FOOTAGE_THRESHOLD_HELP</small></div>
-            <label class="control-label sectionLabel" translate>Condition Index Threshold</label>
-            <input ng-model="new_analysis.configuration.condition_index_threshold" ng-init="new_analysis.configuration.condition_index_threshold=90" type="number" class="form-control" />
-            <div class="analysis-help-text"><small class="form-text text-muted" translate>CONDITION_INDEX_THRESHOLD_HELP</small></div>
-            <label class="control-label sectionLabel" translate>Fossil Fuel-Fired Equipment RSL Threshold</label>
-            <input ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold" ng-init="new_analysis.configuration.ff_fired_equipment_rsl_threshold=15" type="number" class="form-control" />
-            <div class="analysis-help-text"><small class="form-text text-muted" translate>FF_RSL_THRESHOLD_HELP</small></div>
+            <div class="analysis-help-text">
+              <small class="form-text text-muted" translate
+                >POOR_BENCHMARK_RATIO_HELP</small
+              >
+            </div>
+            <label class="control-label sectionLabel" translate
+              >Building Square Footage Threshold</label
+            >
+            <input
+              ng-model="new_analysis.configuration.building_sqft_threshold"
+              ng-init="new_analysis.configuration.building_sqft_threshold=10000"
+              type="number"
+              class="form-control"
+            />
+            <div class="analysis-help-text">
+              <small class="form-text text-muted" translate
+                >SQUARE_FOOTAGE_THRESHOLD_HELP</small
+              >
+            </div>
+            <label class="control-label sectionLabel" translate
+              >Condition Index Threshold</label
+            >
+            <input
+              ng-model="new_analysis.configuration.condition_index_threshold"
+              ng-init="new_analysis.configuration.condition_index_threshold=90"
+              type="number"
+              class="form-control"
+            />
+            <div class="analysis-help-text">
+              <small class="form-text text-muted" translate
+                >CONDITION_INDEX_THRESHOLD_HELP</small
+              >
+            </div>
+            <label class="control-label sectionLabel" translate
+              >Fossil Fuel-Fired Equipment RSL Threshold</label
+            >
+            <input
+              ng-model="new_analysis.configuration.ff_fired_equipment_rsl_threshold"
+              ng-init="new_analysis.configuration.ff_fired_equipment_rsl_threshold=15"
+              type="number"
+              class="form-control"
+            />
+            <div class="analysis-help-text">
+              <small class="form-text text-muted" translate
+                >FF_RSL_THRESHOLD_HELP</small
+              >
+            </div>
           </div>
         </div>
       </form>
@@ -333,7 +689,24 @@
     </div>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-default" style="min-width: 90px" ng-click="cancel()" translate>Cancel</button>
-    <button type="submit" class="btn btn-primary" form="newAnalysisForm" ng-disabled="newAnalysisForm.$invalid || waiting_for_server" ng-if="!error" translate>Create Analysis</button>
+    <button
+      type="button"
+      class="btn btn-default"
+      style="min-width: 90px"
+      ng-click="cancel()"
+      translate
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      class="btn btn-primary"
+      form="newAnalysisForm"
+      ng-disabled="newAnalysisForm.$invalid || waiting_for_server"
+      ng-if="!error"
+      translate
+    >
+      Create Analysis
+    </button>
   </div>
 </div>
