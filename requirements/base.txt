@@ -61,7 +61,7 @@ seed-salesforce==0.1.1
 # geospatial and pnnl/buildingid-py
 shapely==2.0.7
 usaddress==0.5.14
-pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@9c9b1e6
+pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@3cb82c9
 
 django-treebeard==4.7.1
 
