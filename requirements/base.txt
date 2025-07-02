@@ -12,11 +12,11 @@ hiredis==3.2.1
 
 brotli==1.1.0
 django-compressor==4.5.1
-django-extensions==4.1
+django-extensions==3.2.3
 django-model-utils==5.0.0
 
 # Time zones support
-pytz==2025.2
+pytz==2024.2
 python-dateutil==2.9.0.post0
 
 # Metric/imperial units support
@@ -24,14 +24,14 @@ django-pint==0.7.3  # https://github.com/hgrecco/pint/issues/2065
 
 # API
 djangorestframework==3.16.0
-djangorestframework-simplejwt==5.5.0
+djangorestframework-simplejwt==5.3.1
 django-post-office==3.9.1
 drf-yasg==1.21.10
-django-filter==25.1  # Update after drf-spectacular
+django-filter==22.1  # Update after drf-spectacular
 drf-nested-routers==0.94.2
 
 # Server monitoring
-sentry-sdk==2.32.0
+sentry-sdk==2.14.0
 
 # Various packages
 jellyfish==1.2.0
@@ -39,14 +39,14 @@ Markdown==3.8.2
 polling==0.3.2
 pyyaml==6.0.2
 street-address==0.4.0
-xlrd<3.0.0  # Version 2 removes xlsx support
+xlrd<2.0.0  # Version 2 removes xlsx support
 xlsxwriter==3.2.5
 xmltodict==0.14.2
 requests==2.32.4
 probablepeople==0.5.6
-xmlschema==4.1.0
+xmlschema==3.4.2
 lark==1.2.2
-pandas==2.3.0
+pandas<3
 
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
 geojson==3.2.0
