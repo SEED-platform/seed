@@ -8,7 +8,7 @@ psycopg2-binary==2.9.10
 celery==5.5.3
 django-celery-beat==2.8.1
 django-redis==6.0.0
-hiredis==3.0.0
+hiredis==3.2.1
 
 brotli==1.1.0
 django-compressor==4.5.1
@@ -25,8 +25,8 @@ django-pint==0.7.3  # https://github.com/hgrecco/pint/issues/2065
 # API
 djangorestframework==3.16.0
 djangorestframework-simplejwt==5.3.1
-django-post-office==3.9.0
-drf-yasg==1.21.8
+django-post-office==3.9.1
+drf-yasg==1.21.10
 django-filter==22.1  # Update after drf-spectacular
 drf-nested-routers==0.94.2
 
@@ -34,22 +34,22 @@ drf-nested-routers==0.94.2
 sentry-sdk==2.14.0
 
 # Various packages
-jellyfish==1.1.0
-Markdown==3.7
+jellyfish==1.2.0
+Markdown==3.8.2
 polling==0.3.2
 pyyaml==6.0.2
 street-address==0.4.0
 xlrd<2.0.0  # Version 2 removes xlsx support
-xlsxwriter==3.2.0
-xmltodict==0.13.0
+xlsxwriter==3.2.5
+xmltodict==0.14.2
 requests==2.32.4
-probablepeople==0.5.5
+probablepeople==0.5.6
 xmlschema==3.4.2
 lark==1.2.2
-pandas==2.2.3
+pandas<3
 
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
-geojson==3.1.0
+geojson==3.2.0
 
 # BuildingSync Asset Extractor
 # this also includes the lxml dependency required by SEED
@@ -59,9 +59,9 @@ buildingsync-asset-extractor==v0.2.1
 seed-salesforce==0.1.1
 
 # geospatial and pnnl/buildingid-py
-shapely==2.0.6
+shapely==2.0.7
 usaddress==0.5.14
-pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@df04c15
+pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@3cb82c9
 
 django-treebeard==4.7.1
 
@@ -70,7 +70,7 @@ qrcode[pil]==7.4.2
 pyotp==2.9.0
 
 # This dependency can be removed once a version newer than 8.5.0 has been released that fixes Django autoreload
-importlib_metadata==8.4.0
+importlib_metadata==8.7.0
 
 tkbl==0.7
 
