@@ -12,6 +12,8 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: 'deps'
+    ignore:
+      - dependency-name: 'qrcode'
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
