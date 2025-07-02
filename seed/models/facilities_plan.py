@@ -8,7 +8,7 @@ import logging
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.db.models import BooleanField, Case, F, FloatField, Sum, Value, When
-from django.db.models.functions import Cast
+from django.db.models.functions import Cast, Coalesce
 from django.utils import timezone as tz
 
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
@@ -81,9 +81,13 @@ class FacilitiesPlanRun(models.Model):
             raise ValueError(f"`calculate_properties_selected_by_plan` requires the following null columns: {missing_columns}")
 
         # get relevant properties
-        properties = PropertyView.objects.filter(
-            property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt, cycle=cycle
-        ).exclude(**{_get_column_model_field(self.facilities_plan.include_in_total_denominator_column): False})
+        properties = (
+            PropertyView.objects.filter(
+                property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt, cycle=cycle
+            )
+            .prefetch_related("state")
+            .exclude(**{_get_column_model_field(self.facilities_plan.include_in_total_denominator_column): False})
+        )
 
         # calculate properties total energy usage
         properties = properties.annotate(
@@ -91,6 +95,9 @@ class FacilitiesPlanRun(models.Model):
             + _get_column_or_zero(self.facilities_plan.gas_energy_usage_column)
             + _get_column_or_zero(self.facilities_plan.steam_energy_usage_column)
         )
+
+        # get floor area
+        properties = properties.annotate(gross_floor_area=Coalesce("state__gross_floor_area", 0, output_field=FloatField()))
 
         # calculate properties percentage of total energy usage
         denominator = properties.aggregate(Sum("total_energy_usage"))["total_energy_usage__sum"]
@@ -125,9 +132,11 @@ class FacilitiesPlanRun(models.Model):
             "exclude_from_plan_column", "-required_in_plan", "-percentage_of_total_energy_usage"
         )
         energy_running_sum_percentage = 0
+        running_square_footage = 0
 
         for rank, p in enumerate(all_properties):
             energy_running_sum_percentage += p.percentage_of_total_energy_usage
+            running_square_footage += p.gross_floor_area
 
             FacilitiesPlanRunProperty.objects.create(
                 run=self,
@@ -136,7 +145,7 @@ class FacilitiesPlanRun(models.Model):
                 percentage_of_total_energy_usage=p.percentage_of_total_energy_usage,
                 rank=rank,
                 running_percentage=energy_running_sum_percentage,
-                running_square_footage=0,
+                running_square_footage=running_square_footage,
             )
 
 
