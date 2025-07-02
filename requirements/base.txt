@@ -61,12 +61,12 @@ seed-salesforce==0.1.1
 # geospatial and pnnl/buildingid-py
 shapely==2.0.7
 usaddress==0.5.14
-pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@df04c15
+pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@9c9b1e6
 
 django-treebeard==4.7.1
 
 django-two-factor-auth[phonenumbers]==1.17.0
-qrcode[pil]==8.2
+qrcode[pil]==7.4.2
 pyotp==2.9.0
 
 # This dependency can be removed once a version newer than 8.5.0 has been released that fixes Django autoreload
