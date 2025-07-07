@@ -44,7 +44,7 @@ xlsxwriter==3.2.5
 xmltodict==0.14.2
 requests==2.32.4
 probablepeople==0.5.6
-xmlschema==3.4.2
+xmlschema==4.1.0
 lark==1.2.2
 pandas<3
 
