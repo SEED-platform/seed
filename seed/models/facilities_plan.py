@@ -81,13 +81,9 @@ class FacilitiesPlanRun(models.Model):
             raise ValueError(f"`calculate_properties_selected_by_plan` requires the following null columns: {missing_columns}")
 
         # get relevant properties
-        properties = (
-            PropertyView.objects.filter(
-                property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt, cycle=cycle
-            )
-            .prefetch_related("state")
-            .exclude(**{_get_column_model_field(self.facilities_plan.include_in_total_denominator_column): False})
-        )
+        properties = PropertyView.objects.filter(
+            property__access_level_instance__lft__gte=ali.lft, property__access_level_instance__rgt__lte=ali.rgt, cycle=cycle
+        ).exclude(**{_get_column_model_field(self.facilities_plan.include_in_total_denominator_column): False})
 
         # calculate properties total energy usage
         properties = properties.annotate(
