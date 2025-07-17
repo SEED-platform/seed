@@ -358,10 +358,8 @@ class AuditTemplate:
                     em.Reports(
                         em.Report(
                             {"ID": report_id},
-                             *(
-                                [em.Scenarios(
-                                    *_build_metering_scenarios(em, view.property.id, building_id)
-                                )]
+                            *(
+                                [em.Scenarios(*_build_metering_scenarios(em, view.property.id, building_id))]
                                 if org.audit_template_export_meters and _build_metering_scenarios(em, view.property.id, building_id)
                                 else []
                             ),
