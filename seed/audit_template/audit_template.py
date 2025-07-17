@@ -358,12 +358,12 @@ class AuditTemplate:
                     em.Reports(
                         em.Report(
                             {"ID": report_id},
-                            em.Scenarios(
-                                *(
-                                    []
-                                    if not org.audit_template_export_meters
-                                    else _build_metering_scenarios(em, view.property.id, building_id)
-                                ),
+                             *(
+                                [em.Scenarios(
+                                    *_build_metering_scenarios(em, view.property.id, building_id)
+                                )]
+                                if org.audit_template_export_meters and _build_metering_scenarios(em, view.property.id, building_id)
+                                else []
                             ),
                             em.LinkedPremisesOrSystem(
                                 em.Building(em.LinkedBuildingID({"IDref": building_id})),
@@ -371,7 +371,7 @@ class AuditTemplate:
                             em.UserDefinedFields(
                                 em.UserDefinedField(
                                     em.FieldName("Audit Template Report Type"),
-                                    em.FieldValue(report_type),
+                                    em.FieldValue(str(report_type).strip()),
                                 ),
                             ),
                         )
