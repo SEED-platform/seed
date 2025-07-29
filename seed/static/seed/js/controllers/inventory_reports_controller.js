@@ -577,10 +577,10 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         controller: 'export_report_modal_controller',
         resolve: {
           axes_data: () => ({
-            xVar: $scope.chartData.xAxisVarName,
-            xLabel: $scope.chartData.xAxisTitle,
-            yVar: $scope.chartData.yAxisVarName,
-            yLabel: $scope.chartData.yAxisTitle
+            xVar: $scope.chartData.yAxisVarName,
+            xLabel: $scope.chartData.yAxisTitle,
+            yVar: $scope.chartData.xAxisVarName,
+            yLabel: $scope.chartData.xAxisTitle
           }),
           cycles: () => $scope.selected_cycles,
           filter_group_id: () => $scope.filter_group_id
