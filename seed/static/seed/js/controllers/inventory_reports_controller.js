@@ -729,8 +729,8 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
               }, {});
 
               data.chart_data = data.chart_data.sort((a, b) => {
-                if (a.y === b.y) return a.yr_e < b.yr_e;
-                return $scope.order_by_x[a.y] > $scope.order_by_x[b.y];
+                if (a.y === b.y) return a.yr_e < b.yr_e? 1 : -1;
+                return $scope.order_by_x[a.y] > $scope.order_by_x[b.y]? 1: -1;
               });
             }
 
