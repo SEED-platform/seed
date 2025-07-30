@@ -1,0 +1,10 @@
+<div class="page_header_container">
+  <div ng-if="AUTHENTICATION_STATE == 'SUCCESS'">
+      Seed is now logged in to Salesforce.
+      <button class="btn btn-primary portfolio-summary-btn" type="submit" ui-sref="portfolio_summary()" ui-sref-active="active">{$:: 'Go to Goals' | translate $}</button>
+  </div>
+  <div ng-if="AUTHENTICATION_STATE == 'FAILURE'">
+      There was an error {$ error_message $}
+      <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="login_salesforce()" ng-if="write_permission">{$:: 'Try Again' | translate $}</button>
+  </div>
+</div>

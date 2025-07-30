@@ -119,6 +119,7 @@
     'SEED.controller.merge_modal',
     'SEED.controller.meter_deletion_modal',
     'SEED.controller.meter_edit_modal',
+    'SEED.controller.salesforce_login',
     'SEED.controller.system_meter_readings_upload_modal',
     'SEED.controller.group_meter_creation_modal',
     'SEED.controller.modified_modal',
@@ -1039,6 +1040,15 @@
           }
         })
         .state({
+          name: 'salesforce_login',
+          url: '/salesforce_login',
+          templateUrl: `${static_url}seed/partials/salesforce_login.html`,
+          controller: 'salesforce_login_controller',
+          resolve: {
+            organization_id: ['user_service', (user_service) => user_service.get_organization().id],
+          },
+        })
+        .state({
           name: 'dataset_detail',
           url: '/data/{dataset_id:int}',
           templateUrl: `${static_url}seed/partials/dataset_detail.html`,
@@ -1164,6 +1174,14 @@
               'salesforce_config_service',
               '$stateParams',
               (salesforce_config_service, $stateParams) => {
+                const { organization_id } = $stateParams;
+                return salesforce_config_service.get_salesforce_configs(organization_id);
+              }
+            ],
+            bb_salesforce_configs_payload: [
+              'bb_salesforce_config_service',
+              '$stateParams',
+              (bb_salesforce_config_service, $stateParams) => {
                 const { organization_id } = $stateParams;
                 return salesforce_config_service.get_salesforce_configs(organization_id);
               }
@@ -2939,6 +2957,14 @@
               (auth_service, organization_payload) => {
                 const organization_id = organization_payload.organization.id;
                 return auth_service.is_authorized(organization_id, ['requires_owner']);
+              }
+            ],
+            is_logged_into_salesforce: [
+              'salesforce_config_service',
+              'organization_payload',
+              (salesforce_config_service, organization_payload) => {
+                const organization_id = organization_payload.organization.id;
+                return salesforce_config_service.verify_token(organization_id, ['requires_owner']);
               }
             ]
           }

@@ -21,6 +21,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   'labels_payload',
   'salesforce_mappings_payload',
   'salesforce_configs_payload',
+  'bb_salesforce_config_payload',
   'audit_template_configs_payload',
   'meters_service',
   'Notification',
@@ -45,6 +46,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     labels_payload,
     salesforce_mappings_payload,
     salesforce_configs_payload,
+    bb_salesforce_config_payload,
     audit_template_configs_payload,
     meters_service,
     Notification,
@@ -57,6 +59,11 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $scope.conf = {};
     if (salesforce_configs_payload.length > 0) {
       $scope.conf = salesforce_configs_payload[0];
+    }
+
+    $scope.bb_salesforce_config = {};
+    if (bb_salesforce_config_payload.length > 0) {
+      $scope.bb_salesforce_conf = bb_salesforce_config_payload[0];
     }
 
     $scope.at_conf = {};

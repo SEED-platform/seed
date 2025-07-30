@@ -15,11 +15,13 @@ angular.module('SEED.controller.portfolio_summary', [])
     'inventory_service',
     'label_service',
     'goal_service',
+    'salesforce_config_service',
     'Notification',
     'cycles',
     'organization_payload',
     'access_level_tree',
     'auth_payload',
+    'is_logged_into_salesforce',
     'property_columns',
     'uiGridConstants',
     'gridUtil',
@@ -37,11 +39,13 @@ angular.module('SEED.controller.portfolio_summary', [])
       inventory_service,
       label_service,
       goal_service,
+      salesforce_config_service,
       Notification,
       cycles,
       organization_payload,
       access_level_tree,
       auth_payload,
+      is_logged_into_salesforce,
       property_columns,
       uiGridConstants,
       gridUtil,
@@ -66,6 +70,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.selected_count = 0;
       $scope.selected_option = 'none';
       $scope.search_query = '';
+      $scope.is_logged_into_salesforce = is_logged_into_salesforce.valid;
 
       $scope.search_for_goals = (query) => {
         const pattern = query.split('').join('.*');
@@ -231,6 +236,13 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.change_selected_level_index = () => {
         const new_level_instance_depth = parseInt($scope.goal.level_name_index, 10) + 1;
         $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+      };
+
+      $scope.login_salesforce = () => {
+        salesforce_config_service.get_login_url($scope.organization.id).then(data => {
+          console.log(data.url)
+          $window.location.href = data.url;
+        })
       };
 
       // GOAL EDITOR MODAL

@@ -45,9 +45,16 @@
         </div>
         <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
       </div>
+      <!-- SALEFORCES -->
+      <div style="margin: 0px 0px 15px 15px;" ng-if="!is_logged_into_salesforce">
+        <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="login_salesforce()" ng-if="write_permission">{$:: 'Login to Salesforce' | translate $}</button>
+      </div>
+      <div style="margin: 0px 0px 15px 15px;" ng-if="is_logged_into_salesforce">
+        <button disabled class="btn" type="submit" ng-if="write_permission"  style="border-color: darkgreen;">{$:: 'Logged in to Salesforce' | translate $}</button>
+      </div>
       <!-- GOAL DETAILS -->
       <div class="goal-details-container" ng-if="goal">
-        <div class="goal-details-column" style="margin-left: 10px">
+        <div class="goal-details-column" style="margin: 10px">
           <div ng-repeat="(k, v) in goal_details[0]" class="goal-detail">
             <div class="goal-detail-key" style="width: 120px">{$ k $}:</div>
             <div class="goal-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>

@@ -1151,6 +1151,49 @@
           </div>
         </div>
       </div>
+      <div class="section_content_container">
+        <div class="section_content with_padding">
+          <h3 translate>Enable Better Buildings Salesforce Integration</h3>
+          <form class="form-horizontal" role="form">
+            <div class="form-group">
+              <div class="col-sm-4">
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.bb_salesforce_enabled" ng-disabled="::!auth.requires_owner" />
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div ng-if="org.bb_salesforce_enabled" class="salesforce-form">
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="username" translate>Username</label>
+                <div class="col-sm-5">
+                  <input type="text" id="username" class="form-control" ng-model="conf.username" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="pwd" translate>Password</label>
+                <div class="col-sm-5">
+                  <div class="input-group">
+                    <input type="{$ secrets['pwd'] $}" class="form-control" id="pwd" ng-model="conf.password" autocomplete="new-password" ng-disabled="::!auth.requires_owner" />
+                    <span class="input-group-btn">
+                      <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')"><i class="glyphicon glyphicon-eye-open"></i></button>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </uib-tab>
 
     <uib-tab index="7" heading="{$:: 'Two-Factor Authentication' | translate $}">
