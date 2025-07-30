@@ -49,6 +49,8 @@ class InventoryFilter:
         "endsWith": lambda name, filter, _: Q(**{f"{name}__iendswith": filter}),  # noqa: A006
         "blank": lambda name, *_: Q(**{f"{name}__isnull": True}) | Q(**{f"{name}": ""}),
         "notBlank": lambda name, *_: Q(**{f"{name}__isnull": False}) & ~Q(**{f"{name}": ""}),
+        "isNull": lambda name, *_: Q(**{f"{name}__isnull": True}),  # noqa: A006
+        "notNull": lambda name, *_: Q(**{f"{name}__isnull": False}),
         "greaterThan": lambda name, filter, _: Q(**{f"{name}__gt": filter}),  # noqa: A006
         "greaterThanOrEqual": lambda name, filter, _: Q(**{f"{name}__gte": filter}),  # noqa: A006
         "lessThan": lambda name, filter, _: Q(**{f"{name}__lt": filter}),  # noqa: A006
@@ -201,7 +203,6 @@ class InventoryFilter:
 
         filters = self.generate_q_filters(ag_filters)
         sorts = self.generate_sorts(ag_sorts)
-
         views_qs = views_qs.filter(filters).order_by(*sorts).distinct()
 
         return views_qs
@@ -220,9 +221,16 @@ class InventoryFilter:
         operator = filter_dict.get("operator")
         filter = filter_dict.get("filter")
         filter_to = filter_dict.get("filterTo")
+        filter_type = filter_dict.get("filterType")
         type = filter_dict.get("type")
         # handles cases when filtering on other table
         prefixed_name = self.parse_name(name_with_id)
+
+        type_overrides = {
+            ("number", "blank"): "isNull",
+            ("number", "notBlank"): "notNull",
+        }
+        type = type_overrides.get((filter_type, type), type)
 
         if conditions and operator:
             q = self.parse_conditions(prefixed_name, conditions, operator)
@@ -232,9 +240,9 @@ class InventoryFilter:
             raise InventoryFilterError(JsonResponse({"status": "error", "message": "Invalid filter"}, status=status.HTTP_400_BAD_REQUEST))
         return q
 
-    def parse_filter(self, prefixed_name, filter_type, filter_from, filter_to=None):
+    def parse_filter(self, prefixed_name, type, filter_from, filter_to=None):
         """convert a single filter to a Q object"""
-        return self.Q_MAP[filter_type](prefixed_name, filter_from, filter_to)
+        return self.Q_MAP[type](prefixed_name, filter_from, filter_to)
 
     def parse_conditions(self, prefixed_name, conditions, operator):
         """handle multiple conditions and convert to a single Q object"""
