@@ -29,7 +29,6 @@ from seed.utils.match import update_sub_progress_total
 INVENTORY_MODELS = {"properties": PropertyView, "taxlots": TaxLotView}
 
 def export_data(args):
-    logging.error(">>>Exporting Inventory...")
     org_id = args.get("org_id")
     ali_lft = args.get("ali_lft")
     ali_rgt = args.get("ali_rgt")
@@ -56,6 +55,7 @@ def export_data(args):
     select_related = ["state", "cycle"]
     prefetch_related = ["labels"]
     ids = request_data.get("ids", [])
+    breakpoint()
 
     filter_str = {}
     if ids:
@@ -138,26 +138,15 @@ def export_data(args):
             view_id_str = "taxlot_view_id"
         data.sort(key=lambda inventory_obj: order_dict[inventory_obj[view_id_str]])
 
-    filename = request_data.get("filename", f"ExportedData.{export_type}")
-
     if export_type == "csv":
-        return _csv_response(filename, data, column_name_mappings)
+        return _csv_response(data, column_name_mappings)
     elif export_type == "geojson":
-        response_dict = _json_response(filename, data, column_name_mappings)
-        response = JsonResponse(response_dict)
-        response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        return response
+        return _json_response(data, column_name_mappings)
     elif export_type == "xlsx":
-        return _spreadsheet_response(filename, data, column_name_mappings)
-    
-    logging.error('>>> finished')
+        return _spreadsheet_response(data, column_name_mappings)
 
-def _csv_response(filename, data, column_name_mappings):
-    # response = HttpResponse(content_type="text/csv")
-    # response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
-    # writer = csv.writer(response)
-
+def _csv_response(data, column_name_mappings):
     output = io.StringIO()
     writer = csv.writer(output)
 
@@ -199,7 +188,7 @@ def _csv_response(filename, data, column_name_mappings):
     return output.getvalue()
     # return response
     
-def _json_response(filename, data, column_name_mappings):
+def _json_response(data, column_name_mappings):
     polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
     features = []
 
@@ -297,22 +286,10 @@ def _json_response(filename, data, column_name_mappings):
 
         # per geojsonlint.com, the CRS we were defining was the default and should not
         # be included.
-        response_dict = {"type": "FeatureCollection", "name": f"SEED Export - {filename.replace('.geojson', '')}", "features": features}
 
-    return response_dict
+    return features
 
-def _spreadsheet_response(filename, data, column_name_mappings):
-    # response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-    # response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-    # # response = HttpResponse(content_type="text/csv")
-    # # response["Content-Disposition"] = f'attachment; filename="{filename}"'
-
-    # # writer = csv.writer(response)
-
-    # output = io.StringIO()
-    # writer = csv.writer(output)
-
+def _spreadsheet_response(data, column_name_mappings):
     scenario_keys = (
         "id",
         "name",
@@ -512,10 +489,6 @@ def _spreadsheet_response(filename, data, column_name_mappings):
     xlsx_data = base64.b64encode(xlsx_bytes).decode("ascii")
 
     return xlsx_data
-
-    # response.write(xlsx_data)
-    # import remote_pdb; remote_pdb.set_trace()
-    # return response
 
 def _serialized_coordinates( polygon_wkt):
     string_coord_pairs = polygon_wkt.lstrip("POLYGON (").rstrip(")").split(", ")

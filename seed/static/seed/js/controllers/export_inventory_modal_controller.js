@@ -34,20 +34,15 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
       $scope.exporting = true;
 
       const successFn = (response) => {
-        console.log('success', response)
-        data = response.message
+        data = response.message;
 
         const blob_map = {
-          csv: csv_to_blob(data),
-          xlsx: base64_to_blob(data),
-          geojson: base64_to_blob(data)
-        }
+          csv: csv_to_blob,
+          xlsx: base64_to_blob,
+          geojson: geojson_to_blob,
+        };
 
-        if (export_type === 'geojson') {
-          data = JSON.stringify(data, null, '    ');
-        }
-
-        const blob = blob_map[export_type];
+        const blob = blob_map[export_type](data);
         saveAs(blob, filename);
         $scope.close();
       }
@@ -98,6 +93,11 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
       }
 
       return new Blob(byteArrays, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    }
+
+    geojson_to_blob = (data) => {
+      data = JSON.stringify(data, null, '    ');
+      return new Blob([data], { type: 'application/geo+json' });
     }
 
     $scope.cancel = () => {

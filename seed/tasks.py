@@ -604,6 +604,7 @@ def _finish_update_state_derived_data(progress_key, derived_column_ids):
     progress_data = ProgressData.from_key(progress_key)
     progress_data.finish_with_success("Updated Derived Data")
 
+
 @shared_task
 def export_data_task(args):
     progress_key = args.get("progress_key")
