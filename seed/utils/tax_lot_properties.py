@@ -55,7 +55,6 @@ def export_data(args):
     select_related = ["state", "cycle"]
     prefetch_related = ["labels"]
     ids = request_data.get("ids", [])
-    breakpoint()
 
     filter_str = {}
     if ids:
