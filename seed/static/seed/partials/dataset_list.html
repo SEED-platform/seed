@@ -27,12 +27,31 @@
           <tbody>
             <tr ng-repeat="d in datasets" class="import_row">
               <td class="name container-fluid">
-                <span class="view" id="data-link-{$:: $index $}">
-                  <a ui-sref="dataset_detail(::{dataset_id: d.id})" class="import_name" ng-show="!d.edit_form_showing">{$:: d.name $}</a>
-                  <a class="delete_link" ng-click="confirm_delete(d)" ng-show="!d.edit_form_showing"><i class="fa-solid fa-trash-can"></i></a>
-                  <a class="replace_file_button edit_file_name" ng-click="edit_dataset_name(d)" ng-show="!d.edit_form_showing" style="margin-right: 8px"><i class="fa-solid fa-pencil"></i></a>
-                </span>
-                <form class="row action edit_file_name form form-inline edit_import_meta_form" role="form" sd-enter="save_dataset_name(d)" ng-show="d.edit_form_showing">
+                <a
+                  ui-sref="dataset_detail(::{dataset_id: d.id})"
+                  class="import_name"
+                  ng-show="!d.edit_form_showing"
+                  >{$:: d.name $}</a
+                >
+                <a
+                  class="delete_link"
+                  ng-click="confirm_delete(d)"
+                  ng-show="!d.edit_form_showing"
+                  ><i class="fa-solid fa-trash-can"></i
+                ></a>
+                <a
+                  class="replace_file_button edit_file_name"
+                  ng-click="edit_dataset_name(d)"
+                  ng-show="!d.edit_form_showing"
+                  style="margin-right: 8px"
+                  ><i class="fa-solid fa-pencil"></i
+                ></a>
+                <form
+                  class="row action edit_file_name form form-inline edit_import_meta_form"
+                  role="form"
+                  sd-enter="save_dataset_name(d)"
+                  ng-show="d.edit_form_showing"
+                >
                   <div class="form-group col-sm-8">
                     <label class="sr-only" for="editDatasetName-{$ $index $}" translate>Edit Name</label>
                     <input class="form-control input-sm" id="editDatasetName-{$ $index $}" type="text" name="name" ng-model="d.name" style="width: 100%" />
