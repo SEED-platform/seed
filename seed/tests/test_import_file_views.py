@@ -900,7 +900,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
         resp = self.client.post(url, content_type="application/json")
 
         self.assertEqual(200, resp.status_code)
-        mapped_property = json.loads(resp.content)["properties"][0]
+        mapped_property = json.loads(resp.content)["message"]["properties"][0]
         unitted_column_names = ["gross_floor_area", "site_eui"]
         for column_name, val in mapped_property.items():
             for unitted_column_name in unitted_column_names:
