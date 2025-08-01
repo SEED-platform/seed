@@ -185,7 +185,6 @@ def _csv_response(data, column_name_mappings):
         writer.writerow(row)
 
     return output.getvalue()
-    # return response
     
 def _json_response(data, column_name_mappings):
     polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]

@@ -533,6 +533,26 @@
       </div>
     </div>
   </div>
+  <div class="section_content_container" ng-if="process_mappings">
+    <div class="section_content">
+      <div class="progress_bar_container progressbar_fill_area">
+        <div
+          class="progress_bar_copy_top"
+          translate="Processing Mappings..."
+        ></div>
+        <uib-progressbar
+          class="progress-striped active"
+          value="import_file.progress"
+          type="success"
+        ></uib-progressbar>
+        <div
+          class="progress_bar_copy_bottom"
+          translate="PERCENT_COMPLETE"
+          translate-values="{ progress: (import_file.progress | number: 0) }"
+        ></div>
+      </div>
+    </div>
+  </div>
   <div
     class="section_header_container"
     ng-if="show_mapped_buildings"

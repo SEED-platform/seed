@@ -61,6 +61,8 @@ from seed.models import (
     DATA_STATE_MATCHING,
     DATA_STATE_UNKNOWN,
     GREEN_BUTTON,
+    MERGE_STATE_NEW,
+    MERGE_STATE_UNKNOWN,
     PORTFOLIO_BS,
     PORTFOLIO_METER_USAGE,
     SEED_DATA_SOURCES,
@@ -85,6 +87,7 @@ from seed.models import (
 )
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
+from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences
 from seed.utils.buildings import get_source_type
 from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
 from seed.utils.goals import get_state_pairs
@@ -2021,3 +2024,124 @@ def validate_use_cases(file_pk):
     _validate_use_cases.s(file_pk, progress_data.key).apply_async()
     _log.debug(progress_data.result())
     return progress_data.result()
+
+
+@shared_task
+def mapping_results_task(args):
+    import_file_id = args.get("import_file_id")
+    inventory_type = args.get("inventory_type")
+    org_id = args.get("org_id")
+    progress_key = args.get("progress_key")
+    progress_data = ProgressData.from_key(progress_key)
+    org = Organization.objects.get(pk=org_id)
+    properties = []
+    tax_lots = []
+
+    try:
+        import_file = ImportFile.objects.get(pk=import_file_id, import_record__super_organization_id=org_id)
+    except ImportFile.DoesNotExist:
+        progress_data.return_with_error("Could not find import file with pk=" + str(import_file_id))
+
+    # List of the only fields to show
+    field_names = import_file.get_cached_mapped_columns
+    fields = {"PropertyState": ["id", "extra_data", "lot_number"], "TaxLotState": ["id", "extra_data"]}
+
+    if inventory_type in {"properties", "all"}:
+        properties = (
+            PropertyState.objects.filter(
+                import_file_id=import_file_id,
+                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW],
+            )
+            .only(*fields["PropertyState"])
+            .order_by("id")
+        )
+    
+    if inventory_type in {"taxlots", "all"}:
+        tax_lots = (
+            TaxLotState.objects.filter(
+                import_file_id=import_file_id,
+                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW],
+            )
+            .only(*fields["TaxLotState"])
+            .order_by("id")
+        )
+
+    progress_total = len(properties) + len(tax_lots) + len(field_names)
+    progress_data = update_sub_progress_total(progress_total, progress_key)
+
+    progress_data.save()
+
+
+    columns_from_db = Column.retrieve_all(org_id)
+    property_column_name_mapping = {}
+    taxlot_column_name_mapping = {}
+    extra_data_units = {}
+    for field_name in field_names:
+        # find the field from the columns in the database
+        progress_data.step("Fetching column field names")
+        for column in columns_from_db:
+            if column["table_name"] == "PropertyState" and field_name[0] == "PropertyState" and field_name[1] == column["column_name"]:
+                property_column_name_mapping[column["column_name"]] = column["name"]
+                if not column["is_extra_data"]:
+                    fields["PropertyState"].append(field_name[1])  # save to the raw db fields
+                elif DEFAULT_UNITS.get(column["data_type"]):
+                    extra_data_units[column["column_name"]] = DEFAULT_UNITS.get(column["data_type"])
+            elif column["table_name"] == "TaxLotState" and field_name[0] == "TaxLotState" and field_name[1] == column["column_name"]:
+                taxlot_column_name_mapping[column["column_name"]] = column["name"]
+                if not column["is_extra_data"]:
+                    fields["TaxLotState"].append(field_name[1])  # save to the raw db fields
+                elif DEFAULT_UNITS.get(column["data_type"]):
+                    extra_data_units[column["column_name"]] = DEFAULT_UNITS.get(column["data_type"])
+
+    result = {"status": "success"}
+
+    # Map properties
+    if inventory_type in {"properties", "all"}:
+        property_results = []
+        for prop in properties:
+            progress_data.step("Mapping Properties")
+            prop_dict = TaxLotProperty.model_to_dict_with_mapping(
+                prop, property_column_name_mapping, fields=fields["PropertyState"], exclude=["extra_data"]
+            )
+
+            prop_dict.update(
+                TaxLotProperty.extra_data_to_dict_with_mapping(
+                    prop.extra_data, property_column_name_mapping, fields=prop.extra_data.keys(), units=extra_data_units
+                ).items()
+            )
+            if prop.raw_access_level_instance is not None:
+                prop_dict.update(prop.raw_access_level_instance.path)
+            prop_dict["raw_access_level_instance_error"] = prop.raw_access_level_instance_error
+
+            prop_dict = apply_display_unit_preferences(org, prop_dict)
+            property_results.append(prop_dict)
+
+        result["properties"] = property_results
+
+    # Map taxlots
+    if inventory_type in {"taxlots", "all"}:
+        tax_lot_results = []
+        for tax_lot in tax_lots:
+            progress_data.step("Mapping Tax Lots")
+            tax_lot_dict = TaxLotProperty.model_to_dict_with_mapping(
+                tax_lot, taxlot_column_name_mapping, fields=fields["TaxLotState"], exclude=["extra_data"]
+            )
+            tax_lot_dict.update(
+                TaxLotProperty.extra_data_to_dict_with_mapping(
+                    tax_lot.extra_data,
+                    taxlot_column_name_mapping,
+                    fields=tax_lot.extra_data.keys(),
+                ).items()
+            )
+            if tax_lot.raw_access_level_instance is not None:
+                tax_lot_dict.update(tax_lot.raw_access_level_instance.path)
+            tax_lot_dict["raw_access_level_instance_error"] = tax_lot.raw_access_level_instance_error
+
+            tax_lot_dict = apply_display_unit_preferences(org, tax_lot_dict)
+            tax_lot_results.append(tax_lot_dict)
+
+        result["tax_lots"] = tax_lot_results
+
+    progress_data.finish_with_success(result)
