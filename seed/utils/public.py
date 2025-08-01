@@ -12,8 +12,8 @@ from django.db.models.functions import Lower
 from seed.models import Column, PropertyState, TaxLotState
 from seed.utils.generic import get_int
 from seed.utils.geocode import bounding_box_wkt, long_lat_wkt
+from seed.utils.tax_lot_properties import json_response
 from seed.utils.ubid import centroid_wkt
-from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
 
 
 def public_feed(org, request, cycles, endpoint="feed"):
@@ -342,9 +342,7 @@ PUBLIC_HTML_STYLE = """
 def public_geojson(org, cycle, request):
     params = request.query_params
     taxlots_only = params.get("taxlots", "false").lower() == "true"
-
     feed = public_feed(org, request, [cycle.id], "geojson")
-
     title = f"Cycle {cycle.id} Public GeoJSON"
 
     if taxlots_only:
@@ -356,7 +354,5 @@ def public_geojson(org, cycle, request):
     for key in data[0]:
         key_mappings.update({key: key})
 
-    viewset = TaxLotPropertyViewSet()
-    geojson = viewset._json_response(title, data, key_mappings)
-
+    geojson = json_response(title, data, key_mappings)
     return geojson

@@ -32,6 +32,7 @@ def export_data(args):
     request_data = args.get("request_data", {})
     query_params = args.get("query_params", {})
     progress_key = args.get("progress_key")
+
     progress_data = ProgressData.from_key(progress_key)
 
     profile_id = None
@@ -132,10 +133,11 @@ def export_data(args):
             view_id_str = "taxlot_view_id"
         data.sort(key=lambda inventory_obj: order_dict[inventory_obj[view_id_str]])
 
+    filename = request_data.get("filename", f"ExportedData.{export_type}")
     if export_type == "csv":
         return _csv_response(data, column_name_mappings)
     elif export_type == "geojson":
-        return _json_response(data, column_name_mappings)
+        return json_response(filename, data, column_name_mappings)
     elif export_type == "xlsx":
         return _spreadsheet_response(data, column_name_mappings)
 
@@ -182,8 +184,10 @@ def _csv_response(data, column_name_mappings):
     return output.getvalue()
 
 
-def _json_response(data, column_name_mappings):
+def json_response(filename, data, column_name_mappings):
     polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
+    response_dict = {"type": "FeatureCollection", "name": f"SEED Export - {filename.replace('.geojson', '')}"}
+
     features = []
 
     # extract related records
@@ -279,7 +283,8 @@ def _json_response(data, column_name_mappings):
         # per geojsonlint.com, the CRS we were defining was the default and should not
         # be included.
 
-    return features
+    response_dict["features"] = features
+    return response_dict
 
 
 def _spreadsheet_response(data, column_name_mappings):
