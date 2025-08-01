@@ -34,7 +34,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-dev
-    command: watchmedo auto-restart --directory=/seed/seed/ --pattern=*.py --recursive -- /seed/docker/start_celery_docker.sh
+    command: /seed/docker/start_celery_docker.sh
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.docker_dev
       - DJANGO_LOG_LEVEL
@@ -42,6 +42,7 @@ services:
       - ref_seed_media:/seed/media
       - ./seed:/seed/seed
       - ./config:/seed/config/
+      - ./dataset-links.csv:/seed/dataset-links.csv
 volumes:
   ref_seed_pgdata:
     external: true

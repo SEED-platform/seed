@@ -270,9 +270,13 @@ class AnalysisPipeline(abc.ABC):
         from seed.analysis_pipelines.better import BETTERPipeline
         from seed.analysis_pipelines.bsyncr import BsyncrPipeline
         from seed.analysis_pipelines.co2 import CO2Pipeline
+        from seed.analysis_pipelines.custom_analysis import CustomAnalysisPipeline
+        from seed.analysis_pipelines.add_hello_column import AddHelloColumnPipeline 
         from seed.analysis_pipelines.eeej import EEEJPipeline
         from seed.analysis_pipelines.element_statistics import ElementStatisticsPipeline
         from seed.analysis_pipelines.eui import EUIPipeline
+        from seed.analysis_pipelines.geopandas_test import GeopandasTestPipeline
+        from seed.analysis_pipelines.buildings_analysis import BuildingsAnalysisPipeline
         from seed.analysis_pipelines.upgrade_recommendation import UpgradeRecommendationPipeline
 
         if analysis.service == Analysis.BSYNCR:
@@ -289,6 +293,14 @@ class AnalysisPipeline(abc.ABC):
             return ElementStatisticsPipeline(analysis.id)
         elif analysis.service == Analysis.UPGRADERECOMMENDATION:
             return UpgradeRecommendationPipeline(analysis.id)
+        elif analysis.service == Analysis.CUSTOM_ANALYSIS:
+            return CustomAnalysisPipeline(analysis.id)
+        elif analysis.service == Analysis.ADD_HELLO_COLUMN:
+            return AddHelloColumnPipeline(analysis.id)
+        elif analysis.service == Analysis.GEOPANDAS_TEST:
+            return GeopandasTestPipeline(analysis.id)
+        elif analysis.service == Analysis.BUILDINGS_ANALYSIS:
+            return BuildingsAnalysisPipeline(analysis.id)
         else:
             raise AnalysisPipelineError(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 

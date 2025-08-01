@@ -26,6 +26,10 @@ class Analysis(models.Model):
     EEEJ = 5
     ELEMENTSTATISTICS = 6
     UPGRADERECOMMENDATION = 7
+    CUSTOM_ANALYSIS = 100
+    ADD_HELLO_COLUMN = 101
+    GEOPANDAS_TEST = 102
+    BUILDINGS_ANALYSIS = 103
 
     SERVICE_TYPES = (
         (BSYNCR, "BSyncr"),
@@ -35,6 +39,10 @@ class Analysis(models.Model):
         (EEEJ, "EEEJ"),
         (ELEMENTSTATISTICS, "Element Statistics"),
         (UPGRADERECOMMENDATION, "Building Upgrade Recommendation"),
+        (CUSTOM_ANALYSIS, "Custom Analysis"),
+        (ADD_HELLO_COLUMN, "Add Hello Column"),
+        (GEOPANDAS_TEST, "Geopandas Test"),
+        (BUILDINGS_ANALYSIS, "Buildings Analysis"),
     )
 
     PENDING_CREATION = 8
@@ -197,6 +205,47 @@ class Analysis(models.Model):
             return [
                 {"name": "Building Upgrade Recommendation", "value": recommendation},
             ]
+
+        # Add Hello Column
+        elif self.service == self.ADD_HELLO_COLUMN:
+            return [{"name": "Hello", "value": "Hello"}]    
+
+        # Geopandas Test
+        elif self.service == self.GEOPANDAS_TEST:
+            lat = results.get("lat", "N/A")
+            lon = results.get("lon", "N/A")
+            city = results.get("city", "N/A")
+            return [
+                {"name": "Latitude", "value": f"{lat}"},
+                {"name": "Longitude", "value": f"{lon}"},
+                {"name": "City", "value": f"{city}"}
+            ]
+
+        # Buildings Analysis
+        elif self.service == self.BUILDINGS_ANALYSIS:
+            building_count = results.get("building_count", 0)
+            avg_height = results.get("avg_height")
+            building_density = results.get("building_density", 0)
+            mean_setback = results.get("mean_setback")
+            h3_hex = results.get("h3_hex", "N/A")
+            
+            highlights = [
+                {"name": "Building Count", "value": f"{building_count}"},
+                {"name": "Building Density", "value": f"{building_density:.2f} buildings/km²"},
+                {"name": "H3 Hexagon", "value": f"{h3_hex}"}
+            ]
+            
+            if avg_height is not None:
+                highlights.append({"name": "Average Height", "value": f"{avg_height:.2f} meters"})
+            else:
+                highlights.append({"name": "Average Height", "value": "No height data"})
+                
+            if mean_setback is not None:
+                highlights.append({"name": "Mean Setback", "value": f"{mean_setback:.2f} meters"})
+            else:
+                highlights.append({"name": "Mean Setback", "value": "Insufficient data"})
+            
+            return highlights
 
         # Unexpected
         return [{"name": "Unexpected Analysis Type", "value": "Oops!"}]

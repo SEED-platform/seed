@@ -21,3 +21,7 @@ from seed.analysis_pipelines.eeej import _finish_preparation, _run_analysis  # n
 from seed.analysis_pipelines.element_statistics import _finish_preparation, _run_analysis  # noqa: F811
 from seed.analysis_pipelines.eui import _finish_preparation, _run_analysis  # noqa: F811
 from seed.analysis_pipelines.upgrade_recommendation import _finish_preparation, _run_analysis  # noqa: F811, F401
+from seed.analysis_pipelines.custom_analysis import _finish_preparation, _run_analysis  # noqa: F811
+from seed.analysis_pipelines.add_hello_column import _finish_preparation, _run_analysis  # noqa: F811
+from seed.analysis_pipelines.geopandas_test import _finish_preparation, _run_analysis  # noqa: F811
+from seed.analysis_pipelines.buildings_analysis import _finish_preparation, _run_analysis  # noqa: F811

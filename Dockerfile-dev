@@ -18,6 +18,8 @@ RUN apk add --no-cache \
         geos-dev \
         gdal \
         gdal-dev \
+        proj-dev \
+        proj-util \
         gcc \
         musl-dev \
         cargo \
@@ -89,9 +91,9 @@ COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 RUN git config --system --add safe.directory /seed
 
 ### Build SEED Angular
-RUN npm install -g pnpm
-RUN pnpm -C /seed/ng_seed/seed-angular install
-RUN pnpm -C /seed/ng_seed/seed-angular build
+# RUN npm install -g pnpm
+# RUN pnpm -C /seed/ng_seed/seed-angular install
+# RUN pnpm -C /seed/ng_seed/seed-angular build
 
 EXPOSE 80
 

@@ -60,6 +60,8 @@ seed-salesforce==0.1.1
 
 # geospatial and pnnl/buildingid-py
 shapely==2.0.7
+geopandas==1.0.1  # UPDATED 2025-07-27 
+pyproj==3.6.1 # UPDATED 2025-07-27 
 usaddress==0.5.14
 pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@3cb82c9
 
@@ -75,3 +77,7 @@ importlib_metadata==8.7.0
 tkbl==0.7
 
 semantic_version==2.10.0
+
+# Building analysis dependencies - ADDED 2025-07-27
+mercantile==1.2.1
+h3==3.7.7
