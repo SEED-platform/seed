@@ -1,11 +1,25 @@
 <div class="section">
   <div class="section_content_container">
     <div class="section_content">
-      <div uib-alert class="alert-danger http_error" ng-if="http_error == 404" close="closeAlert()">
-        <span translate>HTTP Error! Status Code: 404. The requested URL was not found.</span>
+      <div
+        uib-alert
+        class="alert-danger http_error"
+        ng-if="http_error == 404"
+        close="closeAlert()"
+      >
+        <span translate
+          >HTTP Error! Status Code: 404. The requested URL was not found.</span
+        >
       </div>
-      <div uib-alert class="alert-danger http_error" ng-if="http_error == 500" close="closeAlert()">
-        <span translate>HTTP Error! Status Code: 500. Internal Server Error.</span>
+      <div
+        uib-alert
+        class="alert-danger http_error"
+        ng-if="http_error == 500"
+        close="closeAlert()"
+      >
+        <span translate
+          >HTTP Error! Status Code: 500. Internal Server Error.</span
+        >
       </div>
 
       <div class="bg jumbotron">
@@ -54,13 +68,19 @@
                 class="btn btn-warning btn-lg"
                 role="button"
                 style="white-space: normal !important"
-                ><i class="fa-solid fa-file-lines"></i>&nbsp;&nbsp;{$:: 'Getting Started Guide' | translate $}</a
+                ><i class="fa-solid fa-file-lines"></i>&nbsp;&nbsp;{$:: 'Getting
+                Started Guide' | translate $}</a
               >
             </div>
 
             <div>
-              <a ng-href="{$ urls.static_url $}seed/sample-data/seed-sample-data.zip" class="btn btn-info btn-lg" role="button" style="white-space: normal !important"
-                ><i class="fa-solid fa-cloud-arrow-down"></i>&nbsp;&nbsp;{$:: 'Download Sample Data' | translate $}</a
+              <a
+                ng-href="{$ urls.static_url $}seed/sample-data/seed-sample-data.zip"
+                class="btn btn-info btn-lg"
+                role="button"
+                style="white-space: normal !important"
+                ><i class="fa-solid fa-cloud-arrow-down"></i>&nbsp;&nbsp;{$::
+                'Download Sample Data' | translate $}</a
               >
             </div>
 
@@ -73,15 +93,24 @@
                 role="button"
                 ng-hide="menu.user.organization.user_role === 'viewer'"
                 style="white-space: normal !important"
-                ><i class="fa-solid fa-cloud-arrow-up"></i>&nbsp;&nbsp;{$:: 'Upload your Buildings List' | translate $}</a
+                ><i class="fa-solid fa-cloud-arrow-up"></i>&nbsp;&nbsp;{$::
+                'Upload your Buildings List' | translate $}</a
               >
             </div>
           </div>
 
-          <div ng-if="menu.user.organization && menu.user.organization.user_role !== 'viewer'">
+          <div
+            ng-if="menu.user.organization && menu.user.organization.user_role !== 'viewer'"
+          >
             <div>
-              <a data-toggle="modal" ng-click="open_sample_data_modal()" class="btn btn-success btn-lg" role="button" style="white-space: normal !important"
-                ><i class="fa-solid fa-server"></i>&nbsp;&nbsp;{$:: 'Auto-Populate Sample Data' | translate $}</a
+              <a
+                data-toggle="modal"
+                ng-click="open_sample_data_modal()"
+                class="btn btn-success btn-lg"
+                role="button"
+                style="white-space: normal !important"
+                ><i class="fa-solid fa-server"></i>&nbsp;&nbsp;{$::
+                'Auto-Populate Sample Data' | translate $}</a
               >
             </div>
           </div>

@@ -1,7 +1,10 @@
 <div class="page_header_container">
   <div class="page_header">
     <div class="left page_action_container">
-      <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
+      <a ui-sref="organizations" class="page_action"
+        ><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' |
+        translate $}</a
+      >
     </div>
     <div class="page_title">
       <h1>{$:: org.name $}</h1>
@@ -10,16 +13,29 @@
   </div>
 </div>
 <div class="section_nav_container">
-  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
+  <div
+    class="section_nav"
+    ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"
+  ></div>
 </div>
 <div class="section">
   <div class="section_header_container">
     <div class="section_header has_no_padding fixed_height_short">
       <div class="section_action_container left wider-diff">
-        <h2><i class="fa-solid fa-share-from-square"></i> {$:: 'Public Disclosure - Sharing Your Data' | translate $}</h2>
+        <h2>
+          <i class="fa-solid fa-share-from-square"></i> {$:: 'Public Disclosure
+          - Sharing Your Data' | translate $}
+        </h2>
       </div>
-      <div class="section_action_container right section_action_btn" ng-if="org.public_feed_enabled">
-        <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">
+      <div
+        class="section_action_container right section_action_btn"
+        ng-if="org.public_feed_enabled"
+      >
+        <button
+          type="button"
+          class="pull-right btn btn-primary"
+          ng-click="save_settings()"
+        >
           {$:: 'Save Changes' | translate $}
           <i class="fa-solid fa-check" ng-show="settings_updated"></i>
         </button>
@@ -27,66 +43,141 @@
     </div>
   </div>
   <div class="section_content_container">
-    <div class="section_content with_padding" ng-if="::org.is_parent && auth.requires_owner">
+    <div
+      class="section_content with_padding"
+      ng-if="::org.is_parent && auth.requires_owner"
+    >
       <p class="pad-top-20">
         {$:: 'The Public Feed functionality is currently' | translate $}:
-        <span ng-if="org.public_feed_enabled" class="label label-success label-lg">ENABLED</span>
-        <span ng-if="!org.public_feed_enabled" class="label label-default label-lg">DISABLED</span>
+        <span
+          ng-if="org.public_feed_enabled"
+          class="label label-success label-lg"
+          >ENABLED</span
+        >
+        <span
+          ng-if="!org.public_feed_enabled"
+          class="label label-default label-lg"
+          >DISABLED</span
+        >
         <span translate>Visit</span>
-        <a ui-sref="organization_settings(::{organization_id: org.id})">{$:: 'Organization Settings' | translate $}</a>
+        <a ui-sref="organization_settings(::{organization_id: org.id})"
+          >{$:: 'Organization Settings' | translate $}</a
+        >
         <span translate>to enable or disable Public Feed functionality</span>
       </p>
       <div ng-if="org.public_feed_enabled">
-        <button type="button" class="btn btn-primary" data-toggle="collapse" data-target="#instructions" ng-click="changeText(btnText)">{$ btnText $}</button>
+        <button
+          type="button"
+          class="btn btn-primary"
+          data-toggle="collapse"
+          data-target="#instructions"
+          ng-click="changeText(btnText)"
+        >
+          {$ btnText $}
+        </button>
         <div class="collapse" id="instructions">
           <h2 class="sharing-type">JSON/HTML</h2>
           <p>
             <span translate>PUBLIC_JSON</span>:
-            <strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/feed.json</strong>
+            <strong>
+              {$:: base_url $}/api/v3/public/organizations/{$:: org.id
+              $}/feed.json</strong
+            >
           </p>
           <p>
             <span translate>PUBLIC_HTML</span>:
-            <strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/feed.html</strong>
+            <strong>
+              {$:: base_url $}/api/v3/public/organizations/{$:: org.id
+              $}/feed.html</strong
+            >
           </p>
           <h3 translate>URL_OPTIONS</h3>
           <p translate>SHARING_QUERY_PARAMS</p>
           <ul>
-            <li><strong>page</strong>&mdash;<span translate>SHARING_PAGE</span></li>
-            <li><strong>per_page</strong>&mdash;<span translate>SHARING_PER_PAGE</span></li>
-            <li><strong>properties</strong>&mdash;<span translate>SHARING_PROPERTIES</span></li>
-            <li><strong>taxlots</strong>&mdash;<span translate>SHARING_TAXLOTS</span></li>
-            <li><strong>cycles</strong>&mdash;<span translate>SHARING_CYCLES</span></li>
-            <li><strong>labels</strong>&mdash;<span translate>SHARING_LABELS</span></li>
+            <li>
+              <strong>page</strong>&mdash;<span translate>SHARING_PAGE</span>
+            </li>
+            <li>
+              <strong>per_page</strong>&mdash;<span translate
+                >SHARING_PER_PAGE</span
+              >
+            </li>
+            <li>
+              <strong>properties</strong>&mdash;<span translate
+                >SHARING_PROPERTIES</span
+              >
+            </li>
+            <li>
+              <strong>taxlots</strong>&mdash;<span translate
+                >SHARING_TAXLOTS</span
+              >
+            </li>
+            <li>
+              <strong>cycles</strong>&mdash;<span translate
+                >SHARING_CYCLES</span
+              >
+            </li>
+            <li>
+              <strong>labels</strong>&mdash;<span translate
+                >SHARING_LABELS</span
+              >
+            </li>
           </ul>
-          <p><strong>Example:</strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/feed.json?properties=True&taxlots=False&per_page=25&cycles=12,13</p>
+          <p>
+            <strong>Example:</strong> {$:: base_url
+            $}/api/v3/public/organizations/{$:: org.id
+            $}/feed.json?properties=True&taxlots=False&per_page=25&cycles=12,13
+          </p>
           <div ng-if="org.public_geojson_enabled">
             <h2 class="sharing-type">GeoJSON</h2>
             <p>
-              <span translate>PUBLIC_GEOJSON_TEXT_1</span>: <strong>{$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/cycles/CYCLE_ID/geo.json</strong>.
+              <span translate>PUBLIC_GEOJSON_TEXT_1</span>:
+              <strong
+                >{$:: base_url $}/api/v3/public/organizations/{$:: org.id
+                $}/cycles/CYCLE_ID/geo.json</strong
+              >.
               <span translate>PUBLIC_GEOJSON_TEXT_2</span>
-              <a ui-sref="organization_cycles(::{organization_id: org.id})">{$:: 'Cycles Page' | translate $}</a>
+              <a ui-sref="organization_cycles(::{organization_id: org.id})"
+                >{$:: 'Cycles Page' | translate $}</a
+              >
             </p>
             <h3 translate>URL_OPTIONS</h3>
             <p translate>SHARING_QUERY_PARAMS</p>
             <ul>
-              <li><strong>taxlots</strong>&mdash;<span translate>SHARING_TAXLOTS</span></li>
+              <li>
+                <strong>taxlots</strong>&mdash;<span translate
+                  >SHARING_TAXLOTS</span
+                >
+              </li>
             </ul>
-            <p><strong>Example:</strong> {$:: base_url $}/api/v3/public/organizations/{$:: org.id $}/cycles/1/geo.json?taxlots=true</p>
+            <p>
+              <strong>Example:</strong> {$:: base_url
+              $}/api/v3/public/organizations/{$:: org.id
+              $}/cycles/1/geo.json?taxlots=true
+            </p>
           </div>
         </div>
         <h3 translate>Selecting Fields to Share</h3>
         <p translate>PUBLIC_SHARE</p>
         <div class="table_list_container has_borders">
-          <table class="table has_no_btm_margin table-striped table_highlight_first">
+          <table
+            class="table has_no_btm_margin table-striped table_highlight_first"
+          >
             <thead>
               <tr>
-                <th class="condensed_head" style="width: 150px" translate>SHARE</th>
+                <th class="condensed_head" style="width: 150px" translate>
+                  SHARE
+                </th>
                 <th translate>Table Name</th>
                 <th translate>Field Name</th>
               </tr>
               <tr class="sub_head">
                 <th class="sub_head check is_aligned_center condensed_head">
-                  <input type="checkbox" ng-model="controls.public_select_all" ng-change="select_all_clicked('public')" />
+                  <input
+                    type="checkbox"
+                    ng-model="controls.public_select_all"
+                    ng-change="select_all_clicked('public')"
+                  />
                 </th>
                 <th class="sub_head" style="width: 235px">
                   <input
@@ -131,7 +222,11 @@
     </div>
     <div class="section_content_container pad-top-10">
       <div class="section_content with_padding" ng-if="org.public_feed_enabled">
-        <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()">
+        <button
+          type="button"
+          class="pull-right btn btn-primary"
+          ng-click="save_settings()"
+        >
           {$:: 'Save Changes' | translate $}
           <i class="fa-solid fa-check" ng-show="settings_updated"></i>
         </button>

@@ -4,7 +4,9 @@
 
 <div ng-switch on="stage">
   <div class="modal-body modal-input">
-    <div class="alert alert-danger" ng-show="error" style="margin-bottom: 10px">{$ error $}</div>
+    <div class="alert alert-danger" ng-show="error" style="margin-bottom: 10px">
+      {$ error $}
+    </div>
 
     <div class="flex-centered grow">
       <div
@@ -25,18 +27,38 @@
     </div>
 
     <div class="flex-centered grow" style="margin-top: 10px">
-      <label class="col-sm-2 no-padding" for="input-at-building-id" translate>Custom ID 1</label>
+      <label class="col-sm-2 no-padding" for="input-at-building-id" translate
+        >Custom ID 1</label
+      >
       <div class="col-sm-2 no-padding">
-        <input id="input-at-building-id" type="text" class="form-control" ng-model="fields.custom_id_1" ng-disabled="busy" />
+        <input
+          id="input-at-building-id"
+          type="text"
+          class="form-control"
+          ng-model="fields.custom_id_1"
+          ng-disabled="busy"
+        />
       </div>
       <hr />
-      <div class="col-sm-8 btn btn-primary upload-btn flex-centered" ng-click="confirm_import()" ng-disabled="busy">
+      <div
+        class="col-sm-8 btn btn-primary upload-btn flex-centered"
+        ng-click="confirm_import()"
+        ng-disabled="busy"
+      >
         <i class="fa-regular fa-id-card fa-2x"></i>
         <span class="grow" translate>Import from Audit Template</span>
       </div>
     </div>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-default" ng-click="close()" ng-disabled="busy" translate>Close</button>
+    <button
+      type="button"
+      class="btn btn-default"
+      ng-click="close()"
+      ng-disabled="busy"
+      translate
+    >
+      Close
+    </button>
   </div>
 </div>

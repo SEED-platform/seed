@@ -1,33 +1,55 @@
 <div class="page_header_container" ng-cloak>
   <div class="page_header">
     <div class="left page_action_container">
-      <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+      <a
+        ui-sref="inventory_list(::{inventory_type: inventory_type})"
+        class="page_action"
+      >
         <i class="fa-solid fa-chevron-left"></i>
-        {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+        {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') |
+        translate $}
       </a>
     </div>
     <div class="page_title">
-      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+      <h1>
+        {$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property
+        Detail') | translate $}
+      </h1>
     </div>
     <div class="right page_action_container"></div>
   </div>
 </div>
 <div class="section_nav_container">
-  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+  <div
+    class="section_nav"
+    ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"
+  ></div>
 </div>
 <div class="section">
   <div class="section_header_container">
     <div class="section_header fixed_height_short has_no_padding">
-      <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"></div>
+      <div
+        ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"
+      ></div>
     </div>
   </div>
   <div class="section_content_container">
     <div class="section_content">
-      <div style="display: flex; justify-content: flex-end; padding: 20px 10px 20px">
+      <div
+        style="
+          display: flex;
+          justify-content: flex-end;
+          padding: 20px 10px 20px;
+        "
+      >
         <span ng-show="profiles.length > 0">
           <label>{$:: 'Detail Column List Profile' | translate $}:</label>
           <div style="display: inline-block">
-            <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
+            <select
+              class="form-control input-sm"
+              ng-model="currentProfile"
+              ng-options="option.name for option in profiles track by option.id"
+            ></select>
           </div>
         </span>
       </div>
@@ -42,10 +64,15 @@
             <th id="building-fields">{$:: 'Field' | translate $}</th>
             <!-- Cycle Names -->
             <th ng-repeat="state in ::states">
-              <span popover-placement="bottom-left" uib-popover="{$:: cycles[state.cycle_id].start | date: 'yyyy-MM-dd' $} to {$:: cycles[state.cycle_id].end | date: 'yyyy-MM-dd' $}">
+              <span
+                popover-placement="bottom-left"
+                uib-popover="{$:: cycles[state.cycle_id].start | date: 'yyyy-MM-dd' $} to {$:: cycles[state.cycle_id].end | date: 'yyyy-MM-dd' $}"
+              >
                 {$:: cycles[state.cycle_id].name $}
               </span>
-              <a ui-sref="inventory_detail(inventory_type === 'properties' ? {inventory_type: 'properties', view_id: state.view_id} : {inventory_type: 'taxlots', view_id: state.view_id})">
+              <a
+                ui-sref="inventory_detail(inventory_type === 'properties' ? {inventory_type: 'properties', view_id: state.view_id} : {inventory_type: 'taxlots', view_id: state.view_id})"
+              >
                 <i class="ui-grid-icon-info-circled"></i>
               </a>
             </th>
@@ -58,10 +85,16 @@
         <tbody>
           <tr ng-repeat="col in ::columns">
             <!-- Column name -->
-            <td ng-attr-title="{$:: col.column_name $}">{$:: col.displayName | translate $}</td>
+            <td ng-attr-title="{$:: col.column_name $}">
+              {$:: col.displayName | translate $}
+            </td>
 
             <!-- Column values for each record -->
-            <td ng-repeat="state in states" class="ellipsis" ng-class="{highlight: col.changed}">
+            <td
+              ng-repeat="state in states"
+              class="ellipsis"
+              ng-class="{highlight: col.changed}"
+            >
               <span
                 ng-if="::!col.is_extra_data"
                 class="sd-data-content"
@@ -70,7 +103,10 @@
                 popover-animation="false"
                 uib-popover="{$:: state[col.column_description] $}"
               >
-                <span>{$:: displayValue(col.data_type, state[col.column_name]) $}</span>
+                <span
+                  >{$:: displayValue(col.data_type, state[col.column_name])
+                  $}</span
+                >
               </span>
               <span
                 ng-if="::col.is_extra_data"
@@ -80,7 +116,10 @@
                 popover-animation="false"
                 uib-popover="{$:: state.extra_data[col.column_description] $}"
               >
-                <span>{$:: displayValue(col.data_type, state.extra_data[col.column_name]) $}</span>
+                <span
+                  >{$:: displayValue(col.data_type,
+                  state.extra_data[col.column_name]) $}</span
+                >
               </span>
             </td>
           </tr>

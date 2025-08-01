@@ -1,6 +1,9 @@
 <div class="system-table-container">
   <div class="system-type">{$ system_key $} Systems</div>
-  <table class="table table-striped table_highlight_first system-table" style="border-bottom: 1px solid #dddddd; border-collapse: collapse">
+  <table
+    class="table table-striped table_highlight_first system-table"
+    style="border-bottom: 1px solid #dddddd; border-collapse: collapse"
+  >
     <thead>
       <tr>
         <th style="width: 90px"></th>
@@ -9,30 +12,62 @@
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat-start="system in systems[system_key]" style="border-bottom: 1px solid gray">
+      <tr
+        ng-repeat-start="system in systems[system_key]"
+        style="border-bottom: 1px solid gray"
+      >
         <td>
           <div ng-if="system.services.length">
-            <button id="collapse-services-button-{$ system.id $}" type="button" class="accordion-button" data-toggle="collapse" data-target="#collapse-services-{$ system.id $}">
+            <button
+              id="collapse-services-button-{$ system.id $}"
+              type="button"
+              class="accordion-button"
+              data-toggle="collapse"
+              data-target="#collapse-services-{$ system.id $}"
+            >
               Services
-              <i class="fa-solid fa-chevron-right accordion-indicator-default-closed"></i>
+              <i
+                class="fa-solid fa-chevron-right accordion-indicator-default-closed"
+              ></i>
             </button>
           </div>
         </td>
         <td ng-repeat="field in fields">{$ system[field] $}</td>
         <td>
           <div ng-if="menu.user.organization.user_role !== 'viewer'">
-            <button class="btn btn-default btn-rowform" ng-click="create_service(system.id)" translate>+ service</button>
-            <button class="btn btn-default btn-rowform" ng-click="edit_system(system.id)" translate>
+            <button
+              class="btn btn-default btn-rowform"
+              ng-click="create_service(system.id)"
+              translate
+            >
+              + service
+            </button>
+            <button
+              class="btn btn-default btn-rowform"
+              ng-click="edit_system(system.id)"
+              translate
+            >
               <i class="fa-solid fa-pencil"></i>
             </button>
-            <button class="btn btn-danger btn-rowform" ng-click="remove_system(system.id)">X</button>
+            <button
+              class="btn btn-danger btn-rowform"
+              ng-click="remove_system(system.id)"
+            >
+              X
+            </button>
           </div>
         </td>
       </tr>
-      <tr id="collapse-services-{$ system.id $}" class="collapse services-table" ng-repeat-end="system in systems[system_key]">
+      <tr
+        id="collapse-services-{$ system.id $}"
+        class="collapse services-table"
+        ng-repeat-end="system in systems[system_key]"
+      >
         <td></td>
         <td colspan="{$ fields.length + 1 $}" style="padding: 0">
-          <div ng-include="::urls.static_url + 'seed/partials/services_table.html'"></div>
+          <div
+            ng-include="::urls.static_url + 'seed/partials/services_table.html'"
+          ></div>
         </td>
       </tr>
     </tbody>

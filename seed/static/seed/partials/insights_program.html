@@ -7,7 +7,10 @@
 </div>
 
 <div class="section_nav_container">
-  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"></div>
+  <div
+    class="section_nav"
+    ng-include="::urls.static_url + 'seed/partials/insights_nav.html'"
+  ></div>
 </div>
 
 <div class="section_content_container">
@@ -16,11 +19,19 @@
       <div ng-show="!data">
         <div class="col-md-10">
           <div class="title-row">
-            <h2 style="font-size: 18px">{$:: 'Program Overview' | translate $}</h2>
+            <h2 style="font-size: 18px">
+              {$:: 'Program Overview' | translate $}
+            </h2>
           </div>
           <div ng-if="auth.requires_member" class="compliance-setup">
             <p>Configure your program's metrics:</p>
-            <button class="btn btn-primary" type="submit" ng-click="open_program_setup_modal()">Program Configuration</button>
+            <button
+              class="btn btn-primary"
+              type="submit"
+              ng-click="open_program_setup_modal()"
+            >
+              Program Configuration
+            </button>
           </div>
         </div>
       </div>
@@ -28,13 +39,21 @@
       <div ng-show="data">
         <div class="col-md-2">
           <div class="title-row">
-            <h2 style="font-size: 18px">{$:: 'Program Overview' | translate $}</h2>
+            <h2 style="font-size: 18px">
+              {$:: 'Program Overview' | translate $}
+            </h2>
           </div>
           <!-- compliance setup -->
           <div ng-if="auth.requires_member" class="compliance-setup">
             <p>
               Need to configure your Program?
-              <button class="btn btn-primary" type="submit" ng-click="open_program_setup_modal()">Program Configuration</button>
+              <button
+                class="btn btn-primary"
+                type="submit"
+                ng-click="open_program_setup_modal()"
+              >
+                Program Configuration
+              </button>
             </p>
           </div>
           <div class="form-group margin-top-20">
@@ -48,7 +67,11 @@
             ></select>
           </div>
           <div class="margin-top-20">
-            <button type="button" class="btn btn-primary" ng-click="downloadChart()">
+            <button
+              type="button"
+              class="btn btn-primary"
+              ng-click="downloadChart()"
+            >
               <i class="fa-solid fa-share-from-square" aria-hidden="true"></i>
               <span translate>Export</span>
             </button>

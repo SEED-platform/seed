@@ -8,12 +8,18 @@
   </div>
 </div>
 <div class="section_nav_container">
-  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"></div>
+  <div
+    class="section_nav"
+    ng-include="::urls.static_url + 'seed/partials/profile_nav.html'"
+  ></div>
 </div>
 <div class="section">
   <div class="section_header_container">
     <div class="section_header">
-      <h2><i class="fa-solid fa-code" style="font-weight: bold"></i> {$:: 'API Key' | translate $}</h2>
+      <h2>
+        <i class="fa-solid fa-code" style="font-weight: bold"></i> {$:: 'API
+        Key' | translate $}
+      </h2>
     </div>
   </div>
   <div class="section_content_container">
@@ -33,7 +39,11 @@
                 <tr>
                   <td>
                     <pre ng-if="user.api_key">{$ user.api_key $}</pre>
-                    <span ng-if="!user.api_key" style="font-style: italic; opacity: 0.6">&lt;generate a key&gt;</span>
+                    <span
+                      ng-if="!user.api_key"
+                      style="font-style: italic; opacity: 0.6"
+                      >&lt;generate a key&gt;</span
+                    >
                   </td>
                   <td>{$:: user.username $}</td>
                 </tr>
@@ -41,7 +51,11 @@
             </table>
           </div>
           <div class="table_footer">
-            <button type="submit" class="btn btn-primary" ng-click="generate_api_key()">
+            <button
+              type="submit"
+              class="btn btn-primary"
+              ng-click="generate_api_key()"
+            >
               <span translate>Get a New API Key</span>
               <i class="fa-solid fa-check" ng-show="new_key_generated"></i>
             </button>
