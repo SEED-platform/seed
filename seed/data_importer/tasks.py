@@ -2056,7 +2056,7 @@ def mapping_results_task(args):
             .only(*fields["PropertyState"])
             .order_by("id")
         )
-    
+
     if inventory_type in {"taxlots", "all"}:
         tax_lots = (
             TaxLotState.objects.filter(
@@ -2072,7 +2072,6 @@ def mapping_results_task(args):
     progress_data = update_sub_progress_total(progress_total, progress_key)
 
     progress_data.save()
-
 
     columns_from_db = Column.retrieve_all(org_id)
     property_column_name_mapping = {}

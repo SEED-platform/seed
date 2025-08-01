@@ -73,7 +73,7 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
           $scope.exporter_progress
         )
       })
-    } 
+    }
 
     const csv_to_blob = (data) => {
       if ($scope.include_label_header) {

@@ -3,7 +3,6 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-
 import logging
 from random import randint
 
@@ -18,10 +17,8 @@ from seed.decorators import ajax_request
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import AccessLevelInstance, Column, DerivedColumn, PropertyView, TaxLotProperty, TaxLotView
-
-
 from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
-from seed.tasks import set_update_to_now, export_data_task
+from seed.tasks import export_data_task, set_update_to_now
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.match import update_sub_progress_total
@@ -79,7 +76,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         """
         Download a collection of the TaxLot and Properties in multiple formats via a background task.
         """
-        org_id = request.query_params.get('organization_id')
+        org_id = request.query_params.get("organization_id")
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         ali_lft = access_level_instance.lft
         ali_rgt = access_level_instance.rgt
@@ -102,7 +99,6 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         export_data_task.s(args).apply_async()
 
         return progress_data.result()
-
 
     def _serialized_coordinates(self, polygon_wkt):
         string_coord_pairs = polygon_wkt.lstrip("POLYGON (").rstrip(")").split(", ")

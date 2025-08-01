@@ -1,15 +1,13 @@
 import base64
 import csv
 import datetime
+import io
 import logging
 import math
-import io
-from seed.views.v3 import progress
-import xlsxwriter
 from collections import OrderedDict
-from django.http import HttpResponse, JsonResponse
-from quantityfield.units import ureg
 
+import xlsxwriter
+from quantityfield.units import ureg
 
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
@@ -21,12 +19,11 @@ from seed.models import (
 from seed.models.meters import Meter, MeterReading
 from seed.models.property_measures import PropertyMeasure
 from seed.models.scenarios import Scenario
-from seed.serializers.meters import MeterSerializer
 from seed.serializers.meter_readings import MeterReadingSerializer
-from seed.utils.match import update_sub_progress_total
-
+from seed.serializers.meters import MeterSerializer
 
 INVENTORY_MODELS = {"properties": PropertyView, "taxlots": TaxLotView}
+
 
 def export_data(args):
     org_id = args.get("org_id")
@@ -77,9 +74,7 @@ def export_data(args):
         column_name_mappings["taxlot_notes"] = "Tax Lot Notes"
         column_name_mappings["taxlot_labels"] = "Tax Lot Labels"
 
-    model_views = (
-        view_klass.objects.select_related(*select_related).prefetch_related(*prefetch_related).filter(**filter_str).order_by("id")
-    )
+    model_views = view_klass.objects.select_related(*select_related).prefetch_related(*prefetch_related).filter(**filter_str).order_by("id")
 
     # get the data in a dict which includes the related data
     progress_data.step("Exporting Inventory...")
@@ -185,7 +180,8 @@ def _csv_response(data, column_name_mappings):
         writer.writerow(row)
 
     return output.getvalue()
-    
+
+
 def _json_response(data, column_name_mappings):
     polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
     features = []
@@ -195,8 +191,6 @@ def _json_response(data, column_name_mappings):
 
     # append related_records to data
     complete_data = data + related_records
-
-    response_dict = {}
 
     for datum in complete_data:
         feature = {"type": "Feature", "properties": {}}
@@ -286,6 +280,7 @@ def _json_response(data, column_name_mappings):
         # be included.
 
     return features
+
 
 def _spreadsheet_response(data, column_name_mappings):
     scenario_keys = (
@@ -488,7 +483,8 @@ def _spreadsheet_response(data, column_name_mappings):
 
     return xlsx_data
 
-def _serialized_coordinates( polygon_wkt):
+
+def _serialized_coordinates(polygon_wkt):
     string_coord_pairs = polygon_wkt.lstrip("POLYGON (").rstrip(")").split(", ")
 
     coordinates = []
@@ -498,7 +494,8 @@ def _serialized_coordinates( polygon_wkt):
 
     return coordinates
 
-def _serialized_point( point_wkt):
+
+def _serialized_point(point_wkt):
     string_coords = point_wkt.lstrip("POINT (").rstrip(")").split(", ")
 
     coordinates = []
@@ -506,6 +503,7 @@ def _serialized_point( point_wkt):
         coordinates.append(float(coord))
 
     return coordinates
+
 
 def _extract_related(data):
     # extract all related records into a separate array

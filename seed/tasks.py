@@ -43,8 +43,8 @@ from seed.models import (
     TaxLotView,
 )
 from seed.utils.match import update_sub_progress_total
-from seed.utils.tax_lot_properties import export_data
 from seed.utils.salesforce import auto_sync_salesforce_properties
+from seed.utils.tax_lot_properties import export_data
 
 logger = get_task_logger(__name__)
 

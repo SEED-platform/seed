@@ -35,11 +35,9 @@ from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (
     ASSESSED_RAW,
     AUDIT_USER_EDIT,
-    DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
-    MERGE_STATE_UNKNOWN,
     PORTFOLIO_METER_USAGE,
     SEED_DATA_SOURCES,
     Column,
@@ -53,15 +51,12 @@ from seed.models import (
     PropertyView,
     System,
     TaxLotAuditLog,
-    TaxLotProperty,
     TaxLotState,
     get_column_mapping,
     obj_to_dict,
 )
-from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
-from seed.utils.match import update_sub_progress_total
 
 _log = logging.getLogger(__name__)
 
