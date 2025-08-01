@@ -6,6 +6,7 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
   '$http',
   '$scope',
   '$uibModalInstance',
+  'inventory_service',
   'user_service',
   'uploader_service',
   'ids',
@@ -15,7 +16,7 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
   'spinner_utility',
   'filter_header_string',
   // eslint-disable-next-line func-names
-  function ($http, $scope, $uibModalInstance, user_service, uploader_service, ids, columns, inventory_type, profile_id, spinner_utility, filter_header_string) {
+  function ($http, $scope, $uibModalInstance, inventory_service, user_service, uploader_service, ids, columns, inventory_type, profile_id, spinner_utility, filter_header_string) {
     $scope.export_name = '';
     $scope.include_notes = true;
     $scope.include_label_header = false;
@@ -26,53 +27,51 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
       progress: 0,
       status_message: ''
     };
+    $scope.export_type = '';
+    $scope.filename = '';
 
     $scope.export_selected = (export_type) => {
-      let filename = $scope.export_name;
+      $scope.export_type = export_type;
+      $scope.filename = $scope.export_name;
       const ext = `.${export_type}`;
-      if (!filename.endsWith(ext)) filename += ext;
+      if (!$scope.filename.endsWith(ext)) $scope.filename += ext;
       $scope.exporting = true;
 
-      const successFn = (response) => {
-        const data = response.message;
-
-        const blob_map = {
-          csv: csv_to_blob,
-          xlsx: base64_to_blob,
-          geojson: geojson_to_blob
-        };
-
-        const blob = blob_map[export_type](data);
-        saveAs(blob, filename);
-        $scope.close();
-      };
-
-      $http.post(
-        '/api/v3/tax_lot_properties/export/',
-        {
-          ids,
-          filename,
-          profile_id,
-          export_type,
-          include_notes: $scope.include_notes,
-          include_meter_readings: $scope.include_meter_readings
-        },
-        {
-          params: {
-            organization_id: user_service.get_organization().id,
-            inventory_type
-          }
-        }
+      inventory_service.start_export(
+        ids,
+        $scope.filename,
+        profile_id,
+        export_type,
+        $scope.include_notes,
+        $scope.include_meter_readings,
+        inventory_type
       ).then((data) => {
         uploader_service.check_progress_loop(
           data.data.progress_key,
           0,
           1,
-          successFn,
+          $scope.get_export,
           () => {},
           $scope.exporter_progress
         );
       });
+    };
+
+    $scope.get_export = ({ unique_id }) => {
+      inventory_service.get_export(unique_id)
+        .then((response) => {
+          const data = response.data;
+
+          const blob_map = {
+            csv: csv_to_blob,
+            xlsx: base64_to_blob,
+            geojson: geojson_to_blob
+          };
+
+          const blob = blob_map[$scope.export_type](data);
+          saveAs(blob, $scope.filename);
+          $scope.close();
+        });
     };
 
     const csv_to_blob = (data) => {

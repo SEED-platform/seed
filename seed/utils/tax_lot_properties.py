@@ -21,6 +21,7 @@ from seed.models.property_measures import PropertyMeasure
 from seed.models.scenarios import Scenario
 from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.serializers.meters import MeterSerializer
+from seed.utils.cache import set_cache
 
 INVENTORY_MODELS = {"properties": PropertyView, "taxlots": TaxLotView}
 
@@ -135,11 +136,13 @@ def export_data(args):
 
     filename = request_data.get("filename", f"ExportedData.{export_type}")
     if export_type == "csv":
-        return _csv_response(data, column_name_mappings)
+        response_dict = _csv_response(data, column_name_mappings)
     elif export_type == "geojson":
-        return json_response(filename, data, column_name_mappings)
+        response_dict = json_response(filename, data, column_name_mappings)
     elif export_type == "xlsx":
-        return _spreadsheet_response(data, column_name_mappings)
+        response_dict = _spreadsheet_response(data, column_name_mappings)
+    
+    set_cache(progress_data.unique_id, 'success', {'data': response_dict})
 
 
 def _csv_response(data, column_name_mappings):
