@@ -3,58 +3,23 @@
 </div>
 
 <div class="modal-body no_bottom_padding">
-  <div style="padding-bottom: 20px" ng-if="!status.complete">
-    {$ 'Update inventory with Audit Template Submissions' | translate $}
-  </div>
+  <div style="padding-bottom: 20px" ng-if="!status.complete">{$ 'Update inventory with Audit Template Submissions' | translate $}</div>
   <div style="padding-bottom: 20px" ng-if="!status.complete">
     <span translate>Import setting: </span>
-    <span
-      ng-if="org.audit_template_conditional_import"
-      class="label label-info"
-      translate
-      >MORE RECENT DATA</span
-    >
-    <div
-      class="at-details"
-      ng-if="org.audit_template_conditional_import"
-      translate
-    >
-      AT_MOST_RECENT_ONLY
-    </div>
-    <span
-      ng-if="!org.audit_template_conditional_import"
-      class="label label-default"
-      translate
-      >ALL DATA</span
-    >
-    <div
-      class="at-details"
-      ng-if="!org.audit_template_conditional_import"
-      translate
-    >
-      AT_ALL_DATA
-    </div>
+    <span ng-if="org.audit_template_conditional_import" class="label label-info" translate>MORE RECENT DATA</span>
+    <div class="at-details" ng-if="org.audit_template_conditional_import" translate>AT_MOST_RECENT_ONLY</div>
+    <span ng-if="!org.audit_template_conditional_import" class="label label-default" translate>ALL DATA</span>
+    <div class="at-details" ng-if="!org.audit_template_conditional_import" translate>AT_ALL_DATA</div>
   </div>
-  <div style="padding-bottom: 20px" ng-if="status.complete">
-    {$ 'Results' | translate $}
-  </div>
+  <div style="padding-bottom: 20px" ng-if="status.complete">{$ 'Results' | translate $}</div>
 
   <div class="progress_bar_container" ng-show="status.in_progress">
     <div class="progress_bar_copy_top" translate>Progress</div>
-    <uib-progressbar
-      class="progress-striped active"
-      value="status.progress"
-      type="success"
-    ></uib-progressbar>
-    <div class="progress_bar_copy_bottom">
-      {$ status.progress | number:0 $}% {$:: 'Complete' | translate $} {$
-      status.status_message ? ': ' + status.status_message : '' $}
-    </div>
+    <uib-progressbar class="progress-striped active" value="status.progress" type="success"></uib-progressbar>
+    <div class="progress_bar_copy_bottom">{$ status.progress | number:0 $}% {$:: 'Complete' | translate $} {$ status.status_message ? ': ' + status.status_message : '' $}</div>
   </div>
   <div ng-show="status.complete">
-    <div ng-if="status.result.error" class="alert alert-danger">
-      Error: {$ status.result.error $}
-    </div>
+    <div ng-if="status.result.error" class="alert alert-danger">Error: {$ status.result.error $}</div>
     <div ng-if="!status.result.error">
       <table id="import-export-at-table" class="table table-striped">
         <tbody style="border: 1px solid #cccccc">
@@ -62,21 +27,12 @@
             <td>{$ 'Properties updated:' | translate $}</td>
             <td>{$ status.result.success $}</td>
           </tr>
-          <tr
-            class="import-export-detail-row"
-            ng-if="status.result.data.length"
-          >
+          <tr class="import-export-detail-row" ng-if="status.result.data.length">
             <td>
               <div class="import-export-details">
                 <div ng-repeat="data in status.result.data" class="alert-info">
                   Custom ID 1
-                  <a
-                    ui-sref="inventory_detail({inventory_type: 'properties', view_id: data.view_id})"
-                    ng-click="close()"
-                    style="color: black"
-                  >
-                    {$ data.custom_id_1 $}
-                  </a>
+                  <a ui-sref="inventory_detail({inventory_type: 'properties', view_id: data.view_id})" ng-click="close()" style="color: black"> {$ data.custom_id_1 $} </a>
                   in cycle {$ data.cycle_name $}
                 </div>
               </div>
@@ -93,32 +49,7 @@
 </div>
 
 <div class="modal-footer">
-  <button
-    type="button"
-    class="btn btn-default"
-    ng-show="!status.complete"
-    ng-click="close()"
-    translate
-  >
-    Cancel
-  </button>
-  <button
-    type="submit"
-    class="btn btn-primary"
-    ng-show="!status.complete"
-    ng-click="get_submissions()"
-    ng-disabled="status.in_progress"
-    translate
-  >
-    Import
-  </button>
-  <button
-    type="button"
-    class="btn btn-primary"
-    ng-show="status.complete"
-    ng-click="close()"
-    translate
-  >
-    Close
-  </button>
+  <button type="button" class="btn btn-default" ng-show="!status.complete" ng-click="close()" translate>Cancel</button>
+  <button type="submit" class="btn btn-primary" ng-show="!status.complete" ng-click="get_submissions()" ng-disabled="status.in_progress" translate>Import</button>
+  <button type="button" class="btn btn-primary" ng-show="status.complete" ng-click="close()" translate>Close</button>
 </div>

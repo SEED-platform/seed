@@ -6,22 +6,13 @@
   <div class="meter-config-container">
     <!-- DIRECTION -->
     <div class="meter-config-selection-container">
-      <label class="control-label" for="selected_direction" translate
-        >Flow Direction</label
-      >
-      <select
-        class="form-control"
-        id="selected_direction"
-        ng-model="config.direction"
-        ng-options="option.value as option.display for option in direction_options"
-      ></select>
+      <label class="control-label" for="selected_direction" translate>Flow Direction</label>
+      <select class="form-control" id="selected_direction" ng-model="config.direction" ng-options="option.value as option.display for option in direction_options"></select>
     </div>
 
     <!-- CONNECTION -->
     <div class="meter-config-selection-container">
-      <label class="control-label" for="selected_connection" translate
-        >Connection</label
-      >
+      <label class="control-label" for="selected_connection" translate>Connection</label>
       <select
         class="form-control"
         id="selected_connection"
@@ -33,16 +24,8 @@
 
     <div ng-show="!loading">
       <!-- USAGE -->
-      <div
-        ng-if="config.connection !== 'outside'"
-        class="meter-config-selection-container"
-      >
-        <label
-          class="control-label"
-          for="selected_use"
-          tooltip-placement="right"
-          uib-tooltip="Is the meter using a service, or offering a service?"
-        >
+      <div ng-if="config.connection !== 'outside'" class="meter-config-selection-container">
+        <label class="control-label" for="selected_use" tooltip-placement="right" uib-tooltip="Is the meter using a service, or offering a service?">
           <span translate>Meter Usage</span>
           <i class="ui-grid-icon-info-circled"></i>
         </label>
@@ -57,13 +40,8 @@
       </div>
 
       <!-- GROUP -->
-      <div
-        ng-if="config.connection !== 'outside' && config.use !== null"
-        class="meter-config-selection-container"
-      >
-        <label class="control-label" for="selected_group" translate
-          >Group</label
-        >
+      <div ng-if="config.connection !== 'outside' && config.use !== null" class="meter-config-selection-container">
+        <label class="control-label" for="selected_group" translate>Group</label>
         <select
           class="form-control"
           id="selected_group"
@@ -75,13 +53,8 @@
       </div>
 
       <!-- SYSTEM -->
-      <div
-        ng-if="config.connection !== 'outside' && config.group_id !== null"
-        class="meter-config-selection-container"
-      >
-        <label class="control-label" for="selected_system" translate
-          >System</label
-        >
+      <div ng-if="config.connection !== 'outside' && config.group_id !== null" class="meter-config-selection-container">
+        <label class="control-label" for="selected_system" translate>System</label>
         <select
           class="form-control"
           id="selected_system"
@@ -93,52 +66,20 @@
       </div>
 
       <!-- SERVICE -->
-      <div
-        ng-if="config.connection !== 'outside' && config.system_id !== null"
-        class="meter-config-selection-container"
-      >
-        <label class="control-label" for="selected_service" translate
-          >Service</label
-        >
-        <select
-          class="form-control"
-          id="selected_service"
-          ng-model="config.service_id"
-          ng-change="service_selected()"
-          ng-options="option.id as option.name for option in service_options"
-        ></select>
+      <div ng-if="config.connection !== 'outside' && config.system_id !== null" class="meter-config-selection-container">
+        <label class="control-label" for="selected_service" translate>Service</label>
+        <select class="form-control" id="selected_service" ng-model="config.service_id" ng-change="service_selected()" ng-options="option.id as option.name for option in service_options"></select>
       </div>
     </div>
   </div>
 </div>
 
 <div class="modal-footer">
-  <div
-    class="alert-danger"
-    style="padding: 15px; border-radius: 5px; text-align: center"
-    ng-if="error"
-  >
-    {$ error $}
+  <div class="alert-danger" style="padding: 15px; border-radius: 5px; text-align: center" ng-if="error">{$ error $}</div>
+  <div class="row text-center">
+    <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="update_meter()" ng-disabled="!form_valid" translate>Confirm</button>
   </div>
   <div class="row text-center">
-    <button
-      type="button"
-      class="btn btn-primary col-sm-6 center-block"
-      ng-click="update_meter()"
-      ng-disabled="!form_valid"
-      translate
-    >
-      Confirm
-    </button>
-  </div>
-  <div class="row text-center">
-    <button
-      type="button"
-      class="btn btn-default col-sm-6 center-block"
-      ng-click="cancel()"
-      translate
-    >
-      Dismiss
-    </button>
+    <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="cancel()" translate>Dismiss</button>
   </div>
 </div>

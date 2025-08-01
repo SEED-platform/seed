@@ -4,44 +4,19 @@
   <h4 class="modal-title" ng-switch-when="remove" translate>Remove System</h4>
 </div>
 <div class="modal-body" ng-switch="::action">
-  <form
-    id="systemForm"
-    name="systemForm"
-    role="form"
-    ng-submit="submitSystemForm(systemForm)"
-    novalidate
-  >
+  <form id="systemForm" name="systemForm" role="form" ng-submit="submitSystemForm(systemForm)" novalidate>
     <div ng-if="action !== 'remove'">
       <!-- Name input -->
       <div class="form-group">
         <label class="control-label sectionLabel" translate>Name</label>
-        <input
-          id="name"
-          type="text"
-          name="name"
-          class="form-control"
-          ng-minlength="1"
-          ng-maxlength="100"
-          ng-model="system.name"
-          placeholder="{$:: 'System Name' | translate $}"
-          required
-        />
+        <input id="name" type="text" name="name" class="form-control" ng-minlength="1" ng-maxlength="100" ng-model="system.name" placeholder="{$:: 'System Name' | translate $}" required />
       </div>
 
       <!-- system selection -->
       <div class="form-group">
         <label class="control-label sectionLabel" translate>System Type</label>
-        <select
-          class="form-control"
-          ng-model="system.type"
-          ng-dropdown
-          ng-change="initializeSystem()"
-          ng-disabled="system.id"
-          required
-        >
-          <option ng-option value="DES" selected="selected">
-            District Energy System (DES)
-          </option>
+        <select class="form-control" ng-model="system.type" ng-dropdown ng-change="initializeSystem()" ng-disabled="system.id" required>
+          <option ng-option value="DES" selected="selected">District Energy System (DES)</option>
           <option ng-option value="EVSE" selected="selected">EVSE</option>
           <option ng-option value="Battery" selected="selected">Battery</option>
         </select>
@@ -50,158 +25,45 @@
       <!-- DES -->
       <div class="form-group system-container" ng-if="system.type == 'DES'">
         <label class="control-label sectionLabel" translate>DES Type</label>
-        <select
-          class="form-control"
-          ng-model="system.des_type"
-          ng-dropdown
-          ng-change="change_des_type()"
-          required
-        >
-          <option
-            ng-repeat="des_type in des_types"
-            selected="selected"
-            ng-value="des_type"
-          >
-            {$:: des_type $}
-          </option>
+        <select class="form-control" ng-model="system.des_type" ng-dropdown ng-change="change_des_type()" required>
+          <option ng-repeat="des_type in des_types" selected="selected" ng-value="des_type">{$:: des_type $}</option>
         </select>
         <div ng-if="system.des_type && system.des_type !== 'Chiller'">
-          <label class="control-label sectionLabel" translate
-            >Heating Capacity (MMBtu)</label
-          >
-          <input
-            id="heating_capacity"
-            type="number"
-            name="heating_capacity"
-            class="form-control"
-            ng-model="system.heating_capacity"
-            placeholder="{$:: '2.5' | translate $}"
-            required
-          />
+          <label class="control-label sectionLabel" translate>Heating Capacity (MMBtu)</label>
+          <input id="heating_capacity" type="number" name="heating_capacity" class="form-control" ng-model="system.heating_capacity" placeholder="{$:: '2.5' | translate $}" required />
         </div>
         <div ng-if="system.des_type && system.des_type === 'Chiller'">
-          <label class="control-label sectionLabel" translate
-            >Cooling Capacity (Ton)</label
-          >
-          <input
-            id="cooling_capacity"
-            type="number"
-            name="cooling_capacity"
-            class="form-control"
-            ng-model="system.cooling_capacity"
-            placeholder="{$:: '250' | translate $}"
-            required
-          />
+          <label class="control-label sectionLabel" translate>Cooling Capacity (Ton)</label>
+          <input id="cooling_capacity" type="number" name="cooling_capacity" class="form-control" ng-model="system.cooling_capacity" placeholder="{$:: '250' | translate $}" required />
         </div>
         <label class="control-label sectionLabel" translate>Count</label>
-        <input
-          id="count"
-          type="number"
-          name="count"
-          class="form-control"
-          ng-model="system.count"
-          placeholder="1"
-          required
-        />
+        <input id="count" type="number" name="count" class="form-control" ng-model="system.count" placeholder="1" required />
       </div>
 
       <!-- EVSE -->
       <div class="form-group system-container" ng-if="system.type == 'EVSE'">
         <label class="control-label sectionLabel" translate>EVSE Type</label>
-        <select
-          class="form-control"
-          ng-model="system.evse_type"
-          ng-dropdown
-          required
-        >
-          <option
-            ng-repeat="evse_type in evse_types"
-            selected="selected"
-            ng-value="evse_type"
-          >
-            {$:: evse_type $}
-          </option>
+        <select class="form-control" ng-model="system.evse_type" ng-dropdown required>
+          <option ng-repeat="evse_type in evse_types" selected="selected" ng-value="evse_type">{$:: evse_type $}</option>
         </select>
         <label class="control-label sectionLabel" translate>Power (kW)</label>
-        <input
-          id="power"
-          type="number"
-          name="power"
-          class="form-control"
-          ng-model="system.power"
-          placeholder="{$:: '6.6' | translate $}"
-          required
-        />
+        <input id="power" type="number" name="power" class="form-control" ng-model="system.power" placeholder="{$:: '6.6' | translate $}" required />
         <label class="control-label sectionLabel" translate>Voltage (V)</label>
-        <input
-          id="voltage"
-          type="number"
-          name="voltage"
-          class="form-control"
-          ng-model="system.voltage"
-          placeholder="{$:: '240' | translate $}"
-          required
-        />
+        <input id="voltage" type="number" name="voltage" class="form-control" ng-model="system.voltage" placeholder="{$:: '240' | translate $}" required />
         <label class="control-label sectionLabel" translate>Count</label>
-        <input
-          id="count"
-          type="number"
-          name="count"
-          class="form-control"
-          ng-model="system.count"
-          placeholder="1"
-          required
-        />
+        <input id="count" type="number" name="count" class="form-control" ng-model="system.count" placeholder="1" required />
       </div>
 
       <!-- Battery -->
       <div class="form-group system-container" ng-if="system.type == 'Battery'">
-        <label class="control-label sectionLabel" translate
-          >Efficiency (%)</label
-        >
-        <input
-          id="efficiency"
-          type="number"
-          name="efficiency"
-          class="form-control"
-          ng-model="system.efficiency"
-          placeholder="{$:: '90' | translate $}"
-          required
-        />
-        <label class="control-label sectionLabel" translate
-          >Power Capacity (kW)</label
-        >
-        <input
-          id="power_capacity"
-          type="number"
-          name="power_capacity"
-          class="form-control"
-          ng-model="system.power_capacity"
-          placeholder="{$:: '20' | translate $}"
-          required
-        />
-        <label class="control-label sectionLabel" translate
-          >Energy Capacity (kWh)</label
-        >
-        <input
-          id="energy_capacity"
-          type="number"
-          name="energy_capacity"
-          class="form-control"
-          ng-model="system.energy_capacity"
-          placeholder="{$:: '80' | translate $}"
-          required
-        />
+        <label class="control-label sectionLabel" translate>Efficiency (%)</label>
+        <input id="efficiency" type="number" name="efficiency" class="form-control" ng-model="system.efficiency" placeholder="{$:: '90' | translate $}" required />
+        <label class="control-label sectionLabel" translate>Power Capacity (kW)</label>
+        <input id="power_capacity" type="number" name="power_capacity" class="form-control" ng-model="system.power_capacity" placeholder="{$:: '20' | translate $}" required />
+        <label class="control-label sectionLabel" translate>Energy Capacity (kWh)</label>
+        <input id="energy_capacity" type="number" name="energy_capacity" class="form-control" ng-model="system.energy_capacity" placeholder="{$:: '80' | translate $}" required />
         <label class="control-label sectionLabel" translate>Voltage (V)</label>
-        <input
-          id="voltage"
-          type="number"
-          name="voltage"
-          class="form-control"
-          ng-model="system.voltage"
-          placeholder="{$:: '480' | translate $}"
-          required
-        />
+        <input id="voltage" type="number" name="voltage" class="form-control" ng-model="system.voltage" placeholder="{$:: '480' | translate $}" required />
       </div>
     </div>
 
@@ -212,29 +74,8 @@
   </form>
 
   <div class="modal-footer">
-    <button
-      type="button"
-      class="btn btn-default"
-      style="min-width: 90px"
-      ng-click="cancel()"
-      translate
-    >
-      Cancel
-    </button>
-    <input
-      type="submit"
-      id="hidden_submit"
-      form="systemForm"
-      hidden
-      ng-disabled="systemForm.$invalid || waiting_for_server"
-    />
-    <button
-      type="submit"
-      class="btn btn-primary"
-      form="systemForm"
-      ng-disabled="systemForm.$invalid || waiting_for_server"
-    >
-      {$ capitalize(action) $} System
-    </button>
+    <button type="button" class="btn btn-default" style="min-width: 90px" ng-click="cancel()" translate>Cancel</button>
+    <input type="submit" id="hidden_submit" form="systemForm" hidden ng-disabled="systemForm.$invalid || waiting_for_server" />
+    <button type="submit" class="btn btn-primary" form="systemForm" ng-disabled="systemForm.$invalid || waiting_for_server">{$ capitalize(action) $} System</button>
   </div>
 </div>

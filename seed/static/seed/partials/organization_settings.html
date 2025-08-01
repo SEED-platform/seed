@@ -1,10 +1,7 @@
 <div class="page_header_container">
   <div class="page_header">
     <div class="left page_action_container">
-      <a ui-sref="organizations" class="page_action"
-        ><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' |
-        translate $}</a
-      >
+      <a ui-sref="organizations" class="page_action"><i class="fa-solid fa-chevron-left"></i> {$:: 'Organizations' | translate $}</a>
     </div>
     <div class="page_title">
       <h1>{$ org_static.name $}</h1>
@@ -13,43 +10,25 @@
   </div>
 </div>
 <div class="section_nav_container">
-  <div
-    class="section_nav"
-    ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"
-  ></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/accounts_nav.html'"></div>
 </div>
 <div class="section">
   <div class="section_header_container">
     <div class="section_header has_no_padding fixed_height_short">
       <div class="section_action_container left">
-        <h2>
-          <i class="fa-solid fa-gears"></i> {$:: 'Settings' | translate $}
-        </h2>
+        <h2><i class="fa-solid fa-gears"></i> {$:: 'Settings' | translate $}</h2>
       </div>
       <div class="section_action_container right section_action_btn">
-        <button
-          type="button"
-          class="pull-right btn btn-primary"
-          ng-click="save_settings()"
-          ng-disabled="invalid_ubid_threshold"
-        >
+        <button type="button" class="pull-right btn btn-primary" ng-click="save_settings()" ng-disabled="invalid_ubid_threshold">
           {$:: 'Save Changes' | translate $}
           <i class="fa-solid fa-check" ng-show="settings_updated"></i>
         </button>
       </div>
     </div>
-    <div ng-if="form_errors" class="r-error-msg r-margin-right-10 pull-right">
-      <i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$
-      form_errors $}
-    </div>
+    <div ng-if="form_errors" class="r-error-msg r-margin-right-10 pull-right"><i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}</div>
   </div>
 
-  <uib-tabset
-    class="org-settings"
-    active="activePill"
-    vertical="true"
-    type="pills"
-  >
+  <uib-tabset class="org-settings" active="activePill" vertical="true" type="pills">
     <uib-tab index="0" heading="{$:: 'Options' | translate $}">
       <div class="section_content_container">
         <div class="section_content with_padding">
@@ -57,13 +36,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input
-                  type="text"
-                  class="form-control"
-                  id="editOrganizationName"
-                  ng-model="org.name"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="text" class="form-control" id="editOrganizationName" ng-model="org.name" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -76,13 +49,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input
-                  type="checkbox"
-                  class="form-control"
-                  style="width: 34px"
-                  ng-model="org.geocoding_enabled"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.geocoding_enabled" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -95,13 +62,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input
-                  type="checkbox"
-                  class="form-control"
-                  style="width: 34px"
-                  ng-model="org.comstock_enabled"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.comstock_enabled" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -113,22 +74,14 @@
           <h3 translate>Enable Public Endpoints</h3>
           <p>
             <span translate>PUBLIC_FEED_HELP</span>
-            <a ui-sref="organization_sharing(::{organization_id: org.id})"
-              >{$:: 'Organization Sharing' | translate $}</a
-            >. <span translate>For more information about the</span>
+            <a ui-sref="organization_sharing(::{organization_id: org.id})">{$:: 'Organization Sharing' | translate $}</a>. <span translate>For more information about the</span>
             <code>/v3/public</code> <span translate>endpoints see the</span>
             <a href="/api/swagger" translate>API Documentation</a>
           </p>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input
-                  type="checkbox"
-                  class="form-control"
-                  style="width: 34px"
-                  ng-model="org.public_feed_enabled"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.public_feed_enabled" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -142,13 +95,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input
-                  type="checkbox"
-                  class="form-control"
-                  style="width: 34px"
-                  ng-model="org.public_feed_labels"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.public_feed_labels" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -162,13 +109,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input
-                  type="checkbox"
-                  class="form-control"
-                  style="width: 34px"
-                  ng-model="org.public_geojson_enabled"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.public_geojson_enabled" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -183,12 +124,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input
-                  type="text"
-                  class="form-control"
-                  ng-model="org.mapquest_api_key"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="text" class="form-control" ng-model="org.mapquest_api_key" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -202,13 +138,8 @@
             <div class="form-group">
               <div class="col-sm-6">
                 <p>
-                  An API key will be assigned to your account upon creation of a
-                  BETTER account at <br />
-                  <a
-                    href="{$ org.better_host_url $}/accounts/signup/"
-                    target="_blank"
-                    >{$ org.better_host_url $}/accounts/signup/</a
-                  >
+                  An API key will be assigned to your account upon creation of a BETTER account at <br />
+                  <a href="{$ org.better_host_url $}/accounts/signup/" target="_blank">{$ org.better_host_url $}/accounts/signup/</a>
                 </p>
                 <button
                   type="button"
@@ -218,27 +149,11 @@
                   style="margin-bottom: 10px"
                 >
                   {$ token_validity.message $}
-                  <i
-                    class="fa-solid fa-check"
-                    ng-show="token_validity.status == 'valid'"
-                  ></i>
-                  <i
-                    class="fa-solid fa-xmark"
-                    ng-show="token_validity.status == 'invalid'"
-                  ></i>
+                  <i class="fa-solid fa-check" ng-show="token_validity.status == 'valid'"></i>
+                  <i class="fa-solid fa-xmark" ng-show="token_validity.status == 'invalid'"></i>
                 </button>
-                <input
-                  type="text"
-                  class="form-control"
-                  ng-model="org.better_analysis_api_key"
-                  ng-disabled="::!auth.requires_owner"
-                />
-                <p
-                  ng-if="error"
-                  class="alert alert-danger"
-                  style="margin-top: 10px"
-                  ng-bind-html="error"
-                ></p>
+                <input type="text" class="form-control" ng-model="org.better_analysis_api_key" ng-disabled="::!auth.requires_owner" />
+                <p ng-if="error" class="alert alert-danger" style="margin-top: 10px" ng-bind-html="error"></p>
               </div>
             </div>
           </form>
@@ -258,16 +173,8 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-5">
-                <p
-                  translate="AT_TOKEN_TEXT"
-                  translate-values="{ link: org.at_host_url }"
-                ></p>
-                <input
-                  type="text"
-                  class="form-control"
-                  ng-model="org.at_organization_token"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <p translate="AT_TOKEN_TEXT" translate-values="{ link: org.at_host_url }"></p>
+                <input type="text" class="form-control" ng-model="org.at_organization_token" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -280,16 +187,8 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-5">
-                <p
-                  translate="AT_EMAIL_TEXT"
-                  translate-values="{ link: org.at_host_url }"
-                ></p>
-                <input
-                  type="text"
-                  class="form-control"
-                  ng-model="org.audit_template_user"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <p translate="AT_EMAIL_TEXT" translate-values="{ link: org.at_host_url }"></p>
+                <input type="text" class="form-control" ng-model="org.audit_template_user" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -302,23 +201,11 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-5">
-                <p
-                  translate="AT_PASS_TEXT"
-                  translate-values="{ link: org.at_host_url }"
-                ></p>
+                <p translate="AT_PASS_TEXT" translate-values="{ link: org.at_host_url }"></p>
                 <div class="input-group">
-                  <input
-                    type="{$ secrets['pwd'] $}"
-                    class="form-control"
-                    ng-model="org.audit_template_password"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="{$ secrets['pwd'] $}" class="form-control" ng-model="org.audit_template_password" ng-disabled="::!auth.requires_owner" />
                   <span class="input-group-btn">
-                    <button
-                      class="btn btn-default reveal"
-                      type="button"
-                      ng-click="toggle_secret('pwd')"
-                    >
+                    <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')">
                       <i class="glyphicon glyphicon-eye-open"></i>
                     </button>
                   </span>
@@ -336,12 +223,7 @@
             <div class="form-group">
               <div class="col-sm-5">
                 <p translate>AT_CITY_ID</p>
-                <input
-                  type="number"
-                  class="form-control"
-                  ng-model="org.audit_template_city_id"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="number" class="form-control" ng-model="org.audit_template_city_id" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -362,20 +244,11 @@
                     ng-class="{'option-selected': at_status_types[status]}"
                     ng-click="toggle_at_status_type(status)"
                   >
-                    <i
-                      class="option-indicator"
-                      ng-class="at_status_types[status] ? 'fa-solid fa-check' : 'fa-regular fa-square'"
-                    ></i>
+                    <i class="option-indicator" ng-class="at_status_types[status] ? 'fa-solid fa-check' : 'fa-regular fa-square'"></i>
                     {$ status $}
                   </div>
                 </div>
-                <div
-                  ng-show="!org.audit_template_status_types"
-                  class="alert alert-warning"
-                  style="width: fit-content; margin: 10px"
-                >
-                  Select at least one status type
-                </div>
+                <div ng-show="!org.audit_template_status_types" class="alert alert-warning" style="width: fit-content; margin: 10px">Select at least one status type</div>
               </div>
             </div>
           </form>
@@ -388,13 +261,7 @@
             <div class="form-group">
               <div class="col-sm-5">
                 <p translate>AT_CONDITION_INDEX</p>
-                <input
-                  type="checkbox"
-                  class="form-control"
-                  style="width: 34px"
-                  ng-model="org.audit_template_conditional_import"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_conditional_import" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -403,24 +270,13 @@
 
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <button
-            class="btn btn-info"
-            style="margin-top: 20px"
-            type="button"
-            ng-click="get_city_submission_data()"
-            translate
-          >
-            Import Submissions
-          </button>
+          <button class="btn btn-info" style="margin-top: 20px" type="button" ng-click="get_city_submission_data()" translate>Import Submissions</button>
         </div>
       </div>
 
       <div class="section_header_container has_btm_margin r-margin-top-10">
         <div class="section_header">
-          <h2>
-            <i class="fa-solid fa-clock"></i> {$ 'Schedule Weekly Update' |
-            translate $}
-          </h2>
+          <h2><i class="fa-solid fa-clock"></i> {$ 'Schedule Weekly Update' | translate $}</h2>
         </div>
       </div>
 
@@ -430,23 +286,14 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input
-                  type="checkbox"
-                  class="form-control"
-                  style="width: 34px"
-                  ng-model="org.audit_template_sync_enabled"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.audit_template_sync_enabled" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
         </div>
       </div>
 
-      <div
-        class="section_content_container"
-        ng-if="org.audit_template_sync_enabled"
-      >
+      <div class="section_content_container" ng-if="org.audit_template_sync_enabled">
         <div class="section_content with_padding">
           <form class="form-horizontal" role="form">
             <div class="form-group">
@@ -459,9 +306,7 @@
                   <thead>
                     <tr>
                       <th>Day</th>
-                      <th style="white-space: nowrap; padding: 10px">
-                        Hour (24)
-                      </th>
+                      <th style="white-space: nowrap; padding: 10px">Hour (24)</th>
                       <th></th>
                       <th style="padding: 10px">Minute</th>
                     </tr>
@@ -469,43 +314,17 @@
                   <tbody>
                     <tr>
                       <th style="padding-right: 10px">
-                        <select
-                          ng-model="at_conf.update_at_day"
-                          ng-disabled="::!auth.requires_owner"
-                          class="settings-dropdown"
-                          style="width: 100px"
-                        >
+                        <select ng-model="at_conf.update_at_day" ng-disabled="::!auth.requires_owner" class="settings-dropdown" style="width: 100px">
                           <option value="">Select a day</option>
-                          <option
-                            ng-repeat="(idx, day) in days_of_week"
-                            ng-value="idx"
-                          >
-                            {$ day[idx] $}
-                          </option>
+                          <option ng-repeat="(idx, day) in days_of_week" ng-value="idx">{$ day[idx] $}</option>
                         </select>
                       </th>
                       <th>
-                        <input
-                          type="number"
-                          class="form-control"
-                          id="ah_update_at_hour"
-                          ng-model="at_conf.update_at_hour"
-                          ng-disabled="::!auth.requires_owner"
-                          min="0"
-                          max="23"
-                        />
+                        <input type="number" class="form-control" id="ah_update_at_hour" ng-model="at_conf.update_at_hour" ng-disabled="::!auth.requires_owner" min="0" max="23" />
                       </th>
                       <th>:</th>
                       <th>
-                        <input
-                          type="number"
-                          class="form-control"
-                          id="ah_update_at_minute"
-                          ng-model="at_conf.update_at_minute"
-                          ng-disabled="::!auth.requires_owner"
-                          min="0"
-                          max="59"
-                        />
+                        <input type="number" class="form-control" id="ah_update_at_minute" ng-model="at_conf.update_at_minute" ng-disabled="::!auth.requires_owner" min="0" max="59" />
                       </th>
                     </tr>
                   </tbody>
@@ -517,10 +336,7 @@
       </div>
       <div class="section_header_container has_btm_margin">
         <div class="section_header">
-          <h2>
-            <i class="fa-solid fa-clock"></i> {$ 'Advanced Settings' | translate
-            $}
-          </h2>
+          <h2><i class="fa-solid fa-clock"></i> {$ 'Advanced Settings' | translate $}</h2>
         </div>
       </div>
       <div class="section_content_container">
@@ -535,16 +351,8 @@
             <div class="form-group">
               <div class="col-sm-5">
                 <p translate>AT_REPORT_TYPE</p>
-                <select
-                  ng-model="org.audit_template_report_type"
-                  ng-disabled="::!auth.requires_owner"
-                  class="settings-dropdown"
-                >
-                  <option
-                    ng-repeat="report_type in audit_template_report_types"
-                  >
-                    {$ report_type$}
-                  </option>
+                <select ng-model="org.audit_template_report_type" ng-disabled="::!auth.requires_owner" class="settings-dropdown">
+                  <option ng-repeat="report_type in audit_template_report_types">{$ report_type$}</option>
                 </select>
               </div>
             </div>
@@ -558,11 +366,7 @@
             <div class="form-group">
               <div class="col-sm-5">
                 <p translate>AT_TAX_ID_NAME</p>
-                <input
-                  class="form-control"
-                  ng-model="org.audit_template_tracking_id_name"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input class="form-control" ng-model="org.audit_template_tracking_id_name" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -575,11 +379,7 @@
             <div class="form-group">
               <div class="col-sm-5">
                 <p translate>AT_ID_FIELD_TEXT</p>
-                <input
-                  class="form-control"
-                  ng-model="org.audit_template_tracking_id_field"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input class="form-control" ng-model="org.audit_template_tracking_id_field" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -593,26 +393,12 @@
               <div class="col-sm-5">
                 <p translate>AT_OPTIONAL_EXPORTS_TEXT</p>
                 <div style="display: flex; vertical-align: middle">
-                  <input
-                    type="checkbox"
-                    class="form-control"
-                    style="width: 20px"
-                    ng-model="org.audit_template_export_meters"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="checkbox" class="form-control" style="width: 20px" ng-model="org.audit_template_export_meters" ng-disabled="::!auth.requires_owner" />
                   <h3 translate style="padding-left: 5px">Meter Data</h3>
                 </div>
                 <div style="display: flex; vertical-align: middle">
-                  <input
-                    type="checkbox"
-                    class="form-control"
-                    style="width: 20px"
-                    ng-model="org.audit_template_export_measures"
-                    ng-disabled="::!auth.requires_owner"
-                  />
-                  <h3 translate style="padding-left: 5px">
-                    BuildingSync Measures
-                  </h3>
+                  <input type="checkbox" class="form-control" style="width: 20px" ng-model="org.audit_template_export_measures" ng-disabled="::!auth.requires_owner" />
+                  <h3 translate style="padding-left: 5px">BuildingSync Measures</h3>
                 </div>
               </div>
             </div>
@@ -630,19 +416,10 @@
       <div class="section_content_container r-columns">
         <div class="r-column r-shrink r-panel">
           <ul class="r-list">
-            <li class="r-list-header" translate>
-              Facilities Plan Generic Configurations
-            </li>
-            <li
-              ng-show="selected_facilities_plan"
-              class="r-selected r-row r-row-centered"
-            >
+            <li class="r-list-header" translate>Facilities Plan Generic Configurations</li>
+            <li ng-show="selected_facilities_plan" class="r-selected r-row r-row-centered">
               <span class="r-grow">{$ dirty_facilities_plan.name $}</span>
-              <i
-                class="fa-solid fa-xmark r-margin-left-5"
-                ng-if="selected_facilities_plan.id"
-                ng-click="delete_facilities_plan(selected_facilities_plan)"
-              ></i>
+              <i class="fa-solid fa-xmark r-margin-left-5" ng-if="selected_facilities_plan.id" ng-click="delete_facilities_plan(selected_facilities_plan)"></i>
             </li>
           </ul>
           <ul class="r-list r-scrollable">
@@ -652,26 +429,13 @@
               ng-repeat-end
               class="r-row r-row-centered"
             >
-              <a
-                ng-click="set_facilities_plan(facilities_plan.id)"
-                class="r-grow"
-                >{$:: facilities_plan.name $}</a
-              >
-              <i
-                class="fa-solid fa-xmark r-margin-left-5"
-                ng-click="delete_facilities_plan(facilities_plan)"
-              ></i>
+              <a ng-click="set_facilities_plan(facilities_plan.id)" class="r-grow">{$:: facilities_plan.name $}</a>
+              <i class="fa-solid fa-xmark r-margin-left-5" ng-click="delete_facilities_plan(facilities_plan)"></i>
             </li>
           </ul>
           <ul class="r-list">
             <li>
-              <button
-                class="btn btn-success r-grow"
-                ng-click="create_new_facilities_plan()"
-              >
-                <i class="fa-solid fa-circle-plus r-pad-right-5"></i
-                ><span translate>New Facilities Plan</span>
-              </button>
+              <button class="btn btn-success r-grow" ng-click="create_new_facilities_plan()"><i class="fa-solid fa-circle-plus r-pad-right-5"></i><span translate>New Facilities Plan</span></button>
             </li>
           </ul>
         </div>
@@ -681,24 +445,11 @@
             <!-- GENERAL CONFIG -->
             <li class="r-list-header" translate>General Configurations</li>
             <li class="r-row r-row-centered">
-              <label for="name" class="r-no-wrap r-margin-right-5" translate
-                >Name</label
-              >
-              <input
-                id="name"
-                type="text"
-                class="form-control r-margin-bottom-10"
-                ng-model="dirty_facilities_plan.name"
-                ng-change="(c_id) => {}"
-              />
+              <label for="name" class="r-no-wrap r-margin-right-5" translate>Name</label>
+              <input id="name" type="text" class="form-control r-margin-bottom-10" ng-model="dirty_facilities_plan.name" ng-change="(c_id) => {}" />
             </li>
             <li class="r-row r-row-centered">
-              <label
-                for="energy_running_sum_percentage"
-                class="r-no-wrap r-margin-right-5"
-                translate
-                >Energy Running Sum Percentage</label
-              >
+              <label for="energy_running_sum_percentage" class="r-no-wrap r-margin-right-5" translate>Energy Running Sum Percentage</label>
               <input
                 id="energy_running_sum_percentage"
                 class="form-control goal-form-control"
@@ -710,202 +461,68 @@
                 required
               />
             </li>
-            <li class="r-info">
-              <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-              ><span translate>RUNNING_SUM_PERCENTAGE_DESC</span>
-            </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>RUNNING_SUM_PERCENTAGE_DESC</span></li>
             <li class="r-row r-row-centered">
-              <label
-                for="compliance_cycle_year_column"
-                class="r-no-wrap r-margin-right-5"
-                translate
-                >Compliance Cycle Year Column</label
-              >
-              <select
-                id="compliance_cycle_year_column"
-                class="form-control"
-                ng-model="dirty_facilities_plan.compliance_cycle_year_column"
-                ng-change="(c_id) => {}"
-              >
+              <label for="compliance_cycle_year_column" class="r-no-wrap r-margin-right-5" translate>Compliance Cycle Year Column</label>
+              <select id="compliance_cycle_year_column" class="form-control" ng-model="dirty_facilities_plan.compliance_cycle_year_column" ng-change="(c_id) => {}">
                 <option value=""></option>
-                <option
-                  ng-repeat="property_column in columns"
-                  ng-value="property_column.id"
-                >
-                  {$:: property_column.displayName $}
-                </option>
+                <option ng-repeat="property_column in columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
               </select>
             </li>
-            <li class="r-info">
-              <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-              ><span translate>COMPLIANCE_CYCLE_YEAR_DESC</span>
-            </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>COMPLIANCE_CYCLE_YEAR_DESC</span></li>
             <li class="r-row r-row-centered">
-              <label
-                for="include_in_total_denominator_column"
-                class="r-no-wrap r-margin-right-5"
-                translate
-                >Include In Total Denominator Column</label
-              >
-              <select
-                id="include_in_total_denominator_column"
-                class="form-control"
-                ng-model="dirty_facilities_plan.include_in_total_denominator_column"
-                ng-change="(c_id) => {}"
-              >
+              <label for="include_in_total_denominator_column" class="r-no-wrap r-margin-right-5" translate>Include In Total Denominator Column</label>
+              <select id="include_in_total_denominator_column" class="form-control" ng-model="dirty_facilities_plan.include_in_total_denominator_column" ng-change="(c_id) => {}">
                 <option value=""></option>
-                <option
-                  ng-repeat="property_column in boolean_columns"
-                  ng-value="property_column.id"
-                >
-                  {$:: property_column.displayName $}
-                </option>
+                <option ng-repeat="property_column in boolean_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
               </select>
             </li>
-            <li class="r-info">
-              <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-              ><span translate>INCLUDE_IN_DENOMINATOR_DESC</span>
-            </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>INCLUDE_IN_DENOMINATOR_DESC</span></li>
             <li class="r-row r-row-centered">
-              <label
-                for="exclude_from_plan_column"
-                class="r-no-wrap r-margin-right-5"
-                translate
-                >Exclude From Plan Column</label
-              >
-              <select
-                id="exclude_from_plan_column"
-                class="form-control"
-                ng-model="dirty_facilities_plan.exclude_from_plan_column"
-                ng-change="(c_id) => {}"
-              >
+              <label for="exclude_from_plan_column" class="r-no-wrap r-margin-right-5" translate>Exclude From Plan Column</label>
+              <select id="exclude_from_plan_column" class="form-control" ng-model="dirty_facilities_plan.exclude_from_plan_column" ng-change="(c_id) => {}">
                 <option value=""></option>
-                <option
-                  ng-repeat="property_column in boolean_columns"
-                  ng-value="property_column.id"
-                >
-                  {$:: property_column.displayName $}
-                </option>
+                <option ng-repeat="property_column in boolean_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
               </select>
             </li>
-            <li class="r-info">
-              <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-              ><span translate>EXCLUDE_FROM_PLAN_DESC</span>
-            </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>EXCLUDE_FROM_PLAN_DESC</span></li>
             <li class="r-row r-row-centered">
-              <label
-                for="require_in_plan_column"
-                class="r-no-wrap r-margin-right-5"
-                translate
-                >Require In Plan Column</label
-              >
-              <select
-                id="require_in_plan_column"
-                class="form-control"
-                ng-model="dirty_facilities_plan.require_in_plan_column"
-                ng-change="(c_id) => {}"
-              >
+              <label for="require_in_plan_column" class="r-no-wrap r-margin-right-5" translate>Require In Plan Column</label>
+              <select id="require_in_plan_column" class="form-control" ng-model="dirty_facilities_plan.require_in_plan_column" ng-change="(c_id) => {}">
                 <option value=""></option>
-                <option
-                  ng-repeat="property_column in boolean_columns"
-                  ng-value="property_column.id"
-                >
-                  {$:: property_column.displayName $}
-                </option>
+                <option ng-repeat="property_column in boolean_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
               </select>
             </li>
-            <li class="r-info">
-              <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-              ><span translate>REQUIRE_IN_PLAN_DESC</span>
-            </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>REQUIRE_IN_PLAN_DESC</span></li>
 
             <!-- Energy Usage Column-->
             <li class="r-list-header" translate>Energy Usage Columns</li>
             <li class="r-row r-row-centered">
-              <label
-                for="electric_energy_usage_column"
-                class="r-no-wrap r-margin-right-5"
-                translate
-                >Electric Energy Usage Column</label
-              >
-              <select
-                id="electric_energy_usage_column"
-                class="form-control"
-                ng-model="dirty_facilities_plan.electric_energy_usage_column"
-                ng-change="(c_id) => {}"
-              >
+              <label for="electric_energy_usage_column" class="r-no-wrap r-margin-right-5" translate>Electric Energy Usage Column</label>
+              <select id="electric_energy_usage_column" class="form-control" ng-model="dirty_facilities_plan.electric_energy_usage_column" ng-change="(c_id) => {}">
                 <option value=""></option>
-                <option
-                  ng-repeat="property_column in numeric_columns"
-                  ng-value="property_column.id"
-                >
-                  {$:: property_column.displayName $}
-                </option>
+                <option ng-repeat="property_column in numeric_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
               </select>
             </li>
-            <li class="r-info">
-              <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-              ><span translate>ELECTRIC_ENERGY_USAGE_DESC</span>
-            </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>ELECTRIC_ENERGY_USAGE_DESC</span></li>
             <li class="r-row r-row-centered">
-              <label
-                for="gas_energy_usage_column"
-                class="r-no-wrap r-margin-right-5"
-                translate
-                >Gas Energy Usage Column</label
-              >
-              <select
-                id="gas_energy_usage_column"
-                class="form-control"
-                ng-model="dirty_facilities_plan.gas_energy_usage_column"
-                ng-change="(c_id) => {}"
-              >
+              <label for="gas_energy_usage_column" class="r-no-wrap r-margin-right-5" translate>Gas Energy Usage Column</label>
+              <select id="gas_energy_usage_column" class="form-control" ng-model="dirty_facilities_plan.gas_energy_usage_column" ng-change="(c_id) => {}">
                 <option value=""></option>
-                <option
-                  ng-repeat="property_column in numeric_columns"
-                  ng-value="property_column.id"
-                >
-                  {$:: property_column.displayName $}
-                </option>
+                <option ng-repeat="property_column in numeric_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
               </select>
             </li>
-            <li class="r-info">
-              <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-              ><span translate>GAS_ENERGY_USAGE_DESC</span>
-            </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>GAS_ENERGY_USAGE_DESC</span></li>
             <li class="r-row r-row-centered">
-              <label
-                for="steam_energy_usage_column"
-                class="r-no-wrap r-margin-right-5"
-                translate
-                >Steam Energy Usage Column</label
-              >
-              <select
-                id="steam_energy_usage_column"
-                class="form-control"
-                ng-model="dirty_facilities_plan.steam_energy_usage_column"
-                ng-change="(c_id) => {}"
-              >
+              <label for="steam_energy_usage_column" class="r-no-wrap r-margin-right-5" translate>Steam Energy Usage Column</label>
+              <select id="steam_energy_usage_column" class="form-control" ng-model="dirty_facilities_plan.steam_energy_usage_column" ng-change="(c_id) => {}">
                 <option value=""></option>
-                <option
-                  ng-repeat="property_column in numeric_columns"
-                  ng-value="property_column.id"
-                >
-                  {$:: property_column.displayName $}
-                </option>
+                <option ng-repeat="property_column in numeric_columns" ng-value="property_column.id">{$:: property_column.displayName $}</option>
               </select>
             </li>
-            <li class="r-info">
-              <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-              ><span translate>STEAM_ENERGY_USAGE_DESC</span>
-            </li>
+            <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>STEAM_ENERGY_USAGE_DESC</span></li>
           </ul>
-          <button
-            type="button"
-            class="btn btn-primary"
-            ng-click="save_facilities_plan()"
-            style="margin-top: 1em"
-          >
+          <button type="button" class="btn btn-primary" ng-click="save_facilities_plan()" style="margin-top: 1em">
             {$:: 'Save Facilities Plan' | translate $}
             <i class="fa-solid fa-check" ng-show="settings_updated"></i>
           </button>
@@ -917,18 +534,11 @@
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate>Property Display Field</h3>
-          <small
-            >Determines which column field is used when displaying and
-            identifying a property. Defaults to "Address Line 1".</small
-          >
+          <small>Determines which column field is used when displaying and identifying a property. Defaults to "Address Line 1".</small>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select
-                  class="form-control"
-                  ng-options="column.column_name as column.display_name for column in property_column_names"
-                  ng-model="org.property_display_field"
-                ></select>
+                <select class="form-control" ng-options="column.column_name as column.display_name for column in property_column_names" ng-model="org.property_display_field"></select>
               </div>
             </div>
           </form>
@@ -938,18 +548,11 @@
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate>Taxlot Display Field</h3>
-          <small
-            >Determines which column field is used when displaying and
-            identifying a taxlot. Defaults to "Address Line 1".</small
-          >
+          <small>Determines which column field is used when displaying and identifying a taxlot. Defaults to "Address Line 1".</small>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select
-                  class="form-control"
-                  ng-options="column.column_name as column.display_name for column in taxlot_column_names"
-                  ng-model="org.taxlot_display_field"
-                ></select>
+                <select class="form-control" ng-options="column.column_name as column.display_name for column in taxlot_column_names" ng-model="org.taxlot_display_field"></select>
               </div>
             </div>
           </form>
@@ -963,29 +566,13 @@
             <div class="form-group">
               <div class="col-sm-4">
                 <ul ng-if="selected_x_columns.length">
-                  <li
-                    ng-repeat="id in selected_x_columns"
-                    class="r-row r-row-centered"
-                  >
+                  <li ng-repeat="id in selected_x_columns" class="r-row r-row-centered">
                     <span class="r-grow">{$:: get_column_display(id) $}</span>
-                    <i
-                      class="fa-solid fa-xmark r-margin-left-5"
-                      ng-click="remove_x_column(id)"
-                    ></i>
+                    <i class="fa-solid fa-xmark r-margin-left-5" ng-click="remove_x_column(id)"></i>
                   </li>
                 </ul>
-                <select
-                  class="form-control"
-                  ng-change="add_x_column(x_column_selection); x_column_selection = null"
-                  ng-model="x_column_selection"
-                  ng-disabled="::!auth.requires_owner"
-                >
-                  <option
-                    ng-repeat="x_columns in available_x_columns()"
-                    ng-value="x_columns.id"
-                  >
-                    {$:: x_columns.displayName $}
-                  </option>
+                <select class="form-control" ng-change="add_x_column(x_column_selection); x_column_selection = null" ng-model="x_column_selection" ng-disabled="::!auth.requires_owner">
+                  <option ng-repeat="x_columns in available_x_columns()" ng-value="x_columns.id">{$:: x_columns.displayName $}</option>
                 </select>
               </div>
             </div>
@@ -1000,29 +587,13 @@
             <div class="form-group">
               <div class="col-sm-4">
                 <ul ng-if="selected_y_columns.length">
-                  <li
-                    ng-repeat="id in selected_y_columns"
-                    class="r-row r-row-centered"
-                  >
+                  <li ng-repeat="id in selected_y_columns" class="r-row r-row-centered">
                     <span class="r-grow">{$:: get_column_display(id) $}</span>
-                    <i
-                      class="fa-solid fa-xmark r-margin-left-5"
-                      ng-click="remove_y_column(id)"
-                    ></i>
+                    <i class="fa-solid fa-xmark r-margin-left-5" ng-click="remove_y_column(id)"></i>
                   </li>
                 </ul>
-                <select
-                  class="form-control"
-                  ng-change="add_y_column(y_column_selection); y_column_selection = null"
-                  ng-model="y_column_selection"
-                  ng-disabled="::!auth.requires_owner"
-                >
-                  <option
-                    ng-repeat="y_columns in available_y_columns()"
-                    ng-value="y_columns.id"
-                  >
-                    {$:: y_columns.displayName $}
-                  </option>
+                <select class="form-control" ng-change="add_y_column(y_column_selection); y_column_selection = null" ng-model="y_column_selection" ng-disabled="::!auth.requires_owner">
+                  <option ng-repeat="y_columns in available_y_columns()" ng-value="y_columns.id">{$:: y_columns.displayName $}</option>
                 </select>
               </div>
             </div>
@@ -1035,53 +606,22 @@
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate>New User Email</h3>
-          <small
-            >Customizes the email sent when a new user is invited to SEED. The
-            body can accept placeholders {{first_name}} and {{sign_up_link}},
-            including the braces.</small
-          >
+          <small>Customizes the email sent when a new user is invited to SEED. The body can accept placeholders {{first_name}} and {{sign_up_link}}, including the braces.</small>
           <form class="form-horizontal email-form" role="form">
             <div class="form-group">
-              <label
-                class="control-label col-sm-1"
-                for="new-user-email-from"
-                translate
-                >From Email</label
-              >
+              <label class="control-label col-sm-1" for="new-user-email-from" translate>From Email</label>
               <div class="col-sm-3">
-                <input
-                  id="new-user-email-from"
-                  type="email"
-                  class="form-control"
-                  ng-model="org.new_user_email_from"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input id="new-user-email-from" type="email" class="form-control" ng-model="org.new_user_email_from" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
             <div class="form-group">
-              <label
-                class="control-label col-sm-1"
-                for="new-user-email-subject"
-                translate
-                >Subject</label
-              >
+              <label class="control-label col-sm-1" for="new-user-email-subject" translate>Subject</label>
               <div class="col-sm-3">
-                <input
-                  id="new-user-email-subject"
-                  type="text"
-                  class="form-control"
-                  ng-model="org.new_user_email_subject"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input id="new-user-email-subject" type="text" class="form-control" ng-model="org.new_user_email_subject" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
             <div class="form-group">
-              <label
-                class="control-label col-sm-1"
-                for="new-user-email-content"
-                translate
-                >Body</label
-              >
+              <label class="control-label col-sm-1" for="new-user-email-content" translate>Body</label>
               <div class="col-sm-3">
                 <textarea
                   id="new-user-email-content"
@@ -1096,20 +636,9 @@
               </div>
             </div>
             <div class="form-group">
-              <label
-                class="control-label col-sm-1"
-                for="new-user-email-signature"
-                translate
-                >Signature</label
-              >
+              <label class="control-label col-sm-1" for="new-user-email-signature" translate>Signature</label>
               <div class="col-sm-3">
-                <input
-                  id="new-user-email-signature"
-                  type="text"
-                  class="form-control"
-                  ng-model="org.new_user_email_signature"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input id="new-user-email-signature" type="text" class="form-control" ng-model="org.new_user_email_signature" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -1117,27 +646,13 @@
       </div>
     </uib-tab>
 
-    <uib-tab
-      index="5"
-      heading="{$:: 'Maintenance' | translate $}"
-      class="warning"
-      ng-if="::auth.requires_owner"
-    >
+    <uib-tab index="5" heading="{$:: 'Maintenance' | translate $}" class="warning" ng-if="::auth.requires_owner">
       <div class="section_content_container">
         <div class="section_content with_padding maintenance">
           <h3 translate>Maintenance Actions</h3>
-          <small translate
-            >The following actions have destructive effects, please read all
-            warnings after clicking an option.</small
-          >
-          <button
-            class="btn btn-danger"
-            type="button"
-            ng-click="confirm_delete(org)"
-            ng-disabled="org.progress > -1"
-          >
-            <i class="fa-solid fa-triangle-exclamation"></i> {$:: 'Delete ' +
-            (org.is_parent ? '' : 'Sub-') + 'Organization' | translate $}
+          <small translate>The following actions have destructive effects, please read all warnings after clicking an option.</small>
+          <button class="btn btn-danger" type="button" ng-click="confirm_delete(org)" ng-disabled="org.progress > -1">
+            <i class="fa-solid fa-triangle-exclamation"></i> {$:: 'Delete ' + (org.is_parent ? '' : 'Sub-') + 'Organization' | translate $}
           </button>
         </div>
       </div>
@@ -1146,10 +661,7 @@
     <uib-tab index="6" heading="{$:: 'Salesforce' | translate $}">
       <div class="section_header_container has_btm_margin">
         <div class="section_header">
-          <h2>
-            <i class="fa-solid fa-arrow-right-arrow-left"></i> {$:: 'Salesforce
-            Integration' | translate $}
-          </h2>
+          <h2><i class="fa-solid fa-arrow-right-arrow-left"></i> {$:: 'Salesforce Integration' | translate $}</h2>
         </div>
       </div>
       <div class="section_content_container">
@@ -1163,13 +675,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input
-                  type="checkbox"
-                  class="form-control"
-                  style="width: 34px"
-                  ng-model="org.salesforce_enabled"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.salesforce_enabled" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -1178,10 +684,7 @@
       <div ng-if="org.salesforce_enabled" class="salesforce-form">
         <div class="section_header_container has_btm_margin">
           <div class="section_header">
-            <h2>
-              <i class="fa-solid fa-rss"></i> {$:: 'Salesforce Connection ' |
-              translate $}
-            </h2>
+            <h2><i class="fa-solid fa-rss"></i> {$:: 'Salesforce Connection ' | translate $}</h2>
           </div>
         </div>
         <div class="section_content_container">
@@ -1193,20 +696,9 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="url"
-                  translate
-                  >Salesforce Instance URL</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="url" translate>Salesforce Instance URL</label>
                 <div class="col-sm-5">
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="url"
-                    ng-model="conf.url"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="url" ng-model="conf.url" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1216,20 +708,9 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="username"
-                  translate
-                  >Username</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="username" translate>Username</label>
                 <div class="col-sm-5">
-                  <input
-                    type="text"
-                    id="username"
-                    class="form-control"
-                    ng-model="conf.username"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" id="username" class="form-control" ng-model="conf.username" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1239,28 +720,12 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="pwd"
-                  translate
-                  >Password</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="pwd" translate>Password</label>
                 <div class="col-sm-5">
                   <div class="input-group">
-                    <input
-                      type="{$ secrets['pwd'] $}"
-                      class="form-control"
-                      id="pwd"
-                      ng-model="conf.password"
-                      autocomplete="new-password"
-                      ng-disabled="::!auth.requires_owner"
-                    />
+                    <input type="{$ secrets['pwd'] $}" class="form-control" id="pwd" ng-model="conf.password" autocomplete="new-password" ng-disabled="::!auth.requires_owner" />
                     <span class="input-group-btn">
-                      <button
-                        class="btn btn-default reveal"
-                        type="button"
-                        ng-click="toggle_secret('pwd')"
-                      >
+                      <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')">
                         <i class="glyphicon glyphicon-eye-open"></i>
                       </button>
                     </span>
@@ -1274,29 +739,13 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="token"
-                  translate
-                  >Security Token</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="token" translate>Security Token</label>
                 <div class="col-sm-5">
                   <p translate="SF_SECURITY_TOKEN_TEXT"></p>
                   <div class="input-group">
-                    <input
-                      type="{$ secrets['token'] $}"
-                      class="form-control"
-                      id="token"
-                      ng-model="conf.security_token"
-                      autocomplete="token"
-                      ng-disabled="::!auth.requires_owner"
-                    />
+                    <input type="{$ secrets['token'] $}" class="form-control" id="token" ng-model="conf.security_token" autocomplete="token" ng-disabled="::!auth.requires_owner" />
                     <span class="input-group-btn">
-                      <button
-                        class="btn btn-default reveal"
-                        type="button"
-                        ng-click="toggle_secret('token')"
-                      >
+                      <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('token')">
                         <i class="glyphicon glyphicon-eye-open"></i>
                       </button>
                     </span>
@@ -1310,21 +759,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="domain"
-                  translate
-                  >Domain</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="domain" translate>Domain</label>
                 <div class="col-sm-5">
                   <p translate="SF_DOMAIN_TEXT"></p>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="domain"
-                    ng-model="conf.domain"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="domain" ng-model="conf.domain" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1335,28 +773,13 @@
             <form class="form-horizontal" role="form">
               <div class="form-group">
                 <div class="col-sm-11 text-center">
-                  <button
-                    type="button"
-                    class="btn btn-info"
-                    ng-click="test_connection()"
-                  >
-                    {$:: 'Test Connection' | translate $}
-                  </button>
+                  <button type="button" class="btn btn-info" ng-click="test_connection()">{$:: 'Test Connection' | translate $}</button>
                 </div>
                 <div class="col-sm-11">
-                  <div
-                    ng-if="test_sf == 'success'"
-                    class="r-panel r-success r-margin-bottom-10 r-margin-top-10"
-                    aria-hidden="false"
-                  >
-                    <i class="fa-regular fa-circle-check fa-lg"></i> {$::
-                    'Success!' | translate $}
+                  <div ng-if="test_sf == 'success'" class="r-panel r-success r-margin-bottom-10 r-margin-top-10" aria-hidden="false">
+                    <i class="fa-regular fa-circle-check fa-lg"></i> {$:: 'Success!' | translate $}
                   </div>
-                  <div
-                    ng-if="test_sf == 'error'"
-                    class="r-panel r-error r-margin-top-10 r-margin-bottom-10"
-                    aria-hidden="false"
-                  >
+                  <div ng-if="test_sf == 'error'" class="r-panel r-error r-margin-top-10 r-margin-bottom-10" aria-hidden="false">
                     <i class="fa-solid fa-circle-exclamation fa-lg"></i>
                     Error: {$ test_sf_msg $}
                   </div>
@@ -1368,10 +791,7 @@
 
         <div class="section_header_container has_btm_margin">
           <div class="section_header">
-            <h2>
-              <i class="fa-solid fa-clock"></i> {$:: 'Scheduled Daily Update' |
-              translate $}
-            </h2>
+            <h2><i class="fa-solid fa-clock"></i> {$:: 'Scheduled Daily Update' | translate $}</h2>
           </div>
         </div>
         <div class="section_content_container">
@@ -1383,26 +803,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="update_at_hour"
-                  translate
-                  >Hour</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_at_hour" translate>Hour</label>
                 <div class="col-sm-5">
-                  <p>
-                    <span translate="SF_UPDATE_HOUR_TEXT"></span> Timezone: {$
-                    timezone $}
-                  </p>
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="update_at_hour"
-                    ng-model="conf.update_at_hour"
-                    ng-disabled="::!auth.requires_owner"
-                    min="0"
-                    max="23"
-                  />
+                  <p><span translate="SF_UPDATE_HOUR_TEXT"></span> Timezone: {$ timezone $}</p>
+                  <input type="number" class="form-control" id="update_at_hour" ng-model="conf.update_at_hour" ng-disabled="::!auth.requires_owner" min="0" max="23" />
                 </div>
               </div>
             </form>
@@ -1412,23 +816,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="update_at_minute"
-                  translate
-                  >Minute</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_at_minute" translate>Minute</label>
                 <div class="col-sm-5">
                   <p translate="SF_UPDATE_MINUTE_TEXT"></p>
-                  <input
-                    type="number"
-                    class="form-control"
-                    id="update_at_minute"
-                    ng-model="conf.update_at_minute"
-                    ng-disabled="::!auth.requires_owner"
-                    min="0"
-                    max="59"
-                  />
+                  <input type="number" class="form-control" id="update_at_minute" ng-model="conf.update_at_minute" ng-disabled="::!auth.requires_owner" min="0" max="59" />
                 </div>
               </div>
             </form>
@@ -1438,21 +829,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="logging_email"
-                  translate
-                  >Logging Email</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="logging_email" translate>Logging Email</label>
                 <div class="col-sm-5">
                   <p translate="SF_LOGGING_EMAIL_TEXT"></p>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="logging_email"
-                    ng-model="conf.logging_email"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="logging_email" ng-model="conf.logging_email" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1462,37 +842,19 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="update_date"
-                  translate
-                  >Last Salesforce Update</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="update_date" translate>Last Salesforce Update</label>
                 <div class="col-sm-3">
                   <!-- <input type="text" id="update_date" class="form-control" ng-model="conf.last_update_date" readonly> -->
-                  <span
-                    class="form-control updated_date_field"
-                    ng-bind="conf.last_update_date | date:'MM/dd/yyyy hh:mm:ss a'"
-                  ></span>
+                  <span class="form-control updated_date_field" ng-bind="conf.last_update_date | date:'MM/dd/yyyy hh:mm:ss a'"></span>
                 </div>
                 <div class="col-sm-2">
-                  <button
-                    type="button"
-                    class="btn btn-info r-margin-right-10"
-                    ng-click="reset_date()"
-                  >
-                    {$:: 'Reset' | translate $}
-                  </button>
+                  <button type="button" class="btn btn-info r-margin-right-10" ng-click="reset_date()">{$:: 'Reset' | translate $}</button>
                   <!-- leaving it here in case we want to move this functionality to the background in the future -->
                   <!-- <button type="button" class="btn btn-info" ng-click="sync_salesforce()">{$:: 'Sync Salesforce' | translate $}
                                     </button> -->
                 </div>
                 <div class="col-sm-11">
-                  <div
-                    ng-if="sync_sf == 'error'"
-                    class="r-panel r-error r-margin-top-10 r-margin-bottom-10"
-                    aria-hidden="false"
-                  >
+                  <div ng-if="sync_sf == 'error'" class="r-panel r-error r-margin-top-10 r-margin-bottom-10" aria-hidden="false">
                     <i class="fa-solid fa-circle-exclamation fa-lg"></i>
                     Error: {$ sync_sf_msg $}
                   </div>
@@ -1504,10 +866,7 @@
 
         <div class="section_header_container has_btm_margin">
           <div class="section_header">
-            <h2>
-              <i class="fa-solid fa-gears"></i> {$:: 'Configuration' | translate
-              $}
-            </h2>
+            <h2><i class="fa-solid fa-gears"></i> {$:: 'Configuration' | translate $}</h2>
           </div>
         </div>
         <div class="section_content_container">
@@ -1519,20 +878,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="sf_ind"
-                  translate
-                  >Indication Label</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_ind" translate>Indication Label</label>
                 <div class="col-sm-5">
                   <p translate="SF_INDICATION_LABEL_TEXT"></p>
-                  <select
-                    class="form-control"
-                    id="sf_ind"
-                    ng-options="label.id as label.name for label in labels"
-                    ng-model="conf.indication_label"
-                  >
+                  <select class="form-control" id="sf_ind" ng-options="label.id as label.name for label in labels" ng-model="conf.indication_label">
                     <option value=""></option>
                   </select>
                 </div>
@@ -1544,24 +893,11 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="delete_label_after_sync"
-                  translate
-                  >Delete Indication Label After Successful Salesforce
-                  Update</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="delete_label_after_sync" translate>Delete Indication Label After Successful Salesforce Update</label>
                 <div class="col-sm-5">
                   <p translate="SF_DELETE_LABEL_AFTER_SYNC_TEXT"></p>
 
-                  <input
-                    type="checkbox"
-                    id="delete_label_after_sync"
-                    class="form-control"
-                    style="width: 34px"
-                    ng-model="conf.delete_label_after_sync"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="checkbox" id="delete_label_after_sync" class="form-control" style="width: 34px" ng-model="conf.delete_label_after_sync" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1571,20 +907,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="sf_violation"
-                  translate
-                  >Violation Label</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_violation" translate>Violation Label</label>
                 <div class="col-sm-5">
                   <p translate="SF_VIOLATION_LABEL_TEXT"></p>
-                  <select
-                    class="form-control"
-                    id="sf_violation"
-                    ng-options="o.id as o.name for o in labels"
-                    ng-model="conf.violation_label"
-                  >
+                  <select class="form-control" id="sf_violation" ng-options="o.id as o.name for o in labels" ng-model="conf.violation_label">
                     <option value=""></option>
                   </select>
                 </div>
@@ -1596,20 +922,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="sf_compliance"
-                  translate
-                  >Compliance Label</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_compliance" translate>Compliance Label</label>
                 <div class="col-sm-5">
                   <p translate="SF_COMPLIANCE_LABEL_TEXT"></p>
-                  <select
-                    class="form-control"
-                    id="sf_compliance"
-                    ng-options="o.id as o.name for o in labels"
-                    ng-model="conf.compliance_label"
-                  >
+                  <select class="form-control" id="sf_compliance" ng-options="o.id as o.name for o in labels" ng-model="conf.compliance_label">
                     <option value=""></option>
                   </select>
                 </div>
@@ -1621,21 +937,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="sf_benchmark_id"
-                  translate
-                  >Salesforce Unique Benchmark ID Fieldname</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="sf_benchmark_id" translate>Salesforce Unique Benchmark ID Fieldname</label>
                 <div class="col-sm-5">
                   <p translate="SF_BENCHMARK_ID_FIELDNAME_TEXT"></p>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="sf_benchmark_id"
-                    ng-model="conf.unique_benchmark_id_fieldname"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="sf_benchmark_id" ng-model="conf.unique_benchmark_id_fieldname" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1645,12 +950,7 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="seed_benchmark_id"
-                  translate
-                  >SEED Unique Benchmark ID Column</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="seed_benchmark_id" translate>SEED Unique Benchmark ID Column</label>
                 <div class="col-sm-5">
                   <p translate="SF_SEED_BENCHMARK_ID_FIELDNAME_TEXT"></p>
                   <select
@@ -1671,21 +971,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="cycle_fieldname"
-                  translate
-                  >Cycle Name Benchmark Field</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="cycle_fieldname" translate>Cycle Name Benchmark Field</label>
                 <div class="col-sm-5">
                   <p translate="SF_CYCLE_FIELDNAME_TEXT"></p>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="cycle_fieldname"
-                    ng-model="conf.cycle_fieldname"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="cycle_fieldname" ng-model="conf.cycle_fieldname" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1695,21 +984,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="status_fieldname"
-                  translate
-                  >Status Label Benchmark Field</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="status_fieldname" translate>Status Label Benchmark Field</label>
                 <div class="col-sm-5">
                   <p translate="SF_STATUS_FIELDNAME_TEXT"></p>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="status_fieldname"
-                    ng-model="conf.status_fieldname"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="status_fieldname" ng-model="conf.status_fieldname" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1719,21 +997,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="labels_fieldname"
-                  translate
-                  >All Labels Benchmark Field</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="labels_fieldname" translate>All Labels Benchmark Field</label>
                 <div class="col-sm-5">
                   <p translate="SF_LABELS_FIELDNAME_TEXT"></p>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="labels_fieldname"
-                    ng-model="conf.labels_fieldname"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="labels_fieldname" ng-model="conf.labels_fieldname" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1742,10 +1009,7 @@
 
         <div class="section_header_container has_btm_margin">
           <div class="section_header">
-            <h2>
-              <i class="fa-solid fa-users"></i> {$:: 'Contacts and Accounts' |
-              translate $}
-            </h2>
+            <h2><i class="fa-solid fa-users"></i> {$:: 'Contacts and Accounts' | translate $}</h2>
           </div>
         </div>
         <div class="section_content_container">
@@ -1758,21 +1022,10 @@
             <h3 translate></h3>
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="acc_rec"
-                  translate
-                  >Salesforce Account Object Record Type</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="acc_rec" translate>Salesforce Account Object Record Type</label>
                 <div class="col-sm-5">
                   <p translate="SF_ACCOUNT_RECORD_TYPE_TEXT"></p>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="acc_rec"
-                    ng-model="conf.account_rec_type"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="acc_rec" ng-model="conf.account_rec_type" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1782,21 +1035,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="contact_rec"
-                  translate
-                  >Salesforce Contact Object Record Type</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_rec" translate>Salesforce Contact Object Record Type</label>
                 <div class="col-sm-5">
                   <p translate="SF_CONTACT_RECORD_TYPE_TEXT"></p>
-                  <input
-                    type="text"
-                    id="contact_rec"
-                    class="form-control"
-                    ng-model="conf.contact_rec_type"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" id="contact_rec" class="form-control" ng-model="conf.contact_rec_type" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1812,12 +1054,7 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="account_column"
-                  translate
-                  >Contact Account Name Column</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="account_column" translate>Contact Account Name Column</label>
                 <div class="col-sm-5">
                   <p translate="SF_ACCOUNT_NAME_FIELDNAME_TEXT"></p>
                   <select
@@ -1838,21 +1075,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="account_default"
-                  translate
-                  >Default Contact Account Name</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="account_default" translate>Default Contact Account Name</label>
                 <div class="col-sm-5">
                   <p translate="SF_DEFAULT_ACCOUNT_NAME_TEXT"></p>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="account_default"
-                    ng-model="conf.default_contact_account_name"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="account_default" ng-model="conf.default_contact_account_name" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1862,12 +1088,7 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="contact_fieldname"
-                  translate
-                  >Contact Name Column</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_fieldname" translate>Contact Name Column</label>
                 <div class="col-sm-5">
                   <p translate="SF_CONTACT_NAME_FIELDNAME_TEXT"></p>
                   <select
@@ -1888,12 +1109,7 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="contact_email"
-                  translate
-                  >Contact Email Column</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="contact_email" translate>Contact Email Column</label>
                 <div class="col-sm-5">
                   <p translate="SF_CONTACT_EMAIL_FIELDNAME_TEXT"></p>
                   <select
@@ -1914,21 +1130,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="benchmark_contact_fieldname"
-                  translate
-                  >Contact Benchmark Field</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="benchmark_contact_fieldname" translate>Contact Benchmark Field</label>
                 <div class="col-sm-5">
                   <p translate="SF_BENCHMARK_CONTACT_FIELDNAME_TEXT"></p>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="benchmark_contact_fieldname"
-                    ng-model="conf.benchmark_contact_fieldname"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="benchmark_contact_fieldname" ng-model="conf.benchmark_contact_fieldname" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1944,12 +1149,7 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="admin_account_column"
-                  translate
-                  >Data Administrator Account Name Column</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_account_column" translate>Data Administrator Account Name Column</label>
                 <div class="col-sm-5">
                   <p translate="SF_DATA_ADMIN_ACCOUNT_NAME_FIELDNAME_TEXT"></p>
                   <select
@@ -1970,21 +1170,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="admin_account_default"
-                  translate
-                  >Default Data Administrator Account Name</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_account_default" translate>Default Data Administrator Account Name</label>
                 <div class="col-sm-5">
                   <p translate="SF_DEFAULT_DATA_ADMIN_ACCOUNT_NAME_TEXT"></p>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="admin_account_default"
-                    ng-model="conf.default_data_admin_account_name"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="admin_account_default" ng-model="conf.default_data_admin_account_name" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1994,12 +1183,7 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="admin_name"
-                  translate
-                  >Data Administrator Name Column</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_name" translate>Data Administrator Name Column</label>
                 <div class="col-sm-5">
                   <p translate="SF_DATA_ADMIN_NAME_FIELDNAME_TEXT"></p>
                   <select
@@ -2020,12 +1204,7 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="admin_email"
-                  translate
-                  >Data Administrator Email Column</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="admin_email" translate>Data Administrator Email Column</label>
                 <div class="col-sm-5">
                   <p translate="SF_DATA_ADMIN_EMAIL_FIELDNAME_TEXT"></p>
                   <select
@@ -2046,21 +1225,10 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label
-                  class="col-sm-2 col-sm-offset-1 control-label"
-                  for="data_admin_contact_fieldname"
-                  translate
-                  >Data Administrator Contact Field</label
-                >
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="data_admin_contact_fieldname" translate>Data Administrator Contact Field</label>
                 <div class="col-sm-5">
                   <p translate="SF_DATA_ADMIN_CONTACT_FIELDNAME_TEXT"></p>
-                  <input
-                    type="text"
-                    class="form-control"
-                    id="data_admin_contact_fieldname"
-                    ng-model="conf.data_admin_contact_fieldname"
-                    ng-disabled="::!auth.requires_owner"
-                  />
+                  <input type="text" class="form-control" id="data_admin_contact_fieldname" ng-model="conf.data_admin_contact_fieldname" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -2068,10 +1236,7 @@
         </div>
         <div class="section_header_container has_btm_margin">
           <div class="section_header">
-            <h2>
-              <i class="fa-solid fa-gear"></i> {$:: 'Salesforce Field Mappings'
-              | translate $}
-            </h2>
+            <h2><i class="fa-solid fa-gear"></i> {$:: 'Salesforce Field Mappings' | translate $}</h2>
           </div>
         </div>
         <div class="section_content_container">
@@ -2085,15 +1250,8 @@
               <table class="table table-striped">
                 <thead>
                   <tr>
-                    <th
-                      class="source_data"
-                      ng-click="toggle_sf_name_order_sort()"
-                    >
-                      <span
-                        ><translate>Salesforce Field Name</translate>&nbsp;<i
-                          class="glyphicon glyphicon-sort"
-                        ></i
-                      ></span>
+                    <th class="source_data" ng-click="toggle_sf_name_order_sort()">
+                      <span><translate>Salesforce Field Name</translate>&nbsp;<i class="glyphicon glyphicon-sort"></i></span>
                     </th>
                     <th class="source_data">
                       <span><translate>SEED Field Name</translate></span>
@@ -2105,85 +1263,41 @@
                 <tbody id="mapped-table">
                   <tr ng-repeat="(index, col) in salesforce_mappings">
                     <td>
-                      <input
-                        type="text"
-                        class="form-control input-sm tcm_field"
-                        ng-model="col.salesforce_fieldname"
-                        ng-change="flag_change()"
-                      />
+                      <input type="text" class="form-control input-sm tcm_field" ng-model="col.salesforce_fieldname" ng-change="flag_change()" />
                     </td>
                     <td ng-attr-id="mapped-row-input-{$:: $index $}">
-                      <select
-                        id="select-column"
-                        class="form-control"
-                        ng-model="col.column"
-                        ng-change="flag_change()"
-                      >
-                        <option
-                          ng-repeat="property_column in property_column_names"
-                          ng-value="property_column.id"
-                        >
-                          {$:: property_column.display_name $}
-                        </option>
+                      <select id="select-column" class="form-control" ng-model="col.column" ng-change="flag_change()">
+                        <option ng-repeat="property_column in property_column_names" ng-value="property_column.id">{$:: property_column.display_name $}</option>
                       </select>
                     </td>
 
                     <td style="text-align: center">
-                      <button
-                        class="btn btn-danger"
-                        type="button"
-                        ng-click="remove_column(index)"
-                        tooltip-placement="bottom"
-                        uib-tooltip="Delete"
-                      >
-                        <span
-                          class="glyphicon glyphicon-remove"
-                          aria-hidden="true"
-                        ></span>
+                      <button class="btn btn-danger" type="button" ng-click="remove_column(index)" tooltip-placement="bottom" uib-tooltip="Delete">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                       </button>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            <button
-              class="btn btn-success"
-              type="button"
-              ng-click="add_new_column()"
-              tooltip-placement="bottom"
-              uib-tooltip="New"
-              translate
-            >
-              Add Mapping
-            </button>
+            <button class="btn btn-success" type="button" ng-click="add_new_column()" tooltip-placement="bottom" uib-tooltip="New" translate>Add Mapping</button>
           </div>
         </div>
       </div>
     </uib-tab>
 
-    <uib-tab
-      index="7"
-      heading="{$:: 'Two-Factor Authentication' | translate $}"
-    >
+    <uib-tab index="7" heading="{$:: 'Two-Factor Authentication' | translate $}">
       <div class="section_content_container">
         <div class="section_content with_padding">
           <h3 translate>Require two-factor authentication</h3>
           <p>
-            Checking this box requires all organization users to use Two-Factor
-            Authentication (2FA). If a user does not already have a 2FA method
-            configured, an email-based authentication method will be set as the
-            default.
+            Checking this box requires all organization users to use Two-Factor Authentication (2FA). If a user does not already have a 2FA method configured, an email-based authentication method will
+            be set as the default.
           </p>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input
-                  type="checkbox"
-                  class="form-control"
-                  style="width: 34px"
-                  ng-model="org.require_2fa"
-                  ng-disabled="::!auth.requires_owner"
-                />
+                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.require_2fa" ng-disabled="::!auth.requires_owner" />
               </div>
             </div>
           </form>
@@ -2200,21 +1314,13 @@
       <div class="section_content_container">
         <div class="section_content with_padding">
           <p translate>
-            The UBID Threshold defines the minimum Jaccard Index value required
-            for a UBID Comparison to be considered acceptable. When the
-            threshold is satisfied, the incoming property can be merged with the
-            existing property.
+            The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable. When the threshold is satisfied, the incoming property can be merged
+            with the existing property.
           </p>
           <p translate>UBID thresholds must be greater than 0 and up to 1.0</p>
           <form class="form-horizontal" role="form" lang="en-US">
             <div class="form-group">
-              <label
-                class="control-label col-md-1"
-                style="width: fit-content"
-                for="ubid-threshold-form"
-                translate
-                >UBID Threshold</label
-              >
+              <label class="control-label col-md-1" style="width: fit-content" for="ubid-threshold-form" translate>UBID Threshold</label>
               <div class="col-sm-3">
                 <input
                   id="ubid-threshold-form"
@@ -2230,13 +1336,7 @@
             </div>
           </form>
           <div style="margin-top: 30px">
-            <span
-              class="alert alert-danger"
-              ng-show="invalid_ubid_threshold"
-              translate
-            >
-              UBID Threshold must be between 0.0001 and 1.0
-            </span>
+            <span class="alert alert-danger" ng-show="invalid_ubid_threshold" translate> UBID Threshold must be between 0.0001 and 1.0 </span>
           </div>
         </div>
       </div>
@@ -2245,17 +1345,11 @@
     <uib-tab index="9" heading="{$:: 'Units' | translate $}">
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <h3 translate>
-            Measurement unit display for energy use intensities (EUI)
-          </h3>
+          <h3 translate>Measurement unit display for energy use intensities (EUI)</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select
-                  class="form-control"
-                  ng-options="o.value as o.label for o in unit_options_eui"
-                  ng-model="org.display_units_eui"
-                ></select>
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_eui" ng-model="org.display_units_eui"></select>
               </div>
             </div>
           </form>
@@ -2264,17 +1358,11 @@
 
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <h3 translate>
-            Measurement unit display for Green House Gas Emissions (GHG)
-          </h3>
+          <h3 translate>Measurement unit display for Green House Gas Emissions (GHG)</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select
-                  class="form-control"
-                  ng-options="o.value as o.label for o in unit_options_ghg"
-                  ng-model="org.display_units_ghg"
-                ></select>
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_ghg" ng-model="org.display_units_ghg"></select>
               </div>
             </div>
           </form>
@@ -2283,18 +1371,11 @@
 
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <h3 translate>
-            Measurement unit display for Green House Gas Emission Intensity
-            (GHGI)
-          </h3>
+          <h3 translate>Measurement unit display for Green House Gas Emission Intensity (GHGI)</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select
-                  class="form-control"
-                  ng-options="o.value as o.label for o in unit_options_ghg_intensity"
-                  ng-model="org.display_units_ghg_intensity"
-                ></select>
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_ghg_intensity" ng-model="org.display_units_ghg_intensity"></select>
               </div>
             </div>
           </form>
@@ -2307,11 +1388,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select
-                  class="form-control"
-                  ng-options="o.value as o.label for o in unit_options_water_use"
-                  ng-model="org.display_units_water_use"
-                ></select>
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_water_use" ng-model="org.display_units_water_use"></select>
               </div>
             </div>
           </form>
@@ -2324,11 +1401,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select
-                  class="form-control"
-                  ng-options="o.value as o.label for o in unit_options_wui"
-                  ng-model="org.display_units_wui"
-                ></select>
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_wui" ng-model="org.display_units_wui"></select>
               </div>
             </div>
           </form>
@@ -2341,15 +1414,8 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select
-                  class="form-control"
-                  ng-change="get_valid_units_for_type()"
-                  ng-options="type.value as type.label for type in energy_type_options"
-                  ng-model="chosen_type_unit.type"
-                >
-                  <option value="" translate>
-                    ENERGY_TYPE_DISPLAY_CHOICE_PLACEHOLDER
-                  </option>
+                <select class="form-control" ng-change="get_valid_units_for_type()" ng-options="type.value as type.label for type in energy_type_options" ng-model="chosen_type_unit.type">
+                  <option value="" translate>ENERGY_TYPE_DISPLAY_CHOICE_PLACEHOLDER</option>
                 </select>
               </div>
             </div>
@@ -2361,9 +1427,7 @@
                   ng-options="unit as unit for unit in energy_unit_options[chosen_type_unit.type]"
                   ng-model="chosen_type_unit.unit"
                 >
-                  <option value="" translate>
-                    ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER
-                  </option>
+                  <option value="" translate>ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER</option>
                 </select>
               </div>
             </div>
@@ -2377,15 +1441,8 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select
-                  class="form-control"
-                  ng-change="get_valid_water_units_for_type()"
-                  ng-options="type.value as type.label for type in water_type_options"
-                  ng-model="chosen_water_type_unit.type"
-                >
-                  <option value="" translate>
-                    WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER
-                  </option>
+                <select class="form-control" ng-change="get_valid_water_units_for_type()" ng-options="type.value as type.label for type in water_type_options" ng-model="chosen_water_type_unit.type">
+                  <option value="" translate>WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER</option>
                 </select>
               </div>
             </div>
@@ -2397,9 +1454,7 @@
                   ng-options="unit as unit for unit in water_unit_options[chosen_water_type_unit.type]"
                   ng-model="chosen_water_type_unit.unit"
                 >
-                  <option value="" translate>
-                    ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER
-                  </option>
+                  <option value="" translate>ENERGY_UNIT_DISPLAY_CHOICE_PLACEHOLDER</option>
                 </select>
               </div>
             </div>
@@ -2413,11 +1468,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select
-                  class="form-control"
-                  ng-options="o.value as o.label for o in unit_options_area"
-                  ng-model="org.display_units_area"
-                ></select>
+                <select class="form-control" ng-options="o.value as o.label for o in unit_options_area" ng-model="org.display_units_area"></select>
               </div>
             </div>
           </form>
@@ -2430,11 +1481,7 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <select
-                  class="form-control"
-                  ng-options="o.value as o.label for o in decimal_places_options"
-                  ng-model="org.display_decimal_places"
-                ></select>
+                <select class="form-control" ng-options="o.value as o.label for o in decimal_places_options" ng-model="org.display_decimal_places"></select>
               </div>
             </div>
           </form>
@@ -2446,17 +1493,8 @@
           <h3 translate>THERMAL_CONV_ASSUMPTION_TITLE</h3>
           <form class="form-horizontal" role="form">
             <div class="form-group">
-              <div
-                class="col-sm-4"
-                uib-popover="Warning: Meters will be imported as and viewed according to this assumption."
-                popover-trigger="mouseenter"
-                popover-placement="right-top"
-              >
-                <select
-                  class="form-control"
-                  ng-options="country.value as country.label for country in thermal_conversion_countries"
-                  ng-model="org.thermal_conversion_assumption"
-                ></select>
+              <div class="col-sm-4" uib-popover="Warning: Meters will be imported as and viewed according to this assumption." popover-trigger="mouseenter" popover-placement="right-top">
+                <select class="form-control" ng-options="country.value as country.label for country in thermal_conversion_countries" ng-model="org.thermal_conversion_assumption"></select>
               </div>
             </div>
           </form>
@@ -2465,25 +1503,13 @@
     </uib-tab>
   </uib-tabset>
 
-  <div
-    class="section_content_container"
-    style="margin: 30px 0"
-    ng-if="::auth.requires_owner"
-  >
+  <div class="section_content_container" style="margin: 30px 0" ng-if="::auth.requires_owner">
     <div class="section_content with_padding">
-      <button
-        type="button"
-        class="btn btn-primary"
-        ng-click="save_settings()"
-        ng-disabled="invalid_ubid_threshold"
-      >
+      <button type="button" class="btn btn-primary" ng-click="save_settings()" ng-disabled="invalid_ubid_threshold">
         {$:: 'Save Changes' | translate $}
         <i class="fa-solid fa-check" ng-show="settings_updated"></i>
       </button>
-      <div ng-if="form_errors" class="r-error-msg r-margin-right-10">
-        <i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$
-        form_errors $}
-      </div>
+      <div ng-if="form_errors" class="r-error-msg r-margin-right-10"><i class="fa-solid fa-circle-exclamation fa-lg"></i> Error saving: {$ form_errors $}</div>
     </div>
   </div>
 </div>

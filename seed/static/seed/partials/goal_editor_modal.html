@@ -3,10 +3,7 @@
     <div class="section_header_container" style="border: none">
       <div class="section_header has_no_padding fixed_height_short">
         <div class="section_action_container left">
-          <h2>
-            <i class="fa-solid fa-gauge-high"></i>{$:: 'Goal Setup' | translate
-            $}
-          </h2>
+          <h2><i class="fa-solid fa-gauge-high"></i>{$:: 'Goal Setup' | translate $}</h2>
         </div>
       </div>
     </div>
@@ -16,16 +13,8 @@
       <div class="section_content_container rp-data-view">
         <div class="goals-text">
           <span translate>GOAL_CONFIG_TEXT</span>
-          <i
-            class="ui-grid-icon-info-circled"
-            ng-mouseenter="show_help = true"
-            ng-mouseleave="show_help = false"
-          ></i>
-          <div
-            class="alert alert-info"
-            ng-show="show_help"
-            style="position: absolute; z-index: 1; font-weight: normal"
-          >
+          <i class="ui-grid-icon-info-circled" ng-mouseenter="show_help = true" ng-mouseleave="show_help = false"></i>
+          <div class="alert alert-info" ng-show="show_help" style="position: absolute; z-index: 1; font-weight: normal">
             <ul>
               <li translate>GOAL_SELECT_CYCLES</li>
               <li translate>GOAL_SELECT_ALI</li>
@@ -42,27 +31,12 @@
             <ul class="r-list">
               <li class="r-list-header" translate>Goal</li>
               <li ng-show="goal" class="r-selected r-row r-row-centered">
-                <span
-                  class="r-grow goal-name"
-                  uib-tooltip="{$ goal.name.length > 40 ? goal.name : '' $}"
-                  tooltip-class="tooltip-long"
-                  style="height: 18px"
-                  >{$ goal.name $}
-                </span>
-                <i
-                  class="fa-solid fa-xmark r-margin-left-5"
-                  ng-if="goal.id && write_permission"
-                  ng-click="delete_goal(goal.id)"
-                ></i>
+                <span class="r-grow goal-name" uib-tooltip="{$ goal.name.length > 40 ? goal.name : '' $}" tooltip-class="tooltip-long" style="height: 18px">{$ goal.name $} </span>
+                <i class="fa-solid fa-xmark r-margin-left-5" ng-if="goal.id && write_permission" ng-click="delete_goal(goal.id)"></i>
               </li>
             </ul>
             <ul class="r-list r-scrollable" id="goal-list">
-              <li
-                ng-repeat-start="goal_option in goals"
-                ng-repeat-end
-                ng-show="goal_option.id != goal.id"
-                class="r-row r-row-centered"
-              >
+              <li ng-repeat-start="goal_option in goals" ng-repeat-end ng-show="goal_option.id != goal.id" class="r-row r-row-centered">
                 <span
                   class="r-grow goal-name"
                   uib-tooltip="{$ goal_option.name.length > 40 ? goal_option.name : '' $}"
@@ -71,76 +45,35 @@
                   ng-click="set_goal(goal_option)"
                   >{$ goal_option.name $}</span
                 >
-                <i
-                  class="fa-solid fa-xmark r-margin-left-5"
-                  ng-if="write_permission"
-                  ng-click="delete_goal(goal_option.id)"
-                ></i>
+                <i class="fa-solid fa-xmark r-margin-left-5" ng-if="write_permission" ng-click="delete_goal(goal_option.id)"></i>
               </li>
             </ul>
             <ul class="r-list" ng-if="write_permission">
               <li>
-                <button class="btn btn-success r-grow" ng-click="new_goal()">
-                  <i class="fa-solid fa-circle-plus r-pad-right-5"></i>{$:: 'New
-                  Goal' | translate $}
-                </button>
+                <button class="btn btn-success r-grow" ng-click="new_goal()"><i class="fa-solid fa-circle-plus r-pad-right-5"></i>{$:: 'New Goal' | translate $}</button>
               </li>
             </ul>
           </div>
           <!-- New Goal -->
 
-          <div
-            id="goal-details"
-            style="max-height: 62vh; overflow: scroll; width: 90%"
-          >
+          <div id="goal-details" style="max-height: 62vh; overflow: scroll; width: 90%">
             <form name="goal_form">
-              <div
-                id="goal-details-col1"
-                class="r-column table_list_container"
-                style="width: 100%"
-              >
+              <div id="goal-details-col1" class="r-column table_list_container" style="width: 100%">
                 <ul class="r-list">
                   <li class="r-list-header" translate>Goal</li>
                   <!-- Name -->
                   <li class="r-row r-row-centered">
-                    <label
-                      for="input-name"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Name</label
-                    >
-                    <input
-                      id="input-name"
-                      class="form-control goal-form-control"
-                      type="text"
-                      ng-model="goal.name"
-                      style="padding-left: 5px"
-                      required
-                    />
+                    <label for="input-name" class="r-pad-right-5 goal-label" translate>Name</label>
+                    <input id="input-name" class="form-control goal-form-control" type="text" ng-model="goal.name" style="padding-left: 5px" required />
                   </li>
                   <!-- Type -->
                   <li class="r-row r-row-centered">
-                    <label
-                      for="input-name"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Type</label
-                    >
-                    <select
-                      id="goal-type"
-                      class="form-control goal-form-control"
-                      ng-options="type for type in goal_types"
-                      ng-model="goal.type"
-                      required
-                    ></select>
+                    <label for="input-name" class="r-pad-right-5 goal-label" translate>Type</label>
+                    <select id="goal-type" class="form-control goal-form-control" ng-options="type for type in goal_types" ng-model="goal.type" required></select>
                   </li>
                   <li class="r-info">
                     <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-                    ><span translate
-                      >Select a Goal Type. A Standard goal will calculate a
-                      standard EUI per sqft. A Transaction goal will also
-                      calculate an EUI per transaction.</span
-                    >
+                    ><span translate>Select a Goal Type. A Standard goal will calculate a standard EUI per sqft. A Transaction goal will also calculate an EUI per transaction.</span>
                   </li>
                 </ul>
                 <!-- Cycle Selection -->
@@ -148,12 +81,7 @@
                   <li class="r-list-header" translate>Cycle Selection</li>
                   <!-- Baseline Cycle -->
                   <li class="r-row r-row-centered">
-                    <label
-                      for="select-baseline-cycle"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Baseline Cycle</label
-                    >
+                    <label for="select-baseline-cycle" class="r-pad-right-5 goal-label" translate>Baseline Cycle</label>
                     <select
                       id="select-baseline-cycle"
                       class="form-control goal-form-control"
@@ -165,12 +93,7 @@
                   </li>
                   <!-- Current Cycle -->
                   <li class="r-row r-row-centered">
-                    <label
-                      for="select-current-cycle"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Current Cycle</label
-                    >
+                    <label for="select-current-cycle" class="r-pad-right-5 goal-label" translate>Current Cycle</label>
                     <select
                       id="select-current-cycle"
                       class="form-control goal-form-control"
@@ -180,25 +103,14 @@
                       required
                     ></select>
                   </li>
-                  <li class="r-info">
-                    <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-                    ><span translate
-                      >Current Cycle will be measured against Baseline
-                      Cycle</span
-                    >
-                  </li>
+                  <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Current Cycle will be measured against Baseline Cycle</span></li>
                 </ul>
                 <!-- Access Level Selection -->
                 <ul class="r-list">
                   <li class="r-list-header" translate>Access Level Instance</li>
                   <!-- Access Level Name -->
                   <li class="r-row r-row-centered">
-                    <label
-                      for="select-level-name"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Access Level
-                    </label>
+                    <label for="select-level-name" class="r-pad-right-5 goal-label" translate>Access Level </label>
                     <select
                       id="select-level-name"
                       class="form-control goal-form-control"
@@ -212,12 +124,7 @@
                   </li>
                   <!-- Access Level Instance -->
                   <li class="r-row r-row-centered">
-                    <label
-                      for="select-level-instance"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Level Instance</label
-                    >
+                    <label for="select-level-instance" class="r-pad-right-5 goal-label" translate>Level Instance</label>
                     <select
                       id="select-level-instance"
                       class="form-control goal-form-control"
@@ -229,11 +136,7 @@
                   </li>
 
                   <li class="r-info">
-                    <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-                    ><span translate
-                      >Portfolio Summary will only include properties belonging
-                      to this Access Level Instance.</span
-                    >
+                    <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Portfolio Summary will only include properties belonging to this Access Level Instance.</span>
                   </li>
                 </ul>
               </div>
@@ -244,12 +147,7 @@
                   <li class="r-list-header" translate>Area Target Column</li>
                   <!-- Area Column -->
                   <li class="r-row r-row-centered">
-                    <label
-                      for="select-area-column"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Area Column</label
-                    >
+                    <label for="select-area-column" class="r-pad-right-5 goal-label" translate>Area Column</label>
                     <select
                       id="select-area-column"
                       class="form-control goal-form-control"
@@ -264,18 +162,10 @@
                     <span
                       >{$:: 'Not seeing your column?' | translate $}
                       <span ng-if="auth.requires_owner"
-                        >{$ 'Update the data type of the column to "Area" in' |
-                        translate $}
-                        <a
-                          ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})"
-                          ng-click="$dismiss()"
-                          >Column Settings</a
-                        >
+                        >{$ 'Update the data type of the column to "Area" in' | translate $}
+                        <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})" ng-click="$dismiss()">Column Settings</a>
                       </span>
-                      <span ng-if="!auth.requires_owner" translate
-                        >Have your organization owner update the column's data
-                        type to "Area"</span
-                      >
+                      <span ng-if="!auth.requires_owner" translate>Have your organization owner update the column's data type to "Area"</span>
                     </span>
                   </li>
                 </ul>
@@ -284,12 +174,7 @@
                   <li class="r-list-header" translate>EUI Target Columns</li>
                   <!-- EUI Column1 -->
                   <li class="r-row r-row-centered">
-                    <label
-                      for="select-eui-column1"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Primary Column</label
-                    >
+                    <label for="select-eui-column1" class="r-pad-right-5 goal-label" translate>Primary Column</label>
                     <select
                       id="select-eui-column1"
                       class="form-control goal-form-control"
@@ -301,12 +186,7 @@
                   </li>
                   <!-- EUI Column2 -->
                   <li class="r-row r-row-centered" ng-if="goal.eui_column1">
-                    <label
-                      for="select-eui-column2"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Secondary (optional)</label
-                    >
+                    <label for="select-eui-column2" class="r-pad-right-5 goal-label" translate>Secondary (optional)</label>
                     <select
                       id="select-eui-column2"
                       class="form-control goal-form-control"
@@ -318,12 +198,7 @@
                   </li>
                   <!-- EUI Column3 -->
                   <li class="r-row r-row-centered" ng-if="goal.eui_column2">
-                    <label
-                      for="select-eui-column3"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Tertiary (optional)</label
-                    >
+                    <label for="select-eui-column3" class="r-pad-right-5 goal-label" translate>Tertiary (optional)</label>
                     <select
                       id="select-eui-column3"
                       class="form-control goal-form-control"
@@ -339,18 +214,10 @@
                     <span
                       >{$:: 'Not seeing your column?' | translate $}
                       <span ng-if="auth.requires_owner"
-                        >{$ 'Update the data type of the column to "EUI" in' |
-                        translate $}
-                        <a
-                          ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})"
-                          ng-click="$dismiss()"
-                          >Column Settings</a
-                        >
+                        >{$ 'Update the data type of the column to "EUI" in' | translate $}
+                        <a ui-sref="organization_column_settings(::{organization_id: organization.id, inventory_type: 'properties'})" ng-click="$dismiss()">Column Settings</a>
                       </span>
-                      <span ng-if="!auth.requires_owner" translate
-                        >Have your organization owner update the column's data
-                        type to "EUI"</span
-                      >
+                      <span ng-if="!auth.requires_owner" translate>Have your organization owner update the column's data type to "EUI"</span>
                     </span>
                   </li>
                 </ul>
@@ -359,12 +226,7 @@
                   <li class="r-list-header" translate>Transactions Column</li>
                   <!-- Transaction Column -->
                   <li class="r-row r-row-centered">
-                    <label
-                      for="select-area-column"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Transactions</label
-                    >
+                    <label for="select-area-column" class="r-pad-right-5 goal-label" translate>Transactions</label>
                     <select
                       id="select-area-column"
                       class="form-control goal-form-control"
@@ -376,72 +238,31 @@
                   </li>
                   <li class="r-info">
                     <i class="fa-solid fa-arrow-up r-pad-right-5"></i>
-                    <span translate
-                      >Column representing number of transactions per
-                      property</span
-                    >
+                    <span translate>Column representing number of transactions per property</span>
                   </li>
                 </ul>
                 <!-- Target -->
                 <ul class="r-list">
                   <li class="r-list-header" translate>Portfolio Target</li>
                   <li class="r-row r-row-centered">
-                    <label
-                      for="input-target"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Percentage (%)</label
-                    >
-                    <input
-                      id="input-target"
-                      class="form-control goal-form-control"
-                      type="number"
-                      ng-model="goal.target_percentage"
-                      min="0"
-                      max="100"
-                      style="padding-left: 5px"
-                      required
-                    />
+                    <label for="input-target" class="r-pad-right-5 goal-label" translate>Percentage (%)</label>
+                    <input id="input-target" class="form-control goal-form-control" type="number" ng-model="goal.target_percentage" min="0" max="100" style="padding-left: 5px" required />
                   </li>
-                  <li class="r-info">
-                    <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-                    ><span translate
-                      >Target to quantify Portfolio EUI improvement. Must be
-                      between 0 and 100.</span
-                    >
-                  </li>
+                  <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Target to quantify Portfolio EUI improvement. Must be between 0 and 100.</span></li>
                 </ul>
                 <!-- Commitment Sq Ft -->
                 <ul class="r-list" style="margin-bottom: 50px">
                   <li class="r-list-header" translate>Commitment</li>
                   <li class="r-row r-row-centered">
-                    <label
-                      for="input-target"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Commitment (Sq Ft)</label
-                    >
-                    <input
-                      id="input-target"
-                      class="form-control goal-form-control"
-                      type="number"
-                      ng-model="goal.commitment_sqft"
-                      min="0"
-                      style="padding-left: 5px"
-                    />
+                    <label for="input-target" class="r-pad-right-5 goal-label" translate>Commitment (Sq Ft)</label>
+                    <input id="input-target" class="form-control goal-form-control" type="number" ng-model="goal.commitment_sqft" min="0" style="padding-left: 5px" />
                   </li>
-                  <li class="r-info">
-                    <i class="fa-solid fa-arrow-up r-pad-right-5"></i
-                    ><span translate>Committed Area</span>
-                  </li>
+                  <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Committed Area</span></li>
                 </ul>
               </div>
             </form>
           </div>
-          <div
-            class="scroll-indicator"
-            style="position: absolute; bottom: 3px"
-          ></div>
+          <div class="scroll-indicator" style="position: absolute; bottom: 3px"></div>
         </div>
       </div>
     </div>
@@ -450,25 +271,11 @@
     <div id="goal-messages" class="alert-danger" ng-if="errors">
       <div ng-repeat="error in errors">{$ error $}</div>
     </div>
-    <div
-      class="section_action_container right_40 section_action_btn pull-right"
-    >
-      <button
-        class="btn btn-primary"
-        ng-click="save_goal()"
-        ng-disabled="goal_form.$invalid || !goal_changed"
-        ng-if="write_permission"
-        translate
-      >
+    <div class="section_action_container right_40 section_action_btn pull-right">
+      <button class="btn btn-primary" ng-click="save_goal()" ng-disabled="goal_form.$invalid || !goal_changed" ng-if="write_permission" translate>
         Save Changes<i class="fa-solid fa-check" ng-show="settings_updated"></i>
       </button>
-      <button
-        class="btn btn-default r-margin-right-5"
-        ng-click="close()"
-        translate
-      >
-        Dismiss
-      </button>
+      <button class="btn btn-default r-margin-right-5" ng-click="close()" translate>Dismiss</button>
     </div>
   </div>
 </div>

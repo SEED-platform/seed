@@ -13,15 +13,8 @@
       <div class="col-sm-12">
         Updating derived data...
         <div class="progress_bar_container">
-          <uib-progressbar
-            class="progress-striped active"
-            value="uploader.progress"
-            type="success"
-          ></uib-progressbar>
-          <div class="progress_bar_copy_bottom">
-            {$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $}
-            {$ uploader.status_message ? ': ' + uploader.status_message : '' $}
-          </div>
+          <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+          <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
         </div>
       </div>
     </div>
@@ -29,22 +22,6 @@
 </div>
 
 <div class="modal-footer">
-  <button
-    type="button"
-    class="btn btn-default"
-    ng-click="cancel()"
-    ng-disabled="status !== 'ready'"
-    translate
-  >
-    Cancel
-  </button>
-  <button
-    type="button"
-    class="btn btn-danger"
-    ng-click="begin_update()"
-    ng-show="status === 'ready'"
-    translate
-  >
-    Begin Update
-  </button>
+  <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="status !== 'ready'" translate>Cancel</button>
+  <button type="button" class="btn btn-danger" ng-click="begin_update()" ng-show="status === 'ready'" translate>Begin Update</button>
 </div>
