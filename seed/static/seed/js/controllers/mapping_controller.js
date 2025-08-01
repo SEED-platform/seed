@@ -739,7 +739,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         .then((results) => {
           $scope.property_columns = results[0];
           $scope.taxlot_columns = results[1];
-          progress_key = results[2].progress_key;
+          const progress_key = results[2].progress_key;
 
           uploader_service.check_progress_loop(
             progress_key,
@@ -752,7 +752,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         })
         .catch((response) => {
           $log.error(response);
-        })
+        });
     };
 
     $scope.process_mapped_buildings = (response) => {
