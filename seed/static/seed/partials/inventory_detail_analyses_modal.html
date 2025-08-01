@@ -60,6 +60,9 @@
             >
               Building Upgrade Recommendation
             </option>
+            <option ng-option value="Buildings Analysis" selected="selected">
+              Buildings Analysis
+            </option>
           </select>
         </div>
         <div
@@ -681,6 +684,34 @@
               <small class="form-text text-muted" translate
                 >FF_RSL_THRESHOLD_HELP</small
               >
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" ng-if="new_analysis.service == 'Buildings Analysis'">
+          <label class="control-label sectionLabel">Buildings Analysis Options</label>
+          <div class="form-group" style="padding-top: 1em">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-md-6">
+                  <label class="control-label sectionLabel text-muted">
+                    H3 Resolution
+                    <i
+                      class="ui-grid-icon-info-circled"
+                      uib-tooltip-html="'H3 hexagon resolution level (0-15). Higher values create smaller hexagons with more precise local analysis. Default is 8 (approximately 0.74 km² hexagons).'"
+                    ></i>
+                  </label>
+                  <input
+                    ng-model="new_analysis.configuration.h3_resolution"
+                    type="number"
+                    class="form-control"
+                    ng-init="new_analysis.configuration.h3_resolution=8"
+                    min="0"
+                    max="15"
+                    step="1"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -42,6 +42,7 @@
     "ANALYSIS_DESCRIPTION_EEEJ": "The EEEJ Analysis uses each property's address to identify the 2010 census tract. Based on census tract, disadvantaged community classification and energy burden information can be retrieved from the CEJST dataset. The number of affordable housing locations is retrieved from HUD datasets. Location is used to generate a link to view an EJScreen Report providing more demographic indicators.",
     "ANALYSIS_DESCRIPTION_EUI": "The EUI analysis will sum the property's meter readings for the last twelve months to calculate the energy use per square footage per year. If there are missing meter readings, then the analysis will return a less that 100% coverage to alert the user that there is a missing meter reading.",
     "ANALYSIS_DESCRIPTION_ElementStatistics": "The Element Statistics analysis looks through a property's element data (if any) to count the number of elements of type 'D.D.C. Control Panel'. It also generates the aggregated (average) condition index values for EISA 2007-432 elements and saves those quantities to the property.",
+    "ANALYSIS_DESCRIPTION_BuildingsAnalysis": "The Buildings Analysis examines building density, height, and setback patterns in areas surrounding each property's coordinates. It uses H3 hexagonal spatial indexing to analyze building data within defined geographical boundaries, providing insights into the local building environment and urban characteristics.",
     "AND": "AND",
     "API Documentation": "API Documentation",
     "API Key": "API Key",
