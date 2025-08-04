@@ -146,7 +146,7 @@ def export_data(args):
     set_cache_raw(progress_data.unique_id, {"data": data}, timeout)
 
 
-def _csv_response(data, column_name_mappings) -> str:
+def _csv_response(data, column_name_mappings):
     output = io.StringIO()
     writer = csv.writer(output)
 
@@ -188,7 +188,7 @@ def _csv_response(data, column_name_mappings) -> str:
     return output.getvalue()
 
 
-def json_response(filename, data, column_name_mappings) -> dict:
+def json_response(filename, data, column_name_mappings):
     polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
     response_dict = {"type": "FeatureCollection", "name": f"SEED Export - {filename.replace('.geojson', '')}"}
 
@@ -291,7 +291,7 @@ def json_response(filename, data, column_name_mappings) -> dict:
     return response_dict
 
 
-def _spreadsheet_response(data, column_name_mappings) -> str:
+def _spreadsheet_response(data, column_name_mappings):
     scenario_keys = (
         "id",
         "name",
