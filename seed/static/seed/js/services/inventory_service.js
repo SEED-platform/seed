@@ -1300,7 +1300,7 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       taxlot_view_ids
     }).then((response) => response.data);
 
-    inventory_service.start_export = (ids, filename, profile_id, export_type, include_notes, include_meter_readings, inventory_type) => $http.post(
+    inventory_service.start_export = (ids, filename, profile_id, export_type, inventory_type, include_notes = false, include_meter_readings = false) => $http.post(
       '/api/v3/tax_lot_properties/start_export/',
       {
         ids,

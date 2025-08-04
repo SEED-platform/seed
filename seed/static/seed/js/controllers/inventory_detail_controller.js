@@ -25,6 +25,8 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
   'pairing_service',
   'organization_service',
   'dataset_service',
+  'cache_entry_service',
+  'uploader_service',
   'inventory_payload',
   'views_payload',
   'analyses_payload',
@@ -64,6 +66,8 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     pairing_service,
     organization_service,
     dataset_service,
+    cache_entry_service,
+    uploader_service,
     inventory_payload,
     views_payload,
     analyses_payload,
@@ -82,6 +86,10 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
   ) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.organization = organization_payload.organization;
+    $scope.exporter_progress = {
+      progress: 0,
+      status_message: ''
+    };
 
     // WARNING: $scope.org is used by "child" controller - analysis_details_controller
     $scope.org = { id: organization_payload.organization.id };
@@ -686,34 +694,46 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
 
     $scope.export_building_sync_xlsx = () => {
       const filename = `buildingsync_property_${$stateParams.view_id}.xlsx`;
-      // let profileId = null;
-      // if ($scope.currentProfile) {
-      //   profileId = $scope.currentProfile.id;
-      // }
 
-      $http
-        .post(
-          '/api/v3/tax_lot_properties/export/',
-          {
-            ids: [$stateParams.view_id],
-            filename,
-            profile_id: null, // TODO: reconfigure backend to handle detail settings profiles
-            export_type: 'xlsx'
-          },
-          {
-            params: {
-              organization_id: $scope.organization.id,
-              inventory_type: $scope.inventory_type
-            },
-            responseType: 'arraybuffer'
-          }
-        )
-        .then((response) => {
-          const blob_type = response.headers()['content-type'];
+      inventory_service.start_export(
+        [$stateParams.view_id],
+        filename,
+        null,
+        'xlsx',
+        $scope.inventory_type
+      ).then((data) => {
+        uploader_service.check_progress_loop(
+          data.data.progress_key,
+          0,
+          1,
+          $scope.get_export,
+          () => {},
+          $scope.exporter_progress
+        );
+      });
+    };
 
-          const blob = new Blob([response.data], { type: blob_type });
+    $scope.get_export = ({ unique_id }) => {
+      const filename = `buildingsync_property_${$stateParams.view_id}.xlsx`;
+
+      cache_entry_service.get_cache_entry(unique_id)
+        .then(({ data }) => {
+          const blob = base64_to_blob(data);
           saveAs(blob, filename);
         });
+    };
+
+    const base64_to_blob = (base64) => {
+      const byteCharacters = atob(base64);
+      const byteArrays = [];
+
+      for (let i = 0; i < byteCharacters.length; i += 512) {
+        const slice = byteCharacters.slice(i, i + 512);
+        const byteNumbers = Array.from(slice).map((c) => c.charCodeAt(0));
+        byteArrays.push(new Uint8Array(byteNumbers));
+      }
+
+      return new Blob(byteArrays, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     };
 
     $scope.export_building_sync_at_file = () => {

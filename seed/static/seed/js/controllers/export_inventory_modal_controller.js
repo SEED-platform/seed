@@ -42,9 +42,9 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
         $scope.filename,
         profile_id,
         export_type,
+        inventory_type,
         $scope.include_notes,
-        $scope.include_meter_readings,
-        inventory_type
+        $scope.include_meter_readings
       ).then((data) => {
         uploader_service.check_progress_loop(
           data.data.progress_key,
