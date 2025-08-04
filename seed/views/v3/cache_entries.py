@@ -1,21 +1,25 @@
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework.viewsets import GenericViewSet
-from seed.utils.api_schema import AutoSchemaHelper
-from seed.utils.api import OrgMixin, api_endpoint
-from rest_framework.decorators import action
+
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
-from django.utils.decorators import method_decorator
+from seed.utils.api import OrgMixin, api_endpoint
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw
+
 
 class CacheEntryViewSet(GenericViewSet, OrgMixin):
     """
     ViewSet for managing redis cache entries.
     """
 
-    manual_parameters=[
-        AutoSchemaHelper.query_org_id_field(),
-    ],
+    manual_parameters = (
+        [
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+    )
+
     @method_decorator(
         [
             api_endpoint,

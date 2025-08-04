@@ -314,7 +314,7 @@ describe('controller: mapping_controller', () => {
 
   //     // act
   //     mapping_controller_scope.$digest();
-  //     mapping_controller_scope.get_mapped_buildings();
+  //     mapping_controller_scope.start_mapped_buildings();
   //     mapping_controller_scope.$digest();
 
   //     // assertions

@@ -2069,7 +2069,7 @@ def mapping_results_task(args):
             .order_by("id")
         )
 
-    progress_total = len(properties) + len(tax_lots) + len(field_names) #  + 1 so total is never reached?
+    progress_total = len(properties) + len(tax_lots) + len(field_names)  #  + 1 so total is never reached?
     progress_data = update_sub_progress_total(progress_total, progress_key)
 
     progress_data.save()
@@ -2143,7 +2143,7 @@ def mapping_results_task(args):
             tax_lot_results.append(tax_lot_dict)
 
         result["tax_lots"] = tax_lot_results
-    
+
     set_cache_raw(progress_data.unique_id, result)
 
     progress_data.finish_with_success()

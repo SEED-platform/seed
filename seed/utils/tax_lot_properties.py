@@ -141,7 +141,7 @@ def export_data(args):
         data = json_response(filename, data, column_name_mappings)
     elif export_type == "xlsx":
         data = _spreadsheet_response(data, column_name_mappings)
-    
+
     timeout = 60 * 30  # 30 minutes
     set_cache_raw(progress_data.unique_id, {"data": data}, timeout)
 

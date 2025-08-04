@@ -19,6 +19,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
   'spinner_utility',
   'urls',
   '$uibModal',
+  'cache_entry_service',
   'user_service',
   'uploader_service',
   'column_mappings_service',
@@ -55,6 +56,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     spinner_utility,
     urls,
     $uibModal,
+    cache_entry_service,
     user_service,
     uploader_service,
     column_mappings_service,
@@ -683,7 +685,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         0, // starting prog bar percentage
         1.0, // progress multiplier
         () => {
-          $scope.get_mapped_buildings();
+          $scope.start_mapped_buildings();
         },
         () => {
           // Do nothing
@@ -710,7 +712,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         mapping_service.remap_buildings($scope.import_file.id).then((data) => {
           if (data.status === 'error' || data.status === 'warning') {
             $scope.$emit('app_error', data);
-            $scope.get_mapped_buildings();
+            $scope.start_mapped_buildings();
           } else {
             // save maps start mapping data
             check_mapping(data.progress_key);
@@ -720,9 +722,9 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     };
 
     /**
-     * get_mapped_buildings: gets mapped buildings for the preview table
+     * start_mapped_buildings: kicks off backend process to format mapped buildings for the preview table
      */
-    $scope.get_mapped_buildings = () => {
+    $scope.start_mapped_buildings = () => {
       $scope.import_file.progress = 0;
       $scope.save_mappings = true;
       $scope.review_mappings = true;
@@ -745,7 +747,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
             progress_key,
             0,
             1,
-            $scope.process_mapped_buildings,
+            $scope.get_cached_mapped_buildings,
             () => {},
             $scope.import_file
           );
@@ -755,8 +757,14 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         });
     };
 
-    $scope.process_mapped_buildings = (response) => {
-      $scope.mappedData = response.message;
+    $scope.get_cached_mapped_buildings = ({ unique_id }) => {
+      cache_entry_service.get_cache_entry(unique_id)
+        .then($scope.set_mapped_buildings)
+        .catch($log.error);
+    };
+
+    $scope.set_mapped_buildings = (mapped_data) => {
+      $scope.mappedData = mapped_data;
 
       const data = $scope.mappedData;
 
