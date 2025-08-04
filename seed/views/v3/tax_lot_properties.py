@@ -21,7 +21,6 @@ from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
 from seed.tasks import export_data_task, set_update_to_now
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
-from seed.utils.cache import get_cache
 from seed.utils.match import update_sub_progress_total
 
 _log = logging.getLogger(__name__)
@@ -100,23 +99,6 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         export_data_task.s(args).apply_async()
 
         return progress_data.result()
-
-    @method_decorator(
-        [
-            api_endpoint,
-            ajax_request,
-            has_perm("requires_member"),
-        ]
-    )
-    @action(detail=False, methods=["GET"])
-    def get_export(self, request):
-        """
-        Return the results of an inventory export that has been saved to the redis db
-        Data is found using a progress data unique id
-        """
-        unique_id = request.query_params["unique_id"]
-        data = get_cache(unique_id, default=None)
-        return JsonResponse(data)
 
     def _serialized_coordinates(self, polygon_wkt):
         string_coord_pairs = polygon_wkt.lstrip("POLYGON (").rstrip(")").split(", ")

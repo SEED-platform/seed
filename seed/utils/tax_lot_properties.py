@@ -21,7 +21,7 @@ from seed.models.property_measures import PropertyMeasure
 from seed.models.scenarios import Scenario
 from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.serializers.meters import MeterSerializer
-from seed.utils.cache import set_cache
+from seed.utils.cache import set_cache_raw
 
 INVENTORY_MODELS = {"properties": PropertyView, "taxlots": TaxLotView}
 
@@ -136,16 +136,17 @@ def export_data(args):
 
     filename = request_data.get("filename", f"ExportedData.{export_type}")
     if export_type == "csv":
-        response_dict = _csv_response(data, column_name_mappings)
+        data = _csv_response(data, column_name_mappings)
     elif export_type == "geojson":
-        response_dict = json_response(filename, data, column_name_mappings)
+        data = json_response(filename, data, column_name_mappings)
     elif export_type == "xlsx":
-        response_dict = _spreadsheet_response(data, column_name_mappings)
+        data = _spreadsheet_response(data, column_name_mappings)
     
-    set_cache(progress_data.unique_id, 'success', {'data': response_dict})
+    timeout = 60 * 30  # 30 minutes
+    set_cache_raw(progress_data.unique_id, {"data": data}, timeout)
 
 
-def _csv_response(data, column_name_mappings):
+def _csv_response(data, column_name_mappings) -> str:
     output = io.StringIO()
     writer = csv.writer(output)
 
@@ -187,7 +188,7 @@ def _csv_response(data, column_name_mappings):
     return output.getvalue()
 
 
-def json_response(filename, data, column_name_mappings):
+def json_response(filename, data, column_name_mappings) -> dict:
     polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
     response_dict = {"type": "FeatureCollection", "name": f"SEED Export - {filename.replace('.geojson', '')}"}
 
@@ -290,7 +291,7 @@ def json_response(filename, data, column_name_mappings):
     return response_dict
 
 
-def _spreadsheet_response(data, column_name_mappings):
+def _spreadsheet_response(data, column_name_mappings) -> str:
     scenario_keys = (
         "id",
         "name",

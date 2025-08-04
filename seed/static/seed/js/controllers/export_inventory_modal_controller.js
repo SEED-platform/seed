@@ -6,8 +6,8 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
   '$http',
   '$scope',
   '$uibModalInstance',
+  'cache_entry_service',
   'inventory_service',
-  'user_service',
   'uploader_service',
   'ids',
   'columns',
@@ -16,7 +16,7 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
   'spinner_utility',
   'filter_header_string',
   // eslint-disable-next-line func-names
-  function ($http, $scope, $uibModalInstance, inventory_service, user_service, uploader_service, ids, columns, inventory_type, profile_id, spinner_utility, filter_header_string) {
+  function ($http, $scope, $uibModalInstance, cache_entry_service, inventory_service, uploader_service, ids, columns, inventory_type, profile_id, spinner_utility, filter_header_string) {
     $scope.export_name = '';
     $scope.include_notes = true;
     $scope.include_label_header = false;
@@ -58,7 +58,7 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
     };
 
     $scope.get_export = ({ unique_id }) => {
-      inventory_service.get_export(unique_id)
+      cache_entry_service.get_cache_entry(unique_id)
         .then((response) => {
           const data = response.data;
 

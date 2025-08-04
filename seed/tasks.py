@@ -611,5 +611,6 @@ def export_data_task(args):
     progress_data = ProgressData.from_key(progress_key)
     progress_data = update_sub_progress_total(100, progress_key)
 
+    # save data to redis cache db
     export_data(args)
     progress_data.finish_with_success()

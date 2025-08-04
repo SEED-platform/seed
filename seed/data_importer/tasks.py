@@ -89,6 +89,7 @@ from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences
 from seed.utils.buildings import get_source_type
+from seed.utils.cache import set_cache_raw
 from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
 from seed.utils.goals import get_state_pairs
 from seed.utils.match import update_sub_progress_total
@@ -2068,7 +2069,7 @@ def mapping_results_task(args):
             .order_by("id")
         )
 
-    progress_total = len(properties) + len(tax_lots) + len(field_names)
+    progress_total = len(properties) + len(tax_lots) + len(field_names) #  + 1 so total is never reached?
     progress_data = update_sub_progress_total(progress_total, progress_key)
 
     progress_data.save()
@@ -2142,5 +2143,7 @@ def mapping_results_task(args):
             tax_lot_results.append(tax_lot_dict)
 
         result["tax_lots"] = tax_lot_results
+    
+    set_cache_raw(progress_data.unique_id, result)
 
-    progress_data.finish_with_success(result)
+    progress_data.finish_with_success()
