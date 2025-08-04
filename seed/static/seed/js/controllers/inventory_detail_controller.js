@@ -698,7 +698,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
       inventory_service.start_export(
         [$stateParams.view_id],
         filename,
-        null,
+        $scope.currentProfile?.id,
         'xlsx',
         $scope.inventory_type
       ).then((data) => {

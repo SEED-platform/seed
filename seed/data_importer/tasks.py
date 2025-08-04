@@ -2144,6 +2144,6 @@ def mapping_results_task(args):
 
         result["tax_lots"] = tax_lot_results
 
-    set_cache_raw(progress_data.unique_id, result)
+    set_cache_raw(progress_data.unique_id, result, 1800)  # 30 mins
 
     progress_data.finish_with_success()

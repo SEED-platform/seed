@@ -138,7 +138,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c["name"])
 
         # call the API
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         response = self.client.post(
             f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "csv"}),
@@ -187,7 +187,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         tv_ids = [tv.id for tv in tvs]
 
         # Property export
-        url = reverse_lazy("api:v3:tax_lot_properties-export") + f"?organization_id={self.org.id!s}&inventory_type=properties"
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export") + f"?organization_id={self.org.id!s}&inventory_type=properties"
         data = json.dumps({"columns": col_names, "export_type": "csv", "ids": pv_ids})
         response = self.client.post(url, data=data, content_type="application/json")
         data = json.loads(response.content.decode("utf-8"))["message"].split("\n")
@@ -201,7 +201,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         self.assertEqual(set(row1[idx_jtl].split("; ")), exp_id_set)
 
         # Taxlot export
-        url = reverse_lazy("api:v3:tax_lot_properties-export") + f"?organization_id={self.org.id!s}&inventory_type=taxlots"
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export") + f"?organization_id={self.org.id!s}&inventory_type=taxlots"
         data = json.dumps({"columns": col_names, "export_type": "csv", "ids": tv_ids})
         response = self.client.post(url, data=data, content_type="application/json")
         data = json.loads(response.content.decode("utf-8"))["message"].split("\n")
@@ -222,7 +222,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c["name"])
 
         # call the API
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         response = self.client.post(
             f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "csv"}),
@@ -256,7 +256,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c["name"])
 
         # call the API
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         response = self.client.post(
             f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "xlsx"}),
@@ -286,7 +286,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c["name"])
 
         # call the API
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         response = self.client.post(
             f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "geojson"}),
@@ -405,7 +405,7 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
             self.root_taxlot.save()
 
     def test_property_export(self):
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         url += f"?organization_id={self.org.pk}&inventory_type=properties"
         params = json.dumps({"columns": self.columns, "export_type": "csv"})
 
@@ -420,7 +420,7 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
         assert len(data) == 2
 
     def test_taxlot_export(self):
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         url += f"?organization_id={self.org.pk}&inventory_type=taxlots"
         params = json.dumps({"columns": self.columns, "export_type": "csv"})
 
