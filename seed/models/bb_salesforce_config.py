@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class BBSalesforceConfig(models.Model):
-    organization = models.OneToOneField(Organization, on_delete=models.CASCADE)
+    organization = models.OneToOneField(Organization, on_delete=models.CASCADE, related_name="bb_salesforce_config")
     salesforce_url = models.CharField(blank=True, max_length=128, null=True)
     client_id = models.CharField(blank=True, max_length=128, null=True)
     client_secret = models.CharField(blank=True, max_length=128, null=True)

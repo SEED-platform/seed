@@ -195,6 +195,7 @@
     'SEED.service.analyses',
     'SEED.service.audit_template',
     'SEED.service.auth',
+    'SEED.service.bb_salesforce',
     'SEED.service.column_mappings',
     'SEED.service.columns',
     'SEED.service.compliance_metric',
@@ -1179,11 +1180,11 @@
               }
             ],
             bb_salesforce_configs_payload: [
-              'bb_salesforce_config_service',
+              'bb_salesforce_service',
               '$stateParams',
-              (bb_salesforce_config_service, $stateParams) => {
+              (bb_salesforce_service, $stateParams) => {
                 const { organization_id } = $stateParams;
-                return salesforce_config_service.get_salesforce_configs(organization_id);
+                return bb_salesforce_service.get_bb_salesforce_configs(organization_id);
               }
             ],
             audit_template_configs_payload: [
@@ -2960,11 +2961,11 @@
               }
             ],
             is_logged_into_salesforce: [
-              'salesforce_config_service',
+              'bb_salesforce_service',
               'organization_payload',
-              (salesforce_config_service, organization_payload) => {
+              (bb_salesforce_service, organization_payload) => {
                 const organization_id = organization_payload.organization.id;
-                return salesforce_config_service.verify_token(organization_id, ['requires_owner']);
+                return bb_salesforce_service.verify_token(organization_id, ['requires_owner']);
               }
             ]
           }

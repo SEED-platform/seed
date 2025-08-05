@@ -7,7 +7,7 @@ angular.module('SEED.controller.salesforce_login', []).controller('salesforce_lo
   '$state',
   '$location',
   '$window',
-  'salesforce_config_service',
+  'bb_salesforce_service',
   'organization_id',
   // eslint-disable-next-line func-names
   function (
@@ -15,14 +15,14 @@ angular.module('SEED.controller.salesforce_login', []).controller('salesforce_lo
     $state,
     $location,
     $window,
-    salesforce_config_service,
+    bb_salesforce_service,
     organization_id
   ) {
     $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !$scope.viewer;
     $scope.AUTHENTICATION_STATE = "PENDING"; // PENDING, FAILURE, SUCCESS
     code = $location.search().code;
 
-    salesforce_config_service.get_token(code, organization_id).then(data => {
+    bb_salesforce_service.get_token(code, organization_id).then(data => {
       if(data.status == "success"){
         $scope.AUTHENTICATION_STATE = "SUCCESS";
       } else{
@@ -32,7 +32,7 @@ angular.module('SEED.controller.salesforce_login', []).controller('salesforce_lo
     });
 
     $scope.login_salesforce = () => {
-      salesforce_config_service.get_login_url(organization_id).then(data => {
+      bb_salesforce_service.get_login_url(organization_id).then(data => {
         $window.location.href = data.url;
       })
     };

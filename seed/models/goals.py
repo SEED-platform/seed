@@ -23,8 +23,13 @@ GOAL_TYPE_CHOICES = (
 
 class Goal(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    baseline_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name="goal_baseline_cycles")
     access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE)
+    salesforce_partner_id = models.CharField(max_length=255, null=True)
+    salesforce_partner_name = models.CharField(max_length=255, null=True)
+    salesforce_goal_id = models.CharField(max_length=255, null=True)
+    salesforce_goal_name = models.CharField(max_length=255, null=True)
+
+    baseline_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name="goal_baseline_cycles")
     eui_column1 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_eui_column1s")
     # eui column 2 and 3 optional
     eui_column2 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_eui_column2s", blank=True, null=True)
@@ -58,6 +63,8 @@ class Goal(models.Model):
 class CycleGoal(models.Model):
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name="current_cycles")
     current_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name="goals")
+    salesforce_annual_report_id = models.CharField(max_length=255, null=True)
+    salesforce_annual_report_name = models.CharField(max_length=255, null=True)
 
     def properties(self):
         properties = Property.objects.filter(

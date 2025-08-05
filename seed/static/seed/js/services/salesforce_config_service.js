@@ -91,48 +91,6 @@ angular.module('SEED.service.salesforce_config', []).factory('salesforce_config_
       })
       .then((response) => response.data);
 
-    const get_login_url = (
-      organization_id
-    ) => $http
-      .get('/api/v3/salesforce/login_url/', {
-        params: {
-          organization_id
-        }
-      })
-      .then((response) => response.data);
-
-    const get_token = (
-      code,
-      organization_id
-    ) => $http
-      .get('/api/v3/salesforce/get_token/', {
-        params: {
-          organization_id,
-          code
-        }
-      })
-      .then((response) => response.data);
-
-    const verify_token = (
-      organization_id
-    ) => $http
-      .get('/api/v3/salesforce/verify_token/', {
-        params: {
-          organization_id,
-        }
-      })
-      .then((response) => response.data);
-
-    const get_partners = (
-      organization_id
-    ) => $http
-      .get('/api/v3/salesforce/partners/', {
-        params: {
-          organization_id,
-        }
-      })
-      .then((response) => response.data);
-
     const salesforce_config_factory = {
       get_salesforce_configs,
       get_salesforce_config,
@@ -140,11 +98,7 @@ angular.module('SEED.service.salesforce_config', []).factory('salesforce_config_
       update_salesforce_config,
       new_salesforce_config,
       salesforce_connection,
-      sync_salesforce,
-      get_login_url,
-      get_token,
-      verify_token,
-      get_partners
+      sync_salesforce
     };
 
     return salesforce_config_factory;

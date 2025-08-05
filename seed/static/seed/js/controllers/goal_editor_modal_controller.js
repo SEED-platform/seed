@@ -11,7 +11,7 @@ angular.module('SEED.controller.goal_editor_modal', [])
     'Notification',
     'ah_service',
     'goal_service',
-    'salesforce_config_service',
+    'bb_salesforce_service',
     'access_level_tree',
     'area_columns',
     'auth_payload',
@@ -30,7 +30,7 @@ angular.module('SEED.controller.goal_editor_modal', [])
       Notification,
       ah_service,
       goal_service,
-      salesforce_config_service,
+      bb_salesforce_service,
       access_level_tree,
       area_columns,
       auth_payload,
@@ -58,13 +58,15 @@ angular.module('SEED.controller.goal_editor_modal', [])
         $scope.eui_columns.unshift({ id: null, displayName: '' });
       }
 
-      salesforce_config_service.get_partners(organization.id).then(data => {
+
+      bb_salesforce_service.get_partners(organization.id).then(data => {
         $scope.partners = data.results
+        $scope.selected_partner = $scope.partners.find(p => p.id ==  $scope.goal.salesforce_partner_id)
+        $scope.possible_goals = $scope.selected_partner?.goals;
+        $scope.selected_goal = $scope.selected_partner?.goals.find(g => g.id == $scope.goal.salesforce_goal_id);
       });
 
-      $scope.selected_partner = null;
-      $scope.possible_goals = [];
-      $scope.selected_goal = null;
+
       $scope.changePossibleGoals = () => {
         $scope.possible_goals = $scope.selected_partner.goals;
       }
@@ -75,6 +77,8 @@ angular.module('SEED.controller.goal_editor_modal', [])
         $scope.goal.salesforce_goal_id = $scope.selected_goal.id;
         $scope.goal.salesforce_goal_name = $scope.selected_goal.name;
 
+        console.log($scope.selected_partner)
+        console.log($scope.selected_goal)
         console.log(goal)
       }
 

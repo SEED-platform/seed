@@ -1168,9 +1168,9 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label class="col-sm-2 col-sm-offset-1 control-label" for="username" translate>Username</label>
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="salesforce_url" translate>url</label>
                 <div class="col-sm-5">
-                  <input type="text" id="username" class="form-control" ng-model="conf.username" ng-disabled="::!auth.requires_owner" />
+                  <input type="text" id="url" class="form-control" ng-model="bb_salesforce_configs.salesforce_url" ng-disabled="::!auth.requires_owner" />
                 </div>
               </div>
             </form>
@@ -1180,10 +1180,22 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label class="col-sm-2 col-sm-offset-1 control-label" for="pwd" translate>Password</label>
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="client_id" translate>Client Id</label>
+                <div class="col-sm-5">
+                  <input type="text" id="client_id" class="form-control" ng-model="bb_salesforce_configs.client_id" ng-disabled="::!auth.requires_owner" />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="pclient_secretwd" translate>Client Secret</label>
                 <div class="col-sm-5">
                   <div class="input-group">
-                    <input type="{$ secrets['pwd'] $}" class="form-control" id="pwd" ng-model="conf.password" autocomplete="new-password" ng-disabled="::!auth.requires_owner" />
+                    <input type="{$ secrets['pwd'] $}" class="form-control" id="pwd" ng-model="bb_salesforce_configs.client_secret" autocomplete="new-password" ng-disabled="::!auth.requires_owner" />
                     <span class="input-group-btn">
                       <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')"><i class="glyphicon glyphicon-eye-open"></i></button>
                     </span>

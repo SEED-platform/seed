@@ -8,7 +8,14 @@ from rest_framework import serializers
 from seed.models import BBSalesforceConfig
 
 
-class EventSerializer(serializers.ModelSerializer):
+class BBSalesforceConfigSerializer(serializers.ModelSerializer):
+    # organization_id = serializers.PrimaryKeyRelatedField(source="organization", read_only=True)
+
     class Meta:
         model = BBSalesforceConfig
-        fields = "__all__"
+        fields = (
+            "organization",
+            "salesforce_url",
+            "client_id",
+            "client_secret",
+        )

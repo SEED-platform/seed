@@ -16,12 +16,13 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   'organization_service',
   'salesforce_mapping_service',
   'salesforce_config_service',
+  'bb_salesforce_service',
   'property_column_names',
   'taxlot_column_names',
   'labels_payload',
   'salesforce_mappings_payload',
   'salesforce_configs_payload',
-  'bb_salesforce_config_payload',
+  'bb_salesforce_configs_payload',
   'audit_template_configs_payload',
   'meters_service',
   'Notification',
@@ -41,12 +42,13 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     organization_service,
     salesforce_mapping_service,
     salesforce_config_service,
+    bb_salesforce_service,
     property_column_names,
     taxlot_column_names,
     labels_payload,
     salesforce_mappings_payload,
     salesforce_configs_payload,
-    bb_salesforce_config_payload,
+    bb_salesforce_configs_payload,
     audit_template_configs_payload,
     meters_service,
     Notification,
@@ -62,8 +64,11 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     }
 
     $scope.bb_salesforce_config = {};
-    if (bb_salesforce_config_payload.length > 0) {
-      $scope.bb_salesforce_conf = bb_salesforce_config_payload[0];
+    console.log(bb_salesforce_configs_payload, bb_salesforce_configs_payload === null)
+    if (bb_salesforce_configs_payload !== null) {
+      $scope.bb_salesforce_configs = bb_salesforce_configs_payload;
+    } else{
+      $scope.bb_salesforce_configs = {};
     }
 
     $scope.at_conf = {};
@@ -383,6 +388,29 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
             $scope.form_errors = 'An unknown error has occurred';
           }
         });
+
+      if ($scope.bb_salesforce_configs) {
+          bb_salesforce_service
+            .update_bb_salesforce_config($scope.org.id, $scope.bb_salesforce_configs, $scope.conf, $scope.timezone)
+            .then((response) => {
+              if (response.status === 'error') {
+                $scope.config_errors = response.errors;
+              // } else {
+              //   salesforce_config_service.get_salesforce_configs($scope.org.id).then((data) => {
+              //     $scope.conf = data.length > 0 ? data[0] : {};
+              //   });
+              }
+            })
+            .catch((response) => {
+              if (response.data && response.data.status === 'error') {
+                $scope.config_errors = response.data.message;
+              } else {
+                $scope.config_errors = 'An unknown error has occurred';
+              }
+              // console.log("config ERRORS: ", $scope.config_errors);
+              Notification.error({ message: `Error: ${$scope.config_errors}`, delay: 15000, closeOnClick: true });
+          });
+      }
 
       // also save salesforce configs
       if ($scope.org.salesforce_enabled) {

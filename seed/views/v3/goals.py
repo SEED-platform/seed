@@ -153,7 +153,12 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @has_perm_class("requires_non_leaf_access")
     @has_hierarchy_access(goal_id_kwarg="goal_pk")
     def create(self, request, goal_pk):
-        cycle_goal = CycleGoal.objects.create(goal_id=goal_pk, current_cycle_id=request.data.get("current_cycle"))
+        cycle_goal = CycleGoal.objects.create(
+            goal_id=goal_pk,
+            current_cycle_id=request.data.get("current_cycle"),
+            salesforce_annual_report_id=request.data.get("salesforce_annual_report_id"),
+            salesforce_annual_report_name=request.data.get("salesforce_annual_report_name"),
+        )
 
         return JsonResponse(CycleGoalSerializer(cycle_goal).data, status=status.HTTP_201_CREATED)
 

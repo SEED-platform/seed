@@ -15,7 +15,7 @@ angular.module('SEED.controller.portfolio_summary', [])
     'inventory_service',
     'label_service',
     'goal_service',
-    'salesforce_config_service',
+    'bb_salesforce_service',
     'Notification',
     'cycles',
     'organization_payload',
@@ -39,7 +39,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       inventory_service,
       label_service,
       goal_service,
-      salesforce_config_service,
+      bb_salesforce_service,
       Notification,
       cycles,
       organization_payload,
@@ -70,7 +70,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.selected_count = 0;
       $scope.selected_option = 'none';
       $scope.search_query = '';
-      $scope.is_logged_into_salesforce = is_logged_into_salesforce.valid;
+      $scope.is_logged_into_salesforce = is_logged_into_salesforce.data.valid;
 
       $scope.search_for_goals = (query) => {
         const pattern = query.split('').join('.*');
@@ -239,7 +239,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       $scope.login_salesforce = () => {
-        salesforce_config_service.get_login_url($scope.organization.id).then(data => {
+        bb_salesforce_service.get_login_url($scope.organization.id).then(data => {
           console.log(data.url)
           $window.location.href = data.url;
         })
@@ -1166,6 +1166,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           resolve: {
             goal: () => $scope.goal,
             cycles: () => $scope.cycles,
+            annual_reports: () => bb_salesforce_service.get_annual_report($scope.organization.id, $scope.goal.id)
           }
         });
       }

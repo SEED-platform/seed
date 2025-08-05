@@ -11,8 +11,12 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
   ) => {
     const goal_service = {};
 
-    goal_service.create_cycle_goal = (goal_id, cycle_id) => $http.post(`/api/v3/goals/${goal_id}/cycles/`,
-        {current_cycle: cycle_id} ,
+    goal_service.create_cycle_goal = (goal_id, cycle_id, annual_report_id, annual_report_name) => $http.post(`/api/v3/goals/${goal_id}/cycles/`,
+        {
+          current_cycle: cycle_id,
+          salesforce_annual_report_id: annual_report_id,
+          salesforce_annual_report_name: annual_report_name,
+        } ,
         { params: {organization_id: user_service.get_organization().id} },
     )
       .then((response) => response)
