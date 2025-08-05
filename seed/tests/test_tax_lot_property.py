@@ -39,6 +39,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
+from seed.utils.cache import get_cache_raw
 from seed.utils.organizations import create_organization
 
 
@@ -146,10 +147,11 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         )
 
         # parse the content as array
-        data = json.loads(response.content.decode("utf-8"))["message"].split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
 
-        self.assertTrue("Address Line 1" in data[0].split(","))
-        self.assertTrue("Property Labels\r" in data[0].split(","))
+        self.assertTrue("Address Line 1" in data[0])
+        self.assertTrue("Property Labels\r" in data[0])
 
         self.assertEqual(len(data), 53)
         # last row should be blank
@@ -190,7 +192,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         url = reverse_lazy("api:v3:tax_lot_properties-start-export") + f"?organization_id={self.org.id!s}&inventory_type=properties"
         data = json.dumps({"columns": col_names, "export_type": "csv", "ids": pv_ids})
         response = self.client.post(url, data=data, content_type="application/json")
-        data = json.loads(response.content.decode("utf-8"))["message"].split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         headers = data[0].split(",")
         idx_adr = headers.index("Address Line 1 (Tax Lot)")
         idx_jtl = headers.index("Jurisdiction Tax Lot ID (Tax Lot)")
@@ -204,7 +207,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         url = reverse_lazy("api:v3:tax_lot_properties-start-export") + f"?organization_id={self.org.id!s}&inventory_type=taxlots"
         data = json.dumps({"columns": col_names, "export_type": "csv", "ids": tv_ids})
         response = self.client.post(url, data=data, content_type="application/json")
-        data = json.loads(response.content.decode("utf-8"))["message"].split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         headers = data[0].split(",")
         idx_adr = headers.index("Address Line 1 (Property)")
         row1 = data[1].split(",")
@@ -230,7 +234,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         )
 
         # parse the content as array
-        data = json.loads(response.content.decode("utf-8"))["message"].split("\r\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\r\n")
         notes_string = (
             multi_line_note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p")
             + "\n"
@@ -264,8 +269,10 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         )
 
         # parse & decode the content as array
-        file_contents = json.loads(response.content)["message"]
-        xlsx_bytes = base64.b64decode(file_contents)
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"]
+
+        xlsx_bytes = base64.b64decode(data)
         wb = open_workbook(file_contents=xlsx_bytes)
 
         data = [row.value for row in wb.sheet_by_index(0).row(0)]
@@ -294,8 +301,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         )
 
         # parse the content as dictionary
-        progress_data = json.loads(response.content)
-        features = progress_data["message"]
+        unique_id = json.loads(response.content)["unique_id"]
+        features = get_cache_raw(unique_id)["data"]["features"]
         record_level_keys = list(features[0]["properties"].keys())
 
         self.assertIn("Address Line 1", record_level_keys)
@@ -411,12 +418,14 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
 
         self.login_as_root_member()
         response = self.client.post(url, data=params, content_type="application/json")
-        data = json.loads(response.content.decode("utf-8"))["message"].split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         assert len(data) == 3
 
         self.login_as_child_member()
         response = self.client.post(url, data=params, content_type="application/json")
-        data = json.loads(response.content.decode("utf-8"))["message"].split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         assert len(data) == 2
 
     def test_taxlot_export(self):
@@ -426,12 +435,14 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
 
         self.login_as_root_member()
         response = self.client.post(url, data=params, content_type="application/json")
-        data = json.loads(response.content.decode("utf-8"))["message"].split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         assert len(data) == 3
 
         self.login_as_child_member()
         response = self.client.post(url, data=params, content_type="application/json")
-        data = json.loads(response.content.decode("utf-8"))["message"].split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         assert len(data) == 2
 
     def test_set_update_to_now(self):
