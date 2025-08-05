@@ -197,6 +197,7 @@
     'SEED.service.analyses',
     'SEED.service.audit_template',
     'SEED.service.auth',
+    'SEED.service.cache_entry',
     'SEED.service.column_mappings',
     'SEED.service.columns',
     'SEED.service.compliance_metric',

@@ -3,6 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import base64
 import json
 import time
 from datetime import datetime
@@ -38,6 +39,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
+from seed.utils.cache import get_cache_raw
 from seed.utils.organizations import create_organization
 
 
@@ -137,7 +139,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c["name"])
 
         # call the API
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         response = self.client.post(
             f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "csv"}),
@@ -145,10 +147,11 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         )
 
         # parse the content as array
-        data = response.content.decode("utf-8").split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
 
-        self.assertTrue("Address Line 1" in data[0].split(","))
-        self.assertTrue("Property Labels\r" in data[0].split(","))
+        self.assertTrue("Address Line 1" in data[0])
+        self.assertTrue("Property Labels\r" in data[0])
 
         self.assertEqual(len(data), 53)
         # last row should be blank
@@ -186,10 +189,11 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         tv_ids = [tv.id for tv in tvs]
 
         # Property export
-        url = reverse_lazy("api:v3:tax_lot_properties-export") + f"?organization_id={self.org.id!s}&inventory_type=properties"
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export") + f"?organization_id={self.org.id!s}&inventory_type=properties"
         data = json.dumps({"columns": col_names, "export_type": "csv", "ids": pv_ids})
         response = self.client.post(url, data=data, content_type="application/json")
-        data = response.content.decode("utf-8").split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         headers = data[0].split(",")
         idx_adr = headers.index("Address Line 1 (Tax Lot)")
         idx_jtl = headers.index("Jurisdiction Tax Lot ID (Tax Lot)")
@@ -200,10 +204,11 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         self.assertEqual(set(row1[idx_jtl].split("; ")), exp_id_set)
 
         # Taxlot export
-        url = reverse_lazy("api:v3:tax_lot_properties-export") + f"?organization_id={self.org.id!s}&inventory_type=taxlots"
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export") + f"?organization_id={self.org.id!s}&inventory_type=taxlots"
         data = json.dumps({"columns": col_names, "export_type": "csv", "ids": tv_ids})
         response = self.client.post(url, data=data, content_type="application/json")
-        data = response.content.decode("utf-8").split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         headers = data[0].split(",")
         idx_adr = headers.index("Address Line 1 (Property)")
         row1 = data[1].split(",")
@@ -221,7 +226,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c["name"])
 
         # call the API
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         response = self.client.post(
             f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "csv"}),
@@ -229,7 +234,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         )
 
         # parse the content as array
-        data = response.content.decode("utf-8").split("\r\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\r\n")
         notes_string = (
             multi_line_note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p")
             + "\n"
@@ -255,15 +261,19 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c["name"])
 
         # call the API
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         response = self.client.post(
             f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "xlsx"}),
             content_type="application/json",
         )
 
-        # parse the content as array
-        wb = open_workbook(file_contents=response.content)
+        # parse & decode the content as array
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"]
+
+        xlsx_bytes = base64.b64decode(data)
+        wb = open_workbook(file_contents=xlsx_bytes)
 
         data = [row.value for row in wb.sheet_by_index(0).row(0)]
 
@@ -283,7 +293,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
             columns.append(c["name"])
 
         # call the API
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         response = self.client.post(
             f"{url}?organization_id={self.org.pk}&inventory_type=properties",
             data=json.dumps({"columns": columns, "export_type": "geojson"}),
@@ -291,20 +301,15 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         )
 
         # parse the content as dictionary
-        data = json.loads(response.content)
-
-        first_level_keys = list(data.keys())
-
-        self.assertIn("type", first_level_keys)
-        self.assertIn("features", first_level_keys)
-
-        record_level_keys = list(data["features"][0]["properties"].keys())
+        unique_id = json.loads(response.content)["unique_id"]
+        features = get_cache_raw(unique_id)["data"]["features"]
+        record_level_keys = list(features[0]["properties"].keys())
 
         self.assertIn("Address Line 1", record_level_keys)
         self.assertIn("Gross Floor Area", record_level_keys)
 
         # ids 52 up to and including 102
-        self.assertEqual(len(data["features"]), 51)
+        self.assertEqual(len(features), 51)
 
     def test_set_update_to_now(self):
         property_view_ids = [self.property_view_factory.get_property_view().id for _ in range(50)]
@@ -407,33 +412,37 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
             self.root_taxlot.save()
 
     def test_property_export(self):
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         url += f"?organization_id={self.org.pk}&inventory_type=properties"
         params = json.dumps({"columns": self.columns, "export_type": "csv"})
 
         self.login_as_root_member()
         response = self.client.post(url, data=params, content_type="application/json")
-        data = response.content.decode("utf-8").split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         assert len(data) == 3
 
         self.login_as_child_member()
         response = self.client.post(url, data=params, content_type="application/json")
-        data = response.content.decode("utf-8").split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         assert len(data) == 2
 
     def test_taxlot_export(self):
-        url = reverse_lazy("api:v3:tax_lot_properties-export")
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
         url += f"?organization_id={self.org.pk}&inventory_type=taxlots"
         params = json.dumps({"columns": self.columns, "export_type": "csv"})
 
         self.login_as_root_member()
         response = self.client.post(url, data=params, content_type="application/json")
-        data = response.content.decode("utf-8").split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         assert len(data) == 3
 
         self.login_as_child_member()
         response = self.client.post(url, data=params, content_type="application/json")
-        data = response.content.decode("utf-8").split("\n")
+        unique_id = json.loads(response.content)["unique_id"]
+        data = get_cache_raw(unique_id)["data"].split("\n")
         assert len(data) == 2
 
     def test_set_update_to_now(self):

@@ -42,7 +42,9 @@ from seed.models import (
     TaxLotState,
     TaxLotView,
 )
+from seed.utils.match import update_sub_progress_total
 from seed.utils.salesforce import auto_sync_salesforce_properties
+from seed.utils.tax_lot_properties import export_data
 
 logger = get_task_logger(__name__)
 
@@ -601,3 +603,14 @@ def _finish_update_state_derived_data(progress_key, derived_column_ids):
 
     progress_data = ProgressData.from_key(progress_key)
     progress_data.finish_with_success("Updated Derived Data")
+
+
+@shared_task
+def export_data_task(args):
+    progress_key = args.get("progress_key")
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data = update_sub_progress_total(100, progress_key)
+
+    # save data to redis cache db
+    export_data(args)
+    progress_data.finish_with_success()
