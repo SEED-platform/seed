@@ -36,7 +36,10 @@ def check_file_permission(user, filepath):
     organization = None
     if base_dir == "uploads":
         try:
-            import_file = ImportFile.objects.get(file__in=[absolute_filepath, filepath], deleted=False)
+            # there could be more than one file of the same name if the same file was used to import properties and meters
+            import_file = ImportFile.objects.filter(file__in=[absolute_filepath, filepath], deleted=False).first()
+            if import_file is None:
+              raise ModelForFileNotFoundError("ImportFile not found")  
         except ImportFile.DoesNotExist:
             raise ModelForFileNotFoundError("ImportFile not found")
         organization = import_file.import_record.super_organization
