@@ -19,6 +19,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
   'spinner_utility',
   'urls',
   '$uibModal',
+  'cache_entry_service',
   'user_service',
   'uploader_service',
   'column_mappings_service',
@@ -55,6 +56,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     spinner_utility,
     urls,
     $uibModal,
+    cache_entry_service,
     user_service,
     uploader_service,
     column_mappings_service,
@@ -683,7 +685,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         0, // starting prog bar percentage
         1.0, // progress multiplier
         () => {
-          $scope.get_mapped_buildings();
+          $scope.start_mapped_buildings();
         },
         () => {
           // Do nothing
@@ -710,7 +712,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         mapping_service.remap_buildings($scope.import_file.id).then((data) => {
           if (data.status === 'error' || data.status === 'warning') {
             $scope.$emit('app_error', data);
-            $scope.get_mapped_buildings();
+            $scope.start_mapped_buildings();
           } else {
             // save maps start mapping data
             check_mapping(data.progress_key);
@@ -720,9 +722,9 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     };
 
     /**
-     * get_mapped_buildings: gets mapped buildings for the preview table
+     * start_mapped_buildings: kicks off backend process to format mapped buildings for the preview table
      */
-    $scope.get_mapped_buildings = () => {
+    $scope.start_mapped_buildings = () => {
       $scope.import_file.progress = 0;
       $scope.save_mappings = true;
       $scope.review_mappings = true;
@@ -730,6 +732,8 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
       $scope.tabs.two_active = true;
 
       $scope.save_mappings = false;
+      $scope.process_mappings = true;
+      $scope.import_file.progress = 0;
 
       // Request the columns again because they may (most likely)
       // have changed from the initial import
@@ -737,111 +741,129 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         .then((results) => {
           $scope.property_columns = results[0];
           $scope.taxlot_columns = results[1];
-          $scope.mappedData = results[2];
+          const progress_key = results[2].progress_key;
 
-          const data = $scope.mappedData;
-
-          const gridOptions = {
-            enableFiltering: true,
-            enableGridMenu: false,
-            enableSorting: true,
-            fastWatch: true,
-            flatEntityAccess: true
-          };
-
-          const defaults = {
-            enableHiding: false,
-            headerCellFilter: 'translate',
-            minWidth: 75,
-            width: 150
-          };
-          const existing_property_keys = _.keys(data.properties[0]);
-          const existing_extra_property_keys = existing_property_keys.length ? _.keys(data.properties[0].extra_data) : [];
-          const existing_taxlot_keys = _.keys(data.tax_lots[0]);
-          const existing_extra_taxlot_keys = existing_taxlot_keys.length ? _.keys(data.tax_lots[0].extra_data) : [];
-          _.map($scope.property_columns, (col) => {
-            const options = {};
-            if (!_.includes(existing_property_keys, col.name) && !_.includes(existing_extra_property_keys, col.name)) {
-              col.visible = false;
-            } else if (col.data_type === 'datetime') {
-              options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
-              options.filter = inventory_service.dateFilter();
-            } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
-              options.cellFilter = `number: ${$scope.organization.display_decimal_places}`;
-              options.sortingAlgorithm = naturalSort;
-            } else {
-              options.filter = inventory_service.combinedFilter();
-            }
-            return _.defaults(col, options, defaults);
-          });
-          _.map($scope.taxlot_columns, (col) => {
-            const options = {};
-            if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) {
-              col.visible = false;
-            } else if (col.data_type === 'datetime') {
-              options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
-              options.filter = inventory_service.dateFilter();
-            } else {
-              options.filter = inventory_service.combinedFilter();
-            }
-            return _.defaults(col, options, defaults);
-          });
-
-          $scope.propertiesGridOptions = angular.copy(gridOptions);
-          $scope.propertiesGridOptions.data = _.map(data.properties, (prop) => _.defaults(prop, prop.extra_data));
-          $scope.propertiesGridOptions.columnDefs = $scope.property_columns;
-          // Add access level instances to grid
-          ['raw_access_level_instance_error', ...$scope.organization.access_level_names].reverse().forEach((level) => {
-            $scope.propertiesGridOptions.columnDefs.unshift({
-              name: level,
-              displayName: level,
-              group: 'access_level_instance',
-              enableColumnMenu: true,
-              enableColumnMoving: false,
-              enableColumnResizing: true,
-              enableFiltering: true,
-              enableHiding: true,
-              enableSorting: true,
-              enablePinning: false,
-              exporterSuppressExport: true,
-              pinnedLeft: true,
-              visible: true,
-              width: 100,
-              cellClass: 'ali-cell',
-              headerCellClass: 'ali-header'
-            });
-          });
-
-          $scope.taxlotsGridOptions = angular.copy(gridOptions);
-          $scope.taxlotsGridOptions.data = _.map(data.tax_lots, (taxlot) => _.defaults(taxlot, taxlot.extra_data));
-          $scope.taxlotsGridOptions.columnDefs = $scope.taxlot_columns;
-
-          $scope.show_mapped_buildings = true;
+          uploader_service.check_progress_loop(
+            progress_key,
+            0,
+            1,
+            $scope.get_cached_mapped_buildings,
+            () => {},
+            $scope.import_file
+          );
         })
         .catch((response) => {
           $log.error(response);
-        })
-        .finally(() => {
-          // Submit the data quality checks and wait for the results
-          data_quality_service.start_data_quality_checks_for_import_file($scope.organization.id, $scope.import_file.id).then((response) => {
-            data_quality_service.data_quality_checks_status(response.progress_key).then((check_result) => {
-              // Fetch data quality check results
-              $scope.data_quality_results_ready = false;
-              $scope.data_quality_results = data_quality_service.get_data_quality_results($scope.organization.id, check_result.unique_id);
-              $scope.data_quality_results.then((data) => {
-                $scope.data_quality_results_ready = true;
-                $scope.data_quality_errors = 0;
-                $scope.data_quality_warnings = 0;
-                _.forEach(data, (datum) => {
-                  _.forEach(datum.data_quality_results, (result) => {
-                    if (result.severity === 'error') $scope.data_quality_errors++;
-                    else if (result.severity === 'warning') $scope.data_quality_warnings++;
-                  });
-                });
+        });
+    };
+
+    $scope.get_cached_mapped_buildings = ({ unique_id }) => {
+      cache_entry_service.get_cache_entry(unique_id)
+        .then($scope.set_mapped_buildings)
+        .catch($log.error);
+    };
+
+    $scope.set_mapped_buildings = (mapped_data) => {
+      $scope.mappedData = mapped_data;
+
+      const data = $scope.mappedData;
+
+      const gridOptions = {
+        enableFiltering: true,
+        enableGridMenu: false,
+        enableSorting: true,
+        fastWatch: true,
+        flatEntityAccess: true
+      };
+
+      const defaults = {
+        enableHiding: false,
+        headerCellFilter: 'translate',
+        minWidth: 75,
+        width: 150
+      };
+      const existing_property_keys = _.keys(data.properties[0]);
+      const existing_extra_property_keys = existing_property_keys.length ? _.keys(data.properties[0].extra_data) : [];
+      const existing_taxlot_keys = _.keys(data.tax_lots[0]);
+      const existing_extra_taxlot_keys = existing_taxlot_keys.length ? _.keys(data.tax_lots[0].extra_data) : [];
+      _.map($scope.property_columns, (col) => {
+        const options = {};
+        if (!_.includes(existing_property_keys, col.name) && !_.includes(existing_extra_property_keys, col.name)) {
+          col.visible = false;
+        } else if (col.data_type === 'datetime') {
+          options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
+          options.filter = inventory_service.dateFilter();
+        } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
+          options.cellFilter = `number: ${$scope.organization.display_decimal_places}`;
+          options.sortingAlgorithm = naturalSort;
+        } else {
+          options.filter = inventory_service.combinedFilter();
+        }
+        return _.defaults(col, options, defaults);
+      });
+      _.map($scope.taxlot_columns, (col) => {
+        const options = {};
+        if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) {
+          col.visible = false;
+        } else if (col.data_type === 'datetime') {
+          options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
+          options.filter = inventory_service.dateFilter();
+        } else {
+          options.filter = inventory_service.combinedFilter();
+        }
+        return _.defaults(col, options, defaults);
+      });
+
+      $scope.propertiesGridOptions = angular.copy(gridOptions);
+      $scope.propertiesGridOptions.data = _.map(data.properties, (prop) => _.defaults(prop, prop.extra_data));
+      $scope.propertiesGridOptions.columnDefs = $scope.property_columns;
+      // Add access level instances to grid
+      ['raw_access_level_instance_error', ...$scope.organization.access_level_names].reverse().forEach((level) => {
+        $scope.propertiesGridOptions.columnDefs.unshift({
+          name: level,
+          displayName: level,
+          group: 'access_level_instance',
+          enableColumnMenu: true,
+          enableColumnMoving: false,
+          enableColumnResizing: true,
+          enableFiltering: true,
+          enableHiding: true,
+          enableSorting: true,
+          enablePinning: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 100,
+          cellClass: 'ali-cell',
+          headerCellClass: 'ali-header'
+        });
+      });
+
+      $scope.taxlotsGridOptions = angular.copy(gridOptions);
+      $scope.taxlotsGridOptions.data = _.map(data.tax_lots, (taxlot) => _.defaults(taxlot, taxlot.extra_data));
+      $scope.taxlotsGridOptions.columnDefs = $scope.taxlot_columns;
+
+      $scope.process_mappings = false;
+      $scope.show_mapped_buildings = true;
+      // Submit the data quality checks and wait for the results
+      data_quality_service.start_data_quality_checks_for_import_file($scope.organization.id, $scope.import_file.id).then((response) => {
+        data_quality_service.data_quality_checks_status(response.progress_key).then((check_result) => {
+          // Fetch data quality check results
+          $scope.data_quality_results_ready = false;
+          $scope.data_quality_results = data_quality_service.get_data_quality_results($scope.organization.id, check_result.unique_id);
+          $scope.data_quality_results.then((data) => {
+            $scope.data_quality_results_ready = true;
+            $scope.data_quality_errors = 0;
+            $scope.data_quality_warnings = 0;
+            _.forEach(data, (datum) => {
+              _.forEach(datum.data_quality_results, (result) => {
+                if (result.severity === 'error') $scope.data_quality_errors++;
+                else if (result.severity === 'warning') $scope.data_quality_warnings++;
               });
             });
           });
         });
+      });
     };
 
     $scope.backToMapping = () => {

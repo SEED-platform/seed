@@ -6,7 +6,8 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
   '$http',
   '$scope',
   '$uibModalInstance',
-  'user_service',
+  'cache_entry_service',
+  'inventory_service',
   'uploader_service',
   'ids',
   'columns',
@@ -15,7 +16,7 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
   'spinner_utility',
   'filter_header_string',
   // eslint-disable-next-line func-names
-  function ($http, $scope, $uibModalInstance, user_service, uploader_service, ids, columns, inventory_type, profile_id, spinner_utility, filter_header_string) {
+  function ($http, $scope, $uibModalInstance, cache_entry_service, inventory_service, uploader_service, ids, columns, inventory_type, profile_id, spinner_utility, filter_header_string) {
     $scope.export_name = '';
     $scope.include_notes = true;
     $scope.include_label_header = false;
@@ -26,69 +27,76 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
       progress: 0,
       status_message: ''
     };
+    $scope.export_type = '';
+    $scope.filename = '';
 
     $scope.export_selected = (export_type) => {
-      let filename = $scope.export_name;
+      $scope.export_type = export_type;
+      $scope.filename = $scope.export_name;
       const ext = `.${export_type}`;
-      if (!filename.endsWith(ext)) filename += ext;
+      if (!$scope.filename.endsWith(ext)) $scope.filename += ext;
       $scope.exporting = true;
-      $http
-        .get('/api/v3/tax_lot_properties/start_export/', {
-          params: {
-            organization_id: user_service.get_organization().id
-          }
-        })
-        .then((data) => {
-          uploader_service.check_progress_loop(
-            data.data.progress_key,
-            0,
-            1,
-            () => {},
-            () => {},
-            $scope.exporter_progress
-          );
-          return $http.post(
-            '/api/v3/tax_lot_properties/export/',
-            {
-              ids,
-              filename,
-              profile_id,
-              export_type,
-              include_notes: $scope.include_notes,
-              include_meter_readings: $scope.include_meter_readings,
-              progress_key: data.data.progress_key
-            },
-            {
-              params: {
-                organization_id: user_service.get_organization().id,
-                inventory_type
-              },
-              responseType: export_type === 'xlsx' ? 'arraybuffer' : undefined
-            }
-          );
-        })
+
+      inventory_service.start_export(
+        ids,
+        $scope.filename,
+        profile_id,
+        export_type,
+        inventory_type,
+        $scope.include_notes,
+        $scope.include_meter_readings
+      ).then((data) => {
+        uploader_service.check_progress_loop(
+          data.data.progress_key,
+          0,
+          1,
+          $scope.get_export,
+          () => {},
+          $scope.exporter_progress
+        );
+      });
+    };
+
+    $scope.get_export = ({ unique_id }) => {
+      cache_entry_service.get_cache_entry(unique_id)
         .then((response) => {
-          const blob_type = response.headers()['content-type'];
-          let data;
-          if (export_type === 'xlsx') {
-            data = response.data;
-          } else if (blob_type === 'application/json') {
-            data = JSON.stringify(response.data, null, '    ');
-          } else if (blob_type === 'text/csv') {
-            if ($scope.include_label_header) {
-              data = [filter_header_string, response.data].join('\r\n');
-            } else {
-              data = response.data;
-            }
-          }
+          const data = response.data;
 
-          const blob = new Blob([data], { type: blob_type });
+          const blob_map = {
+            csv: csv_to_blob,
+            xlsx: base64_to_blob,
+            geojson: geojson_to_blob
+          };
 
-          saveAs(blob, filename);
-
+          const blob = blob_map[$scope.export_type](data);
+          saveAs(blob, $scope.filename);
           $scope.close();
-          return response.data;
         });
+    };
+
+    const csv_to_blob = (data) => {
+      if ($scope.include_label_header) {
+        data = [filter_header_string, data].join('\r\n');
+      }
+      return new Blob([data], { type: 'text/csv' });
+    };
+
+    const base64_to_blob = (base64) => {
+      const byteCharacters = atob(base64);
+      const byteArrays = [];
+
+      for (let i = 0; i < byteCharacters.length; i += 512) {
+        const slice = byteCharacters.slice(i, i + 512);
+        const byteNumbers = Array.from(slice).map((c) => c.charCodeAt(0));
+        byteArrays.push(new Uint8Array(byteNumbers));
+      }
+
+      return new Blob(byteArrays, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    };
+
+    const geojson_to_blob = (data) => {
+      data = JSON.stringify(data, null, '    ');
+      return new Blob([data], { type: 'application/geo+json' });
     };
 
     $scope.cancel = () => {
