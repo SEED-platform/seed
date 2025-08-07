@@ -509,7 +509,7 @@ def build_view_filters_and_sorts(
     return new_filters, annotations, order_by
 
 
-def filter_views_on_related(views1, cycle_goal, filters, cycle1):
+def filter_views_on_related(views1, goal, filters, cycle1):
     p_ids = views1.values_list("property_id", flat=True)
     order_by = filters.get("order_by")
     if not order_by:
@@ -528,7 +528,7 @@ def filter_views_on_related(views1, cycle_goal, filters, cycle1):
     views = []
     if goal_note:
         goal_notes = (
-            cycle_goal.goalnote_set.filter(property__in=p_ids)
+            goal.goalnote_set.filter(property__in=p_ids)
             .annotate(custom_order=blanks_last)
             .order_by(direction + "custom_order", direction + order_by)
         )

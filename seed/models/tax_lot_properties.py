@@ -143,7 +143,7 @@ class TaxLotProperty(models.Model):
         show_columns: list[int] | None,
         columns_from_database: list[dict],
         include_related: bool = True,
-        cycle_goal_id: int = False,
+        goal_id: int = False,
     ) -> list[dict]:
         """
         This method takes a list of TaxLotViews or PropertyViews and returns the data along
@@ -325,8 +325,8 @@ class TaxLotProperty(models.Model):
                 del obj_dict["measures"]
 
             # add goal note data
-            if cycle_goal_id:
-                goal_note = obj.property.goalnote_set.filter(cycle_goal=cycle_goal_id).first()
+            if goal_id:
+                goal_note = obj.property.goalnote_set.filter(goal=goal_id).first()
                 obj_dict["goal_note"] = goal_note.serialize() if goal_note else None
                 obj_dict["historical_note"] = obj.property.historical_note.serialize()
 

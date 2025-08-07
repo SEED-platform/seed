@@ -768,14 +768,14 @@ class DataQualityCheck(models.Model):
         # Prune the results will remove any entries that have zero data_quality_results
         self.prune_results()
 
-    def check_data_cross_cycle(self, cycle_goal_id, state_pairs):
+    def check_data_cross_cycle(self, goal_id, state_pairs):
         """
         Send in data as properties and their goal state pairs. Update GoalNote.passed_checks with data quality check return
         :param goal:
         :param state_pairs: [{property: Property, baseline: PropertyState, current: PropertyState}, {}, ...]
         """
         rules = self.rules.filter(enabled=True, table_name="Goal")
-        goal_notes = GoalNote.objects.filter(cycle_goal=cycle_goal_id)
+        goal_notes = GoalNote.objects.filter(goal=goal_id)
         goal_notes = {note.property_id: note for note in goal_notes}
         goal_notes_to_update = []
         fields = self.get_fieldnames("PropertyState")
@@ -956,12 +956,21 @@ class DataQualityCheck(models.Model):
         if not goal_note or not row["current"]:
             # NEED TO MAKE SURE MISSING DATA IS APPLIED
             return
-        goal = goal_note.cycle_goal.goal
+        goal = goal_note.goal
         baseline_view = row["baseline"].propertyview_set.first() if row["baseline"] else None
         current_view = row["current"].propertyview_set.first() if row["current"] else None
 
         def check_range():
-            return (rule.min is None or value > rule.min) and (rule.max is None or value < rule.max)
+            _log.error("++++++")
+            _log.error(rule.name)
+            _log.error(f"min: {rule.min} max: {rule.max}")
+            _log.error(f"value: {value} type: {type(value)}")
+            _log.error(f"result: {(rule.min is None or value > float(rule.min)) and (rule.max is None or value < float(rule.max))}")
+            return (
+                (rule.min is None or value > float(rule.min))
+                and 
+                (rule.max is None or value < float(rule.max))
+            )
 
         def append_to_apply_labels():
             if rule.status_label:
@@ -983,6 +992,8 @@ class DataQualityCheck(models.Model):
                 if rule.condition == Rule.RULE_RANGE:
                     result = check_range()
                     results.append(result)
+                    _log.error(f"result: {result}")
+                    _log.error("^^^^^^^^")
                     append_to_apply_labels()
                     if not result:
                         self.add_result_range_error(row["current"].id, rule, data_type, value)
@@ -1012,6 +1023,7 @@ class DataQualityCheck(models.Model):
                             self.add_result_is_null(state.id, rule, data_type, value)
                             self.update_status_label(PropertyViewLabel, rule, view.id, state.id)
 
+            _log.error(f"results: {results}")
             goal_note.passed_checks = all(results)
 
         # if there are multiple rules with the same label, determine if they are all passing to add or remove the label

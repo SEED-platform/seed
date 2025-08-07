@@ -13,7 +13,9 @@ from quantityfield.units import ureg
 from seed.models import CycleGoal, GoalNote, Property, PropertyView
 from seed.serializers.pint import collapse_unit
 from seed.utils.generic import get_int
+import logging
 
+logger = logging.getLogger(__name__)
 
 def get_eui_expression(goal):
     """
@@ -123,14 +125,14 @@ def percentage(a, b):
     return int(b / a * 100) or 0
 
 
-def get_or_create_goal_notes(cycle_goal):
+def get_or_create_goal_notes(goal):
     """
     If properties are added after goals have been created they wont have goal_notes. Create those goal_notes.
     """
 
     # Find properties without goal_notes
-    property_ids = cycle_goal.properties().exclude(goalnote__cycle_goal=cycle_goal).values_list("id", flat=True)
-    new_goal_notes = [GoalNote(goal=cycle_goal.goal, property_id=id) for id in property_ids]
+    property_ids = goal.properties().exclude(goalnote__goal=goal).values_list("id", flat=True)
+    new_goal_notes = [GoalNote(goal=goal, property_id=id) for id in property_ids]
     GoalNote.objects.bulk_create(new_goal_notes)
 
 
@@ -149,20 +151,20 @@ def get_portfolio_summary(org, cycle_goal):
             cycle_id=cycle.id,
             property__access_level_instance__lft__gte=goal.access_level_instance.lft,
             property__access_level_instance__rgt__lte=goal.access_level_instance.rgt,
-            property__goalnote__cycle_goal__id=cycle_goal.id,
+            property__goalnote__goal__id=cycle_goal.goal.id,
         )
         # Shared area is area of all properties regardless of valid status
         property_views = property_views.annotate(area=get_column_expression(goal.area_column))
         if current:
             summary["total_properties"] = property_views.count()
             summary["shared_sqft"] = property_views.aggregate(shared_sqft=Sum("area"))["shared_sqft"]
-            summary["total_passing"] = GoalNote.objects.filter(cycle_goal=cycle_goal, passed_checks=True).count()
-            summary["total_new_or_acquired"] = GoalNote.objects.filter(cycle_goal=cycle_goal, new_or_acquired=True).count()
+            summary["total_passing"] = GoalNote.objects.filter(goal=goal, passed_checks=True).count()
+            summary["total_new_or_acquired"] = GoalNote.objects.filter(goal=goal, new_or_acquired=True).count()
 
         # Remaining calculations are restricted to passing check
         # New builds in the baseline year will be excluded from calculations
         # use goal notes relation to properties to get valid properties views
-        goal_notes = GoalNote.objects.filter(cycle_goal=cycle_goal)
+        goal_notes = GoalNote.objects.filter(goal=goal)
         new_property_ids = goal_notes.filter(new_or_acquired=True).values_list("property__id", flat=True)
         valid_property_ids = goal_notes.filter(passed_checks=True).values_list("property__id", flat=True)
         property_views = property_views.filter(property__id__in=valid_property_ids).exclude(

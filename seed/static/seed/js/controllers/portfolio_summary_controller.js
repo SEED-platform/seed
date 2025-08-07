@@ -261,7 +261,8 @@ angular.module('SEED.controller.portfolio_summary', [])
             eui_columns: () => $scope.eui_columns,
             goal: () => $scope.goal,
             organization: () => $scope.organization,
-            write_permission: () => $scope.write_permission
+            write_permission: () => $scope.write_permission,
+            partners: () =>  $scope.is_logged_into_salesforce? bb_salesforce_service.get_partners(organization.id): []
           }
         });
 
@@ -1144,6 +1145,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       const set_summary_grid_options = (summary) => {
+        console.log(summary)
         get_goal_stats(summary);
         $scope.summary_data = [summary];
         $scope.summaryGridOptions = {
@@ -1174,7 +1176,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       // --- DATA QUALITY ---
       $scope.run_data_quality_check = () => {
         spinner_utility.show();
-        data_quality_service.start_data_quality_checks([], [], $scope.cycle_goal.id)
+        data_quality_service.start_data_quality_checks([], [], $scope.goal.id)
           .then((response) => {
             data_quality_service.data_quality_checks_status(response.progress_key)
               .then((result) => {

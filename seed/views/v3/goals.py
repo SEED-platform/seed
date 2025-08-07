@@ -30,7 +30,9 @@ from seed.utils.goals import (
 )
 from seed.utils.search import FilterError, build_view_filters_and_sorts, filter_views_on_related
 from seed.utils.viewsets import ModelViewSetWithoutPatch
+import logging
 
+logger = logging.getLogger(__name__)
 
 @method_decorator(
     name="destroy",
@@ -112,27 +114,32 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse(serializer.data)
 
-    @ajax_request_class
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="pk")
-    @action(detail=True, methods=["GET"])
-    def portfolio_summary(self, request, pk):
-        """
-        Gets a Portfolio Summary dictionary given a goal
-        """
-        org_id = int(self.get_organization(request))
+    @has_perm_class("requires_member")
+    @action(detail=True, methods=["PUT"])
+    def bulk_update_goal_notes(self, request, pk):
+        """Bulk updates Goal-related fields for a given goal and property view ids"""
+        org_id = self.get_organization(request)
         try:
-            org = Organization.objects.get(pk=org_id)
-            goal = Goal.objects.get(pk=pk)
-        except (Organization.DoesNotExist, Goal.DoesNotExist):
-            return JsonResponse({"status": "error", "message": "No such resource."})
+            goal = Goal.objects.get(pk=pk, goal__organization=org_id)
+        except Goal.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
 
-        # If new properties heave been uploaded, create goal_notes
-        get_or_create_goal_notes(goal)
+        property_view_ids = request.data.get("property_view_ids", [])
+        properties = Property.objects.filter(views__in=property_view_ids).select_related("historical_notes")
+        goal_notes = GoalNote.objects.filter(goal=goal, property__in=properties)
 
-        summary = get_portfolio_summary(org, goal)
-        return JsonResponse(summary)
+        data = request.data.get("data", {})
+
+        if "historical_note" in data:
+            historical_notes = HistoricalNote.objects.filter(property__in=properties)
+            result = historical_notes.update(text=data["historical_note"])
+            del data["historical_note"]
+
+        if data:
+            data = get_permission_data(data, request.access_level_instance_id)
+            result = goal_notes.update(**data)
+
+        return JsonResponse({"status": "success", "message": f"Updated {result} properties"})
 
 
 @method_decorator(
@@ -171,33 +178,6 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         )
         return JsonResponse({"status": "success", "cycle_goals": self.serializer_class(cycle_goals, many=True).data})
 
-    @has_perm_class("requires_member")
-    @action(detail=True, methods=["PUT"])
-    def bulk_update_goal_notes(self, request, goal_pk, pk):
-        """Bulk updates Goal-related fields for a given goal and property view ids"""
-        org_id = self.get_organization(request)
-        try:
-            cycle_goal = CycleGoal.objects.get(pk=pk, goal__organization=org_id)
-        except CycleGoal.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
-
-        property_view_ids = request.data.get("property_view_ids", [])
-        properties = Property.objects.filter(views__in=property_view_ids).select_related("historical_notes")
-        goal_notes = GoalNote.objects.filter(cycle_goal=cycle_goal, property__in=properties)
-
-        data = request.data.get("data", {})
-
-        if "historical_note" in data:
-            historical_notes = HistoricalNote.objects.filter(property__in=properties)
-            result = historical_notes.update(text=data["historical_note"])
-            del data["historical_note"]
-
-        if data:
-            data = get_permission_data(data, request.access_level_instance_id)
-            result = goal_notes.update(**data)
-
-        return JsonResponse({"status": "success", "message": f"Updated {result} properties"})
-
     @ajax_request_class
     @swagger_auto_schema_org_query_param
     @has_perm_class("requires_viewer")
@@ -215,9 +195,12 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             return JsonResponse({"status": "error", "message": "No such resource."})
 
         # If new properties heave been uploaded, create goal_notes
-        get_or_create_goal_notes(cycle_goal)
+        get_or_create_goal_notes(cycle_goal.goal)
 
+        logger.error("++++++++")
         summary = get_portfolio_summary(org, cycle_goal)
+        logger.error("++++++++")
+        
         return JsonResponse(summary)
 
     @ajax_request_class
@@ -263,7 +246,7 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         try:
             # Sorts initiated from Portfolio Summary that contain related model names (goal_note, historical_note) require custom handling
             if related_model_sort:
-                views1 = filter_views_on_related(views1, cycle_goal, request.query_params, cycle1)
+                views1 = filter_views_on_related(views1, cycle_goal.goal, request.query_params, cycle1)
             else:
                 filters, annotations, order_by = build_view_filters_and_sorts(
                     request.query_params, columns_from_database, inventory_type, org.access_level_names
@@ -306,8 +289,8 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             property__access_level_instance__rgt__lte=access_level_instance.rgt,
         )
 
-        properties1 = TaxLotProperty.serialize(views1, show_columns, columns_from_database, False, pk)
-        properties2 = TaxLotProperty.serialize(views2, show_columns, columns_from_database, False, pk)
+        properties1 = TaxLotProperty.serialize(views1, show_columns, columns_from_database, False, goal_pk)
+        properties2 = TaxLotProperty.serialize(views2, show_columns, columns_from_database, False, goal_pk)
         # collapse pint quantity units to their magnitudes
         properties1 = [apply_display_unit_preferences(org, x) for x in properties1]
         properties2 = [apply_display_unit_preferences(org, x) for x in properties2]

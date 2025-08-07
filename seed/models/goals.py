@@ -43,6 +43,14 @@ class Goal(models.Model):
         Column, on_delete=models.CASCADE, related_name="goal_transactions_columns", blank=True, null=True
     )
 
+    def properties(self):
+        properties = Property.objects.filter(
+            access_level_instance__lft__gte=self.access_level_instance.lft,
+            access_level_instance__rgt__lte=self.access_level_instance.rgt,
+        ).distinct()
+
+        return properties
+
     class Meta:
         ordering = ["name"]
 
@@ -59,6 +67,28 @@ class Goal(models.Model):
         eui_columns = [self.eui_column1, self.eui_column2, self.eui_column3]
         return [column for column in eui_columns if column]
 
+@receiver(post_save, sender=Goal)
+def post_save_goal(sender, instance, **kwargs):
+    from seed.models import GoalNote
+
+    # retrieve a flat set of all property ids associated with this goal
+    goal_property_ids = set(instance.properties().values_list("id", flat=True))
+
+    # retrieve a flat set of all property ids from the previous goal (through goal note which has not been created/updated yet)
+    previous_property_ids = set(instance.goalnote_set.values_list("property_id", flat=True))
+
+    # create, or update has added more properties to the cycle goal
+    new_property_ids = goal_property_ids - previous_property_ids
+    # update has removed properties from the cycle goal
+    removed_property_ids = previous_property_ids - goal_property_ids
+
+    if new_property_ids:
+        new_goal_notes = [GoalNote(goal=instance, property_id=id) for id in new_property_ids]
+        GoalNote.objects.bulk_create(new_goal_notes)
+
+    if removed_property_ids:
+        GoalNote.objects.filter(goal=instance, property_id__in=removed_property_ids).delete()
+
 
 class CycleGoal(models.Model):
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name="current_cycles")
@@ -74,26 +104,3 @@ class CycleGoal(models.Model):
         ).distinct()
 
         return properties
-
-
-@receiver(post_save, sender=CycleGoal)
-def post_save_goal(sender, instance, **kwargs):
-    from seed.models import GoalNote
-
-    # retrieve a flat set of all property ids associated with this goal
-    cycle_goal_property_ids = set(instance.properties().values_list("id", flat=True))
-
-    # retrieve a flat set of all property ids from the previous goal (through goal note which has not been created/updated yet)
-    previous_property_ids = set(instance.goalnote_set.values_list("property_id", flat=True))
-
-    # create, or update has added more properties to the cycle goal
-    new_property_ids = cycle_goal_property_ids - previous_property_ids
-    # update has removed properties from the cycle goal
-    removed_property_ids = previous_property_ids - cycle_goal_property_ids
-
-    if new_property_ids:
-        new_goal_notes = [GoalNote(cycle_goal=instance, property_id=id) for id in new_property_ids]
-        GoalNote.objects.bulk_create(new_goal_notes)
-
-    if removed_property_ids:
-        GoalNote.objects.filter(cycle_goal=instance, property_id__in=removed_property_ids).delete()

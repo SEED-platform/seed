@@ -65,7 +65,6 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
                 "response_type": "code",
                 "code_challenge": code_challenge,
             },
-            timeout=300,
         )
 
         return JsonResponse({"status": "success", "url": request.url}, status=status.HTTP_200_OK)

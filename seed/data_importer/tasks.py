@@ -73,6 +73,7 @@ from seed.models import (
     CycleGoal,
     DataLogger,
     Goal,
+    GoalNote,
     Meter,
     PropertyAuditLog,
     PropertyState,
@@ -116,7 +117,8 @@ def check_data_chunk(org_id, model, ids, dq_id, cycle_goal_id=None):
     if not cycle_goal_id:
         d.check_data(model, qs.iterator())
     else:
-        d.check_data_cross_cycle(cycle_goal_id, state_pairs)
+        cycle_goal = CycleGoal.objects.get(pk=cycle_goal_id)
+        d.check_data_cross_cycle(cycle_goal.goal_id, state_pairs)
     d.save_to_cache(dq_id, organization.id)
 
 
@@ -133,14 +135,14 @@ def finish_checking(progress_key):
     return progress_data.result()
 
 
-def do_checks(org_id, propertystate_ids, taxlotstate_ids, cycle_goal_id, import_file_id=None):
+def do_checks(org_id, propertystate_ids, taxlotstate_ids, goal_id, import_file_id=None):
     """
     Run the dq checks on the data
 
     :param org_id:
     :param propertystate_ids:
     :param taxlotstate_ids:
-    :param cycle_goal_id:
+    :param goal_id:
     :param import_file_id: int, if present, find the data to check by the import file id
     :return:
     """
@@ -163,7 +165,7 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, cycle_goal_id, import_
             .values_list("id", flat=True)
         )
 
-    tasks = _data_quality_check_create_tasks(org_id, propertystate_ids, taxlotstate_ids, cycle_goal_id, dq_id)
+    tasks = _data_quality_check_create_tasks(org_id, propertystate_ids, taxlotstate_ids, goal_id, dq_id)
     progress_data.total = len(tasks)
     progress_data.save()
     if tasks:
@@ -601,7 +603,7 @@ def _map_data_create_tasks(import_file_id, progress_key):
     return tasks
 
 
-def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_ids, cycle_goal, dq_id):
+def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_ids, goal, dq_id):
     """
     Entry point into running data quality checks.
 
@@ -631,14 +633,17 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
         for ids in id_chunks_tl:
             tasks.append(check_data_chunk.s(org_id, "TaxLotState", ids, dq_id))
 
-    if cycle_goal:
-        # If cycle_goal is passed, treat as a cross cycle data quality check.
+    if goal:
+        # If goal is passed, treat as a cross cycle data quality check.
         try:
-            cycle_goal = CycleGoal.objects.get(id=cycle_goal)
-            property_ids = cycle_goal.properties().values_list("id", flat=True)
+            # start by marking everything false
+            GoalNote.objects.filter(goal=goal).update(passed_checks=False)
+            # then, use the most recent cycle to set some true
+            most_recent_cycle_goal = CycleGoal.objects.filter(goal=goal).order_by("-current_cycle__end").first()
+            property_ids = most_recent_cycle_goal.properties().values_list("id", flat=True)
             id_chunks = [list(chunk) for chunk in batch(property_ids, 100)]
             for ids in id_chunks:
-                tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, cycle_goal.id))
+                tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, most_recent_cycle_goal.id))
         except Goal.DoesNotExist:
             pass
 

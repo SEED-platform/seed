@@ -61,14 +61,14 @@ angular.module('SEED.service.data_quality', []).factory('data_quality_service', 
 
     data_quality_factory.start_data_quality_checks_for_import_file = (org_id, import_file_id) => $http.post(`/api/v3/import_files/${import_file_id}/start_data_quality_checks/?organization_id=${org_id}`).then((response) => response.data);
 
-    data_quality_factory.start_data_quality_checks = (property_view_ids, taxlot_view_ids, cycle_goal_id) => data_quality_factory
-      .start_data_quality_checks_for_org(user_service.get_organization().id, property_view_ids, taxlot_view_ids, cycle_goal_id);
+    data_quality_factory.start_data_quality_checks = (property_view_ids, taxlot_view_ids, goal_id) => data_quality_factory
+      .start_data_quality_checks_for_org(user_service.get_organization().id, property_view_ids, taxlot_view_ids, goal_id);
 
-    data_quality_factory.start_data_quality_checks_for_org = (org_id, property_view_ids, taxlot_view_ids, cycle_goal_id) => $http
+    data_quality_factory.start_data_quality_checks_for_org = (org_id, property_view_ids, taxlot_view_ids, goal_id) => $http
       .post(`/api/v3/data_quality_checks/${org_id}/start/`, {
         property_view_ids,
         taxlot_view_ids,
-        cycle_goal_id
+        goal_id
       })
       .then((response) => response.data);
 
