@@ -1278,11 +1278,22 @@ class OrganizationViewSet(viewsets.ViewSet):
         agg_sheet.write(data_row_start, data_col_start + 1, request.query_params.get("y_label"), bold)
         agg_sheet.write(data_row_start, data_col_start + 2, "Year Ending", bold)
 
+        # X could be count, else its a column
+        if params["x_var"] != "Count":
+            x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        else:
+            x_var = params["x_var"]
+
+        # y could be an access level, else its a column
+        access_level_names = Organization.objects.get(pk=pk).access_level_names
+        if params["y_var"] not in access_level_names:
+            y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        else:
+            y_var = params["y_var"]
+
         # Gather base data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
-        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
-        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
         report_data = self.setup_report_data(
             pk, access_level_instance, cycles, x_var, y_var, filter_group_id, additional_columns=matching_columns
         )

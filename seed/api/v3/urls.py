@@ -15,6 +15,7 @@ from seed.views.v3.analysis_views import AnalysisPropertyViewViewSet
 from seed.views.v3.audit_template import AuditTemplateViewSet
 from seed.views.v3.audit_template_configs import AuditTemplateConfigViewSet
 from seed.views.v3.building_files import BuildingFileViewSet
+from seed.views.v3.cache_entries import CacheEntryViewSet
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
 from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
 from seed.views.v3.columns import ColumnViewSet
@@ -81,6 +82,7 @@ api_v3_router.register(r"analyses", AnalysisViewSet, basename="analyses")
 api_v3_router.register(r"audit_template", AuditTemplateViewSet, basename="audit_template")
 api_v3_router.register(r"audit_template_configs", AuditTemplateConfigViewSet, basename="audit_template_configs")
 api_v3_router.register(r"building_files", BuildingFileViewSet, basename="building_files")
+api_v3_router.register(r"cache_entries", CacheEntryViewSet, basename="cache_entries")
 api_v3_router.register(r"column_list_profiles", ColumnListProfileViewSet, basename="column_list_profiles")
 api_v3_router.register(r"column_mapping_profiles", ColumnMappingProfileViewSet, basename="column_mapping_profiles")
 api_v3_router.register(r"columns", ColumnViewSet, basename="columns")
