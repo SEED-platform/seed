@@ -47,6 +47,7 @@ probablepeople==0.5.6
 xmlschema==4.1.0
 lark==1.2.2
 pandas<3
+scipy>=1.7.0 # UPDATED 2025-08-02
 
 # Parsing and managing geojson data (this is only used in managed tasks at the moment)
 geojson==3.2.0
@@ -81,3 +82,9 @@ semantic_version==2.10.0
 # Building analysis dependencies - ADDED 2025-07-27
 mercantile==1.2.1
 h3==3.7.7
+
+# Degree Days Analysis dependencies - ADDED 2025-08-05
+# Note: These specific versions ensure compatibility between numpy, netCDF4, and xarray
+numpy<2.0  
+netCDF4==1.7.2  
+xarray==2023.12.0  

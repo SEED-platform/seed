@@ -3,6 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 Buildings Analysis - Analyzes building density, height, and setback in area around property coordinates
+Optimized version with improved spatial calculations
 
 Adrian Mungroo, 2025-07-25
 """
@@ -13,6 +14,7 @@ import json
 import gzip
 import hashlib
 import tempfile
+import math
 from pathlib import Path
 from urllib.parse import urlparse
 from concurrent.futures import ThreadPoolExecutor
@@ -24,6 +26,13 @@ import mercantile
 import h3
 import requests
 from shapely.geometry import Point, Polygon, box, shape
+from scipy.spatial import cKDTree
+
+# Try to use faster JSON parser if available
+try:
+    import ujson as fast_json
+except ImportError:
+    fast_json = json
 
 from celery import chain, shared_task
 
@@ -119,6 +128,9 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
     if links_df is None:
         logger.warning("No dataset links available, returning basic results")
 
+    # Cache for processed hexagon results
+    hex_cache = {}
+
     for analysis_property_view in analysis_property_views:
         analysis_property_view.parsed_results = {}
         property_view = property_views_by_apv_id[analysis_property_view.id]
@@ -142,30 +154,39 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
                 'h3_hex': None
             }
         else:
-            # Run the actual building analysis
-            logger.info(f"Dataset available: {links_df is not None}")
-            if links_df is not None:
-                logger.info(f"Dataset shape: {links_df.shape}")
+            # Check if we've already processed this hexagon
+            hex_index = h3.geo_to_h3(lat, lon, h3_resolution)
             
-            try:
-                results = _analyze_buildings_for_coordinates(
-                    lat, lon, h3_resolution, zoom_level, links_df, max_workers
-                )
-                logger.info(f"Building analysis completed for property {property_view.property.id}")
-            except Exception as e:
-                logger.error(f"Error in building analysis for property {property_view.property.id}: {e}")
-                import traceback
-                logger.error(f"Traceback: {traceback.format_exc()}")
-                # Set default values on error
-                results = {
-                    'error': f'Building analysis failed: {str(e)}',
-                    'building_count': 0,
-                    'avg_height': None,
-                    'building_density': 0,
-                    'hex_area_km2': 0,
-                    'mean_setback': None,
-                    'h3_hex': None
-                }
+            if hex_index in hex_cache:
+                logger.info(f"Using cached results for hex {hex_index}")
+                results = hex_cache[hex_index].copy()
+            else:
+                # Run the actual building analysis
+                logger.info(f"Dataset available: {links_df is not None}")
+                if links_df is not None:
+                    logger.info(f"Dataset shape: {links_df.shape}")
+                
+                try:
+                    results = _analyze_buildings_for_coordinates(
+                        lat, lon, h3_resolution, zoom_level, links_df, max_workers
+                    )
+                    # Cache the results for this hexagon
+                    hex_cache[hex_index] = results.copy()
+                    logger.info(f"Building analysis completed for property {property_view.property.id}")
+                except Exception as e:
+                    logger.error(f"Error in building analysis for property {property_view.property.id}: {e}")
+                    import traceback
+                    logger.error(f"Traceback: {traceback.format_exc()}")
+                    # Set default values on error
+                    results = {
+                        'error': f'Building analysis failed: {str(e)}',
+                        'building_count': 0,
+                        'avg_height': None,
+                        'building_density': 0,
+                        'hex_area_km2': 0,
+                        'mean_setback': None,
+                        'h3_hex': None
+                    }
 
         # Store results in analysis record
         analysis_property_view.parsed_results = results
@@ -287,15 +308,37 @@ def _get_property_coordinates(property_view):
     return lat, lon
 
 
+def _get_optimal_crs(lat, lon):
+    """Get the optimal CRS for spatial calculations with fallback hierarchy"""
+    try:
+        # Try UTM first for most accurate local measurements
+        utm_crs = _get_utm_crs(lon, lat)
+        # Test if the CRS works
+        test_point = gpd.GeoSeries([Point(lon, lat)])
+        test_point.to_crs(utm_crs)
+        return utm_crs
+    except Exception as e:
+        logger.debug(f"UTM CRS failed for {lat}, {lon}: {e}")
+        try:
+            # Fall back to Web Mercator for approximate meter-based calculations
+            test_point = gpd.GeoSeries([Point(lon, lat)])
+            test_point.to_crs('EPSG:3857')
+            return 'EPSG:3857'
+        except Exception as e2:
+            logger.warning(f"Web Mercator also failed for {lat}, {lon}: {e2}")
+            # Last resort: return None to use approximate calculations
+            return None
+
+
 def _analyze_buildings_for_coordinates(lat, lon, h3_resolution, zoom_level, links_df, max_workers):
-    """Core building analysis logic adapted from the original script"""
+    """Core building analysis logic with spatial optimizations"""
     try:
         # Get H3 hexagon for the coordinates
         hex_index = h3.geo_to_h3(lat, lon, h3_resolution)
         hex_polygon = _get_h3_hex_polygon(hex_index)
         
-        # Skip UTM CRS due to geopandas/pyproj compatibility issues
-        utm_crs = None
+        # Get optimal CRS for accurate measurements
+        optimal_crs = _get_optimal_crs(lat, lon)
         
         results = {
             'h3_hex': hex_index,
@@ -318,37 +361,40 @@ def _analyze_buildings_for_coordinates(lat, lon, h3_resolution, zoom_level, link
             logger.warning(f"No quadkeys found for hex {hex_index}")
             return results
         
+        logger.info(f"Found {len(quadkey_polygons)} quadkeys for hex {hex_index}")
+        
         # Get URLs for quadkeys
         quadkey_urls = {}
         for qk in quadkey_polygons.keys():
             url, location = _get_url_for_quadkey(qk, links_df)
             if url:
                 quadkey_urls[qk] = (url, location)
+                logger.debug(f"Found URL for quadkey {qk}: {url}")
+            else:
+                logger.debug(f"No URL found for quadkey {qk}")
         
         if not quadkey_urls:
             logger.warning(f"No data URLs found for hex {hex_index}")
             return results
         
+        logger.info(f"Found {len(quadkey_urls)} URLs for hex {hex_index}")
+        
         # Download and analyze building data
         urls = [url for url, _ in quadkey_urls.values()]
-        buildings_gdf = _download_tiles_parallel(urls, max_workers)
+        logger.info(f"Downloading {len(urls)} tiles for hex {hex_index}")
+        buildings_gdf = _download_and_process_tiles(urls, hex_polygon, optimal_crs, max_workers)
         
         if buildings_gdf is None or buildings_gdf.empty:
             logger.warning(f"No building data loaded for hex {hex_index}")
             return results
         
-        # Filter to buildings within hexagon
-        buildings_in_hex = buildings_gdf[buildings_gdf.geometry.intersects(hex_polygon)]
+        logger.info(f"Successfully loaded {len(buildings_gdf)} buildings for hex {hex_index}")
         
-        if buildings_in_hex.empty:
-            logger.info(f"No buildings found within hex {hex_index}")
-            return results
-        
-        # Calculate metrics (without UTM CRS to avoid compatibility issues)
-        building_count = len(buildings_in_hex)
-        avg_height, height_count = _calculate_average_height(buildings_in_hex)
-        density, area_km2 = _calculate_building_density(buildings_in_hex, hex_polygon, None)
-        mean_setback = _calculate_mean_setback(buildings_in_hex, None)
+        # Calculate metrics
+        building_count = len(buildings_gdf)
+        avg_height, height_count = _calculate_average_height(buildings_gdf)
+        density, area_km2 = _calculate_building_density(buildings_gdf, hex_polygon, optimal_crs)
+        mean_setback = _calculate_mean_setback(buildings_gdf, optimal_crs)
         
         results.update({
             'building_count': building_count,
@@ -374,6 +420,183 @@ def _analyze_buildings_for_coordinates(lat, lon, h3_resolution, zoom_level, link
             'mean_setback': None,
             'h3_hex': None
         }
+
+
+def _download_and_process_tiles(urls, hex_polygon, optimal_crs, max_workers=4):
+    """Download tiles and process with spatial optimizations"""
+    all_buildings = []
+    
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Pass hex_polygon to each tile download for early filtering
+        tile_results = list(executor.map(lambda url: _download_and_parse_tile(url, hex_polygon), urls))
+    
+    # Process each tile incrementally with spatial filtering
+    for tile_gdf in tile_results:
+        if tile_gdf is not None and not tile_gdf.empty:
+            # Apply spatial index for efficient intersection
+            if hasattr(tile_gdf, 'sindex'):
+                # Use spatial index for fast filtering
+                possible_matches_index = list(tile_gdf.sindex.intersection(hex_polygon.bounds))
+                if possible_matches_index:
+                    possible_matches = tile_gdf.iloc[possible_matches_index]
+                    buildings_in_hex = possible_matches[possible_matches.geometry.intersects(hex_polygon)]
+                else:
+                    buildings_in_hex = gpd.GeoDataFrame()
+            else:
+                # Fallback to basic intersection
+                buildings_in_hex = tile_gdf[tile_gdf.geometry.intersects(hex_polygon)]
+            
+            if not buildings_in_hex.empty:
+                # Pre-compute geometric properties for optimization
+                buildings_in_hex = buildings_in_hex.copy()
+                buildings_in_hex['centroid'] = buildings_in_hex.geometry.centroid
+                
+                # Convert to optimal CRS if available
+                if optimal_crs:
+                    try:
+                        buildings_in_hex = buildings_in_hex.to_crs(optimal_crs)
+                        buildings_in_hex['centroid_projected'] = buildings_in_hex['centroid'].to_crs(optimal_crs)
+                    except Exception as e:
+                        logger.debug(f"CRS conversion failed: {e}")
+                        buildings_in_hex['centroid_projected'] = buildings_in_hex['centroid']
+                else:
+                    buildings_in_hex['centroid_projected'] = buildings_in_hex['centroid']
+                
+                all_buildings.append(buildings_in_hex)
+    
+    if not all_buildings:
+        return None
+    
+    # Combine all building data
+    combined_gdf = pd.concat(all_buildings, ignore_index=True)
+    return gpd.GeoDataFrame(combined_gdf, geometry='geometry')
+
+
+def _calculate_building_density(gdf, hex_polygon, optimal_crs=None):
+    """Calculate building density with proper area calculation"""
+    if gdf is None or gdf.empty:
+        return 0, 0
+    
+    building_count = len(gdf)
+    
+    # Calculate area using optimal method
+    if optimal_crs:
+        try:
+            # Use projected CRS for accurate area calculation
+            hex_gdf = gpd.GeoDataFrame([1], geometry=[hex_polygon])
+            hex_projected = hex_gdf.to_crs(optimal_crs)
+            area_m2 = hex_projected.geometry.area.iloc[0]
+            area_km2 = area_m2 / 1_000_000  # Convert to km²
+        except Exception as e:
+            logger.debug(f"Projected area calculation failed: {e}")
+            area_km2 = _calculate_approximate_area_km2(hex_polygon)
+    else:
+        # Use H3 built-in area calculation (most accurate for H3 hexagons)
+        try:
+            # This requires the hex index, which we can derive from the polygon
+            # For now, use approximate calculation
+            area_km2 = _calculate_approximate_area_km2(hex_polygon)
+        except:
+            area_km2 = _calculate_approximate_area_km2(hex_polygon)
+    
+    density = building_count / area_km2 if area_km2 > 0 else 0
+    return density, area_km2
+
+
+def _calculate_approximate_area_km2(polygon):
+    """Calculate approximate area using simple degree-to-km conversion"""
+    bounds = polygon.bounds
+    minx, miny, maxx, maxy = bounds
+    
+    # Rough conversion: 1 degree ≈ 111 km
+    width_km = (maxx - minx) * 111
+    height_km = (maxy - miny) * 111
+    area_km2 = width_km * height_km
+    
+    return area_km2
+
+
+def _calculate_mean_setback(gdf, optimal_crs=None):
+    """Calculate mean setback using spatial data structures for O(n log n) complexity"""
+    if gdf is None or gdf.empty or len(gdf) <= 1:
+        return None
+    
+    try:
+        # Use projected coordinates if available for more accurate distances
+        if optimal_crs and 'centroid_projected' in gdf.columns:
+            centroids = np.array([(geom.x, geom.y) for geom in gdf['centroid_projected']])
+        else:
+            # Convert lat/lon to approximate meters
+            centroids = np.array([
+                (_lon_to_meters(geom.x, geom.y), _lat_to_meters(geom.y)) 
+                for geom in gdf['centroid']
+            ])
+        
+        if len(centroids) < 2:
+            return None
+        
+        # Use scipy's cKDTree for efficient nearest neighbor search
+        tree = cKDTree(centroids)
+        
+        # Find the nearest neighbor for each building (k=2 to exclude self)
+        distances, indices = tree.query(centroids, k=2)
+        
+        # Extract nearest neighbor distances (second column)
+        nearest_distances = distances[:, 1]
+        
+        # Filter out very close buildings (< 1 meter) which might be data errors
+        valid_distances = nearest_distances[nearest_distances > 1.0]
+        
+        if len(valid_distances) > 0:
+            return float(np.mean(valid_distances))
+        else:
+            return None
+            
+    except Exception as e:
+        logger.debug(f"Optimized setback calculation failed: {e}")
+        # Fallback to basic calculation for small datasets
+        return _calculate_mean_setback_basic(gdf)
+
+
+def _calculate_mean_setback_basic(gdf):
+    """Fallback basic setback calculation"""
+    if gdf is None or gdf.empty or len(gdf) <= 1:
+        return None
+    
+    setbacks = []
+    
+    for idx, building in gdf.iterrows():
+        distances = []
+        centroid1 = building.geometry.centroid
+        
+        for other_idx, other_building in gdf.iterrows():
+            if idx != other_idx:
+                centroid2 = other_building.geometry.centroid
+                lat1, lon1 = centroid1.y, centroid1.x
+                lat2, lon2 = centroid2.y, centroid2.x
+                
+                # Convert degree distance to approximate meters
+                dlat = (lat2 - lat1) * 111000  # meters
+                dlon = (lon2 - lon1) * 111000 * math.cos(math.radians((lat1 + lat2) / 2))
+                dist = math.sqrt(dlat**2 + dlon**2)
+                
+                if dist > 1:  # Filter out very close buildings
+                    distances.append(dist)
+        
+        if distances:
+            setbacks.append(min(distances))
+    
+    return sum(setbacks) / len(setbacks) if setbacks else None
+
+
+def _lon_to_meters(lon, lat):
+    """Convert longitude to approximate meters"""
+    return lon * 111000 * math.cos(math.radians(lat))
+
+
+def _lat_to_meters(lat):
+    """Convert latitude to approximate meters"""
+    return lat * 111000
 
 
 # Helper functions adapted from the original script
@@ -454,7 +677,7 @@ def _get_cache_filename(url):
     return cache_filename
 
 
-def _download_and_parse_tile(url):
+def _download_and_parse_tile(url, hex_polygon=None):
     """Download and parse the GeoJSONL tile data from the given URL."""
     if not url:
         return None
@@ -487,21 +710,54 @@ def _download_and_parse_tile(url):
             logger.error(f"Error downloading {url}: {str(e)}")
             return None
     
-    # Parse GeoJSONL
+    # Parse GeoJSONL with early filtering
     buildings = []
+    hex_bounds = hex_polygon.bounds if hex_polygon is not None else None
+    
     try:
         with gzip.open(gz_path, 'rt') as f:
             for line in f:
                 if line.strip():
                     try:
-                        feature = json.loads(line)
+                        feature = fast_json.loads(line)
                         if feature['type'] == 'Feature':
+                            # Early bounding box check to skip buildings outside hexagon
+                            if hex_bounds:
+                                geom_type = feature['geometry']['type']
+                                coords = feature['geometry']['coordinates']
+                                
+                                # Handle different geometry types
+                                if geom_type == 'Polygon':
+                                    # For polygons, use the outer ring coordinates
+                                    ring_coords = coords[0]
+                                elif geom_type == 'MultiPolygon':
+                                    # For multipolygons, flatten all outer rings
+                                    ring_coords = [coord for poly in coords for coord in poly[0]]
+                                elif geom_type == 'Point':
+                                    # For points, use single coordinate
+                                    ring_coords = [coords]
+                                else:
+                                    # For other types, skip early filtering
+                                    ring_coords = None
+                                
+                                if ring_coords:
+                                    # Quick bounds check before full geometry parsing
+                                    min_x = min(coord[0] for coord in ring_coords)
+                                    max_x = max(coord[0] for coord in ring_coords)
+                                    min_y = min(coord[1] for coord in ring_coords)
+                                    max_y = max(coord[1] for coord in ring_coords)
+                                    
+                                    # Skip if building is completely outside hexagon bounds
+                                    if (max_x < hex_bounds[0] or min_x > hex_bounds[2] or 
+                                        max_y < hex_bounds[1] or min_y > hex_bounds[3]):
+                                        continue
+                            
                             properties = feature['properties']
                             geom = shape(feature['geometry'])
                             record = properties.copy()
                             record['geometry'] = geom
                             buildings.append(record)
-                    except json.JSONDecodeError:
+                    except (json.JSONDecodeError, ValueError):
                         continue
     except Exception as e:
         logger.error(f"Error parsing {gz_path}: {str(e)}")
@@ -511,24 +767,6 @@ def _download_and_parse_tile(url):
         gdf = gpd.GeoDataFrame(buildings, geometry='geometry')
         return gdf
     return None
-
-
-def _download_tiles_parallel(urls, max_workers=4):
-    """Download multiple tiles in parallel and combine them."""
-    gdfs = []
-    
-    with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        results = list(executor.map(_download_and_parse_tile, urls))
-    
-    for gdf in results:
-        if gdf is not None and len(gdf) > 0:
-            gdfs.append(gdf)
-    
-    if not gdfs:
-        return None
-    
-    combined_gdf = pd.concat(gdfs, ignore_index=True)
-    return gpd.GeoDataFrame(combined_gdf, geometry='geometry')
 
 
 def _calculate_average_height(gdf):
@@ -549,64 +787,6 @@ def _calculate_average_height(gdf):
     
     avg_height = has_height[height_col].mean()
     return avg_height, len(has_height)
-
-
-def _calculate_building_density(gdf, hex_polygon, utm_crs=None):
-    """Calculate building density (buildings per km²) within a hexagon."""
-    if gdf is None or gdf.empty:
-        return 0, 0
-    
-    # Use approximate area calculation without CRS conversion
-    # Calculate area using simple degree-to-meter approximation
-    bounds = hex_polygon.bounds
-    minx, miny, maxx, maxy = bounds
-    
-    # Rough conversion: 1 degree ≈ 111 km
-    width_km = (maxx - minx) * 111
-    height_km = (maxy - miny) * 111
-    area_km2 = width_km * height_km
-    
-    building_count = len(gdf)
-    density = building_count / area_km2 if area_km2 > 0 else 0
-    
-    return density, area_km2
-
-
-def _calculate_mean_setback(gdf, utm_crs=None):
-    """Calculate the mean neighbor setback (distance to nearest neighboring building)."""
-    if gdf is None or gdf.empty or len(gdf) <= 1:
-        return None
-    
-    # Use lat/lon directly with approximate conversion to meters
-    setbacks = []
-    
-    for idx, building in gdf.iterrows():
-        distances = []
-        for other_idx, other_building in gdf.iterrows():
-            if idx != other_idx:
-                # Use centroids for distance calculation (buildings are polygons, not points)
-                centroid1 = building.geometry.centroid
-                centroid2 = other_building.geometry.centroid
-                lat1, lon1 = centroid1.y, centroid1.x
-                lat2, lon2 = centroid2.y, centroid2.x
-                
-                # Convert degree distance to approximate meters
-                # 1 degree lat ≈ 111 km, 1 degree lon ≈ 111 km * cos(lat)
-                import math
-                dlat = (lat2 - lat1) * 111000  # meters
-                dlon = (lon2 - lon1) * 111000 * math.cos(math.radians((lat1 + lat2) / 2))
-                dist = math.sqrt(dlat**2 + dlon**2)
-                
-                if dist > 1:  # Filter out very close buildings (< 1 meter)
-                    distances.append(dist)
-        
-        if distances:
-            setbacks.append(min(distances))
-    
-    if setbacks:
-        return sum(setbacks) / len(setbacks)
-    else:
-        return None
 
 
 # Column creation functions
@@ -751,4 +931,4 @@ def _create_h3_hex_column(analysis):
             )
             return column
         else:
-            return None 
+            return None

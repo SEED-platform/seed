@@ -30,6 +30,7 @@ class Analysis(models.Model):
     ADD_HELLO_COLUMN = 101
     GEOPANDAS_TEST = 102
     BUILDINGS_ANALYSIS = 103
+    DEGREE_DAYS_ANALYSIS = 104
 
     SERVICE_TYPES = (
         (BSYNCR, "BSyncr"),
@@ -43,6 +44,7 @@ class Analysis(models.Model):
         (ADD_HELLO_COLUMN, "Add Hello Column"),
         (GEOPANDAS_TEST, "Geopandas Test"),
         (BUILDINGS_ANALYSIS, "Buildings Analysis"),
+        (DEGREE_DAYS_ANALYSIS, "Degree Days Analysis"),
     )
 
     PENDING_CREATION = 8
@@ -244,6 +246,32 @@ class Analysis(models.Model):
                 highlights.append({"name": "Mean Setback", "value": f"{mean_setback:.2f} meters"})
             else:
                 highlights.append({"name": "Mean Setback", "value": "Insufficient data"})
+            
+            return highlights
+
+        # Degree Days Analysis
+        elif self.service == self.DEGREE_DAYS_ANALYSIS:
+            cdd = results.get("cdd", 0)
+            hdd = results.get("hdd", 0)
+            tmax_mean = results.get("tmax_mean")
+            tmin_mean = results.get("tmin_mean")
+            year = results.get("year", "N/A")
+            
+            highlights = [
+                {"name": "Cooling Degree Days", "value": f"{cdd:.1f} degree days"},
+                {"name": "Heating Degree Days", "value": f"{hdd:.1f} degree days"},
+                {"name": "Analysis Year", "value": f"{year}"}
+            ]
+            
+            if tmax_mean is not None:
+                highlights.append({"name": "Mean Max Temperature", "value": f"{tmax_mean:.1f}°F"})
+            else:
+                highlights.append({"name": "Mean Max Temperature", "value": "No data"})
+                
+            if tmin_mean is not None:
+                highlights.append({"name": "Mean Min Temperature", "value": f"{tmin_mean:.1f}°F"})
+            else:
+                highlights.append({"name": "Mean Min Temperature", "value": "No data"})
             
             return highlights
 

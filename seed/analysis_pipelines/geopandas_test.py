@@ -2,13 +2,14 @@
 SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
-Geopandas Test Analysis - Generates random coordinates in Atlanta, Georgia
+Geopandas Test Analysis - Generates random coordinates in various US cities
 """
 
 import logging
 import numpy as np
 import geopandas as gpd
 from shapely.geometry import Point
+import random
 
 from celery import chain, shared_task
 
@@ -20,6 +21,67 @@ from seed.analysis_pipelines.pipeline import (
 from seed.models import Analysis, AnalysisPropertyView, Column
 
 logger = logging.getLogger(__name__)
+
+
+# Inland US cities (avoid coastal cities) with their coordinates and radius for random generation
+US_CITIES = [
+    {
+        'name': 'Denver',
+        'state': 'Colorado',
+        'lat': 39.7392,
+        'lon': -104.9903,
+        'radius_degrees': 0.2
+    },
+    {
+        'name': 'Dallas',
+        'state': 'Texas',
+        'lat': 32.7767,
+        'lon': -96.7970,
+        'radius_degrees': 0.25
+    },
+    {
+        'name': 'Phoenix',
+        'state': 'Arizona',
+        'lat': 33.4484,
+        'lon': -112.0740,
+        'radius_degrees': 0.25
+    },
+    {
+        'name': 'Atlanta',
+        'state': 'Georgia',
+        'lat': 33.7490,
+        'lon': -84.3880,
+        'radius_degrees': 0.2
+    },
+    {
+        'name': 'Minneapolis',
+        'state': 'Minnesota',
+        'lat': 44.9778,
+        'lon': -93.2650,
+        'radius_degrees': 0.2
+    },
+    {
+        'name': 'Nashville',
+        'state': 'Tennessee',
+        'lat': 36.1627,
+        'lon': -86.7816,
+        'radius_degrees': 0.2
+    },
+    {
+        'name': 'Kansas City',
+        'state': 'Missouri',
+        'lat': 39.0997,
+        'lon': -94.5786,
+        'radius_degrees': 0.2
+    },
+    {
+        'name': 'Salt Lake City',
+        'state': 'Utah',
+        'lat': 40.7608,
+        'lon': -111.8910,
+        'radius_degrees': 0.2
+    }
+]
 
 
 class GeopandasTestPipeline(AnalysisPipeline):
@@ -53,10 +115,10 @@ def _finish_preparation(self, analysis_view_ids_by_property_view_id, analysis_id
 @shared_task(bind=True)
 @analysis_pipeline_task(Analysis.READY)
 def _run_analysis(self, analysis_property_view_ids, analysis_id):
-    """Run the geopandas test analysis - generates random Atlanta coordinates"""
+    """Run the geopandas test analysis - generates random coordinates in various US cities"""
     pipeline = GeopandasTestPipeline(analysis_id)
     progress_data = pipeline.set_analysis_status_to_running()
-    progress_data.step("Generating random Atlanta coordinates using geopandas.")
+    progress_data.step("Generating random US city coordinates using geopandas.")
 
     analysis = Analysis.objects.get(id=analysis_id)
     analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
@@ -67,26 +129,26 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
     lon_column = _create_geopandas_lon_column(analysis)
     city_column = _create_geopandas_city_column(analysis)
 
-    # Atlanta, Georgia coordinates (approximate city center)
-    atlanta_lat = 33.7490
-    atlanta_lon = -84.3880
-    
-    # Radius for random generation (roughly 20 miles from center)
-    radius_degrees = 0.3  # ~20 miles in degrees
-
     logger.info(f"Processing {len(analysis_property_views)} properties for geopandas test analysis")
 
     for analysis_property_view in analysis_property_views:
         analysis_property_view.parsed_results = {}
         property_view = property_views_by_apv_id[analysis_property_view.id]
 
-        # Generate random coordinates within Atlanta area
-        # Using numpy for random generation within a circular area
-        angle = np.random.uniform(0, 2 * np.pi)
-        distance = np.random.uniform(0, radius_degrees)
+        # Randomly select a US city
+        selected_city = random.choice(US_CITIES)
         
-        random_lat = atlanta_lat + distance * np.cos(angle)
-        random_lon = atlanta_lon + distance * np.sin(angle)
+        # Generate random coordinates within the selected city's area
+        angle = np.random.uniform(0, 2 * np.pi)
+        distance = np.random.uniform(0, selected_city['radius_degrees'])
+        
+        # Add slight perturbation to avoid clustering while staying well inland
+        # Very small random offset (±0.005 degrees ≈ ±0.5 km)
+        lat_perturbation = np.random.uniform(-0.005, 0.005)
+        lon_perturbation = np.random.uniform(-0.005, 0.005)
+        
+        random_lat = selected_city['lat'] + distance * np.cos(angle) + lat_perturbation
+        random_lon = selected_city['lon'] + distance * np.sin(angle) + lon_perturbation
         
         # Create a geopandas point to demonstrate geopandas usage
         point = Point(random_lon, random_lat)
@@ -101,8 +163,8 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
         analysis_property_view.parsed_results = {
             'lat': final_lat,
             'lon': final_lon,
-            'city': 'Atlanta',
-            'state': 'Georgia',
+            'city': selected_city['name'],
+            'state': selected_city['state'],
             'geopandas_version': gpd.__version__,
             'geometry_type': 'Point'
         }
@@ -115,14 +177,14 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id):
             property_view.state.extra_data[lon_column.column_name] = final_lon
             analysis_property_view.parsed_results[lon_column.column_name] = final_lon
         if city_column:
-            property_view.state.extra_data[city_column.column_name] = 'Atlanta'
-            analysis_property_view.parsed_results[city_column.column_name] = 'Atlanta'
+            property_view.state.extra_data[city_column.column_name] = selected_city['name']
+            analysis_property_view.parsed_results[city_column.column_name] = selected_city['name']
 
         analysis_property_view.save()
         property_view.state.save()
         
         logger.info(f"Generated coordinates for property {property_view.property.id}: "
-                   f"lat={final_lat:.6f}, lon={final_lon:.6f}")
+                   f"lat={final_lat:.6f}, lon={final_lon:.6f} in {selected_city['name']}, {selected_city['state']}")
 
     # Analysis complete
     pipeline.set_analysis_status_to_completed()
@@ -145,7 +207,7 @@ def _create_geopandas_lat_column(analysis):
                 organization=analysis.organization,
                 table_name="PropertyState",
                 display_name="Geopandas Test Latitude",
-                column_description="Random latitude coordinate in Atlanta area (geopandas demo)",
+                column_description="Random latitude coordinate in various US cities (geopandas demo)",
                 data_type="number",
             )
             return column
@@ -169,7 +231,7 @@ def _create_geopandas_lon_column(analysis):
                 organization=analysis.organization,
                 table_name="PropertyState",
                 display_name="Geopandas Test Longitude",
-                column_description="Random longitude coordinate in Atlanta area (geopandas demo)",
+                column_description="Random longitude coordinate in various US cities (geopandas demo)",
                 data_type="number",
             )
             return column
@@ -193,7 +255,7 @@ def _create_geopandas_city_column(analysis):
                 organization=analysis.organization,
                 table_name="PropertyState",
                 display_name="Geopandas Test City",
-                column_description="City name for geopandas test (Atlanta)",
+                column_description="City name for geopandas test (various US cities)",
                 data_type="string",
             )
             return column

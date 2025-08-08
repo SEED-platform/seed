@@ -277,6 +277,7 @@ class AnalysisPipeline(abc.ABC):
         from seed.analysis_pipelines.eui import EUIPipeline
         from seed.analysis_pipelines.geopandas_test import GeopandasTestPipeline
         from seed.analysis_pipelines.buildings_analysis import BuildingsAnalysisPipeline
+        from seed.analysis_pipelines.degree_days_analysis import DegreeDaysAnalysisPipeline
         from seed.analysis_pipelines.upgrade_recommendation import UpgradeRecommendationPipeline
 
         if analysis.service == Analysis.BSYNCR:
@@ -301,6 +302,8 @@ class AnalysisPipeline(abc.ABC):
             return GeopandasTestPipeline(analysis.id)
         elif analysis.service == Analysis.BUILDINGS_ANALYSIS:
             return BuildingsAnalysisPipeline(analysis.id)
+        elif analysis.service == Analysis.DEGREE_DAYS_ANALYSIS:
+            return DegreeDaysAnalysisPipeline(analysis.id)
         else:
             raise AnalysisPipelineError(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 

@@ -143,6 +143,11 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
             h3_resolution: 8
           };
           break;
+        case 'Degree Days Analysis':
+          $scope.new_analysis.configuration = {
+            year: 2020
+          };
+          break;
         default:
           $log.error('Unknown analysis type.', $scope.new_analysis.service);
           Notification.error(`Unknown analysis type: ${$scope.new_analysis.service}`);

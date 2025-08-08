@@ -63,6 +63,9 @@
             <option ng-option value="Buildings Analysis" selected="selected">
               Buildings Analysis
             </option>
+            <option ng-option value="Degree Days Analysis" selected="selected">
+              Degree Days Analysis
+            </option>
           </select>
         </div>
         <div
@@ -708,6 +711,34 @@
                     ng-init="new_analysis.configuration.h3_resolution=8"
                     min="0"
                     max="15"
+                    step="1"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" ng-if="new_analysis.service == 'Degree Days Analysis'">
+          <label class="control-label sectionLabel">Degree Days Analysis Options</label>
+          <div class="form-group" style="padding-top: 1em">
+            <div class="container-fluid">
+              <div class="row">
+                <div class="col-md-6">
+                  <label class="control-label sectionLabel text-muted">
+                    Analysis Year
+                    <i
+                      class="ui-grid-icon-info-circled"
+                      uib-tooltip-html="'Year of temperature data to use for degree days calculation. Uses GridMET temperature data from Northwest Knowledge Network. Default is 2020.'"
+                    ></i>
+                  </label>
+                  <input
+                    ng-model="new_analysis.configuration.year"
+                    type="number"
+                    class="form-control"
+                    ng-init="new_analysis.configuration.year=2020"
+                    min="1980"
+                    max="2024"
                     step="1"
                   />
                 </div>

@@ -30,7 +30,10 @@ RUN apk add --no-cache \
         ncurses-dev \
         xz-dev \
         zlib-dev \
-        libxml2-dev && \
+        libxml2-dev \
+        hdf5-dev \
+        hdf5 \
+        netcdf-dev && \
     mkdir -p /var/log/supervisord && \
     mkdir -p /run/nginx
 

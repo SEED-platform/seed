@@ -25,3 +25,4 @@ from seed.analysis_pipelines.custom_analysis import _finish_preparation, _run_an
 from seed.analysis_pipelines.add_hello_column import _finish_preparation, _run_analysis  # noqa: F811
 from seed.analysis_pipelines.geopandas_test import _finish_preparation, _run_analysis  # noqa: F811
 from seed.analysis_pipelines.buildings_analysis import _finish_preparation, _run_analysis  # noqa: F811
+from seed.analysis_pipelines.degree_days_analysis import _finish_preparation, _run_analysis  # noqa: F811
