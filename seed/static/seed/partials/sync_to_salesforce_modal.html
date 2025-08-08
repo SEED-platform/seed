@@ -1,0 +1,23 @@
+<div class="modal-header">
+  <h4 class="modal-title" translate>Sync to Salesforce</h4>
+</div>
+
+<div class="modal-body">
+  GOAL DETAILS
+  <div class="goal-header-wrapper">
+    <div class="goal-header-column">
+      <div class="goal-details-container" ng-if="goal">
+        <div class="goal-details-column" style="margin: 10px">
+          <div ng-repeat="(k, v) in goal_details" class="goal-detail" style="display: flex">
+            <div class="goal-detail-key" style="width: 120px">{$ k $}:</div>
+            <div class="goal-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer" style="display: flex; gap: 2px">
+  <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="dismiss()" translate>Dismiss</button>
+</div>

@@ -247,7 +247,7 @@
                   <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Committed Area</span></li>
                 </ul>
                 <!-- Partner -->
-                <div ng-if="partners.length() > 0">
+                <div ng-if="partners.length > 0">
                   <ul class="r-list">
                     <li class="r-list-header" translate>Partner</li>
                     <li class="r-row r-row-centered">
@@ -255,9 +255,9 @@
                       <select
                         id="select-eui-column1"
                         class="form-control goal-form-control"
-                        ng-options="partner as partner.name for partner in partners"
-                        ng-change="changePossibleGoals(partner)"
-                        ng-model="selected_partner"
+                        ng-options="partner.id as partner.name for partner in partners"
+                        ng-change="changePossibleGoals(partner.id)"
+                        ng-model="selected_partner_id"
                         required
                       ></select>
                     </li>

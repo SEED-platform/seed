@@ -159,6 +159,7 @@
           </ul>
         </div>
       </div>
+      <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_sync_to_salesforce_modal()" ng-if="write_permission">{$:: 'Sync to Salesforce' | translate $}</button>
     </div>
     <div>
       {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>

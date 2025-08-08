@@ -154,6 +154,7 @@
     'SEED.controller.set_update_to_now_modal',
     'SEED.controller.settings_profile_modal',
     'SEED.controller.show_populated_columns_modal',
+    'SEED.controller.sync_to_salesforce_modal',
     'SEED.controller.two_factor_profile',
     'SEED.controller.ubid_admin',
     'SEED.controller.ubid_admin_modal',

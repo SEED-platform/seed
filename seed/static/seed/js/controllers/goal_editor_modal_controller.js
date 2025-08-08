@@ -57,24 +57,35 @@ angular.module('SEED.controller.goal_editor_modal', [])
       if (!eui_columns.find((col) => col.id === null && col.displayName === '')) {
         $scope.eui_columns.unshift({ id: null, displayName: '' });
       }
+      $scope.goal = goal || {};
 
-      $scope.partners = partners
-      $scope.selected_partner = $scope.partners.find(p => p.id ==  $scope.goal.salesforce_partner_id)
-      $scope.possible_goals = $scope.selected_partner?.goals;
-      $scope.selected_goal = $scope.selected_partner?.goals.find(g => g.id == $scope.goal.salesforce_goal_id);
+      $scope.partners = partners.results;
+      console.log($scope.partners)
+      $scope.selected_partner_id = undefined;
+      $scope.possible_goals = [];
+      $scope.selected_goal = undefined;
+      if ($scope.goal.salesforce_partner_id !== null){
+        $scope.selected_partner_id = $scope.goal.salesforce_partner_id
+        selected_partner = $scope.partners.find(p => p.id == $scope.selected_partner_id);
+        $scope.possible_goals = selected_partner?.goals;
+        $scope.selected_goal = selected_partner?.goals.find(g => g.id == $scope.goal.salesforce_goal_id);
+      }
 
-      $scope.changePossibleGoals = () => {
-        $scope.possible_goals = $scope.selected_partner.goals;
+      $scope.changePossibleGoals = (partner_id) => {
+        console.log(partner_id)
+        console.log($scope.selected_partner_id)
+        selected_partner = $scope.partners.find(p => p.id == $scope.selected_partner_id);
+        $scope.possible_goals = selected_partner.goals;
       }
 
       $scope.changeSelectedGoal = () => {
-        $scope.goal.salesforce_partner_id = $scope.selected_partner.id;
-        $scope.goal.salesforce_partner_name = $scope.selected_partner.name;
+        $scope.goal.salesforce_partner_id = $scope.selected_partner_id;
+        selected_partner = $scope.partners.find(p => p.id == $scope.selected_partner_id);
+        $scope.goal.salesforce_partner_name = selected_partner.name;
         $scope.goal.salesforce_goal_id = $scope.selected_goal.id;
         $scope.goal.salesforce_goal_name = $scope.selected_goal.name;
       }
 
-      $scope.goal = goal || {};
       $scope.valid = false;
       $scope.goal_types = ['standard', 'transaction'];
 

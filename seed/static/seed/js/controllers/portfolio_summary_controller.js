@@ -247,6 +247,7 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       // GOAL EDITOR MODAL
       $scope.open_goal_editor_modal = () => {
+        console.log("open_goal_editor_modal")
         const modalInstance = $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
           controller: 'goal_editor_modal_controller',
@@ -262,13 +263,26 @@ angular.module('SEED.controller.portfolio_summary', [])
             goal: () => $scope.goal,
             organization: () => $scope.organization,
             write_permission: () => $scope.write_permission,
-            partners: () =>  $scope.is_logged_into_salesforce? bb_salesforce_service.get_partners(organization.id): []
+            partners: () =>  $scope.is_logged_into_salesforce? bb_salesforce_service.get_partners($scope.organization.id): []
           }
         });
 
         // on modal close
         modalInstance.result.then((goal_name) => {
           get_goals(goal_name);
+        });
+      };
+
+      // GOAL EDITOR MODAL
+      $scope.open_sync_to_salesforce_modal = () => {
+        const modalInstance = $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/sync_to_salesforce_modal.html`,
+          controller: 'sync_to_salesforce_modal_controller',
+          size: 'lg',
+          backdrop: 'static',
+          resolve: {
+            goal: () => $scope.goal,
+          }
         });
       };
 
