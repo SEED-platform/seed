@@ -138,7 +138,7 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
             ff_fired_equipment_rsl_threshold: null
           };
           break;
-        case 'Buildings Analysis':
+        case 'Neighborhood Context Analysis':
           $scope.new_analysis.configuration = {
             h3_resolution: 8
           };

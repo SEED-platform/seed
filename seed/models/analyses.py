@@ -29,7 +29,7 @@ class Analysis(models.Model):
     CUSTOM_ANALYSIS = 100
     ADD_HELLO_COLUMN = 101
     GEOPANDAS_TEST = 102
-    BUILDINGS_ANALYSIS = 103
+    BLDG_ANALYSIS = 103
     DEGREE_DAYS_ANALYSIS = 104
 
     SERVICE_TYPES = (
@@ -43,7 +43,7 @@ class Analysis(models.Model):
         (CUSTOM_ANALYSIS, "Custom Analysis"),
         (ADD_HELLO_COLUMN, "Add Hello Column"),
         (GEOPANDAS_TEST, "Geopandas Test"),
-        (BUILDINGS_ANALYSIS, "Buildings Analysis"),
+        (BLDG_ANALYSIS, "Neighborhood Context Analysis"),
         (DEGREE_DAYS_ANALYSIS, "Degree Days Analysis"),
     )
 
@@ -223,30 +223,28 @@ class Analysis(models.Model):
                 {"name": "City", "value": f"{city}"}
             ]
 
-        # Buildings Analysis
-        elif self.service == self.BUILDINGS_ANALYSIS:
+        # Neighborhood Context Analysis
+        elif self.service == self.BLDG_ANALYSIS:
             building_count = results.get("building_count", 0)
             avg_height = results.get("avg_height")
             building_density = results.get("building_density", 0)
             mean_setback = results.get("mean_setback")
-            h3_hex = results.get("h3_hex", "N/A")
-            
+
             highlights = [
-                {"name": "Building Count", "value": f"{building_count}"},
-                {"name": "Building Density", "value": f"{building_density:.2f} buildings/km²"},
-                {"name": "H3 Hexagon", "value": f"{h3_hex}"}
+                {"name": "Neighborhood Building Count", "value": f"{building_count}"},
+                {"name": "Neighborhood Building Density", "value": f"{building_density:.2f} buildings/km²"},
             ]
-            
+
             if avg_height is not None:
-                highlights.append({"name": "Average Height", "value": f"{avg_height:.2f} meters"})
+                highlights.append({"name": "Neighborhood Avg Building Height", "value": f"{avg_height:.2f} meters"})
             else:
-                highlights.append({"name": "Average Height", "value": "No height data"})
-                
+                highlights.append({"name": "Neighborhood Avg Building Height", "value": "No height data"})
+
             if mean_setback is not None:
-                highlights.append({"name": "Mean Setback", "value": f"{mean_setback:.2f} meters"})
+                highlights.append({"name": "Neighborhood Mean Building Setback", "value": f"{mean_setback:.2f} meters"})
             else:
-                highlights.append({"name": "Mean Setback", "value": "Insufficient data"})
-            
+                highlights.append({"name": "Neighborhood Mean Building Setback", "value": "Insufficient data"})
+
             return highlights
 
         # Degree Days Analysis

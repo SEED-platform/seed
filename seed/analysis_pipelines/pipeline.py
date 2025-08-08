@@ -276,7 +276,7 @@ class AnalysisPipeline(abc.ABC):
         from seed.analysis_pipelines.element_statistics import ElementStatisticsPipeline
         from seed.analysis_pipelines.eui import EUIPipeline
         from seed.analysis_pipelines.geopandas_test import GeopandasTestPipeline
-        from seed.analysis_pipelines.buildings_analysis import BuildingsAnalysisPipeline
+        from seed.analysis_pipelines.neighborhood_context_analysis import NeighborhoodContextAnalysisPipeline
         from seed.analysis_pipelines.degree_days_analysis import DegreeDaysAnalysisPipeline
         from seed.analysis_pipelines.upgrade_recommendation import UpgradeRecommendationPipeline
 
@@ -300,8 +300,8 @@ class AnalysisPipeline(abc.ABC):
             return AddHelloColumnPipeline(analysis.id)
         elif analysis.service == Analysis.GEOPANDAS_TEST:
             return GeopandasTestPipeline(analysis.id)
-        elif analysis.service == Analysis.BUILDINGS_ANALYSIS:
-            return BuildingsAnalysisPipeline(analysis.id)
+        elif analysis.service == Analysis.BLDG_ANALYSIS:
+            return NeighborhoodContextAnalysisPipeline(analysis.id)
         elif analysis.service == Analysis.DEGREE_DAYS_ANALYSIS:
             return DegreeDaysAnalysisPipeline(analysis.id)
         else:
