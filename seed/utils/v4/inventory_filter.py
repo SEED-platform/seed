@@ -49,7 +49,7 @@ class InventoryFilter:
         "endsWith": lambda name, filter, _: Q(**{f"{name}__iendswith": filter}),  # noqa: A006
         "blank": lambda name, *_: Q(**{f"{name}__isnull": True}) | Q(**{f"{name}": ""}),
         "notBlank": lambda name, *_: Q(**{f"{name}__isnull": False}) & ~Q(**{f"{name}": ""}),
-        "isNull": lambda name, *_: Q(**{f"{name}__isnull": True}),  # noqa: A006
+        "isNull": lambda name, *_: Q(**{f"{name}__isnull": True}),
         "notNull": lambda name, *_: Q(**{f"{name}__isnull": False}),
         "greaterThan": lambda name, filter, _: Q(**{f"{name}__gt": filter}),  # noqa: A006
         "greaterThanOrEqual": lambda name, filter, _: Q(**{f"{name}__gte": filter}),  # noqa: A006
@@ -130,7 +130,10 @@ class InventoryFilter:
             )
 
         if cycle_id:
-            cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
+            try:
+                cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
+            except Cycle.DoesNotExist:
+                raise InventoryFilterError(JsonResponse({"status": "error", "message": "No such cycle."}, status=status.HTTP_404_NOT_FOUND))
         else:
             cycle = Cycle.objects.filter(organization_id=org_id).order_by("name")
             if cycle:
@@ -240,9 +243,9 @@ class InventoryFilter:
             raise InventoryFilterError(JsonResponse({"status": "error", "message": "Invalid filter"}, status=status.HTTP_400_BAD_REQUEST))
         return q
 
-    def parse_filter(self, prefixed_name, type, filter_from, filter_to=None):
+    def parse_filter(self, prefixed_name, filter_type, filter_from, filter_to=None):
         """convert a single filter to a Q object"""
-        return self.Q_MAP[type](prefixed_name, filter_from, filter_to)
+        return self.Q_MAP[filter_type](prefixed_name, filter_from, filter_to)
 
     def parse_conditions(self, prefixed_name, conditions, operator):
         """handle multiple conditions and convert to a single Q object"""
