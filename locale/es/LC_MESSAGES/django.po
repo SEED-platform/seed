@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-07-01 05:28\n"
+"PO-Revision-Date: 2025-08-13 19:16\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -215,6 +215,9 @@ msgstr "Utilice el correo electrónico asociado a su cuenta de <a href=\"{link}/
 #, fuzzy
 msgid "AT_ID_FIELD_TEXT"
 msgstr "Ingrese el NOMBRE DE COLUMNA (no el nombre para mostrar) del campo SEED que contiene el ID de identificación fiscal personalizado de su organización. El valor predeterminado es 'custom_id_1'. Puede encontrar esta información en la página Configuración de columnas de su organización en SEED."
+
+msgid "AT_IMPORT_DEFAULT_CYCLE_DESC"
+msgstr "El proceso de importación recupera cada envío de plantilla de auditoría y compara su fecha de envío con las fechas de inicio y fin de todos los ciclos SEED para determinar a qué ciclo adjuntar los datos. Si no se encuentra ninguna coincidencia, puede agregar un ciclo predeterminado aquí al que adjuntar los datos, independientemente de la comparación de fechas de envío."
 
 #, fuzzy
 msgid "AT_MOST_RECENT_ONLY"
