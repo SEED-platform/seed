@@ -38,6 +38,10 @@ local_untracked.py file
         ),
     )
 
+Version 3.3.1
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
 Version 3.3.0
 -------------
 - There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
