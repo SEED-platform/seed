@@ -1,3 +1,26 @@
+# SEED Version 3.3.1
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Fixes bug for angular grid filtering by @perryr16 in https://github.com/SEED-platform/seed/pull/5049
+### Improvements 📈
+* Move export and mapping results to background tasks by @perryr16 in https://github.com/SEED-platform/seed/pull/5045
+### Maintenance 🧹
+* Bump the prod-deps group with multiple updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5023
+* Bump the prod-deps group across 1 directory with 4 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5025
+* Bump hypothesis from 6.135.24 to 6.135.26 in the prod-deps group by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5026
+* Bump the prod-deps group across 1 directory with 8 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5036
+### Bug Fixes 🐛
+* XML report updates for AT export by @kflemin in https://github.com/SEED-platform/seed/pull/5029
+* Fix dataset links for Chrome v138 by @axelstudios in https://github.com/SEED-platform/seed/pull/5038
+* Default report fixes by @haneslinger in https://github.com/SEED-platform/seed/pull/5039
+* Dataset links by @kflemin in https://github.com/SEED-platform/seed/pull/5047
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.3.0...v3.3.1
+
 # SEED Version 3.3.0
 
 <!-- Release notes generated using configuration in .github/release.yml at develop -->

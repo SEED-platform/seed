@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: 'pip'
     directory: '/'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
     groups:
       dev-deps:
         dependency-type: 'development'
@@ -12,10 +12,22 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: 'deps'
+    labels:
+      - 'Maintenance'
+    ignore:
+      - dependency-name: 'qrcode'
+      - dependency-name: 'urllib3'
+      - dependency-name: 'django-extensions'
+      - dependency-name: 'pytz'
+      - dependency-name: 'sentry-sdk'
+      - dependency-name: 'djangorestframework-simplejwt'
+      - dependency-name: 'django-filter'
+      - dependency-name: 'xlrd'
+
   - package-ecosystem: 'github-actions'
     directory: '/'
     schedule:
-      interval: 'daily'
+      interval: 'weekly'
     groups:
       actions-deps:
         patterns:
@@ -23,3 +35,5 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: 'ci'
+    labels:
+      - 'Do not publish'

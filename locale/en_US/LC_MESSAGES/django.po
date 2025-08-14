@@ -170,6 +170,9 @@ msgstr "Use the email associated with your account from <a href=\"{link}/\" targ
 msgid "AT_ID_FIELD_TEXT"
 msgstr "Enter the COLUMN NAME (not display name) of the SEED Field that contains your organization's custom Tax Identifier. The default is 'custom_id_1'. You can find this information on your organization's Column Settings page in SEED."
 
+msgid "AT_IMPORT_DEFAULT_CYCLE_DESC"
+msgstr "The import process retrieves each audit template submission and compares its submission date to all SEED cycle start and end dates to determine which cycle to attach the data to. If no match is found, you can add a default cycle here to attach the data to, regardless of submission date comparison."
+
 msgid "AT_MOST_RECENT_ONLY"
 msgstr "Only Audit Template submissions that have been submitted more recently than the SEED inventory's most recent update will be imported. You can configure this setting in your SEED organization's settings page."
 
