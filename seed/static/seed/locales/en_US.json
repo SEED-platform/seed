@@ -52,7 +52,11 @@
     "AT_CONDITION_INDEX": "When this checkbox is checked, SEED will only import Audit Template submissions that have been submitted more recently than the SEED records' most recent update. If unchecked, all Audit Template submissions will be imported regardless of the submission date.",
     "AT_EMAIL_TEXT": "Use the email associated with your account from <a href=\"{link}\/\" target=\"_blank\" rel=\"noopener noreferrer\">Building Energy Score website<\/a>.",
     "AT_ID_FIELD_TEXT": "Enter the COLUMN NAME (not display name) of the SEED Field that contains your organization's custom Tax Identifier. The default is 'custom_id_1'. You can find this information on your organization's Column Settings page in SEED.",
+<<<<<<< HEAD
     "AT_IMPORT_DEFAULT_CYCLE_DESC": "The import process retrieves each audit template submission and compares its submission date to all SEED cycle start and end dates to determine which cycle to attach the data to. If no match is found, you can opt to add a default cycle here to attach the data to, regardless of submission date comparison. If no default cycle is specified, non-matching data will not be imported.",
+=======
+    "AT_IMPORT_DEFAULT_CYCLE_DESC": "The import process retrieves each audit template submission and compares its submission date to all SEED cycle start and end dates to determine which cycle to attach the data to. If no match is found, you can add a default cycle here to attach the data to, regardless of submission date comparison.",
+>>>>>>> develop
     "AT_MOST_RECENT_ONLY": "Only Audit Template submissions that have been submitted more recently than the SEED inventory's most recent update will be imported. You can configure this setting in your SEED organization's settings page.",
     "AT_OPTIONAL_DEFAULT_CYCLE": "Default Cycle for Import (Optional)",
     "AT_OPTIONAL_EXPORTS_TEXT": "Use the checkboxes below if you want to include additional data in your BuildingSync exports that create stub Audit Template reports.",

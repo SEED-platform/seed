@@ -29,7 +29,7 @@ repos:
         types_or: [yaml, markdown, css, scss]
   # https://docs.astral.sh/ruff/integrations/#pre-commit
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.1
+    rev: v0.12.8
     hooks:
       # Run the linter
       - id: ruff
