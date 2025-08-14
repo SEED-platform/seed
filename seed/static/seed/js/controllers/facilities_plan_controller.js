@@ -55,8 +55,7 @@ angular.module('SEED.controller.facilities_plan', [])
       };
 
       const selected_columns = () => {
-        console.log(Object.entries($scope.current_facilities_plan_run.columns).map(([n, c]) => n))
-        compliance_cycle_year_column = $scope.current_facilities_plan_run.columns.compliance_cycle_year_column;
+        const compliance_cycle_year_column = $scope.current_facilities_plan_run.columns.compliance_cycle_year_column;
 
         const property_display_field = $scope.current_facilities_plan_run.property_display_field;
         return [
@@ -92,9 +91,9 @@ angular.module('SEED.controller.facilities_plan', [])
             displayName: property_display_field.display_name ? property_display_field.display_name : property_display_field.column_name,
             name: `${property_display_field.column_name}_${property_display_field.id}`,
             cellClass: () => 'portfolio-summary-current-cell',
-            enableFiltering: true,
+            enableFiltering: true
           },
-          ...Object.entries($scope.current_facilities_plan_run.columns).filter(([n, c]) => n != "compliance_cycle_year_column").map(([n, c]) => ({
+          ...Object.entries($scope.current_facilities_plan_run.columns).filter(([n]) => n !== 'compliance_cycle_year_column').map(([, c]) => ({
             displayName: c.display_name && c.display_name !== '' ? c.display_name : c.column_name,
             name: `${c.column_name}_${c.id}`,
             enableFiltering: true
@@ -108,12 +107,11 @@ angular.module('SEED.controller.facilities_plan', [])
             name: `${compliance_cycle_year_column.column_name}_${compliance_cycle_year_column.id}`,
             enableFiltering: true
           },
-          ...Object.values($scope.current_facilities_plan_run.display_columns).map(c => ({
+          ...Object.values($scope.current_facilities_plan_run.display_columns).map((c) => ({
             displayName: c.display_name && c.display_name !== '' ? c.display_name : c.column_name,
             name: `${c.column_name}_${c.id}`,
             enableFiltering: true
-          })),
-
+          }))
         ];
       };
 
