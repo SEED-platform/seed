@@ -683,21 +683,20 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, default_cycle, pro
                 xml_data_by_cycle[view.cycle.id].append(
                     {"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}
                 )
-        else:
-            # if no view is found, check if a default cycle is given
-            if default_cycle:
-                # use the default cycle to create a view
-                view = property_views.filter(state__custom_id_1=custom_id_1, cycle=default_cycle).first()
-                if view:
-                    xml, _ = audit_template.get_submission(sub["id"], "xml")
+        # if no view is found, check if a default cycle is given
+        elif default_cycle:
+            # use the default cycle to create a view
+            view = property_views.filter(state__custom_id_1=custom_id_1, cycle=default_cycle).first()
+            if view:
+                xml, _ = audit_template.get_submission(sub["id"], "xml")
 
-                    if hasattr(xml, "text"):
-                        if not xml_data_by_cycle.get(default_cycle):
-                            xml_data_by_cycle[default_cycle] = []
+                if hasattr(xml, "text"):
+                    if not xml_data_by_cycle.get(default_cycle):
+                        xml_data_by_cycle[default_cycle] = []
 
-                        xml_data_by_cycle[default_cycle].append(
-                            {"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}
-                        )
+                    xml_data_by_cycle[default_cycle].append(
+                        {"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}
+                    )
 
     from seed.views.v3.properties import PropertyViewSet
 

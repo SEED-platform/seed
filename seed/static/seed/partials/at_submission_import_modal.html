@@ -37,15 +37,20 @@
     <div class="pad-top-20">
       <span translate>AT_IMPORT_DEFAULT_CYCLE_DESC</span>
       <div>
-      <label class="control-label" style="margin-top:20px;" for="default-cycle" translate>
-        AT_OPTIONAL_DEFAULT_CYCLE
-      </label>
-        <select ng-model="form_data.default_cycle"
+        <label
+          class="control-label"
+          style="margin-top: 20px"
+          for="default-cycle"
+          translate
+        >
+          AT_OPTIONAL_DEFAULT_CYCLE
+        </label>
+        <select
+          ng-model="form_data.default_cycle"
           ng-options="cycle.id as cycle.name for cycle in cycles"
           class="form-control input-sm"
           id="default-cycle"
-        >
-        </select>
+        ></select>
       </div>
     </div>
   </div>
