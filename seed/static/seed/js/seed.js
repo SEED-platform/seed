@@ -1199,6 +1199,7 @@
                 );
               }
             ],
+            cycles_payload: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
             property_columns: ['inventory_service', 'user_service', (inventory_service) => inventory_service.get_property_columns()],
             facilities_plans: ['facilities_plan_service', (facilities_plan_service) => facilities_plan_service.get_facilities_plans()]
           }
