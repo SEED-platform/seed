@@ -1559,6 +1559,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         controller: 'export_to_audit_template_modal_controller',
         resolve: {
           ids: () => selectedViewIds,
+          cycles: () => cycles.cycles,
           org_id: () => $scope.organization.id
         }
       });
@@ -1582,6 +1583,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         backdrop: 'static',
         resolve: {
           org: () => $scope.organization,
+          cycles: () => $scope.cycle.cycles,
           view_ids: () => selectedViewIds
         }
       });
