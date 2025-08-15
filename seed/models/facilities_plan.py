@@ -143,13 +143,10 @@ class FacilitiesPlanRun(models.Model):
         FacilitiesPlanRunProperty.objects.filter(run=self).all().delete()
         self.run_at = tz.now()
         self.save()
-        try:
-            all_properties = self._calculate_properties_percentage_of_total_energy_usage(self.ali, self.cycle).order_by(
-                "exclude_from_plan_column", "-required_in_plan", "-percentage_of_total_energy_usage"
-            )
-        except Exception as e:
-            logger.error(f"Error in facilities plan calculation: {str(e)}")
-            raise
+
+        all_properties = self._calculate_properties_percentage_of_total_energy_usage(self.ali, self.cycle).order_by(
+            "exclude_from_plan_column", "-required_in_plan", "-percentage_of_total_energy_usage"
+        )
 
         energy_running_sum_percentage = 0
         running_square_footage = 0
