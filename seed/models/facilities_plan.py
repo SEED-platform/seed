@@ -7,7 +7,7 @@ import logging
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import BooleanField, Case, CharField, F, FloatField, Sum, Value, When, Q
+from django.db.models import BooleanField, Case, CharField, F, FloatField, Q, Sum, Value, When
 from django.db.models.functions import Cast, Coalesce, Replace
 from django.utils import timezone as tz
 
@@ -39,7 +39,6 @@ class FacilitiesPlan(models.Model):
 
 
 def _get_column_or_zero(column):
-
     c = _get_column_model_field(column)
 
     if column.is_extra_data or column.derived_column:
@@ -47,15 +46,8 @@ def _get_column_or_zero(column):
         # First cast to CharField to extract the string value, then to FloatField
         return Case(
             When(
-                Q(**{f"{c}__isnull": False}) &
-                Q(**{f"{c}__regex": r'^"*-?\d+(\.\d+)?"*$'}),
-                then=Cast(
-                    Replace(
-                        Replace(Cast(F(c), CharField()), Value('"'), Value('')),
-                        Value('"'), Value('')
-                    ),
-                    FloatField()
-                )
+                Q(**{f"{c}__isnull": False}) & Q(**{f"{c}__regex": r'^"*-?\d+(\.\d+)?"*$'}),
+                then=Cast(Replace(Replace(Cast(F(c), CharField()), Value('"'), Value("")), Value('"'), Value("")), FloatField()),
             ),
             default=Value(0.0),
             output_field=FloatField(),
