@@ -2,13 +2,13 @@
 -r base.txt
 
 # general
-coverage==7.10.1
+coverage==7.10.4
 coveralls==4.0.1  # https://github.com/TheKevJames/coveralls-python/pull/542
-tox==4.28.3  # Keep this in sync with ci.yml
+tox==4.28.4  # Keep this in sync with ci.yml
 psutil==7.0.0
 
 # python testing
-Faker==37.4.2
+Faker==37.5.3
 mock==5.2.0
 vcrpy==7.0.0
 pytest==8.4.1
@@ -16,13 +16,13 @@ pytest-django==4.11.1
 urllib3==1.26.20
 
 # static code analysis
-pre-commit==4.2.0
+pre-commit==4.3.0
 
 # documentation and spelling
 Sphinx==7.4.7  # TODO update after python 3.9
 sphinxcontrib-spelling==8.0.0
 sphinx_rtd_theme==3.0.2
-docutils==0.21.2
+docutils==0.22
 
 # property-based testing
-hypothesis==6.136.5
+hypothesis==6.138.2
