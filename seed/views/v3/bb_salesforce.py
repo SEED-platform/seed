@@ -4,7 +4,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
-from functools import wraps
 
 import requests
 from django.http import JsonResponse
@@ -12,10 +11,9 @@ from requests.models import PreparedRequest
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
+from seed.decorators import ajax_request_class, get_bb_salesforce_config
 from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.lib.superperms.orgs.permissions import get_org_id
-from seed.models import BBSalesforceConfig, Goal
+from seed.models import Goal
 from seed.utils.api import OrgMixin, api_endpoint_class
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema, swagger_auto_schema_org_query_param
 from seed.utils.cache import get_cache_raw, set_cache_raw
@@ -28,20 +26,6 @@ def _get_pkce(bb_salesforce_config):
     response = requests.get(f"{bb_salesforce_config.salesforce_url}/oauth2/pkce/generator", timeout=10)
 
     return response.json()["code_verifier"], response.json()["code_challenge"]
-
-
-def get_bb_salesforce_config(func):
-    @wraps(func)
-    def _wrapper(*args, **kwargs):
-        org_id = get_org_id(args[1])
-        bb_salesforce_config = BBSalesforceConfig.objects.filter(organization=org_id).first()
-
-        if bb_salesforce_config is None:
-            return JsonResponse({"status": "error", "response": "This org has no bb salesforce connection."}, status=status.HTTP_200_OK)
-
-        return func(*args, **kwargs, bb_salesforce_config=bb_salesforce_config)
-
-    return _wrapper
 
 
 class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):

@@ -3,7 +3,7 @@
 </div>
 
 <div class="modal-body">
-  GOAL DETAILS
+  <div class="r-list-header" translate>GOAL DETAILS</div>
   <div class="goal-header-wrapper">
     <div class="goal-header-column">
       <div class="goal-details-container" ng-if="goal">
@@ -16,8 +16,60 @@
       </div>
     </div>
   </div>
+
+  <div class="r-list-header" translate>Baseline</div>
+  </div>
+    <table class="table">
+    <thead>
+      <tr>
+        <th translate></th>
+        <th translate>Seed</th>
+        <th translate>Salesforce</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="(k, v) in baseline_cycle_goal_table">
+        <td>{$ k $}:</td>
+        <td>{$ v["seed"] $}</td>
+        <td>{$ v["salesforce"] $}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="r-list-header" translate>Current Year Energy Annual Report</div>
+  <div class="goal-header-wrapper">
+    <div class="goal-header-column">
+      <div class="goal-details-container" ng-if="goal">
+        <div class="goal-details-column" style="margin: 10px">
+          <div ng-repeat="(k, v) in cycle_goal_details" class="cycle-goal-detailsl" style="display: flex">
+            <div class="cycle-goal-detail-key" style="width: 120px">{$ k $}:</div>
+            <div class="cycle-goal-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    <table class="table">
+    <thead>
+      <tr>
+        <th translate></th>
+        <th translate>Seed</th>
+        <th translate>Salesforce</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="(k, v) in current_cycle_goal_table">
+        <td>{$ k $}:</td>
+        <td>{$ v["seed"] $}</td>
+        <td>{$ v["salesforce"] $}</td>
+      </tr>
+    </tbody>
+  </table>
+
+
 </div>
 
 <div class="modal-footer" style="display: flex; gap: 2px">
+  <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="send_sync()" translate>Sync</button>
   <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="dismiss()" translate>Dismiss</button>
 </div>

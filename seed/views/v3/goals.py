@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import logging
 
+import requests
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
 from django.http import JsonResponse
@@ -12,13 +13,14 @@ from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
+from seed.decorators import ajax_request_class, get_bb_salesforce_config
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
 from seed.models import AccessLevelInstance, Column, CycleGoal, Goal, GoalNote, HistoricalNote, Organization, Property, TaxLotProperty
 from seed.serializers.goals import CycleGoalSerializer, GoalSerializer
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.cache import get_cache_raw
 from seed.utils.generic import get_int
 from seed.utils.goal_notes import get_permission_data
 from seed.utils.goals import (
@@ -199,11 +201,93 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         # If new properties heave been uploaded, create goal_notes
         get_or_create_goal_notes(cycle_goal.goal)
 
-        logger.error("++++++++")
         summary = get_portfolio_summary(org, cycle_goal)
-        logger.error("++++++++")
 
         return JsonResponse(summary)
+
+    @ajax_request_class
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(goal_id_kwarg="goal_pk")
+    @action(detail=True, methods=["GET"])
+    @get_bb_salesforce_config
+    def salesforce_summary(self, request, goal_pk, pk, bb_salesforce_config):
+        try:
+            cycle_goal = CycleGoal.objects.get(pk=pk)
+        except CycleGoal.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."})
+
+        # ensure salesforce goal is attached
+        salesforce_annual_report_id = cycle_goal.salesforce_annual_report_id
+        if salesforce_annual_report_id is None:
+            return JsonResponse({"status": "error", "message": "No attached salesforce annual report."})
+
+        # get annual reports
+        access_token = get_cache_raw("access_token")
+        salesforce_fields = [
+            "BB_Goal__r.BB_Other_Baseline__c",
+            "BB_Goal__r.BB_BBC_Portfolio_Average_EUI_Baseline__c",
+            "BB_Reporting_Year_Start_Date__c",
+            "BB_Reporting_Year_End_Date__c",
+            "BB_Num_of_Participating_Facilities__c",
+            "BB_Portfolio_Average_EUI__c",
+            "BB_Shared_Square_Feet__c",
+            "BB_Reviewed_Square_Feet__c",
+            "BB_Energy_IntensityImprovement_Current__c",
+            # "BB_Other_Type__c",
+            "BB_Other__c",
+            "BB_Total_Improvement_in_Energy_Intensity__c",
+            "BB_New_Energy_Savings_for_Current_Year__c",
+        ]
+        response = requests.get(
+            f"{bb_salesforce_config.salesforce_url}/data/v64.0/query?",
+            params={
+                "q": f"SELECT {', '.join(salesforce_fields)} FROM Annual_Report__c WHERE Id = '{salesforce_annual_report_id}'",  # noqa: S608 no fear of sql injection as the id comes from the db, and must be an int
+            },
+            headers={"Authorization": f"Bearer {access_token}"},
+            timeout=300,
+        )
+        # return response.json()
+        annual_report = response.json()["records"][0]
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "results": {
+                    "baseline_portfolio_kbtu": annual_report["BB_Goal__r"]["BB_Other_Baseline__c"],
+                    "baseline_portfolio_eui:": annual_report["BB_Goal__r"]["BB_BBC_Portfolio_Average_EUI_Baseline__c"],
+                    "reporting_year_start": annual_report["BB_Reporting_Year_Start_Date__c"],
+                    "reporting_year_end": annual_report["BB_Reporting_Year_End_Date__c"],
+                    "number_of_properties": annual_report["BB_Num_of_Participating_Facilities__c"],
+                    "portfolio_average_eui": annual_report["BB_Portfolio_Average_EUI__c"],
+                    "shared_square_feet": annual_report["BB_Shared_Square_Feet__c"],
+                    "reviewed_square_feet": annual_report["BB_Reviewed_Square_Feet__c"],
+                    "ei_annual_improvement": annual_report["BB_Energy_IntensityImprovement_Current__c"],
+                    # "BB_Other_Type__c": annual_report["BB_Other_Type__c"],
+                    "portfolio_kbtu": annual_report["BB_Other__c"],
+                    "total_ei_improvement": annual_report["BB_Total_Improvement_in_Energy_Intensity__c"],
+                    "new_energy_savings": annual_report["BB_New_Energy_Savings_for_Current_Year__c"],
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @ajax_request_class
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(goal_id_kwarg="goal_pk")
+    @action(detail=True, methods=["PUT"])
+    @get_bb_salesforce_config
+    def update_salesforce(self, request, goal_pk, pk, bb_salesforce_config):
+        try:
+            cycle_goal = CycleGoal.objects.get(pk=pk)
+        except CycleGoal.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."})
+
+        # ensure salesforce goal is attached
+        salesforce_annual_report_id = cycle_goal.salesforce_annual_report_id
+        if salesforce_annual_report_id is None:
+            return JsonResponse({"status": "error", "message": "No attached salesforce annual report."})
 
     @ajax_request_class
     @swagger_auto_schema_org_query_param

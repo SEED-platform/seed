@@ -31,8 +31,7 @@ angular.module('SEED.controller.facilities_plan', [])
       property_columns,
       facilities_plan_run_service,
       spinner_utility,
-      uiGridConstants,
-      uiGridGridMenuService
+      uiGridConstants
     ) {
       $scope.facilities_plan_runs = facilities_plan_runs.data;
       $scope.current_facilities_plan_run_id = null;
@@ -40,12 +39,12 @@ angular.module('SEED.controller.facilities_plan', [])
       $scope.selected_count = 0;
 
       $scope.change_facilities_pan = () => {
-        $scope.current_facilities_plan_run = $scope.facilities_plan_runs.find((fp) => fp.id == $scope.current_facilities_plan_run_id);
+        $scope.current_facilities_plan_run = $scope.facilities_plan_runs.find((fp) => fp.id === $scope.current_facilities_plan_run_id);
         load_data(1); // get the first [age of the selected run
       };
 
       const selected_columns = () => {
-        property_display_field = $scope.current_facilities_plan_run.property_display_field;
+        const property_display_field = $scope.current_facilities_plan_run.property_display_field;
         return [
           {
             name: 'id',
@@ -76,7 +75,7 @@ angular.module('SEED.controller.facilities_plan', [])
             width: 30
           },
           {
-            displayName: (property_display_field.display_name ?? '' === '') ? property_display_field.display_name : property_display_field.column_name,
+            displayName: !property_display_field.display_name ? property_display_field.display_name : property_display_field.column_name,
             name: `${property_display_field.column_name}_${property_display_field.id}`,
             cellClass: (grid, row) => {
               console.log(row.entity.running_percentage);
@@ -84,8 +83,8 @@ angular.module('SEED.controller.facilities_plan', [])
             }
 
           },
-          ...Object.values($scope.current_facilities_plan_run.display_columns).map((c) => ({ displayName: (c.display_name ?? '' === '') ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}` })),
-          ...Object.values($scope.current_facilities_plan_run.columns).map((c) => ({ displayName: (c.display_name ?? '' === '') ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}` })),
+          ...Object.values($scope.current_facilities_plan_run.display_columns).map((c) => ({ displayName: !c.display_name ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}` })),
+          ...Object.values($scope.current_facilities_plan_run.columns).map((c) => ({ displayName: !c.display_name ? c.display_name : c.column_name, name: `${c.column_name}_${c.id}` })),
           { displayName: 'Total Energy Usage', name: 'total_energy_usage', enableFiltering: true },
           { displayName: 'Percentage Of Total Energy Usage', name: 'percentage_of_total_energy_usage', enableFiltering: true },
           { displayName: 'Running Percentage', name: 'running_percentage', enableFiltering: true },
@@ -164,7 +163,7 @@ angular.module('SEED.controller.facilities_plan', [])
             gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
             gridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
 
-            gridApi.edit.on.afterCellEdit($scope, (rowEntity, colDef, newValue) => {});
+            gridApi.edit.on.afterCellEdit($scope, () => {});
           }
         };
       };
@@ -195,7 +194,6 @@ angular.module('SEED.controller.facilities_plan', [])
           $scope.selected_option = 'none';
           $scope.selected_count = 0;
           $scope.gridApi.selection.clearSelectedRows();
-          load_summary();
           load_data();
         });
       };
@@ -205,7 +203,7 @@ angular.module('SEED.controller.facilities_plan', [])
       * */
       $scope.create_facilities_plan_run = () => {
         console.log('create_facilities_plan_run');
-        const modalInstance = $uibModal.open({
+        modalInstance = $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/create_facilities_plan_run_modal.html`,
           controller: 'create_facilities_plan_run_modal_controller',
           resolve: {

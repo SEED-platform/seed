@@ -6,9 +6,12 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 from functools import wraps
 
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
+from rest_framework import status
 
 from seed.lib.superperms.orgs.models import OrganizationUser
+from seed.lib.superperms.orgs.permissions import get_org_id
+from seed.models import BBSalesforceConfig
 from seed.serializers.pint import PintJSONEncoder
 from seed.utils.api import drf_api_endpoint
 from seed.utils.cache import get_lock, lock_cache, make_key, unlock_cache
@@ -248,3 +251,17 @@ def decorator_to_mixin(decorator):
 
 
 DRFEndpointMixin = decorator_to_mixin(drf_api_endpoint)
+
+
+def get_bb_salesforce_config(func):
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+        org_id = get_org_id(args[1])
+        bb_salesforce_config = BBSalesforceConfig.objects.filter(organization=org_id).first()
+
+        if bb_salesforce_config is None:
+            return JsonResponse({"status": "error", "response": "This org has no bb salesforce connection."}, status=status.HTTP_200_OK)
+
+        return func(*args, **kwargs, bb_salesforce_config=bb_salesforce_config)
+
+    return _wrapper

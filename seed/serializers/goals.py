@@ -7,6 +7,7 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from seed.models import CycleGoal, Goal
+from seed.serializers.cycles import CycleSerializer
 
 
 class GoalSerializer(serializers.ModelSerializer):
@@ -65,7 +66,7 @@ class GoalSerializer(serializers.ModelSerializer):
 
 
 class CycleGoalSerializer(serializers.ModelSerializer):
-    cycle_name = serializers.CharField(source="current_cycle.name")
+    current_cycle = CycleSerializer()
 
     class Meta:
         model = CycleGoal

@@ -148,8 +148,8 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.cycle_goal = selected_cycle_goal;
       };
 
-      $scope.$watch('goal', (cur, old) => {
-        if (Object.keys(cur).length == 0) return;
+      $scope.$watch('goal', (cur) => {
+        if (Object.keys(cur).length === 0) return;
         goal_service.get_cycle_goals(cur.id).then((data) => {
           $scope.cycle_goals = data.cycle_goals;
         });
@@ -274,13 +274,16 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       // GOAL EDITOR MODAL
       $scope.open_sync_to_salesforce_modal = () => {
-        const modalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/sync_to_salesforce_modal.html`,
           controller: 'sync_to_salesforce_modal_controller',
           size: 'lg',
           backdrop: 'static',
           resolve: {
-            goal: () => $scope.goal
+            goal: () => $scope.goal,
+            cycle_goal: () => $scope.cycle_goal,
+            seed_summary_data: () => $scope.summary_data[0],
+            salesforce_summary_data: () => goal_service.get_salesforce_summary($scope.goal.id, $scope.cycle_goal.id).then((data) => data.data.results)
           }
         });
       };
@@ -1175,7 +1178,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       $scope.create_cycle_goal = () => {
-        const modalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/create_cycle_goal_modal.html`,
           controller: 'create_cycle_goal_modal_controller',
           resolve: {

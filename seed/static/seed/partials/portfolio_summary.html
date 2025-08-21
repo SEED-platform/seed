@@ -69,7 +69,7 @@
       </div>
       <!-- cycles -->
       <div style="display: flex; flex-direction: row">
-        <button ng-repeat="cycle_goal in cycle_goals" ng-click="select_cycle_goal(cycle_goal)" class="btn btn-light">{$ cycle_goal.cycle_name $}</button>
+        <button ng-repeat="cycle_goal in cycle_goals" ng-click="select_cycle_goal(cycle_goal)" class="btn btn-light">{$ cycle_goal.current_cycle.name $}</button>
         <button ng-click="create_cycle_goal()" class="btn btn-light">Add Cycle</button>
       </div>
     </div>
