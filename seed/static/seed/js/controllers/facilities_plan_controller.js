@@ -55,6 +55,8 @@ angular.module('SEED.controller.facilities_plan', [])
       };
 
       const selected_columns = () => {
+        const compliance_cycle_year_column = $scope.current_facilities_plan_run.columns.compliance_cycle_year_column;
+
         const property_display_field = $scope.current_facilities_plan_run.property_display_field;
         return [
           {
@@ -89,15 +91,9 @@ angular.module('SEED.controller.facilities_plan', [])
             displayName: property_display_field.display_name ? property_display_field.display_name : property_display_field.column_name,
             name: `${property_display_field.column_name}_${property_display_field.id}`,
             cellClass: () => 'portfolio-summary-current-cell',
-            enableFiltering: true,
-            cellFilter: 'number'
-          },
-          ...Object.values($scope.current_facilities_plan_run.display_columns).map((c) => ({
-            displayName: c.display_name && c.display_name !== '' ? c.display_name : c.column_name,
-            name: `${c.column_name}_${c.id}`,
             enableFiltering: true
-          })),
-          ...Object.values($scope.current_facilities_plan_run.columns).map((c) => ({
+          },
+          ...Object.entries($scope.current_facilities_plan_run.columns).filter(([n]) => n !== 'compliance_cycle_year_column').map(([, c]) => ({
             displayName: c.display_name && c.display_name !== '' ? c.display_name : c.column_name,
             name: `${c.column_name}_${c.id}`,
             enableFiltering: true
@@ -105,7 +101,17 @@ angular.module('SEED.controller.facilities_plan', [])
           { displayName: 'Total Energy Usage', name: 'total_energy_usage', enableFiltering: false },
           { displayName: 'Percentage Of Total Energy Usage', name: 'percentage_of_total_energy_usage', enableFiltering: false },
           { displayName: 'Running Percentage', name: 'running_percentage', enableFiltering: false },
-          { displayName: 'Running Square Footage', name: 'running_square_footage', enableFiltering: false }
+          { displayName: 'Running Square Footage', name: 'running_square_footage', enableFiltering: false },
+          {
+            displayName: compliance_cycle_year_column.display_name && compliance_cycle_year_column.display_name !== '' ? compliance_cycle_year_column.display_name : compliance_cycle_year_column.column_name,
+            name: `${compliance_cycle_year_column.column_name}_${compliance_cycle_year_column.id}`,
+            enableFiltering: true
+          },
+          ...Object.values($scope.current_facilities_plan_run.display_columns).map((c) => ({
+            displayName: c.display_name && c.display_name !== '' ? c.display_name : c.column_name,
+            name: `${c.column_name}_${c.id}`,
+            enableFiltering: true
+          }))
         ];
       };
 
