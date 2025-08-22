@@ -103,6 +103,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         SEED properties will be updated with the returned Audit Template Building ID
         """
         property_view_ids = request.data.get("property_view_ids", [])
+
         at = AuditTemplate(self.get_organization(request))
 
         progress_data, message = at.batch_export_to_audit_template(property_view_ids)
@@ -167,8 +168,10 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         Properties are updated with xmls using custom_id_1 as matching criteria
         """
         view_ids = request.data.get("view_ids", [])
+        default_cycle = request.data.get("default_cycle", None)
+
         at = AuditTemplate(self.get_organization(request))
-        progress_data, message = at.batch_get_city_submission_xml(view_ids)
+        progress_data, message = at.batch_get_city_submission_xml(view_ids, default_cycle)
 
         if progress_data is None:
             return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)

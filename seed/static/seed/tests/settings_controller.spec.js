@@ -66,6 +66,21 @@ describe('controller: organization_settings_controller', () => {
           is_parent_org_owner: false
         }
       },
+      cycles_payload: [
+        {
+          status: 'success',
+          cycles: [
+            {
+              id: 1,
+              name: 'Cycle 1',
+              organization_id: 4,
+              start_date: '2023-01-01',
+              end_date: '2023-12-31',
+              default: true
+            }
+          ]
+        }
+      ],
       labels_payload: [
         {
           id: 47,

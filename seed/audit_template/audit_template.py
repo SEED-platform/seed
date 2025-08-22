@@ -102,7 +102,7 @@ class AuditTemplate:
         self.org_id = org_id
         self.org = Organization.objects.get(id=self.org_id)
 
-    def batch_get_city_submission_xml(self, view_ids):
+    def batch_get_city_submission_xml(self, view_ids, default_cycle):
         """
         1. get city_cubmissions
         2. find views using xml fields custom_id_1 and updated for cycle start/end bounds
@@ -114,7 +114,7 @@ class AuditTemplate:
         """
         progress_data = ProgressData(func_name="batch_get_city_submission_xml", unique_id=self.org_id)
 
-        _batch_get_city_submission_xml.delay(self.org_id, self.org.audit_template_city_id, view_ids, progress_data.key)
+        _batch_get_city_submission_xml.delay(self.org_id, self.org.audit_template_city_id, view_ids, default_cycle, progress_data.key)
 
         return progress_data.result(), ""
 
@@ -225,7 +225,7 @@ class AuditTemplate:
         return self.token, ""
 
     @require_token
-    def batch_export_to_audit_template(self, view_ids):
+    def batch_export_to_audit_template(self, view_ids, default_cycle):
         progress_data = ProgressData(func_name="batch_export_to_audit_template", unique_id=self.org_id)
         progress_data.total = len(view_ids)
         progress_data.save()
@@ -617,13 +617,14 @@ def _get_measures(property_id):
 
 
 @shared_task
-def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
+def _batch_get_city_submission_xml(org_id, city_id, view_ids, default_cycle, progress_key):
     """
     1. get city_cubmissions
     2. find views using xml fields custom_id_1 and updated for cycle start/end bounds
-    3. get xmls corresponding to submissions matching a view
-    4. group data by cycles
-    5. update cycle grouped views in cycle batches
+    3. if a default cycle is given, attempt to import xml in the given cycle if no matches are found by start/end bounds
+    4. get xmls corresponding to submissions matching a view
+    5. group data by cycles
+    6. update cycle grouped views in cycle batches
     """
     org = Organization.objects.get(pk=org_id)
     status_types = org.audit_template_status_types
@@ -670,9 +671,9 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
             filter_criteria["state__updated__lte"] = updated_at
 
         view = property_views.filter(**filter_criteria).first()
-
         progress_data.step("Getting XML for submissions...")
         if view:
+            # if a view is found, get the xml for the submission
             xml, _ = audit_template.get_submission(sub["id"], "xml")
 
             if hasattr(xml, "text"):
@@ -682,6 +683,20 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
                 xml_data_by_cycle[view.cycle.id].append(
                     {"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}
                 )
+        # if no view is found, check if a default cycle is given
+        elif default_cycle:
+            # use the default cycle to create a view
+            view = property_views.filter(state__custom_id_1=custom_id_1, cycle=default_cycle).first()
+            if view:
+                xml, _ = audit_template.get_submission(sub["id"], "xml")
+
+                if hasattr(xml, "text"):
+                    if not xml_data_by_cycle.get(default_cycle):
+                        xml_data_by_cycle[default_cycle] = []
+
+                    xml_data_by_cycle[default_cycle].append(
+                        {"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}
+                    )
 
     from seed.views.v3.properties import PropertyViewSet
 

@@ -7,8 +7,8 @@ import logging
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.db.models import BooleanField, Case, F, FloatField, Sum, Value, When
-from django.db.models.functions import Cast
+from django.db.models import BooleanField, Case, CharField, F, FloatField, Q, Sum, Value, When
+from django.db.models.functions import Cast, Coalesce, Replace
 from django.utils import timezone as tz
 
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
@@ -41,12 +41,24 @@ class FacilitiesPlan(models.Model):
 def _get_column_or_zero(column):
     c = _get_column_model_field(column)
 
-    return Case(
-        # regex to see if field is present and numeric
-        When(**{f"{c}__regex": r"^\d+(\.\d+)?$"}, then=Cast(F(c), FloatField())),
-        default=Value(0.0),
-        output_field=FloatField(),
-    )
+    if column.is_extra_data or column.derived_column:
+        # For JSONB fields, we need to handle string-to-number conversion properly
+        # First cast to CharField to extract the string value, then to FloatField
+        return Case(
+            When(
+                Q(**{f"{c}__isnull": False}) & Q(**{f"{c}__regex": r'^"*-?\d+(\.\d+)?"*$'}),
+                then=Cast(Replace(Replace(Cast(F(c), CharField()), Value('"'), Value("")), Value('"'), Value("")), FloatField()),
+            ),
+            default=Value(0.0),
+            output_field=FloatField(),
+        )
+    else:
+        # For regular model fields
+        return Case(
+            When(**{f"{c}__isnull": False}, then=Cast(F(c), FloatField())),
+            default=Value(0.0),
+            output_field=FloatField(),
+        )
 
 
 def _get_column_model_field(column):
@@ -92,6 +104,9 @@ class FacilitiesPlanRun(models.Model):
             + _get_column_or_zero(self.facilities_plan.steam_energy_usage_column)
         )
 
+        # get floor area
+        properties = properties.annotate(gross_floor_area=Coalesce("state__gross_floor_area", 0, output_field=FloatField()))
+
         # calculate properties percentage of total energy usage
         denominator = properties.aggregate(Sum("total_energy_usage"))["total_energy_usage__sum"]
         properties = properties.annotate(
@@ -124,10 +139,13 @@ class FacilitiesPlanRun(models.Model):
         all_properties = self._calculate_properties_percentage_of_total_energy_usage(self.ali, self.cycle).order_by(
             "exclude_from_plan_column", "-required_in_plan", "-percentage_of_total_energy_usage"
         )
+
         energy_running_sum_percentage = 0
+        running_square_footage = 0
 
         for rank, p in enumerate(all_properties):
             energy_running_sum_percentage += p.percentage_of_total_energy_usage
+            running_square_footage += p.gross_floor_area
 
             FacilitiesPlanRunProperty.objects.create(
                 run=self,
@@ -136,7 +154,7 @@ class FacilitiesPlanRun(models.Model):
                 percentage_of_total_energy_usage=p.percentage_of_total_energy_usage,
                 rank=rank,
                 running_percentage=energy_running_sum_percentage,
-                running_square_footage=0,
+                running_square_footage=running_square_footage,
             )
 
 

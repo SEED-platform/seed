@@ -8,7 +8,7 @@ angular.module('SEED.service.audit_template', []).factory('audit_template_servic
     const audit_template_factory = {};
 
     audit_template_factory.batch_export_to_audit_template = (org_id, property_view_ids) => $http
-      .post(`/api/v3/audit_template/batch_export_to_audit_template/?organization_id=${org_id}`, property_view_ids)
+      .post(`/api/v3/audit_template/batch_export_to_audit_template/?organization_id=${org_id}`, { property_view_ids })
       .then((response) => response.data)
       .catch((response) => response.data);
 
@@ -17,8 +17,8 @@ angular.module('SEED.service.audit_template', []).factory('audit_template_servic
       .then((response) => response)
       .catch((response) => response);
 
-    audit_template_factory.batch_get_city_submission_xml_and_update = (org_id, view_ids) => $http
-      .put(`/api/v3/audit_template/batch_get_city_submission_xml/?organization_id=${org_id}`, { view_ids })
+    audit_template_factory.batch_get_city_submission_xml_and_update = (org_id, view_ids, default_cycle) => $http
+      .put(`/api/v3/audit_template/batch_get_city_submission_xml/?organization_id=${org_id}`, { view_ids, default_cycle })
       .then((response) => response)
       .catch((response) => response);
 

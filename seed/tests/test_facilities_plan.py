@@ -251,15 +251,18 @@ class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):
     def test_run(self):
         # Setup
         PropertyView.objects.all().delete()
+        properties = []
         for e in [10, 20, 30, 40]:
-            self.property_view_factory.get_property_view(
-                cycle=self.cycle,
-                extra_data={
-                    "electric_energy_usage_column": e,
-                    "gas_energy_usage_column": 0,
-                    "steam_energy_usage_column": 0,
-                    "include_in_total_denominator_column": True,
-                },
+            properties.append(
+                self.property_view_factory.get_property_view(
+                    cycle=self.cycle,
+                    extra_data={
+                        "electric_energy_usage_column": e,
+                        "gas_energy_usage_column": 0,
+                        "steam_energy_usage_column": 0,
+                        "include_in_total_denominator_column": True,
+                    },
+                )
             )
 
         # Action
@@ -283,28 +286,28 @@ class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):
                     "percentage_of_total_energy_usage": 0.4,
                     "rank": 0,
                     "running_percentage": 0.4,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[3]])),
                 },
                 {
                     "total_energy_usage": 30.0,
                     "percentage_of_total_energy_usage": 0.3,
                     "rank": 1,
                     "running_percentage": 0.7,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[3], properties[2]])),
                 },
                 {
                     "total_energy_usage": 20.0,
                     "percentage_of_total_energy_usage": 0.2,
                     "rank": 2,
                     "running_percentage": 0.9,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[3], properties[2], properties[1]])),
                 },
                 {
                     "total_energy_usage": 10.0,
                     "percentage_of_total_energy_usage": 0.1,
                     "rank": 3,
                     "running_percentage": 1.0,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in properties)),
                 },
             ],
         )
@@ -312,15 +315,18 @@ class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):
     def test_run_missing_columns(self):
         # Setup
         PropertyView.objects.all().delete()
+        properties = []
         for e in [10, 20, 30, 40]:
-            self.property_view_factory.get_property_view(
-                cycle=self.cycle,
-                extra_data={
-                    "electric_energy_usage_column": e,
-                    "gas_energy_usage_column": None,
-                    # "steam_energy_usage_column": 0,  # oh no! i'm missing
-                    "include_in_total_denominator_column": True,
-                },
+            properties.append(
+                self.property_view_factory.get_property_view(
+                    cycle=self.cycle,
+                    extra_data={
+                        "electric_energy_usage_column": e,
+                        "gas_energy_usage_column": None,
+                        # "steam_energy_usage_column": 0,  # oh no! i'm missing
+                        "include_in_total_denominator_column": True,
+                    },
+                )
             )
 
         # Action
@@ -344,28 +350,28 @@ class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):
                     "percentage_of_total_energy_usage": 0.4,
                     "rank": 0,
                     "running_percentage": 0.4,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[3]])),
                 },
                 {
                     "total_energy_usage": 30.0,
                     "percentage_of_total_energy_usage": 0.3,
                     "rank": 1,
                     "running_percentage": 0.7,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[3], properties[2]])),
                 },
                 {
                     "total_energy_usage": 20.0,
                     "percentage_of_total_energy_usage": 0.2,
                     "rank": 2,
                     "running_percentage": 0.9,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[3], properties[2], properties[1]])),
                 },
                 {
                     "total_energy_usage": 10.0,
                     "percentage_of_total_energy_usage": 0.1,
                     "rank": 3,
                     "running_percentage": 1.0,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in properties)),
                 },
             ],
         )
@@ -416,28 +422,28 @@ class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):
                     "percentage_of_total_energy_usage": 0.2,
                     "rank": 0,
                     "running_percentage": 0.2,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[1]])),
                 },
                 {
                     "total_energy_usage": 10.0,
                     "percentage_of_total_energy_usage": 0.1,
                     "rank": 1,
                     "running_percentage": 0.3,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[0], properties[1]])),
                 },
                 {
                     "total_energy_usage": 40.0,
                     "percentage_of_total_energy_usage": 0.4,
                     "rank": 2,
                     "running_percentage": 0.7,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[0], properties[1], properties[3]])),
                 },
                 {
                     "total_energy_usage": 30.0,
                     "percentage_of_total_energy_usage": 0.3,
                     "rank": 3,
                     "running_percentage": 1.0,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in properties)),
                 },
             ],
         )
@@ -488,28 +494,28 @@ class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):
                     "percentage_of_total_energy_usage": 0.4,
                     "rank": 0,
                     "running_percentage": 0.4,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[3]])),
                 },
                 {
                     "total_energy_usage": 10.0,
                     "percentage_of_total_energy_usage": 0.1,
                     "rank": 1,
                     "running_percentage": 0.5,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[3], properties[0]])),
                 },
                 {
                     "total_energy_usage": 30.0,
                     "percentage_of_total_energy_usage": 0.3,
                     "rank": 2,
                     "running_percentage": 0.8,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[3], properties[0], properties[2]])),
                 },
                 {
                     "total_energy_usage": 20.0,
                     "percentage_of_total_energy_usage": 0.2,
                     "rank": 3,
                     "running_percentage": 1.0,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in properties)),
                 },
             ],
         )
@@ -555,21 +561,21 @@ class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):
                     "percentage_of_total_energy_usage": 0.5,
                     "rank": 0,
                     "running_percentage": 0.5,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[2]])),
                 },
                 {
                     "total_energy_usage": 20.0,
                     "percentage_of_total_energy_usage": 0.33,
                     "rank": 1,
                     "running_percentage": 0.83,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[2], properties[1]])),
                 },
                 {
                     "total_energy_usage": 10.0,
                     "percentage_of_total_energy_usage": 0.17,
                     "rank": 2,
                     "running_percentage": 1.0,
-                    "running_square_footage": 0.0,
+                    "running_square_footage": float(sum(p.state.gross_floor_area for p in [properties[2], properties[1], properties[0]])),
                 },
             ],
         )

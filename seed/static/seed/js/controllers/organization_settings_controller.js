@@ -11,6 +11,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   'organization_payload',
   'audit_template_service',
   'auth_payload',
+  'cycles_payload',
   'property_columns',
   'analyses_service',
   'modified_service',
@@ -38,6 +39,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     organization_payload,
     audit_template_service,
     auth_payload,
+    cycles_payload,
     property_columns,
     analyses_service,
     modified_service,
@@ -628,6 +630,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
         backdrop: 'static',
         resolve: {
           org: () => $scope.org,
+          cycles: () => cycles_payload.cycles,
           view_ids: () => []
         }
       });

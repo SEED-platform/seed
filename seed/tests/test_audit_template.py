@@ -100,6 +100,7 @@ class ExportToAuditTemplate(TestCase):
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
 
         self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
+        self.default_cycle = self.cycle_factory.get_cycle(start=datetime(2020, 1, 1, tzinfo=timezone.get_current_timezone()))
 
         self.client.login(**self.user_details)
         self.property_factory = FakePropertyFactory(organization=self.org)
@@ -395,7 +396,7 @@ class ExportToAuditTemplate(TestCase):
         self.assertIsNone(self.state3.audit_template_building_id)
         self.assertEqual("4444", self.state4.audit_template_building_id)
 
-        results, _ = at.batch_export_to_audit_template([self.view1.id, self.view2.id, self.view3.id, self.view4.id])
+        results, _ = at.batch_export_to_audit_template([self.view1.id, self.view2.id, self.view3.id, self.view4.id], self.default_cycle)
         message = results["message"]
         self.assertEqual(["error", "info", "success"], sorted(message.keys()))
         # refresh data
