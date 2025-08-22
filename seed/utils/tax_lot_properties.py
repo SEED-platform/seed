@@ -90,7 +90,8 @@ def export_data(args):
 
     # add labels, notes, and derived columns
     include_notes = request_data.get("include_notes", True)
-    batch_size = math.ceil(len(model_views) / 98)
+    # keep the batch size below 100 to avoid the frontend requesting data that has not yet been sent to the cache
+    batch_size = math.ceil(len(model_views) / 88)
     for i, record in enumerate(model_views):
         label_string = []
         note_string = []
