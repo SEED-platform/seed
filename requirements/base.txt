@@ -23,9 +23,9 @@ python-dateutil==2.9.0.post0
 django-pint==0.7.3  # https://github.com/hgrecco/pint/issues/2065
 
 # API
-djangorestframework==3.16.0
+djangorestframework==3.16.1
 djangorestframework-simplejwt==5.3.1
-django-post-office==3.10.0
+django-post-office==3.10.1
 drf-yasg==1.21.10
 django-filter==22.1  # Update after drf-spectacular
 drf-nested-routers==0.94.2
@@ -42,7 +42,7 @@ street-address==0.4.0
 xlrd<2.0.0  # Version 2 removes xlsx support
 xlsxwriter==3.2.5
 xmltodict==0.14.2
-requests==2.32.4
+requests==2.32.5
 probablepeople==0.5.6
 xmlschema==4.1.0
 lark==1.2.2
@@ -60,7 +60,7 @@ seed-salesforce==0.1.1
 
 # geospatial and pnnl/buildingid-py
 shapely==2.0.7
-usaddress==0.5.15
+usaddress==0.5.16
 pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@3cb82c9
 
 django-treebeard==4.7.1
