@@ -41,7 +41,8 @@ CSRF_COOKIE_SAMESITE = "Strict"
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 # Default to expiring cookies after 2 weeks
 SESSION_COOKIE_AGE = int(os.environ.get("COOKIE_EXPIRATION", 1_209_600))  # noqa: PLW1508
-SESSION_COOKIE_SAMESITE = "Strict"
+# This must be `Lax` so that emailed invitation links work as expected
+SESSION_COOKIE_SAMESITE = "Lax"
 
 TEMPLATES = [
     {
