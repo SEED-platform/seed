@@ -65,6 +65,14 @@ angular.module('SEED.service.facilities_plan_run', []).factory('facilities_plan_
       .then((response) => response.data)
       .catch((response) => response);
 
+      facilities_plan_run_service.export_facilities_plan_run = (facilities_plan_run_id) => $http.post(
+        `/api/v3/facilities_plan_runs/${facilities_plan_run_id}/export/`,
+        {},
+        { params: { organization_id: user_service.get_organization().id }, responseType: 'arraybuffer' },
+    )
+      .then((response) => response)
+      .catch((response) => response);
+
     facilities_plan_run_service.create_facilities_plan_run = (data) => $http.post(
       '/api/v3/facilities_plan_runs/',
       data,

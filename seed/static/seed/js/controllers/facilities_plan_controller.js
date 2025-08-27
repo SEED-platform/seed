@@ -424,6 +424,14 @@ angular.module('SEED.controller.facilities_plan', [])
         });
       };
 
+      $scope.export_facilities_plan_run = () => {
+        facilities_plan_run_service.export_facilities_plan_run($scope.current_facilities_plan_run_id).then((data) => {
+          const blob_type = data.headers()['content-type'];
+          const blob = new Blob([data.data], { type: blob_type });
+          saveAs(blob, "a.xlsx");
+        });
+      };
+
       $scope.select_all = () => {
         // select all rows to visibly support everything has been selected
         $scope.gridApi.selection.selectAllRows();
