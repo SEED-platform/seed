@@ -318,8 +318,9 @@ class GeoJSONParser:
         features = raw_data.get("features")
         raw_column_names = features[0].get("properties").keys()
 
-        # add in the property footprint to the headers/columns
+        # add in the property footprint to the headers/columns. conditionally add property_footprint
         self.headers = [self._display_name(col) for col in raw_column_names] + ["property_footprint"]
+
         self.column_translations = {col: self._display_name(col) for col in raw_column_names}
         self.first_five_rows = [self._capture_row(feature) for feature in features[:5]]
 
@@ -328,7 +329,8 @@ class GeoJSONParser:
             properties = feature.get("properties")
 
             entry = {self.column_translations.get(k, k): v for k, v in properties.items()}
-            entry["property_footprint"] = self._get_bounding_box(feature)
+            if property_footprint := self._get_bounding_box(feature):
+                entry["property_footprint"] = property_footprint
 
             self.data.append(entry)
 
@@ -337,7 +339,16 @@ class GeoJSONParser:
         return re.sub(r"[_]", " ", col.title())
 
     def _get_bounding_box(self, feature):
-        raw_coordinates = feature.get("geometry").get("coordinates")[0]
+        geometry = feature.get("geometry")
+        raw_coordinates = []
+        if "coordinates" in geometry:
+            raw_coordinates = feature.get("geometry").get("coordinates")
+        elif "geometries" in geometry:
+            geometries = feature.get("geometry").get("geometries", [[]])
+            raw_coordinates = geometries[0].get("coordinates")
+
+        raw_coordinates = raw_coordinates[0] if len(raw_coordinates) else raw_coordinates
+
         coords_strings = [f"{coords[0]} {coords[1]}" for coords in raw_coordinates]
 
         return f"POLYGON (({', '.join(coords_strings)}))"

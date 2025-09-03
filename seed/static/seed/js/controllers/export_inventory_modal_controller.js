@@ -18,7 +18,7 @@ angular.module('SEED.controller.export_inventory_modal', []).controller('export_
   // eslint-disable-next-line func-names
   function ($http, $scope, $uibModalInstance, cache_entry_service, inventory_service, uploader_service, ids, columns, inventory_type, profile_id, spinner_utility, filter_header_string) {
     $scope.export_name = '';
-    $scope.include_notes = true;
+    $scope.include_notes = false;
     $scope.include_label_header = false;
     $scope.include_meter_readings = false;
     $scope.inventory_type = inventory_type;
