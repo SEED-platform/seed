@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-08-15 00:02\n"
+"PO-Revision-Date: 2025-09-04 23:57\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -1823,6 +1823,9 @@ msgstr "Arrastrar hasta aquí"
 #, fuzzy
 msgid "Duplicate"
 msgstr "Duplicar"
+
+msgid "Duplicate Data File Headers are not allowed. Modify the import file and try again."
+msgstr "No se permiten encabezados duplicados en los archivos de datos. Modifique el archivo de importación y vuelva a intentarlo."
 
 #, fuzzy
 msgid "Duplicates"
@@ -3979,6 +3982,9 @@ msgstr "Vaya a la siguiente página y cree su cuenta:"
 #, fuzzy
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Únete al foro de desarrolladores de SEED-Platform, donde podrás ponerte en contacto con otros desarrolladores."
+
+msgid "Please review SEED Headers. Duplicate values are not allowed."
+msgstr "Revise los encabezados SEED. No se permiten valores duplicados."
 
 #, fuzzy
 msgid "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
