@@ -212,7 +212,7 @@ def geometry_cleaner(value):
         if "Improper geometry input type" in str(e):
             return None
     except Exception as e:
-        raise RuntimeError(f"Unexpected error in geometry_cleaner: {str(e)}")
+        raise RuntimeError(f"Unexpected error in geometry_cleaner: {e!s}")
 
 
 class Cleaner:

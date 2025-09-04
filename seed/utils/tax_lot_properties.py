@@ -137,7 +137,7 @@ def export_data(args):
         elif hasattr(record, "taxlot"):
             data[i]["taxlot_labels"] = ",".join(label_string)
             notes_key = "taxlot_notes"
-        
+
         if include_notes:
             for note in list(record.notes.all().order_by("created")):
                 note_string.append(note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" + note.text)
@@ -301,7 +301,7 @@ def json_response(filename, data, column_name_mappings, excluded_fields):
         keys = {key.lower() for key in props}
 
         # add style information, avoiding duplication
-        if ('stroke' not in keys):
+        if "stroke" not in keys:
             if props.get("property_state_id") is not None:
                 props["stroke"] = "#185189"  # buildings color
             elif props.get("taxlot_state_id") is not None:
