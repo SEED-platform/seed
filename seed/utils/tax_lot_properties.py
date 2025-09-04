@@ -12,6 +12,7 @@ from quantityfield.units import ureg
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     ColumnListProfile,
+    Organization,
     PropertyView,
     TaxLotProperty,
     TaxLotView,
@@ -35,6 +36,28 @@ def export_data(args):
     progress_key = args.get("progress_key")
 
     progress_data = ProgressData.from_key(progress_key)
+
+    org = Organization.objects.get(id=org_id)
+    level_names = org.access_level_names
+    # What about created/updated?
+    excluded_fields = [
+        *level_names,
+        "groups_indicator",
+        "id",
+        "labels",
+        "merged_indicator",
+        "meters_exist_indicator",
+        "notes_count",
+        "property_labels",
+        "property_notes",
+        "property_state_id",
+        "property_view_id",
+        "related",
+        "taxlot_labels",
+        "taxlot_notes",
+        "taxlot_state_id",
+        "taxlot_view_id",
+    ]
 
     profile_id = None
     column_profile = None
@@ -140,7 +163,7 @@ def export_data(args):
     if export_type == "csv":
         data = _csv_response(data, column_name_mappings)
     elif export_type == "geojson":
-        data = json_response(filename, data, column_name_mappings)
+        data = json_response(filename, data, column_name_mappings, excluded_fields)
     elif export_type == "xlsx":
         data = _spreadsheet_response(data, column_name_mappings)
 
@@ -190,7 +213,7 @@ def _csv_response(data, column_name_mappings):
     return output.getvalue()
 
 
-def json_response(filename, data, column_name_mappings):
+def json_response(filename, data, column_name_mappings, excluded_fields):
     polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
     response_dict = {"type": "FeatureCollection", "name": f"SEED Export - {filename.replace('.geojson', '')}"}
 
@@ -207,7 +230,7 @@ def json_response(filename, data, column_name_mappings):
 
         feature_geometries = []
         for key, value in datum.items():
-            if value is None:
+            if value is None or key in excluded_fields:
                 continue
 
             if isinstance(value, ureg.Quantity):

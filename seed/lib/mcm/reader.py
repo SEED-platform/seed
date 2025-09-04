@@ -318,8 +318,11 @@ class GeoJSONParser:
         features = raw_data.get("features")
         raw_column_names = features[0].get("properties").keys()
 
-        # add in the property footprint to the headers/columns. conditionally add property_footprint
-        self.headers = [self._display_name(col) for col in raw_column_names] + ["property_footprint"]
+        # add in the property footprint to the headers/columns, avoiding duplicates
+        self.headers = [self._display_name(col) for col in raw_column_names] 
+        if not (footprint_key := self._footprint_key(raw_column_names)):
+            self.headers.append("Property Footprint")
+            footprint_key = "Property Footprint"
 
         self.column_translations = {col: self._display_name(col) for col in raw_column_names}
         self.first_five_rows = [self._capture_row(feature) for feature in features[:5]]
@@ -329,8 +332,7 @@ class GeoJSONParser:
             properties = feature.get("properties")
 
             entry = {self.column_translations.get(k, k): v for k, v in properties.items()}
-            if property_footprint := self._get_bounding_box(feature):
-                entry["property_footprint"] = property_footprint
+            entry[footprint_key] = self._get_bounding_box(feature)
 
             self.data.append(entry)
 
@@ -339,6 +341,9 @@ class GeoJSONParser:
         return re.sub(r"[_]", " ", col.title())
 
     def _get_bounding_box(self, feature):
+        if existing_footprint:= self._existing_footprint(feature):
+            return existing_footprint
+
         geometry = feature.get("geometry")
         raw_coordinates = []
         if "coordinates" in geometry:
@@ -350,11 +355,25 @@ class GeoJSONParser:
         raw_coordinates = raw_coordinates[0] if len(raw_coordinates) else raw_coordinates
 
         coords_strings = [f"{coords[0]} {coords[1]}" for coords in raw_coordinates]
+        coords = ", ".join(coords_strings)
+        bounding_box = f"POLYGON (({coords}))" if coords else "POLYGON EMPTY"
+        return bounding_box
+    
+    def _footprint_key(self, keys):
+        return "property_footprint" if "property_footprint" in keys else "Property Footprint" if "Property Footprint" in keys else None
 
-        return f"POLYGON (({', '.join(coords_strings)}))"
+    def _existing_footprint(self, feature):
+        properties = feature.get("properties", {})
+        footprint_key = self._footprint_key(properties.keys())
+        existing_footprint = properties.get(footprint_key, "")
+        if isinstance(existing_footprint, str) and existing_footprint.startswith("POLYGON"):
+            return existing_footprint
+
 
     def _capture_row(self, feature):
-        stringified_values = [str(value) for value in feature.get("properties").values()] + ["Property Footprint - Not Displayed"]
+        stringified_values = [str(value) for value in feature.get("properties").values()]
+        if not self._existing_footprint(feature): 
+            stringified_values += ["Property Footprint - Not Displayed"]
         return "|#*#|".join(stringified_values)
 
     def num_columns(self):
