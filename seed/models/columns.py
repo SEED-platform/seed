@@ -1311,6 +1311,13 @@ class Column(models.Model):
             else:
                 raise ColumnCastError("Datum is None and allow_none is False.")
 
+        # Cast partial dates to strings. ex: '01-23'
+        if column_data_type in ["date", "datetime"]:
+            try:
+                datetime.fromisoformat(value)
+            except (ValueError, TypeError):
+                column_data_type = "string"
+
         parser = Column.DATA_TYPE_PARSERS.get(column_data_type, str)
         try:
             return parser(value)
