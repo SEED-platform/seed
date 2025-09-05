@@ -20,7 +20,7 @@ class JSONParserTest(TestCase):
         expectation = [
             {
                 "Address Line 1": "1 Fake Street",
-                "property_footprint": (
+                "Property Footprint": (
                     "POLYGON ((-105.17262205481529 39.74200726814212, "
                     "-105.17227604985237 39.74207739085327, "
                     "-105.17228543758394 39.742112452182084, "
@@ -34,7 +34,7 @@ class JSONParserTest(TestCase):
             },
             {
                 "Address Line 1": "12 Fake Street",
-                "property_footprint": (
+                "Property Footprint": (
                     "POLYGON ((-105.17615586519241 39.74217020021416, "
                     "-105.1763167977333 39.74228982098384, "
                     "-105.17616927623747 39.74240944154582, "
@@ -51,7 +51,7 @@ class JSONParserTest(TestCase):
         self.assertEqual(self.parser.data, expectation)
 
     def test_it_has_a_headers_property(self):
-        expectation = ["Address Line 1", "Building Type", "Created At", "Floor Area", "Type", "property_footprint"]
+        expectation = ["Address Line 1", "Building Type", "Created At", "Floor Area", "Type", "Property Footprint"]
 
         self.assertEqual(self.parser.headers, expectation)
 

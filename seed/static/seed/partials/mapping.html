@@ -245,9 +245,20 @@
           {$:: 'TAXLOT_MATCHING_FIELDS_REQUIREMENT' | translate $}: {$
           taxlot_matching_criteria_columns $}.
         </div>
-        <div class="alert alert-danger" ng-show="duplicates_present" translate>
-          Please review SEED column names or the column names of the file being
-          imported. Duplicate values are not allowed in either case.
+        <div
+          class="alert alert-danger"
+          ng-show="duplicate_suggestions_present"
+          translate
+        >
+          Please review SEED Headers. Duplicate values are not allowed.
+        </div>
+        <div
+          class="alert alert-danger"
+          ng-show="duplicate_headers_present"
+          translate
+        >
+          Duplicate Data File Headers are not allowed. Modify the import file
+          and try again.
         </div>
         <div
           class="alert alert-danger"

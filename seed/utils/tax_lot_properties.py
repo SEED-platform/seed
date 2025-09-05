@@ -12,6 +12,7 @@ from quantityfield.units import ureg
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
     ColumnListProfile,
+    Organization,
     PropertyView,
     TaxLotProperty,
     TaxLotView,
@@ -36,6 +37,28 @@ def export_data(args):
 
     progress_data = ProgressData.from_key(progress_key)
 
+    org = Organization.objects.get(id=org_id)
+    level_names = org.access_level_names
+    # What about created/updated?
+    excluded_fields = [
+        *level_names,
+        "groups_indicator",
+        "id",
+        "labels",
+        "merged_indicator",
+        "meters_exist_indicator",
+        "notes_count",
+        "property_labels",
+        "property_notes",
+        "property_state_id",
+        "property_view_id",
+        "related",
+        "taxlot_labels",
+        "taxlot_notes",
+        "taxlot_state_id",
+        "taxlot_view_id",
+    ]
+
     profile_id = None
     column_profile = None
     if "profile_id" in request_data and str(request_data["profile_id"]) not in {"None", ""}:
@@ -47,13 +70,14 @@ def export_data(args):
     view_klass = INVENTORY_MODELS[view_klass_str]
 
     # Set the first column to be the ID
-    column_name_mappings = OrderedDict([("id", "ID")])
+    column_name_mappings = OrderedDict([])
     column_ids, add_column_name_mappings, columns_from_database = ColumnListProfile.return_columns(org_id, profile_id, view_klass_str)
     column_name_mappings.update(add_column_name_mappings)
 
     select_related = ["state", "cycle"]
     prefetch_related = ["labels"]
     ids = request_data.get("ids", [])
+    include_notes = request_data.get("include_notes", True)
 
     filter_str = {}
     if ids:
@@ -63,18 +87,18 @@ def export_data(args):
         filter_str["property__organization_id"] = org_id
         filter_str["property__access_level_instance__lft__gte"] = ali_lft
         filter_str["property__access_level_instance__rgt__lte"] = ali_rgt
-        # always export the labels and notes
-        column_name_mappings["property_notes"] = "Property Notes"
         column_name_mappings["property_labels"] = "Property Labels"
+        if include_notes:
+            column_name_mappings["property_notes"] = "Property Notes Export"
 
     elif hasattr(view_klass, "taxlot"):
         select_related.append("taxlot")
         filter_str["taxlot__organization_id"] = org_id
         filter_str["taxlot__access_level_instance__lft__gte"] = ali_lft
         filter_str["taxlot__access_level_instance__rgt__lte"] = ali_rgt
-        # always export the labels and notes
-        column_name_mappings["taxlot_notes"] = "Tax Lot Notes"
         column_name_mappings["taxlot_labels"] = "Tax Lot Labels"
+        if include_notes:
+            column_name_mappings["taxlot_notes"] = "Tax Lot Notes Export"
 
     model_views = view_klass.objects.select_related(*select_related).prefetch_related(*prefetch_related).filter(**filter_str).order_by("id")
 
@@ -97,13 +121,10 @@ def export_data(args):
         note_string = []
         for label in list(record.labels.all().order_by("name")):
             label_string.append(label.name)
-        if include_notes:
-            for note in list(record.notes.all().order_by("created")):
-                note_string.append(note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" + note.text)
 
         if hasattr(record, "property"):
             data[i]["property_labels"] = ",".join(label_string)
-            data[i]["property_notes"] = "\n----------\n".join(note_string) if include_notes else "(excluded during export)"
+            notes_key = "property_notes"
 
             include_meter_data = request_data.get("include_meter_readings", False)
             if include_meter_data and export_type == "geojson":
@@ -117,7 +138,12 @@ def export_data(args):
                 data[i]["_meters"] = meters
         elif hasattr(record, "taxlot"):
             data[i]["taxlot_labels"] = ",".join(label_string)
-            data[i]["taxlot_notes"] = "\n----------\n".join(note_string) if include_notes else "(excluded during export)"
+            notes_key = "taxlot_notes"
+
+        if include_notes:
+            for note in list(record.notes.all().order_by("created")):
+                note_string.append(note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" + note.text)
+            data[i][notes_key] = "\n----------\n".join(note_string)
 
         # add derived columns
         for derived_column in derived_columns:
@@ -139,7 +165,7 @@ def export_data(args):
     if export_type == "csv":
         data = _csv_response(data, column_name_mappings)
     elif export_type == "geojson":
-        data = json_response(filename, data, column_name_mappings)
+        data = json_response(filename, data, column_name_mappings, excluded_fields)
     elif export_type == "xlsx":
         data = _spreadsheet_response(data, column_name_mappings)
 
@@ -189,7 +215,7 @@ def _csv_response(data, column_name_mappings):
     return output.getvalue()
 
 
-def json_response(filename, data, column_name_mappings):
+def json_response(filename, data, column_name_mappings, excluded_fields=[]):
     polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
     response_dict = {"type": "FeatureCollection", "name": f"SEED Export - {filename.replace('.geojson', '')}"}
 
@@ -206,7 +232,7 @@ def json_response(filename, data, column_name_mappings):
 
         feature_geometries = []
         for key, value in datum.items():
-            if value is None:
+            if value is None or key in excluded_fields:
                 continue
 
             if isinstance(value, ureg.Quantity):
@@ -273,14 +299,19 @@ def json_response(filename, data, column_name_mappings):
         Note that the GeoJson will not render if no lat/lng
         """
 
-        # add style information
-        if feature["properties"].get("property_state_id") is not None:
-            feature["properties"]["stroke"] = "#185189"  # buildings color
-        elif feature["properties"].get("taxlot_state_id") is not None:
-            feature["properties"]["stroke"] = "#10A0A0"  # buildings color
-        feature["properties"]["marker-color"] = "#E74C3C"
-        # feature["properties"]["stroke-width"] = 3
-        feature["properties"]["fill-opacity"] = 0
+        props = feature["properties"]
+        keys = {key.lower() for key in props}
+
+        # add style information, avoiding duplication
+        if "stroke" not in keys:
+            if props.get("property_state_id") is not None:
+                props["stroke"] = "#185189"  # buildings color
+            elif props.get("taxlot_state_id") is not None:
+                props["stroke"] = "#10A0A0"  # buildings color
+        if "marker-color" not in keys:
+            props["marker-color"] = "#E74C3C"
+        if "fill-opacity" not in keys:
+            props["fill-opacity"] = 0
 
         # append feature
         features.append(feature)

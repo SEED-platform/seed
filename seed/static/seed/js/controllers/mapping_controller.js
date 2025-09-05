@@ -258,6 +258,8 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
 
     $scope.review_mappings = false;
     $scope.show_mapped_buildings = false;
+    $scope.duplicate_suggestions_present = false;
+    $scope.duplicate_headers_present = false;
 
     const validCycle = _.find(cycles.cycles, { id: $scope.import_file.cycle });
     $scope.isValidCycle = Boolean(validCycle);
@@ -412,7 +414,6 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
       });
 
       // Verify that we don't have any duplicate mappings.
-      let duplicates_present = false;
       _.forEach($scope.mappings, (col) => {
         const potential = `${col.suggestion}.${col.suggestion_table_name}`;
         const dup_suggestion = _.get(suggestions, potential, 0) > 1;
@@ -420,10 +421,9 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         const dup_header = _.filter($scope.raw_columns, (filter_col) => filter_col === col.name).length > 1;
 
         col.is_duplicate = dup_header || dup_suggestion;
-        duplicates_present = duplicates_present || col.is_duplicate;
+        $scope.duplicate_suggestions_present ||= dup_suggestion;
+        $scope.duplicate_headers_present ||= dup_header;
       });
-
-      $scope.duplicates_present = duplicates_present;
     };
 
     $scope.updateColIsDisallowedCreation = () => {
@@ -667,7 +667,8 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     /**
      * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
      */
-    $scope.check_fields = () => $scope.duplicates_present ||
+    $scope.check_fields = () => $scope.duplicate_suggestions_present ||
+      $scope.duplicate_headers_present ||
       $scope.empty_fields_present() ||
       $scope.empty_units_present() ||
       !$scope.required_property_fields_present() ||
