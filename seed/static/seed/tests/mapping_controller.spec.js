@@ -330,7 +330,7 @@ describe('controller: mapping_controller', () => {
     for (let i = mapping_controller_scope.mappings.length - 1; i >= 0; i--) {
       mapping_controller_scope.change(mapping_controller_scope.mappings[i]);
     }
-    const duplicates_found = mapping_controller_scope.duplicates_present;
+    const duplicates_found = mapping_controller_scope.duplicate_headers_present || mapping_controller_scope.duplicate_suggestions_present;
 
     // assertions
     expect(duplicates_found).toBe(false);
@@ -348,7 +348,7 @@ describe('controller: mapping_controller', () => {
       mapping_controller_scope.mappings[i].suggestion = 'PM Property ID';
       mapping_controller_scope.change(mapping_controller_scope.mappings[i]);
     }
-    const duplicates_found = mapping_controller_scope.duplicates_present;
+    const duplicates_found = mapping_controller_scope.duplicate_headers_present || mapping_controller_scope.duplicate_suggestions_present;
 
     // assertions
     expect(duplicates_found).toBe(true);

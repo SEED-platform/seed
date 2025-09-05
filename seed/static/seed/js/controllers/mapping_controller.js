@@ -258,6 +258,8 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
 
     $scope.review_mappings = false;
     $scope.show_mapped_buildings = false;
+    $scope.duplicate_suggestions_present = false;
+    $scope.duplicate_headers_present = false;
 
     const validCycle = _.find(cycles.cycles, { id: $scope.import_file.cycle });
     $scope.isValidCycle = Boolean(validCycle);
