@@ -396,7 +396,7 @@ class ExportToAuditTemplate(TestCase):
         self.assertIsNone(self.state3.audit_template_building_id)
         self.assertEqual("4444", self.state4.audit_template_building_id)
 
-        results, _ = at.batch_export_to_audit_template([self.view1.id, self.view2.id, self.view3.id, self.view4.id], self.default_cycle)
+        results, _ = at.batch_export_to_audit_template([self.view1.id, self.view2.id, self.view3.id, self.view4.id])
         message = results["message"]
         self.assertEqual(["error", "info", "success"], sorted(message.keys()))
         # refresh data
