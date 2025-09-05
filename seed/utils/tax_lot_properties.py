@@ -215,7 +215,7 @@ def _csv_response(data, column_name_mappings):
     return output.getvalue()
 
 
-def json_response(filename, data, column_name_mappings, excluded_fields):
+def json_response(filename, data, column_name_mappings, excluded_fields=[]):
     polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
     response_dict = {"type": "FeatureCollection", "name": f"SEED Export - {filename.replace('.geojson', '')}"}
 
