@@ -20,7 +20,7 @@ jobs:
       matrix:
         test_env: [django, functional, api]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
       - name: Set up Docker Buildx
@@ -54,7 +54,7 @@ jobs:
           docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py migrate
           docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
       - name: Setup pnpm
@@ -108,13 +108,13 @@ jobs:
       matrix:
         tox_env: [docs, precommit, mypy, lint]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: true
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.9'
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 20
       - name: Install deps
