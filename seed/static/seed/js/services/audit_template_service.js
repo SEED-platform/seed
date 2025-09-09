@@ -8,7 +8,7 @@ angular.module('SEED.service.audit_template', []).factory('audit_template_servic
     const audit_template_factory = {};
 
     audit_template_factory.batch_export_to_audit_template = (org_id, property_view_ids) => $http
-      .post(`/api/v3/audit_template/batch_export_to_audit_template/?organization_id=${org_id}`, { property_view_ids })
+      .post(`/api/v3/audit_template/batch_export_to_audit_template/?organization_id=${org_id}`, property_view_ids)
       .then((response) => response.data)
       .catch((response) => response.data);
 
