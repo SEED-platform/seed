@@ -1,5 +1,5 @@
 # Django
-django==4.2.23
+django==4.2.24
 
 # Persistence stores
 psycopg2-binary==2.9.10
