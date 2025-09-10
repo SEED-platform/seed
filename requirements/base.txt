@@ -24,7 +24,7 @@ django-pint==0.7.3  # https://github.com/hgrecco/pint/issues/2065
 
 # API
 djangorestframework==3.16.0
-djangorestframework-simplejwt==5.3.1
+djangorestframework-simplejwt==5.5.1
 django-post-office==3.10.0
 drf-yasg==1.21.10
 django-filter==22.1  # Update after drf-spectacular
