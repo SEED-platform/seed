@@ -1246,6 +1246,23 @@ class TestColumnCasting(TestCase):
         r = Column.cast_column_value("eui", None)
         self.assertEqual(None, r)
 
+    def test_cast_partial_date(self):
+        dates = [
+            "2010",
+            "2010-01",
+            "2010-01-01",
+            "=2010",
+            "=2010-01",
+            "!=2010-01-01",
+            ">=2010",
+            "<2010-01",
+        ]
+        for date_str in dates:
+            r = Column.cast_column_value("date", date_str)
+            self.assertEqual(date(2010, 1, 1), r)
+            r = Column.cast_column_value("datetime", date_str)
+            self.assertEqual(datetime(2010, 1, 1), r)
+
     def test_cast_values_with_errors(self):
         with pytest.raises(ColumnCastError) as exc:
             Column.cast_column_value("integer", "abc")

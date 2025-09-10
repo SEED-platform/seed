@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 import math
+import re
 from datetime import datetime
 
 from django.core import serializers
@@ -142,3 +143,27 @@ def get_int(value, default=None):
         return result if result > 0 else default
     except (ValueError, TypeError):
         return default
+
+
+def parse_date(value):
+    """
+    Parse a date string in the format YYYY, YYYY-MM, YYYY-MM-DD, or ISO format and return it as as datetime object.
+    """
+    try:
+        return datetime.fromisoformat(value)
+    except (ValueError, TypeError):
+        pass
+
+    pattern = re.compile(r"^(=|!=?)?\s*(" "|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$")
+    match = pattern.match(str(value))
+    if not match:
+        raise ValueError(f'Unable to parse date from value "{value}". Expected format: YYYY, YYYY-MM, YYYY-MM-DD, or ISO format.')
+
+    groups = match.groups()
+    date_string = groups[1] if groups[1] else groups[3]
+    parts = date_string.split("-")
+    year = int(parts[0])
+    month = int(parts[1]) if len(parts) > 1 else 1
+    day = int(parts[2]) if len(parts) > 2 else 1
+    date_string = f"{year:04d}-{month:02d}-{day:02d}"
+    return datetime.fromisoformat(date_string)
