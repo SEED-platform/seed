@@ -297,7 +297,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
             }
         )
     elif data_type in {"date", "datetime"}:
-        annotations.update({final_field_name: Cast(text_field_name, output_field=models.DateTimeField())})
+        annotations.update({final_field_name: Cast(text_field_name, output_field=models.DateField())})
     elif data_type == "boolean":
         annotations.update({final_field_name: Cast(text_field_name, output_field=models.BooleanField())})
     else:

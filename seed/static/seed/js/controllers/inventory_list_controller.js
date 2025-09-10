@@ -1915,7 +1915,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     };
 
     // https://regexr.com/6cka2
-    const combinedRegex = /^(!?)=\s*(-?\d+(?:\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\.\d+)?)|(\d{4}-\d{2}(?:-\d{2})?))$/;
+    const combinedRegex = /^(!?)=\s*(-?\d+(?:\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?|!?=)\s*((-?\d+(?:\.\d+)?)|(\d{4}-\d{2}(?:-\d{2})?))$/;
     const parseFilter = (expression) => {
       // parses an expression string into an object containing operator and value
       const filterData = expression.match(combinedRegex);
@@ -1965,6 +1965,10 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
               return { string: '>', operator: 'gt', value };
             case '>=':
               return { string: '>=', operator: 'gte', value };
+            case '!=':
+              return { string: 'is not', operator: 'ne', value };
+            case '=':
+              return { string: 'is', operator: 'exact', value };
           }
         }
       } else {
