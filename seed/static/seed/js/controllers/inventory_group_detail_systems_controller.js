@@ -33,7 +33,7 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
       $scope.group_id = $stateParams.group_id;
       $scope.inventory_display_name = group.name;
       $scope.systems = systems.data;
-      const system_types = ['DES - Cooling', 'DES - Heating', 'EVSE', 'Battery'];
+      const system_types = ['DES - Cooling', 'DES - Heating', 'EVSE', 'Battery', "Aggregate Meter"];
       const all_systems = system_types.flatMap((type) => $scope.systems[type] ?? []);
       const org_id = organization_payload.organization.id;
       $scope.filler_cycle = cycles.cycles[0].id;
@@ -58,6 +58,11 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
           system_key: 'Battery',
           headers: ['Name', 'Efficiency (%)', 'Energy Capacity (kWh)', 'Power Capacity (kW)', 'Voltage (V)'],
           fields: ['name', 'efficiency', 'energy_capacity', 'power_capacity', 'voltage']
+        },
+        {
+          system_key: 'Aggregate Meter',
+          headers: ['Name'],
+          fields: ['name']
         }
       ];
 

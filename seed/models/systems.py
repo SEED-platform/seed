@@ -73,6 +73,10 @@ class BatterySystem(System):
     voltage = QuantityField("V", null=False)
 
 
+class AggregateMeterSystem(System):
+    pass
+
+
 class Service(models.Model):
     system = models.ForeignKey(System, on_delete=models.CASCADE, related_name="services")
     name = models.CharField(max_length=255)
