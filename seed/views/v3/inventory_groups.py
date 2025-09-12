@@ -197,8 +197,12 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         )
 
     @swagger_auto_schema_org_query_param
-    @has_perm("requires_viewer")
-    @has_hierarchy_access(inventory_group_id_kwarg="pk")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def meter_usage(self, request, pk):
         """
