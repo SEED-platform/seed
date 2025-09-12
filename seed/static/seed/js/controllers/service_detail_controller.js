@@ -20,7 +20,7 @@ angular.module('SEED.controller.service_detail', []).controller('service_detail_
 
     $scope.service = service;
 
-    $scope.headers = ["Property", "Connected Via", "Connection Type", "Meter Data?"];
+    $scope.headers = ['Property', 'Connected Via', 'Connection Type', 'Meter Data?'];
 
     $scope.open_service_meter_create_modal = () => {
       $uibModal.open({
@@ -29,7 +29,7 @@ angular.module('SEED.controller.service_detail', []).controller('service_detail_
         resolve: {
           properties: inventory_group_service.get_group_properties(organization_id, $scope.group_id),
           organization_id: () => organization_id,
-          service_service: () => service_service,
+          service_service: () => service_service
         }
       });
     };

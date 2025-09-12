@@ -996,9 +996,9 @@
           resolve: {
             organization_id: ['user_service', (user_service) => user_service.get_organization().id],
             service: ['service_service', 'user_service', '$stateParams', (service_service, user_service, $stateParams) => {
-              const { group_id,  system_id, service_id } = $stateParams;
+              const { group_id, system_id, service_id } = $stateParams;
               const organization_id = user_service.get_organization().id;
-              return service_service.get_service(organization_id, group_id, system_id, service_id)
+              return service_service.get_service(organization_id, group_id, system_id, service_id);
             }]
           }
         })

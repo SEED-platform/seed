@@ -67,7 +67,7 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
       params: {
         organization_id
       }
-    }).then((response) => {return response.data.data});
+    }).then((response) => response.data.data);
 
     group_factory.new_group = (data) => $http.post('/api/v3/inventory_groups/', data, {
       params: {
