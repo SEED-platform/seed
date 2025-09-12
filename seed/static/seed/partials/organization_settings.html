@@ -542,7 +542,8 @@
       </div>
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <h3 translate>Enable Salesforce Integration</h3>
+          <h3 translate>Enable Salesforce Integration (Individual Properties)</h3>
+          <p translate>SALESFORCE_BENCHMARK_INTEGRATION_DESC</p>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
@@ -1153,7 +1154,8 @@
       </div>
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <h3 translate>Enable Better Buildings Salesforce Integration</h3>
+          <h3 class="pad-top-20" translate>Enable Salesforce Integration (Portfolio of Properties)</h3>
+          <p translate>SALESFORCE_PORTFOLIO_INTEGRATION_DESC</p>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
@@ -1164,11 +1166,21 @@
         </div>
       </div>
       <div ng-if="org.bb_salesforce_enabled" class="salesforce-form">
+        <div class="section_header_container has_btm_margin">
+          <div class="section_header">
+            <h2><i class="fa-solid fa-rss"></i> {$:: 'Salesforce Connection ' | translate $}</h2>
+          </div>
+        </div>
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <p translate="SF_PORTFOLIO_CONNECTION_TEXT"></p>
+          </div>
+        </div>
         <div class="section_content_container">
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label class="col-sm-2 col-sm-offset-1 control-label" for="salesforce_url" translate>url</label>
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="salesforce_url" translate>URL</label>
                 <div class="col-sm-5">
                   <input type="text" id="url" class="form-control" ng-model="bb_salesforce_configs.salesforce_url" ng-disabled="::!auth.requires_owner" />
                 </div>
@@ -1180,7 +1192,7 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label class="col-sm-2 col-sm-offset-1 control-label" for="client_id" translate>Client Id</label>
+                <label class="col-sm-2 col-sm-offset-1 control-label" for="client_id" translate>Client ID</label>
                 <div class="col-sm-5">
                   <input type="text" id="client_id" class="form-control" ng-model="bb_salesforce_configs.client_id" ng-disabled="::!auth.requires_owner" />
                 </div>
