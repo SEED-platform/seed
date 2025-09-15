@@ -40,8 +40,8 @@ polling==0.3.2
 pyyaml==6.0.2
 street-address==0.4.0
 xlrd<2.0.0  # Version 2 removes xlsx support
-xlsxwriter==3.2.5
-xmltodict==0.15.1
+xlsxwriter==3.2.8
+xmltodict==1.0.0
 requests==2.32.5
 probablepeople==0.5.6
 xmlschema==4.1.0
