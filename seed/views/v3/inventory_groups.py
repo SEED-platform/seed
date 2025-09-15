@@ -183,8 +183,12 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return JsonResponse({"status": "success", "data": readable_data})
 
     @swagger_auto_schema_org_query_param
-    @has_perm("requires_viewer")
-    @has_hierarchy_access(inventory_group_id_kwarg="pk")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def properties(self, request, pk):
         views = PropertyView.objects.filter(property__group_mappings__group=pk).distinct("property")

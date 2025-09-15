@@ -6,14 +6,16 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 
 from django.db.models import Case, When
+from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from rest_framework import status
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import Meter, MeterReading, Service
 from seed.serializers.systems import ServiceSerializer
-from seed.utils.api import OrgMixin
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
@@ -95,14 +97,29 @@ class ServiceViewSet(ModelViewSetWithoutPatch, OrgMixin):
         }
 
     @swagger_auto_schema_org_query_param
-    @ajax_request
-    @has_perm("requires_member")
-    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def create_meters(self, request, inventory_group_pk, system_pk, pk):
-        property_ids = request.data["property_ids"]
-        direction = request.data["direction"]
-        type = request.data["type"]
+        property_ids = request.data.get("property_ids")
+        direction = request.data.get("direction")
+        type = request.data.get("type")
+
+        if not property_ids and direction and type:
+            missing_args = [arg for arg in [property_ids, direction, type] if arg is None]
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "errors": f"Missing required arg(s): {missing_args}",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         for property_id in property_ids:
             Meter.objects.create(
@@ -110,4 +127,4 @@ class ServiceViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 type=Meter.type_lookup[type],
                 service_id=pk,
                 connection_type=Meter.RECEIVING_SERVICE if direction == "imported" else Meter.RETURNING_TO_SERVICE,
-            ).save()
+            )
