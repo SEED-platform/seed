@@ -156,9 +156,9 @@ def parse_date(value):
 
     # pattern = re.compile(r"^(=|!=?)?\s*(" "|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$")
     pattern = re.compile(
-    r'^(=|!=?)?\s*(".*?"|\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$'
-    r'|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$'
-)
+        r'^(=|!=?)?\s*(".*?"|\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$'
+        r"|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$"
+    )
     match = pattern.match(str(value))
     if not match:
         raise ValueError(f'Unable to parse date from value "{value}". Expected format: YYYY, YYYY-MM, YYYY-MM-DD, or ISO format.')
