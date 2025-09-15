@@ -46,7 +46,7 @@ def check_file_permission(user, filepath):
 
     elif base_dir == "buildingsync_files":
         try:
-            building_file = BuildingFile.objects.get(file__in=[absolute_filepath, filepath])
+            building_file = BuildingFile.objects.filter(file__in=[absolute_filepath, filepath]).first()
         except BuildingFile.DoesNotExist:
             raise ModelForFileNotFoundError("BuildingFile not found")
         organization = building_file.property_state.organization
@@ -63,7 +63,7 @@ def check_file_permission(user, filepath):
 
     elif base_dir == "analysis_output_files":
         try:
-            analysis_output_file = AnalysisOutputFile.objects.get(file__in=[absolute_filepath, filepath])
+            analysis_output_file = AnalysisOutputFile.objects.filter(file__in=[absolute_filepath, filepath]).first()
             analysis_property_view = analysis_output_file.analysis_property_views.first()
             if analysis_property_view is None:
                 raise ModelForFileNotFoundError(
@@ -75,7 +75,7 @@ def check_file_permission(user, filepath):
 
     elif base_dir == "inventory_documents":
         try:
-            inventory_document = InventoryDocument.objects.get(file__in=[absolute_filepath, filepath])
+            inventory_document = InventoryDocument.objects.filter(file__in=[absolute_filepath, filepath]).first()
         except InventoryDocument.DoesNotExist:
             raise ModelForFileNotFoundError("InventoryDocument not found")
         organization = inventory_document.property.organization
