@@ -154,7 +154,11 @@ def parse_date(value):
     except (ValueError, TypeError):
         pass
 
-    pattern = re.compile(r"^(=|!=?)?\s*(" "|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$")
+    # pattern = re.compile(r"^(=|!=?)?\s*(" "|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$")
+    pattern = re.compile(
+    r'^(=|!=?)?\s*(".*?"|\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$'
+    r'|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$'
+)
     match = pattern.match(str(value))
     if not match:
         raise ValueError(f'Unable to parse date from value "{value}". Expected format: YYYY, YYYY-MM, YYYY-MM-DD, or ISO format.')
@@ -165,5 +169,8 @@ def parse_date(value):
     year = int(parts[0])
     month = int(parts[1]) if len(parts) > 1 else 1
     day = int(parts[2]) if len(parts) > 2 else 1
-    date_string = f"{year:04d}-{month:02d}-{day:02d}"
+    hour = int(parts[3]) if len(parts) > 3 else 0
+    minute = int(parts[4]) if len(parts) > 4 else 0
+    second = int(parts[5]) if len(parts) > 5 else 0
+    date_string = f"{year:04d}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:{second:02d}"
     return datetime.fromisoformat(date_string)
