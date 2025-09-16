@@ -41,7 +41,13 @@ class ServiceViewSet(ModelViewSetWithoutPatch, OrgMixin):
     )
     def retrieve(self, request, inventory_group_pk, system_pk, pk):
         # get service
-        service = Service.objects.get(pk=pk)
+        try:
+            service = Service.objects.get(system_id=system_pk, pk=pk)
+        except Service.DoesNotExist:
+            return JsonResponse(
+                {"status": "error", "message": "No Service matches the given query."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         # get meters
         meters = Meter.objects.filter(service=pk)
@@ -56,6 +62,7 @@ class ServiceViewSet(ModelViewSetWithoutPatch, OrgMixin):
         out_meters = meters.filter(connection_type=Meter.TOTAL_FROM_USERS)
 
         return {
+            "id": service.id,
             "system_name": service.system.name,
             "name": service.name,
             "service_meters": {
