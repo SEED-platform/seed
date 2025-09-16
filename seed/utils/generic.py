@@ -11,6 +11,7 @@ from datetime import datetime
 
 from django.core import serializers
 from django.db import IntegrityError, models
+from django.utils import timezone
 from pint import UnitRegistry
 
 ureg = UnitRegistry()
@@ -150,11 +151,11 @@ def parse_date(value):
     Parse a date string in the format YYYY, YYYY-MM, YYYY-MM-DD, or ISO format and return it as as datetime object.
     """
     try:
-        return datetime.fromisoformat(value)
+        naive = datetime.fromisoformat(value)
+        return timezone.make_aware(naive)
     except (ValueError, TypeError):
         pass
 
-    # pattern = re.compile(r"^(=|!=?)?\s*(" "|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$")
     pattern = re.compile(
         r'^(=|!=?)?\s*(".*?"|\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$'
         r"|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$"
@@ -173,4 +174,6 @@ def parse_date(value):
     minute = int(parts[4]) if len(parts) > 4 else 0
     second = int(parts[5]) if len(parts) > 5 else 0
     date_string = f"{year:04d}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:{second:02d}"
-    return datetime.fromisoformat(date_string)
+
+    naive = datetime.fromisoformat(date_string)
+    return timezone.make_aware(naive)
