@@ -66,6 +66,8 @@ def check_file_permission(user, filepath):
     elif base_dir == "analysis_output_files":
         try:
             analysis_output_file = AnalysisOutputFile.objects.filter(file__in=[absolute_filepath, filepath]).first()
+            if analysis_output_file is None:
+                raise ModelForFileNotFoundError(f'AnalysisOutputFile not found')
             analysis_property_view = analysis_output_file.analysis_property_views.first()
             if analysis_property_view is None:
                 raise ModelForFileNotFoundError(
