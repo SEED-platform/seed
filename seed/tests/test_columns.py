@@ -10,6 +10,7 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
+from django.utils import timezone
 from quantityfield.units import ureg
 
 from seed import models as seed_models
@@ -1226,7 +1227,7 @@ class TestColumnCasting(TestCase):
         r = Column.cast_column_value("geometry", "POLY 123, 456")
         self.assertEqual("POLY 123, 456", r)
         r = Column.cast_column_value("datetime", "2020-01-01T00:00:00")
-        self.assertEqual(datetime(2020, 1, 1, 0, 0, 0), r)
+        self.assertEqual(timezone.make_aware(datetime(2020, 1, 1, 0, 0, 0)), r)
         r = Column.cast_column_value("date", "2020-01-01")
         self.assertEqual(date(2020, 1, 1), r)
         r = Column.cast_column_value("boolean", "true")
@@ -1261,7 +1262,7 @@ class TestColumnCasting(TestCase):
             r = Column.cast_column_value("date", date_str)
             self.assertEqual(date(2010, 1, 1), r)
             r = Column.cast_column_value("datetime", date_str)
-            self.assertEqual(datetime(2010, 1, 1), r)
+            self.assertEqual(timezone.make_aware(datetime(2010, 1, 1)), r)
 
     def test_cast_values_with_errors(self):
         with pytest.raises(ColumnCastError) as exc:

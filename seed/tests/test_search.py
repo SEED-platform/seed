@@ -60,7 +60,7 @@ class TestInventoryViewSearchParsers(TestCase):
             TestCase(
                 "canonical column with datetime data_type",
                 QueryDict(f"updated_{updated_id}=2022-01-01 10:11:12"),
-                Q(state__updated=datetime(2022, 1, 1, 10, 11, 12)),
+                Q(state__updated=timezone.make_aware(datetime(2022, 1, 1, 10, 11, 12))),
             ),
             TestCase(
                 "canonical column with date data_type",
