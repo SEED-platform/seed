@@ -14,7 +14,7 @@ class JSONParserTest(TestCase):
     def setUp(self):
         file_path = os.path.dirname(os.path.abspath(__file__)) + "/test_data/example_feature_collection_geojson.json"
         with open(file_path, encoding="utf-8") as file:
-            self.parser = GeoJSONParser(file)
+            self.parser = GeoJSONParser(file, {})
 
     def test_it_has_a_data_property(self):
         expectation = [

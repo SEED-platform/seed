@@ -313,10 +313,11 @@ class GreenButtonParser:
 
 
 class GeoJSONParser:
-    def __init__(self, json_file):
+    def __init__(self, json_file, display_name_lookup):
         raw_data = json.load(json_file)
         features = raw_data.get("features")
         raw_column_names = features[0].get("properties").keys()
+        self.display_name_lookup = display_name_lookup
 
         # add in the property footprint to the headers/columns, avoiding duplicates
         self.headers = [self._display_name(col) for col in raw_column_names]
@@ -337,8 +338,12 @@ class GeoJSONParser:
             self.data.append(entry)
 
     def _display_name(self, col):
-        # Returns string with capitalized words and underscores removed
-        return re.sub(r"[_]", " ", col.title())
+        # Returns found display name or a string with capitalized words and underscores removed
+        snake_case_col = re.sub(r"\s+", "_", col.lower())
+        return (
+            self.display_name_lookup.get(snake_case_col)
+            or snake_case_col.replace("_", " ").title()
+        )
 
     def _get_bounding_box(self, feature):
         if existing_footprint := self._existing_footprint(feature):
