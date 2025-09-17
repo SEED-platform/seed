@@ -340,10 +340,7 @@ class GeoJSONParser:
     def _display_name(self, col):
         # Returns found display name or a string with capitalized words and underscores removed
         snake_case_col = re.sub(r"\s+", "_", col.lower())
-        return (
-            self.display_name_lookup.get(snake_case_col)
-            or snake_case_col.replace("_", " ").title()
-        )
+        return self.display_name_lookup.get(snake_case_col) or snake_case_col.replace("_", " ").title()
 
     def _get_bounding_box(self, feature):
         if existing_footprint := self._existing_footprint(feature):
