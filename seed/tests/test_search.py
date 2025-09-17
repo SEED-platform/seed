@@ -14,9 +14,11 @@ from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce, Collate, Replace
 from django.http.request import QueryDict
 from django.test import TestCase
+from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
 from seed.models import Column, PropertyView
+from seed.serializers.columns import ColumnSerializer
 from seed.test_helpers.fake import FakePropertyViewFactory
 from seed.utils.organizations import create_organization
 from seed.utils.search import FilterError, build_view_filters_and_sorts
@@ -58,7 +60,7 @@ class TestInventoryViewSearchParsers(TestCase):
             TestCase(
                 "canonical column with datetime data_type",
                 QueryDict(f"updated_{updated_id}=2022-01-01 10:11:12"),
-                Q(state__updated=datetime(2022, 1, 1, 10, 11, 12)),
+                Q(state__updated=timezone.make_aware(datetime(2022, 1, 1, 10, 11, 12))),
             ),
             TestCase(
                 "canonical column with date data_type",
@@ -349,6 +351,134 @@ class TestInventoryViewSearchParsers(TestCase):
         # -- Assert
         # evaluate the queryset -- no exception should be raised!
         list(cast_property_views)
+
+    def test_filter_extra_dates(self):
+        extra_date = Column.objects.create(
+            table_name="PropertyState",
+            column_name="Extra Date",
+            organization=self.fake_org,
+            data_type="date",
+            is_extra_data=True,
+        )
+        col_name = ColumnSerializer(extra_date).data["name"]
+        columns = Column.retrieve_all(self.fake_org, "property", only_used=False, include_related=False)
+
+        eq = QueryDict(f"{col_name}=2000-02-01")
+        gt = QueryDict(f"{col_name}__gt=2000-02-01")
+        gte = QueryDict(f"{col_name}__gte=2000-02-01")
+        date_range = QueryDict(f"{col_name}__gte=2000-02-01&{col_name}__lt=2000-04-01")
+        neq = QueryDict(f"{col_name}__ne=2000-02-01")
+
+        for month in range(1, 6):
+            date_str = f"2000-0{month}-01 00:00:00"
+            self.property_view_factory.get_property_view(extra_data={"Extra Date": date_str})
+
+        self.assertEqual(PropertyView.objects.count(), 5)
+
+        # Test equal
+        filters, annotations, _ = build_view_filters_and_sorts(eq, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 1)
+        # Test gt
+        filters, annotations, _ = build_view_filters_and_sorts(gt, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 3)
+        # Test gte
+        filters, annotations, _ = build_view_filters_and_sorts(gte, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 4)
+        # Test date range
+        filters, annotations, _ = build_view_filters_and_sorts(date_range, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 2)
+        # Test not equal
+        filters, annotations, _ = build_view_filters_and_sorts(neq, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 4)
+
+    def test_filter_datetimes(self):
+        col = Column.objects.get(column_name="release_date")
+        col_name = ColumnSerializer(col).data["name"]
+        columns = Column.retrieve_all(self.fake_org, "property", only_used=False, include_related=False)
+
+        eq = QueryDict(f"{col_name}=2000-02-01")
+        gt = QueryDict(f"{col_name}__gt=2000-02-01")
+        gte = QueryDict(f"{col_name}__gte=2000-02-01")
+        date_range = QueryDict(f"{col_name}__gte=2000-02-01&{col_name}__lt=2000-04-01")
+        neq = QueryDict(f"{col_name}__ne=2000-02-01")
+
+        for month in range(1, 6):
+            date_str = f"2000-{month:02d}-01"
+            naive = datetime.fromisoformat(date_str)
+            aware = timezone.make_aware(naive)
+            self.property_view_factory.get_property_view(release_date=aware)
+
+        self.assertEqual(PropertyView.objects.count(), 5)
+
+        # Test equal
+        filters, annotations, _ = build_view_filters_and_sorts(eq, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 1)
+        # Test gt
+        filters, annotations, _ = build_view_filters_and_sorts(gt, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 3)
+        # Test gte
+        filters, annotations, _ = build_view_filters_and_sorts(gte, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 4)
+        # Test date range
+        filters, annotations, _ = build_view_filters_and_sorts(date_range, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 2)
+        # Test not equal
+        filters, annotations, _ = build_view_filters_and_sorts(neq, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 4)
+
+    def test_filter_extra_datetimes(self):
+        extra_datetime = Column.objects.create(
+            table_name="PropertyState",
+            column_name="Extra Date Time",
+            organization=self.fake_org,
+            data_type="datetime",
+            is_extra_data=True,
+        )
+        col_name = ColumnSerializer(extra_datetime).data["name"]
+        columns = Column.retrieve_all(self.fake_org, "property", only_used=False, include_related=False)
+
+        eq = QueryDict(f"{col_name}=2000-02-01")
+        gt = QueryDict(f"{col_name}__gt=2000-02-01")
+        gte = QueryDict(f"{col_name}__gte=2000-02-01")
+        date_range = QueryDict(f"{col_name}__gte=2000-02-01&{col_name}__lt=2000-04-01")
+        neq = QueryDict(f"{col_name}__ne=2000-02-01")
+
+        for month in range(1, 6):
+            date_str = f"2000-{month:02d}-01T00:00:00+00:00"
+            self.property_view_factory.get_property_view(extra_data={"Extra Date Time": date_str})
+
+        self.assertEqual(PropertyView.objects.count(), 5)
+
+        # Test equal
+        filters, annotations, _ = build_view_filters_and_sorts(eq, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 1)
+        # Test gt
+        filters, annotations, _ = build_view_filters_and_sorts(gt, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 3)
+        # Test gte
+        filters, annotations, _ = build_view_filters_and_sorts(gte, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 4)
+        # Test date range
+        filters, annotations, _ = build_view_filters_and_sorts(date_range, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 2)
+        # Test not equal
+        filters, annotations, _ = build_view_filters_and_sorts(neq, columns, "property")
+        property_views = PropertyView.objects.annotate(**annotations).filter(filters)
+        self.assertEqual(property_views.count(), 4)
 
 
 class TestInventoryViewSearchParsersAccessLevelInstances(TestCase):
