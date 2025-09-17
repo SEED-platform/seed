@@ -96,7 +96,7 @@ class ServiceViewTests(AccessLevelBaseTestCase):
         )
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
-        assert response.json() == {"detail": "No Service matches the given query."}
+        assert response.json() == {"status": "error", "message": "No Service matches the given query."}
 
     def test_service_update(self):
         service = self.service_factory.get_service(system=self.system11, name="original name", emission_factor=1)

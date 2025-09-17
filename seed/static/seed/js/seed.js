@@ -123,6 +123,7 @@
     'SEED.controller.meter_edit_modal',
     'SEED.controller.system_meter_readings_upload_modal',
     'SEED.controller.group_meter_creation_modal',
+    'SEED.controller.service_meter_creation_modal',
     'SEED.controller.modified_modal',
     'SEED.controller.move_inventory_modal',
     'SEED.controller.new_member_modal',
@@ -137,6 +138,7 @@
     'SEED.controller.organization_sharing',
     'SEED.controller.pairing',
     'SEED.controller.pairing_settings',
+    'SEED.controller.service_detail',
     'SEED.controller.portfolio_summary',
     'SEED.controller.facilities_plan',
     'SEED.controller.postoffice_modal',
@@ -984,6 +986,20 @@
             propertyInventory: ['inventory_service', (inventory_service) => inventory_service.get_properties(1, undefined, undefined, -1)],
             taxlotInventory: ['inventory_service', (inventory_service) => inventory_service.get_taxlots(1, undefined, undefined, -1)],
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()]
+          }
+        })
+        .state({
+          name: 'service_detail',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/systems/{system_id:int}/services/{service_id:int}',
+          templateUrl: `${static_url}seed/partials/service_detail.html`,
+          controller: 'service_detail_controller',
+          resolve: {
+            organization_id: ['user_service', (user_service) => user_service.get_organization().id],
+            service: ['service_service', 'user_service', '$stateParams', (service_service, user_service, $stateParams) => {
+              const { group_id, system_id, service_id } = $stateParams;
+              const organization_id = user_service.get_organization().id;
+              return service_service.get_service(organization_id, group_id, system_id, service_id);
+            }]
           }
         })
         .state({
