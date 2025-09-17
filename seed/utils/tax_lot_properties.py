@@ -87,8 +87,8 @@ def export_data(args):
         filter_str["property__organization_id"] = org_id
         filter_str["property__access_level_instance__lft__gte"] = ali_lft
         filter_str["property__access_level_instance__rgt__lte"] = ali_rgt
-        column_name_mappings["property_labels"] = "Property Labels"
         if include_notes:
+            column_name_mappings["property_labels"] = "Property Labels"
             column_name_mappings["property_notes"] = "Property Notes Export"
 
     elif hasattr(view_klass, "taxlot"):
@@ -96,8 +96,8 @@ def export_data(args):
         filter_str["taxlot__organization_id"] = org_id
         filter_str["taxlot__access_level_instance__lft__gte"] = ali_lft
         filter_str["taxlot__access_level_instance__rgt__lte"] = ali_rgt
-        column_name_mappings["taxlot_labels"] = "Tax Lot Labels"
         if include_notes:
+            column_name_mappings["taxlot_labels"] = "Tax Lot Labels"
             column_name_mappings["taxlot_notes"] = "Tax Lot Notes Export"
 
     model_views = view_klass.objects.select_related(*select_related).prefetch_related(*prefetch_related).filter(**filter_str).order_by("id")
