@@ -8,7 +8,6 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
-from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
@@ -123,12 +122,17 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             has_hierarchy_access(property_view_id_kwarg="property_pk"),
         ]
     )
-    @action(detail=True, methods=["PUT"])
-    def update_connection(self, request, property_pk, pk):
+    def update(self, request, property_pk, pk):
         meter = self.get_queryset().filter(pk=pk).first()
-        meter_config = request.data.get("meter_config")
+        alias = request.data.get("alias")
+        connection_config = request.data.get("connection_config")
+
         try:
-            update_meter_connection(meter, meter_config)
+            if alias:
+                meter.alias = alias
+                meter.save()
+            if connection_config:
+                update_meter_connection(meter, connection_config)
         except IntegrityError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

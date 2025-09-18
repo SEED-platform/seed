@@ -34,6 +34,7 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
   ) {
     $scope.loading = true;
     $scope.meter_parent = property_id ? `Property ${property_id}` : meter.system_name;
+    $scope.meter_alias = meter.alias
     $scope.config = {};
     $scope.group_id = $stateParams.group_id;
     $scope.property_id = property_id;
@@ -62,7 +63,7 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
     }
 
     $scope.update_meter = () => {
-      meter_service.update_meter_connection(organization_id, meter.id, $scope.config, view_id, $scope.group_id).then((response) => {
+      meter_service.update_meter(organization_id, meter.id, $scope.meter_alias, $scope.config, view_id, $scope.group_id).then((response) => {
         if (response.status === 200) {
           refresh_meters_and_readings();
           spinner_utility.show();

@@ -4,6 +4,20 @@
 
 <div class="modal-body">
   <div class="meter-config-container">
+    <!-- ALIAS -->
+    <label class="control-label" for="selected_connection" translate
+      >Alias</label
+    >
+    <input
+      type="text"
+      class="form-control"
+      id="Alias"
+      ng-model="meter_alias"
+      placeholder="{$:: 'Alias' | translate $}"
+      required
+    />
+    <hr></hr>
+
     <!-- DIRECTION -->
     <div class="meter-config-selection-container">
       <label class="control-label" for="selected_direction" translate
