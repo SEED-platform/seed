@@ -5,15 +5,12 @@
   <!-- Current Cycle -->
   <li class="r-row r-row-centered">
     <label for="select-current-cycle" class="r-pad-right-5 goal-label" translate>Current Cycle</label>
-    <select id="select-current-cycle" class="form-control goal-form-control"
-      ng-options="cycle.id as cycle.name for cycle in cycles" ng-change="" ng-model="current_cycle" required></select>
+    <select id="select-current-cycle" class="form-control goal-form-control" ng-options="cycle.id as cycle.name for cycle in cycles" ng-change="" ng-model="current_cycle" required></select>
   </li>
-  <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Current Cycle will be measured
-      against Baseline Cycle</span></li>
+  <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Current Cycle will be measured against Baseline Cycle</span></li>
   <li class="r-row r-row-centered">
     <label for="select-current-cycle" class="r-pad-right-5 goal-label" translate>Salesforce Annual Report</label>
-    <select id="select-current-cycle" class="form-control goal-form-control"
-      ng-options="ar as ar.name for ar in annual_reports" ng-change="" ng-model="annual_report" required></select>
+    <select id="select-current-cycle" class="form-control goal-form-control" ng-options="ar as ar.name for ar in annual_reports" ng-change="" ng-model="annual_report" required></select>
   </li>
   <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Salesforce Annual Report</span></li>
 </div>

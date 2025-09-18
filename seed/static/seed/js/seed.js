@@ -1047,8 +1047,8 @@
           templateUrl: `${static_url}seed/partials/salesforce_login.html`,
           controller: 'salesforce_login_controller',
           resolve: {
-            organization_id: ['user_service', (user_service) => user_service.get_organization().id],
-          },
+            organization_id: ['user_service', (user_service) => user_service.get_organization().id]
+          }
         })
         .state({
           name: 'dataset_detail',

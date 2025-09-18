@@ -67,6 +67,7 @@ class Goal(models.Model):
         eui_columns = [self.eui_column1, self.eui_column2, self.eui_column3]
         return [column for column in eui_columns if column]
 
+
 @receiver(post_save, sender=Goal)
 def post_save_goal(sender, instance, **kwargs):
     from seed.models import GoalNote

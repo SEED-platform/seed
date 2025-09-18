@@ -29,7 +29,7 @@ angular.module('SEED.controller.create_cycle_goal_modal', [])
       $scope.annual_reports = annual_reports.results;
 
       $scope.save = () => {
-        console.log($scope.annual_report?.id, $scope.annual_report?.name)
+        console.log($scope.annual_report?.id, $scope.annual_report?.name);
         goal_service.create_cycle_goal(goal.id, $scope.current_cycle, $scope.annual_report?.id, $scope.annual_report?.name).then(() => {
           $state.reload();
           $uibModalInstance.dismiss();

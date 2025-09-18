@@ -11,8 +11,8 @@ angular.module('SEED.controller.sync_to_salesforce_modal', []).controller('sync_
   function ($scope, $uibModalInstance, urls, goal) {
     $scope.goal = goal;
     $scope.goal_details = {
-        'Partner': $scope.goal.salesforce_partner_id,
-        'Partner ID': $scope.goal.salesforce_partner_name,
+      Partner: $scope.goal.salesforce_partner_id,
+      'Partner ID': $scope.goal.salesforce_partner_name
     };
 
     $scope.dismiss = () => {

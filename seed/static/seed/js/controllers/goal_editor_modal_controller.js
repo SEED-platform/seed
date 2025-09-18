@@ -19,7 +19,7 @@ angular.module('SEED.controller.goal_editor_modal', [])
     'eui_columns',
     'goal',
     'organization',
-    'write_permission',    
+    'write_permission',
     'partners',
     // eslint-disable-next-line func-names
     function (
@@ -39,7 +39,7 @@ angular.module('SEED.controller.goal_editor_modal', [])
       goal,
       organization,
       write_permission,
-      partners,
+      partners
     ) {
       $scope.auth = auth_payload.auth;
       $scope.organization = organization;
@@ -60,31 +60,31 @@ angular.module('SEED.controller.goal_editor_modal', [])
       $scope.goal = goal || {};
 
       $scope.partners = partners.results;
-      console.log($scope.partners)
+      console.log($scope.partners);
       $scope.selected_partner_id = undefined;
       $scope.possible_goals = [];
       $scope.selected_goal = undefined;
-      if ($scope.goal.salesforce_partner_id !== null){
-        $scope.selected_partner_id = $scope.goal.salesforce_partner_id
-        selected_partner = $scope.partners.find(p => p.id == $scope.selected_partner_id);
+      if ($scope.goal.salesforce_partner_id !== null) {
+        $scope.selected_partner_id = $scope.goal.salesforce_partner_id;
+        selected_partner = $scope.partners.find((p) => p.id == $scope.selected_partner_id);
         $scope.possible_goals = selected_partner?.goals;
-        $scope.selected_goal = selected_partner?.goals.find(g => g.id == $scope.goal.salesforce_goal_id);
+        $scope.selected_goal = selected_partner?.goals.find((g) => g.id == $scope.goal.salesforce_goal_id);
       }
 
       $scope.changePossibleGoals = (partner_id) => {
-        console.log(partner_id)
-        console.log($scope.selected_partner_id)
-        selected_partner = $scope.partners.find(p => p.id == $scope.selected_partner_id);
+        console.log(partner_id);
+        console.log($scope.selected_partner_id);
+        selected_partner = $scope.partners.find((p) => p.id == $scope.selected_partner_id);
         $scope.possible_goals = selected_partner.goals;
-      }
+      };
 
       $scope.changeSelectedGoal = () => {
         $scope.goal.salesforce_partner_id = $scope.selected_partner_id;
-        selected_partner = $scope.partners.find(p => p.id == $scope.selected_partner_id);
+        selected_partner = $scope.partners.find((p) => p.id == $scope.selected_partner_id);
         $scope.goal.salesforce_partner_name = selected_partner.name;
         $scope.goal.salesforce_goal_id = $scope.selected_goal.id;
         $scope.goal.salesforce_goal_name = $scope.selected_goal.name;
-      }
+      };
 
       $scope.valid = false;
       $scope.goal_types = ['standard', 'transaction'];

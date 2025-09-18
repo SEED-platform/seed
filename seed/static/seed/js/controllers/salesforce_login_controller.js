@@ -19,22 +19,22 @@ angular.module('SEED.controller.salesforce_login', []).controller('salesforce_lo
     organization_id
   ) {
     $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !$scope.viewer;
-    $scope.AUTHENTICATION_STATE = "PENDING"; // PENDING, FAILURE, SUCCESS
+    $scope.AUTHENTICATION_STATE = 'PENDING'; // PENDING, FAILURE, SUCCESS
     code = $location.search().code;
 
-    bb_salesforce_service.get_token(code, organization_id).then(data => {
-      if(data.status == "success"){
-        $scope.AUTHENTICATION_STATE = "SUCCESS";
-      } else{
-        $scope.AUTHENTICATION_STATE = "FAILURE";
+    bb_salesforce_service.get_token(code, organization_id).then((data) => {
+      if (data.status == 'success') {
+        $scope.AUTHENTICATION_STATE = 'SUCCESS';
+      } else {
+        $scope.AUTHENTICATION_STATE = 'FAILURE';
         $scope.error_message = data.response;
       }
     });
 
     $scope.login_salesforce = () => {
-      bb_salesforce_service.get_login_url(organization_id).then(data => {
+      bb_salesforce_service.get_login_url(organization_id).then((data) => {
         $window.location.href = data.url;
-      })
+      });
     };
   }
 ]);

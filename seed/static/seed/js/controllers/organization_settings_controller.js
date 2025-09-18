@@ -64,10 +64,10 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     }
 
     $scope.bb_salesforce_config = {};
-    console.log(bb_salesforce_configs_payload, bb_salesforce_configs_payload === null)
+    console.log(bb_salesforce_configs_payload, bb_salesforce_configs_payload === null);
     if (bb_salesforce_configs_payload !== null) {
       $scope.bb_salesforce_configs = bb_salesforce_configs_payload;
-    } else{
+    } else {
       $scope.bb_salesforce_configs = {};
     }
 
@@ -390,25 +390,25 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
         });
 
       if ($scope.bb_salesforce_configs) {
-          bb_salesforce_service
-            .update_bb_salesforce_config($scope.org.id, $scope.bb_salesforce_configs, $scope.conf, $scope.timezone)
-            .then((response) => {
-              if (response.status === 'error') {
-                $scope.config_errors = response.errors;
+        bb_salesforce_service
+          .update_bb_salesforce_config($scope.org.id, $scope.bb_salesforce_configs, $scope.conf, $scope.timezone)
+          .then((response) => {
+            if (response.status === 'error') {
+              $scope.config_errors = response.errors;
               // } else {
               //   salesforce_config_service.get_salesforce_configs($scope.org.id).then((data) => {
               //     $scope.conf = data.length > 0 ? data[0] : {};
               //   });
-              }
-            })
-            .catch((response) => {
-              if (response.data && response.data.status === 'error') {
-                $scope.config_errors = response.data.message;
-              } else {
-                $scope.config_errors = 'An unknown error has occurred';
-              }
-              // console.log("config ERRORS: ", $scope.config_errors);
-              Notification.error({ message: `Error: ${$scope.config_errors}`, delay: 15000, closeOnClick: true });
+            }
+          })
+          .catch((response) => {
+            if (response.data && response.data.status === 'error') {
+              $scope.config_errors = response.data.message;
+            } else {
+              $scope.config_errors = 'An unknown error has occurred';
+            }
+            // console.log("config ERRORS: ", $scope.config_errors);
+            Notification.error({ message: `Error: ${$scope.config_errors}`, delay: 15000, closeOnClick: true });
           });
       }
 

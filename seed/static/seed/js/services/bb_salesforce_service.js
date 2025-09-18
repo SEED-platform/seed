@@ -30,7 +30,7 @@ angular.module('SEED.service.bb_salesforce', []).factory('bb_salesforce_service'
 
     // update
     const update_bb_salesforce_config = (organization_id, data, timezone = null) => $http
-      .put(`/api/v3/bb_salesforce/configs/update_config/`, data, {
+      .put('/api/v3/bb_salesforce/configs/update_config/', data, {
         params: {
           organization_id,
           timezone
@@ -77,28 +77,28 @@ angular.module('SEED.service.bb_salesforce', []).factory('bb_salesforce_service'
     ) => $http
       .get('/api/v3/bb_salesforce/verify_token/', {
         params: {
-          organization_id,
+          organization_id
         }
-      })
+      });
 
     const get_partners = (
       organization_id
     ) => $http
       .get('/api/v3/bb_salesforce/partners/', {
         params: {
-          organization_id,
+          organization_id
         }
       })
       .then((response) => response.data);
 
     const get_annual_report = (
       organization_id,
-      goal_id,
+      goal_id
     ) => $http
       .get('/api/v3/bb_salesforce/annual_report/', {
         params: {
           organization_id,
-          goal_id,
+          goal_id
         }
       })
       .then((response) => response.data);

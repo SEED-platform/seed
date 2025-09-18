@@ -3,6 +3,8 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import logging
+
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
 from django.http import JsonResponse
@@ -30,9 +32,9 @@ from seed.utils.goals import (
 )
 from seed.utils.search import FilterError, build_view_filters_and_sorts, filter_views_on_related
 from seed.utils.viewsets import ModelViewSetWithoutPatch
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 @method_decorator(
     name="destroy",
@@ -200,7 +202,7 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         logger.error("++++++++")
         summary = get_portfolio_summary(org, cycle_goal)
         logger.error("++++++++")
-        
+
         return JsonResponse(summary)
 
     @ajax_request_class

@@ -146,14 +146,13 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       $scope.select_cycle_goal = (selected_cycle_goal) => {
         $scope.cycle_goal = selected_cycle_goal;
-      }
+      };
 
       $scope.$watch('goal', (cur, old) => {
         if (Object.keys(cur).length == 0) return;
-        goal_service.get_cycle_goals(cur.id).then(data => {
-          $scope.cycle_goals = data.cycle_goals
-        })
-
+        goal_service.get_cycle_goals(cur.id).then((data) => {
+          $scope.cycle_goals = data.cycle_goals;
+        });
       });
 
       // If goal changes, reset grid filters and repopulate ui-grids
@@ -239,15 +238,15 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       $scope.login_salesforce = () => {
-        bb_salesforce_service.get_login_url($scope.organization.id).then(data => {
-          console.log(data.url)
+        bb_salesforce_service.get_login_url($scope.organization.id).then((data) => {
+          console.log(data.url);
           $window.location.href = data.url;
-        })
+        });
       };
 
       // GOAL EDITOR MODAL
       $scope.open_goal_editor_modal = () => {
-        console.log("open_goal_editor_modal")
+        console.log('open_goal_editor_modal');
         const modalInstance = $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
           controller: 'goal_editor_modal_controller',
@@ -263,7 +262,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             goal: () => $scope.goal,
             organization: () => $scope.organization,
             write_permission: () => $scope.write_permission,
-            partners: () =>  $scope.is_logged_into_salesforce? bb_salesforce_service.get_partners($scope.organization.id): []
+            partners: () => ($scope.is_logged_into_salesforce ? bb_salesforce_service.get_partners($scope.organization.id) : [])
           }
         });
 
@@ -281,7 +280,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           size: 'lg',
           backdrop: 'static',
           resolve: {
-            goal: () => $scope.goal,
+            goal: () => $scope.goal
           }
         });
       };
@@ -1159,7 +1158,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       const set_summary_grid_options = (summary) => {
-        console.log(summary)
+        console.log(summary);
         get_goal_stats(summary);
         $scope.summary_data = [summary];
         $scope.summaryGridOptions = {
@@ -1185,7 +1184,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             annual_reports: () => bb_salesforce_service.get_annual_report($scope.organization.id, $scope.goal.id)
           }
         });
-      }
+      };
 
       // --- DATA QUALITY ---
       $scope.run_data_quality_check = () => {

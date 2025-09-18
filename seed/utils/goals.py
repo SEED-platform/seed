@@ -3,6 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import logging
 import math
 
 from django.db.models import Case, F, FloatField, IntegerField, Prefetch, Sum, Value, When
@@ -13,9 +14,9 @@ from quantityfield.units import ureg
 from seed.models import CycleGoal, GoalNote, Property, PropertyView
 from seed.serializers.pint import collapse_unit
 from seed.utils.generic import get_int
-import logging
 
 logger = logging.getLogger(__name__)
+
 
 def get_eui_expression(goal):
     """

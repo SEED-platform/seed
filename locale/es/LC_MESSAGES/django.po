@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-05-27 19:27\n"
+"PO-Revision-Date: 2025-09-13 00:33\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -216,9 +216,15 @@ msgstr "Utilice el correo electrónico asociado a su cuenta de <a href=\"{link}/
 msgid "AT_ID_FIELD_TEXT"
 msgstr "Ingrese el NOMBRE DE COLUMNA (no el nombre para mostrar) del campo SEED que contiene el ID de identificación fiscal personalizado de su organización. El valor predeterminado es 'custom_id_1'. Puede encontrar esta información en la página Configuración de columnas de su organización en SEED."
 
+msgid "AT_IMPORT_DEFAULT_CYCLE_DESC"
+msgstr "El proceso de importación recupera cada envío de plantilla de auditoría y compara su fecha de envío con las fechas de inicio y fin de todos los ciclos SEED para determinar a qué ciclo adjuntar los datos. Si no se encuentra ninguna coincidencia, puede optar por agregar un ciclo predeterminado al que adjuntar los datos, independientemente de la comparación de fechas de envío. Si no se especifica ningún ciclo predeterminado, no se importarán los datos que no coincidan."
+
 #, fuzzy
 msgid "AT_MOST_RECENT_ONLY"
 msgstr "Sólo se importarán los envíos de Plantillas de Auditoría que hayan sido enviados más recientemente que la actualización más reciente del inventario de SEED. Puede configurar esta opción en la página de configuración de su organización de SEED."
+
+msgid "AT_OPTIONAL_DEFAULT_CYCLE"
+msgstr "Ciclo predeterminado para la importación (opcional)"
 
 msgid "AT_OPTIONAL_EXPORTS_TEXT"
 msgstr "Utilice las casillas de verificación a continuación si desea incluir datos adicionales en sus exportaciones de BuildingSync que crean informes de plantillas de auditoría de código auxiliar."
@@ -730,6 +736,9 @@ msgstr "BuildingSync Medidas recomendadas"
 msgid "Buildings"
 msgstr "Edificios"
 
+msgid "Bulk Edit"
+msgstr "Edición masiva"
+
 msgid "By Analysis"
 msgstr "Por análisis"
 
@@ -739,6 +748,16 @@ msgstr "Por propiedad"
 #, fuzzy
 msgid "By clicking the Log In button you accept the NREL Data Terms."
 msgstr "Al hacer clic en el botón Iniciar sesión, acepta las Condiciones de datos del NREL."
+
+msgid "CALC_ACCESS_LEVEL_DESC"
+msgstr "Seleccione el nivel de acceso y la instancia de los datos que se incluirán en los cálculos."
+
+#, fuzzy
+msgid "CALC_CYCLE_DESC"
+msgstr "Seleccione el ciclo a utilizar para los cálculos."
+
+msgid "CALC_DATA_COLS_DESC"
+msgstr "Seleccione columnas de datos adicionales para incluir en la tabla del Plan de Instalaciones, si lo desea."
 
 msgid "CEWE_ELEMENTS_COMMENT"
 msgstr "(Generado por la biblioteca de base de conocimientos de ESTCP Technologies)"
@@ -989,6 +1008,12 @@ msgstr "Limpiar filtros"
 #, fuzzy
 msgid "Clear Labels"
 msgstr "Etiquetas transparentes"
+
+msgid "Client ID"
+msgstr "ID de cliente"
+
+msgid "Client Secret"
+msgstr "Secreto del cliente"
 
 #, fuzzy
 msgid "Close"
@@ -1739,6 +1764,9 @@ msgstr "Equipo de desarrollo"
 msgid "Dismiss"
 msgstr "Desestimar"
 
+msgid "Display Columns"
+msgstr "Columnas de visualización"
+
 #, fuzzy
 msgid "Display Name"
 msgstr "Mostrar nombre"
@@ -1801,6 +1829,9 @@ msgstr "Arrastrar hasta aquí"
 #, fuzzy
 msgid "Duplicate"
 msgstr "Duplicar"
+
+msgid "Duplicate Data File Headers are not allowed. Modify the import file and try again."
+msgstr "No se permiten encabezados duplicados en los archivos de datos. Modifique el archivo de importación y vuelva a intentarlo."
 
 #, fuzzy
 msgid "Duplicates"
@@ -1979,6 +2010,9 @@ msgstr "Activar la geocodificación"
 msgid "Enable Labels in Public Feed"
 msgstr "Habilitar etiquetas en el feed público"
 
+msgid "Enable Portfolio Salesforce Integration"
+msgstr "Habilitar la integración de Salesforce (cartera de propiedades)"
+
 #, fuzzy
 msgid "Enable Public Endpoints"
 msgstr "Habilitar puntos finales públicos"
@@ -1987,9 +2021,8 @@ msgstr "Habilitar puntos finales públicos"
 msgid "Enable Public GeoJSON"
 msgstr "Activar GeoJSON público"
 
-#, fuzzy
 msgid "Enable Salesforce Integration"
-msgstr "Activar la integración de Salesforce"
+msgstr "Habilitar la integración de Salesforce (propiedades individuales)"
 
 #, fuzzy
 msgid "Energy"
@@ -2230,6 +2263,9 @@ msgstr "Umbral EUI de combustibles fósiles para el edificio (incluye gas, etc.)
 msgid "Facilities Plan"
 msgstr "Plan de Instalaciones"
 
+msgid "Facilities Plan Run"
+msgstr "Ejecución del plan de instalaciones"
+
 #, fuzzy
 msgid "Failed to delete inventory"
 msgstr "Error al borrar inventario"
@@ -2398,6 +2434,9 @@ msgstr "Financiación de"
 msgid "GAS_ENERGY_USAGE_DESC"
 msgstr "Identifique la columna SEMILLA utilizada para almacenar el consumo de energía del gas."
 
+msgid "GENERIC_FP_DESC"
+msgstr "Seleccione un Plan de Instalaciones Genérico creado en la Configuración de la Organización. Si no tiene acceso, pídale a su administrador que lo cree."
+
 #, fuzzy
 msgid "GEOCODED_MANUALLY"
 msgstr "geocodificado manualmente"
@@ -2511,6 +2550,9 @@ msgstr "Configuraciones generales"
 #, fuzzy
 msgid "Generate Token"
 msgstr "Generar token"
+
+msgid "Generic Facilities Plan Selection"
+msgstr "Selección de planes de instalaciones genéricas"
 
 #, fuzzy
 msgid "Geocode"
@@ -3486,6 +3528,9 @@ msgstr "Nueva construcción o adquisición"
 msgid "New Facilities Plan"
 msgstr "Nuevo Plan de Instalaciones"
 
+msgid "New Facilities Run Plan"
+msgstr "Plan de Ejecución de Nuevas Instalaciones"
+
 #, fuzzy
 msgid "New Goal"
 msgstr "Nuevo Objetivo"
@@ -3945,6 +3990,9 @@ msgstr "Vaya a la siguiente página y cree su cuenta:"
 #, fuzzy
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Únete al foro de desarrolladores de SEED-Platform, donde podrás ponerte en contacto con otros desarrolladores."
+
+msgid "Please review SEED Headers. Duplicate values are not allowed."
+msgstr "Revise los encabezados SEED. No se permiten valores duplicados."
 
 #, fuzzy
 msgid "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
@@ -4524,6 +4572,12 @@ msgstr "Estado de ejecución"
 msgid "Runs"
 msgstr "Ejecuciones"
 
+msgid "SALESFORCE_BENCHMARK_INTEGRATION_DESC"
+msgstr "Esta integración le permite conectar su organización con una instancia de Salesforce para optimizar la gestión de datos y la automatización del flujo de trabajo. Esta integración presupone que Salesforce está configurado con objetos de propiedad y referencia, que se actualizarán con datos de propiedad individuales de SEED."
+
+msgid "SALESFORCE_PORTFOLIO_INTEGRATION_DESC"
+msgstr "Esta integración también le permite conectar su organización con una instancia de Salesforce, pero supone que Salesforce está configurado con objetos de Objetivo e Informe anual que se actualizarán con datos de nivel de cartera (agregados de múltiples propiedades en SEED)."
+
 #, fuzzy
 msgid "SEED Field Containing Organization's Identifier"
 msgstr "Campo SEED que contiene el identificador de la organización"
@@ -4700,6 +4754,9 @@ msgstr "Introduzca la dirección de correo electrónico que se utilizará para n
 #, fuzzy
 msgid "SF_MAPPINGS_TEXT"
 msgstr "Asigne los campos de su objeto de referencia de Salesforce a columnas en SEED. Utilice el Administrador de Objetos en Salesforce para recuperar los nombres de campo (no las etiquetas de campo), ej: Cycle__c (no Cycle). Estos campos sólo se enviarán a Salesforce cuando una propiedad tenga aplicada la etiqueta correspondiente."
+
+msgid "SF_PORTFOLIO_CONNECTION_TEXT"
+msgstr "Ingrese los datos de conexión de su instancia de Salesforce. Esto supone que su Salesforce está configurado con una aplicación de cliente externa para SEED."
 
 #, fuzzy
 msgid "SF_SCHEDULED_UPDATE_TEXT"
@@ -5776,6 +5833,9 @@ msgstr "¿Cálculos de resumen de cartera inesperados?"
 #, fuzzy
 msgid "Uniformat Category"
 msgstr "Categoría Uniformat"
+
+msgid "Unique name which will be displayed in the dropdown selector"
+msgstr "Nombre único que se mostrará en el selector desplegable"
 
 #, fuzzy
 msgid "Units"

@@ -46,11 +46,11 @@
         <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
       </div>
       <!-- SALEFORCES -->
-      <div style="margin: 0px 0px 15px 15px;" ng-if="!is_logged_into_salesforce">
+      <div style="margin: 0px 0px 15px 15px" ng-if="!is_logged_into_salesforce">
         <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="login_salesforce()" ng-if="write_permission">{$:: 'Login to Salesforce' | translate $}</button>
       </div>
-      <div style="margin: 0px 0px 15px 15px;" ng-if="is_logged_into_salesforce">
-        <button disabled class="btn" type="submit" ng-if="write_permission"  style="border-color: darkgreen;">{$:: 'Logged in to Salesforce' | translate $}</button>
+      <div style="margin: 0px 0px 15px 15px" ng-if="is_logged_into_salesforce">
+        <button disabled class="btn" type="submit" ng-if="write_permission" style="border-color: darkgreen">{$:: 'Logged in to Salesforce' | translate $}</button>
       </div>
       <!-- GOAL DETAILS -->
       <div class="goal-details-container" ng-if="goal">
@@ -68,13 +68,11 @@
         </div>
       </div>
       <!-- cycles -->
-      <div style="display: flex; flex-direction: row;">
+      <div style="display: flex; flex-direction: row">
         <button ng-repeat="cycle_goal in cycle_goals" ng-click="select_cycle_goal(cycle_goal)" class="btn btn-light">{$ cycle_goal.cycle_name $}</button>
         <button ng-click="create_cycle_goal()" class="btn btn-light">Add Cycle</button>
       </div>
     </div>
-
-
 
     <div class="goal-header-column" ng-if="valid">
       <table class="table table-striped table-bordered">

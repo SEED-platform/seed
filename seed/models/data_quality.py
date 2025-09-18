@@ -966,11 +966,7 @@ class DataQualityCheck(models.Model):
             _log.error(f"min: {rule.min} max: {rule.max}")
             _log.error(f"value: {value} type: {type(value)}")
             _log.error(f"result: {(rule.min is None or value > float(rule.min)) and (rule.max is None or value < float(rule.max))}")
-            return (
-                (rule.min is None or value > float(rule.min))
-                and 
-                (rule.max is None or value < float(rule.max))
-            )
+            return (rule.min is None or value > float(rule.min)) and (rule.max is None or value < float(rule.max))
 
         def append_to_apply_labels():
             if rule.status_label:
