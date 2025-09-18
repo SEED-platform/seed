@@ -138,6 +138,25 @@ class TestInventoryViewSearchParsers(TestCase):
                 f'Failed "{test_case.name}"; actual: {annotations}; expected: {test_case.expected_annotations}',
             )
 
+    def test_filters_with_multilpe_conditions(self):
+        self.property_view_factory.get_property_view(custom_id_1="123")
+        self.property_view_factory.get_property_view(custom_id_1="321")
+        self.property_view_factory.get_property_view(custom_id_1="10203")
+        self.property_view_factory.get_property_view(custom_id_1="12")
+
+        columns = Column.retrieve_all(self.fake_org, "property", only_used=False, include_related=False)
+        col = Column.objects.get(column_name="custom_id_1", table_name="PropertyState")
+        col_name = f"{col.column_name}_{col.id}__icontains"
+
+        q1 = QueryDict(f"{col_name}=123")
+        q2 = QueryDict(f"{col_name}=1,2,3")
+
+        filters, _, _ = build_view_filters_and_sorts(q1, columns, "property")
+        self.assertEqual(PropertyView.objects.filter(filters).count(), 1)
+
+        filters, _, _ = build_view_filters_and_sorts(q2, columns, "property")
+        self.assertEqual(PropertyView.objects.filter(filters).count(), 3)
+
     def test_parse_filters_returns_empty_q_object_for_invalid_columns(self):
         # -- Setup
         query_dict = QueryDict("this_column_does_not_exits=123")
