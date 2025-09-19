@@ -728,3 +728,74 @@ class TestPostalCodeAndExcelCellErrors(DataMappingBaseTestCase):
         ps = PropertyState.objects.filter(address_line_1="124 Mainstreet")[0]
         self.assertEqual(ps.postal_code, None)
         self.assertEqual(ps.site_eui, None)
+
+
+class TestColumnMatching(DataMappingBaseTestCase):
+    def setUp(self):
+        import_file_source_type = ASSESSED_RAW
+        selfvars = self.set_up(import_file_source_type)
+        self.user, self.org, *_ = selfvars
+
+    def test_column_mapping_matches_existing_columns(self):
+        mappings = [
+            {
+                "from_field": "PM Property Id",
+                "to_field": "pm_property_id",
+                "to_table_name": "PropertyState",
+            },
+            {
+                "from_field": "CUSTOM ID 1",
+                "to_field": "CUSTOM ID 1",
+                "to_table_name": "PropertyState",
+            },
+            {
+                "from_field": "address line 1",
+                "to_field": "address line 1",
+                "to_table_name": "PropertyState",
+            },
+            {
+                "from_field": "address_line_2",
+                "to_field": "address_line_2",
+                "to_table_name": "PropertyState",
+            },
+            {
+                "from_field": "postal_code",
+                "to_field": "postal code",
+                "to_table_name": "PropertyState",
+            },
+            {
+                "from_field": "site eui",
+                "to_field": "site eui",
+                "to_table_name": "PropertyState",
+            },
+            {
+                "from_field": "SOURCE EUI",
+                "to_field": "source eui",
+                "to_table_name": "PropertyState",
+            },
+            {
+                "from_field": "Extra Field",
+                "to_field": "Extra Field",
+                "to_table_name": "PropertyState",
+            },
+        ]
+
+        # on first import, new columns with empty table_name's will be created (8)
+        # one new column (Extra Field) will be created and attatched to PropertyState (1)
+        # the rest should match existing columns
+
+        count1 = Column.objects.count()
+        ids1 = [c.id for c in Column.objects.all()]
+        self.assertEqual(count1, 78)
+
+        Column.create_mappings(mappings, self.org, self.user)
+        count2 = Column.objects.count()
+        cols2 = Column.objects.exclude(id__in=ids1)
+        self.assertEqual(count1 + 9, count2)
+        self.assertEqual(cols2.filter(table_name="").count(), 8)
+        self.assertEqual(cols2.filter(table_name="PropertyState").count(), 1)
+
+        # on second import, all columns should match existing columns
+        Column.create_mappings(mappings, self.org, self.user)
+        count3 = Column.objects.count()
+        self.assertEqual(count3, count2)
