@@ -9,6 +9,7 @@ from django.db.models import Count, F, Q, Sum
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.utils.timezone import make_aware
+from drf_yasg.utils import swagger_auto_schema
 from pint import Quantity
 from pytz import timezone
 from rest_framework import response, status
@@ -17,10 +18,10 @@ from rest_framework.decorators import action
 from config.settings.common import TIME_ZONE
 from seed.filters import ColumnListProfileFilterBackend
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
-from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, PropertyView
+from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, Property, PropertyView, System
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.meters import PropertyMeterReadingsExporter, update_meter_connection
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
@@ -181,6 +182,81 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             "exporting_total": exporting_total,
         }
         return JsonResponse({"status": "success", "data": readable_data})
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="Cycle ID"),
+            AutoSchemaHelper.query_integer_field("meter_type", required=True, description="Meter Type"),
+        ],
+    )
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
+        ]
+    )
+    @action(detail=True, methods=["GET"])
+    def hannahs_sankey(self, request, pk):
+        cycle = Cycle.objects.get(pk=request.query_params.get("cycle_id"))
+        meter_type = request.query_params.get("meter_type")
+
+        def _get_sankey_data_for_system(system, meter_type, cycle):
+            system_meters = Meter.objects.filter(system=system, type=meter_type).annotate(
+                flow=Sum(
+                    "meter_readings__reading",
+                    filter=Q(meter_readings__end_time__lte=cycle.end, meter_readings__start_time__gte=cycle.start),
+                )
+            )
+
+            data = []
+            for meter in system_meters:
+                if meter.connection_type == Meter.IMPORTED:
+                    data.append({"from": "outside", "to": f"system {system.name}", "flow": meter.flow})
+                elif meter.connection_type == Meter.EXPORTED:
+                    data.append({"from": f"system {system.name}", "to": "outside", "flow": meter.flow})
+                elif meter.connection_type == Meter.RECEIVING_SERVICE:
+                    data.append({"from": f"system {meter.service.system.name}", "to": f"system {system.name}", "flow": meter.flow})
+                elif meter.connection_type == Meter.RETURNING_TO_SERVICE:
+                    data.append({"from": f"system {system.name}", "to": f"system {meter.service.system.name}", "flow": meter.flow})
+                elif meter.connection_type in {Meter.TOTAL_TO_USERS, Meter.TOTAL_FROM_USERS}:
+                    # ???
+                    pass
+
+            return data
+
+        def _get_sankey_data_for_property(property_, meter_type, cycle):
+            property_meters = Meter.objects.filter(property=property_, type=meter_type).annotate(
+                flow=Sum(
+                    "meter_readings__reading",
+                    filter=Q(meter_readings__end_time__lte=cycle.end, meter_readings__start_time__gte=cycle.start),
+                )
+            )
+
+            data = []
+            for meter in property_meters:
+                if meter.connection_type == Meter.IMPORTED:
+                    data.append({"from": "outside", "to": f"property {property_.id}", "flow": meter.flow})
+                elif meter.connection_type == Meter.EXPORTED:
+                    data.append({"from": f"property {property_.id}", "to": "outside", "flow": meter.flow})
+                elif meter.connection_type == Meter.RECEIVING_SERVICE:
+                    data.append({"from": f"system {meter.service.system.name}", "to": f"property {property_.id}", "flow": meter.flow})
+                elif meter.connection_type == Meter.RETURNING_TO_SERVICE:
+                    data.append({"from": f"property {property_.id}", "to": f"system {meter.service.system.name}", "flow": meter.flow})
+                elif meter.connection_type in {Meter.TOTAL_TO_USERS, Meter.TOTAL_FROM_USERS}:
+                    # ???
+                    pass
+
+            return data
+
+        data = []
+        for system in System.objects.filter(group_id=pk):
+            data.extend(_get_sankey_data_for_system(system, meter_type, cycle))
+
+        for property in Property.objects.filter(group_mappings__group_id=pk):
+            data.extend(_get_sankey_data_for_property(property, meter_type, cycle))
+
+        return JsonResponse({"status": "success", "data": data})
 
     @swagger_auto_schema_org_query_param
     @method_decorator(
