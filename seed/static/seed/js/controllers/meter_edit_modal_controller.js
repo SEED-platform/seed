@@ -34,7 +34,7 @@ angular.module('SEED.controller.meter_edit_modal', []).controller('meter_edit_mo
   ) {
     $scope.loading = true;
     $scope.meter_parent = property_id ? `Property ${property_id}` : meter.system_name;
-    $scope.meter_alias = meter.alias
+    $scope.meter_alias = meter.alias;
     $scope.config = {};
     $scope.group_id = $stateParams.group_id;
     $scope.property_id = property_id;

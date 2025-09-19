@@ -213,6 +213,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
         )
         response = self.client.put(meter_url, data=json.dumps(new_payload), content_type="application/json")
         self.assertEqual(response.status_code, 200)
+        print(f" @@@@@@@ response.json() {response.json()}")
         self.assertEqual(response.json()["is_virtual"], True)
 
 
