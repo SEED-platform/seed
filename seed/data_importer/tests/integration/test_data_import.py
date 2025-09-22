@@ -729,6 +729,7 @@ class TestPostalCodeAndExcelCellErrors(DataMappingBaseTestCase):
         self.assertEqual(ps.postal_code, None)
         self.assertEqual(ps.site_eui, None)
 
+
 class TestColumnMatching(DataMappingBaseTestCase):
     def setUp(self):
         import_file_source_type = ASSESSED_RAW
