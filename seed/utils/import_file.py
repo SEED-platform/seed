@@ -1,7 +1,7 @@
 import json
-
-from seed.models import Column, ColumnMapping, Cycle, ImportFile, Organization
 import logging
+
+from seed.models import Column, ColumnMapping, ImportFile
 
 
 def get_import_file_table_mappings(import_file_id):
@@ -34,12 +34,11 @@ def get_import_file_table_mappings(import_file_id):
         logging.error(f"Unable to get Organization from ImportFile {import_file_id}")
         return {}
 
-
-    ali_columns = Column.objects.filter(
+    ali_column_names = Column.objects.filter(
         organization=org,
         column_name__in=org.access_level_names,
         is_extra_data=True,
-    )
+    ).values_list("column_name", flat=True)
     org_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
     cached_mappings = json.loads(import_file.cached_mapped_columns or "[]")
 
@@ -47,10 +46,12 @@ def get_import_file_table_mappings(import_file_id):
     for mapping in cached_mappings:
         table_name = mapping.get("to_table_name")
         from_field = mapping.get("from_field")
+
+        # Try to find the existing mapping, ali info will be placed under an empty table name. If neither exists, ignore.
         if mapping_data := org_mappings.get(table_name, {}).get(from_field, ()):
             result.setdefault(table_name, {})[from_field] = mapping_data
-        elif ali_columns.filter(column_name=from_field).first():
-            mapping = org_mappings.get('', {}).get(from_field, ())
-            result.setdefault('', {})[from_field] = mapping
+        elif from_field in ali_column_names:
+            mapping_data = org_mappings.get("", {}).get(from_field, ())
+            result.setdefault("", {})[from_field] = mapping_data
 
     return result
