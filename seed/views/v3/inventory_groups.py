@@ -189,6 +189,24 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             has_hierarchy_access(inventory_group_id_kwarg="pk"),
         ]
     )
+    @action(detail=True, methods=["GET"])
+    def properties(self, request, pk):
+        views = PropertyView.objects.filter(property__group_mappings__group=pk).distinct("property")
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "data": [{"property_id": view.property_id, "property_display_name": view.state.default_display_value()} for view in views],
+            }
+        )
+
+    @swagger_auto_schema_org_query_param
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def meter_usage(self, request, pk):
         """
