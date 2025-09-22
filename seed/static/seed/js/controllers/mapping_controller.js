@@ -413,12 +413,14 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         }
       });
 
+      $scope.duplicate_suggestions_present = false;
+      $scope.duplicate_headers_present = false;
       // Verify that we don't have any duplicate mappings.
       _.forEach($scope.mappings, (col) => {
         const potential = `${col.suggestion}.${col.suggestion_table_name}`;
         const dup_suggestion = _.get(suggestions, potential, 0) > 1;
 
-        const dup_header = _.filter($scope.raw_columns, (filter_col) => filter_col === col.name).length > 1;
+        const dup_header = $scope.raw_columns.filter((c) => c === col.name).length > 1;
 
         col.is_duplicate = dup_header || dup_suggestion;
         $scope.duplicate_suggestions_present ||= dup_suggestion;

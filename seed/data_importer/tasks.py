@@ -1407,7 +1407,7 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     try:
         columns = import_file.cycle.organization.column_set.all()
         display_name_lookup = {col.column_name: col.display_name for col in columns}
-    except Exception as e:
+    except Exception:
         display_name_lookup = {}
 
     if file_extension in {".json", ".geojson"}:
