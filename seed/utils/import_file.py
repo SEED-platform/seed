@@ -1,6 +1,7 @@
 import json
 
-from seed.models import ColumnMapping, Cycle, ImportFile
+from seed.models import Column, ColumnMapping, Cycle, ImportFile, Organization
+import logging
 
 
 def get_import_file_table_mappings(import_file_id):
@@ -11,8 +12,13 @@ def get_import_file_table_mappings(import_file_id):
     The return is the same format as ColumnMapping.get_column_mappings_by_table_name
     but limited to the mappings specified in the ImportFile's cached_mapped_columns.
 
+    Ali info is saved under the '' (empty string) key.
+
     ex return:
     {
+        '': {
+            '1st Gen': ('', '1st Gen', '', True),
+        },
         'PropertyState': {
             'address line 1': ('PropertyState', 'address_line_1', 'Address Line 1', False),
             'city': ('PropertyState', 'city', 'City', False),
@@ -23,10 +29,17 @@ def get_import_file_table_mappings(import_file_id):
     """
     try:
         import_file = ImportFile.objects.get(pk=import_file_id)
-        org = import_file.cycle.organization
-    except (ImportFile.DoesNotExist, Cycle.DoesNotExist):
-        raise ValueError("No such resource.")
+        org = import_file.import_record.super_organization
+    except (ImportFile.DoesNotExist, AttributeError):
+        logging.error(f"Unable to get Organization from ImportFile {import_file_id}")
+        return {}
 
+
+    ali_columns = Column.objects.filter(
+        organization=org,
+        column_name__in=org.access_level_names,
+        is_extra_data=True,
+    )
     org_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
     cached_mappings = json.loads(import_file.cached_mapped_columns or "[]")
 
@@ -36,4 +49,8 @@ def get_import_file_table_mappings(import_file_id):
         from_field = mapping.get("from_field")
         if mapping_data := org_mappings.get(table_name, {}).get(from_field, ()):
             result.setdefault(table_name, {})[from_field] = mapping_data
+        elif ali_columns.filter(column_name=from_field).first():
+            mapping = org_mappings.get('', {}).get(from_field, ())
+            result.setdefault('', {})[from_field] = mapping
+
     return result
