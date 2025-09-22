@@ -40,7 +40,7 @@ polling==0.3.2
 pyyaml==6.0.2
 street-address==0.4.0
 xlrd<2.0.0  # Version 2 removes xlsx support
-xlsxwriter==3.2.8
+xlsxwriter==3.2.9
 xmltodict==1.0.2
 requests==2.32.5
 probablepeople==0.5.6
@@ -65,7 +65,7 @@ pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@3cb82c9
 
 django-treebeard==4.7.1
 
-django-two-factor-auth[phonenumbers]==1.17.0
+django-two-factor-auth[phonenumbers]==1.18.0
 qrcode[pil]==7.4.2
 pyotp==2.9.0
 
