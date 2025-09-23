@@ -1403,8 +1403,15 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     file_extension = os.path.splitext(import_file.file.name)[1]
 
+    # get columns display_names for geojsonparser
+    try:
+        columns = import_file.cycle.organization.column_set.all()
+        display_name_lookup = {col.column_name: col.display_name for col in columns}
+    except Exception:
+        display_name_lookup = {}
+
     if file_extension in {".json", ".geojson"}:
-        parser = reader.GeoJSONParser(import_file.local_file)
+        parser = reader.GeoJSONParser(import_file.local_file, display_name_lookup)
     elif import_file.source_type == SEED_DATA_SOURCES[BUILDINGSYNC_RAW][1]:
         try:
             parser = xml_reader.BuildingSyncParser(import_file.file)

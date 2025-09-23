@@ -205,7 +205,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertDictContainsSubset(payload, response.json())
 
         new_payload = copy.deepcopy(payload)
-        new_payload["is_virtual"] = True
+        new_payload["alias"] = "my name"
         meter_id = response.json()["id"]
         meter_url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": property_view.id, "pk": meter_id})
@@ -213,7 +213,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
         )
         response = self.client.put(meter_url, data=json.dumps(new_payload), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["is_virtual"], True)
+        self.assertEqual(response.json()["alias"], "my name")
 
 
 class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
