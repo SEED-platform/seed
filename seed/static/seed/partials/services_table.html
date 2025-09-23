@@ -17,6 +17,12 @@
         <td>
           <button
             class="btn btn-default btn-rowform"
+            ui-sref="service_detail(::{inventory_type: inventory_type, group_id: system.group_id, system_id: system.id, service_id: service.id})"
+          >
+            View Details
+          </button>
+          <button
+            class="btn btn-default btn-rowform"
             ng-click="edit_service(system.id, service.id)"
             translate
           >

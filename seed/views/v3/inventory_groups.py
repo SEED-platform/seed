@@ -189,6 +189,24 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             has_hierarchy_access(inventory_group_id_kwarg="pk"),
         ]
     )
+    @action(detail=True, methods=["GET"])
+    def properties(self, request, pk):
+        views = PropertyView.objects.filter(property__group_mappings__group=pk).distinct("property")
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "data": [{"property_id": view.property_id, "property_display_name": view.state.default_display_value()} for view in views],
+            }
+        )
+
+    @swagger_auto_schema_org_query_param
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def meter_usage(self, request, pk):
         """
@@ -251,13 +269,17 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk"),
         ]
     )
-    @action(detail=True, methods=["PUT"])
-    def update_connection(self, request, inventory_group_pk, pk):
+    def update(self, request, inventory_group_pk, pk):
         meter = self.get_queryset().filter(pk=pk).first()
-        meter_config = request.data.get("meter_config")
+        alias = request.data.get("alias")
+        connection_config = request.data.get("connection_config")
 
         try:
-            update_meter_connection(meter, meter_config)
+            if alias:
+                meter.alias = alias
+                meter.save()
+            if connection_config:
+                update_meter_connection(meter, connection_config)
         except IntegrityError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
