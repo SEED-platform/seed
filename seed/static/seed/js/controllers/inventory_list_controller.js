@@ -2016,13 +2016,20 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
 
               const { string, operator, value } = parseFilter(subFilter);
               const display = [$scope.columnDisplayByName[name], string, value].join(' ');
-              $scope.column_filters.push({
-                name,
-                column_name,
-                operator,
-                value,
-                display
-              });
+
+              const existingFilter = $scope.column_filters.find((f) => f.name === name && f.operator === operator);
+              if (existingFilter) {
+                existingFilter.value = `${existingFilter.value},${value}`;
+                existingFilter.display = `${existingFilter.display}, ${value}`;
+              } else {
+                $scope.column_filters.push({
+                  name,
+                  column_name,
+                  operator,
+                  value,
+                  display
+                });
+              }
             }
           }
         }
