@@ -211,6 +211,8 @@ def _evaluate_delete_organization_and_inventory(prog_key, org_pk, delete_org=Fal
         Organization.objects.get(pk=org_pk).delete()
         # TODO: Delete measures in BRICR branch
 
+    progress_data.finish_with_success()
+
 
 @shared_task
 def _delete_organization_children(chunk_ids, class_name, prog_key):
