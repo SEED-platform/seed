@@ -1432,6 +1432,9 @@ msgstr "Drag to here"
 msgid "Duplicate"
 msgstr "Duplicate"
 
+msgid "Duplicate Data File Headers are not allowed. Modify the import file and try again."
+msgstr "Duplicate Data File Headers are not allowed. Modify the import file and try again."
+
 msgid "Duplicates"
 msgstr "Duplicates"
 
@@ -3107,6 +3110,9 @@ msgstr "Please go to the following page and setup your account:"
 
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Please join the SEED-Platform Dev forum where you can connect with other developers."
+
+msgid "Please review SEED Headers. Duplicate values are not allowed."
+msgstr "Please review SEED Headers. Duplicate values are not allowed."
 
 msgid "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
 msgstr "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."

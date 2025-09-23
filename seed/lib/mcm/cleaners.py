@@ -202,6 +202,8 @@ def pint_cleaner(value, units, *args):
 
 
 def geometry_cleaner(value):
+    if isinstance(value, str):
+        value = value.replace("POLYGON (())", "POLYGON EMPTY")
     try:
         return GEOSGeometry(value, srid=4326)
     except ValueError as e:
@@ -210,6 +212,8 @@ def geometry_cleaner(value):
     except TypeError as e:
         if "Improper geometry input type" in str(e):
             return None
+    except Exception as e:
+        raise RuntimeError(f"Unexpected error in geometry_cleaner: {e!s}")
 
 
 class Cleaner:
