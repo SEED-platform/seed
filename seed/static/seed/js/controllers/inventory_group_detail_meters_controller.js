@@ -105,7 +105,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
 
       $scope.serviceLink = (entity) => {
         if (entity.service_name === null) return;
-        return `<a id="inventory-summary" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active">${entity.service_name}</a>`;
+        return `<a id="inventory-summary" class="ui-grid-cell-contents" style="display: flex; align-items: center;" ui-sref="ix1ventory_list(::{inventory_type: inventory_type})" ui-sref-active="active">${entity.service_name}</a>`;
       };
 
       $scope.meterGridOptions = {
@@ -120,12 +120,12 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           { field: 'connection_type' },
           {
             field: 'property_display_field',
-            displayName: property_display_name,
-            cellTemplate: '<a id="inventory-summary" ui-sref="inventory_detail_meters({inventory_type: \'properties\', view_id: row.entity.view_id})" ui-sref-active="active">{$ row.entity.property_display_field $}</a>'
+            displayName: 'Property',
+            cellTemplate: '<a id="inventory-summary" class="ui-grid-cell-contents" style="display: flex; align-items: center;" ui-sref="inventory_detail_meters({inventory_type: \'properties\', view_id: row.entity.view_id})" ui-sref-active="active">{$ row.entity.property_display_field $}</a>'
             // cellTemplate: `<a id="inventory-summary"  ui-sref="inventory_detail_meters({inventory_type: 'properties', view_id: row.entity.view_id})" ui-sref-active="active">{$ hoi $}</a>`
           },
           { field: 'system_name' },
-          { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
+          { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" class="ui-grid-cell-contents" style="display: flex; align-items: center;" "ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
           { field: 'is_virtual' },
           { field: 'scenario_name' },
           { field: 'actions', cellTemplate: buttons }
