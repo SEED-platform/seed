@@ -21,7 +21,7 @@
     ></select>
   </div>
 
-<!-- DIRECTION -->
+  <!-- DIRECTION -->
   <div class="meter-config-selection-container">
     <label class="control-label" for="selected_direction" translate
       >Flow Direction</label
@@ -51,26 +51,23 @@
         ng-change="selected_property_index !== null && select_property(selected_property_index)"
       >
         <option value="">Select a property...</option>
-        <option
-          ng-repeat="i in unselected_property_indices"
-          ng-value="i"
-        >
+        <option ng-repeat="i in unselected_property_indices" ng-value="i">
           {$:: properties[i].property_display_name $}
         </option>
       </select>
     </li>
   </ul>
 
- <!-- CONFIRM -->
+  <!-- CONFIRM -->
   <div class="modal-footer">
     <button
-    type="button"
-    class="btn col-sm-6 center-block"
-    ng-click="dismiss()"
-    translate
-  >
-    Dismiss
-  </button>
+      type="button"
+      class="btn col-sm-6 center-block"
+      ng-click="dismiss()"
+      translate
+    >
+      Dismiss
+    </button>
     <button
       ng-disabled="selected_property_indices.length == 0"
       type="button"

@@ -62,7 +62,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       $scope.organization = organization_payload.organization;
       $scope.filler_cycle = cycles.cycles[0].id;
 
-      const property_display_name = columns.find((col) => col.column_name === $scope.organization.property_display_field).display_name;
+      // const property_display_name = columns.find((col) => col.column_name === $scope.organization.property_display_field).display_name;
 
       $scope.inventory = {
         view_id: $stateParams.view_id
