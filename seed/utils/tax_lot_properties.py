@@ -220,11 +220,8 @@ def json_response(org_id, filename, data, column_name_mappings, excluded_fields=
         ColumnSerializer(c).data["name"]
         for c in Column.objects.filter(organization_id=org_id, column_name__in=["property_footprint", "taxlot_footprint"])
     ]
-
     polygon_fields = ["bounding_box", "centroid", "long_lat", *footprint_fields]
-
     response_dict = {"type": "FeatureCollection", "name": f"SEED Export - {filename.replace('.geojson', '')}"}
-
     features = []
 
     # extract related records
