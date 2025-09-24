@@ -11,6 +11,7 @@ from quantityfield.units import ureg
 
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
+    Column,
     ColumnListProfile,
     Organization,
     PropertyView,
@@ -20,6 +21,7 @@ from seed.models import (
 from seed.models.meters import Meter, MeterReading
 from seed.models.property_measures import PropertyMeasure
 from seed.models.scenarios import Scenario
+from seed.serializers.columns import ColumnSerializer
 from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.serializers.meters import MeterSerializer
 from seed.utils.cache import set_cache_raw
@@ -163,7 +165,7 @@ def export_data(args):
     if export_type == "csv":
         data = _csv_response(data, column_name_mappings)
     elif export_type == "geojson":
-        data = json_response(filename, data, column_name_mappings, excluded_fields)
+        data = json_response(org.id, filename, data, column_name_mappings, excluded_fields)
     elif export_type == "xlsx":
         data = _spreadsheet_response(data, column_name_mappings)
 
@@ -213,8 +215,14 @@ def _csv_response(data, column_name_mappings):
     return output.getvalue()
 
 
-def json_response(filename, data, column_name_mappings, excluded_fields=[]):
-    polygon_fields = ["bounding_box", "centroid", "property_footprint", "taxlot_footprint", "long_lat"]
+def json_response(org_id, filename, data, column_name_mappings, excluded_fields=[]):
+    footprint_fields = [
+        ColumnSerializer(c).data["name"]
+        for c in Column.objects.filter(organization_id=org_id, column_name__in=["property_footprint", "taxlot_footprint"])
+    ]
+
+    polygon_fields = ["bounding_box", "centroid", "long_lat", *footprint_fields]
+
     response_dict = {"type": "FeatureCollection", "name": f"SEED Export - {filename.replace('.geojson', '')}"}
 
     features = []

@@ -354,5 +354,5 @@ def public_geojson(org, cycle, request):
     for key in data[0]:
         key_mappings.update({key: key})
 
-    geojson = json_response(title, data, key_mappings)
+    geojson = json_response(org.id, title, data, key_mappings)
     return geojson
