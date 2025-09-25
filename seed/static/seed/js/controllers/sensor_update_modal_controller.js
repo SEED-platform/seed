@@ -41,7 +41,7 @@ angular.module('SEED.controller.sensor_update_modal', []).controller('sensor_upd
           $scope.sensor.display_name,
           $scope.sensor.location_description,
           $scope.sensor.description,
-          $scope.sensor.type,
+          $scope.sensor.sensor_type,
           $scope.sensor.units,
           $scope.sensor.column_name
         )

@@ -8,11 +8,12 @@ import pathlib
 import zipfile
 
 import requests
+from django.conf import settings
 
 from seed.building_sync.building_sync import BuildingSync
 
 VALIDATION_API_URL = "https://buildingsync.net/api/validate"
-DEFAULT_SCHEMA_VERSION = BuildingSync.BUILDINGSYNC_V2_0_0
+DEFAULT_SCHEMA_VERSION = settings.BUILDINGSYNC_VERSION
 DEFAULT_USE_CASE = "SEED"
 
 
@@ -45,7 +46,6 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
     :return: tuple, (bool, list), bool indicates if the file passes validation,
              the list is a collection of files and their errors, warnings, and infos
     """
-
     if schema_version == BuildingSync.BUILDINGSYNC_V2_0:
         schema_version = BuildingSync.BUILDINGSYNC_V2_0_0
 

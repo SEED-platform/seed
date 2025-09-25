@@ -66,7 +66,7 @@ def func_st(draw, func_name_st, args_st=good_floats, min_args=1, max_args=None):
     func_name = draw(func_name_st)
     args = draw(st.lists(args_st, min_size=min_args, max_size=max_args))
 
-    return f'{func_name}({", ".join(map(str, args))})'
+    return f"{func_name}({', '.join(map(str, args))})"
 
 
 @st.composite

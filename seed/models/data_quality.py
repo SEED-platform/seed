@@ -22,7 +22,7 @@ from seed.models import Column, DerivedColumn, GoalNote, PropertyView, PropertyV
 from seed.serializers.pint import pretty_units
 from seed.utils.cache import get_cache_raw, set_cache_raw
 from seed.utils.goals import get_area_value, get_eui_value, percentage_difference
-from seed.utils.time import convert_datestr
+from seed.utils.time_utils import convert_datestr
 
 _log = logging.getLogger(__name__)
 
@@ -961,7 +961,7 @@ class DataQualityCheck(models.Model):
             data_type = rule.DATA_TYPES[rule.data_type][1]
             baseline = self.get_value(row, data_type, goal, "baseline")
             current = self.get_value(row, data_type, goal, "current")
-            # EUI is inverese as a drop in EUI is an improvement
+            # EUI is inverse as a drop in EUI is an improvement
             cycle_values = [baseline, current] if data_type == "eui" else [current, baseline]
 
             if rule.cross_cycle:

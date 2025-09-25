@@ -2,13 +2,20 @@
 <div class="page_header_container" ng-cloak ng-if="!group">
   <div class="page_header">
     <div class="left page_action_container">
-      <a ui-sref="inventory_list(::{inventory_type: inventory_type})" class="page_action">
+      <a
+        ui-sref="inventory_list(::{inventory_type: inventory_type})"
+        class="page_action"
+      >
         <i class="fa-solid fa-chevron-left"></i>
-        {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') | translate $}
+        {$:: (inventory_type === 'taxlots' ? 'Tax Lots' : 'Properties') |
+        translate $}
       </a>
     </div>
     <div class="page_title">
-      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property Detail') | translate $}</h1>
+      <h1>
+        {$:: (inventory_type === 'taxlots' ? 'Tax Lot Detail' : 'Property
+        Detail') | translate $}
+      </h1>
     </div>
     <div class="right page_action_container"></div>
   </div>
@@ -17,7 +24,10 @@
 <div class="page_header_container" ng-cloak ng-if="group">
   <div class="page_header">
     <div class="left page_action_container">
-      <a ui-sref="inventory_groups(::{inventory_type: inventory_type})" class="page_action">
+      <a
+        ui-sref="inventory_groups(::{inventory_type: inventory_type})"
+        class="page_action"
+      >
         <i class="fa-solid fa-chevron-left"></i>
         {$:: 'Groups' | translate $}
       </a>
@@ -30,14 +40,22 @@
 </div>
 <!-- Populate nav info for inventory or group detail -->
 <div class="section_nav_container" ng-if="!group">
-  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"></div>
+  <div
+    class="section_nav"
+    ng-include="::urls.static_url + 'seed/partials/inventory_detail_nav.html'"
+  ></div>
 </div>
 <div class="section_nav_container" ng-show="group">
-  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
+  <div
+    class="section_nav"
+    ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"
+  ></div>
 </div>
 <div class="section_header_container">
   <div class="section_header fixed_height_short has_no_padding">
-    <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"></div>
+    <div
+      ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"
+    ></div>
   </div>
 </div>
 
@@ -46,16 +64,31 @@
     <div class="column">
       <div class="row">
         <label>{$:: 'Interval' | translate $}:</label>
-        <select class="form-control" ng-model="interval.selected" ng-change="refresh_readings()" ng-options="option for option in interval.options"></select>
+        <select
+          class="form-control"
+          ng-model="interval.selected"
+          ng-change="refresh_readings()"
+          ng-options="option for option in interval.options"
+        ></select>
       </div>
       <div class="row" ng-show="menu.user.organization.user_role !== 'viewer'">
-        <button type="button" ng-click="open_green_button_upload_modal()" class="btn btn-primary" translate>UPLOAD_GB_DATA_BUTTON</button>
+        <button
+          type="button"
+          ng-click="open_green_button_upload_modal()"
+          class="btn btn-primary"
+          translate
+        >
+          UPLOAD_GB_DATA_BUTTON
+        </button>
       </div>
     </div>
 
     <div class="column grow">
       <div class="text-info row pull-right">
-        <span translate>Note: Meters are labeled with the following format: "Type - Source - Source ID".</span>
+        <span translate
+          >Note: Meters are labeled with the following format: "Type - Source -
+          Source ID".</span
+        >
       </div>
     </div>
   </div>
@@ -63,7 +96,12 @@
   <div class="section_content">
     <h4>Meters</h4>
     <div id="meters-grid-container" ng-show="has_meters">
-      <div ui-grid="meterGridOptions" ui-grid-selection ui-grid-resize-columns ui-grid-exporter></div>
+      <div
+        ui-grid="meterGridOptions"
+        ui-grid-selection
+        ui-grid-resize-columns
+        ui-grid-exporter
+      ></div>
     </div>
     <div ng-hide="has_meters">
       <div class="jumbotron text-center" translate>No Data</div>
@@ -71,7 +109,12 @@
 
     <h4>Readings</h4>
     <div id="meters-readings-grid-container" ng-show="has_readings">
-      <div ui-grid="meterReadGridOptions" ui-grid-selection ui-grid-resize-columns ui-grid-exporter></div>
+      <div
+        ui-grid="meterReadGridOptions"
+        ui-grid-selection
+        ui-grid-resize-columns
+        ui-grid-exporter
+      ></div>
     </div>
     <div ng-hide="has_readings">
       <div class="jumbotron text-center" translate>No Data</div>

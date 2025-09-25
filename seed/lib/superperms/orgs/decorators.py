@@ -5,7 +5,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 from functools import wraps
-from inspect import signature
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
@@ -16,7 +15,7 @@ from rest_framework import status
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, AccessLevelInstance, Organization, OrganizationUser
 from seed.lib.superperms.orgs.permissions import get_org_id
-from seed.models import Analysis, DataLogger, Goal, InventoryGroup, Property, PropertyView, TaxLotView, UbidModel
+from seed.models import Analysis, DataLogger, FacilitiesPlanRun, Goal, InventoryGroup, Property, PropertyView, TaxLotView, UbidModel
 
 # Allow Super Users to ignore permissions.
 ALLOW_SUPER_USER_PERMS = getattr(settings, "ALLOW_SUPER_USER_PERMS", True)
@@ -166,7 +165,7 @@ def _validate_permissions(perm_name, request, requires_org):
     if not requires_org:
         if perm_name not in {"requires_superuser", "requires_owner_or_superuser_without_org"}:
             raise AssertionError(
-                "requires_org=False can only be combined with requires_superuser or " "requires_owner_or_superuser_without_org"
+                "requires_org=False can only be combined with requires_superuser or requires_owner_or_superuser_without_org"
             )
         if request.user.is_superuser:
             return
@@ -194,21 +193,13 @@ def _validate_permissions(perm_name, request, requires_org):
         return _make_resp("perm_denied")
 
 
-def has_perm_class(perm_name: str, requires_org: bool = True):
+def has_perm(perm_name: str, requires_org: bool = True):
     """Proceed if user from request has ``perm_name``."""
 
     def decorator(fn):
-        params = list(signature(fn).parameters)
-        if params and params[0] == "self":
-
-            @wraps(fn)
-            def _wrapped(self, request, *args, **kwargs):
-                return _validate_permissions(perm_name, request, requires_org) or fn(self, request, *args, **kwargs)
-        else:
-
-            @wraps(fn)
-            def _wrapped(request, *args, **kwargs):
-                return _validate_permissions(perm_name, request, requires_org) or fn(request, *args, **kwargs)
+        @wraps(fn)
+        def _wrapped(request, *args, **kwargs):
+            return _validate_permissions(perm_name, request, requires_org) or fn(request, *args, **kwargs)
 
         return _wrapped
 
@@ -236,6 +227,7 @@ def assert_hierarchy_access(
     goal_id_kwarg=None,
     data_logger_id_kwarg=None,
     inventory_group_id_kwarg=None,
+    facilities_plan_run_id_kwarg=None,
     *args,
     **kwargs,
 ):
@@ -330,6 +322,10 @@ def assert_hierarchy_access(
             group = InventoryGroup.objects.get(pk=kwargs[inventory_group_id_kwarg])
             requests_ali = group.access_level_instance
 
+        elif facilities_plan_run_id_kwarg and facilities_plan_run_id_kwarg in kwargs:
+            fpr = FacilitiesPlanRun.objects.get(pk=kwargs[facilities_plan_run_id_kwarg])
+            requests_ali = fpr.ali
+
         else:
             property_view = PropertyView.objects.get(pk=request.GET["property_view_id"])
             requests_ali = property_view.property.access_level_instance
@@ -362,66 +358,38 @@ def has_hierarchy_access(
     goal_id_kwarg=None,
     data_logger_id_kwarg=None,
     inventory_group_id_kwarg=None,
+    facilities_plan_run_id_kwarg=None,
 ):
-    """Must be called after has_perm_class"""
+    """Must be called after has_perm"""
 
     def decorator(fn):
-        params = list(signature(fn).parameters)
-        if params and params[0] == "self":
-
-            @wraps(fn)
-            def _wrapped(self, request, *args, **kwargs):
-                return assert_hierarchy_access(
-                    request,
-                    property_id_kwarg,
-                    property_view_id_kwarg,
-                    param_property_view_id,
-                    taxlot_view_id_kwarg,
-                    import_file_id_kwarg,
-                    param_import_file_id,
-                    import_record_id_kwarg,
-                    body_ali_id,
-                    body_import_file_id,
-                    body_property_id,
-                    analysis_id_kwarg,
-                    ubid_id_kwarg,
-                    body_import_record_id,
-                    body_property_state_id,
-                    body_taxlot_state_id,
-                    param_import_record_id,
-                    goal_id_kwarg,
-                    data_logger_id_kwarg,
-                    inventory_group_id_kwarg,
-                    *args,
-                    **kwargs,
-                ) or fn(self, request, *args, **kwargs)
-        else:
-
-            @wraps(fn)
-            def _wrapped(request, *args, **kwargs):
-                return assert_hierarchy_access(
-                    request,
-                    property_id_kwarg,
-                    property_view_id_kwarg,
-                    param_property_view_id,
-                    taxlot_view_id_kwarg,
-                    import_file_id_kwarg,
-                    param_import_file_id,
-                    import_record_id_kwarg,
-                    body_ali_id,
-                    body_import_file_id,
-                    body_property_id,
-                    analysis_id_kwarg,
-                    ubid_id_kwarg,
-                    body_import_record_id,
-                    body_property_state_id,
-                    body_taxlot_state_id,
-                    param_import_record_id,
-                    goal_id_kwarg,
-                    data_logger_id_kwarg,
-                    *args,
-                    **kwargs,
-                ) or fn(request, *args, **kwargs)
+        @wraps(fn)
+        def _wrapped(request, *args, **kwargs):
+            return assert_hierarchy_access(
+                request,
+                property_id_kwarg,
+                property_view_id_kwarg,
+                param_property_view_id,
+                taxlot_view_id_kwarg,
+                import_file_id_kwarg,
+                param_import_file_id,
+                import_record_id_kwarg,
+                body_ali_id,
+                body_import_file_id,
+                body_property_id,
+                analysis_id_kwarg,
+                ubid_id_kwarg,
+                body_import_record_id,
+                body_property_state_id,
+                body_taxlot_state_id,
+                param_import_record_id,
+                goal_id_kwarg,
+                data_logger_id_kwarg,
+                inventory_group_id_kwarg,
+                facilities_plan_run_id_kwarg,
+                *args,
+                **kwargs,
+            ) or fn(request, *args, **kwargs)
 
         return _wrapped
 

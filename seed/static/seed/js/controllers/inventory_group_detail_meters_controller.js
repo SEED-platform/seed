@@ -13,7 +13,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
     'Notification',
     'dataset_service',
     'inventory_service',
-    'meter_service',
+    'inventory_group_service',
     'cycles',
     'meters',
     'inventory_payload',
@@ -33,7 +33,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       Notification,
       dataset_service,
       inventory_service,
-      meter_service,
+      inventory_group_service,
       cycles,
       meters,
       inventory_payload,
@@ -68,7 +68,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
         view_id: $stateParams.view_id
       };
 
-      const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source} - ${source_id ?? 'None'}`;
+      const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source ?? 'None'} - ${source_id ?? 'None'}`;
 
       const resetSelections = () => {
         $scope.sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
@@ -118,7 +118,12 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           { field: 'source_id' },
           { field: 'scenario_id' },
           { field: 'connection_type' },
-          { field: 'property_display_field', displayName: property_display_name },
+          {
+            field: 'property_display_field',
+            displayName: property_display_name,
+            cellTemplate: '<a id="inventory-summary" ui-sref="inventory_detail_meters({inventory_type: \'properties\', view_id: row.entity.view_id})" ui-sref-active="active">{$ row.entity.property_display_field $}</a>'
+            // cellTemplate: `<a id="inventory-summary"  ui-sref="inventory_detail_meters({inventory_type: 'properties', view_id: row.entity.view_id})" ui-sref-active="active">{$ hoi $}</a>`
+          },
           { field: 'system_name' },
           { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
           { field: 'is_virtual' },
@@ -312,13 +317,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       // according to the selected interval
       $scope.refresh_readings = () => {
         spinner_utility.show();
-        meter_service
-          .property_meter_usage(
-            $scope.inventory.view_id,
-            $scope.organization.id,
-            $scope.interval.selected,
-            [] // Not excluding any meters from the query
-          )
+        inventory_group_service.get_meter_usage($stateParams.group_id, $scope.interval.selected)
           .then((usage) => {
             // update the base data and reset filters
             property_meter_usage = usage;

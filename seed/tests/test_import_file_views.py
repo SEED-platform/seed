@@ -38,6 +38,7 @@ from seed.models import (
 )
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
+from seed.utils.cache import get_cache_raw
 from seed.utils.organizations import create_organization
 from seed.views.v3.import_files import ImportFileViewSet, convert_first_five_rows_to_list
 
@@ -900,7 +901,9 @@ class TestViewsMatching(DataMappingBaseTestCase):
         resp = self.client.post(url, content_type="application/json")
 
         self.assertEqual(200, resp.status_code)
-        mapped_property = json.loads(resp.content)["properties"][0]
+        unique_id = json.loads(resp.content)["unique_id"]
+        mapped_property = get_cache_raw(unique_id)
+
         unitted_column_names = ["gross_floor_area", "site_eui"]
         for column_name, val in mapped_property.items():
             for unitted_column_name in unitted_column_names:

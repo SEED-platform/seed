@@ -7,7 +7,7 @@ import contextlib
 import logging
 
 from django.db import models
-from django.db.models import Avg, Count, Max, Min, Sum
+from django.db.models import Avg, Count, F, Max, Min, Sum
 from django.http import QueryDict
 
 from seed.lib.superperms.orgs.models import Organization
@@ -16,6 +16,8 @@ from seed.models.cycles import Cycle
 from seed.models.filter_group import FilterGroup
 from seed.models.properties import PropertyState, PropertyView
 from seed.utils.search import build_view_filters_and_sorts
+
+logger = logging.getLogger()
 
 
 class DataView(models.Model):
@@ -138,7 +140,12 @@ class DataView(models.Model):
             for column in columns:
                 for aggregation in [Avg, Max, Min, Sum, Count]:  # NEED TO ADD 'views_by_label' for scatter plot
                     self._format_aggregation_name(aggregation)
-                    dataset = {"data": [], "column": column.display_name, "aggregation": aggregation.name, "filter_group": filter_name}
+                    dataset = {
+                        "data": [],
+                        "column": column.display_name if column.display_name else column.column_name,
+                        "aggregation": aggregation.name,
+                        "filter_group": filter_name,
+                    }
                     for cycle in sorted(self.cycles.all(), key=lambda x: x.name):
                         views = views_by_filter[filter_id][cycle.id]
                         states = PropertyState.objects.filter(propertyview__in=views)
@@ -216,11 +223,11 @@ class DataView(models.Model):
 
     def _evaluate_extra_data(self, states, aggregation, column):
         extra_data_col = "extra_data__" + column.column_name
-        q_set = states.values(extra_data_col)
+        q_set = states.annotate(data=F(extra_data_col)).values("data")
         values = []
         for val in list(q_set):
             with contextlib.suppress(ValueError, TypeError):
-                values.append(float(val[extra_data_col]))
+                values.append(float(val["data"]))
         if values:
             type_to_aggregate = {Avg: sum(values) / len(values), Count: len(values), Max: max(values), Min: min(values), Sum: sum(values)}
             return round(type_to_aggregate[aggregation], 2)

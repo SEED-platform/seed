@@ -85,7 +85,7 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
     # For the purpose of merging, we only care if match_count is greater than 1.
     states_to_merge = (
         matching_views.values("cycle_id")
-        .annotate(state_ids=ArrayAgg("state_id"), match_count=Count("id"))
+        .annotate(state_ids=ArrayAgg("state_id", default=[]), match_count=Count("id"))
         .filter(match_count__gt=1)
         .values_list("state_ids", flat=True)
     )
@@ -377,7 +377,7 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
                 StateClass.objects.filter(id__in=Subquery(view_in_cycle.values("state_id")))
                 .exclude(**empty_matching_criteria)
                 .values(*column_names)
-                .annotate(matched_ids=ArrayAgg("id"), matched_count=Count("id"))
+                .annotate(matched_ids=ArrayAgg("id", default=[]), matched_count=Count("id"))
                 .values_list("matched_ids", flat=True)
                 .filter(matched_count__gt=1)
             )
@@ -411,7 +411,7 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
         link_groups = (
             org_views.exclude(**state_appended_empty_matching_criteria)
             .values(*state_appended_col_names)
-            .annotate(canonical_ids=ArrayAgg(canonical_id_col), view_ids=ArrayAgg("id"), link_count=Count("id"))
+            .annotate(canonical_ids=ArrayAgg(canonical_id_col, default=[]), view_ids=ArrayAgg("id", default=[]), link_count=Count("id"))
             .values_list("canonical_ids", "view_ids", "link_count")
         )
 

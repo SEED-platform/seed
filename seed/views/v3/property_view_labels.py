@@ -5,9 +5,10 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.db.models import Q
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework.decorators import action
 
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Goal, PropertyViewLabel
 from seed.serializers.property_view_labels import PropertyViewLabelSerializer
 from seed.utils.api import OrgMixin
@@ -20,7 +21,11 @@ class PropertyViewLabelViewSet(ModelViewSetWithoutPatch, OrgMixin):
     queryset = PropertyViewLabel.objects.all()
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def list_by_goal(self, request):
         """

@@ -11,7 +11,7 @@ from seed.utils.address import normalize_address_str
 class TestAddressNormalization(TestCase):
     def test_normalization(self):
         cases = [
-            # case, test str, expected resulting string, actual response
+            # case, test str, expected resulting string
             ("simple", "123 Test St.", "123 test st"),
             ("none input", None, None),
             ("empty input", "", None),

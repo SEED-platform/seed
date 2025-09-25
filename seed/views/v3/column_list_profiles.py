@@ -13,7 +13,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from seed.filters import ColumnListProfileFilterBackend
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import (
     VIEW_LIST,
     VIEW_LIST_INVENTORY_TYPE,
@@ -35,25 +35,25 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
 @method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_root_member_access"),
+    ],
     name="create",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_root_member_access"),
-    ],
 )
 @method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_root_member_access"),
+    ],
     name="update",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_root_member_access"),
-    ],
 )
 @method_decorator(
-    name="destroy",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_root_member_access"),
+        has_perm("requires_root_member_access"),
     ],
+    name="destroy",
 )
 class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
@@ -61,7 +61,7 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
     create:
         Create a new list profile. The list of columns is an array of column primary keys. If using Swagger, then
-        this will be enters as a list with returns between each primary key.
+        this will be entered as a list with returns between each primary key.
 
         JSON POST Example:
 
@@ -190,7 +190,11 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
         return results
 
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            has_perm("requires_root_member_access"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def show_populated(self, request, pk):
         column_list_profile = ColumnListProfile.objects.get(pk=pk)

@@ -1306,6 +1306,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         $scope.gridApi.core.notifyDataChange(uiGridConstants.dataChange.EDIT);
         $scope.select_none();
         spinner_utility.hide();
+      }).catch(() => {
+        spinner_utility.hide();
+        Notification.error('Invalid Filter. Update filter and try again.');
       });
     };
 
@@ -1559,6 +1562,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         controller: 'export_to_audit_template_modal_controller',
         resolve: {
           ids: () => selectedViewIds,
+          cycles: () => cycles.cycles,
           org_id: () => $scope.organization.id
         }
       });
@@ -1582,6 +1586,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         backdrop: 'static',
         resolve: {
           org: () => $scope.organization,
+          cycles: () => $scope.cycle.cycles,
           view_ids: () => selectedViewIds
         }
       });
@@ -1913,7 +1918,10 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     };
 
     // https://regexr.com/6cka2
-    const combinedRegex = /^(!?)=\s*(-?\d+(?:\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*((-?\d+(?:\.\d+)?)|(\d{4}-\d{2}-\d{2}))$/;
+    const numericComparison = /^(!?)=\s*(-?\d+(?:\.\d+)?)$/;
+    const stringComparison = /^(!?)=?\s*"((?:[^"]|\\")*)"$/;
+    const dateComparison = /^(<=|>=|!=|=|<|>|!)\s*((-?\d+(?:\.\d+)?)|(\d{4}(?:[-/]\d{2}(?:[-/]\d{2}(?: \d{1,2}(?::\d{2}(?::\d{2})?)?)?)?)?))$/;
+    const combinedRegex = new RegExp(`${numericComparison.source}|${stringComparison.source}|${dateComparison.source}`);
     const parseFilter = (expression) => {
       // parses an expression string into an object containing operator and value
       const filterData = expression.match(combinedRegex);
@@ -1953,7 +1961,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         } else {
           // Date Comparison
           const operator = filterData[5];
-          const value = filterData[8];
+          const value = filterData[8].replace(/\//g, '-'); // transform d/m/yyyy to d-m-yyyy
           switch (operator) {
             case '<':
               return { string: '<', operator: 'lt', value };
@@ -1963,6 +1971,12 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
               return { string: '>', operator: 'gt', value };
             case '>=':
               return { string: '>=', operator: 'gte', value };
+            case '!=':
+              return { string: 'is not', operator: 'ne', value };
+            case '!':
+              return { string: 'is not', operator: 'ne', value };
+            case '=':
+              return { string: 'is', operator: 'exact', value };
           }
         }
       } else {
@@ -2002,13 +2016,20 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
 
               const { string, operator, value } = parseFilter(subFilter);
               const display = [$scope.columnDisplayByName[name], string, value].join(' ');
-              $scope.column_filters.push({
-                name,
-                column_name,
-                operator,
-                value,
-                display
-              });
+
+              const existingFilter = $scope.column_filters.find((f) => f.name === name && f.operator === operator);
+              if (existingFilter) {
+                existingFilter.value = `${existingFilter.value},${value}`;
+                existingFilter.display = `${existingFilter.display}, ${value}`;
+              } else {
+                $scope.column_filters.push({
+                  name,
+                  column_name,
+                  operator,
+                  value,
+                  display
+                });
+              }
             }
           }
         }

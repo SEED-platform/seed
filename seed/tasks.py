@@ -42,7 +42,9 @@ from seed.models import (
     TaxLotState,
     TaxLotView,
 )
+from seed.utils.match import update_sub_progress_total
 from seed.utils.salesforce import auto_sync_salesforce_properties
+from seed.utils.tax_lot_properties import export_data
 
 logger = get_task_logger(__name__)
 
@@ -209,6 +211,8 @@ def _evaluate_delete_organization_and_inventory(prog_key, org_pk, delete_org=Fal
         Organization.objects.get(pk=org_pk).delete()
         # TODO: Delete measures in BRICR branch
 
+    progress_data.finish_with_success()
+
 
 @shared_task
 def _delete_organization_children(chunk_ids, class_name, prog_key):
@@ -225,7 +229,7 @@ def _finish_delete_column(column_id, prog_key):
     column.delete()
 
     progress_data = ProgressData.from_key(prog_key)
-    return progress_data.finish_with_success(f'Removed {column.column_name} from {progress_data.data["total_records"]} records')
+    return progress_data.finish_with_success(f"Removed {column.column_name} from {progress_data.data['total_records']} records")
 
 
 @shared_task
@@ -400,7 +404,7 @@ def _finish_update_multiple_columns(changes, prog_key):
         return progress_data.finish_with_success(f"Updated {len(changes.keys())} columns.")
     else:
         return progress_data.finish_with_success(
-            f'Updated {len(changes.keys())} columns.  Rebuilt {progress_data.data["total_records"]} records'
+            f"Updated {len(changes.keys())} columns.  Rebuilt {progress_data.data['total_records']} records"
         )
 
 
@@ -601,3 +605,14 @@ def _finish_update_state_derived_data(progress_key, derived_column_ids):
 
     progress_data = ProgressData.from_key(progress_key)
     progress_data.finish_with_success("Updated Derived Data")
+
+
+@shared_task
+def export_data_task(args):
+    progress_key = args.get("progress_key")
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data = update_sub_progress_total(100, progress_key)
+
+    # save data to redis cache db
+    export_data(args)
+    progress_data.finish_with_success()

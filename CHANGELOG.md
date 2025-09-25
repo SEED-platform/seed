@@ -1,3 +1,104 @@
+# SEED Version 3.3.1
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Fixes bug for angular grid filtering by @perryr16 in https://github.com/SEED-platform/seed/pull/5049
+### Improvements 📈
+* Move export and mapping results to background tasks by @perryr16 in https://github.com/SEED-platform/seed/pull/5045
+### Maintenance 🧹
+* Bump the prod-deps group with multiple updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5023
+* Bump the prod-deps group across 1 directory with 4 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5025
+* Bump hypothesis from 6.135.24 to 6.135.26 in the prod-deps group by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5026
+* Bump the prod-deps group across 1 directory with 8 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5036
+### Bug Fixes 🐛
+* XML report updates for AT export by @kflemin in https://github.com/SEED-platform/seed/pull/5029
+* Fix dataset links for Chrome v138 by @axelstudios in https://github.com/SEED-platform/seed/pull/5038
+* Default report fixes by @haneslinger in https://github.com/SEED-platform/seed/pull/5039
+* Dataset links by @kflemin in https://github.com/SEED-platform/seed/pull/5047
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.3.0...v3.3.1
+
+# SEED Version 3.3.0
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Adds a record count endpoint by @perryr16 in https://github.com/SEED-platform/seed/pull/4978
+* Implement New Facilities Plan Feature by @haneslinger in https://github.com/SEED-platform/seed/pull/5015
+* Add Angular UI by @axelstudios in https://github.com/SEED-platform/seed/pull/5018
+### Improvements 📈
+* Update EISA432 and Scope 1 emission code enums. Set order of bars in default reports charts for categorical data by @haneslinger in https://github.com/SEED-platform/seed/pull/4990
+* Update redis key timeout to 15 minutes by @kflemin in https://github.com/SEED-platform/seed/pull/4991
+* Add choice of agg type on default reports bar chart by @haneslinger in https://github.com/SEED-platform/seed/pull/4953
+### Maintenance 🧹
+* Bump tar-fs from 3.0.8 to 3.0.9 by @dependabot in https://github.com/SEED-platform/seed/pull/5001
+* Bump requests from 2.32.3 to 2.32.4 in /requirements by @dependabot in https://github.com/SEED-platform/seed/pull/5005
+* Upgrade from Alpine 3.14 to 3.19 by @dhaley in https://github.com/SEED-platform/seed/pull/4993
+* Update development dependencies by @nllong in https://github.com/SEED-platform/seed/pull/5016
+* Django v4.2 by @axelstudios in https://github.com/SEED-platform/seed/pull/4931
+### Bug Fixes 🐛
+* Remove developer logs by @perryr16 in https://github.com/SEED-platform/seed/pull/4972
+* Fix default report scatter chart ordering of data by @haneslinger in https://github.com/SEED-platform/seed/pull/4992
+* Fix scatter chart ordering for all browsers by @haneslinger in https://github.com/SEED-platform/seed/pull/5000
+* Fix portfolio and sensor bugs by @perryr16 in https://github.com/SEED-platform/seed/pull/5007
+* Fix exporting GeoJSON records with invalid footprints by @axelstudios in https://github.com/SEED-platform/seed/pull/5014
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.2.5...v3.3.0
+
+# SEED Version 3.2.5
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.2.5-release-prep -->
+
+## What's Changed
+### New Features 🎉
+* Add temperature meters by @haneslinger in https://github.com/SEED-platform/seed/pull/4922
+* Appfleet config by @dhaley in https://github.com/SEED-platform/seed/pull/4942
+### Improvements 📈
+* Add Federal Energy and Water Audit Report by @haneslinger in https://github.com/SEED-platform/seed/pull/4941
+* Add meters to Audit Template export by @haneslinger in https://github.com/SEED-platform/seed/pull/4938
+* Remove address, city, state requirements for Audit Template export by @kflemin in https://github.com/SEED-platform/seed/pull/4944
+* Add Access Level to Insights charts by @haneslinger in https://github.com/SEED-platform/seed/pull/4948
+* Download Audit Template xml by @kflemin in https://github.com/SEED-platform/seed/pull/4950
+* Create v4 Filter endpoint by @perryr16 in https://github.com/SEED-platform/seed/pull/4960
+* Update BuildingSync to version 2.6.0 by @kflemin in https://github.com/SEED-platform/seed/pull/4958
+* Update bsyncr to use version 2.6.0 of BuildingSync by @kflemin in https://github.com/SEED-platform/seed/pull/4973
+* Update BETTER BuildingSync mappings by @kflemin in https://github.com/SEED-platform/seed/pull/4956
+### Maintenance 🧹
+* Update precommit, a few dependencies, and spelling issues by @nllong in https://github.com/SEED-platform/seed/pull/4967
+### Bug Fixes 🐛
+* Fix compliance filter groups by @haneslinger in https://github.com/SEED-platform/seed/pull/4929
+* Remove appfleet config by @dhaley in https://github.com/SEED-platform/seed/pull/4947
+* Modified Audit Template export: Truncate zipcode to 5 digits and handle SentenceCasing HVAC by @kflemin in https://github.com/SEED-platform/seed/pull/4949
+* Fix for ordering bar chart bars by quantity on default reports by @haneslinger in https://github.com/SEED-platform/seed/pull/4952
+* Fix groups meters property column by @haneslinger in https://github.com/SEED-platform/seed/pull/4955
+* Fix ESPM download, change generateData from POST to GET by @haneslinger in https://github.com/SEED-platform/seed/pull/4959
+* Use case-insensitive lookup of username in the API by @nllong in https://github.com/SEED-platform/seed/pull/4966
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.2.4...v3.2.5
+
+# SEED Version 3.2.4
+
+<!-- Release notes generated using configuration in .github/release.yml at 3.2.4-release-prep -->
+
+## What's Changed
+### New Features 🎉
+* Django settings endpoint by @kflemin in https://github.com/SEED-platform/seed/pull/4936
+### Improvements 📈
+* Move JWT token claims to v3_users_current by @crutan in https://github.com/SEED-platform/seed/pull/4939
+* Add user serializer by @crutan in https://github.com/SEED-platform/seed/pull/4940
+### Bug Fixes 🐛
+* Make data type column wide enough to see completely by @crutan in https://github.com/SEED-platform/seed/pull/4919
+* Fix group meter interval by @haneslinger in https://github.com/SEED-platform/seed/pull/4937
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.2.3...v3.2.4
+
 # SEED Version 3.2.3
 
 <!-- Release notes generated using configuration in .github/release.yml at 3.2.3-release-prep -->

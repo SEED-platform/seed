@@ -4,20 +4,25 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework import status, viewsets
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import TaxLotView
 from seed.serializers.taxlots import BriefTaxlotViewSerializer
-from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint
 
 
 class TaxlotViewViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     def list(self, request):
         """
         List all the taxlots

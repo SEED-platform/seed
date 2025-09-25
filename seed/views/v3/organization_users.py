@@ -6,25 +6,30 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
+from seed.decorators import ajax_request
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, Organization, OrganizationUser
 from seed.tasks import invite_to_organization
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint
 from seed.utils.users import get_js_role
 
 
 class OrganizationUserViewSet(viewsets.ViewSet):
-    # allow using `organization_pk` in url path for authorization (i.e., for has_perm_class)
+    # allow using `organization_pk` in url path for authorization (i.e., for has_perm)
     authz_org_id_kwarg = "organization_pk"
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     def list(self, request, organization_pk):
         """
         Retrieve all users belonging to an org.
@@ -74,9 +79,13 @@ class OrganizationUserViewSet(viewsets.ViewSet):
 
         return JsonResponse({"status": "success", "users": users})
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def add(self, request, organization_pk, pk):
         """
@@ -100,9 +109,13 @@ class OrganizationUserViewSet(viewsets.ViewSet):
 
         return JsonResponse({"status": "success"})
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=True, methods=["DELETE"])
     def remove(self, request, organization_pk, pk):
         """

@@ -36,8 +36,13 @@ class FilterGroup(models.Model):
             views = ViewClass.objects.select_related(related_model, "state").filter(
                 **{f"{related_model}__organization_id": self.organization_id}
             )
-        if not columns:
-            columns = Column.retrieve_all(org_id=self.organization_id, inventory_type=related_model, only_used=False, include_related=False)
+        columns = Column.retrieve_all(
+            org_id=self.organization_id,
+            inventory_type=related_model,
+            only_used=False,
+            include_related=False,
+            column_ids=[c.id for c in columns],
+        )
         if self.query_dict:
             qd = QueryDict(mutable=True)
             qd.update(self.query_dict)

@@ -219,8 +219,9 @@ angular.module('SEED.controller.portfolio_summary', [])
       const access_level_instances_by_depth = ah_service.calculate_access_level_instances_by_depth($scope.access_level_tree);
 
       $scope.change_selected_level_index = () => {
-        const new_level_instance_depth = parseInt($scope.goal.level_name_index, 10) + 1;
-        $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+        // We are looking for the deepest Access Level Instances (greatest key value). This is an issue if the user is not at the root level.
+        const deepest_key = Math.max(...Object.keys(access_level_instances_by_depth).map(Number));
+        $scope.potential_level_instances = access_level_instances_by_depth[deepest_key];
       };
 
       // GOAL EDITOR MODAL

@@ -15,7 +15,6 @@ from pathlib import Path
 
 import numpy as np
 from django.conf import settings
-from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.forms import PasswordResetForm
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.core.exceptions import ObjectDoesNotExist
@@ -34,10 +33,17 @@ from seed import tasks
 from seed.audit_template.audit_template import toggle_audit_template_sync
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
-from seed.decorators import ajax_request_class
+from seed.decorators import ajax_request
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, AccessLevelInstance, Organization, OrganizationUser
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
+from seed.lib.superperms.orgs.models import (
+    ROLE_MEMBER,
+    ROLE_OWNER,
+    ROLE_VIEWER,
+    AccessLevelInstance,
+    Organization,
+    OrganizationUser,
+)
 from seed.models import (
     AUDIT_IMPORT,
     GREEN_BUTTON,
@@ -62,7 +68,7 @@ from seed.serializers.columns import ColumnSerializer
 from seed.serializers.organizations import SaveSettingsSerializer, SharedFieldsReturnSerializer
 from seed.serializers.pint import add_pint_unit_suffix, apply_display_unit_preferences
 from seed.serializers.report_configurations import ReportConfigurationSerializer
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.geocode import geocode_buildings
@@ -153,10 +159,14 @@ def _dict_org(request, organizations):
             "audit_template_user": o.audit_template_user,
             "audit_template_password": decrypt(o.audit_template_password)[0] if o.audit_template_password else "",
             "audit_template_city_id": o.audit_template_city_id,
+            "audit_template_export_meters": o.audit_template_export_meters,
+            "audit_template_export_measures": o.audit_template_export_measures,
             "audit_template_conditional_import": o.audit_template_conditional_import,
             "audit_template_report_type": o.audit_template_report_type,
             "audit_template_status_types": o.audit_template_status_types,
             "audit_template_sync_enabled": o.audit_template_sync_enabled,
+            "audit_template_tracking_id_name": o.audit_template_tracking_id_name,
+            "audit_template_tracking_id_field": o.audit_template_tracking_id_field,
             "salesforce_enabled": o.salesforce_enabled,
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
@@ -212,11 +222,15 @@ def _dict_org_brief(request, organizations):
 
 
 class OrganizationViewSet(viewsets.ViewSet):
-    # allow using `pk` in url path for authorization (i.e., for has_perm_class)
+    # allow using `pk` in url path for authorization (i.e., for has_perm)
     authz_org_id_kwarg = "pk"
 
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=True, methods=["DELETE"])
     def columns(self, request, pk=None):
         """
@@ -267,10 +281,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         request_body=SaveColumnMappingsRequestPayloadSerializer,
         responses={200: "success response"},
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(param_import_file_id="import_file_id")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(param_import_file_id="import_file_id"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def column_mappings(self, request, pk=None):
         """
@@ -308,8 +326,12 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     def list(self, request):
         """
         Retrieves all orgs the user has access to.
@@ -333,7 +355,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 return JsonResponse(
                     {
                         "status": "error",
-                        "message": "Your SEED account is not associated with any organizations. " "Please contact a SEED administrator.",
+                        "message": "Your SEED account is not associated with any organizations. Please contact a SEED administrator.",
                     },
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
@@ -350,16 +372,20 @@ class OrganizationViewSet(viewsets.ViewSet):
                 return JsonResponse(
                     {
                         "status": "error",
-                        "message": "Your SEED account is not associated with any organizations. " "Please contact a SEED administrator.",
+                        "message": "Your SEED account is not associated with any organizations. Please contact a SEED administrator.",
                     },
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
             else:
                 return JsonResponse({"organizations": orgs})
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def destroy(self, request, pk=None):
         """
         Starts a background task to delete an organization and all related data.
@@ -367,9 +393,13 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(tasks.delete_organization_and_inventory(pk))
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     def retrieve(self, request, pk=None):
         """
         Retrieves a single organization by id.
@@ -417,8 +447,12 @@ class OrganizationViewSet(viewsets.ViewSet):
             "- user_id: The user ID (primary key) to be used as the owner of the new organization",
         )
     )
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     def create(self, request):
         """
         Creates a new organization.
@@ -436,9 +470,13 @@ class OrganizationViewSet(viewsets.ViewSet):
         org, _, _ = create_organization(user, org_name, org_name)
         return JsonResponse({"status": "success", "message": "Organization created", "organization": _dict_org(request, [org])[0]})
 
-    @api_endpoint_class
-    @ajax_request_class
-    @method_decorator(permission_required("seed.can_access_admin"))
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_superuser"),
+        ]
+    )
     @action(detail=True, methods=["DELETE"])
     def inventory(self, request, pk=None):
         """
@@ -450,9 +488,13 @@ class OrganizationViewSet(viewsets.ViewSet):
     @swagger_auto_schema(
         request_body=SaveSettingsSerializer,
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def save_settings(self, request, pk=None):
         """
@@ -641,6 +683,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         if audit_template_user != org.audit_template_user:
             org.audit_template_user = audit_template_user
 
+        audit_template_tracking_id_name = posted_org.get("audit_template_tracking_id_name", False)
+        if audit_template_tracking_id_name != org.audit_template_tracking_id_name:
+            org.audit_template_tracking_id_name = audit_template_tracking_id_name
+
+        audit_template_tracking_id_field = posted_org.get("audit_template_tracking_id_field", False)
+        if audit_template_tracking_id_field != org.audit_template_tracking_id_field:
+            org.audit_template_tracking_id_field = audit_template_tracking_id_field
+
         audit_template_password = posted_org.get("audit_template_password", False)
         if audit_template_password != org.audit_template_password:
             org.audit_template_password = encrypt(audit_template_password)
@@ -656,6 +706,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         audit_template_city_id = posted_org.get("audit_template_city_id", False)
         if audit_template_city_id != org.audit_template_city_id:
             org.audit_template_city_id = audit_template_city_id
+
+        audit_template_export_meters = posted_org.get("audit_template_export_meters", False)
+        if audit_template_export_meters != org.audit_template_export_meters:
+            org.audit_template_export_meters = audit_template_export_meters
+
+        audit_template_export_measures = posted_org.get("audit_template_export_measures", False)
+        if audit_template_export_measures != org.audit_template_export_measures:
+            org.audit_template_export_measures = audit_template_export_measures
 
         audit_template_conditional_import = posted_org.get("audit_template_conditional_import", False)
         if audit_template_conditional_import != org.audit_template_conditional_import:
@@ -710,9 +768,13 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({"status": "success"})
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def query_threshold(self, request, pk=None):
         """
@@ -725,9 +787,13 @@ class OrganizationViewSet(viewsets.ViewSet):
         return JsonResponse({"status": "success", "query_threshold": org.query_threshold})
 
     @swagger_auto_schema(responses={200: SharedFieldsReturnSerializer})
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def shared_fields(self, request, pk=None):
         """
@@ -761,9 +827,13 @@ class OrganizationViewSet(viewsets.ViewSet):
             "- sub_org_owner_email: Email of the owner of the sub organization, which must already exist",
         )
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def sub_org(self, request, pk=None):
         """
@@ -785,9 +855,13 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             return JsonResponse({"status": "error", "message": mess_or_org}, status=status.HTTP_409_CONFLICT)
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def matching_criteria_columns(self, request, pk=None):
         """
@@ -803,15 +877,19 @@ class OrganizationViewSet(viewsets.ViewSet):
         matching_criteria_column_names = dict(
             org.column_set.filter(is_matching_criteria=True)
             .values("table_name")
-            .annotate(column_names=ArrayAgg("column_name"))
+            .annotate(column_names=ArrayAgg("column_name", default=[]))
             .values_list("table_name", "column_names")
         )
 
         return JsonResponse(matching_criteria_column_names)
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def geocoding_columns(self, request, pk=None):
         """
@@ -860,7 +938,11 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         # annotate properties with fields
         def get_column_model_field(column):
-            if column.is_extra_data:
+            if column in Organization.objects.get(pk=organization_id).access_level_names:
+                return F("property__access_level_instance__path__" + column)
+            elif column == "Count":
+                return Value(1)
+            elif column.is_extra_data:
                 return F("state__extra_data__" + column.column_name)
             elif column.derived_column:
                 return F("state__derived_data__" + column.column_name)
@@ -872,8 +954,6 @@ class OrganizationViewSet(viewsets.ViewSet):
             "x": get_column_model_field(x_var),
             "y": get_column_model_field(y_var),
         }
-        if x_var == "Count":
-            fields["x"] = Value(1)
         for k, v in fields.items():
             all_property_views = all_property_views.annotate(**{k: v})
 
@@ -914,9 +994,13 @@ class OrganizationViewSet(viewsets.ViewSet):
             AutoSchemaHelper.query_string_field("end", required=True, description='End time, in the format "2018-12-31T23:53:00-08:00"'),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def report(self, request, pk=None):
         """Retrieve a summary report for charting x vs y"""
@@ -948,9 +1032,20 @@ class OrganizationViewSet(viewsets.ViewSet):
                 {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
-        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        # x could be an access level, else its a column
+        access_level_names = Organization.objects.get(pk=pk).access_level_names
+        if params["x_var"] not in access_level_names:
+            x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        else:
+            x_var = params["x_var"]
+
+        # y could be count, else its a column
+        if params["y_var"] != "Count":
+            y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        else:
+            y_var = params["y_var"]
+
+        cycles = Cycle.objects.filter(id__in=params["cycle_ids"]).order_by("-end")
         report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         axis_data = self.get_axis_data(
@@ -979,9 +1074,13 @@ class OrganizationViewSet(viewsets.ViewSet):
             AutoSchemaHelper.query_string_field("end", required=True, description='End time, in the format "2018-12-31T23:53:00-08:00"'),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def report_aggregated(self, request, pk=None):
         """Retrieve a summary report for charting x vs y aggregated by y_var"""
@@ -989,6 +1088,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         params = {
             "x_var": request.query_params.get("x_var", None),
             "y_var": request.query_params.get("y_var", None),
+            "aggregation_type": request.query_params.get("aggregationType", "Average"),
             "cycle_ids": request.query_params.getlist("cycle_ids", None),
             "access_level_instance_id": request.query_params.get("access_level_instance_id", None),
         }
@@ -1013,10 +1113,20 @@ class OrganizationViewSet(viewsets.ViewSet):
                 {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # get data
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
-        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
-        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        # X could be count, else its a column
+        if params["x_var"] != "Count":
+            x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        else:
+            x_var = params["x_var"]
+
+        # y could be an access level, else its a column
+        access_level_names = Organization.objects.get(pk=pk).access_level_names
+        if params["y_var"] not in access_level_names:
+            y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        else:
+            y_var = params["y_var"]
+
+        cycles = Cycle.objects.filter(id__in=params["cycle_ids"]).order_by("-end")
         report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         chart_data = []
@@ -1040,7 +1150,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         for datum in data:
             buildings = datum["chart_data"]
             yr_e = datum["property_counts"]["yr_e"]
-            chart_data.extend(aggregate_data(yr_e, buildings, bins, count=params["x_var"] == "Count"))
+            chart_data.extend(
+                aggregate_data(yr_e, buildings, bins, count=params["x_var"] == "Count", aggregation_type=params["aggregation_type"])
+            )
             property_counts.append(datum["property_counts"])
 
         # Send back to client
@@ -1051,21 +1163,30 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return Response(result, status=status.HTTP_200_OK)
 
-    def continuous_aggregate_data(self, yr_e, buildings, bins, count=False):
+    def continuous_aggregate_data(self, yr_e, buildings, bins, count=False, aggregation_type="Average"):
         buildings = [b for b in buildings if b["x"] is not None and b["y"] is not None]
         binplace = np.digitize([b["y"] for b in buildings], bins)
         xs = [b["x"] for b in buildings]
 
+        if count or aggregation_type == "Sum":
+            aggregate = sum
+        elif aggregation_type == "Average":
+
+            def average(x):
+                return np.average(x).item()
+
+            aggregate = average
+
         results = []
         for i in range(len(bins) - 1):
-            bin = f"{round(bins[i], 2)} - {round(bins[i+1], 2)}"
+            bin = f"{round(bins[i], 2)} - {round(bins[i + 1], 2)}"
             values = np.array(xs)[np.where(binplace == i + 1)]
-            x = sum(values) if count else np.average(values).item()
+            x = aggregate(values)
             results.append({"y": bin, "x": None if np.isnan(x) else x, "yr_e": yr_e})
 
         return results
 
-    def discrete_aggregate_data(self, yr_e, buildings, bins, count=False):
+    def discrete_aggregate_data(self, yr_e, buildings, bins, count=False, aggregation_type="Average"):
         xs_by_bin = {bin: [] for bin in bins}
 
         for building in buildings:
@@ -1073,16 +1194,19 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         results = []
         for bin, xs in xs_by_bin.items():
-            if count:
+            if count or aggregation_type == "Sum":
                 x = sum(xs)
-            elif len(xs) == 0:
-                x = None
+            elif aggregation_type == "Average":
+                if len(xs) == 0:
+                    x = None
+                else:
+                    x = sum(xs) / len(xs)
             else:
-                x = sum(xs) / len(xs)
+                raise ValueError(f"Bad aggregation_type: {aggregation_type}")
 
             results.append({"y": bin, "x": x, "yr_e": yr_e})
 
-        return results
+        return sorted(results, key=lambda d: d["x"] if d["x"] is not None else -np.inf, reverse=True)
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -1096,9 +1220,13 @@ class OrganizationViewSet(viewsets.ViewSet):
             AutoSchemaHelper.query_string_field("end", required=True, description='End time, in the format "2018-12-31T23:53:00-08:00"'),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def report_export(self, request, pk=None):
         """
@@ -1150,11 +1278,22 @@ class OrganizationViewSet(viewsets.ViewSet):
         agg_sheet.write(data_row_start, data_col_start + 1, request.query_params.get("y_label"), bold)
         agg_sheet.write(data_row_start, data_col_start + 2, "Year Ending", bold)
 
+        # X could be count, else its a column
+        if params["x_var"] != "Count":
+            x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
+        else:
+            x_var = params["x_var"]
+
+        # y could be an access level, else its a column
+        access_level_names = Organization.objects.get(pk=pk).access_level_names
+        if params["y_var"] not in access_level_names:
+            y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
+        else:
+            y_var = params["y_var"]
+
         # Gather base data
         cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
         matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
-        x_var = Column.objects.get(column_name=params["x_var"], organization=pk, table_name="PropertyState")
-        y_var = Column.objects.get(column_name=params["y_var"], organization=pk, table_name="PropertyState")
         report_data = self.setup_report_data(
             pk, access_level_instance, cycles, x_var, y_var, filter_group_id, additional_columns=matching_columns
         )
@@ -1299,8 +1438,12 @@ class OrganizationViewSet(viewsets.ViewSet):
         elif data_type == "integer":
             return data[1:3] + np.round(data[3:]).tolist()
 
-    @has_perm_class("requires_member")
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def geocode_api_key_exists(self, request, pk=None):
         """
@@ -1310,8 +1453,12 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return bool(org.mapquest_api_key)
 
-    @has_perm_class("requires_member")
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def geocoding_enabled(self, request, pk=None):
         """
@@ -1321,9 +1468,13 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return org.geocoding_enabled
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def reset_all_passwords(self, request, pk=None):
         """
@@ -1343,8 +1494,12 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({"status": "success", "message": "passwords reset"})
 
-    @has_perm_class("requires_superuser")
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_superuser"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def insert_sample_data(self, request, pk=None):
         """
@@ -1461,7 +1616,11 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({"status": "success"})
 
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+        ]
+    )
     def public_feed_json(self, request, pk):
         """
         Returns all property and taxlot state data for a given organization as a json object. The results are ordered by "state.update".
@@ -1488,8 +1647,12 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
 
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def report_configurations(self, request, pk):
         user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)

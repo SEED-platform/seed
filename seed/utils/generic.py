@@ -6,10 +6,12 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 import math
+import re
 from datetime import datetime
 
 from django.core import serializers
 from django.db import IntegrityError, models
+from django.utils import timezone
 from pint import UnitRegistry
 
 ureg = UnitRegistry()
@@ -55,7 +57,7 @@ def median(lst):
 
 
 def round_down_hundred_thousand(x):
-    return int(math.floor(x / 100000.0)) * 100000
+    return math.floor(x / 100000.0) * 100000
 
 
 def obj_to_dict(obj, include_m2m=True):
@@ -142,3 +144,36 @@ def get_int(value, default=None):
         return result if result > 0 else default
     except (ValueError, TypeError):
         return default
+
+
+def parse_date(value):
+    """
+    Parse a date string in the format YYYY, YYYY-MM, YYYY-MM-DD, or ISO format and return it as as datetime object.
+    """
+    try:
+        naive = datetime.fromisoformat(value)
+        return timezone.make_aware(naive)
+    except (ValueError, TypeError):
+        pass
+
+    pattern = re.compile(
+        r'^(=|!=?)?\s*(".*?"|\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$'
+        r"|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$"
+    )
+    match = pattern.match(str(value))
+    if not match:
+        raise ValueError(f'Unable to parse date from value "{value}". Expected format: YYYY, YYYY-MM, YYYY-MM-DD, or ISO format.')
+
+    groups = match.groups()
+    date_string = groups[1] if groups[1] else groups[3]
+    parts = date_string.split("-")
+    year = int(parts[0])
+    month = int(parts[1]) if len(parts) > 1 else 1
+    day = int(parts[2]) if len(parts) > 2 else 1
+    hour = int(parts[3]) if len(parts) > 3 else 0
+    minute = int(parts[4]) if len(parts) > 4 else 0
+    second = int(parts[5]) if len(parts) > 5 else 0
+    date_string = f"{year:04d}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:{second:02d}"
+
+    naive = datetime.fromisoformat(date_string)
+    return timezone.make_aware(naive)

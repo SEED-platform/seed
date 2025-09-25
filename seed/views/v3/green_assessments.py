@@ -6,35 +6,35 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.utils.decorators import method_decorator
 
 from seed.filtersets import GreenAssessmentFilterSet
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import GreenAssessment
 from seed.serializers.certification import GreenAssessmentSerializer
 from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 
 @method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
     name="update",
-    decorator=[
-        has_perm_class("requires_root_member_access"),
-    ],
 )
 @method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
     name="destroy",
-    decorator=[
-        has_perm_class("requires_root_member_access"),
-    ],
 )
 @method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
     name="retrieve",
-    decorator=[
-        has_perm_class("requires_root_member_access"),
-    ],
 )
 @method_decorator(
-    name="list",
-    decorator=[
-        has_perm_class("requires_root_member_access"),
+    [
+        has_perm("requires_root_member_access"),
     ],
+    name="list",
 )
 class GreenAssessmentViewSet(SEEDOrgCreateUpdateModelViewSet):
     """API endpoint for viewing and creating green assessment certifications.

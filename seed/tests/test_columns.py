@@ -10,6 +10,7 @@ import pytest
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.test import TestCase
+from django.utils import timezone
 from quantityfield.units import ureg
 
 from seed import models as seed_models
@@ -426,19 +427,18 @@ class TestRenameColumns(TestCase):
 
         new_col_name = "recent_sale_date"
 
-        for i in range(9, 11):  # range is purposely set to cause errors in the date format but not immediately
-            date = f"2018-04-02T19:53:0{i}+00:00"
+        for d in ["2018-04-02T19:53:09+00:00", "2018-04-02T19:53:010:00"]:  # Valid datetime, invalid datetime
             self.property_state_factory.get_property_state(
-                data_state=DATA_STATE_MATCHING, extra_data={self.extra_data_column.column_name: date}
+                data_state=DATA_STATE_MATCHING, extra_data={self.extra_data_column.column_name: d}
             )
-            expected_data.append(date)
+            expected_data.append(d)
 
         result = self.extra_data_column.rename_column(new_col_name, force=True)
         self.assertEqual(
             result,
             [
                 False,
-                "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.).",
+                "The column data aren't formatted properly for the new column due to type constraints (e.g., Datetime, Quantities, etc.).",
             ],
         )
 
@@ -506,7 +506,7 @@ class TestRenameColumns(TestCase):
             result,
             [
                 False,
-                "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.).",
+                "The column data aren't formatted properly for the new column due to type constraints (e.g., Datetime, Quantities, etc.).",
             ],
         )
 
@@ -574,7 +574,7 @@ class TestRenameColumns(TestCase):
             result,
             [
                 False,
-                "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.).",
+                "The column data aren't formatted properly for the new column due to type constraints (e.g., Datetime, Quantities, etc.).",
             ],
         )
 
@@ -736,7 +736,7 @@ class TestColumnsByInventory(TestCase):
         columns = Column.retrieve_all(self.fake_org.pk, "property", False)
         for c in columns:
             if c["column_name"] == "PropertyState":
-                self.assertEqual(c["name"], f'{c["column_name"]}_{c["id"]}')
+                self.assertEqual(c["name"], f"{c['column_name']}_{c['id']}")
 
     def test_column_retrieve_all(self):
         columns = Column.retrieve_all(self.fake_org.pk, "property", False)
@@ -1227,7 +1227,7 @@ class TestColumnCasting(TestCase):
         r = Column.cast_column_value("geometry", "POLY 123, 456")
         self.assertEqual("POLY 123, 456", r)
         r = Column.cast_column_value("datetime", "2020-01-01T00:00:00")
-        self.assertEqual(datetime(2020, 1, 1, 0, 0, 0), r)
+        self.assertEqual(timezone.make_aware(datetime(2020, 1, 1, 0, 0, 0)), r)
         r = Column.cast_column_value("date", "2020-01-01")
         self.assertEqual(date(2020, 1, 1), r)
         r = Column.cast_column_value("boolean", "true")
@@ -1246,6 +1246,23 @@ class TestColumnCasting(TestCase):
         self.assertEqual(123.456, r)
         r = Column.cast_column_value("eui", None)
         self.assertEqual(None, r)
+
+    def test_cast_partial_date(self):
+        dates = [
+            "2010",
+            "2010-01",
+            "2010-01-01",
+            "=2010",
+            "=2010-01",
+            "!=2010-01-01",
+            ">=2010",
+            "<2010-01",
+        ]
+        for date_str in dates:
+            r = Column.cast_column_value("date", date_str)
+            self.assertEqual(date(2010, 1, 1), r)
+            r = Column.cast_column_value("datetime", date_str)
+            self.assertEqual(timezone.make_aware(datetime(2010, 1, 1)), r)
 
     def test_cast_values_with_errors(self):
         with pytest.raises(ColumnCastError) as exc:

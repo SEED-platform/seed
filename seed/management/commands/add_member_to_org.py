@@ -43,4 +43,4 @@ class Command(BaseCommand):
             ou.role_level = ROLE_MEMBER
         ou.save()
 
-        self.stdout.write(f'Added user {u.username} to org {org.name} with permissions as {options["member_type"]}')
+        self.stdout.write(f"Added user {u.username} to org {org.name} with permissions as {options['member_type']}")

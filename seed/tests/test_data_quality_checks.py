@@ -91,7 +91,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         with pytest.raises(Exception) as exc:  # noqa: PT011
             dq.add_rule(ex_rule)
         self.assertEqual(
-            str(exc.value), "Rule data is not defined correctly: Rule() got an unexpected keyword argument 'table_name_does_not_exist'"
+            str(exc.value), "Rule data is not defined correctly: Rule() got unexpected keyword arguments: 'table_name_does_not_exist'"
         )
 
     def test_check_property_state_example_data(self):

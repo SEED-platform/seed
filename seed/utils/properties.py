@@ -171,7 +171,7 @@ def properties_across_cycles(org_id, ali, profile_id, cycle_ids=[]):
     return results
 
 
-def properties_across_cycles_with_filters(org_id, user_ali, cycle_ids=[], query_dict={}, columns=[]):
+def properties_across_cycles_with_filters(org_id, user_ali, cycle_ids=[], filter_group=None, columns=[]):
     # get relevant views
     views_list = PropertyView.objects.select_related("property", "state", "cycle").filter(
         property__organization_id=org_id,
@@ -179,6 +179,10 @@ def properties_across_cycles_with_filters(org_id, user_ali, cycle_ids=[], query_
         property__access_level_instance__lft__gte=user_ali.lft,
         property__access_level_instance__rgt__lte=user_ali.rgt,
     )
+
+    if filter_group:
+        views_list = filter_group.views(views_list, columns)
+
     views_list = _serialize_views(views_list, columns, org_id)
 
     # group by cycle

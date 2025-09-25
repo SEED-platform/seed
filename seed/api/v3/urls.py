@@ -15,6 +15,7 @@ from seed.views.v3.analysis_views import AnalysisPropertyViewViewSet
 from seed.views.v3.audit_template import AuditTemplateViewSet
 from seed.views.v3.audit_template_configs import AuditTemplateConfigViewSet
 from seed.views.v3.building_files import BuildingFileViewSet
+from seed.views.v3.cache_entries import CacheEntryViewSet
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
 from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
 from seed.views.v3.columns import ColumnViewSet
@@ -29,6 +30,8 @@ from seed.views.v3.derived_columns import DerivedColumnViewSet
 from seed.views.v3.eeej import EEEJViewSet
 from seed.views.v3.elements import ElementViewSet, OrgElementViewSet
 from seed.views.v3.events import EventViewSet
+from seed.views.v3.facilities_plan import FacilitiesPlanViewSet
+from seed.views.v3.facilities_plan_run import FacilitiesPlanRunViewSet
 from seed.views.v3.filter_group import FilterGroupViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
 from seed.views.v3.geocode import GeocodeViewSet
@@ -79,6 +82,7 @@ api_v3_router.register(r"analyses", AnalysisViewSet, basename="analyses")
 api_v3_router.register(r"audit_template", AuditTemplateViewSet, basename="audit_template")
 api_v3_router.register(r"audit_template_configs", AuditTemplateConfigViewSet, basename="audit_template_configs")
 api_v3_router.register(r"building_files", BuildingFileViewSet, basename="building_files")
+api_v3_router.register(r"cache_entries", CacheEntryViewSet, basename="cache_entries")
 api_v3_router.register(r"column_list_profiles", ColumnListProfileViewSet, basename="column_list_profiles")
 api_v3_router.register(r"column_mapping_profiles", ColumnMappingProfileViewSet, basename="column_mapping_profiles")
 api_v3_router.register(r"columns", ColumnViewSet, basename="columns")
@@ -91,6 +95,8 @@ api_v3_router.register(r"datasets", DatasetViewSet, basename="datasets")
 api_v3_router.register(r"derived_columns", DerivedColumnViewSet, basename="derived_columns")
 api_v3_router.register(r"eeej", EEEJViewSet, basename="eeej")
 api_v3_router.register(r"elements", OrgElementViewSet, basename="elements")
+api_v3_router.register(r"facilities_plans", FacilitiesPlanViewSet, basename="facilities_plans")
+api_v3_router.register(r"facilities_plan_runs", FacilitiesPlanRunViewSet, basename="facilities_plan_runs")
 api_v3_router.register(r"filter_groups", FilterGroupViewSet, basename="filter_groups")
 api_v3_router.register(r"gbr_properties", GBRPropertyViewSet, basename="gbr_properties")
 api_v3_router.register(r"goals", GoalViewSet, basename="goals")

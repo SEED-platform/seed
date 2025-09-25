@@ -29,6 +29,13 @@ class ColumnListProfileColumnSerializer(serializers.ModelSerializer):
             "table_name",
         )
 
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+        result["display_name"] = instance.column.display_name or instance.column.column_name
+        result["name"] = f"{instance.column.column_name}_{instance.column.id}"
+
+        return result
+
 
 class ColumnListProfileDerivedColumnSerializer(serializers.ModelSerializer):
     column_name = serializers.CharField(source="name", read_only=True)

@@ -9,35 +9,35 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from seed.filtersets import GAPropertyFilterSet
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import GreenAssessmentProperty
 from seed.serializers.certification import GreenAssessmentPropertySerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
 @method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
     name="update",
-    decorator=[
-        has_perm_class("requires_root_member_access"),
-    ],
 )
 @method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
     name="destroy",
-    decorator=[
-        has_perm_class("requires_root_member_access"),
-    ],
 )
 @method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
     name="retrieve",
-    decorator=[
-        has_perm_class("requires_root_member_access"),
-    ],
 )
 @method_decorator(
-    name="list",
-    decorator=[
-        has_perm_class("requires_root_member_access"),
+    [
+        has_perm("requires_root_member_access"),
     ],
+    name="list",
 )
 class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
     """API endpoint to view and create green assessment property attachments.
@@ -94,16 +94,24 @@ class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
     orgfilter = "assessment__organization_id"
     filterset_class = GAPropertyFilterSet
 
+    @method_decorator(
+        [
+            has_perm("requires_root_member_access"),
+        ]
+    )
     @action(detail=True, methods=["get"])
-    @has_perm_class("requires_root_member_access")
     def reso_format(self, request, pk=None):
         """Return an assessment property instance by pk in reso format"""
         assessment = self.get_object()
         status_code = status.HTTP_200_OK
         return Response(assessment.to_reso_dict(), status=status_code)
 
+    @method_decorator(
+        [
+            has_perm("requires_root_member_access"),
+        ]
+    )
     @action(detail=True, methods=["get"])
-    @has_perm_class("requires_root_member_access")
     def bedes_format(self, request, pk=None):
         """Return an assessment property instance by pk in bedes format"""
         assessment = self.get_object()
