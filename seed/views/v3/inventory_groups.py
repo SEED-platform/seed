@@ -187,7 +187,7 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="Cycle ID"),
-            AutoSchemaHelper.query_integer_field("meter_type", required=True, description="Meter Type"),
+            AutoSchemaHelper.query_string_field("meter_type", required=True, description="Meter Type"),
         ],
     )
     @method_decorator(
@@ -197,15 +197,38 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         ]
     )
     @action(detail=True, methods=["GET"])
-    def hannahs_sankey(self, request, pk):
+    def dashboard_sankey(self, request, pk):
         cycle = Cycle.objects.get(pk=request.query_params.get("cycle_id"))
-        meter_type = request.query_params.get("meter_type")
 
-        def _get_sankey_data_for_system(system, meter_type, cycle):
-            system_meters = Meter.objects.filter(system=system, type=meter_type).annotate(
+        # get org property_display_field
+        org_id = self.get_organization(self.request)
+        try:
+            org = Organization.objects.get(pk=org_id)
+        except Organization.DoesNotExist:
+            return JsonResponse(
+                {"status": "error", "message": f"organization with id {org_id} does not exist"}, status=status.HTTP_404_NOT_FOUND
+            )
+        property_display_field = org.property_display_field
+        print(f"property_display_field: {property_display_field}")
+
+        # this is the meter type name passed in here
+        meter_type = request.query_params.get("meter_type")
+        # find the meter type ID (the key in Meter.ENERGY_TYPE_BY_METER_TYPE) that corresponds to the meter type name
+        meter_type_id = [k for k, v in Meter.ENERGY_TYPE_BY_METER_TYPE.items() if v == meter_type]
+        if not meter_type_id:
+            return JsonResponse({"status": "error", "message": f"Invalid meter type {meter_type}"}, status=status.HTTP_400_BAD_REQUEST)
+        meter_type_id = meter_type_id[0]
+
+        # make cycle start/end timezone aware to query MeterReading table
+        the_tz = timezone(TIME_ZONE)
+        start_time = make_aware(datetime.combine(cycle.start, datetime.min.time()), timezone=the_tz)
+        end_time = make_aware(datetime.combine(cycle.end, datetime.min.time()), timezone=the_tz)
+
+        def _get_sankey_data_for_system(system, meter_type_id, cycle):
+            system_meters = Meter.objects.filter(system=system, type=meter_type_id).annotate(
                 flow=Sum(
                     "meter_readings__reading",
-                    filter=Q(meter_readings__end_time__lte=cycle.end, meter_readings__start_time__gte=cycle.start),
+                    filter=Q(meter_readings__end_time__lte=end_time, meter_readings__start_time__gte=start_time),
                 )
             )
 
@@ -225,24 +248,32 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
             return data
 
-        def _get_sankey_data_for_property(property_, meter_type, cycle):
-            property_meters = Meter.objects.filter(property=property_, type=meter_type).annotate(
+        def _get_sankey_data_for_property(property_, meter_type_id, cycle, property_display_field):
+            property_meters = Meter.objects.filter(property=property_, type=meter_type_id).annotate(
                 flow=Sum(
                     "meter_readings__reading",
-                    filter=Q(meter_readings__end_time__lte=cycle.end, meter_readings__start_time__gte=cycle.start),
+                    filter=Q(meter_readings__end_time__lte=end_time, meter_readings__start_time__gte=start_time),
                 )
             )
 
             data = []
             for meter in property_meters:
+                # first retrieve the property state of the property for this cycle to get the display name
+                property_display_name = f"property {property_.id}"
+                property_view = PropertyView.objects.filter(property=property_, cycle=cycle).first()
+                if property_view:
+                    state = property_view.state
+                    if state.default_display_value():
+                        property_display_name = state.default_display_value()
+
                 if meter.connection_type == Meter.IMPORTED:
-                    data.append({"from": "outside", "to": f"property {property_.id}", "flow": meter.flow})
+                    data.append({"from": "outside", "to": property_display_name, "flow": meter.flow})
                 elif meter.connection_type == Meter.EXPORTED:
-                    data.append({"from": f"property {property_.id}", "to": "outside", "flow": meter.flow})
+                    data.append({"from": property_display_name, "to": "outside", "flow": meter.flow})
                 elif meter.connection_type == Meter.RECEIVING_SERVICE:
-                    data.append({"from": f"system {meter.service.system.name}", "to": f"property {property_.id}", "flow": meter.flow})
+                    data.append({"from": f"system {meter.service.system.name}", "to": property_display_name, "flow": meter.flow})
                 elif meter.connection_type == Meter.RETURNING_TO_SERVICE:
-                    data.append({"from": f"property {property_.id}", "to": f"system {meter.service.system.name}", "flow": meter.flow})
+                    data.append({"from": property_display_name, "to": f"system {meter.service.system.name}", "flow": meter.flow})
                 elif meter.connection_type in {Meter.TOTAL_TO_USERS, Meter.TOTAL_FROM_USERS}:
                     # ???
                     pass
@@ -251,10 +282,10 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         data = []
         for system in System.objects.filter(group_id=pk):
-            data.extend(_get_sankey_data_for_system(system, meter_type, cycle))
+            data.extend(_get_sankey_data_for_system(system, meter_type_id, cycle))
 
         for property in Property.objects.filter(group_mappings__group_id=pk):
-            data.extend(_get_sankey_data_for_property(property, meter_type, cycle))
+            data.extend(_get_sankey_data_for_property(property, meter_type_id, cycle, property_display_field))
 
         return JsonResponse({"status": "success", "data": data})
 

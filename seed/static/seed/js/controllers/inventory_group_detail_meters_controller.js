@@ -59,6 +59,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
 
       $scope.group = group;
       $scope.group_id = group.id;
+      $scope.columns = columns;
       $scope.organization = organization_payload.organization;
       $scope.filler_cycle = cycles.cycles[0].id;
 

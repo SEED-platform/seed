@@ -1108,6 +1108,8 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
             # process dates
             the_tz = timezone(TIME_ZONE)
+            print("RAW READING:")
+            print(raw_reading)
             unaware_start = datetime.strptime(raw_reading["Start Date"], "%Y-%m-%d %H:%M:%S")
             unaware_end = datetime.strptime(raw_reading["End Date"], "%Y-%m-%d %H:%M:%S")
 

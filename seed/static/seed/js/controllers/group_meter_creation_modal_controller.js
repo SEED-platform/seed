@@ -75,6 +75,7 @@ angular.module('SEED.controller.group_meter_creation_modal', []).controller('gro
     });
 
     $scope.create_meter = () => {
+      console.log('METER: $scope.meter', $scope.meter);
       inventory_group_service.create_group_meter(group_id, $scope.meter).then((response) => {
         if (response.status === 200) {
           Notification.info('Meter created! Click on the pencil icon next to your meter to further configure its connections.');

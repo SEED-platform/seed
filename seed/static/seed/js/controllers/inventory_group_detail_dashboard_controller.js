@@ -8,6 +8,7 @@ angular.module('SEED.controller.inventory_group_detail_dashboard', [])
     '$state',
     '$stateParams',
     'cycles',
+    'meter_types',
     'group',
     'inventory_group_service',
     // eslint-disable-next-line func-names
@@ -16,6 +17,7 @@ angular.module('SEED.controller.inventory_group_detail_dashboard', [])
       $state,
       $stateParams,
       cycles,
+      meter_types,
       group,
       inventory_group_service
     ) {
@@ -23,17 +25,60 @@ angular.module('SEED.controller.inventory_group_detail_dashboard', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.group_id = $stateParams.group_id;
       $scope.cycles = cycles.cycles;
+      // only energy meter types for now (not water)
+      $scope.meter_types = meter_types.energy;
       $scope.selectedCycle = $scope.cycles[0] ?? undefined;
-      $scope.data = {};
+      // cheating a bit here and setting the default type to district chilled water.
+      // could be electricity instead
+      $scope.selectedMeterType = 'District Chilled Water';
+
+      $scope.sankey_data = {};
+      $scope.sankey_no_data_message = null;
       inventory_group_service.get_dashboard_info($scope.group_id, $scope.selectedCycle.id).then((data) => { $scope.data = data; });
 
       $scope.changeCycle = () => {
-        inventory_group_service.get_dashboard_info($scope.group_id, $scope.selectedCycle.id).then((data) => { $scope.data = data; });
+        inventory_group_service.get_dashboard_info($scope.group_id, $scope.selectedCycle.id)
+          .then((data) => {
+            $scope.data = data;
+            // update sankey
+            $scope.updateSankey();
+          });
+      };
+
+      $scope.changeMeterType = () => {
+        console.log('Changing Sankey to: ', $scope.selectedMeterType);
+        $scope.updateSankey();
+      };
+
+      $scope.updateSankey = () => {
+        // clear chart data
+        $scope.sankey_data = [];
+        // pull in sankey data based on the meter type
+        inventory_group_service.get_sankey_data($scope.group_id, $scope.selectedCycle.id, $scope.selectedMeterType)
+          .then((data) => {
+            $scope.sankey_data = data;
+            if ($scope.sankey_data.length === 0) {
+              $scope.sankey_no_data_message = 'No data available for the selected meter type and cycle.';
+            } else {
+              $scope.sankey_no_data_message = null;
+            }
+
+            // update the chart
+            $scope.chart.data.datasets[0].data = $scope.sankey_data;
+            $scope.chart.data.datasets[0].colorFrom = (c) => getColor(c.dataset.data[c.dataIndex].from);
+            $scope.chart.data.datasets[0].colorTo = (c) => getColor(c.dataset.data[c.dataIndex].to);
+            $scope.chart.update();
+          })
+          .catch((err) => {
+            console.error('Error getting sankey data: ', err);
+            $scope.sankey_no_data_message = 'Error retrieving data for the selected meter type and cycle.';
+          });
       };
 
       const ctx = document.getElementById('chart').getContext('2d');
       const colors = {
         Oil: 'black',
+        'Natural Gas': 'red',
         Coal: 'gray',
         'Fossil Fuels': 'slategray',
         Electricity: 'blue',
@@ -43,7 +88,7 @@ angular.module('SEED.controller.inventory_group_detail_dashboard', [])
       // the y-order of nodes, smaller = higher
       const priority = {
         Oil: 1,
-        'Narural Gas': 2,
+        'Natural Gas': 2,
         Coal: 3,
         'Fossil Fuels': 1,
         Electricity: 2,
@@ -56,128 +101,21 @@ angular.module('SEED.controller.inventory_group_detail_dashboard', [])
 
       const getColor = (name) => colors[name] || 'green';
 
-      const data = [
-        {
-          from: 'system FTLB​  Chiller 3',
-          to: 'system FTLB Plant​',
-          flow: null
-        },
-        {
-          from: 'system FTLB​  Chiller 1​',
-          to: 'system FTLB Plant​',
-          flow: null
-        },
-        {
-          from: 'system FTLB​  Flat Plate HX​',
-          to: 'system FTLB Plant​',
-          flow: null
-        },
-        {
-          from: 'system FTLB​  Chiller 2',
-          to: 'system FTLB Plant​',
-          flow: null
-        },
-        {
-          from: 'system SERF​  HX1​',
-          to: 'system SERF Plant​',
-          flow: null
-        },
-        {
-          from: 'system SERF​  Chiller 3',
-          to: 'system SERF Plant​',
-          flow: 7
-        },
-        {
-          from: 'system SERF​  HX2',
-          to: 'system SERF Plant​',
-          flow: null
-        },
-        {
-          from: 'system SERF​  Chiller 4',
-          to: 'system SERF Plant​',
-          flow: null
-        },
-        {
-          from: 'system SERF​  Chiller 2​',
-          to: 'system SERF Plant​',
-          flow: 3
-        },
-        {
-          from: 'system FTLB Plant​',
-          to: 'system “Infrastructure”​  (East Campus)​',
-          flow: null
-        },
-        {
-          from: 'system SERF Plant​',
-          to: 'system “Infrastructure”​  (East Campus)​',
-          flow: null
-        },
-        {
-          from: 'system FTLB Plant​',
-          to: 'system “Spine”​ (West Campus)​',
-          flow: null
-        },
-        {
-          from: 'system “Spine”​ (West Campus)​',
-          to: 'property 7',
-          flow: null
-        },
-        {
-          from: 'system “Spine”​ (West Campus)​',
-          to: 'property 8',
-          flow: null
-        },
-        {
-          from: 'system “Spine”​ (West Campus)​',
-          to: 'property 9',
-          flow: null
-        },
-        {
-          from: 'system FTLB Plant​',
-          to: 'property 10',
-          flow: null
-        },
-        {
-          from: 'system “Infrastructure”​  (East Campus)​',
-          to: 'property 11',
-          flow: null
-        },
-        {
-          from: 'system “Infrastructure”​  (East Campus)​',
-          to: 'property 11',
-          flow: null
-        },
-        {
-          from: 'system “Infrastructure”​  (East Campus)​',
-          to: 'property 12',
-          flow: null
-        },
-        {
-          from: 'system SERF Plant​',
-          to: 'property 13',
-          flow: 11
-        },
-        {
-          from: 'system SERF Plant​',
-          to: 'property 14',
-          flow: null
-        }
-      ];
-
-      const chart = new Chart(ctx, {
+      $scope.chart = new Chart(ctx, {
         type: 'sankey',
         data: {
           datasets: [
             {
-              data: data.map((d) => ({ ...d, flow: Math.floor(Math.random() * 10) })),
+              data: [],
               priority,
               labels,
-              colorFrom: (c) => getColor(c.dataset.data[c.dataIndex].from),
-              colorTo: (c) => getColor(c.dataset.data[c.dataIndex].to),
               borderWidth: 2,
               borderColor: 'black'
             }
           ]
         }
       });
+
+      // initialize sankey w/ default cycle and meter type
+      $scope.updateSankey();
     }]);
