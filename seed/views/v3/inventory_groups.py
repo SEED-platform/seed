@@ -209,7 +209,6 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 {"status": "error", "message": f"organization with id {org_id} does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
         property_display_field = org.property_display_field
-        print(f"property_display_field: {property_display_field}")
 
         # this is the meter type name passed in here
         meter_type = request.query_params.get("meter_type")

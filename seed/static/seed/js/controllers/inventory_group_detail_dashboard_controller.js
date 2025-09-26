@@ -46,7 +46,7 @@ angular.module('SEED.controller.inventory_group_detail_dashboard', [])
       };
 
       $scope.changeMeterType = () => {
-        console.log('Changing Sankey to: ', $scope.selectedMeterType);
+        // console.log('Changing Sankey to: ', $scope.selectedMeterType);
         $scope.updateSankey();
       };
 
@@ -70,8 +70,7 @@ angular.module('SEED.controller.inventory_group_detail_dashboard', [])
             $scope.chart.update();
           })
           .catch((err) => {
-            console.error('Error getting sankey data: ', err);
-            $scope.sankey_no_data_message = 'Error retrieving data for the selected meter type and cycle.';
+            $scope.sankey_no_data_message = `Error retrieving data for the selected meter type and cycle: ${err}`;
           });
       };
 
