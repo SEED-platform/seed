@@ -327,7 +327,15 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         # Remove duplicate dicts by converting to a set of tuples, then back to dicts
         data["column_defs"] = [dict(t) for t in {tuple(d.items()) for d in data["column_defs"]}]
-
+        # make sure start_time and end_time are the first entries in the column defs
+        start_col = next((col for col in data["column_defs"] if col["field"] == "start_time"), None)
+        end_col = next((col for col in data["column_defs"] if col["field"] == "end_time"), None)
+        if start_col:
+            data["column_defs"].remove(start_col)
+            data["column_defs"].insert(0, start_col)
+        if end_col:
+            data["column_defs"].remove(end_col)
+            data["column_defs"].insert(1, end_col)
         return JsonResponse({"status": "success", "data": data})
 
 

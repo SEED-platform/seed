@@ -174,7 +174,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
         enableSelectAll: true,
         exporterMenuPdf: false,
         exporterMenuExcel: false,
-        exporterCsvFilename: () => `${$scope.inventory_dispaly_name ? $scope.inventory_dispaly_name : $stateParams.view_id}_meter_readings.csv`,
+        exporterCsvFilename: () => `${$scope.inventory_display_name ? $scope.inventory_display_name : $stateParams.view_id}_meter_readings.csv`,
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
@@ -310,7 +310,6 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       // refresh_readings make an API call to refresh the base readings data
       // according to the selected interval
       $scope.refresh_meters_and_readings = () => {
-        // RP - Why cant we just reload the state?
         $state.reload();
       };
 

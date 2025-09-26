@@ -1090,6 +1090,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         num_total_readings = 0
         num_readings_created = 0
+        num_readings_updated = 0
         for raw_reading in parser.data:
             conversion_factor = get_conversion_factor(
                 Meter.ENERGY_TYPE_BY_METER_TYPE[meter.type],
@@ -1129,22 +1130,30 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 # Handle timestamp that doesn't exist due to "springing forward" to dst
                 end_time = make_aware(unaware_end, timezone=the_tz, is_dst=True)
 
-            _, created = MeterReading.objects.get_or_create(
+            # if a meter readings file is re-uploaded, it will UPDATE the values in defaults
+            # rather than keeping the values and ignoring incoming new data
+            _, created = MeterReading.objects.update_or_create(
                 start_time=start_time,
                 end_time=end_time,
                 meter_id=meter.id,
                 defaults={
                     "reading": float(raw_reading["Reading"]) * conversion_factor,
                     "conversion_factor": conversion_factor,
+                    "source_unit": raw_reading["Usage Units"],
                 },
             )
 
             num_total_readings += 1
             if created:
                 num_readings_created += 1
+            else:
+                num_readings_updated += 1
 
         return JsonResponse(
-            {"status": "success", "message": f"{num_readings_created} new readings created from the {num_total_readings} readings found."},
+            {
+                "status": "success",
+                "message": f"{num_readings_created} new readings created and {num_readings_updated} updated from the {num_total_readings} readings found.",
+            },
             status=status.HTTP_200_OK,
         )
 
