@@ -1184,9 +1184,15 @@ class Column(models.Model):
         for field in fields:
             new_field = field
             is_ah_data = any(field["to_field"] == name for name in organization.access_level_names)
-            is_extra_data = not any(
-                field["to_table_name"] == c["table_name"] and field["to_field"] == c["column_name"] for c in Column.DATABASE_COLUMNS
-            )
+            is_extra_data = True
+            for c in Column.DATABASE_COLUMNS:
+                table_match = field["to_table_name"] == c["table_name"]
+                field_match = field["to_field"].lower() in {c["column_name"], c["display_name"].lower()}
+
+                if table_match and field_match:
+                    field["to_field"] = c["column_name"]
+                    is_extra_data = False
+                    break
 
             to_col_params = {
                 "organization": organization,

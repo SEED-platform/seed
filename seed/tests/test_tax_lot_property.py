@@ -151,7 +151,8 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         data = get_cache_raw(unique_id)["data"].split("\n")
 
         self.assertTrue("Address Line 1" in data[0])
-        self.assertTrue("Property Labels\r" in data[0])
+        self.assertTrue("Property Labels" in data[0])
+        self.assertTrue("Property Notes Export\r" in data[0])
 
         self.assertEqual(len(data), 53)
         # last row should be blank

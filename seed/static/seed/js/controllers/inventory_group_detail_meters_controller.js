@@ -68,7 +68,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
         view_id: $stateParams.view_id
       };
 
-      const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source} - ${source_id ?? 'None'}`;
+      const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source ?? 'None'} - ${source_id ?? 'None'}`;
 
       const resetSelections = () => {
         $scope.sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
