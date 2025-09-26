@@ -1134,23 +1134,15 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
             # First, try to get the existing reading for this specific meter
             # also count how many readings were returned
-            existing_readings = MeterReading.objects.filter(
-                meter_id=meter.id,
-                start_time=start_time,
-                end_time=end_time
-            )
+            existing_readings = MeterReading.objects.filter(meter_id=meter.id, start_time=start_time, end_time=end_time)
             existing_reading = existing_readings.first() if existing_readings.count() > 0 else None
 
             if existing_reading:
                 # Update using queryset.update() instead of instance.save()
-                num_updated = MeterReading.objects.filter(
-                    meter_id=meter.id,
-                    start_time=start_time,
-                    end_time=end_time
-                ).update(
+                MeterReading.objects.filter(meter_id=meter.id, start_time=start_time, end_time=end_time).update(
                     reading=float(raw_reading["Reading"]) * conversion_factor,
                     conversion_factor=conversion_factor,
-                    source_unit=raw_reading["Usage Units"]
+                    source_unit=raw_reading["Usage Units"],
                 )
                 created = False
             else:
