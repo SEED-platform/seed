@@ -45,11 +45,13 @@
       ></i>
     </li>
     <li class="r-row r-row-centered">
-      <select class="form-control">
-        <option
-          ng-repeat="i in unselected_property_indices"
-          ng-click="select_property(i)"
-        >
+      <select
+        class="form-control"
+        ng-model="selected_property_index"
+        ng-change="selected_property_index !== null && select_property(selected_property_index)"
+      >
+        <option value="">Select a property...</option>
+        <option ng-repeat="i in unselected_property_indices" ng-value="i">
           {$:: properties[i].property_display_name $}
         </option>
       </select>
@@ -57,13 +59,23 @@
   </ul>
 
   <!-- CONFIRM -->
-  <button
-    ng-disable="selected_property_indices.length == 0"
-    type="button"
-    class="btn btn-primary"
-    style="width: 200px"
-    ng-click="create_meters()"
-  >
-    Create Meters
-  </button>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn col-sm-6 center-block"
+      ng-click="dismiss()"
+      translate
+    >
+      Dismiss
+    </button>
+    <button
+      ng-disabled="selected_property_indices.length == 0"
+      type="button"
+      class="btn btn-primary"
+      style="width: 200px"
+      ng-click="create_meters()"
+    >
+      Create Meters
+    </button>
+  </div>
 </div>

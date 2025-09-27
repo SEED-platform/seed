@@ -5,6 +5,8 @@
 angular.module('SEED.controller.service_meter_creation_modal', []).controller('service_meter_creation_modal_controller', [
   '$scope',
   '$stateParams',
+  '$uibModalInstance',
+  '$window',
   'properties',
   'organization_id',
   'service_service',
@@ -12,6 +14,8 @@ angular.module('SEED.controller.service_meter_creation_modal', []).controller('s
   function (
     $scope,
     $stateParams,
+    $uibModalInstance,
+    $window,
     properties,
     organization_id,
     service_service
@@ -79,7 +83,14 @@ angular.module('SEED.controller.service_meter_creation_modal', []).controller('s
         direction: $scope.direction,
         type: $scope.type,
         property_ids: properties.filter((_, i) => $scope.selected_property_indices.includes(i)).map((p) => p.property_id)
-      });
+      }).then(() => {
+        $window.location.reload();
+      })
+        .catch((err) => Notification.error(err));
+    };
+
+    $scope.dismiss = () => {
+      $uibModalInstance.close();
     };
   }
 ]);
