@@ -134,6 +134,6 @@ class ServiceViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 property_id=property_id,
                 type=Meter.type_lookup[type],
                 service_id=pk,
-                source="Manual Entry",
+                source=Meter.MANUAL_ENTRY,
                 connection_type=Meter.RECEIVING_SERVICE if direction == "imported" else Meter.RETURNING_TO_SERVICE,
             )
