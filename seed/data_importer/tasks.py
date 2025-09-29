@@ -92,6 +92,7 @@ from seed.utils.buildings import get_source_type
 from seed.utils.cache import set_cache_raw
 from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
 from seed.utils.goals import get_state_pairs
+from seed.utils.import_file import get_import_file_table_mappings
 from seed.utils.match import update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
 
@@ -278,8 +279,10 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
     org = Organization.objects.get(pk=import_file.import_record.super_organization.pk)
 
-    # get all the table_mappings that exist for the organization
-    table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
+    # get table mappings specific to the import file to respect 'omitted' mappings
+    # otherwise get all the table_mappings that exist for the organization
+    if not (table_mappings := get_import_file_table_mappings(import_file.id)):
+        table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
 
     # Remove any of the mappings that are not in the current list of raw columns because this
     # can really mess up the mapping of delimited_fields.

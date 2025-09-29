@@ -1090,6 +1090,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         num_total_readings = 0
         num_readings_created = 0
+        num_readings_updated = 0
         for raw_reading in parser.data:
             conversion_factor = get_conversion_factor(
                 Meter.ENERGY_TYPE_BY_METER_TYPE[meter.type],
@@ -1105,12 +1106,10 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-
             # process dates
             the_tz = timezone(TIME_ZONE)
             unaware_start = datetime.strptime(raw_reading["Start Date"], "%Y-%m-%d %H:%M:%S")
             unaware_end = datetime.strptime(raw_reading["End Date"], "%Y-%m-%d %H:%M:%S")
-
             try:
                 start_time = make_aware(unaware_start, timezone=the_tz)
             except AmbiguousTimeError:
@@ -1119,7 +1118,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             except NonExistentTimeError:
                 # Handle timestamp that doesn't exist due to "springing forward" to dst
                 start_time = make_aware(unaware_start, timezone=the_tz, is_dst=True)
-
             try:
                 end_time = make_aware(unaware_end, timezone=the_tz)
             except AmbiguousTimeError:
@@ -1129,29 +1127,52 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 # Handle timestamp that doesn't exist due to "springing forward" to dst
                 end_time = make_aware(unaware_end, timezone=the_tz, is_dst=True)
 
-            _, created = MeterReading.objects.get_or_create(
-                start_time=start_time,
-                end_time=end_time,
-                meter_id=meter.id,
-                defaults={
-                    "reading": float(raw_reading["Reading"]) * conversion_factor,
-                    "conversion_factor": conversion_factor,
-                },
-            )
+            # if a meter readings file is re-uploaded, it will UPDATE the values in defaults
+            # rather than keeping the values and ignoring incoming new data
+            # this code was really hard to get right due to the methods not respecting the
+            # meter ID constraint and updating multiple records.
+
+            # First, try to get the existing reading for this specific meter
+            # also count how many readings were returned
+            existing_readings = MeterReading.objects.filter(meter_id=meter.id, start_time=start_time, end_time=end_time)
+            existing_reading = existing_readings.first() if existing_readings.count() > 0 else None
+
+            if existing_reading:
+                # Update using queryset.update() instead of instance.save()
+                MeterReading.objects.filter(meter_id=meter.id, start_time=start_time, end_time=end_time).update(
+                    reading=float(raw_reading["Reading"]) * conversion_factor,
+                    conversion_factor=conversion_factor,
+                    source_unit=raw_reading["Usage Units"],
+                )
+                created = False
+            else:
+                # Create new reading
+                MeterReading.objects.create(
+                    meter_id=meter.id,
+                    start_time=start_time,
+                    end_time=end_time,
+                    reading=float(raw_reading["Reading"]) * conversion_factor,
+                    conversion_factor=conversion_factor,
+                    source_unit=raw_reading["Usage Units"],
+                )
+                created = True
 
             num_total_readings += 1
             if created:
                 num_readings_created += 1
+            else:
+                num_readings_updated += 1
 
         return JsonResponse(
-            {"status": "success", "message": f"{num_readings_created} new readings created from the {num_total_readings} readings found."},
+            {
+                "status": "success",
+                "message": f"{num_readings_created} new readings created and {num_readings_updated} updated from the {num_total_readings} readings found.",
+            },
             status=status.HTTP_200_OK,
         )
 
 
 def get_conversion_factor(type_name, unit, _kbtu_thermal_conversion_factors, _kgal_water_conversion_factors):
-    _log.error(type_name + ", " + unit)
-
     thermal_conversion_factor = _kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
     water_conversion_factor = _kgal_water_conversion_factors.get(type_name, {}).get(unit, None)
 
