@@ -148,32 +148,63 @@ def get_int(value, default=None):
 
 def parse_date(value):
     """
-    Parse a date string in the format YYYY, YYYY-MM, YYYY-MM-DD, or ISO format and return it as as datetime object.
+    Parse a date string and return it as an aware datetime object.
+
+    Supports partial ISO and US date formats:
+     - YYYY
+     - YYYY-MM
+     - YYYY-MM-DD
+     - YYYY-MM-DD HH:MM:SS
+     - YYYY-MM-DDTHH:MM:SS
+     - MM-DD-YYYY
+     - MM-DD-YY
+
+    '-' and '/' are interchangeable separators.
+    Optional comparison operators (=, !=, <, <=, >, >=) can prefix the date.
+
     """
+    if not value:
+        return timezone.make_aware(datetime.min)
+
+    # standardize separators, ignore optional operators
+    s = str(value).strip().replace("/", "-")
+    match = re.match(r"^(=|!=|<=|>=|<|>)\s*(.+)$", s)
+    if match:
+        s = match.group(2)
+
+    # ISO
     try:
-        naive = datetime.fromisoformat(value)
+        naive = datetime.fromisoformat(s)
         return timezone.make_aware(naive)
     except (ValueError, TypeError):
         pass
 
-    pattern = re.compile(
-        r'^(=|!=?)?\s*(".*?"|\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$'
-        r"|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$"
-    )
-    match = pattern.match(str(value))
-    if not match:
-        raise ValueError(f'Unable to parse date from value "{value}". Expected format: YYYY, YYYY-MM, YYYY-MM-DD, or ISO format.')
+    # Reduced ISO format: YYYY or YYYY-MM or YYYY-MM-DD
+    if re.fullmatch(r"\d{4}", s):  # YYYY
+        naive = datetime(int(s), 1, 1)
+        return timezone.make_aware(naive)
 
-    groups = match.groups()
-    date_string = groups[1] if groups[1] else groups[3]
-    parts = date_string.split("-")
-    year = int(parts[0])
-    month = int(parts[1]) if len(parts) > 1 else 1
-    day = int(parts[2]) if len(parts) > 2 else 1
-    hour = int(parts[3]) if len(parts) > 3 else 0
-    minute = int(parts[4]) if len(parts) > 4 else 0
-    second = int(parts[5]) if len(parts) > 5 else 0
-    date_string = f"{year:04d}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:{second:02d}"
+    if re.fullmatch(r"\d{4}[-]\d{2}", s):  # YYYY-MM
+        year, month = map(int, re.split(r"[-]", s))
+        naive = datetime(year, month, 1)
+        return timezone.make_aware(naive)
 
-    naive = datetime.fromisoformat(date_string)
-    return timezone.make_aware(naive)
+    if re.fullmatch(r"\d{4}[-]\d{2}[-]\d{2}", s):  # YYYY-MM-DD
+        year, month, day = map(int, re.split(r"[-]", s))
+        naive = datetime(year, month, day)
+        return timezone.make_aware(naive)
+
+    # US-style: MM-DD-YYYY or MM-DD-YY
+    try:
+        naive = datetime.strptime(s, "%m-%d-%Y")
+        return timezone.make_aware(naive)
+    except ValueError:
+        pass
+
+    try:
+        naive = datetime.strptime(s, "%m-%d-%y")
+        return timezone.make_aware(naive)
+    except ValueError:
+        pass
+
+    raise ValueError(f'Unable to parse date from value "{value}".')
