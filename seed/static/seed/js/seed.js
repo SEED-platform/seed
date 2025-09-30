@@ -2339,6 +2339,7 @@
           controller: 'inventory_group_detail_dashboard_controller',
           resolve: {
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            meter_types: ['meters_service', (meters_service) => meters_service.valid_energy_types_units()],
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
