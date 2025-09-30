@@ -1960,10 +1960,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
               return { string: '>=', operator: 'gte', value };
           }
         } else {
-          // Date Comparison
-          console.log('date comparison', filterData);
-          // handles both yyyy-mm-dd and mm/dd/yyyy formats
-
+          // Date Comparison: handles both yyyy-mm-dd and mm-dd-yyyy formats
           const operator = filterData[5] || filterData[9];
           const rawValue = filterData[8] || filterData[10];
           const value = rawValue.replace(/\//g, '-');
