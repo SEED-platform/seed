@@ -306,11 +306,11 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         # annotate all the shown columns. the shown columns must be annotated on (instead of
         # simply `.values`ed) as they may have characters (such as spaces) that is disallowed from
         # args of `.values()`
-        columns_dict = [
+        properties_columns_dict = [
             *[
                 {
                     "annotated_name": f"col_{i}",
-                    "display_name": column.display_name,
+                    "display_name": column.display_name if column.display_name else column.column_name,
                     "queryable_name": F(_get_column_model_field(column)),
                 }
                 for i, column in enumerate(show_columns)
@@ -339,13 +339,13 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 },
             ],
         ]
-        annotations = {cd["annotated_name"]: cd["queryable_name"] for cd in columns_dict}
+        annotations = {cd["annotated_name"]: cd["queryable_name"] for cd in properties_columns_dict}
         views = views.annotate(**annotations)
 
         # put those in a df
-        properties_records = list(views.values(*[cd["annotated_name"] for cd in columns_dict]))
+        properties_records = list(views.values(*[cd["annotated_name"] for cd in properties_columns_dict]))
         properties_df = pd.DataFrame.from_records(properties_records)
-        properties_df = properties_df.rename(columns={cd["annotated_name"]: cd["display_name"] for cd in columns_dict})
+        properties_df = properties_df.rename(columns={cd["annotated_name"]: cd["display_name"] for cd in properties_columns_dict})
 
         # get the relevant elements, that is, the top 3 RSL for each property with an EISA code
         top_3_element_query = Element.objects.filter(property=OuterRef("pk"), code__code__in=EISA432_CODES)[:3]
@@ -356,7 +356,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         # annotate all the shown columns. the shown columns must be annotated on (instead of
         # simply `.values`ed) as they may have characters (such as spaces) that is disallowed from
         # args of `.values()`
-        columns_dict = [
+        element_columns_dict = [
             {
                 "annotated_name": "cat_code",
                 "display_name": "Uniformat Category",
@@ -438,9 +438,9 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 "queryable_name": F("extra_data__POWER_UNITS"),
             },
         ]
-        annotations = {cd["annotated_name"]: cd["queryable_name"] for cd in columns_dict}
+        annotations = {cd["annotated_name"]: cd["queryable_name"] for cd in element_columns_dict}
         elements = elements.annotate(**annotations)
-        elements_records = list(elements.values("property_id", *[cd["annotated_name"] for cd in columns_dict]))
+        elements_records = list(elements.values("property_id", *[cd["annotated_name"] for cd in element_columns_dict]))
 
         # now we gotta append those property columns
         # get the columns we care about
@@ -458,7 +458,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         # annotate all the shown columns. the shown columns must be annotated on (instead of
         # simply `.values`ed) as they may have characters (such as spaces) that is disallowed from
         # args of `.values()`
-        columns_dict = [
+        element_properties_columns_dict = [
             {
                 "annotated_name": f"col_{i}",
                 "display_name": column.display_name,
@@ -466,17 +466,23 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             }
             for i, column in enumerate(show_columns)
         ]
-        annotations = {cd["annotated_name"]: cd["queryable_name"] for cd in columns_dict}
+        annotations = {cd["annotated_name"]: cd["queryable_name"] for cd in element_properties_columns_dict}
         views = views.annotate(**annotations)
 
         # add property columns to element records
-        view_dict_by_id = {v["property_id"]: v for v in views.values("property_id", *[cd["annotated_name"] for cd in columns_dict])}
+        view_dict_by_id = {
+            v["property_id"]: v for v in views.values("property_id", *[cd["annotated_name"] for cd in element_properties_columns_dict])
+        }
         for er in elements_records:
             er.update(view_dict_by_id[er["property_id"]])
 
         # put those in a df
         elements_df = pd.DataFrame.from_records(elements_records)
-        elements_df = elements_df.rename(columns={cd["annotated_name"]: cd["display_name"] for cd in columns_dict})
+        elements_df = elements_df.rename(columns={cd["annotated_name"]: cd["display_name"] for cd in element_properties_columns_dict})
+        elements_df = elements_df.rename(columns={cd["annotated_name"]: cd["display_name"] for cd in element_columns_dict})
+        elements_df = elements_df[
+            [cd["display_name"] for cd in element_properties_columns_dict] + [cd["display_name"] for cd in element_columns_dict]
+        ]
 
         return properties_df, elements_df
 
