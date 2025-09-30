@@ -800,7 +800,9 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
         if view and state.incoming_labels:
             incoming_label_names = state.incoming_labels.split(",")
             for incoming_label_name in incoming_label_names:
-                incoming_label, _ = StatusLabel.objects.get_or_create(name=incoming_label_name, super_organization=cycle.organization)
+                incoming_label, _ = StatusLabel.objects.get_or_create(
+                    name=incoming_label_name, super_organization=cycle.organization, show_in_list=True
+                )
                 if isinstance(view, PropertyView):
                     PropertyViewLabel.objects.get_or_create(statuslabel=incoming_label, propertyview=view)
                 elif isinstance(view, TaxLotView):
