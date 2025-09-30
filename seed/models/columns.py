@@ -1319,6 +1319,7 @@ class Column(models.Model):
 
         parser = Column.DATA_TYPE_PARSERS.get(column_data_type, str)
         try:
+            logging.error('>>> parsed value %s', parser(value))
             return parser(value)
         except Exception:
             raise ColumnCastError(f'Invalid data type for "{column_data_type}". Expected a valid "{column_data_type}" value.')

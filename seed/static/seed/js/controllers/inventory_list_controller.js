@@ -1920,7 +1920,7 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     // https://regexr.com/6cka2
     const numericComparison = /^(!?)=\s*(-?\d+(?:\.\d+)?)$/;
     const stringComparison = /^(!?)=?\s*"((?:[^"]|\\")*)"$/;
-    const dateComparison = /^(<=|>=|!=|=|<|>|!)\s*((-?\d+(?:\.\d+)?)|(\d{4}(?:[-/]\d{2}(?:[-/]\d{2}(?: \d{1,2}(?::\d{2}(?::\d{2})?)?)?)?)?))$/;
+    const dateComparison = /^(<=|>=|!=|=|<|>|!)\s*((-?\d+(?:\.\d+)?)|(\d{4}(?:[-/]\d{1,2}(?:[-/]\d{1,2}(?: \d{1,2}(?::\d{2}(?::\d{2})?)?)?)?)?))$/;
     const usDateComparison = /^(<=|>=|!=|=|<|>|!)\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})$/;
     const combinedRegex = new RegExp(`${numericComparison.source}|${stringComparison.source}|${dateComparison.source}|${usDateComparison.source}`);
     const parseFilter = (expression) => {
