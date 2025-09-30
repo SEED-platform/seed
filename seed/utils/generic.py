@@ -7,6 +7,7 @@ import json
 import logging
 import math
 import re
+from contextlib import suppress
 from datetime import datetime
 
 from django.core import serializers
@@ -172,39 +173,26 @@ def parse_date(value):
     if match:
         s = match.group(2)
 
-    # ISO
-    try:
-        naive = datetime.fromisoformat(s)
-        return timezone.make_aware(naive)
-    except (ValueError, TypeError):
-        pass
+    # ISO/Partial ISO Format
+    with suppress(ValueError, TypeError):
+        return timezone.make_aware(datetime.fromisoformat(s))
 
-    # Reduced ISO format: YYYY or YYYY-MM or YYYY-MM-DD
     if re.fullmatch(r"\d{4}", s):  # YYYY
-        naive = datetime(int(s), 1, 1)
-        return timezone.make_aware(naive)
+        return timezone.make_aware(datetime(int(s), 1, 1))
 
-    if re.fullmatch(r"\d{4}[-]\d{2}", s):  # YYYY-MM
+    if re.fullmatch(r"\d{4}[-]\d{1,2}", s):  # YYYY-MM
         year, month = map(int, re.split(r"[-]", s))
-        naive = datetime(year, month, 1)
-        return timezone.make_aware(naive)
+        return timezone.make_aware(datetime(year, month, 1))
 
-    if re.fullmatch(r"\d{4}[-]\d{2}[-]\d{2}", s):  # YYYY-MM-DD
+    if re.fullmatch(r"\d{4}[-]\d{1,2}[-]\d{1,2}", s):  # YYYY-MM-DD
         year, month, day = map(int, re.split(r"[-]", s))
-        naive = datetime(year, month, day)
-        return timezone.make_aware(naive)
+        return timezone.make_aware(datetime(year, month, day))
 
-    # US-style: MM-DD-YYYY or MM-DD-YY
-    try:
-        naive = datetime.strptime(s, "%m-%d-%Y")
-        return timezone.make_aware(naive)
-    except ValueError:
-        pass
+    # US-style:
+    with suppress(ValueError):
+        return timezone.make_aware(datetime.strptime(s, "%m-%d-%Y"))  # MM-DD-YYYY
 
-    try:
-        naive = datetime.strptime(s, "%m-%d-%y")
-        return timezone.make_aware(naive)
-    except ValueError:
-        pass
+    with suppress(ValueError):
+        return timezone.make_aware(datetime.strptime(s, "%m-%d-%y"))  # MM-DD-YY
 
     raise ValueError(f'Unable to parse date from value "{value}".')
