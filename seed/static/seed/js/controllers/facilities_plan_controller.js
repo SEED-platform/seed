@@ -428,7 +428,7 @@ angular.module('SEED.controller.facilities_plan', [])
         facilities_plan_run_service.export_facilities_plan_run($scope.current_facilities_plan_run_id).then((data) => {
           const blob_type = data.headers()['content-type'];
           const blob = new Blob([data.data], { type: blob_type });
-          saveAs(blob, "a.xlsx");
+          saveAs(blob, 'a.xlsx');
         });
       };
 
