@@ -59,16 +59,17 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
 
       $scope.group = group;
       $scope.group_id = group.id;
+      $scope.columns = columns;
       $scope.organization = organization_payload.organization;
       $scope.filler_cycle = cycles.cycles[0].id;
 
-      const property_display_name = columns.find((col) => col.column_name === $scope.organization.property_display_field).display_name;
+      // const property_display_name = columns.find((col) => col.column_name === $scope.organization.property_display_field).display_name;
 
       $scope.inventory = {
         view_id: $stateParams.view_id
       };
 
-      const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source} - ${source_id ?? 'None'}`;
+      const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source ?? 'None'} - ${source_id ?? 'None'}`;
 
       const resetSelections = () => {
         $scope.sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
@@ -105,7 +106,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
 
       $scope.serviceLink = (entity) => {
         if (entity.service_name === null) return;
-        return `<a id="inventory-summary" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active">${entity.service_name}</a>`;
+        return `<a id="inventory-summary" class="ui-grid-cell-contents" style="display: flex; align-items: center;" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active">${entity.service_name}</a>`;
       };
 
       $scope.meterGridOptions = {
@@ -120,12 +121,12 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
           { field: 'connection_type' },
           {
             field: 'property_display_field',
-            displayName: property_display_name,
-            cellTemplate: '<a id="inventory-summary" ui-sref="inventory_detail_meters({inventory_type: \'properties\', view_id: row.entity.view_id})" ui-sref-active="active">{$ row.entity.property_display_field $}</a>'
+            displayName: 'Property',
+            cellTemplate: '<a id="inventory-summary" class="ui-grid-cell-contents" style="display: flex; align-items: center;" ui-sref="inventory_detail_meters({inventory_type: \'properties\', view_id: row.entity.view_id})" ui-sref-active="active">{$ row.entity.property_display_field $}</a>'
             // cellTemplate: `<a id="inventory-summary"  ui-sref="inventory_detail_meters({inventory_type: 'properties', view_id: row.entity.view_id})" ui-sref-active="active">{$ hoi $}</a>`
           },
           { field: 'system_name' },
-          { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
+          { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" class="ui-grid-cell-contents" style="display: flex; align-items: center;" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
           { field: 'is_virtual' },
           { field: 'scenario_name' },
           { field: 'actions', cellTemplate: buttons }
@@ -173,7 +174,7 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
         enableSelectAll: true,
         exporterMenuPdf: false,
         exporterMenuExcel: false,
-        exporterCsvFilename: () => `${$scope.inventory_dispaly_name ? $scope.inventory_dispaly_name : $stateParams.view_id}_meter_readings.csv`,
+        exporterCsvFilename: () => `${$scope.inventory_display_name ? $scope.inventory_display_name : $stateParams.view_id}_meter_readings.csv`,
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
@@ -309,7 +310,6 @@ angular.module('SEED.controller.inventory_group_detail_meters', [])
       // refresh_readings make an API call to refresh the base readings data
       // according to the selected interval
       $scope.refresh_meters_and_readings = () => {
-        // RP - Why cant we just reload the state?
         $state.reload();
       };
 

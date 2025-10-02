@@ -9,7 +9,6 @@ import locale
 import logging
 import os.path
 from collections import OrderedDict
-from datetime import datetime
 from typing import Any, Callable, Literal, Optional
 
 from django.apps import apps
@@ -23,6 +22,7 @@ from seed.lib.superperms.orgs.models import Organization as SuperOrganization
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.models.column_mappings import ColumnMapping
 from seed.models.models import Unit
+from seed.utils.generic import parse_date
 
 INVENTORY_DISPLAY = {
     "PropertyState": "Property",
@@ -206,8 +206,8 @@ class Column(models.Model):
         "integer": lambda v: int(v.replace(",", "") if isinstance(v, str) else v),
         "string": str,
         "geometry": str,
-        "datetime": datetime.fromisoformat,
-        "date": lambda v: datetime.fromisoformat(v).date(),
+        "datetime": parse_date,
+        "date": lambda v: parse_date(v).date(),
         "boolean": lambda v: v.lower() == "true",
         "area": lambda v: float(v.replace(",", "") if isinstance(v, str) else v),
         "eui": lambda v: float(v.replace(",", "") if isinstance(v, str) else v),
@@ -1184,9 +1184,15 @@ class Column(models.Model):
         for field in fields:
             new_field = field
             is_ah_data = any(field["to_field"] == name for name in organization.access_level_names)
-            is_extra_data = not any(
-                field["to_table_name"] == c["table_name"] and field["to_field"] == c["column_name"] for c in Column.DATABASE_COLUMNS
-            )
+            is_extra_data = True
+            for c in Column.DATABASE_COLUMNS:
+                table_match = field["to_table_name"] == c["table_name"]
+                field_match = field["to_field"].lower() in {c["column_name"], c["display_name"].lower()}
+
+                if table_match and field_match:
+                    field["to_field"] = c["column_name"]
+                    is_extra_data = False
+                    break
 
             to_col_params = {
                 "organization": organization,

@@ -1318,16 +1318,6 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       }
     );
 
-    inventory_service.get_export = (unique_id) => $http.get(
-      '/api/v3/tax_lot_properties/get_export/',
-      {
-        params: {
-          organization_id: user_service.get_organization().id,
-          unique_id
-        }
-      }
-    ).then((response) => response.data);
-
     return inventory_service;
   }
 ]);
