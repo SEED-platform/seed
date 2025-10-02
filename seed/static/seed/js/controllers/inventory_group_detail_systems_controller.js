@@ -133,7 +133,6 @@ angular.module('SEED.controller.inventory_group_detail_systems', [])
             });
           },
           () => {
-            console.log('here');
           // do nothing
           }
         );

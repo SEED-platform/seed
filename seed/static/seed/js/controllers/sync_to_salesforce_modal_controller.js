@@ -7,94 +7,147 @@ angular.module('SEED.controller.sync_to_salesforce_modal', []).controller('sync_
   '$uibModalInstance',
   'urls',
   'goal',
-  'cycle_goal',
-  'seed_summary_data',
+  'latest_cycle_goal',
   'salesforce_summary_data',
   'goal_service',
   // eslint-disable-next-line func-names
-  function ($scope, $uibModalInstance, urls, goal, cycle_goal, seed_summary_data, salesforce_summary_data, goal_service) {
-    $scope.goal = goal;
+  function ($scope, $uibModalInstance, urls, goal, latest_cycle_goal, salesforce_summary_data, goal_service) {
+    const latest_cycle_goal_summary = salesforce_summary_data[latest_cycle_goal.current_cycle.name];
+    $scope.report_status = null;
+    $scope.review_status = null;
+
+    // goal details
     $scope.goal_details = {
-      Partner: $scope.goal.salesforce_partner_id,
-      'Partner ID': $scope.goal.salesforce_partner_name,
-      Goal: $scope.goal.salesforce_goal_id,
-      'Goal ID': $scope.goal.salesforce_goal_name
+      Partner: goal.salesforce_partner_id,
+      'Partner ID': goal.salesforce_partner_name,
+      Goal: goal.salesforce_goal_id,
+      'Goal ID': goal.salesforce_goal_name
     };
-    console.log(seed_summary_data);
-    console.log(salesforce_summary_data);
 
-    $scope.seed_baseline_portfolio_kbtu = seed_summary_data.baseline_total_kbtu;
-    $scope.salesforce_baseline_portfolio_kbtu = undefined;
-    $scope.seed_baseline_portfolio_eui = seed_summary_data.baseline_weighted_eui;
-    $scope.salesforce_baseline_portfolio_eui = undefined;
-
+    // baseline cycle goal
     $scope.baseline_cycle_goal_table = {
       'Baseline portfolio kBtu': {
-        seed: seed_summary_data.baseline_total_kbtu,
-        salesforce: salesforce_summary_data.baseline_portfolio_kbtu
+        seed: latest_cycle_goal_summary.seed.baseline_total_kbtu,
+        salesforce: latest_cycle_goal_summary.salesforce.baseline_portfolio_kbtu
       },
       'Baseline portfolio EUI': {
-        seed: seed_summary_data.baseline_weighted_eui,
-        salesforce: salesforce_summary_data.baseline_portfolio_eui
+        seed: latest_cycle_goal_summary.seed.baseline_weighted_eui,
+        salesforce: latest_cycle_goal_summary.salesforce.baseline_portfolio_eui
       }
     };
 
-    $scope.cycle_goal_details = {
-      'Annual Report Year': cycle_goal.salesforce_annual_report_name,
-      'Annual Report ID': cycle_goal.salesforce_annual_report_id
-    };
-
-    $scope.current_cycle_goal_table = {
+    // latest cycle goal
+    $scope.latest_cycle_goal_table = {
       'Reporting Year Start': {
-        seed: cycle_goal.current_cycle.start,
-        salesforce: salesforce_summary_data.reporting_year_start
+        seed: latest_cycle_goal.current_cycle.start,
+        salesforce: latest_cycle_goal_summary.salesforce?.reporting_year_start
       },
       'Reporting Year End': {
-        seed: cycle_goal.current_cycle.end,
-        salesforce: salesforce_summary_data.reporting_year_end
+        seed: latest_cycle_goal.current_cycle.end,
+        salesforce: latest_cycle_goal_summary.salesforce?.reporting_year_end
       },
       'Number of Properties': {
-        seed: seed_summary_data.total_properties,
-        salesforce: salesforce_summary_data.number_of_properties
+        seed: latest_cycle_goal_summary.seed.total_properties,
+        salesforce: latest_cycle_goal_summary.salesforce.number_of_properties
       },
       'Portfolio Average EUI': {
-        seed: seed_summary_data.current_weighted_eui,
-        salesforce: salesforce_summary_data.portfolio_average_eui
+        seed: latest_cycle_goal_summary.seed.current_weighted_eui,
+        salesforce: latest_cycle_goal_summary.salesforce.portfolio_average_eui
       },
       'Portfolio kBtu (BBC Total Energy)': {
-        seed: seed_summary_data.current_total_kbtu,
-        salesforce: salesforce_summary_data.portfolio_kbtu
+        seed: latest_cycle_goal_summary.seed.current_total_kbtu,
+        salesforce: latest_cycle_goal_summary.salesforce.portfolio_kbtu
       },
       'New Energy Savings': {
-        seed: seed_summary_data.baseline_total_kbtu - seed_summary_data.current_total_kbtu,
-        salesforce: salesforce_summary_data.new_energy_savings
+        seed: latest_cycle_goal_summary.seed.baseline_total_kbtu - latest_cycle_goal_summary.seed.current_total_kbtu,
+        salesforce: latest_cycle_goal_summary.salesforce.new_energy_savings
       },
       'El Annual Improvement': {
-        seed: seed_summary_data.baseline_weighted_eui - seed_summary_data.current_weighted_eui,
-        salesforce: salesforce_summary_data.ei_annual_improvement
+        seed: latest_cycle_goal_summary.seed.baseline_weighted_eui - latest_cycle_goal_summary.seed.current_weighted_eui,
+        salesforce: latest_cycle_goal_summary.salesforce.ei_annual_improvement
       },
       'Total El Improvement': {
-        seed: seed_summary_data.eui_change,
-        salesforce: salesforce_summary_data.total_ei_improvement
+        seed: latest_cycle_goal_summary.seed.eui_change,
+        salesforce: latest_cycle_goal_summary.salesforce.total_ei_improvement
       },
       'Shared Square Feet': {
-        seed: seed_summary_data.shared_sqft,
-        salesforce: salesforce_summary_data.shared_square_feet
+        seed: latest_cycle_goal_summary.seed.shared_sqft,
+        salesforce: latest_cycle_goal_summary.salesforce.shared_square_feet
       },
       'Reviewed Square Feet': {
-        seed: seed_summary_data.current_total_sqft,
-        salesforce: salesforce_summary_data.reviewed_square_feet
+        seed: latest_cycle_goal_summary.seed.current_total_sqft,
+        salesforce: latest_cycle_goal_summary.salesforce.reviewed_square_feet
       }
     };
+
+    // past cycles
+    $scope.past_cycle_goals = Object.entries(salesforce_summary_data).filter(
+      ([k]) => k !== latest_cycle_goal.current_cycle.name
+    );
+    $scope.past_cycle_goals_table = $scope.past_cycle_goals.map(([, summary]) => ({
+      Year: `${summary.seed.current_cycle_name} (${summary.salesforce.id})`,
+      'EI Annual Improvment': summary.seed.baseline_weighted_eui - summary.seed.current_weighted_eui,
+      'SF EI Annual Improvment': summary.salesforce.ei_annual_improvement,
+      'Portfolio Avg EUI': summary.seed.current_weighted_eui,
+      'SF Portfolio Avg EUI': summary.salesforce.portfolio_average_eui,
+      'New Energy Savings': summary.seed.baseline_total_kbtu - summary.seed.current_total_kbtu,
+      'SF New Energy Savings': summary.salesforce.new_energy_savings,
+      'Portfolio kBtu': summary.seed.current_total_kbtu,
+      'SF Portfolio kBtu': summary.salesforce.portfolio_kbtu
+    }));
+
+
+    $scope.report_status_options = [
+      '00. Baselining',
+      '00. Partner not engaged',
+      '00. Partner under reengagement',
+      '00. No Information Available',
+      '01. No response to requests for annual data',
+      '02. Partner experiencing data challenges',
+      '03. Partner working on data',
+      '04. Data received, under staff review',
+      '05. Data returned for corrections',
+      '06. Annual report reviewed by staff',
+      '07. Quality check complete (industrial only)',
+      '08. Finalized, ready for data display',
+      '09. Data display live on web'
+    ];
+
+    $scope.review_status_options = [
+      'A. Report Needed',
+      'B. Report in Progress',
+      'C. Report in Progress (Complex)',
+      'D. Report on Hold/Partner Update Needed',
+      'E. Report Completed (AM Send to Partner)',
+      'F. Report and Summary Sent to Partner',
+      'G. Feedback Received/Edits Needed from Data Team',
+      'H. Final Report Approved for Solution Center',
+      'I. Report Under Consideration for Goal Achievement',
+      'J. Display Needed',
+      'K. New PowerBI Needed',
+      'L. Display Generated, Ready for Publish',
+      'M. Display Published (AMs QC)',
+      'N. AM QC Complete',
+      'O. Issues for Data Team',
+      'P. Data Team QC Complete',
+      'Q. Opt-Out of Display',
+    ];
 
     $scope.dismiss = () => {
       $uibModalInstance.close();
     };
 
-    $scope.send_sync = () => {
-      goal_service.update_salesforce($scope.goal.id, $scope.cycle_goal.id)
+    $scope.sync_latest_cycle = () => {
+      goal_service.update_salesforce(goal.id, [latest_cycle_goal.id], $scope.report_status? $scope.report_status : null, $scope.review_status? $scope.review_status null)
         .then((data) => {
-          console.log(data);
+          $uibModalInstance.close();
+        });
+    };
+
+    $scope.sync_past_cycles = () => {
+      goal_service.update_salesforce(goal.id, $scope.past_cycle_goals.map(([, c]) => c.id))
+        .then((data) => {
+          $uibModalInstance.close();
         });
     };
   }

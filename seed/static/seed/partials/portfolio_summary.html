@@ -49,8 +49,9 @@
       <div style="margin: 0px 0px 15px 15px" ng-if="!is_logged_into_salesforce">
         <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="login_salesforce()" ng-if="write_permission">{$:: 'Login to Salesforce' | translate $}</button>
       </div>
-      <div style="margin: 0px 0px 15px 15px" ng-if="is_logged_into_salesforce">
-        <button disabled class="btn" type="submit" ng-if="write_permission" style="border-color: darkgreen">{$:: 'Logged in to Salesforce' | translate $}</button>
+      <div style="margin: 0px 0px 15px 15px;" ng-if="is_logged_into_salesforce">
+        <button disabled class="btn" type="submit" ng-if="write_permission"  style="border-color: darkgreen;">{$:: 'Logged in to Salesforce' | translate $}</button>
+        <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_sync_to_salesforce_modal()" ng-if="write_permission">{$:: 'Sync to Salesforce' | translate $}</button>
       </div>
       <!-- GOAL DETAILS -->
       <div class="goal-details-container" ng-if="goal">
@@ -85,6 +86,56 @@
       </table>
     </div>
   </div>
+
+  <div style="display: flex; gap: 30px">
+    <div style="margin-left: 5vw; margin-right: 5vw; width: 50%">
+      <canvas id="data-view-chart" style="border: 10px;"></canvas>
+    </div>
+
+    <div>
+      <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="update_is_editing_partner_note(true)"
+        ng-if="write_permission && !is_editing_partner_note">{$:: 'Edit' | translate $}</button>
+      <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="update_partner_note()"
+        ng-if="write_permission && is_editing_partner_note">{$:: 'Save' | translate $}</button>
+      <div>
+        <input type="text" class="form-control" id="org_name" ng-model="goal.partner_note" placeholder="partner notes"
+          ng-disabled="!is_editing_partner_note" />
+      </div>
+      <div class="col-md-3">
+        <label class="control-label sectionLabel text-muted">Partner Approval
+        </label>
+        <input ng-model="goal.partner_note_approval" type="checkbox" class="form-control" ng-click="toggle_approval()"
+          style="width: 34px; cursor: pointer" />
+        <label class="control-label sectionLabel text-muted" ng-if="goal.partner_note_approval_time">Approved on {$ goal.partner_note_approval_time $}
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div id="cycle-{$ $index $}" class="collapse in">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th translate>Cycle Name</th>
+          <th translate>Baseline?</th>
+          <th translate>EUI</th>
+          <th translate>Goal</th>
+          <th translate>Annual % Imp</th>
+          <th translate>Cumulative % Imp</th>
+        </tr>
+      </thead>
+      <tbody ng-repeat="cycle_goal in table_data track by $index" ng-init="childIndex = $index;">
+        <tr>
+          <td style="font-weight: bold" ng-repeat="(key, value) in cycle_goal">
+            <span> {$ value | tolerantNumber:2 $} </span>
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
   <div id="portfolio-summary-selection-wrapper">
     <!-- Summary Table-->
     <div id="portfolio-summary" class="wide-900" ng-if="summary_loading || summary_valid">
@@ -157,7 +208,6 @@
           </ul>
         </div>
       </div>
-      <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_sync_to_salesforce_modal()" ng-if="write_permission">{$:: 'Sync to Salesforce' | translate $}</button>
     </div>
     <div>
       {$ inventory_pagination.start $}-{$ inventory_pagination.end $}<span ng-if="inventory_pagination.num_pages > 1"> of {$ inventory_pagination.total $}</span>

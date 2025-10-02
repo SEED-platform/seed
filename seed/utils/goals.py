@@ -218,6 +218,75 @@ def get_portfolio_summary(org, cycle_goal):
     return summary
 
 
+def get_weighted_eui_for_each_cycle_goal(org, goal):
+    # We are going to need the goal notes
+    goal_notes = GoalNote.objects.filter(goal=goal)
+    new_property_ids = goal_notes.filter(new_or_acquired=True).values_list("property__id", flat=True)
+    valid_property_ids = goal_notes.filter(passed_checks=True).values_list("property__id", flat=True)
+
+    def get_weighted_eui_for_cycle(cycle):
+        # calculations are restricted to passing check
+        # New builds in the baseline year will be excluded from calculations
+        # use goal notes relation to properties to get valid properties views
+        valid_property_views = (
+            PropertyView.objects.select_related("property", "state")
+            .filter(cycle=cycle, property__id__in=valid_property_ids)
+            .exclude(cycle=goal.baseline_cycle, property__id__in=new_property_ids)
+        )
+
+        # Create annotations for kbtu calcs. "eui" is based on goal column priority
+        valid_property_views = valid_property_views.annotate(
+            eui=get_eui_expression(goal), area=get_column_expression(goal.area_column)
+        ).annotate(kbtu=F("eui") * F("area"))
+
+        # aggregated everything
+        aggregated_data = valid_property_views.aggregate(total_kbtu=Sum("kbtu"), total_sqft=Sum("area"))
+        total_kbtu = aggregated_data["total_kbtu"]
+        total_sqft = aggregated_data["total_sqft"]  # shared sqft
+
+        # get the weighted  average
+        if total_kbtu is not None and total_sqft:
+            # apply units for potential unit conversion (no org setting for type ktbu so it is ignored)
+            total_sqft = total_sqft * ureg("ft**2")
+            weighted_eui = int(total_kbtu) * ureg("kBtu/year") / total_sqft
+            weighted_eui = int(collapse_unit(org, weighted_eui))
+        else:
+            weighted_eui = None
+
+        return weighted_eui
+
+    #  first add the Baseline
+    baseline_eui = get_weighted_eui_for_cycle(goal.baseline_cycle)
+    goal_eui = baseline_eui * (100 - goal.target_percentage) * 0.01
+    results = [
+        {
+            "Cycle Name": goal.baseline_cycle.name,
+            "Baseline?": 1,
+            "EUI": baseline_eui,
+            "Goal": goal_eui,
+            "Annual % Imp": 0,
+            "Cumulative % Imp": 0,
+        }
+    ]
+
+    # then do in for each cycle goal
+    for i, cycle_goal in enumerate(goal.current_cycles.order_by("current_cycle__start")):
+        last_cycles_eui = results[i]["EUI"]  # implicit + 1 - 1
+        this_cycles_eui = get_weighted_eui_for_cycle(cycle_goal.current_cycle)
+        results.append(
+            {
+                "Cycle Name": cycle_goal.current_cycle.name,
+                "Baseline?": 0,
+                "EUI": this_cycles_eui,
+                "Goal": goal_eui,
+                "Annual % Imp": 100 - (100 * this_cycles_eui / last_cycles_eui),
+                "Cumulative % Imp": 100 - (100 * this_cycles_eui / baseline_eui),
+            }
+        )
+
+    return results
+
+
 def set_transaction_summary_cycle_data(property_views, summary, key, goal, total_kbtu):
     try:
         property_views = property_views.annotate(transactions=get_column_expression(goal.transactions_column))

@@ -60,6 +60,7 @@ buildingsync-asset-extractor==v0.2.0
 
 # Salesforce Integration
 seed-salesforce==0.1.0
+simple-salesforce==1.12.8
 
 # geospatial and pnnl/buildingid-py
 shapely==2.0.6

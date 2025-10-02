@@ -93,6 +93,39 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
       initialize_columns();
 
+      const initChart = () => {
+        const canvas = document.getElementById('data-view-chart');
+        const ctx = canvas.getContext('2d');
+        $scope.dataViewChart = new Chart(ctx, {
+          type: 'bar',
+          data: {},
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                position: 'top'
+              },
+              title: {
+                display: true,
+                text: 'Chart.js Bar Chart'
+              },
+              annotation: {
+                annotations: {
+                  line1: {
+                    type: 'line',
+                    yMin: 0,
+                    yMax: 0,
+                    borderWidth: 2,
+                    borderDash: [4]
+                  }
+                }
+              }
+            }
+          }
+        });
+      };
+      initChart();
+
       // Can only sort based on baseline or current, not both. In the event of a conflict, use the more recent.
       let baseline_first = false;
 
@@ -131,6 +164,10 @@ angular.module('SEED.controller.portfolio_summary', [])
             $scope.goals.find((goal) => goal.name === goal_name) :
             $scope.goals[0];
           format_goal_details();
+          goal_service.get_weighted_euis($scope.goal.id).then((data) => {
+            console.log(data);
+            $scope.updateChart(data.results);
+          });
         });
       };
       get_goals();
@@ -142,6 +179,10 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       $scope.select_goal = (selected_goal) => {
         $scope.goal = selected_goal;
+        goal_service.get_weighted_euis($scope.goal.id).then((data) => {
+          console.log(data);
+          $scope.updateChart(data.results);
+        });
       };
 
       $scope.select_cycle_goal = (selected_cycle_goal) => {
@@ -239,14 +280,12 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       $scope.login_salesforce = () => {
         bb_salesforce_service.get_login_url($scope.organization.id).then((data) => {
-          console.log(data.url);
           $window.location.href = data.url;
         });
       };
 
       // GOAL EDITOR MODAL
       $scope.open_goal_editor_modal = () => {
-        console.log('open_goal_editor_modal');
         const modalInstance = $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
           controller: 'goal_editor_modal_controller',
@@ -281,9 +320,8 @@ angular.module('SEED.controller.portfolio_summary', [])
           backdrop: 'static',
           resolve: {
             goal: () => $scope.goal,
-            cycle_goal: () => $scope.cycle_goal,
-            seed_summary_data: () => $scope.summary_data[0],
-            salesforce_summary_data: () => goal_service.get_salesforce_summary($scope.goal.id, $scope.cycle_goal.id).then((data) => data.data.results)
+            latest_cycle_goal: () => $scope.cycle_goals[0],
+            salesforce_summary_data: () => goal_service.get_salesforce_summary($scope.goal.id).then((data) => data.data)
           }
         });
       };
@@ -1082,6 +1120,49 @@ angular.module('SEED.controller.portfolio_summary', [])
         });
       };
 
+      $scope.is_editing_partner_note = false;
+      $scope.update_is_editing_partner_note = (v) => {
+        $scope.is_editing_partner_note = Boolean(v);
+      };
+
+      $scope.update_partner_note = () => {
+        console.log($scope.goal.partner_note);
+        $scope.is_editing_partner_note = false;
+        goal_service.update_goal($scope.goal).then(() => {
+          Notification.primary('partner note updated');
+        });
+      };
+
+      $scope.updateChart = (data) => {
+        $scope.table_data = data;
+
+        // set data
+        $scope.dataViewChart.data.labels = data.map((d) => d['Cycle Name']);
+        $scope.dataViewChart.data.datasets = [{
+          label: 'Sample Bar Chart',
+          data: data.map((d) => d.EUI),
+          backgroundColor: ['#06732cff', ...new Array(data.length).fill('#458CC8')]
+        }];
+
+        // set goal bar
+        $scope.dataViewChart.options.plugins.annotation.annotations.line1.yMin = data[0].Goal;
+        $scope.dataViewChart.options.plugins.annotation.annotations.line1.yMax = data[0].Goal;
+
+        $scope.dataViewChart.update();
+      };
+
+      $scope.toggle_approval = () => {
+        $scope.goal.partner_note_approval = !$scope.goal.partner_note_approval;
+        if ($scope.goal.partner_note_approval) {
+          $scope.goal.partner_note_approval_time = new Date().toJSON();
+        } else {
+          $scope.goal.partner_note_approval_time = null;
+        }
+        goal_service.update_goal($scope.goal).then(() => {
+          Notification.primary('partner note approval updated');
+        });
+      };
+
       // -------- SUMMARY LOGIC ------------
 
       const summary_selected_columns = () => {
@@ -1161,7 +1242,6 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       const set_summary_grid_options = (summary) => {
-        console.log(summary);
         get_goal_stats(summary);
         $scope.summary_data = [summary];
         $scope.summaryGridOptions = {

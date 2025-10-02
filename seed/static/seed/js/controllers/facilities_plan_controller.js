@@ -203,7 +203,7 @@ angular.module('SEED.controller.facilities_plan', [])
       * */
       $scope.create_facilities_plan_run = () => {
         console.log('create_facilities_plan_run');
-        modalInstance = $uibModal.open({
+        $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/create_facilities_plan_run_modal.html`,
           controller: 'create_facilities_plan_run_modal_controller',
           resolve: {

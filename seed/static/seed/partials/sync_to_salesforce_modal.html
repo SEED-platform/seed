@@ -3,10 +3,11 @@
 </div>
 
 <div class="modal-body">
+  <!-- goal details -->
   <div class="r-list-header" translate>GOAL DETAILS</div>
   <div class="goal-header-wrapper">
     <div class="goal-header-column">
-      <div class="goal-details-container" ng-if="goal">
+      <div class="goal-details-container">
         <div class="goal-details-column" style="margin: 10px">
           <div ng-repeat="(k, v) in goal_details" class="goal-detail" style="display: flex">
             <div class="goal-detail-key" style="width: 120px">{$ k $}:</div>
@@ -17,9 +18,9 @@
     </div>
   </div>
 
-  <div class="r-list-header" translate>Baseline</div>
-  </div>
-    <table class="table">
+  <!-- Baseline -->
+  <div class="r-list-header" translate>Basline</div>
+  <table class="table">
     <thead>
       <tr>
         <th translate></th>
@@ -36,40 +37,55 @@
     </tbody>
   </table>
 
-  <div class="r-list-header" translate>Current Year Energy Annual Report</div>
-  <div class="goal-header-wrapper">
-    <div class="goal-header-column">
-      <div class="goal-details-container" ng-if="goal">
-        <div class="goal-details-column" style="margin: 10px">
-          <div ng-repeat="(k, v) in cycle_goal_details" class="cycle-goal-detailsl" style="display: flex">
-            <div class="cycle-goal-detail-key" style="width: 120px">{$ k $}:</div>
-            <div class="cycle-goal-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
-          </div>
-        </div>
-      </div>
+  <!-- latest year -->
+  <div>
+    <div class="r-list-header" translate>Current Year Annual Reports</div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th translate></th>
+          <th translate>Seed</th>
+          <th translate>Salesforce</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="(k, v) in latest_cycle_goal_table">
+          <td>{$ k $}:</td>
+          <td>{$ v["seed"] $}</td>
+          <td>{$ v["salesforce"] $}</td>
+        </tr>
+      </tbody>
+    </table>
+    <label for="report-status" class="r-pad-right-5 goal-label" translate>Report Status</label>
+    <select id="report-status" class="form-control" ng-model="report_status" ng-options="s for s in report_status_options"></select>
+    <label for="review-status" class="r-pad-right-5 goal-label" translate>Review Status</label>
+    <select id="review-status" class="form-control" ng-model="review_status" ng-options="s for s in review_status_options"></select>
+    <div display="display:flex, width: 100%">
+      <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="sync_latest_cycle(report_status, review_status)"
+        translate>Sync</button>
     </div>
   </div>
-    <table class="table">
+
+  <!-- Past years -->
+  <div class="r-list-header" translate>Historical Annual Reports</div>
+  <table class="table">
     <thead>
       <tr>
-        <th translate></th>
-        <th translate>Seed</th>
-        <th translate>Salesforce</th>
+        <th ng-repeat="(k, v) in past_cycle_goals_table[0]">{$ k $}</th>
       </tr>
     </thead>
     <tbody>
-      <tr ng-repeat="(k, v) in current_cycle_goal_table">
-        <td>{$ k $}:</td>
-        <td>{$ v["seed"] $}</td>
-        <td>{$ v["salesforce"] $}</td>
+      <tr ng-repeat="(_, summary) in past_cycle_goals_table">
+        <td ng-repeat="(_, v) in summary">{$ v $}</td>
       </tr>
     </tbody>
   </table>
-
-
+  <div display="display:flex, width: 100%">
+    <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="sync_past_cycles()"
+      translate>Sync</button>
+  </div>
 </div>
 
 <div class="modal-footer" style="display: flex; gap: 2px">
-  <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="send_sync()" translate>Sync</button>
   <button type="button" class="btn btn-default col-sm-6 center-block" ng-click="dismiss()" translate>Dismiss</button>
 </div>

@@ -12,6 +12,7 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import action
+from simple_salesforce import Salesforce
 
 from seed.decorators import ajax_request_class, get_bb_salesforce_config
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
@@ -29,6 +30,7 @@ from seed.utils.goals import (
     get_or_create_goal_notes,
     get_portfolio_summary,
     get_preferred,
+    get_weighted_eui_for_each_cycle_goal,
     percentage_difference,
     set_transaction_data,
 )
@@ -145,6 +147,158 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse({"status": "success", "message": f"Updated {result} properties"})
 
+    @ajax_request_class
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(goal_id_kwarg="pk")
+    @action(detail=True, methods=["GET"])
+    def get_weighted_euis(self, request, pk):
+        org_id = int(self.get_organization(request))
+        try:
+            org = Organization.objects.get(pk=org_id)
+            goal = Goal.objects.get(pk=pk)
+        except (Organization.DoesNotExist, Goal.DoesNotExist):
+            return JsonResponse({"status": "error", "message": "No such resource."})
+
+        weighted_euis = get_weighted_eui_for_each_cycle_goal(org, goal)
+
+        return JsonResponse({"status": "success", "results": weighted_euis})
+
+    @ajax_request_class
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(goal_id_kwarg="pk")
+    @action(detail=True, methods=["GET"])
+    @get_bb_salesforce_config
+    def salesforce_summary(self, request, pk, bb_salesforce_config):
+        org_id = int(self.get_organization(request))
+        try:
+            org = Organization.objects.get(pk=org_id)
+            goal = Goal.objects.get(pk=pk)
+        except Goal.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."})
+
+        cycle_goals = goal.current_cycles.all()
+
+        # get seed side summary
+        summary = {}
+        for cycle_goal in cycle_goals:
+            summary[cycle_goal.current_cycle.name] = {"id": cycle_goal.id, "seed": get_portfolio_summary(org, cycle_goal), "salesforce": {}}
+
+        # get salesforce side summary
+        cycle_name_by_salesforce_annual_report_id = {
+            cg.salesforce_annual_report_id: cg.current_cycle.name for cg in cycle_goals if cg.salesforce_annual_report_id
+        }
+        stringy_list_of_salesforce_annual_report_id = ", ".join([f"'{k}'" for k in cycle_name_by_salesforce_annual_report_id])
+        access_token = get_cache_raw("access_token")
+        salesforce_fields = [
+            "Id",
+            "BB_Goal__r.BB_Other_Baseline__c",
+            "BB_Goal__r.BB_BBC_Portfolio_Average_EUI_Baseline__c",
+            "BB_Reporting_Year_Start_Date__c",
+            "BB_Reporting_Year_End_Date__c",
+            "BB_Num_of_Participating_Facilities__c",
+            "BB_Portfolio_Average_EUI__c",
+            "BB_Shared_Square_Feet__c",
+            "BB_Reviewed_Square_Feet__c",
+            "BB_Energy_IntensityImprovement_Current__c",
+            "BB_Other__c",
+            "BB_Total_Improvement_in_Energy_Intensity__c",
+            "BB_New_Energy_Savings_for_Current_Year__c",
+        ]
+        response = requests.get(
+            f"{bb_salesforce_config.salesforce_url}/data/v64.0/query?",
+            params={
+                "q": f"SELECT {', '.join(salesforce_fields)} FROM Annual_Report__c WHERE Id IN ({stringy_list_of_salesforce_annual_report_id})",  # noqa: S608 no fear of sql injection as the id comes from the db, and must be an int
+            },
+            headers={"Authorization": f"Bearer {access_token}"},
+            timeout=300,
+        )
+        # return response.json()
+
+        for annual_report in response.json()["records"]:
+            summary[cycle_name_by_salesforce_annual_report_id[annual_report["Id"]]]["salesforce"] = {
+                "id": annual_report["Id"],
+                "baseline_portfolio_kbtu": annual_report["BB_Goal__r"]["BB_Other_Baseline__c"],
+                "baseline_portfolio_eui": annual_report["BB_Goal__r"]["BB_BBC_Portfolio_Average_EUI_Baseline__c"],
+                "reporting_year_start": annual_report["BB_Reporting_Year_Start_Date__c"],
+                "reporting_year_end": annual_report["BB_Reporting_Year_End_Date__c"],
+                "number_of_properties": annual_report["BB_Num_of_Participating_Facilities__c"],
+                "portfolio_average_eui": annual_report["BB_Portfolio_Average_EUI__c"],
+                "shared_square_feet": annual_report["BB_Shared_Square_Feet__c"],
+                "reviewed_square_feet": annual_report["BB_Reviewed_Square_Feet__c"],
+                "ei_annual_improvement": annual_report["BB_Energy_IntensityImprovement_Current__c"],
+                # "BB_Other_Type__c": annual_report["BB_Other_Type__c"],
+                "portfolio_kbtu": annual_report["BB_Other__c"],
+                "total_ei_improvement": annual_report["BB_Total_Improvement_in_Energy_Intensity__c"],
+                "new_energy_savings": annual_report["BB_New_Energy_Savings_for_Current_Year__c"],
+            }
+
+        return JsonResponse(summary)
+
+    @ajax_request_class
+    @swagger_auto_schema_org_query_param
+    @has_perm_class("requires_viewer")
+    @has_hierarchy_access(goal_id_kwarg="pk")
+    @action(detail=True, methods=["PUT"])
+    @get_bb_salesforce_config
+    def update_salesforce(self, request, pk, bb_salesforce_config):
+        # Init a bunch of values
+        org_id = int(self.get_organization(request))
+        try:
+            org = Organization.objects.get(pk=org_id)
+            goal = Goal.objects.get(pk=pk)
+        except Goal.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."})
+
+        # get cycle_goals
+        cycle_goal_ids = request.data.get("cycle_goal_ids", [])
+        cycle_goals = CycleGoal.objects.filter(goal=goal, id__in=cycle_goal_ids)
+        report_status = request.data.get("report_status")
+        review_status = request.data.get("review_status")
+
+        # ensure salesforce goal is attached
+        for cycle_goal in cycle_goals:
+            salesforce_annual_report_id = cycle_goal.salesforce_annual_report_id
+            if salesforce_annual_report_id is None:
+                return JsonResponse({"status": "error", "message": f"CycleGoal {cycle_goal.id} has no attached salesforce annual report."})
+
+        # login
+        access_token = get_cache_raw("access_token")
+        sf = Salesforce(
+            instance="doe-bb--kanbantest.sandbox.my.salesforce.com",
+            session_id=access_token,
+        )
+
+        # update for each cycle goal
+        for cycle_goal in cycle_goals:
+            summary = get_portfolio_summary(org, cycle_goal)
+            update_dict = {
+                "BB_Reporting_Year_Start_Date__c": cycle_goal.current_cycle.start.strftime("%Y-%m-%d"),
+                "BB_Reporting_Year_End_Date__c": cycle_goal.current_cycle.end.strftime("%Y-%m-%d"),
+                "BB_Num_of_Participating_Facilities__c": summary["total_properties"],
+                "BB_Portfolio_Average_EUI__c": summary["current_weighted_eui"],
+                "BB_Shared_Square_Feet__c": summary["shared_sqft"],
+                "BB_Reviewed_Square_Feet__c": summary["current_total_sqft"],
+                "BB_Energy_IntensityImprovement_Current__c": summary["baseline_weighted_eui"] - summary["current_weighted_eui"],
+                "BB_Other__c": summary["current_total_kbtu"],
+                "BB_Total_Improvement_in_Energy_Intensity__c": summary["eui_change"],
+                "BB_New_Energy_Savings_for_Current_Year__c": summary["baseline_total_kbtu"] - summary["current_total_kbtu"],
+            }
+            if report_status:
+                update_dict["BB_Report_Status__c"] = report_status
+            if review_status:
+                update_dict["BB_BBC_Data_Review_Status__c"] = review_status
+
+            sf.Annual_Report__c.update(salesforce_annual_report_id, update_dict)
+            sf.Goal__c.update(
+                cycle_goal.goal.salesforce_goal_id,
+                {
+                    "BB_Other_Baseline__c": summary["baseline_total_kbtu"],
+                    "BB_BBC_Portfolio_Average_EUI_Baseline__c": summary["baseline_weighted_eui"],
+                },
+            )
+
 
 @method_decorator(
     name="destroy",
@@ -179,7 +333,7 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     def list(self, request, goal_pk):
         cycle_goals = CycleGoal.objects.filter(
             goal_id=goal_pk,
-        )
+        ).order_by("-current_cycle__start")
         return JsonResponse({"status": "success", "cycle_goals": self.serializer_class(cycle_goals, many=True).data})
 
     @ajax_request_class
@@ -234,7 +388,6 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             "BB_Shared_Square_Feet__c",
             "BB_Reviewed_Square_Feet__c",
             "BB_Energy_IntensityImprovement_Current__c",
-            # "BB_Other_Type__c",
             "BB_Other__c",
             "BB_Total_Improvement_in_Energy_Intensity__c",
             "BB_New_Energy_Savings_for_Current_Year__c",
@@ -271,23 +424,6 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             },
             status=status.HTTP_200_OK,
         )
-
-    @ajax_request_class
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="goal_pk")
-    @action(detail=True, methods=["PUT"])
-    @get_bb_salesforce_config
-    def update_salesforce(self, request, goal_pk, pk, bb_salesforce_config):
-        try:
-            cycle_goal = CycleGoal.objects.get(pk=pk)
-        except CycleGoal.DoesNotExist:
-            return JsonResponse({"status": "error", "message": "No such resource."})
-
-        # ensure salesforce goal is attached
-        salesforce_annual_report_id = cycle_goal.salesforce_annual_report_id
-        if salesforce_annual_report_id is None:
-            return JsonResponse({"status": "error", "message": "No attached salesforce annual report."})
 
     @ajax_request_class
     @swagger_auto_schema_org_query_param

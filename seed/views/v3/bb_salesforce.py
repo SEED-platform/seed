@@ -23,6 +23,9 @@ REDIRECT_URI = "https://127.0.0.1:8000"
 
 
 def _get_pkce(bb_salesforce_config):
+    logger.error("+++++++")
+    logger.error(f"{bb_salesforce_config.salesforce_url}/oauth2/pkce/generator")
+    logger.error("+++++++")
     response = requests.get(f"{bb_salesforce_config.salesforce_url}/oauth2/pkce/generator", timeout=10)
 
     return response.json()["code_verifier"], response.json()["code_challenge"]

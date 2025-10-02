@@ -71,7 +71,7 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
       .then((response) => response)
       .catch((response) => response);
 
-    goal_service.get_salesforce_summary = (goal_id, cycle_goal_id) => $http.get(`/api/v3/goals/${goal_id}/cycles/${cycle_goal_id}/salesforce_summary/`, {
+    goal_service.get_salesforce_summary = (goal_id) => $http.get(`/api/v3/goals/${goal_id}/salesforce_summary/`, {
       params: {
         organization_id: user_service.get_organization().id
       }
@@ -79,11 +79,11 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
       .then((response) => response)
       .catch((response) => response);
 
-    goal_service.update_salesforce = (goal_id, cycle_goal_id) => $http.put(`/api/v3/goals/${goal_id}/cycles/${cycle_goal_id}/update_salesforce/`, {
-      params: {
-        organization_id: user_service.get_organization().id
-      }
-    })
+    goal_service.update_salesforce = (goal_id, cycle_goal_ids, report_status, review_status) => $http.put(
+      `/api/v3/goals/${goal_id}/update_salesforce/`,
+      { cycle_goal_ids, report_status, review_status },
+      { params: { organization_id: user_service.get_organization().id } }
+    )
       .then((response) => response)
       .catch((response) => response);
 
@@ -153,6 +153,14 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
         .then((response) => response)
         .catch((response) => response);
     };
+
+    goal_service.get_weighted_euis = (goal_id) => $http.get(`/api/v3/goals/${goal_id}/get_weighted_euis`, {
+      params: {
+        organization_id: user_service.get_organization().id
+      }
+    })
+      .then((response) => response.data)
+      .catch((response) => response);
 
     return goal_service;
   }
