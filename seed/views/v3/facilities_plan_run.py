@@ -270,7 +270,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         # build response
         response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        response["Content-Disposition"] = 'attachment; filename="output.xlsx"'
+        response["Content-Disposition"] = f'attachment; filename="facilities_plan_run_{fpr.id}.xlsx"'
         xlsx_data = output.getvalue()
         response.write(xlsx_data)
 
