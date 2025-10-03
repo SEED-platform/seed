@@ -234,7 +234,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     )
     @action(detail=True, methods=["POST"])
     def export(self, request, pk):
-        # get are fpr ready
+        # get fpr ready
         org_id = int(self.get_organization(request))
         try:
             org = Organization.objects.get(pk=org_id)
