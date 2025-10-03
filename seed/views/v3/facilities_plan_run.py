@@ -314,6 +314,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                     "queryable_name": F(_get_column_model_field(column)),
                 }
                 for i, column in enumerate(show_columns)
+                if column is not None
             ],
             *[
                 #  we need the rank info too
@@ -461,10 +462,11 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         element_properties_columns_dict = [
             {
                 "annotated_name": f"col_{i}",
-                "display_name": column.display_name,
+                "display_name": column.display_name if column.display_name else column.column_name,
                 "queryable_name": F(_get_column_model_field(column)),
             }
             for i, column in enumerate(show_columns)
+            if column is not None
         ]
         annotations = {cd["annotated_name"]: cd["queryable_name"] for cd in element_properties_columns_dict}
         views = views.annotate(**annotations)
