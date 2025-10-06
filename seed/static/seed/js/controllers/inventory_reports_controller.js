@@ -245,7 +245,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
        $scope.xAxisVars consists of columns specified as numeric types.
 
-       $scope.uAxisVars consists of manually defined columns specified.
+       $scope.yAxisVars consists of manually defined columns specified.
        Ideally, if we need to add new variables, we should just be able to add a new object to
        either of these arrays. (However, at first when adding new variables we might need to add
        new functionality to the directive to handle any idiosyncrasies of graphing that new variable.)
@@ -616,7 +616,6 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         .then(
           (data) => {
             data = data.data;
-
             const propertyCounts = data.property_counts;
             const colorsArr = mapColors(propertyCounts);
             $scope.propertyCounts = propertyCounts;
@@ -629,12 +628,16 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
               yAxisVarName: $scope.yAxisSelectedItem.varName,
               yAxisType: $scope.yAxisSelectedItem.axisType,
               yAxisMin: $scope.yAxisSelectedItem.axisMin,
+              yAxisMax: $scope.yAxisSelectedItem.axisMax,
               xAxisTickFormat: $scope.xAxisSelectedItem.axisTickFormat,
               yAxisTickFormat: $scope.yAxisSelectedItem.axisTickFormat
             };
 
-            // new chartJS chart data
+            // yAxisVars.axisMin and axisMax are unused and will remain 'undefined'.
+            // They may be placeholders for future functionality.
+            // Leaving them undefined is ideal, as it lets Chart.js automatically determine the proper min/max values.
             $scope.scatterChart.options.scales.y.min = $scope.yAxisSelectedItem.axisMin;
+            $scope.scatterChart.options.scales.y.max = $scope.yAxisSelectedItem.axisMax;
             $scope.scatterChart.options.scales.y.type = $scope.chartData.chartData.every((d) => typeof d.y === 'number') ? 'linear' : 'category';
 
             if ($scope.chartData.chartData.every((d) => typeof d.x === 'number')) {
