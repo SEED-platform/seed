@@ -748,6 +748,10 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
             // new agg chart
             const the_data = $scope.aggChartData.chartData;
+            $scope.barChart.options.scales.y.min = undefined;
+            $scope.barChart.options.scales.y.max = undefined;
+            $scope.barChart.options.scales.x.min = undefined;
+            $scope.barChart.options.scales.x.max = undefined;
             $scope.barChart.data.labels = the_data.map((a) => a.y);
             $scope.barChart.data.datasets[0].data = the_data.map((a) => a.x);
             // add the colors to the datapoints, need to create a hash map first
