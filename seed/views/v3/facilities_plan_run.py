@@ -349,7 +349,9 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         properties_df = properties_df.rename(columns={cd["annotated_name"]: cd["display_name"] for cd in properties_columns_dict})
 
         # get the relevant elements, that is, the top 3 RSL for each property with an EISA code
-        top_3_element_query = Element.objects.filter(property=OuterRef("pk"), code__code__in=EISA432_CODES)[:3]
+        top_3_element_query = Element.objects.filter(property=OuterRef("pk"), code__code__in=EISA432_CODES).order_by(
+            "remaining_service_life"
+        )[:3]
         lists_of_element_ids = views.annotate(elements=ArraySubquery(top_3_element_query.values("id"))).values_list("elements", flat=True)
         element_ids = [element_id for element_ids in lists_of_element_ids for element_id in element_ids]
         elements = Element.objects.filter(id__in=element_ids)
@@ -482,9 +484,10 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         elements_df = pd.DataFrame.from_records(elements_records)
         elements_df = elements_df.rename(columns={cd["annotated_name"]: cd["display_name"] for cd in element_properties_columns_dict})
         elements_df = elements_df.rename(columns={cd["annotated_name"]: cd["display_name"] for cd in element_columns_dict})
-        elements_df = elements_df[
-            [cd["display_name"] for cd in element_properties_columns_dict] + [cd["display_name"] for cd in element_columns_dict]
-        ]
+        if not elements_df.empty:
+            elements_df = elements_df[
+                [cd["display_name"] for cd in element_properties_columns_dict] + [cd["display_name"] for cd in element_columns_dict]
+            ]
 
         return properties_df, elements_df
 
