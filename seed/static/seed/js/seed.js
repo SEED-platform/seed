@@ -2186,6 +2186,14 @@
               'label_service',
               ($stateParams, label_service) => label_service.get_labels($stateParams.inventory_type).then((labels) => _.filter(labels, (label) => !_.isEmpty(label.is_applied)))
             ],
+            footprint_column_name: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                const get_columns = $stateParams.inventory_type === 'properties' ? inventory_service.get_property_columns : inventory_service.get_taxlot_columns;
+                return get_columns().then((columns) => columns.find((col) => col.column_name === 'property_footprint')?.name);
+              }
+            ],
             group: () => null
           }
         })
