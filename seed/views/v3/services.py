@@ -114,6 +114,7 @@ class ServiceViewSet(ModelViewSetWithoutPatch, OrgMixin):
     )
     @action(detail=True, methods=["POST"])
     def create_meters(self, request, inventory_group_pk, system_pk, pk):
+        # setting source to Manual Entry to match inventory_groups system create meters
         property_ids = request.data.get("property_ids")
         direction = request.data.get("direction")
         type = request.data.get("type")
@@ -133,5 +134,6 @@ class ServiceViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 property_id=property_id,
                 type=Meter.type_lookup[type],
                 service_id=pk,
+                source=Meter.MANUAL_ENTRY,
                 connection_type=Meter.RECEIVING_SERVICE if direction == "imported" else Meter.RETURNING_TO_SERVICE,
             )
