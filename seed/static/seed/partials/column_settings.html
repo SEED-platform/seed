@@ -307,7 +307,13 @@
               <th class="sub_head"></th>
               <th class="sub_head"></th>
               <th class="sub_head"></th>
-              <th class="sub_head"></th>
+              <th class="sub_head text-center" ng-click="toggle_all_recognize_empty()">
+                <input
+                  type="checkbox"
+                  ng-checked="all_recognize_empty"
+                  class="no-click"
+                />
+              </th>
               <th class="sub_head"></th>
               <th class="sub_head" ng-if="::org.comstock_enabled"></th>
               <th class="sub_head"></th>
