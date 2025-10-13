@@ -260,7 +260,9 @@ def get_bb_salesforce_config(func):
         bb_salesforce_config = BBSalesforceConfig.objects.filter(organization=org_id).first()
 
         if bb_salesforce_config is None:
-            return JsonResponse({"status": "error", "response": "This org has no bb salesforce connection."}, status=status.HTTP_200_OK)
+            return JsonResponse(
+                {"status": "error", "valid": False, "response": "This org has no bb salesforce connection."}, status=status.HTTP_200_OK
+            )
 
         return func(*args, **kwargs, bb_salesforce_config=bb_salesforce_config)
 

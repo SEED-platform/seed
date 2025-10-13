@@ -70,6 +70,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.selected_count = 0;
       $scope.selected_option = 'none';
       $scope.search_query = '';
+      // if org has no salesforce configs, status will be 'error' and valid will be false
       $scope.is_logged_into_salesforce = is_logged_into_salesforce.data.valid;
 
       $scope.search_for_goals = (query) => {
@@ -124,7 +125,10 @@ angular.module('SEED.controller.portfolio_summary', [])
           }
         });
       };
-      initChart();
+      // initialize charts only if goal is defined?
+      if (!(_.isEmpty($scope.goal))) {
+        initChart();
+      }
 
       // Can only sort based on baseline or current, not both. In the event of a conflict, use the more recent.
       let baseline_first = false;
@@ -155,21 +159,28 @@ angular.module('SEED.controller.portfolio_summary', [])
         });
       };
 
-      // optionally pass a goal name to be set as $scope.goal - used on modal close
       const get_goals = (goal_name = false) => {
         goal_service.get_goals().then((result) => {
           $scope.goals = result.goals;
           $scope.goal_options = result.goals;
-          $scope.goal = goal_name ?
-            $scope.goals.find((goal) => goal.name === goal_name) :
-            $scope.goals[0];
-          format_goal_details();
-          goal_service.get_weighted_euis($scope.goal.id).then((data) => {
-            console.log(data);
-            $scope.updateChart(data.results);
-          });
+          if (goal_name) {
+            $scope.goal = $scope.goals.find((goal) => goal.name === goal_name);
+          } else {
+            $scope.goal = $scope.goals.length > 0 ? $scope.goals[0] : {}; // Keep as empty object if no goals
+          }
+
+          if (!(_.isEmpty($scope.goal))) {
+            format_goal_details();
+            goal_service.get_weighted_euis($scope.goal.id).then((data) => {
+              $scope.updateChart(data.results);
+            });
+          }
+        }).catch((error) => {
+          console.error('Failed to load goals:', error);
+          $scope.goal = {}; // Ensure it stays as empty object on error
         });
       };
+
       get_goals();
 
       const reset_data = () => {
@@ -190,6 +201,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       $scope.$watch('goal', (cur) => {
+        if (typeof cur === 'undefined' || _.isEmpty(cur)) return;
         if (Object.keys(cur).length === 0) return;
         goal_service.get_cycle_goals(cur.id).then((data) => {
           $scope.cycle_goals = data.cycle_goals;
@@ -213,6 +225,9 @@ angular.module('SEED.controller.portfolio_summary', [])
       // selected goal details
       const format_goal_details = () => {
         $scope.change_selected_level_index();
+
+        if (_.isEmpty($scope.goal)) return;
+
         const access_level_instance = $scope.potential_level_instances.find((level) => level.id === $scope.goal.access_level_instance).name;
 
         const commitment_sqft = $scope.goal.commitment_sqft?.toLocaleString() || 'n/a';
@@ -286,29 +301,34 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       // GOAL EDITOR MODAL
       $scope.open_goal_editor_modal = () => {
-        const modalInstance = $uibModal.open({
-          templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
-          controller: 'goal_editor_modal_controller',
-          size: 'lg',
-          backdrop: 'static',
-          resolve: {
-            access_level_tree: () => access_level_tree,
-            area_columns: () => $scope.area_columns,
-            auth_payload: () => auth_payload,
-            columns: () => $scope.columns,
-            cycles: () => $scope.cycles,
-            eui_columns: () => $scope.eui_columns,
-            goal: () => $scope.goal,
-            organization: () => $scope.organization,
-            write_permission: () => $scope.write_permission,
-            partners: () => ($scope.is_logged_into_salesforce ? bb_salesforce_service.get_partners($scope.organization.id) : [])
-          }
-        });
-
-        // on modal close
-        modalInstance.result.then((goal_name) => {
-          get_goals(goal_name);
-        });
+        try {
+          const modalInstance = $uibModal.open({
+            templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
+            controller: 'goal_editor_modal_controller',
+            appendTo: angular.element('body'), // Add this line
+            size: 'lg',
+            backdrop: 'static',
+            resolve: {
+              access_level_tree: () => access_level_tree,
+              area_columns: () => $scope.area_columns,
+              auth_payload: () => auth_payload,
+              columns: () => $scope.columns,
+              cycles: () => $scope.cycles,
+              eui_columns: () => $scope.eui_columns,
+              goal: () => $scope.goal,
+              organization: () => $scope.organization,
+              write_permission: () => $scope.write_permission,
+              partners: () => ($scope.is_logged_into_salesforce ? bb_salesforce_service.get_partners($scope.organization.id) : Promise.resolve([]))
+            }
+          });
+          // on modal close
+          modalInstance.result.then((goal_name) => {
+            get_goals(goal_name);
+          });
+        } catch (error) {
+          console.error('Error opening modal:', error);
+          Notification.error('An error occurred while trying to open the goal editor. Please try again.');
+        }
       };
 
       // GOAL EDITOR MODAL
@@ -1264,6 +1284,8 @@ angular.module('SEED.controller.portfolio_summary', [])
           resolve: {
             goal: () => $scope.goal,
             cycles: () => $scope.cycles,
+            bb_salesforce_enabled: () => $scope.organization.bb_salesforce_enabled,
+            is_logged_into_salesforce: () => $scope.is_logged_into_salesforce,
             annual_reports: () => bb_salesforce_service.get_annual_report($scope.organization.id, $scope.goal.id)
           }
         });

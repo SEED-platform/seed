@@ -61,8 +61,7 @@
     <label for="review-status" class="r-pad-right-5 goal-label" translate>Review Status</label>
     <select id="review-status" class="form-control" ng-model="review_status" ng-options="s for s in review_status_options"></select>
     <div display="display:flex, width: 100%">
-      <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="sync_latest_cycle(report_status, review_status)"
-        translate>Sync</button>
+      <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="sync_latest_cycle(report_status, review_status)" translate>Sync</button>
     </div>
   </div>
 
@@ -81,8 +80,7 @@
     </tbody>
   </table>
   <div display="display:flex, width: 100%">
-    <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="sync_past_cycles()"
-      translate>Sync</button>
+    <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="sync_past_cycles()" translate>Sync</button>
   </div>
 </div>
 

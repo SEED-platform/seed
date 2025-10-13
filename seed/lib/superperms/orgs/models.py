@@ -308,6 +308,7 @@ class Organization(models.Model):
 
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
+    bb_salesforce_enabled = models.BooleanField(default=False)
 
     access_level_names = models.JSONField(default=list)
 

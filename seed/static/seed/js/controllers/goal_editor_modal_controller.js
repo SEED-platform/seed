@@ -59,15 +59,20 @@ angular.module('SEED.controller.goal_editor_modal', [])
       }
       $scope.goal = goal || {};
 
-      $scope.partners = partners.results;
+      // partners and goals could be empty, handle this safely
+      $scope.partners = (partners && partners.results && partners.results.length > 0) ? partners.results : [];
       const set_partners_goals = () => {
-        $scope.selected_partner = undefined;
+        $scope.selected_partner = {};
         $scope.possible_goals = [];
-        $scope.selected_goal = undefined;
-        if ($scope.goal.salesforce_partner_id !== null) {
+        $scope.selected_goal = {};
+
+        // Add safety check for goal existence
+        if ($scope.goal && $scope.goal.salesforce_partner_id !== null) {
           $scope.selected_partner = $scope.partners.find((p) => p.id === $scope.goal.salesforce_partner_id);
-          $scope.possible_goals = $scope.selected_partner.goals;
-          $scope.selected_goal = $scope.possible_goals.find((g) => g.id === $scope.goal.salesforce_goal_id);
+          if ($scope.selected_partner) {
+            $scope.possible_goals = $scope.selected_partner.goals || [];
+            $scope.selected_goal = $scope.possible_goals.find((g) => g.id === $scope.goal.salesforce_goal_id);
+          }
         }
       };
 

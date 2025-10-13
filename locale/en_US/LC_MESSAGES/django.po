@@ -92,6 +92,9 @@ msgstr "This page allows you to view the structure of your organization's conten
 msgid "ACCESS_LEVEL_UPLOAD_PROGRESS_MSG"
 msgstr "Saving access level instances in progress... This process depends on the size of your file and may take several minutes."
 
+msgid "ADD_CYCLE_GOAL_DESC"
+msgstr "Add a new cycle to the selected goal to compare against the baseline. The latest cycle added will be considered the \"current\" cycle for comparison purposes. Older cycles added will remain available for historical reference."
+
 msgid "ADD_FILES_TO"
 msgstr "Add files to {dataset_name}."
 
@@ -279,6 +282,9 @@ msgstr "Add Access Level Instance"
 msgid "Add Column"
 msgstr "Add Column"
 
+msgid "Add Cycle to Goal"
+msgstr "Add Cycle to Goal"
+
 msgid "Add Data Files"
 msgstr "Add Data Files"
 
@@ -302,6 +308,9 @@ msgstr "Add Shared Properties"
 
 msgid "Add Shared Tax Lots"
 msgstr "Add Shared Tax Lots"
+
+msgid "Add a Cycle"
+msgstr "Add a Cycle"
 
 msgid "Add a Document"
 msgstr "Add a Document"
@@ -2296,6 +2305,9 @@ msgstr "Jurisdiction Property ID"
 msgid "Jurisdiction Tax Lot ID"
 msgstr "Jurisdiction Tax Lot ID"
 
+msgid "LINK_CYCLE_ERROR_TEXT"
+msgstr "To link this cycle to an Annual Report in your Salesforce instance, you must first login to Salesforce."
+
 msgid "LINK_OUT_CYCLE_MATCHES"
 msgstr "Matches outside of this cycle will be linked."
 
@@ -3810,6 +3822,9 @@ msgstr "Salesforce"
 msgid "Salesforce Account Object Record Type"
 msgstr "Salesforce Account Object Record Type"
 
+msgid "Salesforce Annual Report"
+msgstr "Salesforce Annual Report"
+
 msgid "Salesforce Connection Parameters"
 msgstr "Salesforce Connection Parameters"
 
@@ -3899,6 +3914,9 @@ msgstr "Select Properties to Update"
 msgid "Select a Custom Report to get started!"
 msgstr "Select a Custom Report to get started!"
 
+msgid "Select a Cycle to compare against the Baseline Cycle"
+msgstr "Select a Cycle to compare against the Baseline Cycle"
+
 msgid "Select a Facilities Plan Run from the dropdown below"
 msgstr "Select a Facilities Plan Run from the dropdown below"
 
@@ -3907,6 +3925,9 @@ msgstr "Select a Goal Type. A Standard goal will calculate a standard EUI per sq
 
 msgid "Select a Program to get started!"
 msgstr "Select a Program to get started!"
+
+msgid "Select a Salesforce Annual Report to associate with this Cycle"
+msgstr "Select a Salesforce Annual Report to associate with this Cycle"
 
 msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
 msgstr "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
@@ -4330,6 +4351,9 @@ msgstr "The portfolio summary page compares 2 cycles to calculate progress towar
 
 msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 msgstr "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
+
+msgid "There is no cycle selected for comparison yet"
+msgstr "There is no cycle selected for comparison yet"
 
 msgid "There was an error loading the page"
 msgstr "There was an error loading the page"

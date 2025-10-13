@@ -257,6 +257,8 @@ def get_weighted_eui_for_each_cycle_goal(org, goal):
 
     #  first add the Baseline
     baseline_eui = get_weighted_eui_for_cycle(goal.baseline_cycle)
+    if baseline_eui is None or goal.target_percentage is None:
+        return []
     goal_eui = baseline_eui * (100 - goal.target_percentage) * 0.01
     results = [
         {
