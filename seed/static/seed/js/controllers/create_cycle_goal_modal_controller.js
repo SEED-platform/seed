@@ -10,6 +10,8 @@ angular.module('SEED.controller.create_cycle_goal_modal', [])
     'Notification',
     'goal',
     'cycles',
+    'bb_salesforce_enabled',
+    'is_logged_into_salesforce',
     'annual_reports',
     'goal_service',
     // eslint-disable-next-line func-names
@@ -20,6 +22,8 @@ angular.module('SEED.controller.create_cycle_goal_modal', [])
       Notification,
       goal,
       cycles,
+      bb_salesforce_enabled,
+      is_logged_into_salesforce,
       annual_reports,
       goal_service
     ) {
@@ -27,6 +31,8 @@ angular.module('SEED.controller.create_cycle_goal_modal', [])
       $scope.annual_report = undefined;
       $scope.cycles = cycles;
       $scope.annual_reports = annual_reports.results;
+      $scope.bb_salesforce_enabled = bb_salesforce_enabled;
+      $scope.is_logged_into_salesforce = is_logged_into_salesforce;
 
       $scope.save = () => {
         console.log($scope.annual_report?.id, $scope.annual_report?.name);

@@ -59,7 +59,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_string_field("org_id", required=True, description="org_id"),
-            AutoSchemaHelper.query_string_field("code", required=True, description="code recieved from calling url given by /login_url"),
+            AutoSchemaHelper.query_string_field("code", required=True, description="code received from calling url given by /login_url"),
         ],
     )
     @api_endpoint_class

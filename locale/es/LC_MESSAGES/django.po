@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-09-13 00:33\n"
+"PO-Revision-Date: 2025-10-13 23:32\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -116,6 +116,9 @@ msgstr "Esta página le permite ver la estructura del contenido de su organizaci
 #, fuzzy
 msgid "ACCESS_LEVEL_UPLOAD_PROGRESS_MSG"
 msgstr "Guardando instancias de nivel de acceso en curso... Este proceso depende del tamaño del archivo y puede durar varios minutos."
+
+msgid "ADD_CYCLE_GOAL_DESC"
+msgstr "Agregue un nuevo ciclo al objetivo seleccionado para compararlo con la línea base. El último ciclo agregado se considerará el ciclo actual para fines de comparación. Los ciclos anteriores agregados permanecerán disponibles como referencia histórica."
 
 #, fuzzy
 msgid "ADD_FILES_TO"
@@ -354,6 +357,9 @@ msgstr "Añadir instancia de nivel de acceso"
 msgid "Add Column"
 msgstr "Añadir columna"
 
+msgid "Add Cycle to Goal"
+msgstr "Añadir ciclo a la meta"
+
 #, fuzzy
 msgid "Add Data Files"
 msgstr "Añadir archivos de datos"
@@ -384,6 +390,9 @@ msgstr "Añadir propiedades compartidas"
 #, fuzzy
 msgid "Add Shared Tax Lots"
 msgstr "Añadir lotes fiscales compartidos"
+
+msgid "Add a Cycle"
+msgstr "Agregar un ciclo"
 
 msgid "Add a Document"
 msgstr "Añadir un documento"
@@ -2916,6 +2925,9 @@ msgstr "Jurisdicción ID de propiedad"
 msgid "Jurisdiction Tax Lot ID"
 msgstr "Jurisdicción Número de identificación fiscal del lote"
 
+msgid "LINK_CYCLE_ERROR_TEXT"
+msgstr "Para vincular este ciclo a un Informe anual en su instancia de Salesforce, primero debe iniciar sesión en Salesforce."
+
 #, fuzzy
 msgid "LINK_OUT_CYCLE_MATCHES"
 msgstr "Los partidos fuera de este ciclo serán enlazados."
@@ -4884,6 +4896,9 @@ msgstr "Salesforce"
 msgid "Salesforce Account Object Record Type"
 msgstr "Tipo de registro de objeto de cuenta de Salesforce"
 
+msgid "Salesforce Annual Report"
+msgstr "Informe anual de Salesforce"
+
 #, fuzzy
 msgid "Salesforce Connection Parameters"
 msgstr "Parámetros de conexión de Salesforce"
@@ -5000,6 +5015,9 @@ msgstr "Seleccione las propiedades que desea actualizar"
 msgid "Select a Custom Report to get started!"
 msgstr "Seleccione un informe personalizado para empezar"
 
+msgid "Select a Cycle to compare against the Baseline Cycle"
+msgstr "Seleccione un ciclo para compararlo con el ciclo de referencia"
+
 msgid "Select a Facilities Plan Run from the dropdown below"
 msgstr "Seleccione una ejecución de plan de instalaciones del menú desplegable a continuación"
 
@@ -5009,6 +5027,9 @@ msgstr "Seleccione un tipo de objetivo. Un objetivo estándar calculará un EUI 
 #, fuzzy
 msgid "Select a Program to get started!"
 msgstr "Seleccione un programa para empezar"
+
+msgid "Select a Salesforce Annual Report to associate with this Cycle"
+msgstr "Seleccione un informe anual de Salesforce para asociarlo con este ciclo"
 
 #, fuzzy
 msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
@@ -5554,6 +5575,9 @@ msgstr "La página de resumen de la cartera compara 2 ciclos para calcular el pr
 #, fuzzy
 msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 msgstr "También hay un enlace al foro de usuarios de la plataforma SEED, donde puedes ponerte en contacto con otros usuarios."
+
+msgid "There is no cycle selected for comparison yet"
+msgstr "Aún no hay ningún ciclo seleccionado para comparar"
 
 #, fuzzy
 msgid "There was an error loading the page"

@@ -162,6 +162,7 @@ def _dict_org(request, organizations):
             "audit_template_tracking_id_name": o.audit_template_tracking_id_name,
             "audit_template_tracking_id_field": o.audit_template_tracking_id_field,
             "salesforce_enabled": o.salesforce_enabled,
+            "bb_salesforce_enabled": o.bb_salesforce_enabled,
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
             "access_level_names": o.access_level_names,
@@ -205,6 +206,7 @@ def _dict_org_brief(request, organizations):
             "user_role": user_role,
             "display_decimal_places": o.display_decimal_places,
             "salesforce_enabled": o.salesforce_enabled,
+            "bb_salesforce_enabled": o.bb_salesforce_enabled,
             "access_level_names": o.access_level_names,
             "audit_template_conditional_import": o.audit_template_conditional_import,
             "property_display_field": o.property_display_field,
@@ -325,11 +327,23 @@ class OrganizationViewSet(viewsets.ViewSet):
         if brief:
             if request.user.is_superuser:
                 qs = Organization.objects.only(
-                    "id", "name", "parent_org_id", "display_decimal_places", "salesforce_enabled", "access_level_names"
+                    "id",
+                    "name",
+                    "parent_org_id",
+                    "display_decimal_places",
+                    "salesforce_enabled",
+                    "bb_salesforce_enabled",
+                    "access_level_names",
                 )
             else:
                 qs = request.user.orgs.only(
-                    "id", "name", "parent_org_id", "display_decimal_places", "salesforce_enabled", "access_level_names"
+                    "id",
+                    "name",
+                    "parent_org_id",
+                    "display_decimal_places",
+                    "salesforce_enabled",
+                    "bb_salesforce_enabled",
+                    "access_level_names",
                 )
 
             orgs = _dict_org_brief(request, qs)
@@ -692,6 +706,10 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.salesforce_enabled = salesforce_enabled
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
+
+        bb_salesforce_enabled = posted_org.get("bb_salesforce_enabled", False)
+        if bb_salesforce_enabled != org.bb_salesforce_enabled:
+            org.bb_salesforce_enabled = bb_salesforce_enabled
 
         require_2fa = posted_org.get("require_2fa", False)
         if require_2fa != org.require_2fa:

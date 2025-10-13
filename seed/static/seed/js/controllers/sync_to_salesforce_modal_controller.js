@@ -96,7 +96,6 @@ angular.module('SEED.controller.sync_to_salesforce_modal', []).controller('sync_
       'SF Portfolio kBtu': summary.salesforce.portfolio_kbtu
     }));
 
-
     $scope.report_status_options = [
       '00. Baselining',
       '00. Partner not engaged',
@@ -130,7 +129,7 @@ angular.module('SEED.controller.sync_to_salesforce_modal', []).controller('sync_
       'N. AM QC Complete',
       'O. Issues for Data Team',
       'P. Data Team QC Complete',
-      'Q. Opt-Out of Display',
+      'Q. Opt-Out of Display'
     ];
 
     $scope.dismiss = () => {
@@ -138,7 +137,7 @@ angular.module('SEED.controller.sync_to_salesforce_modal', []).controller('sync_
     };
 
     $scope.sync_latest_cycle = () => {
-      goal_service.update_salesforce(goal.id, [latest_cycle_goal.id], $scope.report_status? $scope.report_status : null, $scope.review_status? $scope.review_status null)
+      goal_service.update_salesforce(goal.id, [latest_cycle_goal.id], $scope.report_status ? $scope.report_status : null, $scope.review_status ? $scope.review_status : null)
         .then((data) => {
           $uibModalInstance.close();
         });

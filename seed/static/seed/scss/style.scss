@@ -5727,6 +5727,12 @@ tags-input .tags .tag-item {
   }
 }
 
+.warning-message {
+  color: $warningText;
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
 #group-create {
   display: flex;
   justify-content: space-between;
