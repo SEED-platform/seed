@@ -12,33 +12,33 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
-from tkbl import bsync_by_uniformat_code, federal_bps_by_uniformat_code, filter_by_uniformat_code
+from tkbl import bsync_by_uniformat_code, filter_by_uniformat_code
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.lib.uniformat.uniformat import uniformat_codes
 from seed.models import Element, Uniformat
 from seed.serializers.elements import ElementPropertySerializer, ElementSerializer
-from seed.utils.api import api_endpoint_class
+from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet, SEEDOrgReadOnlyModelViewSet
 
 
 @method_decorator(
-    name="list",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_viewer"),
+        has_perm("requires_viewer"),
     ],
+    name="list",
 )
 @method_decorator(
-    name="retrieve",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_viewer"),
+        has_perm("requires_viewer"),
     ],
+    name="retrieve",
 )
 class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
     """
@@ -72,9 +72,13 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
             AutoSchemaHelper.query_enum_field(name="code", description=Uniformat._meta.get_field("code").help_text, enum=uniformat_codes),
         ],
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def filter(self, request):
         """
@@ -91,44 +95,44 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
 
 
 @method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_id_kwarg="property_pk"),
+    ],
     name="list",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_viewer"),
-        has_hierarchy_access(property_id_kwarg="property_pk"),
-    ],
 )
 @method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_id_kwarg="property_pk"),
+    ],
     name="retrieve",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_viewer"),
-        has_hierarchy_access(property_id_kwarg="property_pk"),
-    ],
 )
 @method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+        has_hierarchy_access(property_id_kwarg="property_pk"),
+    ],
     name="create",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
-        has_hierarchy_access(property_id_kwarg="property_pk"),
-    ],
 )
 @method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+        has_hierarchy_access(property_id_kwarg="property_pk"),
+    ],
     name="update",
-    decorator=[
-        swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
-        has_hierarchy_access(property_id_kwarg="property_pk"),
-    ],
 )
 @method_decorator(
-    name="destroy",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
+        has_perm("requires_member"),
         has_hierarchy_access(property_id_kwarg="property_pk"),
     ],
+    name="destroy",
 )
 class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
@@ -191,17 +195,21 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             )
         },
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(property_id_kwarg="property_pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(property_id_kwarg="property_pk"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def tkbl(self, request, *args, **kwargs):
         """
         Technologies Knowledge Base Library recommendations for Elements belonging to a Property with the lowest remaining service life
         """
 
-        tkbl_elements = self.get_queryset().filter(code__code__in=SCOPE_ONE_EMISSION_CODES).order_by("remaining_service_life")[:3]
+        tkbl_elements = self.get_queryset().filter(code__code__in=EISA432_CODES).order_by("remaining_service_life")[:3]
 
         results = []
         for e in tkbl_elements:
@@ -209,13 +217,12 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             sftool_links = [link for link in links if link["category"] != "ESTCP"]
             estcp_links = [link for link in links if link["category"] == "ESTCP"]
             bsync = [x["eem_name"] for x in bsync_by_uniformat_code(e.code.code)]
-            federal_bps = [x["Federal BPS Prescriptive Measures"] for x in federal_bps_by_uniformat_code(e.code.code)]
             results.append(
                 {
                     "code": e.code.code,
                     "remaining_service_life": e.remaining_service_life,
                     "description": e.description,
-                    "tkbl": {"sftool": sftool_links, "estcp": estcp_links, "bsync_measures": bsync, "federal_bps_measures": federal_bps},
+                    "tkbl": {"sftool": sftool_links, "estcp": estcp_links, "bsync_measures": bsync},
                 }
             )
 

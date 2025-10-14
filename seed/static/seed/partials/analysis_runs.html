@@ -1,5 +1,8 @@
 <div class="table_list_container">
-  <table id="analysis-runs-table" class="table table-striped table_highlight_first">
+  <table
+    id="analysis-runs-table"
+    class="table table-striped table_highlight_first"
+  >
     <thead>
       <tr>
         <th translate>Run ID</th>
@@ -10,25 +13,59 @@
     </thead>
     <tbody>
       <tr ng-repeat="view in views | filter:filter_params:strict">
-        <td><a ui-sref="analysis_run(::{run_id: view.id, analysis_id: analysis.id, organization_id: org.id})" ui-sref-active="active">{$:: view.id $}</a></td>
         <td>
-          <a ng-if="original_views[view.id]" ui-sref="inventory_detail({inventory_type: 'properties', view_id: original_views[view.id]})">
-            {$:: view.display_name || 'Property: Unknown' $} <i class="glyphicon glyphicon-log-out"></i>
+          <a
+            ui-sref="analysis_run(::{run_id: view.id, analysis_id: analysis.id, organization_id: org.id})"
+            ui-sref-active="active"
+            >{$:: view.id $}</a
+          >
+        </td>
+        <td>
+          <a
+            ng-if="original_views[view.id]"
+            ui-sref="inventory_detail({inventory_type: 'properties', view_id: original_views[view.id]})"
+          >
+            {$:: view.display_name || 'Property: Unknown' $}
+            <i class="glyphicon glyphicon-log-out"></i>
           </a>
-          <span ng-if="!original_views[view.id]" uib-tooltip="Property no longer exists"> <i class="fa-solid fa-triangle-exclamation"></i> {$:: view.display_name || 'Property: Unknown' $} </span>
+          <span
+            ng-if="!original_views[view.id]"
+            uib-tooltip="Property no longer exists"
+          >
+            <i class="fa-solid fa-triangle-exclamation"></i> {$::
+            view.display_name || 'Property: Unknown' $}
+          </span>
         </td>
         <td>
           <ul>
-            <li style="white-space: normal" ng-repeat="message in messages | filter : {'analysis_property_view':view.id}">
-              {$:: message['user_message'] $}<span ng-if="::message['debug_message']"> - {$:: message['debug_message'] $}</span>
+            <li
+              style="white-space: normal"
+              ng-repeat="message in messages | filter : {'analysis_property_view':view.id}"
+            >
+              {$:: message['user_message'] $}<span
+                ng-if="::message['debug_message']"
+              >
+                - {$:: message['debug_message'] $}</span
+              >
             </li>
           </ul>
         </td>
         <td>
-          <span ng-repeat="file in view.output_files | filter:filter_params:strict">
-            <a ng-if="file['analysis_property_views'].length > 1" href="{$:: file.file $}" download>Portfolio Report <span class="fa-solid fa-download"></span></a>
-            <a ng-if="file['analysis_property_views'].length == 1" href="{$:: file.file $}" download
-              >{$:: file.content_type == 'html' ? 'Building Report' : file.content_type $} <span class="fa-solid fa-download"></span
+          <span
+            ng-repeat="file in view.output_files | filter:filter_params:strict"
+          >
+            <a
+              ng-if="file['analysis_property_views'].length > 1"
+              href="{$:: file.file $}"
+              download
+              >Portfolio Report <span class="fa-solid fa-download"></span
+            ></a>
+            <a
+              ng-if="file['analysis_property_views'].length == 1"
+              href="{$:: file.file $}"
+              download
+              >{$:: file.content_type == 'html' ? 'Building Report' :
+              file.content_type $} <span class="fa-solid fa-download"></span
             ></a>
             <span ng-repeat-end ng-if="!$last">, </span>
           </span>

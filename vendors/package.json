@@ -26,7 +26,8 @@
     "angular-ui-sortable": "^0.19.0",
     "angular-xeditable": "^0.10.2",
     "bootstrap": "^3.4.1",
-    "chart.js": "3.9.1",
+    "chart.js": "^3.9.1",
+    "chartjs-chart-sankey": "^0.14.0",
     "chartjs-plugin-annotation": "^2.2.1",
     "chartjs-plugin-zoom": "=1.2.1",
     "@sgratzl/chartjs-chart-boxplot": "^3.10.0",
@@ -38,6 +39,7 @@
     "jquery-ui-dist": "^1.13.3",
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
+    "napa": "^3.0.0",
     "ng-focus-if": "^1.0.7",
     "ng-tags-input": "^3.2.0",
     "ng-wig": "^3.1.1",
@@ -51,8 +53,7 @@
     "ui-grid-draggable-rows": "^0.3.3"
   },
   "devDependencies": {
-    "angular-mocks": "^1.8.3",
-    "napa": "^3.0.0"
+    "angular-mocks": "^1.8.3"
   },
   "scripts": {
     "install": "napa"

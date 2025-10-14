@@ -587,7 +587,7 @@ class TestBsyncrPipeline(TestCase):
         self.assertEqual(self.meter.meter_readings.count(), len(ts_elems))
 
         # throws exception if document is not valid
-        schema = BuildingSync.get_schema(BuildingSync.BUILDINGSYNC_V2_4_0)
+        schema = BuildingSync.get_schema(BuildingSync.BUILDINGSYNC_V2_6_0)
         schema.validate(tree)
 
     def test_build_bsyncr_input_returns_errors_if_state_missing_info(self):

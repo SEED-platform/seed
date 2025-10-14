@@ -219,7 +219,7 @@ class ComplianceMetric(models.Model):
         return "y" if differential >= 0 else "n"
 
     def _get_column_data(self, data: dict, column: Column) -> Union[float, bool]:
-        """Get the column datat from the dictionary version of the property state.
+        """Get the column data from the dictionary version of the property state.
         Also, cast the datatype based on the column data_type as needed.
 
         Args:

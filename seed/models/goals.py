@@ -29,7 +29,7 @@ class Goal(models.Model):
     area_column = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_area_columns")
     target_percentage = models.IntegerField(validators=[MinValueValidator(0), MaxValueValidator(100)])
     commitment_sqft = models.IntegerField(blank=True, null=True, validators=[MinValueValidator(0)])
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
     type = models.CharField(max_length=255, choices=GOAL_TYPE_CHOICES, default="standard")
     transactions_column = models.ForeignKey(
         Column, on_delete=models.CASCADE, related_name="goal_transactions_columns", blank=True, null=True
@@ -37,6 +37,9 @@ class Goal(models.Model):
 
     class Meta:
         ordering = ["name"]
+        constraints = [
+            models.UniqueConstraint(fields=["organization", "name"], name="unique_goal_name_per_organization"),
+        ]
 
     def save(self, *args, **kwargs):
         if self.type == "standard":

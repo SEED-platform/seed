@@ -21,7 +21,7 @@ class TestCaseFactory(type):
 
         for doc, value, expected in cases:
             test = method_maker(value, expected)
-            test_name = f'{prefix}_{doc.lower().replace(" ", "_")}'
+            test_name = f"{prefix}_{doc.lower().replace(' ', '_')}"
             if test_name in attrs:
                 raise KeyError(f"Test name {test_name} duplicated")
             test.__name__ = test_name

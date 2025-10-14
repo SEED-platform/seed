@@ -72,6 +72,7 @@ class OrganizationUser(models.Model):
     status = models.CharField(max_length=12, default=STATUS_PENDING, choices=STATUS_CHOICES)
     role_level = models.IntegerField(default=ROLE_OWNER, choices=ROLE_LEVEL_CHOICES)
     access_level_instance = models.ForeignKey("AccessLevelInstance", on_delete=models.CASCADE, null=False, related_name="users")
+    settings = models.JSONField(default=dict, blank=True, null=True)
 
     def delete(self, *args, **kwargs):
         """Ensure we preserve at least one Owner for this org."""
@@ -334,7 +335,10 @@ class Organization(models.Model):
         Cycle.get_or_create_default(self)
         from seed.models import Measure
 
-        Measure.populate_measures(self.id)
+        # TODO: this could get messy and could be better implemented
+        # TODO: add additional calls to populate measure here when default version is incremented
+        Measure.populate_measures(self.id)  # this populates bsync v1.0.0 (default) measures
+        Measure.populate_measures(self.id, schema_version="2.6.0")  # this populates bsync v2.6.0 measures
 
     def is_member(self, user):
         """Return True if user object has a relation to this organization."""

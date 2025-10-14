@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 import logging
+import re
 from functools import wraps
 
 import requests
@@ -24,13 +25,17 @@ from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
-from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.models import Element, Measure, Meter, MeterReading, PropertyView
 from seed.utils.encrypt import decrypt
 
 _log = logging.getLogger(__name__)
 
 AUTO_SYNC_NAME = "audit_template_sync_org-"
+
+# Currently default version is the latest version.
+# Need to keep this version in sync with Audit Template
+AT_BUILDINGSYNC_VERSION = settings.BUILDINGSYNC_VERSION
 
 
 def require_token(fn):
@@ -97,7 +102,7 @@ class AuditTemplate:
         self.org_id = org_id
         self.org = Organization.objects.get(id=self.org_id)
 
-    def batch_get_city_submission_xml(self, view_ids):
+    def batch_get_city_submission_xml(self, view_ids, default_cycle):
         """
         1. get city_cubmissions
         2. find views using xml fields custom_id_1 and updated for cycle start/end bounds
@@ -109,7 +114,7 @@ class AuditTemplate:
         """
         progress_data = ProgressData(func_name="batch_get_city_submission_xml", unique_id=self.org_id)
 
-        _batch_get_city_submission_xml.delay(self.org_id, self.org.audit_template_city_id, view_ids, progress_data.key)
+        _batch_get_city_submission_xml.delay(self.org_id, self.org.audit_template_city_id, view_ids, default_cycle, progress_data.key)
 
         return progress_data.result(), ""
 
@@ -229,7 +234,7 @@ class AuditTemplate:
 
         return progress_data.result(), []
 
-    def export_to_audit_template(self, state, token):
+    def export_to_audit_template(self, state, token, file_only=False):
         url = f"{self.API_URL}/building_sync/upload"
         display_field = getattr(state, self.org.property_display_field)
 
@@ -241,6 +246,8 @@ class AuditTemplate:
 
             if not xml_string:
                 return None, messages
+            if file_only:
+                return xml_string, messages
         except Exception as e:
             return None, ["error", f"{display_field}: Unexpected error creating building xml {e}"]
 
@@ -260,12 +267,12 @@ class AuditTemplate:
 
     def validate_state_for_xml(self, state, display_field):
         missing_fields = []
-        expected_fields = ["address_line_1", "city", "gross_floor_area", "postal_code", "property_name", "state", "year_built"]
+        expected_fields = ["gross_floor_area", "postal_code", "property_name", "year_built"]
         for field in expected_fields:
             if getattr(state, field) is None:
                 missing_fields.append(field)
 
-        if len(missing_fields):
+        if missing_fields:
             missing_fields = ", ".join(missing_fields)
             messages = ["error", f"Validation Error. {display_field} must have {missing_fields}"]
             return False, messages
@@ -310,12 +317,13 @@ class AuditTemplate:
         }
         nsmap.update(NAMESPACES)
         em = ElementMaker(namespace=BUILDINGSYNC_URI, nsmap=nsmap)
+
         doc = em.BuildingSync(
             {
                 etree.QName(
                     XSI_URI, "schemaLocation"
-                ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.4.0/BuildingSync.xsd",
-                "version": "2.4.0",
+                ): f"http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v{AT_BUILDINGSYNC_VERSION}/BuildingSync.xsd",
+                "version": AT_BUILDINGSYNC_VERSION,
             },
             em.Facilities(
                 em.Facility(
@@ -334,14 +342,7 @@ class AuditTemplate:
                                             em.IdentifierValue(str(tracking_id)),
                                         )
                                     ),
-                                    em.Address(
-                                        em.StreetAddressDetail(
-                                            em.Simplified(em.StreetAddress(state.address_line_1)),
-                                        ),
-                                        em.City(state.city),
-                                        em.State(state.state),
-                                        em.PostalCode(str(state.postal_code)),
-                                    ),
+                                    _build_address(em, state),
                                     em.FloorAreas(
                                         em.FloorArea(
                                             em.FloorAreaType("Gross"),
@@ -357,12 +358,10 @@ class AuditTemplate:
                     em.Reports(
                         em.Report(
                             {"ID": report_id},
-                            em.Scenarios(
-                                *(
-                                    []
-                                    if not org.audit_template_export_meters
-                                    else _build_metering_scenarios(em, view.property.id, building_id)
-                                ),
+                            *(
+                                [em.Scenarios(*_build_metering_scenarios(em, view.property.id, building_id))]
+                                if org.audit_template_export_meters and _build_metering_scenarios(em, view.property.id, building_id)
+                                else []
                             ),
                             em.LinkedPremisesOrSystem(
                                 em.Building(em.LinkedBuildingID({"IDref": building_id})),
@@ -370,7 +369,7 @@ class AuditTemplate:
                             em.UserDefinedFields(
                                 em.UserDefinedField(
                                     em.FieldName("Audit Template Report Type"),
-                                    em.FieldValue(report_type),
+                                    em.FieldValue(str(report_type).strip()),
                                 ),
                             ),
                         )
@@ -385,6 +384,27 @@ class AuditTemplate:
         results.setdefault(status, {"count": 0, "details": []})
         results[status]["count"] += 1
         results[status]["details"].append({"view_id": view_id, **extra_fields})
+
+
+def _build_address(em, state):
+    address_elements = []
+    if state.address_line_1:
+        address_elements.append(
+            em.StreetAddressDetail(
+                em.Simplified(em.StreetAddress(state.address_line_1)),
+            )
+        )
+    if state.city:
+        address_elements.append(em.City(state.city))
+
+    if state.state:
+        address_elements.append(em.State(state.state))
+
+    if state.postal_code:
+        # add postal code truncated to 5 first digits
+        address_elements.append(em.PostalCode(str(state.postal_code[:5])))
+
+    return em.Address(*address_elements)
 
 
 def _build_metering_scenarios(em, property_id, building_id):
@@ -479,7 +499,7 @@ def _build_all_resource_totals(em, meter):
         {},
         *[
             em.AllResourceTotal(
-                {"ID": f"{resource_total_base}{meter.id}-{i+1}"},
+                {"ID": f"{resource_total_base}{meter.id}-{i + 1}"},
                 em.EndUse("All end uses"),
                 em.ResourceBoundary("Site"),
                 em.SiteEnergyUse(
@@ -488,7 +508,7 @@ def _build_all_resource_totals(em, meter):
                     else str(meter_reading.reading / kBtu_to_therms)
                 ),
                 em.UserDefinedFields(
-                    em.UserDefinedField(em.FieldName("Linked Time Series ID"), em.FieldValue(f"{timeseries_id_base}{meter.id}-{i+1}"))
+                    em.UserDefinedField(em.FieldName("Linked Time Series ID"), em.FieldValue(f"{timeseries_id_base}{meter.id}-{i + 1}"))
                 ),
             )
             for i, meter_reading in enumerate(meter_readings)
@@ -508,7 +528,7 @@ def _build_time_series_data(em, property_id, meter):
         {},
         *[
             em.TimeSeries(
-                {"ID": f"{timeseries_id_base}{meter.id}-{i+1}"},
+                {"ID": f"{timeseries_id_base}{meter.id}-{i + 1}"},
                 em.ReadingType("Peak"),
                 em.TimeSeriesReadingQuantity("Voltage"),
                 em.StartTimestamp(meter_reading.start_time.isoformat()),
@@ -534,7 +554,7 @@ def _build_resource_uses(em, property_id, meters, scenario_type, use_meter_ids=T
         {},
         *[
             em.ResourceUse(
-                {"ID": f"{resource_use_base}{meter.id}" if use_meter_ids else f"{resource_use_base}{i+1}"},
+                {"ID": f"{resource_use_base}{meter.id}" if use_meter_ids else f"{resource_use_base}{i + 1}"},
                 em.EnergyResource(SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other")),
                 em.ResourceBoundary("Site"),
                 em.ResourceUnits("kWh" if SEED_TO_BSYNC_RESOURCE_TYPE.get(meter.type, "Other") == "Electricity" else "therms"),
@@ -579,15 +599,17 @@ def _build_measures_element(em, property_id, building_id):
 
 
 def _get_measures(property_id):
-    tkbl_elements = Element.objects.filter(property_id=property_id, code__code__in=SCOPE_ONE_EMISSION_CODES).order_by(
-        "remaining_service_life"
-    )[:3]
+    """Elements/TKBL implementation specific"""
+    # TODO: revise this code to be able to export Recommended measures that were added to SEED via Audit Template import?
+    tkbl_elements = Element.objects.filter(property_id=property_id, code__code__in=EISA432_CODES).order_by("remaining_service_life")[:3]
     bsync_measure_dicts = [x for e in tkbl_elements for x in bsync_by_uniformat_code(e.code.code)]
 
     bsync_measure_tuples = set()
     for bsync_measure_dict in bsync_measure_dicts:
-        category = Measure.objects.filter(category_display_name=bsync_measure_dict["cat_lev1"]).first().category
+        category = Measure.objects.filter(category_display_name=bsync_measure_dict["cat_lev1"]).order_by("-schema_version").first().category
         category = "".join(word.capitalize() for word in category.split("_"))
+        # SPECIAL case: HVAC
+        category = re.sub(r"Hvac", lambda x: x.group().upper(), category)
 
         bsync_measure_tuples.add((category, bsync_measure_dict["eem_name"]))
 
@@ -595,13 +617,14 @@ def _get_measures(property_id):
 
 
 @shared_task
-def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
+def _batch_get_city_submission_xml(org_id, city_id, view_ids, default_cycle, progress_key):
     """
     1. get city_cubmissions
     2. find views using xml fields custom_id_1 and updated for cycle start/end bounds
-    3. get xmls corresponding to submissions matching a view
-    4. group data by cycles
-    5. update cycle grouped views in cycle batches
+    3. if a default cycle is given, attempt to import xml in the given cycle if no matches are found by start/end bounds
+    4. get xmls corresponding to submissions matching a view
+    5. group data by cycles
+    6. update cycle grouped views in cycle batches
     """
     org = Organization.objects.get(pk=org_id)
     status_types = org.audit_template_status_types
@@ -648,9 +671,9 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
             filter_criteria["state__updated__lte"] = updated_at
 
         view = property_views.filter(**filter_criteria).first()
-
         progress_data.step("Getting XML for submissions...")
         if view:
+            # if a view is found, get the xml for the submission
             xml, _ = audit_template.get_submission(sub["id"], "xml")
 
             if hasattr(xml, "text"):
@@ -660,6 +683,20 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, progress_key):
                 xml_data_by_cycle[view.cycle.id].append(
                     {"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}
                 )
+        # if no view is found, check if a default cycle is given
+        elif default_cycle:
+            # use the default cycle to create a view
+            view = property_views.filter(state__custom_id_1=custom_id_1, cycle=default_cycle).first()
+            if view:
+                xml, _ = audit_template.get_submission(sub["id"], "xml")
+
+                if hasattr(xml, "text"):
+                    if not xml_data_by_cycle.get(default_cycle):
+                        xml_data_by_cycle[default_cycle] = []
+
+                    xml_data_by_cycle[default_cycle].append(
+                        {"property_view": view.id, "matching_field": custom_id_1, "xml": xml.text, "updated_at": sub["updated_at"]}
+                    )
 
     from seed.views.v3.properties import PropertyViewSet
 
@@ -702,7 +739,7 @@ def _get_city_submission_xml(org_id, city_id, custom_id_1, progress_key):
     progress_data.save()
 
     submissions = [sub for sub in submissions if sub["tax_id"] == custom_id_1]
-    if not len(submissions):
+    if not submissions:
         return progress_data.finish_with_error(f"No matching submissions for custom id: {custom_id_1}")
     sub = submissions[0]
     created_at = parser.parse(sub["created_at"])

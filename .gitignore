@@ -1,6 +1,5 @@
 .cache
 .coverage
-.cspell.txt
 .DS_Store
 .env
 .hypothesis
@@ -43,9 +42,7 @@ bpd/data/untracked/*
 bpd/data/epa*
 bpd/data/BEDES*
 **/*-old
-lin/migrations/disabled
 htmlcov/
-src/
 node_modules/
 
 # JetBrains tends to suggest a venv directory in the project root for virtual environments
@@ -66,9 +63,6 @@ seed/tests/output
 test.sqlite
 
 docs/build/
-docs/scripts/Gemfile.lock
-docs/scripts/.python-version
-docs/scripts/seed_issues.csv
 docs/htmlout
 
 lokalise.cfg
@@ -87,3 +81,5 @@ docker-compose-dbs.yml
 
 # ruff linting and formatting
 /.ruff_cache
+#ignore appfleet config files downloaded at build time
+appfleet-config*

@@ -168,7 +168,7 @@ class SEEDOrgPermissions(BasePermission):
         # pylint: disable=no-member
 
         # Allow superuser to have permissions. This method is similar to the
-        # previous has_perm method orgs/decorators.py:has_perm_class
+        # previous has_perm method orgs/decorators.py:has_perm
         if request.user.is_superuser and ALLOW_SUPER_USER_PERMS:
             return True
 
@@ -211,7 +211,7 @@ class SEEDOrgPermissions(BasePermission):
 
         if value_error or queryset is None:
             raise AssertionError(
-                f"Cannot apply {view.__class__} on a view that does not set `.queryset`" " or have a `.get_queryset()` method."
+                f"Cannot apply {view.__class__} on a view that does not set `.queryset` or have a `.get_queryset()` method."
             )
 
         return request.user and (is_authenticated(request.user) or not self.authenticated_users_only) and self.has_perm(request)

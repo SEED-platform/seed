@@ -52,7 +52,7 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
         result["scenario_name"] = obj.scenario.name if obj.scenario else None
         if obj.alias is None or obj.alias == "":
             result["alias"] = f"{obj.get_type_display()} - {obj.get_source_display()} - {result['source_id']}"
-        self.get_property_display_name(obj, result)
+        self.get_property_display_name_and_view_id(obj, result)
         self.set_config(obj, result)
 
         return result
@@ -78,8 +78,8 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
         config = {"group_id": group_id, "system_id": system_id, "service_id": obj.service_id, **connection_lookup[obj.connection_type]}
         result["config"] = config
 
-    def get_property_display_name(self, obj, result):
+    def get_property_display_name_and_view_id(self, obj, result):
         if obj.property:
-            state = obj.property.views.first().state
-            property_display_field = state.organization.property_display_field
-            result["property_display_field"] = getattr(state, property_display_field, "Unknown")
+            view = obj.property.views.first()
+            result["view_id"] = view.id
+            result["property_display_field"] = view.state.default_display_value()

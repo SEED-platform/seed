@@ -7,18 +7,19 @@ import csv
 
 from celery.utils.log import get_task_logger
 from django.http import HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.data_importer.tasks import do_checks
-from seed.decorators import ajax_request_class
+from seed.decorators import ajax_request
 from seed.lib.mcm.cleaners import normalize_unicode_and_characters
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import PropertyView, TaxLotView
 from seed.models.data_quality import DataQualityCheck
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw
 
@@ -34,7 +35,7 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
 
     # Remove lookup_field once data_quality_check_id is used and "pk" can be used
     lookup_field = "organization_id"
-    # allow organization_id path id to be used for authorization (i.e., has_perm_class)
+    # allow organization_id path id to be used for authorization (i.e., has_perm)
     authz_org_id_kwarg = "organization_id"
 
     @swagger_auto_schema(
@@ -64,9 +65,13 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
             )
         },
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def start(self, request, organization_id):
         """
@@ -111,9 +116,13 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_integer_field("run_id", True, "Import file ID or cache key"),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def results_csv(self, request):
         """
@@ -181,9 +190,13 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_integer_field("run_id", True, "Import file ID or cache key"),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def results(self, request):
         """

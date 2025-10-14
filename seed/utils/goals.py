@@ -169,9 +169,11 @@ def get_portfolio_summary(org, goal):
         )
 
         # Create annotations for kbtu calcs. "eui" is based on goal column priority
-        property_views = property_views.annotate(
-            eui=get_eui_expression(goal),
-        ).annotate(kbtu=F("eui") * F("area"))
+        property_views = property_views.annotate(eui=get_eui_expression(goal))
+        # exclude properties form current calcs if EUI is null - BetterBuildings uses this as an override
+        if current:
+            property_views = property_views.exclude(eui__isnull=True)
+        property_views = property_views.annotate(kbtu=F("eui") * F("area"))
 
         aggregated_data = property_views.aggregate(total_kbtu=Sum("kbtu"), total_sqft=Sum("area"))
         total_kbtu = aggregated_data["total_kbtu"]

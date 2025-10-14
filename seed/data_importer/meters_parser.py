@@ -207,7 +207,7 @@ class MetersParser:
             all_property_ids = {property_id for property_ids in self._source_to_property_ids.values() for property_id in property_ids}
             cycle_names_by_property_id = dict(
                 Property.objects.filter(id__in=all_property_ids)
-                .annotate(cycle_names=ArrayAgg("views__cycle__name"))
+                .annotate(cycle_names=ArrayAgg("views__cycle__name", default=[]))
                 .values_list("id", "cycle_names")
             )
 

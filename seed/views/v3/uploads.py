@@ -13,16 +13,17 @@ import xlrd
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 
 from seed.data_importer.models import ImportFile, ImportRecord
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import PORTFOLIO_RAW, SEED_DATA_SOURCES
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 
 _log = logging.getLogger(__name__)
@@ -68,10 +69,14 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
             ),
         ],
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(param_import_record_id="import_record")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(param_import_record_id="import_record"),
+        ]
+    )
     def create(self, request):
         """
         Upload a new file to an import_record. This is a multipart/form upload.
@@ -134,7 +139,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
     def _get_pint_var_from_pm_value_object(pm_value):
         units = pint.UnitRegistry()
         if "@uom" in pm_value and "#text" in pm_value:
-            # this is the correct expected path for unit-based attributes
+            # this is the correct, expected path for unit-based attributes
             string_value = pm_value["#text"]
             try:
                 float_value = float(string_value)
@@ -176,10 +181,14 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
             description="An object containing meta data for a property",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(body_import_record_id="import_record_id")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(body_import_record_id="import_record_id"),
+        ]
+    )
     @action(detail=False, methods=["POST"], parser_classes=(JSONParser,))
     def create_from_pm_import(self, request):
         """

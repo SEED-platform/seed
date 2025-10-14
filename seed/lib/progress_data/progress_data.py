@@ -164,7 +164,7 @@ class ProgressData:
         self.data["progress"] = value
         self.data["status"] = "running"
         self.data["completed_records"] = round(value / 100.0 * self.data["total_records"])
-        self.data["status_message"] = f'{self.data["completed_records"]:,} / {self.data["total_records"]:,}'
+        self.data["status_message"] = f"{self.data['completed_records']:,} / {self.data['total_records']:,}"
 
         self.save()
 

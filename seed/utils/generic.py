@@ -6,10 +6,13 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 import math
+import re
+from contextlib import suppress
 from datetime import datetime
 
 from django.core import serializers
 from django.db import IntegrityError, models
+from django.utils import timezone
 from pint import UnitRegistry
 
 ureg = UnitRegistry()
@@ -55,7 +58,7 @@ def median(lst):
 
 
 def round_down_hundred_thousand(x):
-    return int(math.floor(x / 100000.0)) * 100000
+    return math.floor(x / 100000.0) * 100000
 
 
 def obj_to_dict(obj, include_m2m=True):
@@ -142,3 +145,54 @@ def get_int(value, default=None):
         return result if result > 0 else default
     except (ValueError, TypeError):
         return default
+
+
+def parse_date(value):
+    """
+    Parse a date string and return it as an aware datetime object.
+
+    Supports partial ISO and US date formats:
+     - YYYY
+     - YYYY-MM
+     - YYYY-MM-DD
+     - YYYY-MM-DD HH:MM:SS
+     - YYYY-MM-DDTHH:MM:SS
+     - MM-DD-YYYY
+     - MM-DD-YY
+
+    '-' and '/' are interchangeable separators.
+    Optional comparison operators (=, !=, <, <=, >, >=) can prefix the date.
+
+    """
+    if not value:
+        return timezone.make_aware(datetime.min)
+
+    # standardize separators, ignore optional operators
+    s = str(value).strip().replace("/", "-")
+    match = re.match(r"^(=|!=|<=|>=|<|>)\s*(.+)$", s)
+    if match:
+        s = match.group(2)
+
+    # ISO/Partial ISO Format
+    with suppress(ValueError, TypeError):
+        return timezone.make_aware(datetime.fromisoformat(s))
+
+    if re.fullmatch(r"\d{4}", s):  # YYYY
+        return timezone.make_aware(datetime(int(s), 1, 1))
+
+    if re.fullmatch(r"\d{4}[-]\d{1,2}", s):  # YYYY-MM
+        year, month = map(int, re.split(r"[-]", s))
+        return timezone.make_aware(datetime(year, month, 1))
+
+    if re.fullmatch(r"\d{4}[-]\d{1,2}[-]\d{1,2}", s):  # YYYY-MM-DD
+        year, month, day = map(int, re.split(r"[-]", s))
+        return timezone.make_aware(datetime(year, month, day))
+
+    # US-style:
+    with suppress(ValueError):
+        return timezone.make_aware(datetime.strptime(s, "%m-%d-%Y"))  # MM-DD-YYYY
+
+    with suppress(ValueError):
+        return timezone.make_aware(datetime.strptime(s, "%m-%d-%y"))  # MM-DD-YY
+
+    raise ValueError(f'Unable to parse date from value "{value}".')

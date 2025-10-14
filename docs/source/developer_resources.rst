@@ -443,7 +443,7 @@ To make a release do the following:
 #. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).
 #. Create PR for release preparation and merge after tests/reviews pass.
 #. Create a new Release using the develop branch and new release number as the tag (https://github.com/SEED-platform/seed/releases). Include list of changes since previous release (e.g., the additions to ``CHANGELOG.md``).
-#. Locally, merge the ``develop`` branch into the ``main`` branch and push.
+#. Locally, merge the ``develop`` branch into the ``main`` branch and push. :code:`git checkout main; git merge --ff-only origin develop`.
 #. Verify that the Docker versions are built and pushed to Docker Hub (https://hub.docker.com/r/seedplatform/seed/tags/).
 #. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documentation).
 

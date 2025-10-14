@@ -18,7 +18,7 @@ from lxml import etree
 from seed.audit_template.audit_template import AuditTemplate
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
-from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.models import Meter, MeterReading, Uniformat
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -100,6 +100,7 @@ class ExportToAuditTemplate(TestCase):
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
 
         self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
+        self.default_cycle = self.cycle_factory.get_cycle(start=datetime(2020, 1, 1, tzinfo=timezone.get_current_timezone()))
 
         self.client.login(**self.user_details)
         self.property_factory = FakePropertyFactory(organization=self.org)
@@ -175,7 +176,7 @@ class ExportToAuditTemplate(TestCase):
         # property missing required fields
         self.assertIsNone(response3[0])
         messages = response3[1]
-        exp_error = f"Validation Error. {self.state3.pm_property_id} must have address_line_1, property_name"
+        exp_error = f"Validation Error. {self.state3.pm_property_id} must have property_name"
         self.assertEqual("error", messages[0])
         self.assertEqual(exp_error, messages[1])
 
@@ -254,11 +255,15 @@ class ExportToAuditTemplate(TestCase):
 
     def test_build_xml_from_property_with_measures(self):
         # Set Up
+        # NOTE: when the tkbl is rebuilt, the SCOPE_ONE_EMISSION_CODES ordering might change
+        # currently, first element is: A101090 - Building Envelope Modifications - Insulate foundation
         self.element1 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[1]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[1]
         )
+        # second element is: Increase floor insulation - Building Envelope Modifications - Increase floor insulation
+        # (both have same technology category)
         self.element2 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[2]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[2]
         )
 
         # Action
@@ -270,29 +275,19 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual(tuple, type(response))
         tree = etree.XML(response[0])
         measures = tree.find("auc:Facilities/auc:Facility/auc:Measures", namespaces=tree.nsmap)
-        service_hot_water_systems = measures.findall(
-            "auc:Measure/auc:TechnologyCategories/auc:TechnologyCategory/auc:ServiceHotWaterSystems", namespaces=tree.nsmap
-        )
-        chilled_water_hot_water_and_steam_distribution_systems = measures.findall(
-            "auc:Measure/auc:TechnologyCategories/auc:TechnologyCategory/auc:ChilledWaterHotWaterAndSteamDistributionSystems",
-            namespaces=tree.nsmap,
+        building_envelope_mods = measures.findall(
+            "auc:Measure/auc:TechnologyCategories/auc:TechnologyCategory/auc:BuildingEnvelopeModifications", namespaces=tree.nsmap
         )
 
         self.assertSetEqual(
             {
-                "Separate SHW from heating",
-                "Install heat pump SHW system",
-                "Upgrade SHW boiler",
-                "Insulate SHW tank",
-                "Replace tankless coil",
-                "Install tankless water heaters",
+                "Air seal envelope",
+                "Add attic/knee wall insulation",
+                "Insulate thermal bypasses",
+                "Increase wall insulation",
+                "Increase floor insulation",
             },
-            {m.find("auc:MeasureName", namespaces=tree.nsmap).text for m in service_hot_water_systems},
-        )
-
-        self.assertSetEqual(
-            {"Replace or upgrade water heater"},
-            {m.find("auc:MeasureName", namespaces=tree.nsmap).text for m in chilled_water_hot_water_and_steam_distribution_systems},
+            {m.find("auc:MeasureName", namespaces=tree.nsmap).text for m in building_envelope_mods},
         )
 
     def test_build_xml_from_property_with_measures_and_meters_org_settings(self):
@@ -302,10 +297,10 @@ class ExportToAuditTemplate(TestCase):
         self.org.save()
 
         self.element1 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[1]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[1]
         )
         self.element2 = self.element_factory.get_element(
-            property=self.view1.property, code=Uniformat.objects.filter(code__in=SCOPE_ONE_EMISSION_CODES)[2]
+            property=self.view1.property, code=Uniformat.objects.filter(code__in=EISA432_CODES)[2]
         )
 
         self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)
@@ -360,7 +355,7 @@ class ExportToAuditTemplate(TestCase):
         # invalid property
         response, messages = at.export_to_audit_template(self.state3, token)
         self.assertIsNone(response)
-        exp = ["error", f"Validation Error. {self.state3.pm_property_id} must have address_line_1, property_name"]
+        exp = ["error", f"Validation Error. {self.state3.pm_property_id} must have property_name"]
         self.assertEqual(exp, messages)
 
         # valid property
@@ -428,7 +423,7 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual("2222", self.state2.audit_template_building_id)
 
         details = error["details"]
-        exp = f"Validation Error. {self.state3.pm_property_id} must have address_line_1, property_name"
+        exp = f"Validation Error. {self.state3.pm_property_id} must have property_name"
         self.assertEqual(self.view3.id, details[0]["view_id"])
         self.assertEqual(exp, details[0]["message"])
         self.assertIsNone(self.state3.audit_template_building_id)
@@ -511,9 +506,9 @@ class AuditTemplateSubmissionImport(TestCase):
             view.refresh_from_db()
 
         # view1's state is the only state that matches the AT response's tax_id (custom_id_1) and cycle dates
-        assert (
-            self.view1.state.address_line_1 == "ABC Street"
-        ), "IMPORTANT: To run this test ensure that org setting audit_template_status_types includes the submission status on AT."
+        assert self.view1.state.address_line_1 == "ABC Street", (
+            "IMPORTANT: To run this test ensure that org setting audit_template_status_types includes the submission status on AT."
+        )
         assert self.view2.state.address_line_1 == "old address 2"
         assert self.view3.state.address_line_1 == "old address 3"
         assert self.view4.state.address_line_1 == "old address 4"
@@ -539,9 +534,9 @@ class AuditTemplateSubmissionImport(TestCase):
 
         for view in [self.view1, self.view2, self.view3, self.view4]:
             view.refresh_from_db()
-        assert (
-            self.view1.state.address_line_1 == "ABC Street"
-        ), "IMPORTANT: To run this test ensure that org setting audit_template_status_types includes the submission status on AT."
+        assert self.view1.state.address_line_1 == "ABC Street", (
+            "IMPORTANT: To run this test ensure that org setting audit_template_status_types includes the submission status on AT."
+        )
         assert self.view2.state.address_line_1 == "old address 2"
         assert self.view3.state.address_line_1 == "old address 3"
         assert self.view4.state.address_line_1 == "old address 4"

@@ -10,10 +10,8 @@
   }
 }
 
-$font-family-sans-serif: 'PT Sans', 'Helvetica Neue', helvetica, arial,
-  sans-serif;
-$font-family-sans-serif-narrow: 'PT Sans Narrow', 'Helvetica Neue', helvetica,
-  arial, sans-serif;
+$font-family-sans-serif: 'PT Sans', sans-serif;
+$font-family-sans-serif-narrow: 'PT Sans Narrow', sans-serif;
 $font-family-base: $font-family-sans-serif;
 $font-family-base-narrow: $font-family-sans-serif-narrow;
 $font-size-base: 13px;
@@ -5892,7 +5890,8 @@ tags-input .tags .tag-item {
 }
 
 .description-text {
-  max-width: 1000px;
+  margin-left: 20px;
+  margin-right: 20px;
 }
 
 .stat_instructions_container {

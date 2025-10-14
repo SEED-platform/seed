@@ -7,9 +7,9 @@ import ast
 import copy
 import json
 from datetime import datetime
+from datetime import timezone as tz
 
 from django.urls import reverse
-from django.utils import timezone as tz
 
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.landing.models import SEEDUser as User
@@ -205,7 +205,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertDictContainsSubset(payload, response.json())
 
         new_payload = copy.deepcopy(payload)
-        new_payload["is_virtual"] = True
+        new_payload["alias"] = "my name"
         meter_id = response.json()["id"]
         meter_url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": property_view.id, "pk": meter_id})
@@ -213,7 +213,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
         )
         response = self.client.put(meter_url, data=json.dumps(new_payload), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["is_virtual"], True)
+        self.assertEqual(response.json()["alias"], "my name")
 
 
 class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
@@ -718,7 +718,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
                     "end_time": values[1],
                     "reading": values[2],
                     "source_unit": "Wh (Watt-hours)",
-                    # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+                    # conversion_factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
                     "conversion_factor": 0.00341,
                 }
             )

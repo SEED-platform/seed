@@ -12,7 +12,7 @@ from django.utils import timezone
 
 from config.settings.common import BASE_DIR
 from seed.landing.models import SEEDUser as User
-from seed.models import ColumnMappingProfile, PropertyView, StatusLabel
+from seed.models import ColumnMappingProfile, PropertyMeasure, PropertyView, StatusLabel
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeCycleFactory,
@@ -80,6 +80,33 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.get(url, {"organization_id": self.org.pk, "profile_id": self.default_bsync_profile.id})
         self.assertIn("<auc:YearOfConstruction>1967</auc:YearOfConstruction>", response.content.decode("utf-8"))
 
+    def test_upload_measures_specific_version(self):
+        filename = path.join(path.dirname(__file__), "data", "ex_1_v2.6.0.xml")
+
+        url = reverse("api:v3:building_files-list") + f"?organization_id={self.org.id}&cycle_id={self.cycle.id}"
+        with open(filename, "rb") as f:
+            response = self.client.post(
+                url,
+                {
+                    "file": f,
+                    "file_type": "BuildingSync",
+                },
+            )
+
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        self.assertEqual(result["status"], "success")
+
+        # now get the building sync that was just uploaded
+        property_state_id = result["data"]["property_view"]["state"]["id"]
+        # check that the property measures associated with this upload link to
+        # measures with schema_version v2.6.0
+        pms = PropertyMeasure.objects.filter(property_state_id=property_state_id)
+        self.assertEqual(len(pms), 1)
+        self.assertEqual(pms[0].measure.schema_version, "2.6.0")
+        self.assertEqual(pms[0].measure.category, "service_hot_water_systems")
+        self.assertEqual(pms[0].measure.name, "install_heat_pump_shw_system")
+
     def test_upload_batch_building_sync(self):
         # import a zip file of BuildingSync xmls
         # import_record =
@@ -122,8 +149,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertEqual(result["status"], "success")
         expected_message = {
             "warnings": [
-                "Measure category and name is not valid other_electric_motors_and_drives:replace_with_higher_efficiency_bad_name",
-                "Measure category and name is not valid other_hvac:install_demand_control_ventilation_bad_name",
+                "Measure category and name is not valid other_electric_motors_and_drives:replace_with_higher_efficiency_bad_name for schema version 1.0.0",
+                "Measure category and name is not valid other_hvac:install_demand_control_ventilation_bad_name for schema version 1.0.0",
                 "Measure associated with scenario not found. Scenario: Replace with higher efficiency Only, Measure name: Measure22",
                 "Measure associated with scenario not found. Scenario: Install demand control ventilation Only, Measure name: Measure24",
             ]

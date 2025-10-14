@@ -6,12 +6,14 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 
 from django.http import HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.audit_template.audit_template import AuditTemplate
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
+from seed.models import PropertyView
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper
 
@@ -26,7 +28,11 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_string_field("report_format", False, "Report format Valid values are: xml, pdf. Defaults to pdf."),
         ]
     )
-    @has_perm_class("can_view_data")
+    @method_decorator(
+        [
+            has_perm("can_view_data"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def get_submission(self, request, pk):
         """
@@ -85,7 +91,11 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         ],
         request_body=AutoSchemaHelper.schema_factory({"property_view_ids": ["integer"]}, description="PropertyView IDs to be exported"),
     )
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def batch_export_to_audit_template(self, request):
         """
@@ -93,6 +103,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         SEED properties will be updated with the returned Audit Template Building ID
         """
         property_view_ids = request.data.get("property_view_ids", [])
+
         at = AuditTemplate(self.get_organization(request))
 
         progress_data, message = at.batch_export_to_audit_template(property_view_ids)
@@ -101,13 +112,55 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse(progress_data)
 
     @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("view_id", required=True, description="Property View ID to retrieve"),
+        ]
+    )
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+        ]
+    )
+    @action(detail=False, methods=["GET"])
+    def export_buildingsync_at_file(self, request):
+        """
+        Return the BuildingSync XML file that would be sent over to Audit Template.
+        Mostly for testing or manual upload.
+        """
+        pk = request.GET.get("view_id", None)
+        org_id = self.get_organization(self.request)
+
+        try:
+            property_view = PropertyView.objects.select_related("state").get(pk=pk, cycle__organization_id=org_id)
+        except PropertyView.DoesNotExist:
+            return JsonResponse(
+                {"success": False, "message": f"Cannot match a PropertyView with pk={pk}"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            at = AuditTemplate(self.get_organization(request))
+            xml, message = at.export_to_audit_template(property_view.state, None, file_only=True)
+            if xml:
+                return HttpResponse(xml, content_type="application/xml")
+            else:
+                return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
+
+        except Exception as e:
+            return JsonResponse({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
             {"city_id": "integer", "view_ids": ["integer"]},
             description="if view_ids is empty [] all SEED properties will be used to determine the correct PropertyView",
         ),
     )
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["PUT"])
     def batch_get_city_submission_xml(self, request):
         """
@@ -115,8 +168,10 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         Properties are updated with xmls using custom_id_1 as matching criteria
         """
         view_ids = request.data.get("view_ids", [])
+        default_cycle = request.data.get("default_cycle", None)
+
         at = AuditTemplate(self.get_organization(request))
-        progress_data, message = at.batch_get_city_submission_xml(view_ids)
+        progress_data, message = at.batch_get_city_submission_xml(view_ids, default_cycle)
 
         if progress_data is None:
             return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
@@ -126,7 +181,11 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory({"city_id": "integer", "custom_id_1": "string"}),
     )
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["PUT"])
     def get_city_submission_xml(self, request):
         """

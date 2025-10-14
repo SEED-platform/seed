@@ -781,7 +781,9 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(2, cycle_3_views.count())
 
         # Check links
-        views_by_canonical_record = PropertyView.objects.values("property_id").annotate(view_ids=ArrayAgg("id"), times_used=Count("id"))
+        views_by_canonical_record = PropertyView.objects.values("property_id").annotate(
+            view_ids=ArrayAgg("id", default=[]), times_used=Count("id")
+        )
         self.assertTrue(views_by_canonical_record.filter(times_used__gt=1).exists())
 
         # For linked views, the corresponding -States should match
@@ -938,7 +940,9 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.assertEqual(2, cycle_3_views.count())
 
         # Check links
-        views_by_canonical_record = TaxLotView.objects.values("taxlot_id").annotate(view_ids=ArrayAgg("id"), times_used=Count("id"))
+        views_by_canonical_record = TaxLotView.objects.values("taxlot_id").annotate(
+            view_ids=ArrayAgg("id", default=[]), times_used=Count("id")
+        )
         self.assertTrue(views_by_canonical_record.filter(times_used__gt=1).exists())
 
         # For linked views, the corresponding -States should match
