@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0247_goal_partner_note_approval_time'),
+        ("seed", "0247_goal_partner_note_approval_time"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='goal',
-            name='partner_note',
-            field=models.TextField(blank=True, default='', null=True),
+            model_name="goal",
+            name="partner_note",
+            field=models.TextField(blank=True, default="", null=True),
         ),
     ]
