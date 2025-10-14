@@ -42,7 +42,7 @@ class Goal(models.Model):
     transactions_column = models.ForeignKey(
         Column, on_delete=models.CASCADE, related_name="goal_transactions_columns", blank=True, null=True
     )
-    partner_note = models.TextField(default="")
+    partner_note = models.TextField(default="", null=True, blank=True)
     partner_note_approval = models.BooleanField(default=False)
     partner_note_approval_time = models.DateTimeField(null=True, blank=True)
 

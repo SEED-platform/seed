@@ -61,6 +61,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.level_names = access_level_tree.access_level_names;
       $scope.goal = {};
+      $scope.cycle_goal = {};
       $scope.columns = property_columns;
       $scope.cycle_columns = [];
       $scope.area_columns = [];
@@ -72,6 +73,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.search_query = '';
       // if org has no salesforce configs, status will be 'error' and valid will be false
       $scope.is_logged_into_salesforce = is_logged_into_salesforce.data.valid;
+      $scope.chart_initialized = false;
 
       $scope.search_for_goals = (query) => {
         const pattern = query.split('').join('.*');
@@ -108,7 +110,7 @@ angular.module('SEED.controller.portfolio_summary', [])
               },
               title: {
                 display: true,
-                text: 'Chart.js Bar Chart'
+                text: 'Energy Use Intensity by Reporting Period'
               },
               annotation: {
                 annotations: {
@@ -125,10 +127,6 @@ angular.module('SEED.controller.portfolio_summary', [])
           }
         });
       };
-      // initialize charts only if goal is defined?
-      if (!(_.isEmpty($scope.goal))) {
-        initChart();
-      }
 
       // Can only sort based on baseline or current, not both. In the event of a conflict, use the more recent.
       let baseline_first = false;
@@ -168,19 +166,18 @@ angular.module('SEED.controller.portfolio_summary', [])
           } else {
             $scope.goal = $scope.goals.length > 0 ? $scope.goals[0] : {}; // Keep as empty object if no goals
           }
-
-          if (!(_.isEmpty($scope.goal))) {
-            format_goal_details();
-            goal_service.get_weighted_euis($scope.goal.id).then((data) => {
-              $scope.updateChart(data.results);
-            });
-          }
+          // Note: the goal watcher will select a cycle goal and call reset_data()
+          // get EUIs for chart
+          goal_service.get_weighted_euis($scope.goal.id).then((data) => {
+            $scope.updateChart(data.results);
+          });
         }).catch((error) => {
           console.error('Failed to load goals:', error);
           $scope.goal = {}; // Ensure it stays as empty object on error
         });
       };
-
+      // initialize goals and cycle_goals
+      // TODO: should we remember the last goal loaded on initialization?
       get_goals();
 
       const reset_data = () => {
@@ -190,21 +187,31 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       $scope.select_goal = (selected_goal) => {
         $scope.goal = selected_goal;
-        goal_service.get_weighted_euis($scope.goal.id).then((data) => {
-          console.log(data);
-          $scope.updateChart(data.results);
+        // also get cycle_goals and  default cycle_goal?
+        goal_service.get_cycle_goals($scope.goal.id).then((data) => {
+          $scope.cycle_goals = data.cycle_goals;
+          $scope.cycle_goal = $scope.cycle_goals.length > 0 ? $scope.cycle_goals.order_by('start', 'desc').first() : {};
+          // reset_data();
+          goal_service.get_weighted_euis($scope.goal.id).then((data) => {
+            console.log(data);
+            $scope.updateChart(data.results);
+          });
         });
       };
 
       $scope.select_cycle_goal = (selected_cycle_goal) => {
         $scope.cycle_goal = selected_cycle_goal;
+        reset_data();
       };
 
       $scope.$watch('goal', (cur) => {
-        if (typeof cur === 'undefined' || _.isEmpty(cur)) return;
-        if (Object.keys(cur).length === 0) return;
+        if (_.isEmpty(cur)) return;
+        // get cycle goals for this goal
         goal_service.get_cycle_goals(cur.id).then((data) => {
           $scope.cycle_goals = data.cycle_goals;
+          // set a cycle goal
+          // TODO: ordered with most current on top already?
+          $scope.cycle_goal = $scope.cycle_goals.length > 0 ? $scope.cycle_goals[0] : {};
         });
       });
 
@@ -219,15 +226,21 @@ angular.module('SEED.controller.portfolio_summary', [])
           $scope.summary_valid = false;
         } else if (old?.id) { // prevent duplicate request on page load
           reset_data();
+        } else {
+          // do it anyway for now
+          reset_data();
+        }
+        // initialize the chart
+        if (!$scope.chart_initialized) {
+          initChart();
+          $scope.chart_initialized = true;
         }
       });
 
       // selected goal details
       const format_goal_details = () => {
         $scope.change_selected_level_index();
-
         if (_.isEmpty($scope.goal)) return;
-
         const access_level_instance = $scope.potential_level_instances.find((level) => level.id === $scope.goal.access_level_instance).name;
 
         const commitment_sqft = $scope.goal.commitment_sqft?.toLocaleString() || 'n/a';
@@ -291,6 +304,16 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.change_selected_level_index = () => {
         const new_level_instance_depth = parseInt($scope.goal.level_name_index, 10) + 1;
         $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
+      };
+
+      $scope.jump_to_overview_chart = () => {
+        const element = document.getElementById('partner-note-container');
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
       };
 
       $scope.login_salesforce = () => {
