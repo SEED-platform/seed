@@ -91,7 +91,8 @@
             ng-class="{
               'btn-primary': cycle_goal === cycle_goal_option,
               'btn-light': cycle_goal !== cycle_goal_option
-            }">
+            }"
+          >
             {$ cycle_goal_option.current_cycle.name $}
           </button>
         </div>
@@ -108,7 +109,7 @@
           </tr>
         </tbody>
       </table>
-      <div style="padding-top:5px; align-items: center; justify-content: center; display: flex">
+      <div style="padding-top: 5px; align-items: center; justify-content: center; display: flex">
         <button class="btn btn-primary" type="submit" ng-click="jump_to_overview_chart()" ng-if="goal && !isEmpty(goal) && !isEmpty(cycle_goal)">{$:: 'Jump to Overview Chart' | translate $}</button>
       </div>
     </div>
@@ -223,8 +224,8 @@
       </div>
     </div>
     <!--- PARTNER NOTE --->
-    <div ng-if="goal && !isEmpty(goal) && cycle_goal" style="margin:30px;">
-      <h4> Partner Notes</h4>
+    <div ng-if="goal && !isEmpty(goal) && cycle_goal" style="margin: 30px">
+      <h4>Partner Notes</h4>
       <div class="col-md-6">
         <textarea
           class="form-control"
@@ -233,9 +234,10 @@
           placeholder="Partner notes..."
           ng-disabled="!is_editing_partner_note"
           rows="4"
-          style="resize: vertical; min-height: 100px; min-width:300px;">
+          style="resize: vertical; min-height: 100px; min-width: 300px"
+        >
         </textarea>
-        <div style="align-items: end; justify-content:right; display: flex; margin-top: 10px">
+        <div style="align-items: end; justify-content: right; display: flex; margin-top: 10px">
           <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="update_is_editing_partner_note(true)" ng-if="write_permission && !is_editing_partner_note">
             {$:: 'Edit Note' | translate $}
           </button>
@@ -245,8 +247,8 @@
 
       <div class="col-md-6">
         <p>
-          If your organization requires partner approval for notes, please ensure that the appropriate stakeholders are notified.
-          Partner: once you have reviewed and edited the note above, please check the box below to indicate your approval.
+          If your organization requires partner approval for notes, please ensure that the appropriate stakeholders are notified. Partner: once you have reviewed and edited the note above, please
+          check the box below to indicate your approval.
         </p>
         <label class="control-label sectionLabel">Partner Approval </label>
         <input ng-model="goal.partner_note_approval" type="checkbox" class="form-control" ng-click="toggle_approval()" style="width: 34px; cursor: pointer" />
