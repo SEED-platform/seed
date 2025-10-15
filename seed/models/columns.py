@@ -1126,6 +1126,7 @@ class Column(models.Model):
                         "from_units": mapping.get("from_units"),
                         "to_field": mapping["to_field"],
                         "to_table_name": mapping["to_table_name"],
+                        "to_data_type": mapping.get("to_data_type"),
                     }
                 )
             else:

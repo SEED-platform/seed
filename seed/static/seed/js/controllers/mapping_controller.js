@@ -899,6 +899,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         col.suggestion_column_name = cached_col.to_field;
         col.suggestion_table_name = cached_col.to_table_name;
         col.from_units = cached_col.from_units;
+        col.data_type = cached_col.to_data_type;
 
         // If available, use display_name, else use raw field name.
         const mappable_column = _.find($scope.mappable_property_columns.concat($scope.mappable_taxlot_columns), { column_name: cached_col.to_field, table_name: cached_col.to_table_name });
