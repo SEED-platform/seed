@@ -9,6 +9,7 @@ angular.module('SEED.controller.portfolio_summary', [])
     '$stateParams',
     '$uibModal',
     '$window',
+    '$timeout',
     'urls',
     'ah_service',
     'data_quality_service',
@@ -33,6 +34,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       $stateParams,
       $uibModal,
       $window,
+      $timeout,
       urls,
       ah_service,
       data_quality_service,
@@ -97,35 +99,41 @@ angular.module('SEED.controller.portfolio_summary', [])
       initialize_columns();
 
       const initChart = () => {
-        const canvas = document.getElementById('data-view-chart');
-        const ctx = canvas.getContext('2d');
-        $scope.dataViewChart = new Chart(ctx, {
-          type: 'bar',
-          data: {},
-          options: {
-            responsive: true,
-            plugins: {
-              legend: {
-                position: 'top'
-              },
-              title: {
-                display: true,
-                text: 'Energy Use Intensity by Reporting Period'
-              },
-              annotation: {
-                annotations: {
-                  line1: {
-                    type: 'line',
-                    yMin: 0,
-                    yMax: 0,
-                    borderWidth: 2,
-                    borderDash: [4]
+        $timeout(() => {
+          const canvas = document.getElementById('data-view-chart');
+          if (!canvas) {
+            console.warn('Canvas element with ID "data-view-chart" not found');
+            return;
+          }
+          const ctx = canvas.getContext('2d');
+          $scope.dataViewChart = new Chart(ctx, {
+            type: 'bar',
+            data: {},
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top'
+                },
+                title: {
+                  display: true,
+                  text: 'Energy Use Intensity by Reporting Period'
+                },
+                annotation: {
+                  annotations: {
+                    line1: {
+                      type: 'line',
+                      yMin: 0,
+                      yMax: 0,
+                      borderWidth: 2,
+                      borderDash: [4]
+                    }
                   }
                 }
               }
             }
-          }
-        });
+          });
+        }, 100);
       };
 
       // Can only sort based on baseline or current, not both. In the event of a conflict, use the more recent.
