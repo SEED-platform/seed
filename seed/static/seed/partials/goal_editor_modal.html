@@ -53,6 +53,13 @@
                 <button class="btn btn-success r-grow" ng-click="new_goal()"><i class="fa-solid fa-circle-plus r-pad-right-5"></i>{$:: 'New Goal' | translate $}</button>
               </li>
             </ul>
+            <div style="padding-top:30px;padding-bottom:30px;justify-content: center;text-align: center" ng-if="bb_salesforce_enabled">
+                <i class="fab fa-salesforce" style="font-size:25px"></i>
+                <span>Salesforce Connection Status:</span>
+                <span ng-if="is_logged_into_salesforce" class="label label-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
+                <span ng-if="!is_logged_into_salesforce" class="label label-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
+
+            </div>
           </div>
           <!-- New Goal -->
 
@@ -90,6 +97,9 @@
                       ng-model="goal.baseline_cycle"
                       required
                     ></select>
+                  </li>
+                  <li class="r-info">
+                    <i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Select a cycle to use as the baseline for comparison.</span>
                   </li>
                 </ul>
                 <!-- Access Level Selection -->
@@ -248,13 +258,13 @@
                 </ul>
                 <!-- Partner (only for BB Salesforce Enabled) -->
                 <div ng-if="bb_salesforce_enabled && !is_logged_into_salesforce">
-                  <p>Please log in to Salesforce first to configure Salesforce Partner and Goal associations.</p>
+                  <p>Log in to Salesforce first to be able to configure Salesforce Partner and Goal associations here.</p>
                 </div>
                 <div ng-if="bb_salesforce_enabled && partners.length > 0">
                   <ul class="r-list">
-                    <li class="r-list-header" translate>Partner</li>
+                    <li class="r-list-header" translate>Salesforce Partner Record</li>
                     <li class="r-row r-row-centered">
-                      <label for="input-partner" class="r-pad-right-5 goal-label" translate>Partner</label>
+                      <label for="input-partner" class="r-pad-right-5 goal-label" translate>Salesforce Partner</label>
                       <select
                         id="select-eui-column1"
                         class="form-control goal-form-control"
@@ -264,13 +274,13 @@
                         required
                       ></select>
                     </li>
-                    <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Partner</span></li>
+                    <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Partner record using the dropdown above.</span></li>
                   </ul>
                   <!-- Goal -->
                   <ul class="r-list" style="margin-bottom: 50px">
-                    <li class="r-list-header" translate>Goal</li>
+                    <li class="r-list-header" translate>Salesforce Goal Record</li>
                     <li class="r-row r-row-centered">
-                      <label for="input-partner" class="r-pad-right-5 goal-label" translate>Goal</label>
+                      <label for="input-partner" class="r-pad-right-5 goal-label" translate>Salesforce Goal</label>
                       <select
                         id="select-eui-column1"
                         class="form-control goal-form-control"
@@ -280,7 +290,7 @@
                         required
                       ></select>
                     </li>
-                    <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>Goal</span></li>
+                    <li class="r-info"><i class="fa-solid fa-arrow-up r-pad-right-5"></i><span translate>If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Goal record associated with the selected Partner using the dropdown above.</span></li>
                   </ul>
                 </div>
               </div>
