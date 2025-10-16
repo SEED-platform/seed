@@ -75,7 +75,6 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.search_query = '';
       // if org has no salesforce configs, status will be 'error' and valid will be false
       $scope.is_logged_into_salesforce = is_logged_into_salesforce.data.valid;
-      console.log('Logged in to Salesforce? ', $scope.is_logged_into_salesforce);
       $scope.chart_initialized = false;
 
       $scope.search_for_goals = (query) => {
