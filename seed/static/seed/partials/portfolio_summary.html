@@ -46,7 +46,7 @@
         <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
       </div>
       <!-- SALEFORCE -->
-      <div ng-if="organization.bb_salesforce_enabled && goal && !isEmpty(goal)">
+      <div ng-if="organization.bb_salesforce_enabled">
         <div>
           <div class="col-md-5">
             <p>Salesforce portfolio functionality is enabled for this organization. Configure connection details by clicking on <a ui-sref="organization_settings(::{organization_id: organization.id})">{$:: 'Salesforce settings' | translate $}</a> and navigating to the Salesforce tab.</p>
