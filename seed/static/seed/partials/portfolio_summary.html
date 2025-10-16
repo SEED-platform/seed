@@ -124,9 +124,16 @@
   <div id="portfolio-summary-selection-wrapper">
     <!-- Summary Table-->
     <div id="portfolio-summary" class="wide-900" ng-if="summary_loading || summary_valid">
-      <div style="display: flex">
-        <h3 translate>Portfolio Summary</h3>
-        <i class="ui-grid-icon-info-circled" ng-mouseenter="toggle_help(true)"></i>
+      <div>
+        <div style="display: flex">
+          <h3 translate>Portfolio Summary</h3>
+          <i class="ui-grid-icon-info-circled" ng-mouseenter="toggle_help(true)"></i>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 5px" ng-if="cycle_goal.id !== undefined">
+          <h4 style="margin-top: 0">Currently Viewing: {$ cycle_goal.current_cycle.name $}</h4>
+          <button type="button" class="btn-primary" style="border-radius: 4px;" title="Edit Cycle Goal"><i class="fa-solid fa-pencil"></i></button>
+          <button type="button" class="btn-danger" style="border-radius: 4px;" title="Edit Cycle Goal"><i class="fa-solid fa-xmark" ng-click="open_cycle_goal_deletion_modal()"></i></button>
+        </div>
       </div>
       <div class="alert alert-warning portfolio-summary-help-text" ng-show="show_help">
         <div style="display: flex; justify-content: space-between">
