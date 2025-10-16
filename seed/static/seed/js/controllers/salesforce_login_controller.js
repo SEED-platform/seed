@@ -21,7 +21,6 @@ angular.module('SEED.controller.salesforce_login', []).controller('salesforce_lo
     $scope.write_permission = ($scope.menu.user.is_ali_root || !$scope.menu.user.is_ali_leaf) && !$scope.viewer;
     $scope.AUTHENTICATION_STATE = 'PENDING'; // PENDING, FAILURE, SUCCESS
     const code = $location.search().code;
-
     bb_salesforce_service.get_token(code, organization_id).then((data) => {
       if (data.status === 'success') {
         $scope.AUTHENTICATION_STATE = 'SUCCESS';

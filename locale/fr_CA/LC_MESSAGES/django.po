@@ -526,6 +526,12 @@ msgstr "Mesures BuildingSync disponibles"
 msgid "Available Templates"
 msgstr "Modèles disponibles"
 
+msgid "BB_SALESFORCE_LOGIN_FAILURE"
+msgstr "Il y a eu une erreur"
+
+msgid "BB_SALESFORCE_LOGIN_SUCCESS"
+msgstr "SEED est désormais connecté à Salesforce."
+
 msgid "BEFORE_GEOCODING"
 msgstr "Avant le géocodage"
 
@@ -3542,6 +3548,9 @@ msgstr "Rétrospection de mise en service"
 msgid "Retry"
 msgstr "Recommencez"
 
+msgid "Return to Portfolio Summary Page"
+msgstr "Retour à la page de résumé du portefeuille"
+
 msgid "Review Changes"
 msgstr "Revoir les Changements"
 
@@ -4489,6 +4498,9 @@ msgstr "Total des propriétés"
 
 msgid "Total rows in the import file"
 msgstr "Nombre total de lignes dans le fichier d'importation"
+
+msgid "Try Again"
+msgstr "Essayer à nouveau"
 
 msgid "Two Factor Profile"
 msgstr "Profil à deux facteurs"

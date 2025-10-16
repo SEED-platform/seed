@@ -520,6 +520,12 @@ msgstr "Available BuildingSync Measures"
 msgid "Available Templates"
 msgstr "Available Templates"
 
+msgid "BB_SALESFORCE_LOGIN_FAILURE"
+msgstr "There was an error"
+
+msgid "BB_SALESFORCE_LOGIN_SUCCESS"
+msgstr "SEED is now logged in to Salesforce."
+
 msgid "BEFORE_GEOCODING"
 msgstr "Before geocoding"
 
@@ -3516,6 +3522,9 @@ msgstr "Retro Commissioning"
 msgid "Retry"
 msgstr "Retry"
 
+msgid "Return to Portfolio Summary Page"
+msgstr "Return to Portfolio Summary Page"
+
 msgid "Review Changes"
 msgstr "Review Changes"
 
@@ -4453,6 +4462,9 @@ msgstr "Total Properties"
 
 msgid "Total rows in the import file"
 msgstr "Total rows in the import file"
+
+msgid "Try Again"
+msgstr "Try Again"
 
 msgid "Two Factor Profile"
 msgstr "Two Factor Profile"

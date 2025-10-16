@@ -58,9 +58,6 @@
             <span ng-if="!is_logged_into_salesforce" style="margin: 0px 0px 15px 15px">
               <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="login_salesforce()" ng-if="write_permission">{$:: 'Login' | translate $}</button>
             </span>
-            <span ng-if="is_logged_into_salesforce">
-              <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="logout_salesforce()" ng-if="write_permission">{$:: 'Logout' | translate $}</button>
-            </span>
           </div>
         </div>
       </div>

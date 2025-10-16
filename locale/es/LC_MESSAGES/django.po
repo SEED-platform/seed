@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-10-13 23:32\n"
+"PO-Revision-Date: 2025-10-16 18:14\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -655,6 +655,12 @@ msgstr "Medidas BuildingSync disponibles"
 
 msgid "Available Templates"
 msgstr "Plantillas disponibles"
+
+msgid "BB_SALESFORCE_LOGIN_FAILURE"
+msgstr "Hubo un error"
+
+msgid "BB_SALESFORCE_LOGIN_SUCCESS"
+msgstr "SEED ahora ha iniciado sesión en Salesforce."
 
 #, fuzzy
 msgid "BEFORE_GEOCODING"
@@ -4500,6 +4506,9 @@ msgstr "Puesta en servicio a posteriori"
 msgid "Retry"
 msgstr "Reintentar"
 
+msgid "Return to Portfolio Summary Page"
+msgstr "Regresar a la página de resumen de la cartera"
+
 #, fuzzy
 msgid "Review Changes"
 msgstr "Revisar los cambios"
@@ -5707,6 +5716,9 @@ msgstr "Total Propiedades"
 #, fuzzy
 msgid "Total rows in the import file"
 msgstr "Total de filas del fichero de importación"
+
+msgid "Try Again"
+msgstr "Intentar otra vez"
 
 msgid "Two Factor Profile"
 msgstr "Perfil de dos factores"
