@@ -131,7 +131,7 @@
         </div>
         <div style="display: flex; align-items: baseline; gap: 5px" ng-if="cycle_goal.id !== undefined">
           <h4 style="margin-top: 0">Currently Viewing: {$ cycle_goal.current_cycle.name $}</h4>
-          <button type="button" class="btn-primary" style="border-radius: 4px;" title="Edit Cycle Goal"><i class="fa-solid fa-pencil"></i></button>
+          <button type="button" class="btn-primary" style="border-radius: 4px;" title="Edit Cycle Goal"  ng-click="open_cycle_goal_edit_modal()"><i class="fa-solid fa-pencil"></i></button>
           <button type="button" class="btn-danger" style="border-radius: 4px;" title="Edit Cycle Goal"><i class="fa-solid fa-xmark" ng-click="open_cycle_goal_deletion_modal()"></i></button>
         </div>
       </div>

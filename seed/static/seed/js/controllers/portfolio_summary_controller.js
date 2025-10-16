@@ -1328,7 +1328,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         });
       };
 
-      $scope.open_cycle_goal_deletion_modal = (cycle_goal) => {
+      $scope.open_cycle_goal_deletion_modal = () => {
         $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/cycle_goal_deletion_modal.html`,
           controller: 'cycle_goal_deletion_modal_controller',
@@ -1340,6 +1340,19 @@ angular.module('SEED.controller.portfolio_summary', [])
         });
       };
 
+      $scope.open_cycle_goal_edit_modal = () => {
+        $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/cycle_goal_edit_modal.html`,
+          controller: 'cycle_goal_edit_modal_controller',
+          resolve: {
+            goal: () => $scope.goal,
+            cycle_goal: () => $scope.cycle_goal,
+            bb_salesforce_enabled: () => $scope.organization.bb_salesforce_enabled,
+            is_logged_into_salesforce: () => $scope.is_logged_into_salesforce,
+            annual_reports: () => bb_salesforce_service.get_annual_report($scope.organization.id, $scope.goal.id),
+          }
+        });
+      };
 
       // --- DATA QUALITY ---
       $scope.run_data_quality_check = () => {
