@@ -75,6 +75,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.search_query = '';
       // if org has no salesforce configs, status will be 'error' and valid will be false
       $scope.is_logged_into_salesforce = is_logged_into_salesforce.data.valid;
+      console.log('Logged in to Salesforce? ', $scope.is_logged_into_salesforce);
       $scope.chart_initialized = false;
 
       $scope.search_for_goals = (query) => {
@@ -325,9 +326,15 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       $scope.login_salesforce = () => {
+        console.log('login to Salesforce...');
         bb_salesforce_service.get_login_url($scope.organization.id).then((data) => {
           $window.location.href = data.url;
         });
+      };
+
+      $scope.logout_salesforce = () => {
+        console.log('logout from Salesforce...not implemented yet');
+        // todo: implement
       };
 
       // GOAL EDITOR MODAL

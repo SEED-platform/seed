@@ -46,13 +46,22 @@
         <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
       </div>
       <!-- SALEFORCE -->
-      <div ng-if="organization.bb_salesforce_enabled">
-        <div ng-if="goal && !isEmpty(goal)" style="margin: 0px 0px 15px 15px" ng-if="!is_logged_into_salesforce">
-          <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="login_salesforce()" ng-if="write_permission">{$:: 'Login to Salesforce' | translate $}</button>
-        </div>
-        <div ng-if="goal && !isEmpty(goal)" style="margin: 0px 0px 15px 15px" ng-if="is_logged_into_salesforce">
-          <button disabled class="btn" type="submit" ng-if="write_permission" style="border-color: darkgreen">{$:: 'Logged in to Salesforce' | translate $}</button>
-          <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_sync_to_salesforce_modal()" ng-if="write_permission">{$:: 'Sync to Salesforce' | translate $}</button>
+      <div ng-if="organization.bb_salesforce_enabled && goal && !isEmpty(goal)">
+        <div>
+          <div class="col-md-5">
+            <p>Salesforce portfolio functionality is enabled for this organization. Configure connection details by clicking on <a ui-sref="organization_settings(::{organization_id: organization.id})">{$:: 'Salesforce settings' | translate $}</a> and navigating to the Salesforce tab.</p>
+          </div>
+          <div class="col-md-5">
+            <span style="margin-right:10px">Salesforce Connection Status:</span>
+            <span ng-if="is_logged_into_salesforce" class="label label-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
+            <span ng-if="!is_logged_into_salesforce" class="label label-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
+            <span ng-if="!is_logged_into_salesforce" style="margin: 0px 0px 15px 15px">
+              <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="login_salesforce()" ng-if="write_permission">{$:: 'Login' | translate $}</button>
+            </span>
+            <span ng-if="is_logged_into_salesforce">
+              <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="logout_salesforce()" ng-if="write_permission">{$:: 'Logout' | translate $}</button>
+            </span>
+          </div>
         </div>
       </div>
       <!-- GOAL DETAILS -->
@@ -185,6 +194,9 @@
               <span ng-if="level_names.count < 2" class="disabled-action">{$ show_access_level_instances ? 'Hide': 'Show' $} Access Levels</span>
             </li>
           </ul>
+        </div>
+        <div ng-if="!is_logged_into_salesforce" style="margin-left:20px;">
+          <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_sync_to_salesforce_modal()" ng-if="write_permission">{$:: 'Sync to Salesforce' | translate $}</button>
         </div>
       </div>
     </div>
