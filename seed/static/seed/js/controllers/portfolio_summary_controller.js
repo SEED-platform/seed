@@ -218,6 +218,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         goal_service.get_cycle_goals(cur.id).then((data) => {
           $scope.cycle_goals = data.cycle_goals;
           // set a cycle goal
+          console.log('cycle goals: ', $scope.cycle_goals);
           // TODO: ordered with most current on top already?
           $scope.cycle_goal = $scope.cycle_goals.length > 0 ? $scope.cycle_goals[0] : {};
         });
@@ -355,6 +356,7 @@ angular.module('SEED.controller.portfolio_summary', [])
               goal: () => $scope.goal,
               organization: () => $scope.organization,
               write_permission: () => $scope.write_permission,
+              is_logged_into_salesforce: () => $scope.is_logged_into_salesforce,
               partners: () => ($scope.is_logged_into_salesforce ? bb_salesforce_service.get_partners($scope.organization.id) : Promise.resolve([]))
             }
           });

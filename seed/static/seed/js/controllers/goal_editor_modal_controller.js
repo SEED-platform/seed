@@ -20,6 +20,7 @@ angular.module('SEED.controller.goal_editor_modal', [])
     'goal',
     'organization',
     'write_permission',
+    'is_logged_into_salesforce',
     'partners',
     // eslint-disable-next-line func-names
     function (
@@ -39,11 +40,14 @@ angular.module('SEED.controller.goal_editor_modal', [])
       goal,
       organization,
       write_permission,
+      is_logged_into_salesforce,
       partners
     ) {
       $scope.auth = auth_payload.auth;
       $scope.organization = organization;
+      $scope.bb_salesforce_enabled = $scope.organization.bb_salesforce_enabled;
       $scope.write_permission = write_permission;
+      $scope.is_logged_into_salesforce = is_logged_into_salesforce;
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.level_names = access_level_tree.access_level_names.map((level, i) => ({
         index: i,

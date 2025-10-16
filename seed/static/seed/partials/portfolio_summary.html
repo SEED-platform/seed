@@ -91,7 +91,7 @@
         <span ng-if="cycle_goals.length == 0" style="font-size: 1.1em; margin-top: 5px; margin-right: 20px" translate>There is no cycle selected for comparison yet</span>
         <div class="btn-group" role="group" aria-label="Cycle Goal Selection" ng-if="cycle_goals.length > 0">
           <button
-            ng-repeat="cycle_goal_option in cycle_goals"
+            ng-repeat="cycle_goal_option in cycle_goals | orderBy:'current_cycle.end'"
             ng-click="select_cycle_goal(cycle_goal_option)"
             class="btn"
             ng-class="{
@@ -192,7 +192,7 @@
             </li>
           </ul>
         </div>
-        <div ng-if="!is_logged_into_salesforce" style="margin-left:20px;">
+        <div ng-if="is_logged_into_salesforce" style="margin-left:20px;">
           <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_sync_to_salesforce_modal()" ng-if="write_permission">{$:: 'Sync to Salesforce' | translate $}</button>
         </div>
       </div>
