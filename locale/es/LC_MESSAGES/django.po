@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-10-16 18:14\n"
+"PO-Revision-Date: 2025-10-17 00:00\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -2778,6 +2778,12 @@ msgstr "Esta operación es irreversible."
 msgid "ITEMS_WILL_NOT_CHANGE"
 msgstr "estos no cambiarán"
 
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Goal record associated with the selected Partner using the dropdown above."
+msgstr "Si desea sincronizar la información de la cartera con su instancia de Salesforce, seleccione el registro de objetivo de Salesforce asociado con el socio seleccionado utilizando el menú desplegable de arriba."
+
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Partner record using the dropdown above."
+msgstr "Si desea sincronizar la información de su cartera con su instancia de Salesforce, seleccione el registro de socio de Salesforce usando el menú desplegable de arriba."
+
 #, fuzzy
 msgid "Ignored duplicates of existing properties"
 msgstr "Duplicados ignorados de propiedades existentes"
@@ -5046,6 +5052,9 @@ msgstr "Seleccione una columna para mostrar los datos en este eje.  Sólo se mos
 
 msgid "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
 msgstr "Seleccione una columna para mostrar los datos en este eje. Sólo se mostrarán las columnas con uno de estos tipos de datos:"
+
+msgid "Select a cycle to use as the baseline for comparison."
+msgstr "Seleccione un ciclo para utilizarlo como base para la comparación."
 
 #, fuzzy
 msgid "Select columns from the list below to make them appear in your Buildings List table."

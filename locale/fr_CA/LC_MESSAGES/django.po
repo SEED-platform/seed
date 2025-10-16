@@ -2211,6 +2211,12 @@ msgstr "Cette opération est irréversible."
 msgid "ITEMS_WILL_NOT_CHANGE"
 msgstr "ceux-ci ne changeront pas"
 
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Goal record associated with the selected Partner using the dropdown above."
+msgstr "Si vous souhaitez synchroniser les informations du portefeuille avec votre instance Salesforce, sélectionnez l'enregistrement d'objectif Salesforce associé au partenaire sélectionné à l'aide de la liste déroulante ci-dessus."
+
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Partner record using the dropdown above."
+msgstr "Si vous souhaitez synchroniser les informations du portefeuille avec votre instance Salesforce, sélectionnez l'enregistrement du partenaire Salesforce à l'aide de la liste déroulante ci-dessus."
+
 msgid "Ignored duplicates of existing properties"
 msgstr "Copies ignorées des propriétés existantes"
 
@@ -3976,6 +3982,9 @@ msgstr "Sélectionnez une colonne pour afficher les données sur cet axe. Seules
 
 msgid "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
 msgstr "Sélectionnez une colonne pour afficher les données sur cet axe. Seules les colonnes ayant l'un de ces types de données seront listées :"
+
+msgid "Select a cycle to use as the baseline for comparison."
+msgstr "Sélectionnez un cycle à utiliser comme base de comparaison."
 
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Liste des bâtiments."
