@@ -49,6 +49,8 @@
     'SEED.controller.service_modal',
     'SEED.controller.system_modal',
     'SEED.controller.create_cycle_goal_modal',
+    'SEED.controller.cycle_goal_edit_modal',
+    'SEED.controller.cycle_goal_deletion_modal',
     'SEED.controller.create_organization_modal',
     'SEED.controller.create_sub_organization_modal',
     'SEED.controller.cycle_admin',

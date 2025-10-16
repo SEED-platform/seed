@@ -23,6 +23,18 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
       .then((response) => response)
       .catch((response) => response);
 
+    goal_service.edit_cycle_goal = (goal_id, cycle_goal_id, cycle_id, annual_report_id, annual_report_name) => $http.put(
+      `/api/v3/goals/${goal_id}/cycles/${cycle_goal_id}/`,
+      {
+        current_cycle: cycle_id,
+        salesforce_annual_report_id: annual_report_id,
+        salesforce_annual_report_name: annual_report_name
+      },
+      { params: { organization_id: user_service.get_organization().id } }
+    )
+      .then((response) => response)
+      .catch((response) => response);
+
     goal_service.create_goal = (goal) => $http.post('/api/v3/goals/', goal)
       .then((response) => response)
       .catch((response) => response);
@@ -64,6 +76,14 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
       .catch((response) => response);
 
     goal_service.get_portfolio_summary = (goal_id, cycle_goal_id) => $http.get(`/api/v3/goals/${goal_id}/cycles/${cycle_goal_id}/portfolio_summary/`, {
+      params: {
+        organization_id: user_service.get_organization().id
+      }
+    })
+      .then((response) => response)
+      .catch((response) => response);
+
+    goal_service.delete_cycle_goal = (goal_id, cycle_goal_id) => $http.delete(`/api/v3/goals/${goal_id}/cycles/${cycle_goal_id}/`, {
       params: {
         organization_id: user_service.get_organization().id
       }

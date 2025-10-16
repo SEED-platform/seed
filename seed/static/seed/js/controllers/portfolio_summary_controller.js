@@ -201,7 +201,6 @@ angular.module('SEED.controller.portfolio_summary', [])
           $scope.cycle_goal = $scope.cycle_goals.length > 0 ? $scope.cycle_goals.order_by('start', 'desc').first() : {};
           // reset_data();
           goal_service.get_weighted_euis($scope.goal.id).then((data) => {
-            console.log(data);
             $scope.updateChart(data.results);
           });
         });
@@ -1185,7 +1184,6 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       $scope.update_partner_note = () => {
-        console.log($scope.goal.partner_note);
         $scope.is_editing_partner_note = false;
         goal_service.update_goal($scope.goal).then(() => {
           Notification.primary('partner note updated');
@@ -1326,6 +1324,32 @@ angular.module('SEED.controller.portfolio_summary', [])
             bb_salesforce_enabled: () => $scope.organization.bb_salesforce_enabled,
             is_logged_into_salesforce: () => $scope.is_logged_into_salesforce,
             annual_reports: () => bb_salesforce_service.get_annual_report($scope.organization.id, $scope.goal.id)
+          }
+        });
+      };
+
+      $scope.open_cycle_goal_deletion_modal = () => {
+        $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/cycle_goal_deletion_modal.html`,
+          controller: 'cycle_goal_deletion_modal_controller',
+          resolve: {
+            organization_id: () => $scope.organization.id,
+            goal: () => $scope.goal,
+            cycle_goal: () => $scope.cycle_goal,
+          }
+        });
+      };
+
+      $scope.open_cycle_goal_edit_modal = () => {
+        $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/cycle_goal_edit_modal.html`,
+          controller: 'cycle_goal_edit_modal_controller',
+          resolve: {
+            goal: () => $scope.goal,
+            cycle_goal: () => $scope.cycle_goal,
+            bb_salesforce_enabled: () => $scope.organization.bb_salesforce_enabled,
+            is_logged_into_salesforce: () => $scope.is_logged_into_salesforce,
+            annual_reports: () => bb_salesforce_service.get_annual_report($scope.organization.id, $scope.goal.id),
           }
         });
       };

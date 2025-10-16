@@ -66,7 +66,13 @@ class GoalSerializer(serializers.ModelSerializer):
 
 
 class CycleGoalSerializer(serializers.ModelSerializer):
-    current_cycle = CycleSerializer()
+    goal = serializers.IntegerField(source="goal.id", read_only=True)
+
+    def to_representation(self, obj):
+        result = super().to_representation(obj)
+        result["current_cycle"] = CycleSerializer(obj.current_cycle).data
+
+        return result
 
     class Meta:
         model = CycleGoal
