@@ -217,7 +217,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         goal_service.get_cycle_goals(cur.id).then((data) => {
           $scope.cycle_goals = data.cycle_goals;
           // set a cycle goal
-          console.log('cycle goals: ', $scope.cycle_goals);
           // TODO: ordered with most current on top already?
           $scope.cycle_goal = $scope.cycle_goals.length > 0 ? $scope.cycle_goals[0] : {};
         });
@@ -1349,7 +1348,7 @@ angular.module('SEED.controller.portfolio_summary', [])
             cycle_goal: () => $scope.cycle_goal,
             bb_salesforce_enabled: () => $scope.organization.bb_salesforce_enabled,
             is_logged_into_salesforce: () => $scope.is_logged_into_salesforce,
-            annual_reports: () => bb_salesforce_service.get_annual_report($scope.organization.id, $scope.goal.id),
+            annual_reports: () => ($scope.is_logged_into_salesforce ? bb_salesforce_service.get_annual_report($scope.organization.id, $scope.goal.id) : Promise.resolve([]))
           }
         });
       };
