@@ -20,8 +20,8 @@
     <div class="goal-header-column">
       <!-- GOAL SELECT -->
       <div class="goal-select-wrapper">
-        <label class="goal-select-label" for="goal-select" ng-if="goal && !isEmpty(goal)" translate>GOAL</label>
-        <div uib-dropdown class="dropdown-search" ng-if="goal && !isEmpty(goal)">
+        <label class="goal-select-label" for="goal-select" ng-if="hasValidGoal()" translate>GOAL</label>
+        <div uib-dropdown class="dropdown-search" ng-if="hasValidGoal()">
           <button id="" type="button" class="btn dropdown-search-toggle" uib-dropdown-toggle>
             <span>{$ goal.name $}</span>
             <i class="fa-solid fa-chevron-down"></i>
@@ -62,14 +62,14 @@
         </div>
       </div>
       <!-- GOAL DETAILS -->
-      <div class="goal-details-container" ng-if="goal && !isEmpty(goal)">
+      <div class="goal-details-container" ng-if="hasValidGoal()">
         <div class="goal-details-column" style="margin: 10px">
           <div ng-repeat="(k, v) in goal_details[0]" class="goal-detail">
             <div class="goal-detail-key" style="width: 120px">{$ k $}:</div>
             <div class="goal-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
           </div>
         </div>
-        <div class="goal-details-column" ng-if="goal && !isEmpty(goal)">
+        <div class="goal-details-column" ng-if="hasValidGoal()">
           <div ng-repeat="(k, v) in goal_details[1]" class="goal-detail">
             <div class="goal-detail-key">{$ k $}:</div>
             <div class="goal-detail-value" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
@@ -78,18 +78,9 @@
       </div>
 
       <!-- cycles -->
-      <!-- <div ng-if="goal && !isEmpty(goal)" style="display: flex; flex-direction: row; margin-top: 20px">
+      <div style="display: flex; flex-direction: row; margin-top: 20px">
         <span ng-if="cycle_goals.length == 0" style="font-size: 1.1em; margin-top: 5px; margin-right: 20px" translate>There is no cycle selected for comparison yet</span>
-        <div class="btn-group" role="group" aria-label="Cycle Goal Selection" ng-if="cycle_goals.length > 0">
-          <button ng-repeat="cycle_goal in cycle_goals" ng-click="select_cycle_goal(cycle_goal)" class="btn btn-light">{$ cycle_goal.current_cycle.name $}</button>
-        </div>
-          <button ng-click="create_cycle_goal()" class="btn btn-primary" style="margin-left: 10px" translate>Add a Cycle</button>
-      </div> -->
-
-      <!-- cycles -->
-      <div ng-if="goal && !isEmpty(goal) && !isEmpty(cycle_goal)" style="display: flex; flex-direction: row; margin-top: 20px">
-        <span ng-if="cycle_goals.length == 0" style="font-size: 1.1em; margin-top: 5px; margin-right: 20px" translate>There is no cycle selected for comparison yet</span>
-        <div class="btn-group" role="group" aria-label="Cycle Goal Selection" ng-if="cycle_goals.length > 0">
+        <div class="btn-group" role="group" aria-label="Cycle Goal Selection" ng-if="hasValidGoal() && hasValidCycleGoal()">
           <button
             ng-repeat="cycle_goal_option in cycle_goals | orderBy:'current_cycle.end'"
             ng-click="select_cycle_goal(cycle_goal_option)"
@@ -102,11 +93,11 @@
             {$ cycle_goal_option.current_cycle.name $}
           </button>
         </div>
-        <button ng-click="create_cycle_goal()" class="btn btn-primary" style="margin-left: 10px" translate>Add a Cycle</button>
+        <button ng-if="hasValidGoal()" ng-click="create_cycle_goal()" class="btn btn-primary" style="margin-left: 10px" translate>Add a Cycle</button>
       </div>
     </div>
 
-    <div ng-if="goal && !isEmpty(goal) && !isEmpty(cycle_goal) && valid" class="goal-header-column">
+    <div ng-if="hasValidGoal() && hasValidCycleGoal() && valid" class="goal-header-column">
       <table class="table table-striped table-bordered">
         <tbody>
           <tr ng-repeat="stat in goal_stats">
@@ -116,7 +107,7 @@
         </tbody>
       </table>
       <div style="padding-top: 5px; align-items: center; justify-content: center; display: flex">
-        <button class="btn btn-primary" type="submit" ng-click="jump_to_overview_chart()" ng-if="goal && !isEmpty(goal) && !isEmpty(cycle_goal)">{$:: 'Jump to Overview Chart' | translate $}</button>
+        <button class="btn btn-primary" type="submit" ng-click="jump_to_overview_chart()" ng-if="hasValidGoal() && hasValidCycleGoal()">{$:: 'Jump to Overview Chart' | translate $}</button>
       </div>
     </div>
   </div>
@@ -235,12 +226,12 @@
   <div id="partner-note-container" class="partner-note-container" style="margin-top: 30px; margin-bottom: 30px">
     <!-- CHART -->
     <div style="display: flex; gap: 30px">
-      <div ng-if="goal && !isEmpty(goal) && cycle_goal" style="margin-left: 5vw; margin-right: 5vw; width: 50%">
-        <canvas id="data-view-chart" style="border: 10px"></canvas>
+      <div ng-if="hasValidGoal() && hasValidCycleGoal()" style="margin-left: 5vw; margin-right: 5vw; width: 50%">
+        <canvas id="data-view-chart" width="800" height="400"></canvas>
       </div>
     </div>
     <!--- PARTNER NOTE --->
-    <div ng-if="goal && !isEmpty(goal) && cycle_goal" style="margin: 30px">
+    <div ng-if="hasValidGoal() && hasValidCycleGoal()" style="margin: 30px">
       <h4>Partner Notes</h4>
       <div class="col-md-6">
         <textarea
@@ -273,7 +264,7 @@
     </div>
   </div>
   <div class="partner-table-container">
-    <div ng-if="goal && !isEmpty(goal) && cycle_goal" id="cycle-{$ $index $}" class="collapse in">
+    <div ng-if="hasValidGoal() && hasValidCycleGoal()" id="cycle-{$ $index $}" class="collapse in">
       <table class="table table-striped">
         <thead>
           <tr>

@@ -99,7 +99,8 @@ angular.module('SEED.controller.portfolio_summary', [])
       initialize_columns();
 
       const initChart = () => {
-        $timeout(() => {
+        // initialize the chart once
+        if (!$scope.chart_initialized && $scope.hasValidGoal() && $scope.hasValidCycleGoal()) {
           const canvas = document.getElementById('data-view-chart');
           if (!canvas) {
             console.warn('Canvas element with ID "data-view-chart" not found');
@@ -133,7 +134,9 @@ angular.module('SEED.controller.portfolio_summary', [])
               }
             }
           });
-        }, 100);
+          $scope.chart_initialized = true;
+          console.log('chart initialized');
+        }
       };
 
       // Can only sort based on baseline or current, not both. In the event of a conflict, use the more recent.
@@ -175,8 +178,10 @@ angular.module('SEED.controller.portfolio_summary', [])
             $scope.goal = $scope.goals.length > 0 ? $scope.goals[0] : {}; // Keep as empty object if no goals
           }
           // Note: the goal watcher will select a cycle goal and call reset_data()
+
           // get EUIs for chart
           goal_service.get_weighted_euis($scope.goal.id).then((data) => {
+            initChart();
             $scope.updateChart(data.results);
           });
         }).catch((error) => {
@@ -201,6 +206,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           $scope.cycle_goal = $scope.cycle_goals.length > 0 ? $scope.cycle_goals.order_by('start', 'desc').first() : {};
           // reset_data();
           goal_service.get_weighted_euis($scope.goal.id).then((data) => {
+            initChart();
             $scope.updateChart(data.results);
           });
         });
@@ -236,11 +242,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         } else {
           // do it anyway for now
           reset_data();
-        }
-        // initialize the chart
-        if (!$scope.chart_initialized) {
-          initChart();
-          $scope.chart_initialized = true;
         }
       });
 
@@ -284,6 +285,10 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.show_help = bool;
         _.delay($scope.updateHeight, 150);
       };
+
+      $scope.hasValidGoal = () => $scope.goal && $scope.goal.id && Object.keys($scope.goal).length > 1;
+
+      $scope.hasValidCycleGoal = () => $scope.cycle_goal && $scope.cycle_goal.id && Object.keys($scope.cycle_goal).length > 1;
 
       const get_goal_stats = (summary) => {
         const passing_sqft = summary.current_total_sqft;
