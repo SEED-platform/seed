@@ -27,6 +27,7 @@ angular.module('SEED.controller.portfolio_summary', [])
     'uiGridConstants',
     'gridUtil',
     'spinner_utility',
+    'user_service',
     // eslint-disable-next-line func-names
     function (
       $scope,
@@ -51,7 +52,8 @@ angular.module('SEED.controller.portfolio_summary', [])
       property_columns,
       uiGridConstants,
       gridUtil,
-      spinner_utility
+      spinner_utility,
+      user_service,
     ) {
       $scope.organization = organization_payload.organization;
       $scope.viewer = $scope.menu.user.organization.user_role === 'viewer';
@@ -1221,12 +1223,14 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.dataViewChart.update();
       };
 
-      $scope.toggle_approval = () => {
+      $scope.toggle_approval = async () => {
         $scope.goal.partner_note_approval = !$scope.goal.partner_note_approval;
         if ($scope.goal.partner_note_approval) {
           $scope.goal.partner_note_approval_time = new Date().toJSON();
+          $scope.goal.partner_note_approval_user = await user_service.get_user_profile().then(uf => uf.org_user_id);;
         } else {
           $scope.goal.partner_note_approval_time = null;
+          $scope.goal.partner_note_approval_user = null
         }
         goal_service.update_goal($scope.goal).then(() => {
           Notification.primary('partner note approval updated');

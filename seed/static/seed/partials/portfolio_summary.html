@@ -256,7 +256,7 @@
         </p>
         <label class="control-label sectionLabel">Partner Approval </label>
         <input ng-model="goal.partner_note_approval" type="checkbox" class="form-control" ng-click="toggle_approval()" style="width: 34px; cursor: pointer" />
-        <label class="control-label sectionLabel text-muted" ng-if="goal.partner_note_approval_time">Approved on {$ goal.partner_note_approval_time $} </label>
+        <label class="control-label sectionLabel text-muted" ng-if="goal.partner_note_approval_time">Approved on {$ goal.partner_note_approval_time $} by {$ goal.partner_note_approval_user_name $}</label>
       </div>
     </div>
   </div>
