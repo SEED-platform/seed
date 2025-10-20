@@ -4609,6 +4609,22 @@ ul.r-list {
   border-bottom: 1px solid #b3b3b3;
 }
 
+.sync-header {
+  font-weight: bold;
+  color: #fff;
+  text-transform: uppercase;
+  background-color: #7B7B87;
+  text-shadow: none;
+  font-size:18px;
+  border: none;
+}
+
+.mismatch-highlight {
+  background-color: #fff3cd !important; /* Light yellow background */
+  color: #856404; /* Dark yellow/brown text */
+  border: 1px solid #ffeaa7; /* Light yellow border */
+}
+
 .r-small-header {
   text-transform: uppercase;
   font-weight: bold;

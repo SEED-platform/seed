@@ -190,7 +190,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             cg.salesforce_annual_report_id: cg.current_cycle.name for cg in cycle_goals if cg.salesforce_annual_report_id
         }
         stringy_list_of_salesforce_annual_report_id = ", ".join([f"'{k}'" for k in cycle_name_by_salesforce_annual_report_id])
-        access_token = get_cache_raw("access_token")
+        access_token = get_cache_raw(f"access_token_{org_id}")
         salesforce_fields = [
             "Id",
             "BB_Goal__r.BB_Other_Baseline__c",
@@ -205,6 +205,8 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             "BB_Other__c",
             "BB_Total_Improvement_in_Energy_Intensity__c",
             "BB_New_Energy_Savings_for_Current_Year__c",
+            "BB_Report_Status__c",
+            "BB_BBC_Data_Review_Status__c",
         ]
         response = requests.get(
             f"{bb_salesforce_config.salesforce_url}/data/v64.0/query?",
@@ -215,7 +217,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             timeout=300,
         )
         # return response.json()
-
         for annual_report in response.json()["records"]:
             summary[cycle_name_by_salesforce_annual_report_id[annual_report["Id"]]]["salesforce"] = {
                 "id": annual_report["Id"],
@@ -232,6 +233,8 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 "portfolio_kbtu": annual_report["BB_Other__c"],
                 "total_ei_improvement": annual_report["BB_Total_Improvement_in_Energy_Intensity__c"],
                 "new_energy_savings": annual_report["BB_New_Energy_Savings_for_Current_Year__c"],
+                "report_status": annual_report["BB_Report_Status__c"],
+                "review_status": annual_report["BB_BBC_Data_Review_Status__c"]
             }
 
         return JsonResponse(summary)
@@ -264,7 +267,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 return JsonResponse({"status": "error", "message": f"CycleGoal {cycle_goal.id} has no attached salesforce annual report."})
 
         # login
-        access_token = get_cache_raw("access_token")
+        access_token = get_cache_raw(f"access_token_{org_id}")
         sf = Salesforce(
             instance="doe-bb--kanbantest.sandbox.my.salesforce.com",
             session_id=access_token,
@@ -366,6 +369,7 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @action(detail=True, methods=["GET"])
     @get_bb_salesforce_config
     def salesforce_summary(self, request, goal_pk, pk, bb_salesforce_config):
+        org_id = int(self.get_organization(request))
         try:
             cycle_goal = CycleGoal.objects.get(pk=pk)
         except CycleGoal.DoesNotExist:
@@ -377,7 +381,7 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             return JsonResponse({"status": "error", "message": "No attached salesforce annual report."})
 
         # get annual reports
-        access_token = get_cache_raw("access_token")
+        access_token = get_cache_raw(f"access_token_{org_id}")
         salesforce_fields = [
             "BB_Goal__r.BB_Other_Baseline__c",
             "BB_Goal__r.BB_BBC_Portfolio_Average_EUI_Baseline__c",
