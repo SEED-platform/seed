@@ -3,11 +3,15 @@ SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and othe
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import logging
+
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from seed.models import CycleGoal, Goal
 from seed.serializers.cycles import CycleSerializer
+
+logger = logging.getLogger(__name__)
 
 
 class GoalSerializer(serializers.ModelSerializer):
@@ -31,6 +35,13 @@ class GoalSerializer(serializers.ModelSerializer):
         if obj.type == "transaction":
             details["transactions_column_name"] = self.get_column_name(obj.transactions_column)
         result.update(details)
+
+        if obj.partner_note_approval_user is not None:
+            user = obj.partner_note_approval_user.user
+            if user.first_name or user.last_name:
+                result["partner_note_approval_user_name"] = user.get_full_name()
+            else:
+                result["partner_note_approval_user_name"] = user.username
 
         return result
 

@@ -11,7 +11,7 @@ from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from seed.models import AccessLevelInstance, Column, Cycle, Organization, Property
+from seed.models import AccessLevelInstance, Column, Cycle, Organization, OrganizationUser, Property
 
 logger = logging.getLogger()
 
@@ -45,6 +45,7 @@ class Goal(models.Model):
     partner_note = models.TextField(default="", null=True, blank=True)
     partner_note_approval = models.BooleanField(default=False)
     partner_note_approval_time = models.DateTimeField(null=True, blank=True)
+    partner_note_approval_user = models.ForeignKey(OrganizationUser, on_delete=models.SET_NULL, null=True, blank=True)
 
     def properties(self):
         properties = Property.objects.filter(
