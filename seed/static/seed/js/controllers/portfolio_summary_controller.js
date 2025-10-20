@@ -330,9 +330,18 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       $scope.login_salesforce = () => {
         console.log('login to Salesforce...');
-        bb_salesforce_service.get_login_url($scope.organization.id).then((data) => {
-          $window.location.href = data.url;
-        });
+        bb_salesforce_service.get_login_url($scope.organization.id)
+          .then((data) => {
+            // did we get a URL?
+            if (data.status === 'error') {
+              Notification.error(`Cannot Login to Salesforce: ${data.response}`);
+            } else if (data.url) {
+              $window.location.href = data.url;
+            }
+          })
+          .catch(() => {
+            Notification.error('Cannot Login to Salesforce. Double check the Salesforce login URL in the Org Settings page.');
+          });
       };
 
       $scope.logout_salesforce = () => {

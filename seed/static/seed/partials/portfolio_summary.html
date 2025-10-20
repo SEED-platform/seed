@@ -45,24 +45,8 @@
         </div>
         <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="open_goal_editor_modal()" ng-if="write_permission">{$:: 'Configure Goals' | translate $}</button>
       </div>
-      <!-- SALEFORCE -->
-      <div ng-if="organization.bb_salesforce_enabled">
-        <div>
-          <div class="col-md-5">
-            <p>Salesforce portfolio functionality is enabled for this organization. Configure connection details by clicking on <a ui-sref="organization_settings(::{organization_id: organization.id})">{$:: 'Salesforce settings' | translate $}</a> and navigating to the Salesforce tab.</p>
-          </div>
-          <div class="col-md-5">
-            <span style="margin-right:10px">Salesforce Connection Status:</span>
-            <span ng-if="is_logged_into_salesforce" class="label label-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
-            <span ng-if="!is_logged_into_salesforce" class="label label-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
-            <span ng-if="!is_logged_into_salesforce" style="margin: 0px 0px 15px 15px">
-              <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="login_salesforce()" ng-if="write_permission">{$:: 'Login' | translate $}</button>
-            </span>
-          </div>
-        </div>
-      </div>
       <!-- GOAL DETAILS -->
-      <div class="goal-details-container" ng-if="hasValidGoal()">
+      <div class="goal-details-container" style="margin-left:20px !important;" ng-if="hasValidGoal()">
         <div class="goal-details-column" style="margin: 10px">
           <div ng-repeat="(k, v) in goal_details[0]" class="goal-detail">
             <div class="goal-detail-key" style="width: 120px">{$ k $}:</div>
@@ -76,9 +60,22 @@
           </div>
         </div>
       </div>
-
-      <!-- cycles -->
-      <div style="display: flex; flex-direction: row; margin-top: 20px">
+      <!-- SALEFORCE CONNECTION-->
+      <div style="display:flex; margin:10px; margin-bottom:0px;" ng-if="organization.bb_salesforce_enabled">
+        <div class="col-md-7" style="margin-left:0px !important">
+          <p>Salesforce portfolio functionality is enabled for this organization. Configure connection details by clicking on <a ui-sref="organization_settings(::{organization_id: organization.id})">{$:: 'Salesforce settings' | translate $}</a> and navigating to the Salesforce tab.</p>
+        </div>
+        <div class="col-md-5">
+          <span style="margin-right:10px">Salesforce Connection Status:</span>
+          <span ng-if="is_logged_into_salesforce" class="label label-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
+          <span ng-if="!is_logged_into_salesforce" class="label label-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
+          <span ng-if="!is_logged_into_salesforce" style="margin: 0px 0px 15px 15px">
+            <button class="btn btn-primary portfolio-summary-btn" type="submit" ng-click="login_salesforce()" ng-if="write_permission">{$:: 'Login' | translate $}</button>
+          </span>
+        </div>
+      </div>
+      <!-- CYCLE GOALS -->
+      <div style="display: flex; flex-direction: row; margin-top:0px">
         <span ng-if="cycle_goals.length == 0" style="font-size: 1.1em; margin-top: 5px; margin-right: 20px" translate>There is no cycle selected for comparison yet</span>
         <div class="btn-group" role="group" aria-label="Cycle Goal Selection" ng-if="hasValidGoal() && hasValidCycleGoal()">
           <button
@@ -94,6 +91,11 @@
           </button>
         </div>
         <button ng-if="hasValidGoal()" ng-click="create_cycle_goal()" class="btn btn-primary" style="margin-left: 10px" translate>Add a Cycle</button>
+      </div>
+      <div style="display: flex; margin-left:20px; margin-top:10px; align-items: baseline; gap: 5px" ng-if="cycle_goal.id !== undefined">
+        <p>Currently Viewing: {$ cycle_goal.current_cycle.name $}</p>
+        <button type="button" class="btn-primary" style="border-radius: 4px;" title="Edit Cycle Goal"  ng-click="open_cycle_goal_edit_modal()"><i class="fa-solid fa-pencil"></i></button>
+        <button type="button" class="btn-danger" style="border-radius: 4px;" title="Edit Cycle Goal"><i class="fa-solid fa-xmark" ng-click="open_cycle_goal_deletion_modal()"></i></button>
       </div>
     </div>
 
@@ -119,11 +121,6 @@
         <div style="display: flex">
           <h3 translate>Portfolio Summary</h3>
           <i class="ui-grid-icon-info-circled" ng-mouseenter="toggle_help(true)"></i>
-        </div>
-        <div style="display: flex; align-items: baseline; gap: 5px" ng-if="cycle_goal.id !== undefined">
-          <h4 style="margin-top: 0">Currently Viewing: {$ cycle_goal.current_cycle.name $}</h4>
-          <button type="button" class="btn-primary" style="border-radius: 4px;" title="Edit Cycle Goal"  ng-click="open_cycle_goal_edit_modal()"><i class="fa-solid fa-pencil"></i></button>
-          <button type="button" class="btn-danger" style="border-radius: 4px;" title="Edit Cycle Goal"><i class="fa-solid fa-xmark" ng-click="open_cycle_goal_deletion_modal()"></i></button>
         </div>
       </div>
       <div class="alert alert-warning portfolio-summary-help-text" ng-show="show_help">

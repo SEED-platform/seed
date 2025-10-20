@@ -259,9 +259,19 @@ def get_bb_salesforce_config(func):
         org_id = get_org_id(args[1])
         bb_salesforce_config = BBSalesforceConfig.objects.filter(organization=org_id).first()
 
+        # the status must be 200 or the portfolio summary page won't load at all. Handle missing configs case by case
         if bb_salesforce_config is None:
             return JsonResponse(
-                {"status": "error", "valid": False, "response": "This org has no bb salesforce connection."}, status=status.HTTP_200_OK
+                {"status": "error", "valid": False, "response": "Org has no portfolio Salesforce connection."}, status=status.HTTP_200_OK
+            )
+        elif bb_salesforce_config.salesforce_url is None or bb_salesforce_config.client_id is None or bb_salesforce_config.client_secret is None:
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "valid": False,
+                    "response": "Portfolio Salesforce Connection is not properly configured. Visit the Org Settings page to configure.",
+                },
+                status=status.HTTP_200_OK,
             )
 
         return func(*args, **kwargs, bb_salesforce_config=bb_salesforce_config)

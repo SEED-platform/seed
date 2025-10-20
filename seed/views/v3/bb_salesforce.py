@@ -6,6 +6,8 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 
 import requests
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from requests.models import PreparedRequest
 from rest_framework import status, viewsets
@@ -29,6 +31,13 @@ def _get_pkce(bb_salesforce_config):
     response = requests.get(f"{bb_salesforce_config.salesforce_url}/oauth2/pkce/generator", timeout=10)
     return response.json()["code_verifier"], response.json()["code_challenge"]
 
+def is_valid_url(url):
+    validator = URLValidator()
+    try:
+        validator(url)
+        return True
+    except ValidationError:
+        return False
 
 class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema_org_query_param
@@ -39,8 +48,15 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @get_bb_salesforce_config
     def login_url(self, request, bb_salesforce_config):
         # we are going to need the code_verifier when the user has logged in and wants a token
+
+        org_id = request.query_params.get('organization_id')
+
+        # validate URL
+        if not is_valid_url(bb_salesforce_config.salesforce_url):
+            return JsonResponse({"status": "error", "message": "Invalid Salesforce URL"}, status=status.HTTP_400_BAD_REQUEST)
+
         code_verifier, code_challenge = _get_pkce(bb_salesforce_config)
-        set_cache_raw("code_verifier", code_verifier)
+        set_cache_raw(f"code_verifier_{org_id}", code_verifier)
 
         request = PreparedRequest()
         request.prepare_url(
@@ -67,10 +83,10 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class("requires_member")
     @get_bb_salesforce_config
     def get_token(self, request, bb_salesforce_config):
+        org_id = request.query_params.get('organization_id')
         # get the cached code validator
         code = request.query_params.get("code")
-        code_verifier = get_cache_raw("code_verifier")
-
+        code_verifier = get_cache_raw(f"code_verifier_{org_id}")
         # request a token
         response = requests.post(
             f"{bb_salesforce_config.salesforce_url}/oauth2/token",
@@ -91,7 +107,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
 
         # save access_token
         access_token = response.json()["access_token"]
-        set_cache_raw("access_token", access_token, 60 * 60 * 24)
+        set_cache_raw(f"access_token_{org_id}", access_token, 60 * 60 * 24)
 
         return JsonResponse({"status": "success", "response": "access token created"}, status=status.HTTP_200_OK)
 
@@ -102,11 +118,17 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class("requires_member")
     @get_bb_salesforce_config
     def verify_token(self, request, bb_salesforce_config):
-        access_token = get_cache_raw("access_token")
+
+        org_id = request.query_params.get('organization_id')
+        access_token = get_cache_raw(f"access_token_{org_id}")
 
         # check if you ever had a token
         if access_token is None:
             return JsonResponse({"status": "success", "valid": False, "message": "No existing token"}, status=status.HTTP_200_OK)
+
+        # validate URL
+        if not is_valid_url(bb_salesforce_config.salesforce_url):
+            return JsonResponse({"status": "success", "valid": False, "message": "Invalid Salesforce URL"}, status=status.HTTP_200_OK)
 
         # check the token is still valid
         response = requests.get(
@@ -131,7 +153,8 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @has_perm_class("requires_member")
     @get_bb_salesforce_config
     def partners(self, request, bb_salesforce_config):
-        access_token = get_cache_raw("access_token")
+        org_id = request.query_params.get('organization_id')
+        access_token = get_cache_raw(f"access_token_{org_id}")
 
         # check the token is still valid
         response = requests.get(
@@ -178,6 +201,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
         ]
     )
     def annual_report(self, request, bb_salesforce_config):
+
         # get goal
         try:
             goal = Goal.objects.get(pk=request.query_params.get("goal_id"))
@@ -190,7 +214,8 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"status": "error", "message": "No attached salesforce goal."})
 
         # get annual reports
-        access_token = get_cache_raw("access_token")
+        org_id = request.query_params.get('organization_id')
+        access_token = get_cache_raw(f"access_token_{org_id}")
         response = requests.get(
             f"{bb_salesforce_config.salesforce_url}/data/v64.0/query?",
             params={

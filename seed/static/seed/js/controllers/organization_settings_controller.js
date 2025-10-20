@@ -64,7 +64,6 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     }
 
     $scope.bb_salesforce_config = {};
-    console.log(bb_salesforce_configs_payload, bb_salesforce_configs_payload === null);
     if (bb_salesforce_configs_payload !== null) {
       $scope.bb_salesforce_configs = bb_salesforce_configs_payload;
     } else {
