@@ -97,7 +97,10 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
       }
     })
       .then((response) => response)
-      .catch((response) => response);
+      .catch((error) => {
+        // console.error('Error fetching salesforce summary:', error);
+        throw error; // Re-throw to propagate to controller
+      });
 
     goal_service.update_salesforce = (goal_id, cycle_goal_ids, report_status, review_status) => $http.put(
       `/api/v3/goals/${goal_id}/update_salesforce/`,

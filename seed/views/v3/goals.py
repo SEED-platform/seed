@@ -216,7 +216,16 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             headers={"Authorization": f"Bearer {access_token}"},
             timeout=300,
         )
-        # return response.json()
+        # check response and handle errors
+        if response.status_code != 200:
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "message": f"Error retrieving annual reports from salesforce: {response.status_code} {response.text}",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
         for annual_report in response.json()["records"]:
             summary[cycle_name_by_salesforce_annual_report_id[annual_report["Id"]]]["salesforce"] = {
                 "id": annual_report["Id"],

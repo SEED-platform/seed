@@ -71,6 +71,19 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "url": request.url}, status=status.HTTP_200_OK)
 
+    @swagger_auto_schema_org_query_param
+    @api_endpoint_class
+    @ajax_request_class
+    @action(detail=False, methods=["GET"])
+    @has_perm_class("requires_member")
+    @get_bb_salesforce_config
+    def logout(self, request, bb_salesforce_config):
+        org_id = request.query_params.get('organization_id')
+        # delete access_token
+        set_cache_raw(f"access_token_{org_id}", None)
+
+        return JsonResponse({"status": "success", "response": "access token deleted"}, status=status.HTTP_200_OK)
+
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_string_field("org_id", required=True, description="org_id"),

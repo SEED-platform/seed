@@ -72,6 +72,16 @@ angular.module('SEED.service.bb_salesforce', []).factory('bb_salesforce_service'
       })
       .then((response) => response.data);
 
+    const logout_salesforce = (
+      organization_id
+    ) => $http
+      .get('/api/v3/bb_salesforce/logout/', {
+        params: {
+          organization_id
+        }
+      })
+      .then((response) => response.data);
+
     const verify_token = (
       organization_id
     ) => $http
@@ -89,7 +99,12 @@ angular.module('SEED.service.bb_salesforce', []).factory('bb_salesforce_service'
           organization_id
         }
       })
-      .then((response) => response.data);
+      .then((response) => response.data)
+      .catch((error) => {
+        // $log.error('Error fetching Salesforce partners:', error);
+        // Ensure we're throwing the actual error response
+        throw error;
+      });
 
     const get_annual_report = (
       organization_id,
@@ -109,6 +124,7 @@ angular.module('SEED.service.bb_salesforce', []).factory('bb_salesforce_service'
       update_bb_salesforce_config,
       new_bb_salesforce_config,
       get_login_url,
+      logout_salesforce,
       get_token,
       verify_token,
       get_partners,
