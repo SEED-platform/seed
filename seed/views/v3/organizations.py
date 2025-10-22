@@ -976,6 +976,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 "cycle_id": cycle.pk,
                 "chart_data": data,
                 "property_counts": {
+                    "cycle": cycle.name,
                     "yr_e": cycle.end.strftime("%Y"),
                     "num_properties": count_total,
                     "num_properties_w-data": count_with_data,
