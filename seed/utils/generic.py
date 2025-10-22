@@ -7,6 +7,7 @@ import json
 import logging
 import math
 import re
+from contextlib import suppress
 from datetime import datetime
 
 from django.core import serializers
@@ -148,32 +149,50 @@ def get_int(value, default=None):
 
 def parse_date(value):
     """
-    Parse a date string in the format YYYY, YYYY-MM, YYYY-MM-DD, or ISO format and return it as as datetime object.
+    Parse a date string and return it as an aware datetime object.
+
+    Supports partial ISO and US date formats:
+     - YYYY
+     - YYYY-MM
+     - YYYY-MM-DD
+     - YYYY-MM-DD HH:MM:SS
+     - YYYY-MM-DDTHH:MM:SS
+     - MM-DD-YYYY
+     - MM-DD-YY
+
+    '-' and '/' are interchangeable separators.
+    Optional comparison operators (=, !=, <, <=, >, >=) can prefix the date.
+
     """
-    try:
-        naive = datetime.fromisoformat(value)
-        return timezone.make_aware(naive)
-    except (ValueError, TypeError):
-        pass
+    if not value:
+        return timezone.make_aware(datetime.min)
 
-    pattern = re.compile(
-        r'^(=|!=?)?\s*(".*?"|\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$'
-        r"|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2}(?: \d{1,2}(?::\d{1,2}(?::\d{1,2})?)?)?)?)?)$"
-    )
-    match = pattern.match(str(value))
-    if not match:
-        raise ValueError(f'Unable to parse date from value "{value}". Expected format: YYYY, YYYY-MM, YYYY-MM-DD, or ISO format.')
+    # standardize separators, ignore optional operators
+    s = str(value).strip().replace("/", "-")
+    match = re.match(r"^(=|!=|<=|>=|<|>)\s*(.+)$", s)
+    if match:
+        s = match.group(2)
 
-    groups = match.groups()
-    date_string = groups[1] if groups[1] else groups[3]
-    parts = date_string.split("-")
-    year = int(parts[0])
-    month = int(parts[1]) if len(parts) > 1 else 1
-    day = int(parts[2]) if len(parts) > 2 else 1
-    hour = int(parts[3]) if len(parts) > 3 else 0
-    minute = int(parts[4]) if len(parts) > 4 else 0
-    second = int(parts[5]) if len(parts) > 5 else 0
-    date_string = f"{year:04d}-{month:02d}-{day:02d} {hour:02d}:{minute:02d}:{second:02d}"
+    # ISO/Partial ISO Format
+    with suppress(ValueError, TypeError):
+        return timezone.make_aware(datetime.fromisoformat(s))
 
-    naive = datetime.fromisoformat(date_string)
-    return timezone.make_aware(naive)
+    if re.fullmatch(r"\d{4}", s):  # YYYY
+        return timezone.make_aware(datetime(int(s), 1, 1))
+
+    if re.fullmatch(r"\d{4}[-]\d{1,2}", s):  # YYYY-MM
+        year, month = map(int, re.split(r"[-]", s))
+        return timezone.make_aware(datetime(year, month, 1))
+
+    if re.fullmatch(r"\d{4}[-]\d{1,2}[-]\d{1,2}", s):  # YYYY-MM-DD
+        year, month, day = map(int, re.split(r"[-]", s))
+        return timezone.make_aware(datetime(year, month, day))
+
+    # US-style:
+    with suppress(ValueError):
+        return timezone.make_aware(datetime.strptime(s, "%m-%d-%Y"))  # MM-DD-YYYY
+
+    with suppress(ValueError):
+        return timezone.make_aware(datetime.strptime(s, "%m-%d-%y"))  # MM-DD-YY
+
+    raise ValueError(f'Unable to parse date from value "{value}".')
