@@ -75,7 +75,6 @@ def _concat_values(concat_columns, column_values, delimiter):
     return delimiter.join(values) or None
 
 
-# rp
 def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_data, cleaner):
     """Set the column value as the target attr on our model.
 
@@ -133,7 +132,6 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
         elif model.__class__.__name__ == table_name:
             setattr(model, mapped_column_name, cleaned_value)
 
-    logging.error({ 'columne_value': column_value, 'cleaned_value': cleaned_value })
     return model
 
 
@@ -258,7 +256,6 @@ def expand_rows(row, delimited_fields, expand_row):
         return [copy_row]
 
 
-# rp
 def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, **kwargs):
     """Apply mapping of row data to model.
 

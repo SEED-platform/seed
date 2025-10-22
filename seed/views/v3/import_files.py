@@ -393,7 +393,6 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         ]
     )
     @action(detail=True, methods=["POST"])
-    # rp
     def map(self, request, pk=None):
         """
         Starts a background task to convert imported raw data into

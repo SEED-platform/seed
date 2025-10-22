@@ -209,6 +209,9 @@ def finish_mapping(import_file_id, mark_as_done, progress_key):
     import_record.status = STATUS_READY_TO_MERGE
     import_record.save()
 
+    if errors := import_file.mapping_error_messages:
+        return progress_data.finish_with_warning(errors)
+
     return progress_data.finish_with_success()
 
 
@@ -260,7 +263,6 @@ def _build_cleaner(org):
     return cleaners.Cleaner(ontology)
 
 
-# rp
 @shared_task(ignore_result=True)
 def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     """Does the work of matching a mapping to a source type and saving
@@ -336,12 +338,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     # *** END BREAK OUT ***
     try:
         with transaction.atomic():
-            # create column map for quick lookup of mapping info by raw column name
-            column_map = {}
-            for table in table_mappings.items():
-                for k, v in table.items():
-                    column_map[v[1]] = v
-
             # yes, there are three cascading for loops here. sorry :(
             for table, mappings in table_mappings.items():
                 if not table:
@@ -387,9 +383,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
                     # The raw data upon import is in the extra_data column
                     for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):
-                        # rp
                         map_model_obj = mapper.map_row(row, mappings, STR_TO_CLASS[table], extra_data_fields, cleaner=map_cleaner, **kwargs)
-                        import remote_pdb; remote_pdb.set_trace(host='0.0.0.0', port=4444)
 
                         # save cross related data, that is data that needs to go into the other
                         # model's collection as well.
@@ -479,6 +473,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                 # in list
                 if map_model_obj:
                     Column.save_column_names(map_model_obj)
+
     except IntegrityError as e:
         progress_data.finish_with_error("Could not map_row_chunk with error", str(e))
         raise IntegrityError(f"Could not map_row_chunk with error: {e!s}")
@@ -491,9 +486,42 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
         progress_data.finish_with_error("Invalid type found while mapping data", str(e))
         raise DataError(f"Invalid type found while mapping data: {e!s}")
 
+    check_data_parsing_erros(import_file, table_mappings)
     progress_data.step()
 
     return True
+
+
+def check_data_parsing_erros(import_file, table_mappings):
+    import_file.mapping_error_messages = ""
+    # create column map for quick lookup of mapping info by raw header name.
+    column_map = {"PropertyState": {}, "TaxLotState": {}}
+    for table_name, mappings in table_mappings.items():
+        for header, (_, column_name, _, is_extra_data) in mappings.items():
+            if not is_extra_data:
+                column_map[table_name][column_name] = header
+
+    property_column_names = column_map["PropertyState"].keys()
+    taxlot_column_names = column_map["TaxLotState"].keys()
+
+    properties = import_file.propertystate_set.exclude(source_type__in=[0, 1]).only(*property_column_names)
+    taxlots = import_file.taxlotstate_set.only(*taxlot_column_names)
+
+    columns_with_blanks = set()
+    columns_with_blanks.update(
+        [column_map["PropertyState"][field] for field in property_column_names if properties.filter(**{f"{field}__isnull": True}).exists()]
+    )
+    columns_with_blanks.update(
+        [column_map["TaxLotState"][field] for field in taxlot_column_names if taxlots.filter(**{f"{field}__isnull": True}).exists()]
+    )
+
+    if columns_with_blanks:
+        err_msg = (
+            f"Blank values detected in columns: {', '.join(columns_with_blanks)}. Review data type mappings or Save Mappings to ignore."
+        )
+        import_file.mapping_error_messages = err_msg
+
+    import_file.save()
 
 
 def _process_ali_data(model, raw_data, import_file_ali, ah_mappings):
@@ -576,7 +604,7 @@ def _store_raw_footprint_and_create_rule(footprint_details, table, org, import_f
     dq, _created = DataQualityCheck.objects.get_or_create(organization=org.id)
     dq.add_rule_if_new(rule)
 
-# rp
+
 def _map_data_create_tasks(import_file_id, progress_key):
     """
     Get all of the raw data and process it using appropriate mapping.
@@ -710,7 +738,7 @@ def map_data_synchronous(import_file_id: int) -> dict:
 
     return progress_data.result()
 
-# rp
+
 def map_data(import_file_id, remap=False, mark_as_done=True):
     """
     Map data task. By default this method will run through the mapping and mark it as complete.
