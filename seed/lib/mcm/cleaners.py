@@ -255,6 +255,7 @@ class Cleaner:
 
         return pint_column_map
 
+    # rp
     def clean_value(self, value, column_name, is_extra_data=True):
         """Clean the value, based on characteristics of its column_name."""
         value = default_cleaner(value)

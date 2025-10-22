@@ -260,6 +260,7 @@ def _build_cleaner(org):
     return cleaners.Cleaner(ontology)
 
 
+# rp
 @shared_task(ignore_result=True)
 def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     """Does the work of matching a mapping to a source type and saving
@@ -335,6 +336,12 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
     # *** END BREAK OUT ***
     try:
         with transaction.atomic():
+            # create column map for quick lookup of mapping info by raw column name
+            column_map = {}
+            for table in table_mappings.items():
+                for k, v in table.items():
+                    column_map[v[1]] = v
+
             # yes, there are three cascading for loops here. sorry :(
             for table, mappings in table_mappings.items():
                 if not table:
@@ -380,7 +387,9 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
                     # The raw data upon import is in the extra_data column
                     for row in expand_rows(original_row.extra_data, delimited_field_list, expand_row):
+                        # rp
                         map_model_obj = mapper.map_row(row, mappings, STR_TO_CLASS[table], extra_data_fields, cleaner=map_cleaner, **kwargs)
+                        import remote_pdb; remote_pdb.set_trace(host='0.0.0.0', port=4444)
 
                         # save cross related data, that is data that needs to go into the other
                         # model's collection as well.
@@ -567,7 +576,7 @@ def _store_raw_footprint_and_create_rule(footprint_details, table, org, import_f
     dq, _created = DataQualityCheck.objects.get_or_create(organization=org.id)
     dq.add_rule_if_new(rule)
 
-
+# rp
 def _map_data_create_tasks(import_file_id, progress_key):
     """
     Get all of the raw data and process it using appropriate mapping.
@@ -701,7 +710,7 @@ def map_data_synchronous(import_file_id: int) -> dict:
 
     return progress_data.result()
 
-
+# rp
 def map_data(import_file_id, remap=False, mark_as_done=True):
     """
     Map data task. By default this method will run through the mapping and mark it as complete.
