@@ -1,19 +1,24 @@
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework import generics, viewsets
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import OrganizationUser
 from seed.serializers.organizations import OrganizationUserSerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 
 
 class OrganizationUserViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin):
     serializer_class = OrganizationUserSerializer
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     def update(self, request, pk=None):
         """
         List all the properties for angular ag grid

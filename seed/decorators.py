@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 from functools import wraps
 
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, JsonResponse
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from rest_framework import status
 
 from seed.lib.superperms.orgs.models import OrganizationUser
@@ -71,7 +71,7 @@ def lock_and_track(fn, *args, **kwargs):
     return _wrapped
 
 
-def ajax_request(func):
+def ajax_request(fn):
     """
     Copied from django-annoying, with a small modification. Now we also check for 'status' or
     'success' keys and slash return correct status codes
@@ -90,61 +90,16 @@ def ajax_request(func):
             return {"news_titles": news_titles}
     """
 
-    @wraps(func)
+    @wraps(fn)
     def wrapper(request, *args, **kwargs):
-        for accepted_type in request.META.get("HTTP_ACCEPT", "").split(","):
+        for accepted_type in request.headers.get("accept", "").split(","):
             if accepted_type in FORMAT_TYPES:
                 format_type = accepted_type
                 break
         else:
             format_type = "application/json"
 
-        response = func(request, *args, **kwargs)
-
-        # determine the status code if the object is a dictionary
-        status_code = 200
-        if isinstance(response, dict) and (response.get("status") == "error" or response.get("success") is False):
-            status_code = 400
-
-        # convert the response into an HttpResponse if it is not already.
-        if not isinstance(response, HttpResponse):
-            data = FORMAT_TYPES[format_type](response)
-            response = HttpResponse(data, content_type=format_type, status=status_code)
-            response["content-length"] = len(data)
-        return response
-
-    return wrapper
-
-
-def ajax_request_class(func):
-    """
-    * Copied from django-annoying, with a small modification. Now we also check for 'status' or
-    'success' keys and return correct status codes
-
-    If view returned serializable dict, returns response in a format requested
-    by HTTP_ACCEPT header. Defaults to JSON if none requested or match.
-
-    Currently supports JSON or YAML (if installed), but can easily be extended.
-
-    Example::
-
-        @ajax_request
-        def my_view(self, request):
-            news = News.objects.all()
-            news_titles = [entry.title for entry in news]
-            return {"news_titles": news_titles}
-    """
-
-    @wraps(func)
-    def wrapper(self, request, *args, **kwargs):
-        for accepted_type in request.META.get("HTTP_ACCEPT", "").split(","):
-            if accepted_type in FORMAT_TYPES:
-                format_type = accepted_type
-                break
-        else:
-            format_type = "application/json"
-
-        response = func(self, request, *args, **kwargs)
+        response = fn(request, *args, **kwargs)
 
         # determine the status code if the object is a dictionary
         status_code = 200
@@ -183,25 +138,6 @@ def require_organization_id(func):
             return HttpResponse(json.dumps(message), content_type=format_type, status=400)
         else:
             return func(request, *args, **kwargs)
-
-    return _wrapped
-
-
-def require_organization_id_class(fn):
-    """
-    Validate that organization_id is in the GET params and it's an int.
-    """
-
-    @wraps(fn)
-    def _wrapped(self, request, *args, **kwargs):
-        org_id = request.query_params.get("organization_id", None)
-        if org_id is None:
-            return HttpResponseBadRequest("Valid organization_id is required in the query parameters.")
-        try:
-            int(org_id)
-        except (TypeError, ValueError):
-            return HttpResponseBadRequest("Invalid organization_id in the query parameters, must be integer")
-        return fn(self, request, *args, **kwargs)
 
     return _wrapped
 
@@ -264,7 +200,11 @@ def get_bb_salesforce_config(func):
             return JsonResponse(
                 {"status": "error", "valid": False, "response": "Org has no portfolio Salesforce connection."}, status=status.HTTP_200_OK
             )
-        elif bb_salesforce_config.salesforce_url is None or bb_salesforce_config.client_id is None or bb_salesforce_config.client_secret is None:
+        elif (
+            bb_salesforce_config.salesforce_url is None
+            or bb_salesforce_config.client_id is None
+            or bb_salesforce_config.client_secret is None
+        ):
             return JsonResponse(
                 {
                     "status": "error",

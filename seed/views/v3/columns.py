@@ -16,19 +16,19 @@ from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
 from seed import tasks
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Column, Organization
 from seed.serializers.columns import ColumnSerializer
 from seed.serializers.pint import add_pint_unit_suffix
-from seed.utils.api import OrgCreateUpdateMixin, OrgValidateMixin, api_endpoint_class
+from seed.utils.api import OrgCreateUpdateMixin, OrgValidateMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
-@method_decorator(name="create", decorator=swagger_auto_schema_org_query_param)
-@method_decorator(name="update", decorator=swagger_auto_schema_org_query_param)
-@method_decorator(name="destroy", decorator=swagger_auto_schema_org_query_param)
+@method_decorator([swagger_auto_schema_org_query_param], name="create")
+@method_decorator([swagger_auto_schema_org_query_param], name="update")
+@method_decorator([swagger_auto_schema_org_query_param], name="destroy")
 class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, OrgCreateUpdateMixin):
     """
     create:
@@ -73,8 +73,12 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             ),
         ],
     )
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     def list(self, request):
         """
         Retrieves all columns for the user's organization including the raw database columns. Will
@@ -96,9 +100,13 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             }
         )
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def create(self, request):
         org_id = self.get_organization(self.request)
 
@@ -126,7 +134,11 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         )
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+        ]
+    )
     def retrieve(self, request, pk=None):
         """
         This API endpoint retrieves a Column
@@ -146,8 +158,12 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
 
         return JsonResponse({"status": "success", "column": ColumnSerializer(c).data})
 
-    @ajax_request_class
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def update(self, request, pk=None):
         organization_id = self.get_organization(request)
 
@@ -167,8 +183,12 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
 
         return result
 
-    @ajax_request_class
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def destroy(self, request, pk=None):
         org_id = self.get_organization(request)
         try:
@@ -190,8 +210,12 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         result = tasks.delete_organization_column(column.id, org_id)
         return JsonResponse(result)
 
-    @ajax_request_class
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def update_multiple(self, request):
         org_id = self.get_organization(self.request)
@@ -208,8 +232,12 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         return JsonResponse(result)
 
     @swagger_auto_schema(request_body=AutoSchemaHelper.schema_factory({"new_column_name": "string", "overwrite": "boolean"}))
-    @ajax_request_class
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def rename(self, request, pk=None):
         """
@@ -247,9 +275,13 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             ),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def mappable(self, request):
         """

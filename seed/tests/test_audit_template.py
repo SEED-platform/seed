@@ -100,6 +100,7 @@ class ExportToAuditTemplate(TestCase):
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
 
         self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
+        self.default_cycle = self.cycle_factory.get_cycle(start=datetime(2020, 1, 1, tzinfo=timezone.get_current_timezone()))
 
         self.client.login(**self.user_details)
         self.property_factory = FakePropertyFactory(organization=self.org)

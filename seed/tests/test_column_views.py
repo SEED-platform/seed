@@ -350,7 +350,13 @@ class ColumnsViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase)
 
     def test_column_update_permissions(self):
         url = reverse_lazy("api:v3:columns-detail", args=[self.column.id]) + "?organization_id=" + str(self.org.id)
-        payload = {"column_name": "boo", "table_name": "PropertyState", "sharedFieldType": "None", "comstock_mapping": None}
+        payload = {
+            "column_name": "boo",
+            "table_name": "PropertyState",
+            "sharedFieldType": "None",
+            "comstock_mapping": None,
+            "is_extra_data": True,
+        }
 
         # child user cannot
         self.login_as_child_member()

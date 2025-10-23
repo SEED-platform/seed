@@ -8,9 +8,10 @@ import json
 import pytest
 from django.http import HttpResponse
 from django.test import RequestFactory, TestCase
+from django.utils.decorators import method_decorator
 from rest_framework.test import APIRequestFactory
 
-from seed import decorators
+from seed.decorators import _get_lock_key, ajax_request, get_prog_key, lock_and_track, require_organization_id
 from seed.utils.cache import clear_cache, get_cache, get_lock, increment_cache, make_key
 
 
@@ -33,7 +34,7 @@ class TestDecorators(TestCase):
     def test_get_prog_key(self):
         """We format our cache key properly."""
         expected = make_key("SEED:fun_func:PROG:" + str(self.pk))
-        self.assertEqual(decorators.get_prog_key("fun_func", self.pk), expected)
+        self.assertEqual(get_prog_key("fun_func", self.pk), expected)
 
     def test_increment_cache(self):
         """Sum our progress by increments properly."""
@@ -60,10 +61,10 @@ class TestDecorators(TestCase):
 
     def test_locking(self):
         """Make sure we indicate we're locked if and only if we're inside the function."""
-        key = decorators._get_lock_key("fake_func", self.pk)
+        key = _get_lock_key("fake_func", self.pk)
         self.assertEqual(int(get_lock(key)), self.unlocked)
 
-        @decorators.lock_and_track
+        @lock_and_track
         def fake_func(import_file_pk):
             self.assertEqual(int(get_lock(key)), self.locked)
 
@@ -73,9 +74,9 @@ class TestDecorators(TestCase):
 
     def test_locking_w_exception(self):
         """Make sure we release our lock if we have had an exception."""
-        key = decorators._get_lock_key("fake_func", self.pk)
+        key = _get_lock_key("fake_func", self.pk)
 
-        @decorators.lock_and_track
+        @lock_and_track
         def fake_func(import_file_pk):
             self.assertEqual(int(get_lock(key)), self.locked)
             raise TestError("Test exception!")
@@ -87,10 +88,10 @@ class TestDecorators(TestCase):
     def test_progress(self):
         """When a task finishes, it increments the progress counter properly."""
         increment = expected = 25.0
-        key = decorators.get_prog_key("fake_func", self.pk)
+        key = get_prog_key("fake_func", self.pk)
         self.assertEqual(float(get_cache(key, 0.0)["progress"]), 0.0)
 
-        @decorators.lock_and_track
+        @lock_and_track
         def fake_func(import_file_pk):
             increment_cache(key, increment)
 
@@ -101,7 +102,7 @@ class TestDecorators(TestCase):
 
 class RequireOrganizationIDTests(TestCase):
     def setUp(self):
-        @decorators.require_organization_id
+        @require_organization_id
         def test_view(request):
             return HttpResponse()
 
@@ -135,10 +136,10 @@ class RequireOrganizationIDTests(TestCase):
 
 
 class ClassDecoratorTests(TestCase):
-    def test_ajax_request_class_dict(self):
+    def test_ajax_request_dict(self):
         request = RequestFactory().get("")
 
-        @decorators.ajax_request_class
+        @method_decorator(ajax_request)
         def func(mock_self, request):
             return {"success": True, "key": "val"}
 
@@ -147,10 +148,10 @@ class ClassDecoratorTests(TestCase):
         self.assertEqual(result["content-type"], "application/json")
         self.assertEqual(json.loads(result.content), {"success": True, "key": "val"})
 
-    def test_ajax_request_class_dict_status_error(self):
+    def test_ajax_request_dict_status_error(self):
         request = RequestFactory().get("")
 
-        @decorators.ajax_request_class
+        @method_decorator(ajax_request)
         def func(mock_self, request):
             return {"status": "error", "error": "error"}
 
@@ -159,10 +160,10 @@ class ClassDecoratorTests(TestCase):
         self.assertEqual(result["content-type"], "application/json")
         self.assertEqual(json.loads(result.content), {"status": "error", "error": "error"})
 
-    def test_ajax_request_class_dict_status_false(self):
+    def test_ajax_request_dict_status_false(self):
         request = RequestFactory().get("")
 
-        @decorators.ajax_request_class
+        @method_decorator(ajax_request)
         def func(mock_self, request):
             return {"success": False, "error": "error"}
 
@@ -171,50 +172,56 @@ class ClassDecoratorTests(TestCase):
         self.assertEqual(result["content-type"], "application/json")
         self.assertEqual(json.loads(result.content), {"success": False, "error": "error"})
 
-    def test_require_organization_id_class_org_id(self):
+    def test_require_organization_id_org_id(self):
         request = APIRequestFactory().get("", data={"organization_id": 1})
         request.query_params = request.GET
 
-        @decorators.require_organization_id_class
+        @method_decorator(require_organization_id)
         def func(mock_self, request):
             return HttpResponse()
 
         result = func(True, request)
         self.assertEqual(result.status_code, 200)
 
-    def test_require_organization_id_class_no_org_id(self):
+    def test_require_organization_id_no_org_id(self):
         request = APIRequestFactory().get("", data={})
         request.query_params = request.GET
 
-        @decorators.require_organization_id_class
+        @method_decorator(require_organization_id)
         def func(mock_self, request):
             return HttpResponse()
 
         result = func(True, request)
         self.assertEqual(result.status_code, 400)
-        self.assertEqual(result.content, b"Valid organization_id is required in the query parameters.")
+        self.assertEqual(result["content-type"], "application/json")
+        self.assertEqual(
+            json.loads(result.content), {"status": "error", "message": "Invalid organization_id: either blank or not an integer"}
+        )
 
-    def test_require_organization_id_class_org_id_not_int(self):
+    def test_require_organization_id_org_id_not_int(self):
         request = APIRequestFactory().get("", data={"organization_id": "bad"})
         request.query_params = request.GET
 
-        @decorators.require_organization_id_class
+        @method_decorator(require_organization_id)
         def func(mock_self, request):
             return {"key": "val"}
 
         result = func(True, request)
         self.assertEqual(result.status_code, 400)
-        self.assertEqual(result.content, b"Invalid organization_id in the query parameters, must be integer")
+        self.assertEqual(result["content-type"], "application/json")
+        self.assertEqual(
+            json.loads(result.content), {"status": "error", "message": "Invalid organization_id: either blank or not an integer"}
+        )
 
-    def test_ajax_request_class_format_type(self):
+    def test_ajax_request_format_type(self):
         request = RequestFactory().get("")
-        request.META["HTTP_ACCEPT"] = "text/json"
+        request.META["HTTP_ACCEPT"] = "application/json"
 
-        @decorators.ajax_request_class
+        @method_decorator(ajax_request)
         def func(mock_self, request):
             return {"success": True, "key": "val"}
 
         result = func(True, request)
         self.assertEqual(result.status_code, 200)
-        self.assertEqual(result["content-type"], "text/json")
+        self.assertEqual(result["content-type"], "application/json")
         self.assertEqual(json.loads(result.content), {"success": True, "key": "val"})

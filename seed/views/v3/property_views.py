@@ -9,33 +9,51 @@ from django.utils.decorators import method_decorator
 from rest_framework import status
 
 from seed.filtersets import PropertyViewFilterSet
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import AccessLevelInstance, Organization, PropertyView
 from seed.serializers.properties import BriefPropertyViewSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
-@method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer")])
 @method_decorator(
-    name="retrieve",
-    decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer"), has_hierarchy_access(property_view_id_kwarg="pk")],
-)
-@method_decorator(
-    name="destroy",
-    decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member"), has_hierarchy_access(property_view_id_kwarg="pk")],
-)
-@method_decorator(
-    name="update",
-    decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member"), has_hierarchy_access(property_view_id_kwarg="pk")],
-)
-@method_decorator(
-    name="create",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
+        has_perm("requires_viewer"),
+    ],
+    name="list",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_viewer"),
+        has_hierarchy_access(property_view_id_kwarg="pk"),
+    ],
+    name="retrieve",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="pk"),
+    ],
+    name="destroy",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+        has_hierarchy_access(property_view_id_kwarg="pk"),
+    ],
+    name="update",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
         has_hierarchy_access(body_property_id="property_id"),
     ],
+    name="create",
 )
 class PropertyViewViewSet(SEEDOrgModelViewSet):
     """PropertyViews API Endpoint

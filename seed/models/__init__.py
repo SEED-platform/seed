@@ -48,6 +48,7 @@ from .goal_notes import *
 from .audit_template_configs import *
 from .systems import *
 from .bb_salesforce_config import *
+from .facilities_plan import *
 
 from .certification import GreenAssessment, GreenAssessmentProperty, GreenAssessmentURL
 from .report_configurations import *

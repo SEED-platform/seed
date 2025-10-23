@@ -3,6 +3,7 @@ import binascii
 
 import pyotp
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from django_otp import devices_for_user
 from django_otp.plugins.otp_email.models import EmailDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
@@ -11,8 +12,8 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.decorators import has_perm_class
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.lib.superperms.orgs.decorators import has_perm
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.two_factor import generate_qr_code, send_token_email
 
@@ -32,8 +33,12 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
             description="methods can be 'Disabled', 'Email', or 'Token'",
         ),
     )
-    @api_endpoint_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def set_method(self, request):
         """
@@ -114,7 +119,11 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory({"user_email": "string"}),
     )
-    @api_endpoint_class
+    @method_decorator(
+        [
+            api_endpoint,
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def resend_token_email(self, request):
         """
@@ -138,7 +147,11 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory({"user_email": "string"}),
     )
-    @api_endpoint_class
+    @method_decorator(
+        [
+            api_endpoint,
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def generate_qr_code(self, request):
         """
@@ -163,7 +176,11 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory({"user_email": "string", "code": "integer"}),
     )
-    @api_endpoint_class
+    @method_decorator(
+        [
+            api_endpoint,
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def verify_code(self, request):
         """

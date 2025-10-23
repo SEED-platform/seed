@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-10-17 00:00\n"
+"PO-Revision-Date: 2025-10-23 21:54\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -691,6 +691,9 @@ msgstr "Volver a la lista"
 #, fuzzy
 msgid "Back to Mapping"
 msgstr "Volver a Cartografía"
+
+msgid "Baseline"
+msgstr "Base"
 
 #, fuzzy
 msgid "Baseline Cycle"
@@ -1426,6 +1429,9 @@ msgstr "Nombre actual"
 
 msgid "Current Password"
 msgstr "Contraseña Actual"
+
+msgid "Current Year Annual Report"
+msgstr "Informe anuale del año en curso"
 
 #, fuzzy
 msgid "Current password"
@@ -2625,6 +2631,9 @@ msgstr "Ir a Notas"
 msgid "Goal"
 msgstr "Objetivo"
 
+msgid "Goal Details"
+msgstr "Detalles del objetivo"
+
 #, fuzzy
 msgid "Goal Setup"
 msgstr "Configuración de la meta"
@@ -2694,6 +2703,9 @@ msgstr "Ocultar todas las etiquetas"
 #, fuzzy
 msgid "Highlights of SEED Platform™"
 msgstr "Aspectos destacados de la Plataforma SEED"
+
+msgid "Historical Annual Reports"
+msgstr "Informes anuales históricos"
 
 #, fuzzy
 msgid "Historical Note"
@@ -3069,6 +3081,9 @@ msgstr "Conectarse"
 #, fuzzy
 msgid "Log in to SEED Platform"
 msgstr "Iniciar sesión en la Plataforma SEED"
+
+msgid "Log in to Salesforce first to be able to configure Salesforce Partner and Goal associations here."
+msgstr "Primero, inicie sesión en Salesforce para poder configurar las asociaciones de socios y objetivos de Salesforce aquí."
 
 #, fuzzy
 msgid "Logging Email"
@@ -4902,6 +4917,9 @@ msgstr "Compruébelo antes de continuar."
 #, fuzzy
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Actualice la configuración de la columna de geocodificación en la página de configuración de columnas de su organización."
+
+msgid "SYNC_SALESFORCE_DESC"
+msgstr "Revise los detalles a continuación. Cuando esté satisfecho, haga clic en los botones de sincronización a continuación para enviar los datos de SEED a su instancia de Salesforce. El primer botón sincronizará los datos con el objetivo y los objetos del informe anual actual. El segundo botón sincronizará todos los objetos históricos del informe anual."
 
 #, fuzzy
 msgid "Salesforce"

@@ -7,17 +7,18 @@ from copy import deepcopy
 
 import django.core.exceptions
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request, require_organization_id
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models.columns import Column
 from seed.models.data_views import DataView
 from seed.serializers.data_views import DataViewSerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 
@@ -26,10 +27,14 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     model = DataView
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     def list(self, request):
         organization_id = self.get_organization(request)
         data_view_queryset = DataView.objects.filter(organization=organization_id)
@@ -39,10 +44,14 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
         )
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     def retrieve(self, request, pk):
         organization = self.get_organization(request)
 
@@ -55,10 +64,14 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"status": "error", "message": f"DataView with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def destroy(self, request, pk):
         organization_id = self.get_organization(request)
 
@@ -80,10 +93,14 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
             },
         ),
     )
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def create(self, request):
         org_id = self.get_organization(request)
         data = deepcopy(request.data)
@@ -113,10 +130,14 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
             },
         ),
     )
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def update(self, request, pk):
         org_id = self.get_organization(request)
 
@@ -167,10 +188,14 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
             },
         ),
     )
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def evaluate(self, request, pk):
         organization = self.get_organization(request)
@@ -192,10 +217,14 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
         response = data_view.evaluate(columns, user_ali)
         return JsonResponse({"status": "success", "data": response})
 
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def inventory(self, request, pk):
         organization = self.get_organization(request)

@@ -10,19 +10,20 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import IntegrityError
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from django_otp.plugins.otp_email.models import EmailDevice
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
-from seed.decorators import ajax_request_class
+from seed.decorators import ajax_request
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.decorators import PERMS, has_perm_class
+from seed.lib.superperms.orgs.decorators import PERMS, has_perm
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, AccessLevelInstance, Organization, OrganizationUser
 from seed.models.data_quality import Rule
 from seed.tasks import invite_to_seed
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.organizations import create_organization
 from seed.utils.users import get_role_from_js
@@ -140,9 +141,13 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             )
         },
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner_or_superuser_without_org", False)
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner_or_superuser_without_org", False),
+        ]
+    )
     def create(self, request):
         """
         Creates a new SEED user.
@@ -152,7 +157,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         """
         # WARNING: we aren't using the OrgMixin here to validate the organization
         # It is assumed the org authorization logic implemented in this view is
-        # consistent with our permissions checking (has_perm_class decorator)
+        # consistent with our permissions checking (has_perm decorator)
         body = request.data
         org_name = body.get("org_name")
         org_id = request.query_params.get("organization_id", None)
@@ -230,8 +235,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             200: ListUsersResponseSerializer,
         }
     )
-    @ajax_request_class
-    @has_perm_class("requires_superuser", False)
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_superuser", False),
+        ]
+    )
     def list(self, request):
         """
         Retrieves all users' email addresses and IDs.
@@ -242,8 +251,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             users.append({"email": user.email, "user_id": user.id})
         return JsonResponse({"users": users})
 
-    @ajax_request_class
-    @api_endpoint_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     @action(detail=False, methods=["GET"])
     def current(self, request):
         """
@@ -268,9 +281,13 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             description="new role for user",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def role(self, request, pk=None):
         """
@@ -317,9 +334,13 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success"})
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def access_level_instance(self, request, pk=None):
         user_id = int(pk)
@@ -351,8 +372,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             200: user_response_schema,
         }
     )
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     def retrieve(self, request, pk=None):
         """
         Retrieves user's first_name, last_name, email
@@ -367,7 +392,11 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse(user.serialize())
 
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def generate_api_key(self, request, pk=None):
         """
@@ -405,8 +434,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             200: user_response_schema,
         },
     )
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     def update(self, request, pk=None):
         """
         Updates the user's first name, last name, and email
@@ -435,7 +468,11 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             description="Fill in the current and new matching passwords",
         ),
     )
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def set_password(self, request, pk=None):
         """
@@ -463,7 +500,11 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         user.save()
         return JsonResponse({"status": "success"})
 
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+        ]
+    )
     def get_actions(self, request):
         """returns all actions"""
         return {
@@ -483,7 +524,11 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         ),
         responses={200: AutoSchemaHelper.schema_factory({"auth": {"action_name": "boolean"}})},
     )
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def is_authorized(self, request, pk=None):
         """
@@ -563,7 +608,11 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         return {action: PERMS["requires_owner"](ou) for action in actions}
 
     @swagger_auto_schema(responses={200: AutoSchemaHelper.schema_factory({"show_shared_buildings": "boolean"})})
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def shared_buildings(self, request, pk=None):
         """
@@ -583,8 +632,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         )
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def default_organization(self, request, pk=None):
         """
@@ -610,8 +663,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             },
         }
 
-    @has_perm_class("requires_superuser", False)
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_superuser", False),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def deactivate(self, request, pk=None):
         """

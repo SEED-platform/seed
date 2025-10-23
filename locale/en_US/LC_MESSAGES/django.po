@@ -549,6 +549,9 @@ msgstr "Back to List"
 msgid "Back to Mapping"
 msgstr "Back to Mapping"
 
+msgid "Baseline"
+msgstr "Baseline"
+
 msgid "Baseline Cycle"
 msgstr "Baseline Cycle"
 
@@ -1129,6 +1132,9 @@ msgstr "Current Name"
 
 msgid "Current Password"
 msgstr "Current Password"
+
+msgid "Current Year Annual Report"
+msgstr "Current Year Annual Report"
 
 msgid "Current password"
 msgstr "Current password"
@@ -2072,6 +2078,9 @@ msgstr "Go to Notes"
 msgid "Goal"
 msgstr "Goal"
 
+msgid "Goal Details"
+msgstr "Goal Details"
+
 msgid "Goal Setup"
 msgstr "Goal Setup"
 
@@ -2129,6 +2138,9 @@ msgstr "Hide All Labels"
 
 msgid "Highlights of SEED Platform™"
 msgstr "Highlights of SEED Platform™"
+
+msgid "Historical Annual Reports"
+msgstr "Historical Annual Reports"
 
 msgid "Historical Note"
 msgstr "Historical Note"
@@ -2419,6 +2431,9 @@ msgstr "Log in"
 #: seed/landing/templates/landing/home.html:16
 msgid "Log in to SEED Platform"
 msgstr "Log in to SEED Platform"
+
+msgid "Log in to Salesforce first to be able to configure Salesforce Partner and Goal associations here."
+msgstr "Log in to Salesforce first to be able to configure Salesforce Partner and Goal associations here."
 
 msgid "Logging Email"
 msgstr "Logging Email"
@@ -3830,6 +3845,9 @@ msgstr "Please verify before continuing."
 
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Update the geocoding column settings in your organization's column settings page."
+
+msgid "SYNC_SALESFORCE_DESC"
+msgstr "Review the details below. When you are satisfied, click the Sync buttons below to push the SEED data to your Salesforce instance. The first button will sync data with the goal and the current annual report objects. The second sync button will sync all historical annual report objects."
 
 msgid "Salesforce"
 msgstr "Salesforce"

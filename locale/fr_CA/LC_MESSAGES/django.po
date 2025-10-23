@@ -555,6 +555,9 @@ msgstr "Retour à la Liste"
 msgid "Back to Mapping"
 msgstr "Retournez à les mappages"
 
+msgid "Baseline"
+msgstr "Ligne de base"
+
 msgid "Baseline Cycle"
 msgstr "Cycle de référence"
 
@@ -1143,6 +1146,9 @@ msgstr "Nom Actuel"
 
 msgid "Current Password"
 msgstr "Mot de Passe Actuel"
+
+msgid "Current Year Annual Report"
+msgstr "Rapport annuel de l'année en cours"
 
 msgid "Current password"
 msgstr "Mot de passe actuel"
@@ -2090,6 +2096,9 @@ msgstr "Accéder aux Notes"
 msgid "Goal"
 msgstr "Objectif"
 
+msgid "Goal Details"
+msgstr "Détails de l'objectif"
+
 msgid "Goal Setup"
 msgstr "Configuration des objectifs"
 
@@ -2147,6 +2156,9 @@ msgstr "Masquer toutes les étiquettes"
 
 msgid "Highlights of SEED Platform™"
 msgstr "Points forts de la Plate-Forme SEED™"
+
+msgid "Historical Annual Reports"
+msgstr "Rapports annuels historiques"
 
 msgid "Historical Note"
 msgstr "Note historique"
@@ -2439,6 +2451,9 @@ msgstr "S'identifier"
 #: seed/landing/templates/landing/home.html:16
 msgid "Log in to SEED Platform"
 msgstr "Connectez-vous à SEED Platform"
+
+msgid "Log in to Salesforce first to be able to configure Salesforce Partner and Goal associations here."
+msgstr "Connectez-vous d’abord à Salesforce pour pouvoir configurer les associations de partenaires et d’objectifs Salesforce ici."
 
 msgid "Logging Email"
 msgstr "Adresse courriel pour reportage"
@@ -3863,6 +3878,9 @@ msgstr "Veuillez vérifier les points suivants avant de continuer."
 
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Mettez à jour les paramètres de colonne de géocodage dans la page des paramètres de colonne de votre organisation."
+
+msgid "SYNC_SALESFORCE_DESC"
+msgstr "Vérifiez les détails ci-dessous. Lorsque vous êtes satisfait, cliquez sur les boutons «Synchroniser» ci-dessous pour transférer les données SEED vers votre instance Salesforce. Le premier bouton synchronisera les données avec l'objectif et les objets du rapport annuel actuel. Le second bouton synchronisera tous les objets historiques du rapport annuel."
 
 msgid "Salesforce"
 msgstr "Salesforce"

@@ -94,16 +94,18 @@ class ExportReport(DataMappingBaseTestCase):
             "y_var": "gross_floor_area",
         }
         response = self.client.get(url, data)
-
-        assert response.json()["data"]["property_counts"] == [
-            {"yr_e": "2016", "num_properties": 5, "num_properties_w-data": 5},
-            {"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5},
+        property_counts = response.json()["data"]["property_counts"]
+        expected = [
+            {"yr_e": "2016", "num_properties": 5, "num_properties_w-data": 5, "cycle": self.cycle_2.name},
+            {"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5, "cycle": self.cycle.name},
         ]
+        self.assertEqual(property_counts, expected)
 
         data["cycle_ids"] = [self.cycle.id]
         response = self.client.get(url, data)
-
-        assert response.json()["data"]["property_counts"] == [{"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5}]
+        property_counts = response.json()["data"]["property_counts"]
+        expected = [{"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5, "cycle": self.cycle.name}]
+        self.assertEqual(property_counts, expected)
 
     def test_report_aggregated(self):
         url = reverse("api:v3:organizations-report-aggregated", args=[self.org.pk])
@@ -114,15 +116,18 @@ class ExportReport(DataMappingBaseTestCase):
             "access_level_instance_id": self.org.root.id,
         }
         response = self.client.get(url, data)
-        assert response.json()["aggregated_data"]["property_counts"] == [
-            {"yr_e": "2016", "num_properties": 5, "num_properties_w-data": 5},
-            {"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5},
+        property_counts = response.json()["aggregated_data"]["property_counts"]
+        expected = [
+            {"yr_e": "2016", "num_properties": 5, "num_properties_w-data": 5, "cycle": self.cycle_2.name},
+            {"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5, "cycle": self.cycle.name},
         ]
+        self.assertEqual(property_counts, expected)
 
         data["cycle_ids"] = [self.cycle.id]
         response = self.client.get(url, data)
-
-        assert response.json()["aggregated_data"]["property_counts"] == [{"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5}]
+        property_counts = response.json()["aggregated_data"]["property_counts"]
+        expected = [{"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5, "cycle": self.cycle.name}]
+        self.assertEqual(property_counts, expected)
 
     def test_report_aggregated_count(self):
         url = reverse("api:v3:organizations-report-aggregated", args=[self.org.pk])
@@ -133,15 +138,18 @@ class ExportReport(DataMappingBaseTestCase):
             "access_level_instance_id": self.org.root.id,
         }
         response = self.client.get(url, data)
-        assert response.json()["aggregated_data"]["property_counts"] == [
-            {"yr_e": "2016", "num_properties": 5, "num_properties_w-data": 5},
-            {"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5},
+        property_counts = response.json()["aggregated_data"]["property_counts"]
+        expected = [
+            {"yr_e": "2016", "num_properties": 5, "num_properties_w-data": 5, "cycle": self.cycle_2.name},
+            {"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5, "cycle": self.cycle.name},
         ]
+        self.assertEqual(property_counts, expected)
 
         data["cycle_ids"] = [self.cycle.id]
         response = self.client.get(url, data)
-
-        assert response.json()["aggregated_data"]["property_counts"] == [{"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5}]
+        property_counts = response.json()["aggregated_data"]["property_counts"]
+        expected = [{"yr_e": "2015", "num_properties": 5, "num_properties_w-data": 5, "cycle": self.cycle.name}]
+        self.assertEqual(property_counts, expected)
 
     def test_report_missing_arg(self):
         url = reverse("api:v3:organizations-report-aggregated", args=[self.org.pk])

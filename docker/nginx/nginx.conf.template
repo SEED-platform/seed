@@ -159,6 +159,20 @@ http {
             }
         }
 
+        # Redirect Angular requests without trailing slash
+        location = /ng-app {
+            return 301 $uri/;
+        }
+
+        # SEED Angular
+        location /ng-app/ {
+            alias /seed/collected_static/ng-app/;
+            index index.html;
+
+            # try to serve the exact file, otherwise fall back to index.html so the SPA router can handle the URL
+            try_files $uri /ng-app/index.html;
+        }
+
         location / {
             include seed-uwsgi.conf;
         }

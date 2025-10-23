@@ -10,8 +10,8 @@ from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import VIEW_LIST_INVENTORY_TYPE, FilterGroup
 from seed.models.models import StatusLabel
 from seed.serializers.filter_groups import FilterGroupSerializer
@@ -23,21 +23,25 @@ def _get_inventory_type_int(inventory_type: str) -> int:
     return next(k for k, v in VIEW_LIST_INVENTORY_TYPE if v == inventory_type)
 
 
-@method_decorator(name="retrieve", decorator=swagger_auto_schema_org_query_param)
+@method_decorator([swagger_auto_schema_org_query_param], name="retrieve")
 @method_decorator(
-    name="destroy",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_root_member_access"),
+        has_perm("requires_root_member_access"),
     ],
+    name="destroy",
 )
 class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     model = FilterGroup
     serializer_class = FilterGroupSerializer
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_root_member_access")
-    @ajax_request_class
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def create(self, request):
         org_id = self.get_organization(request)
 
@@ -97,8 +101,12 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return JsonResponse(result, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class("requires_root_member_access")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_root_member_access"),
+        ]
+    )
     def update(self, request, pk=None):
         filter_group = FilterGroup.objects.get(pk=pk)
 

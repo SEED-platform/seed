@@ -78,7 +78,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         auth_header = request.META.get("Authorization")
 
         if not auth_header:
-            auth_header = request.META.get("HTTP_AUTHORIZATION")
+            auth_header = request.headers.get("authorization")
 
         if not auth_header:
             return None

@@ -1,14 +1,26 @@
 <div class="section_header_container">
   <div class="section_header fixed_height_short has_no_padding">
-    <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"></div>
+    <div
+      ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"
+    ></div>
   </div>
 </div>
 
 <div class="section_header_container">
-  <button type="button" class="btn btn-info" ng-if="auth.requires_member" ng-click="open_create_note_modal()" style="margin: 15px">
+  <button
+    type="button"
+    class="btn btn-info"
+    ng-if="auth.requires_member"
+    ng-click="open_create_note_modal()"
+    style="margin: 15px"
+  >
     <i class="fa-regular fa-note-sticky"></i> <span translate>New Note</span>
   </button>
-  <table ng-if="notes.length" class="table table-striped table_highlight_first fixed-layout" style="margin-bottom: -1px">
+  <table
+    ng-if="notes.length"
+    class="table table-striped table_highlight_first fixed-layout"
+    style="margin-bottom: -1px"
+  >
     <thead>
       <tr>
         <th width="1%">Created</th>
@@ -21,15 +33,22 @@
     </thead>
     <tbody>
       <tr ng-repeat="note in notes track by note.id">
-        <td style="white-space: nowrap">{$:: note.created | date: 'MM/dd/yyyy hh:mm:ss a' $}</td>
+        <td style="white-space: nowrap">
+          {$:: note.created | date: 'MM/dd/yyyy hh:mm:ss a' $}
+        </td>
         <td style="white-space: nowrap">{$:: note.note_type $}</td>
         <td style="white-space: nowrap">{$:: note.name $}</td>
 
-        <td ng-if="note.note_type == 'Note'" class="text-wrap">{$ note.text $}</td>
+        <td ng-if="note.note_type == 'Note'" class="text-wrap">
+          {$ note.text $}
+        </td>
         <td ng-if="note.note_type == 'Log' && note.name != 'Unmerged Property'">
           <div>Edit(s):</div>
           <ul>
-            <li ng-repeat="log in note.log_data"><strong>{$:: log.field $}</strong> updated from "{$:: log.previous_value $}" to "{$:: log.new_value $}"</li>
+            <li ng-repeat="log in note.log_data">
+              <strong>{$:: log.field $}</strong> updated from "{$::
+              log.previous_value $}" to "{$:: log.new_value $}"
+            </li>
           </ul>
         </td>
         <td ng-if="note.name == 'Unmerged Property'">{$ note.text $}</td>

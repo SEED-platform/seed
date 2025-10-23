@@ -42,9 +42,7 @@ bpd/data/untracked/*
 bpd/data/epa*
 bpd/data/BEDES*
 **/*-old
-lin/migrations/disabled
 htmlcov/
-src/
 node_modules/
 
 # JetBrains tends to suggest a venv directory in the project root for virtual environments
@@ -65,9 +63,6 @@ seed/tests/output
 test.sqlite
 
 docs/build/
-docs/scripts/Gemfile.lock
-docs/scripts/.python-version
-docs/scripts/seed_issues.csv
 docs/htmlout
 
 lokalise.cfg

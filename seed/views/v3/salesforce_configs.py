@@ -8,18 +8,19 @@ from copy import deepcopy
 import django.core.exceptions
 from django.db import IntegrityError
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class, require_organization_id_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request, require_organization_id
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import StatusLabel as Label
 from seed.models.columns import Column
 from seed.models.salesforce_configs import SalesforceConfig
 from seed.serializers.salesforce_configs import SalesforceConfigSerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.salesforce import auto_sync_salesforce_properties, schedule_sync, test_connection
@@ -76,9 +77,13 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
     model = SalesforceConfig
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def list(self, request):
         organization_id = self.get_organization(request)
         salesforce_configs = SalesforceConfig.objects.filter(organization=organization_id)
@@ -91,9 +96,13 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({"status": "success", "salesforce_configs": s_data}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def salesforce_connection(self, request):
         """
@@ -128,10 +137,14 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"status": "success"})
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
-    @has_perm_class("requires_owner")
     def sync(self, request):
         """
         Sync all eligible PropertyViews with Salesforce Benchmark objects.
@@ -146,10 +159,14 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"status": "error", "message": messages}, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def retrieve(self, request, pk=0):
         organization = self.get_organization(request)
         if pk == 0:
@@ -179,10 +196,14 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 )
 
     @swagger_auto_schema_org_query_param
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def destroy(self, request, pk):
         organization_id = self.get_organization(request)
 
@@ -231,10 +252,14 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             },
         ),
     )
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def create(self, request):
         org_id = int(self.get_organization(request))
         try:
@@ -311,10 +336,14 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             },
         ),
     )
-    @require_organization_id_class
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            require_organization_id,
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def update(self, request, pk):
         org_id = self.get_organization(request)
 

@@ -5,16 +5,17 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import django.core.exceptions
 from django.http import HttpResponse, JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 
 from seed.audit_template.audit_template import schedule_sync, toggle_audit_template_sync
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.audit_template_configs import AuditTemplateConfig
 from seed.serializers.audit_template_configs import AuditTemplateConfigSerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 
 
@@ -23,9 +24,13 @@ class AuditTemplateConfigViewSet(viewsets.ViewSet, OrgMixin):
     model = AuditTemplateConfig
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_owner"),
+        ]
+    )
     def list(self, request):
         org_id = self.get_organization(request)
         at_configs = AuditTemplateConfig.objects.filter(organization=org_id)
@@ -47,7 +52,11 @@ class AuditTemplateConfigViewSet(viewsets.ViewSet, OrgMixin):
             },
         ),
     )
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            has_perm("requires_owner"),
+        ]
+    )
     def create(self, request):
         org_id = self.get_organization(self.request)
         data = add_org_to_data(org_id, request.data)
@@ -85,7 +94,11 @@ class AuditTemplateConfigViewSet(viewsets.ViewSet, OrgMixin):
             },
         ),
     )
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            has_perm("requires_owner"),
+        ]
+    )
     def update(self, request, pk):
         org_id = self.get_organization(self.request)
 
@@ -116,7 +129,11 @@ class AuditTemplateConfigViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_org_id_field(),
         ]
     )
-    @has_perm_class("requires_owner")
+    @method_decorator(
+        [
+            has_perm("requires_owner"),
+        ]
+    )
     def destroy(self, request, pk):
         org_id = self.get_organization(self.request)
         org = Organization.objects.get(pk=org_id)

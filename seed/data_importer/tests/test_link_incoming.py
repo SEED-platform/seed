@@ -114,7 +114,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # At the moment, there should be 3 -Views with the same canonical record across 3 cycles
         views_with_same_canonical_record = (
             PropertyView.objects.values("property_id")
-            .annotate(times_used=Count("id"), cycle_ids=ArrayAgg("cycle_id"))
+            .annotate(times_used=Count("id"), cycle_ids=ArrayAgg("cycle_id", default=[]))
             .filter(times_used__gt=1)
             .get()
         )
@@ -208,7 +208,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         # At the moment, there should be 3 -Views with the same canonical record across 3 cycles
         views_with_same_canonical_record = (
             TaxLotView.objects.values("taxlot_id")
-            .annotate(times_used=Count("id"), cycle_ids=ArrayAgg("cycle_id"))
+            .annotate(times_used=Count("id"), cycle_ids=ArrayAgg("cycle_id", default=[]))
             .filter(times_used__gt=1)
             .get()
         )

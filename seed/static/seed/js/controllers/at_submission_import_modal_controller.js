@@ -8,6 +8,7 @@ angular.module('SEED.controller.at_submission_import_modal', []).controller('at_
   'audit_template_service',
   'uploader_service',
   'org',
+  'cycles',
   'view_ids',
   // eslint-disable-next-line func-names
   function (
@@ -16,9 +17,11 @@ angular.module('SEED.controller.at_submission_import_modal', []).controller('at_
     audit_template_service,
     uploader_service,
     org,
+    cycles,
     view_ids
   ) {
     $scope.org = org;
+    $scope.cycles = cycles;
     $scope.view_ids = view_ids;
     $scope.status = {
       progress: 0,
@@ -28,9 +31,13 @@ angular.module('SEED.controller.at_submission_import_modal', []).controller('at_
       result: {}
     };
 
+    $scope.form_data = {
+      default_cycle: null
+    };
+
     $scope.get_submissions = () => {
       $scope.status.in_progress = true;
-      audit_template_service.batch_get_city_submission_xml_and_update($scope.org.id, $scope.view_ids)
+      audit_template_service.batch_get_city_submission_xml_and_update($scope.org.id, $scope.view_ids, $scope.form_data.default_cycle)
         .then((response) => {
           const data = response.data;
           if (response.status !== 200) {

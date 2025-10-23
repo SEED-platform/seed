@@ -14,8 +14,8 @@ from rest_framework import status
 from rest_framework.decorators import action
 from simple_salesforce import Salesforce
 
-from seed.decorators import ajax_request_class, get_bb_salesforce_config
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.decorators import ajax_request, get_bb_salesforce_config
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import AccessLevelInstance, Column, CycleGoal, Goal, GoalNote, HistoricalNote, Organization, Property, TaxLotProperty
 from seed.serializers.goals import CycleGoalSerializer, GoalSerializer
 from seed.serializers.pint import apply_display_unit_preferences
@@ -41,29 +41,33 @@ logger = logging.getLogger(__name__)
 
 
 @method_decorator(
-    name="destroy",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
-        has_perm_class("requires_non_leaf_access"),
+        has_perm("requires_member"),
+        has_perm("requires_non_leaf_access"),
         has_hierarchy_access(goal_id_kwarg="pk"),
     ],
+    name="destroy",
 )
 @method_decorator(
-    name="create",
-    decorator=[
+    [
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
-        has_perm_class("requires_non_leaf_access"),
+        has_perm("requires_member"),
+        has_perm("requires_non_leaf_access"),
         has_hierarchy_access(body_ali_id="access_level_instance"),
     ],
+    name="create",
 )
 class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = GoalSerializer
     queryset = Goal.objects.all()
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+        ]
+    )
     def list(self, request):
         organization_id = self.get_organization(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
@@ -76,7 +80,11 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         return JsonResponse({"status": "success", "goals": self.serializer_class(goals, many=True).data})
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+        ]
+    )
     def retrieve(self, request, pk):
         organization_id = self.get_organization(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
@@ -96,9 +104,13 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         return JsonResponse({"status": "success", "goal": goal_data})
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_member")
-    @has_perm_class("requires_non_leaf_access")
-    @has_hierarchy_access(goal_id_kwarg="pk")
+    @method_decorator(
+        [
+            has_perm("requires_member"),
+            has_perm("requires_non_leaf_access"),
+            has_hierarchy_access(goal_id_kwarg="pk"),
+        ]
+    )
     def update(self, request, pk):
         try:
             goal = Goal.objects.get(pk=pk)
@@ -120,7 +132,38 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse(serializer.data)
 
-    @has_perm_class("requires_member")
+    @has_perm("requires_member")
+    @swagger_auto_schema_org_query_param
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(goal_id_kwarg="pk"),
+        ]
+    )
+    @action(detail=True, methods=["GET"])
+    def portfolio_summary(self, request, pk):
+        """seed/views/v3/property_view_labels.py
+        Gets a Portfolio Summary dictionary given a goal
+        """
+        org_id = int(self.get_organization(request))
+        try:
+            org = Organization.objects.get(pk=org_id)
+            goal = Goal.objects.get(pk=pk)
+        except (Organization.DoesNotExist, Goal.DoesNotExist):
+            return JsonResponse({"status": "error", "message": "No such resource."})
+
+        # If new properties heave been uploaded, create goal_notes
+        get_or_create_goal_notes(goal)
+
+        summary = get_portfolio_summary(org, goal)
+        return JsonResponse(summary)
+
+    @method_decorator(
+        [
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def bulk_update_goal_notes(self, request, pk):
         """Bulk updates Goal-related fields for a given goal and property view ids"""
@@ -147,10 +190,13 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse({"status": "success", "message": f"Updated {result} properties"})
 
-    @ajax_request_class
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="pk")
+    @method_decorator(
+        [
+            swagger_auto_schema_org_query_param,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(goal_id_kwarg="pk"),
+        ],
+    )
     @action(detail=True, methods=["GET"])
     def get_weighted_euis(self, request, pk):
         org_id = int(self.get_organization(request))
@@ -164,10 +210,14 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse({"status": "success", "results": weighted_euis})
 
-    @ajax_request_class
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="pk")
+    @method_decorator(
+        [
+            ajax_request,
+            swagger_auto_schema_org_query_param,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(goal_id_kwarg="pk"),
+        ],
+    )
     @action(detail=True, methods=["GET"])
     @get_bb_salesforce_config
     def salesforce_summary(self, request, pk, bb_salesforce_config):
@@ -236,10 +286,17 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse(summary)
 
-    @ajax_request_class
+    @ajax_request
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
+    @has_perm("requires_viewer")
     @has_hierarchy_access(goal_id_kwarg="pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(goal_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     @get_bb_salesforce_config
     def update_salesforce(self, request, pk, bb_salesforce_config):
@@ -304,8 +361,8 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     name="destroy",
     decorator=[
         swagger_auto_schema_org_query_param,
-        has_perm_class("requires_member"),
-        has_perm_class("requires_non_leaf_access"),
+        has_perm("requires_member"),
+        has_perm("requires_non_leaf_access"),
         has_hierarchy_access(goal_id_kwarg="goal_pk"),
     ],
 )
@@ -313,10 +370,15 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = CycleGoalSerializer
     queryset = CycleGoal.objects.all()
 
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_member")
-    @has_perm_class("requires_non_leaf_access")
-    @has_hierarchy_access(goal_id_kwarg="goal_pk")
+    @method_decorator(
+        [
+            swagger_auto_schema_org_query_param,
+            has_perm("requires_member"),
+            has_perm("requires_non_leaf_access"),
+            has_hierarchy_access(goal_id_kwarg="goal_pk"),
+        ],
+        name="destroy",
+    )
     def create(self, request, goal_pk):
         cycle_goal = CycleGoal.objects.create(
             goal_id=goal_pk,
@@ -327,19 +389,28 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse(CycleGoalSerializer(cycle_goal).data, status=status.HTTP_201_CREATED)
 
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="goal_pk")
+    @method_decorator(
+        [
+            ajax_request,
+            swagger_auto_schema_org_query_param,
+            has_perm("requires_member"),
+            has_hierarchy_access(goal_id_kwarg="goal_pk"),
+        ],
+    )
     def list(self, request, goal_pk):
         cycle_goals = CycleGoal.objects.filter(
             goal_id=goal_pk,
         ).order_by("-current_cycle__start")
         return JsonResponse({"status": "success", "cycle_goals": self.serializer_class(cycle_goals, many=True).data})
 
-    @ajax_request_class
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="goal_pk")
+    @method_decorator(
+        [
+            ajax_request,
+            swagger_auto_schema_org_query_param,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(goal_id_kwarg="goal_pk"),
+        ],
+    )
     @action(detail=True, methods=["GET"])
     def portfolio_summary(self, request, goal_pk, pk):
         """
@@ -359,10 +430,14 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse(summary)
 
-    @ajax_request_class
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="goal_pk")
+    @method_decorator(
+        [
+            ajax_request,
+            swagger_auto_schema_org_query_param,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(goal_id_kwarg="goal_pk"),
+        ],
+    )
     @action(detail=True, methods=["GET"])
     @get_bb_salesforce_config
     def salesforce_summary(self, request, goal_pk, pk, bb_salesforce_config):
@@ -425,10 +500,14 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             status=status.HTTP_200_OK,
         )
 
-    @ajax_request_class
-    @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="goal_pk")
+    @method_decorator(
+        [
+            ajax_request,
+            swagger_auto_schema_org_query_param,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(goal_id_kwarg="goal_pk"),
+        ],
+    )
     @action(detail=True, methods=["PUT"])
     def data(self, request, goal_pk, pk):
         """
@@ -536,6 +615,8 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             # add cycle specific and aggregated goal stats
             property[f"{key1}_cycle"] = cycle1.name
             property[f"{key2}_cycle"] = cycle2.name
+            property[f"{key1}_view_id"] = p1["property_view_id"]
+            property[f"{key2}_view_id"] = p2.get("property_view_id", None)
             property[f"{key1}_sqft"] = get_int(sqft1)
             property[f"{key2}_sqft"] = get_int(sqft2)
             property[f"{key1}_eui"] = get_preferred(p1, eui_columns)

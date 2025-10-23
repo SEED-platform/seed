@@ -6,17 +6,18 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 
 import requests
-from django.core.validators import URLValidator
 from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from requests.models import PreparedRequest
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class, get_bb_salesforce_config
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request, get_bb_salesforce_config
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Goal
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema, swagger_auto_schema_org_query_param
 from seed.utils.cache import get_cache_raw, set_cache_raw
 
@@ -31,6 +32,7 @@ def _get_pkce(bb_salesforce_config):
     response = requests.get(f"{bb_salesforce_config.salesforce_url}/oauth2/pkce/generator", timeout=10)
     return response.json()["code_verifier"], response.json()["code_challenge"]
 
+
 def is_valid_url(url):
     validator = URLValidator()
     try:
@@ -39,17 +41,22 @@ def is_valid_url(url):
     except ValidationError:
         return False
 
+
 class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @action(detail=False, methods=["GET"])
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @get_bb_salesforce_config
+    @action(detail=False, methods=["GET"])
     def login_url(self, request, bb_salesforce_config):
         # we are going to need the code_verifier when the user has logged in and wants a token
 
-        org_id = request.query_params.get('organization_id')
+        org_id = request.query_params.get("organization_id")
 
         # validate URL
         if not is_valid_url(bb_salesforce_config.salesforce_url):
@@ -77,13 +84,17 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_string_field("code", required=True, description="code received from calling url given by /login_url"),
         ],
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @action(detail=False, methods=["GET"])
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @get_bb_salesforce_config
+    @action(detail=False, methods=["GET"])
     def get_token(self, request, bb_salesforce_config):
-        org_id = request.query_params.get('organization_id')
+        org_id = request.query_params.get("organization_id")
         # get the cached code validator
         code = request.query_params.get("code")
         code_verifier = get_cache_raw(f"code_verifier_{org_id}")
@@ -112,14 +123,17 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({"status": "success", "response": "access token created"}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=False, methods=["GET"])
-    @has_perm_class("requires_member")
     @get_bb_salesforce_config
     def verify_token(self, request, bb_salesforce_config):
-
-        org_id = request.query_params.get('organization_id')
+        org_id = request.query_params.get("organization_id")
         access_token = get_cache_raw(f"access_token_{org_id}")
 
         # check if you ever had a token
@@ -147,13 +161,17 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({"status": "success", "valid": False, "message": "access token is not valid"}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @action(detail=False, methods=["GET"])
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @get_bb_salesforce_config
+    @action(detail=False, methods=["GET"])
     def partners(self, request, bb_salesforce_config):
-        org_id = request.query_params.get('organization_id')
+        org_id = request.query_params.get("organization_id")
         access_token = get_cache_raw(f"access_token_{org_id}")
 
         # check the token is still valid
@@ -189,19 +207,22 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
             status=status.HTTP_200_OK,
         )
 
-    @api_endpoint_class
-    @ajax_request_class
-    @action(detail=False, methods=["GET"])
-    @has_perm_class("requires_member")
-    @get_bb_salesforce_config
     @swagger_auto_schema(
         manual_parameters=[
             AutoSchemaHelper.query_org_id_field(True),
             AutoSchemaHelper.query_integer_field("goal_id", False, "Property ID"),
         ]
     )
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
+    @get_bb_salesforce_config
+    @action(detail=False, methods=["GET"])
     def annual_report(self, request, bb_salesforce_config):
-
         # get goal
         try:
             goal = Goal.objects.get(pk=request.query_params.get("goal_id"))
@@ -214,7 +235,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"status": "error", "message": "No attached salesforce goal."})
 
         # get annual reports
-        org_id = request.query_params.get('organization_id')
+        org_id = request.query_params.get("organization_id")
         access_token = get_cache_raw(f"access_token_{org_id}")
         response = requests.get(
             f"{bb_salesforce_config.salesforce_url}/data/v64.0/query?",

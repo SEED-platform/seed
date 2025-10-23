@@ -9,12 +9,12 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import BBSalesforceConfig
 from seed.serializers.bb_salesforce_config import BBSalesforceConfigSerializer
 from seed.serializers.systems import ServiceSerializer
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
@@ -26,9 +26,9 @@ class BBSalesforceConfigsViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = ServiceSerializer
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_owner")
+    @api_endpoint
+    @ajax_request
+    @has_perm("requires_owner")
     def list(self, request):
         organization_id = self.get_organization(request)
         bb_salesforce_configs = BBSalesforceConfig.objects.filter(organization_id=organization_id).first()
@@ -45,10 +45,10 @@ class BBSalesforceConfigsViewSet(ModelViewSetWithoutPatch, OrgMixin):
         )
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
+    @api_endpoint
+    @ajax_request
     @action(detail=False, methods=["PUT"])
-    @has_perm_class("requires_owner")
+    @has_perm("requires_owner")
     def update_config(self, request):
         organization_id = self.get_organization(request)
         bb_salesforce_configs = BBSalesforceConfig.objects.filter(organization_id=organization_id).first()
