@@ -15,7 +15,7 @@ from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import BBSalesforceConfig
 from seed.serializers.bb_salesforce_config import BBSalesforceConfigSerializer
 from seed.serializers.systems import ServiceSerializer
-from seed.utils.api import OrgMixin, api_endpoint
+from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
@@ -49,7 +49,6 @@ class BBSalesforceConfigsViewSet(ModelViewSetWithoutPatch, OrgMixin):
             status=status.HTTP_200_OK,
         )
 
-    @api_endpoint
     @method_decorator(
         [
             swagger_auto_schema_org_query_param,
