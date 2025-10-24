@@ -101,11 +101,13 @@ def _dict_org(request, organizations):
         ali = None
         for ou in org_users:
             owner = ou.role_level == ROLE_OWNER
+            viewer = ou.role_level == ROLE_VIEWER
             if owner:
                 owners.append({"first_name": ou.user.first_name, "last_name": ou.user.last_name, "email": ou.user.email, "id": ou.user.id})
 
             if ou.user == request.user:
                 user_is_owner = owner
+                user_is_viewer = viewer
                 role_level = get_js_role(ou.role_level)
                 ali = ou.access_level_instance
 
@@ -137,7 +139,7 @@ def _dict_org(request, organizations):
             "number_of_users": len(org_users),
             "user_is_owner": user_is_owner,
             "user_role": role_level,
-            "owners": owners if user_is_owner else [],
+            "owners": [] if user_is_viewer else owners,
             "sub_orgs": _dict_org(request, o.child_orgs.all()),
             "is_parent": o.is_parent,
             "parent_id": o.parent_id,

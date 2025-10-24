@@ -882,6 +882,11 @@ class AccountsViewAHTests(AccessLevelBaseTestCase):
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
 
+        self.child_viewer_user_details = {"username": "child_viewer@demo.com", "password": "test_pass"}
+        self.child_viewer_user = User.objects.create_user(**self.child_viewer_user_details)
+        self.org.add_member(self.child_viewer_user, self.child_level_instance.pk, ROLE_VIEWER)
+        self.org.save()
+
         self.cycle = self.org.cycles.first()
         # create 5 properties and 3 taxlots for both users
         for i in range(5):
@@ -911,7 +916,18 @@ class AccountsViewAHTests(AccessLevelBaseTestCase):
         self.assertEqual(cycle_data["num_properties"], 10)
         self.assertEqual(cycle_data["num_taxlots"], 6)
 
+        # member can see owners, child sees limited properties/taxlots
         self.login_as_child_member()
+        response = self.client.get(reverse_lazy("api:v3:organizations-list"))
+
+        data = response.json()["organizations"][0]
+        self.assertEqual(len(data["owners"]), 2)
+        cycle_data = data["cycles"][0]
+        self.assertEqual(cycle_data["num_properties"], 5)
+        self.assertEqual(cycle_data["num_taxlots"], 3)
+
+        # viewer cannot see owners
+        self.client.login(**self.child_viewer_user_details)
         response = self.client.get(reverse_lazy("api:v3:organizations-list"))
 
         data = response.json()["organizations"][0]
