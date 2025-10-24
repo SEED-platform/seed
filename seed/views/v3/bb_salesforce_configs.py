@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import action
 
@@ -24,11 +25,15 @@ logger = logging.getLogger()
 class BBSalesforceConfigsViewSet(ModelViewSetWithoutPatch, OrgMixin):
     model = BBSalesforceConfig
     serializer_class = ServiceSerializer
+    queryset = BBSalesforceConfig.objects.all()
 
-    @swagger_auto_schema_org_query_param
-    @api_endpoint
-    @ajax_request
-    @has_perm("requires_owner")
+    @method_decorator(
+        [
+            swagger_auto_schema_org_query_param,
+            ajax_request,
+            has_perm("requires_owner"),
+        ],
+    )
     def list(self, request):
         organization_id = self.get_organization(request)
         bb_salesforce_configs = BBSalesforceConfig.objects.filter(organization_id=organization_id).first()
@@ -44,11 +49,15 @@ class BBSalesforceConfigsViewSet(ModelViewSetWithoutPatch, OrgMixin):
             status=status.HTTP_200_OK,
         )
 
-    @swagger_auto_schema_org_query_param
     @api_endpoint
-    @ajax_request
+    @method_decorator(
+        [
+            swagger_auto_schema_org_query_param,
+            ajax_request,
+            has_perm("requires_owner"),
+        ],
+    )
     @action(detail=False, methods=["PUT"])
-    @has_perm("requires_owner")
     def update_config(self, request):
         organization_id = self.get_organization(request)
         bb_salesforce_configs = BBSalesforceConfig.objects.filter(organization_id=organization_id).first()
