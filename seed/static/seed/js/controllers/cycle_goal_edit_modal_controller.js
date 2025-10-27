@@ -33,10 +33,10 @@ angular.module('SEED.controller.cycle_goal_edit_modal', []).controller('cycle_go
     $scope.annual_reports = annual_reports && annual_reports.results ? [...annual_reports.results, { id: null, name: null }] : [{ id: null, name: null }];
     $scope.current_cycle = cycle_goal.current_cycle.id;
 
-    $scope.annual_report = $scope.annual_reports.find(ar => ar.id == cycle_goal.salesforce_annual_report_id);
+    $scope.annual_report = $scope.annual_reports.find((ar) => ar.id === cycle_goal.salesforce_annual_report_id);
     $scope.change_annual_report = (annual_report) => {
       $scope.annual_report = annual_report;
-    }
+    };
 
     $scope.save = () => {
       goal_service.edit_cycle_goal(goal.id, cycle_goal.id, $scope.current_cycle, $scope.annual_report?.id, $scope.annual_report?.name).then(() => {

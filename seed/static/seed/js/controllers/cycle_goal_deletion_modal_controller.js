@@ -20,9 +20,9 @@ angular.module('SEED.controller.cycle_goal_deletion_modal', []).controller('cycl
     spinner_utility,
     organization_id,
     goal,
-    cycle_goal,
+    cycle_goal
   ) {
-    $scope.cycle_goal_name = goal.name + " - " + cycle_goal.current_cycle.name;
+    $scope.cycle_goal_name = `${goal.name} - ${cycle_goal.current_cycle.name}`;
 
     $scope.delete_cycle_goal = () => {
       spinner_utility.show();

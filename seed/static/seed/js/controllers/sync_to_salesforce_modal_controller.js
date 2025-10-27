@@ -138,14 +138,14 @@ angular.module('SEED.controller.sync_to_salesforce_modal', []).controller('sync_
 
     $scope.sync_latest_cycle = () => {
       goal_service.update_salesforce(goal.id, [latest_cycle_goal.id], $scope.report_status ? $scope.report_status : null, $scope.review_status ? $scope.review_status : null)
-        .then((data) => {
+        .then(() => {
           $uibModalInstance.close();
         });
     };
 
     $scope.sync_past_cycles = () => {
       goal_service.update_salesforce(goal.id, $scope.past_cycle_goals.map(([, c]) => c.id))
-        .then((data) => {
+        .then(() => {
           $uibModalInstance.close();
         });
     };

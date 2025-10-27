@@ -53,7 +53,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       uiGridConstants,
       gridUtil,
       spinner_utility,
-      user_service,
+      user_service
     ) {
       $scope.organization = organization_payload.organization;
       $scope.viewer = $scope.menu.user.organization.user_role === 'viewer';
@@ -1147,16 +1147,14 @@ angular.module('SEED.controller.portfolio_summary', [])
         a.click();
       };
 
-
       $scope.downloadTable = () => {
         const data = ['Cycle Name,Baseline?,EUI,Goal,Annual % Imp,Cumulative % Imp'];
-        console.log($scope.table_data)
-        $scope.table_data.forEach(d => {
-          data.push(Object.values(d).join(','))
-        })
+        console.log($scope.table_data);
+        $scope.table_data.forEach((d) => {
+          data.push(Object.values(d).join(','));
+        });
         saveAs(new Blob([data.join('\r\n')], { type: 'text/csv' }), 'import_issues.csv');
       };
-
 
       $scope.select_none = () => {
         $scope.gridApi.selection.clearSelectedRows();
@@ -1246,10 +1244,10 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.goal.partner_note_approval = !$scope.goal.partner_note_approval;
         if ($scope.goal.partner_note_approval) {
           $scope.goal.partner_note_approval_time = new Date().toJSON();
-          $scope.goal.partner_note_approval_user = await user_service.get_user_profile().then(uf => uf.org_user_id);;
+          $scope.goal.partner_note_approval_user = await user_service.get_user_profile().then((uf) => uf.org_user_id);
         } else {
           $scope.goal.partner_note_approval_time = null;
-          $scope.goal.partner_note_approval_user = null
+          $scope.goal.partner_note_approval_user = null;
         }
         goal_service.update_goal($scope.goal).then(() => {
           Notification.primary('partner note approval updated');
@@ -1371,7 +1369,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           resolve: {
             organization_id: () => $scope.organization.id,
             goal: () => $scope.goal,
-            cycle_goal: () => $scope.cycle_goal,
+            cycle_goal: () => $scope.cycle_goal
           }
         });
       };
