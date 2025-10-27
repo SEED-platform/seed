@@ -340,6 +340,10 @@
     <div style="display: flex; gap: 30px">
       <div ng-if="hasValidGoal() && hasValidCycleGoal()" style="margin-left: 5vw; margin-right: 5vw; width: 50%">
         <canvas id="data-view-chart" width="800" height="400"></canvas>
+        <button type="button" class="btn btn-info" ng-click="downloadChart()">
+          <i class="fa-solid fa-share-from-square" aria-hidden="true"></i>
+          <span translate>Export Charts</span>
+        </button>
       </div>
     </div>
     <!--- PARTNER NOTE --->
@@ -396,6 +400,10 @@
           </tr>
         </tbody>
       </table>
+      <button type="button" class="btn btn-info" ng-click="downloadTable()">
+        <i class="fa-solid fa-share-from-square" aria-hidden="true"></i>
+        <span translate>Export Table</span>
+      </button>
     </div>
   </div>
 </div>

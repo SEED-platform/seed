@@ -1140,6 +1140,24 @@ angular.module('SEED.controller.portfolio_summary', [])
         });
       };
 
+      $scope.downloadChart = () => {
+        const a = document.createElement('a');
+        a.href = $scope.dataViewChart.toBase64Image();
+        a.download = 'portfolio_summary.png';
+        a.click();
+      };
+
+
+      $scope.downloadTable = () => {
+        const data = ['Cycle Name,Baseline?,EUI,Goal,Annual % Imp,Cumulative % Imp'];
+        console.log($scope.table_data)
+        $scope.table_data.forEach(d => {
+          data.push(Object.values(d).join(','))
+        })
+        saveAs(new Blob([data.join('\r\n')], { type: 'text/csv' }), 'import_issues.csv');
+      };
+
+
       $scope.select_none = () => {
         $scope.gridApi.selection.clearSelectedRows();
         $scope.selected_count = 0;
