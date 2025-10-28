@@ -703,6 +703,7 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
      *   after saving column mappings, deletes unmatched buildings
      */
     $scope.remap_buildings = () => {
+      $scope.mapping_error_messages = null;
       mapping_service.save_mappings($scope.import_file.id, $scope.get_mappings()).then((mapping_result) => {
         if (mapping_result.status === 'error' || mapping_result.status === 'warning') {
           return;
@@ -765,10 +766,13 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
     };
 
     $scope.check_mapping_for_nulls = () => {
+      $scope.checking_for_nulls = true;
       data_quality_service.check_mapping_for_nulls($scope.organization.id, $scope.import_file.id)
         .then((response) => {
           $scope.mapping_error_messages = response.status === 'warning' ? response.message : null;
-          console.log(response);
+        })
+        .finally(() => {
+          $scope.checking_for_nulls = false;
         });
     };
 

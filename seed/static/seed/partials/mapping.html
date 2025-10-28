@@ -226,11 +226,10 @@
         </button>
       </div>
       <div class="table_list_container mapping" ng-cloak>
-        <div
-          class="alert alert-warning"
-          ng-show="mapping_error_messages"
-          ng-bind-html="mapping_error_messages"
-        ></div>
+        <div class="alert alert-warning" ng-show="mapping_error_messages">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span ng-bind-html="mapping_error_messages"></span>
+        </div>
         <div
           class="alert alert-danger"
           ng-show="!required_property_fields_present() && !import_file.matching_done"
@@ -614,9 +613,14 @@
             class="pull-right btn btn-primary"
             ng-click="open_data_upload_modal(import_file.dataset)"
             ng-hide="import_file.matching_done"
-            translate
           >
-            Save Mappings
+            <span ng-if="checking_for_nulls"
+              ><i
+                class="fa-solid fa-spinner fa-spin-pulse fa-fw"
+                style="padding-right: 0"
+              ></i
+            ></span>
+            <span translate>Save Mappings</span>
           </button>
         </a>
       </div>

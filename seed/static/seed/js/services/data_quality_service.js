@@ -96,7 +96,7 @@ angular.module('SEED.service.data_quality', []).factory('data_quality_service', 
     };
 
     data_quality_factory.check_mapping_for_nulls = (org_id, import_file_id) => $http
-      .get(`/api/v3/import_files/${import_file_id}/verify_data_type_mapping?organization=${org_id}`)
+      .post(`/api/v3/import_files/${import_file_id}/verify_data_type_mapping/?organization=${org_id}`)
       .then((response) => response.data);
 
     return data_quality_factory;
