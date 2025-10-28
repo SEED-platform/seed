@@ -57,6 +57,7 @@ from seed.models import (
 )
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.import_file import verify_data_types
 
 _log = logging.getLogger(__name__)
 
@@ -1170,6 +1171,25 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             },
             status=status.HTTP_200_OK,
         )
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @action(detail=True, methods=["GET"])
+    def verify_data_type_mapping(self, request, pk):
+            org_id = self.get_organization(request)
+
+            try:
+                import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
+            except ImportFile.DoesNotExist:
+                return JsonResponse(
+                    {"status": "error", "message": "No such resource."}, status=status.HTTP_400_BAD_REQUEST
+                )
+
+            verify_data_types(org_id, import_file.id)
+            import_file.refresh_from_db()
+
+            warnings = import_file.mapping_error_messages 
+            status = "warning" if warnings else "success"
+            return JsonResponse({"status": status, "message": warnings})
 
 
 def get_conversion_factor(type_name, unit, _kbtu_thermal_conversion_factors, _kgal_water_conversion_factors):
