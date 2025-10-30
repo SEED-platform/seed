@@ -2225,6 +2225,30 @@
             </form>
           </div>
         </div>
+
+        <div class="section_content_container">
+          <div class="section_content with_padding">
+            <form class="form-horizontal" role="form">
+              <div class="form-group">
+                <div class="col-sm-11 text-center" style="align-items:center;">
+                  <i class="fab fa-salesforce" style="font-size:40px; color:#0D9DDA;"></i>
+                  <span style="margin-right:10px">Salesforce Connection Status:</span>
+                  <span ng-if="is_logged_into_bb_salesforce" class="label label-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
+                  <span ng-if="is_logged_into_bb_salesforce" style="margin: 0px 0px 15px 0px">
+                    <button class="btn btn-info portfolio-summary-btn" type="submit" ng-click="bb_logout_salesforce()">{$:: 'Logout' | translate $}</button>
+                  </span>
+                  <span ng-if="!is_logged_into_bb_salesforce" class="label label-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
+                  <span ng-if="!is_logged_into_bb_salesforce" style="margin: 0px 0px 15px 15px">
+                    <button class="btn btn-info portfolio-summary-btn" type="submit" ng-click="bb_login_salesforce()">{$:: 'Login' | translate $}</button>
+                  </span>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+
+
       </div>
     </uib-tab>
 

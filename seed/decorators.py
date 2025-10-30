@@ -209,7 +209,7 @@ def get_bb_salesforce_config(func):
                 {
                     "status": "error",
                     "valid": False,
-                    "response": "Portfolio Salesforce Connection is not properly configured. Visit the Org Settings page to configure.",
+                    "response": "Portfolio Salesforce Connection is not properly configured. Enter configuration details on the Org Settings page.",
                 },
                 status=status.HTTP_200_OK,
             )

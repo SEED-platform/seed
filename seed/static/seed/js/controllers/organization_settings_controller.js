@@ -6,6 +6,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   '$scope',
   '$sce',
   '$uibModal',
+  '$window',
   '$state',
   'urls',
   'organization_payload',
@@ -36,6 +37,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $scope,
     $sce,
     $uibModal,
+    $window,
     $state,
     urls,
     organization_payload,
@@ -64,12 +66,11 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   ) {
     $scope.org = organization_payload.organization;
 
-    $scope.$watch('org', (a, b) => (a !== b ? modified_service.setModified() : null), true);
-
     $scope.conf = {};
     if (salesforce_configs_payload.length > 0) {
       $scope.conf = salesforce_configs_payload[0];
     }
+    $scope.salesforce_mappings = salesforce_mappings_payload;
 
     $scope.bb_salesforce_config = {};
     if (bb_salesforce_configs_payload !== null) {
@@ -83,12 +84,63 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       $scope.at_conf = audit_template_configs_payload[0];
     }
 
+    // watch to detect unsaved modifications
+    $scope.$watch('org', (a, b) => (a !== b ? modified_service.setModified() : null), true);
+    $scope.$watch('salesforce_mappings', (a, b) => (a !== b ? modified_service.setModified() : null), true);
+    $scope.$watch('conf', (a, b) => (a !== b ? modified_service.setModified() : null), true);
+    $scope.$watch('bb_salesforce_configs', (a, b) => (a !== b ? modified_service.setModified() : null), true);
+    $scope.$watch('at_conf', (a, b) => (a !== b ? modified_service.setModified() : null), true);
+
+    // function to verify BB salesforce login status
+    $scope.get_bb_salesforce_login_status = () => {
+      bb_salesforce_service.verify_token($scope.org.id).then((response) => {
+        if (response.status === 200) {
+          $scope.is_logged_into_bb_salesforce = response.data.valid;
+        } else {
+          $scope.is_logged_into_bb_salesforce = false;
+        }
+      });
+    };
+
+    // BB salesforce login status check
+    $scope.is_logged_into_bb_salesforce = false;
+    $scope.get_bb_salesforce_login_status();
+
+    $scope.bb_login_salesforce = () => {
+      bb_salesforce_service.get_login_url($scope.org.id)
+        .then((data) => {
+          // did we get a URL?
+          if (data.status === 'error') {
+            Notification.error({ message: `Cannot Login to Salesforce: ${data.response}`, delay: false });
+          } else if (data.url) {
+            $window.location.href = data.url;
+          }
+        })
+        .catch(() => {
+          Notification.error({ message: 'Cannot Login to Salesforce. Double check the Salesforce login URL.', delay: false });
+        });
+    };
+
+    $scope.bb_logout_salesforce = () => {
+      bb_salesforce_service.logout_salesforce($scope.org.id)
+        .then((data) => {
+          if (data.status === 'success') {
+            $scope.is_logged_into_bb_salesforce = false;
+            Notification.success('Successfully logged out of Salesforce.');
+          } else {
+            Notification.error({ message: 'Error logging out of Salesforce. Please try again.', delay: 30000 });
+          }
+        })
+        .catch(() => {
+          Notification.error({ message: 'Error logging out of Salesforce. Please try again.', delay: 30000 });
+        });
+    };
+
     $scope.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     $scope.auth = auth_payload.auth;
     $scope.property_column_names = property_column_names;
     $scope.taxlot_column_names = taxlot_column_names;
-    $scope.salesforce_mappings = salesforce_mappings_payload;
     $scope.org_static = angular.copy($scope.org);
     $scope.token_validity = { message: 'Verify Token' };
     $scope.labels = labels_payload;

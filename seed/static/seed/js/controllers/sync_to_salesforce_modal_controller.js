@@ -18,10 +18,8 @@ angular.module('SEED.controller.sync_to_salesforce_modal', []).controller('sync_
 
     // goal details
     $scope.goal_details = {
-      Partner: goal.salesforce_partner_id,
-      'Partner ID': goal.salesforce_partner_name,
-      Goal: goal.salesforce_goal_id,
-      'Goal ID': goal.salesforce_goal_name
+      'Salesforce Partner': `${goal.salesforce_partner_name} (${goal.salesforce_partner_id})`,
+      'Salesforce Goal': `${goal.salesforce_goal_name} (${goal.salesforce_goal_id})`
     };
 
     // baseline cycle goal
@@ -79,6 +77,10 @@ angular.module('SEED.controller.sync_to_salesforce_modal', []).controller('sync_
         salesforce: latest_cycle_goal_summary.salesforce.reviewed_square_feet
       }
     };
+
+    // the 2 dropdowns (handle separately)
+    $scope.report_status = latest_cycle_goal_summary.salesforce.report_status;
+    $scope.review_status = latest_cycle_goal_summary.salesforce.review_status;
 
     // past cycles
     $scope.past_cycle_goals = Object.entries(salesforce_summary_data).filter(
