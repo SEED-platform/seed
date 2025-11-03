@@ -28,8 +28,7 @@
         <tr ng-repeat="(k, v) in baseline_cycle_goal_table">
           <td class="col-sm-4" style="font-weight: bold;">{$ k $}</td>
           <td class="col-sm-3">{$ v["seed"] $}</td>
-          <td class="col-sm-3">{$ v["salesforce"] $}</td>
-        </tr>
+          <td class="col-sm-3" ng-class="{'mismatch-highlight': v['seed'] !== v['salesforce'], 'match-highlight': v['seed'] === v['salesforce']}">{$ v["salesforce"] $}</td>
       </tbody>
     </table>
   </div>
@@ -48,7 +47,7 @@
         <tr ng-repeat="(k, v) in latest_cycle_goal_table">
           <td class="col-sm-4" style="font-weight: bold;">{$ k $}</td>
           <td class="col-sm-3">{$ v["seed"] $}</td>
-          <td class="col-sm-3">{$ v["salesforce"] $}</td>
+          <td class="col-sm-3" ng-class="{'mismatch-highlight': v['seed'] !== v['salesforce'], 'match-highlight': v['seed'] === v['salesforce']}">{$ v["salesforce"] $}</td>
         </tr>
         <tr>
           <td class="col-sm-4" style="font-weight: bold;" translate>Report Status</td>
@@ -67,7 +66,7 @@
       </tbody>
     </table>
     <div style="display:flex; width: 100%;">
-      <button type="button" class="btn btn-primary col-sm-3 center-block"  ng-click="sync_latest_cycle(report_status, review_status)" translate>Sync</button>
+      <button type="button" class="btn btn-primary col-sm-3 center-block"  ng-click="sync_latest_cycle(report_status, review_status)" translate>Sync Baseline and Current Report</button>
     </div>
   </div>
 
@@ -82,12 +81,15 @@
       </thead>
       <tbody>
         <tr ng-repeat="(_, summary) in past_cycle_goals_table">
-          <td ng-repeat="(_, v) in summary">{$ v $}</td>
+          <td ng-repeat="(k, v) in summary"
+              ng-class="{'mismatch-sf': setMismatchHighlight(summary, k, $index), 'match-sf': setMatchHighlight(summary, k, $index), 'match-first': $index === 0}">
+            {$ v $}
+          </td>
         </tr>
       </tbody>
     </table>
     <div style="display:flex; width: 100%;">
-      <button type="button" class="btn btn-primary col-sm-3 center-block" ng-click="sync_past_cycles()" translate>Sync</button>
+      <button type="button" class="btn btn-primary col-sm-3 center-block" ng-click="sync_past_cycles()" translate>Sync Historical Reports</button>
     </div>
   </div>
 </div>

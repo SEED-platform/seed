@@ -40,6 +40,7 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
 logger = logging.getLogger(__name__)
 
 
+
 @method_decorator(
     [
         swagger_auto_schema_org_query_param,
@@ -132,7 +133,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse(serializer.data)
 
-    @has_perm("requires_member")
+
     @swagger_auto_schema_org_query_param
     @method_decorator(
         [
@@ -298,10 +299,8 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse(summary)
 
-    @ajax_request
+
     @swagger_auto_schema_org_query_param
-    @has_perm("requires_viewer")
-    @has_hierarchy_access(goal_id_kwarg="pk")
     @method_decorator(
         [
             ajax_request,
@@ -334,11 +333,16 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         # login
         access_token = get_cache_raw(f"access_token_{org_id}")
-        sf = Salesforce(
-            instance="doe-bb--kanbantest.sandbox.my.salesforce.com",
-            session_id=access_token,
-        )
+        try:
+            sf = Salesforce(
+                instance="doe-bb--kanbantest.sandbox.my.salesforce.com",
+                session_id=access_token,
+            )
+        except Exception as e:
+            logger.error(f"Error connecting to Salesforce: {e}")
+            return JsonResponse({"status": "error", "message": "Error connecting to Salesforce."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+        # TODO: the update for current goal should be different than the one for historical goals?
         # update for each cycle goal
         for cycle_goal in cycle_goals:
             summary = get_portfolio_summary(org, cycle_goal)
@@ -359,15 +363,29 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             if review_status:
                 update_dict["BB_BBC_Data_Review_Status__c"] = review_status
 
-            sf.Annual_Report__c.update(salesforce_annual_report_id, update_dict)
-            sf.Goal__c.update(
-                cycle_goal.goal.salesforce_goal_id,
-                {
-                    "BB_Other_Baseline__c": summary["baseline_total_kbtu"],
-                    "BB_BBC_Portfolio_Average_EUI_Baseline__c": summary["baseline_weighted_eui"],
-                },
-            )
-
+            try:
+                sf.Annual_Report__c.update(cycle_goal.salesforce_annual_report_id, update_dict)
+            except Exception as e:
+                logger.error(f"Error updating Salesforce Annual Report {cycle_goal.salesforce_annual_report_name}: {e}")
+                return JsonResponse(
+                    {"status": "error", "message": f"Error updating Salesforce Annual Report {cycle_goal.salesforce_annual_report_name}."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
+            # TODO: this should ONLY happen when we are updating the current report.
+            try:
+                sf.Goal__c.update(
+                    cycle_goal.goal.salesforce_goal_id,
+                    {
+                        "BB_Other_Baseline__c": summary["baseline_total_kbtu"],
+                        "BB_BBC_Portfolio_Average_EUI_Baseline__c": summary["baseline_weighted_eui"],
+                    },
+                )
+            except Exception as e:
+                logger.error(f"Error updating Salesforce Goal {cycle_goal.goal.salesforce_goal_name}: {e}")
+                return JsonResponse(
+                    {"status": "error", "message": f"Error updating Salesforce Goal {cycle_goal.goal.salesforce_goal_name}."},
+                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                )
 
 @method_decorator(
     name="destroy",

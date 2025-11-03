@@ -4624,6 +4624,31 @@ ul.r-list {
   color: #856404; /* Dark yellow/brown text */
   border: 1px solid #ffeaa7; /* Light yellow border */
 }
+.mismatch-sf {
+  background-color: #fff3cd !important; /* Light yellow background */
+  color: #856404; /* Dark yellow/brown text */
+  border: 1px solid #ffeaa7; /* Light yellow border */
+  border-right:2px solid #ddd;
+}
+
+.match-highlight {
+  background-color: #d4edda !important; /* Light green background */
+  color: #155724; /* Dark green text */
+  border: 1px solid #c3e6cb; /* Light green border */
+}
+
+.match-sf {
+  background-color: #d4edda !important; /* Light green background */
+  color: #155724; /* Dark green text */
+  border: 1px solid #c3e6cb; /* Light green border */
+  border-right:2px solid #ddd;
+}
+
+.match-first {
+  border-right:2px solid #ddd;
+  font-weight: bold;
+}
+
 
 .r-small-header {
   text-transform: uppercase;
