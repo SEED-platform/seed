@@ -14,6 +14,7 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from django.utils.text import get_valid_filename
 from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -90,7 +91,8 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
             the_file = request.data["qqfile"]
         else:
             the_file = request.data["file"]
-        filename = the_file.name
+        # Sanitize filename to remove problematic characters (commas, semicolons, etc.)
+        filename = get_valid_filename(the_file.name)
         path = get_upload_path(filename)
 
         # verify the directory exists
