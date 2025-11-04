@@ -23,8 +23,10 @@ from seed.views.v3.uploads import get_upload_path
 
 class TestMeasures(TestCase):
     def setUp(self):
-        self.user_a = User.objects.create(username="user_a")
-        self.user_b = User.objects.create(username="user_b")
+        self.user_details_a = {"username": "user_a@test.com", "password": "test_pass_a", "email": "user_a@test.com"}
+        self.user_a = User.objects.create_user(**self.user_details_a)
+        self.user_details_b = {"username": "user_b@test.com", "password": "test_pass_b", "email": "user_b@test.com"}
+        self.user_b = User.objects.create_user(**self.user_details_b)
         self.org_a = Organization.objects.create()
         self.root_a = AccessLevelInstance.objects.get(organization_id=self.org_a, depth=1)
         self.org_a_sub = Organization.objects.create()
@@ -303,3 +305,68 @@ class TestMeasures(TestCase):
         # test bad path
         with pytest.raises(ModelForFileNotFoundError):
             check_file_permission(self.user_a, "")
+
+    def test_retrieve_file_successfully(self):
+        """Test that retrieve endpoint serves files correctly"""
+        # Setup - create an import file
+        import_record = ImportRecord.objects.create(
+            owner=self.user_a, last_modified_by=self.user_a, super_organization=self.org_a, access_level_instance=self.org_a.root
+        )
+        ImportFile.objects.create(
+            import_record=import_record, uploaded_filename=os.path.basename(self.uploads_file), file=self.absolute_uploads_file
+        )
+
+        self.client.login(**self.user_details_a)
+        response = self.client.get(f"/api/v3/media/{self.uploads_file}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"Hello world")
+        self.assertIn("Content-Disposition", response)
+        self.assertIn("attachment", response["Content-Disposition"])
+
+    def test_retrieve_file_with_comma_in_filename(self):
+        """Test that files with commas in filename download correctly"""
+        # Setup - create a file with commas in the name
+        absolute_comma_file = get_upload_path("test,file,with,commas.txt")
+        comma_file = os.path.relpath(absolute_comma_file, settings.MEDIA_ROOT)
+        os.makedirs(os.path.dirname(absolute_comma_file), exist_ok=True)
+        with open(absolute_comma_file, "w", encoding=locale.getpreferredencoding(False)) as f:
+            f.write("File with commas")
+
+        import_record = ImportRecord.objects.create(
+            owner=self.user_a, last_modified_by=self.user_a, super_organization=self.org_a, access_level_instance=self.org_a.root
+        )
+        ImportFile.objects.create(import_record=import_record, uploaded_filename=os.path.basename(comma_file), file=absolute_comma_file)
+
+        self.client.login(**self.user_details_a)
+        response = self.client.get(f"/api/v3/media/{comma_file}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"File with commas")
+        # Verify the download filename is sanitized (commas removed)
+        self.assertIn("Content-Disposition", response)
+        self.assertIn("testfilewithcommas.txt", response["Content-Disposition"])
+        self.assertNotIn(",", response["Content-Disposition"])
+
+    def test_retrieve_file_without_permission_returns_404(self):
+        """Test that users without permission get 404"""
+        # Setup - create an import file for org_a
+        import_record = ImportRecord.objects.create(
+            owner=self.user_a, last_modified_by=self.user_a, super_organization=self.org_a, access_level_instance=self.org_a.root
+        )
+        ImportFile.objects.create(
+            import_record=import_record, uploaded_filename=os.path.basename(self.uploads_file), file=self.absolute_uploads_file
+        )
+
+        # user_b tries to access org_a's file
+        self.client.login(**self.user_details_b)
+        response = self.client.get(f"/api/v3/media/{self.uploads_file}")
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_retrieve_nonexistent_file_returns_404(self):
+        """Test that requesting non-existent file returns 404"""
+        self.client.login(**self.user_details_a)
+        response = self.client.get("/api/v3/media/uploads/nonexistent.txt")
+
+        self.assertEqual(response.status_code, 404)
