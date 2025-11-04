@@ -40,7 +40,6 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
 logger = logging.getLogger(__name__)
 
 
-
 @method_decorator(
     [
         swagger_auto_schema_org_query_param,
@@ -132,7 +131,6 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         serializer.save()
 
         return JsonResponse(serializer.data)
-
 
     @swagger_auto_schema_org_query_param
     @method_decorator(
@@ -294,11 +292,10 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 "total_ei_improvement": annual_report["BB_Total_Improvement_in_Energy_Intensity__c"],
                 "new_energy_savings": annual_report["BB_New_Energy_Savings_for_Current_Year__c"],
                 "report_status": annual_report["BB_Report_Status__c"],
-                "review_status": annual_report["BB_BBC_Data_Review_Status__c"]
+                "review_status": annual_report["BB_BBC_Data_Review_Status__c"],
             }
 
         return JsonResponse(summary)
-
 
     @swagger_auto_schema_org_query_param
     @method_decorator(
@@ -310,8 +307,11 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     )
     @action(detail=True, methods=["PUT"])
     @get_bb_salesforce_config
-    def update_salesforce(self, request, pk, bb_salesforce_config):
+    def update_salesforce_current(self, request, pk, bb_salesforce_config):
         # Init a bunch of values
+        report_status = request.data.get("report_status")
+        review_status = request.data.get("review_status")
+        cycle_goal_id = request.data.get("cycle_goal_id", None)
         org_id = int(self.get_organization(request))
         try:
             org = Organization.objects.get(pk=org_id)
@@ -319,13 +319,91 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         except Goal.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No such resource."})
 
-        # get cycle_goals
-        cycle_goal_ids = request.data.get("cycle_goal_ids", [])
-        cycle_goals = CycleGoal.objects.filter(goal=goal, id__in=cycle_goal_ids)
-        report_status = request.data.get("report_status")
-        review_status = request.data.get("review_status")
+        # get cycle_goal and ensure salesforce goal is attached
+        cycle_goal = CycleGoal.objects.filter(goal=goal, id=cycle_goal_id).first()
+        if cycle_goal is None:
+            return JsonResponse({"status": "error", "message": "No such resource."})
+        if cycle_goal.salesforce_annual_report_id is None:
+            return JsonResponse({"status": "error", "message": f"CycleGoal {cycle_goal.id} has no attached salesforce annual report."})
 
-        # ensure salesforce goal is attached
+        # login
+        access_token = get_cache_raw(f"access_token_{org_id}")
+        try:
+            sf = Salesforce(
+                instance="doe-bb--kanbantest.sandbox.my.salesforce.com",
+                session_id=access_token,
+            )
+        except Exception as e:
+            logger.error(f"Error connecting to Salesforce: {e}")
+            return JsonResponse(
+                {"status": "error", "message": "Error connecting to Salesforce."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        # update cycle goal
+        summary = get_portfolio_summary(org, cycle_goal)
+        update_dict = {
+            "BB_Reporting_Year_Start_Date__c": cycle_goal.current_cycle.start.strftime("%Y-%m-%d"),
+            "BB_Reporting_Year_End_Date__c": cycle_goal.current_cycle.end.strftime("%Y-%m-%d"),
+            "BB_Num_of_Participating_Facilities__c": summary["total_properties"],
+            "BB_Portfolio_Average_EUI__c": summary["current_weighted_eui"],
+            "BB_Shared_Square_Feet__c": summary["shared_sqft"],
+            "BB_Reviewed_Square_Feet__c": summary["current_total_sqft"],
+            "BB_Energy_IntensityImprovement_Current__c": summary["baseline_weighted_eui"] - summary["current_weighted_eui"],
+            "BB_Other__c": summary["current_total_kbtu"],
+            "BB_Total_Improvement_in_Energy_Intensity__c": summary["eui_change"],
+            "BB_New_Energy_Savings_for_Current_Year__c": summary["baseline_total_kbtu"] - summary["current_total_kbtu"],
+        }
+        if report_status:
+            update_dict["BB_Report_Status__c"] = report_status
+        if review_status:
+            update_dict["BB_BBC_Data_Review_Status__c"] = review_status
+
+        try:
+            sf.Annual_Report__c.update(cycle_goal.salesforce_annual_report_id, update_dict)
+        except Exception as e:
+            logger.error(f"Error updating Salesforce Annual Report {cycle_goal.salesforce_annual_report_name}: {e}")
+            return JsonResponse(
+                {"status": "error", "message": f"Error updating Salesforce Annual Report {cycle_goal.salesforce_annual_report_name}."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+        # TODO: this should ONLY happen when we are updating the current report.
+        try:
+            sf.Goal__c.update(
+                cycle_goal.goal.salesforce_goal_id,
+                {
+                    "BB_Other_Baseline__c": summary["baseline_total_kbtu"],
+                    "BB_BBC_Portfolio_Average_EUI_Baseline__c": summary["baseline_weighted_eui"],
+                },
+            )
+        except Exception as e:
+            logger.error(f"Error updating Salesforce Goal {cycle_goal.goal.salesforce_goal_name}: {e}")
+            return JsonResponse(
+                {"status": "error", "message": f"Error updating Salesforce Goal {cycle_goal.goal.salesforce_goal_name}."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @swagger_auto_schema_org_query_param
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(goal_id_kwarg="pk"),
+        ]
+    )
+    @action(detail=True, methods=["PUT"])
+    @get_bb_salesforce_config
+    def update_salesforce_historical(self, request, pk, bb_salesforce_config):
+        # Init a bunch of values
+        cycle_goal_ids = request.data.get("cycle_goal_ids", [])
+        org_id = int(self.get_organization(request))
+        try:
+            org = Organization.objects.get(pk=org_id)
+            goal = Goal.objects.get(pk=pk)
+        except Goal.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."})
+
+        # get cycle_goals and ensure salesforce goal is attached
+        cycle_goals = CycleGoal.objects.filter(goal=goal, id__in=cycle_goal_ids)
         for cycle_goal in cycle_goals:
             salesforce_annual_report_id = cycle_goal.salesforce_annual_report_id
             if salesforce_annual_report_id is None:
@@ -340,29 +418,19 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             )
         except Exception as e:
             logger.error(f"Error connecting to Salesforce: {e}")
-            return JsonResponse({"status": "error", "message": "Error connecting to Salesforce."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return JsonResponse(
+                {"status": "error", "message": "Error connecting to Salesforce."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-        # TODO: the update for current goal should be different than the one for historical goals?
         # update for each cycle goal
         for cycle_goal in cycle_goals:
             summary = get_portfolio_summary(org, cycle_goal)
             update_dict = {
-                "BB_Reporting_Year_Start_Date__c": cycle_goal.current_cycle.start.strftime("%Y-%m-%d"),
-                "BB_Reporting_Year_End_Date__c": cycle_goal.current_cycle.end.strftime("%Y-%m-%d"),
-                "BB_Num_of_Participating_Facilities__c": summary["total_properties"],
                 "BB_Portfolio_Average_EUI__c": summary["current_weighted_eui"],
-                "BB_Shared_Square_Feet__c": summary["shared_sqft"],
-                "BB_Reviewed_Square_Feet__c": summary["current_total_sqft"],
                 "BB_Energy_IntensityImprovement_Current__c": summary["baseline_weighted_eui"] - summary["current_weighted_eui"],
                 "BB_Other__c": summary["current_total_kbtu"],
-                "BB_Total_Improvement_in_Energy_Intensity__c": summary["eui_change"],
                 "BB_New_Energy_Savings_for_Current_Year__c": summary["baseline_total_kbtu"] - summary["current_total_kbtu"],
             }
-            if report_status:
-                update_dict["BB_Report_Status__c"] = report_status
-            if review_status:
-                update_dict["BB_BBC_Data_Review_Status__c"] = review_status
-
             try:
                 sf.Annual_Report__c.update(cycle_goal.salesforce_annual_report_id, update_dict)
             except Exception as e:
@@ -371,21 +439,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                     {"status": "error", "message": f"Error updating Salesforce Annual Report {cycle_goal.salesforce_annual_report_name}."},
                     status=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 )
-            # TODO: this should ONLY happen when we are updating the current report.
-            try:
-                sf.Goal__c.update(
-                    cycle_goal.goal.salesforce_goal_id,
-                    {
-                        "BB_Other_Baseline__c": summary["baseline_total_kbtu"],
-                        "BB_BBC_Portfolio_Average_EUI_Baseline__c": summary["baseline_weighted_eui"],
-                    },
-                )
-            except Exception as e:
-                logger.error(f"Error updating Salesforce Goal {cycle_goal.goal.salesforce_goal_name}: {e}")
-                return JsonResponse(
-                    {"status": "error", "message": f"Error updating Salesforce Goal {cycle_goal.goal.salesforce_goal_name}."},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                )
+
 
 @method_decorator(
     name="destroy",

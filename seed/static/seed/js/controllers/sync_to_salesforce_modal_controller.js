@@ -181,7 +181,7 @@ angular.module('SEED.controller.sync_to_salesforce_modal', []).controller('sync_
     };
 
     $scope.sync_latest_cycle = () => {
-      goal_service.update_salesforce(goal.id, [latest_cycle_goal.id], $scope.report_status ? $scope.report_status : null, $scope.review_status ? $scope.review_status : null)
+      goal_service.update_salesforce_current(goal.id, latest_cycle_goal.id, $scope.report_status ? $scope.report_status : null, $scope.review_status ? $scope.review_status : null)
         .then(() => {
           Notification.success({ message: 'Salesforce Goal and Current Annual Report Updated Successfully!', delay: 5000 });
           goal_service.get_salesforce_summary(goal.id)
@@ -200,7 +200,7 @@ angular.module('SEED.controller.sync_to_salesforce_modal', []).controller('sync_
     };
 
     $scope.sync_past_cycles = () => {
-      goal_service.update_salesforce(goal.id, $scope.past_cycle_goals.map(([, c]) => c.id))
+      goal_service.update_salesforce_historical(goal.id, $scope.past_cycle_goals.map(([, c]) => c.id))
         .then(() => {
           Notification.success({ message: 'Salesforce historical reports updated successfully!', delay: 5000 });
           goal_service.get_salesforce_summary(goal.id)

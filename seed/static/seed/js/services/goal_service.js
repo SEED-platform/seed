@@ -102,9 +102,17 @@ angular.module('SEED.service.goal', []).factory('goal_service', [
         throw error; // Re-throw to propagate to controller
       });
 
-    goal_service.update_salesforce = (goal_id, cycle_goal_ids, report_status, review_status) => $http.put(
-      `/api/v3/goals/${goal_id}/update_salesforce/`,
-      { cycle_goal_ids, report_status, review_status },
+    goal_service.update_salesforce_current = (goal_id, cycle_goal_id, report_status, review_status) => $http.put(
+      `/api/v3/goals/${goal_id}/update_salesforce_current/`,
+      { cycle_goal_id, report_status, review_status },
+      { params: { organization_id: user_service.get_organization().id } }
+    )
+      .then((response) => response)
+      .catch((response) => response);
+
+    goal_service.update_salesforce_historical = (goal_id, cycle_goal_ids) => $http.put(
+      `/api/v3/goals/${goal_id}/update_salesforce_historical/`,
+      { cycle_goal_ids },
       { params: { organization_id: user_service.get_organization().id } }
     )
       .then((response) => response)
