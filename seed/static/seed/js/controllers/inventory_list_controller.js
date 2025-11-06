@@ -1920,8 +1920,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
     // https://regexr.com/6cka2
     const numericComparison = /^(!?)=\s*(-?\d+(?:\.\d+)?)$/;
     const stringComparison = /^(!?)=?\s*"((?:[^"]|\\")*)"$/;
-    const dateComparison = /^(<=|>=|!=|=|<|>|!)\s*((-?\d+(?:\.\d+)?)|(\d{4}(?:[-/]\d{2}(?:[-/]\d{2}(?: \d{1,2}(?::\d{2}(?::\d{2})?)?)?)?)?))$/;
-    const combinedRegex = new RegExp(`${numericComparison.source}|${stringComparison.source}|${dateComparison.source}`);
+    const dateComparison = /^(<=|>=|!=|=|<|>|!)\s*((-?\d+(?:\.\d+)?)|(\d{4}(?:[-/]\d{1,2}(?:[-/]\d{1,2}(?: \d{1,2}(?::\d{2}(?::\d{2})?)?)?)?)?))$/;
+    const usDateComparison = /^(<=|>=|!=|=|<|>|!)\s*(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})$/;
+    const combinedRegex = new RegExp(`${numericComparison.source}|${stringComparison.source}|${dateComparison.source}|${usDateComparison.source}`);
     const parseFilter = (expression) => {
       // parses an expression string into an object containing operator and value
       const filterData = expression.match(combinedRegex);
@@ -1959,9 +1960,10 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
               return { string: '>=', operator: 'gte', value };
           }
         } else {
-          // Date Comparison
-          const operator = filterData[5];
-          const value = filterData[8].replace(/\//g, '-'); // transform d/m/yyyy to d-m-yyyy
+          // Date Comparison: handles both yyyy-mm-dd and mm-dd-yyyy formats
+          const operator = filterData[5] || filterData[9];
+          const rawValue = filterData[8] || filterData[10];
+          const value = rawValue.replace(/\//g, '-');
           switch (operator) {
             case '<':
               return { string: '<', operator: 'lt', value };
