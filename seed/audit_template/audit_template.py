@@ -334,6 +334,8 @@ class AuditTemplate:
                             em.Buildings(
                                 em.Building(
                                     {"ID": building_id},
+                                    # Conditionally include FederalBuilding element
+                                    *(_build_federal_element(em, state, org) if org.audit_template_export_federal else []),
                                     em.PremisesName(state.property_name),
                                     em.PremisesIdentifiers(
                                         em.PremisesIdentifier(
@@ -596,6 +598,123 @@ def _build_measures_element(em, property_id, building_id):
             ],
         )
     ]
+
+
+def _build_federal_element(em, state, org):
+    """ example:
+        <auc:FederalBuilding>
+            <auc:Agency>DOD</auc:Agency>
+            <auc:SubAgency>Army</auc:SubAgency>
+            <auc:SubAgencySubLevel1>Accountable Organization</auc:SubAgencySubLevel1>
+            <auc:SubAgencySubLevel2>Accountable Sub Org</auc:SubAgencySubLevel2>
+            <auc:FederalFacility>Installation</auc:FederalFacility>
+            <auc:FacilitySubLevel1>Site</auc:FacilitySubLevel1>
+            <auc:FacilitySubLevel2>Site</auc:FacilitySubLevel2>
+            <auc:FacilityNumber>123456</auc:FacilityNumber>
+            <auc:PrimaryCategoryCode>123456</auc:PrimaryCategoryCode>
+        </auc:FederalBuilding>
+    """
+
+    # Get the full path as names
+    ali = state.propertyview_set.first().property.access_level_instance
+    ali_names = ali.get_path()  # This should return a list of names
+
+    # get agency
+    agency = None
+    if org.audit_template_federal_agency:
+        agency = org.audit_template_federal_agency
+
+    # Start with agency as the base value for fallback
+    previous_value = agency
+
+    # TODO: return nothing if not top-level agency is listed?
+
+    # SubAgency - look for access_level_names[0] in ali_names, fallback to previous_value
+    if len(org.access_level_names) > 0:
+        subagency = ali_names.get(org.access_level_names[0], previous_value)
+        previous_value = subagency
+    else:
+        subagency = previous_value
+
+    # SubAgencySubLevel1 - look for access_level_names[1] in ali_names, fallback to previous_value
+    if len(org.access_level_names) > 1:
+        subagency_level_1 = ali_names.get(org.access_level_names[1], previous_value)
+        previous_value = subagency_level_1
+    else:
+        subagency_level_1 = previous_value
+
+    # SubAgencySubLevel2 - look for access_level_names[2] in ali_names, fallback to previous_value
+    if len(org.access_level_names) > 2:
+        subagency_level_2 = ali_names.get(org.access_level_names[2], previous_value)
+        previous_value = subagency_level_2
+    else:
+        subagency_level_2 = previous_value
+
+    # FederalFacility - look for access_level_names[3] in ali_names, fallback to previous_value
+    if len(org.access_level_names) > 3:
+        facility = ali_names.get(org.access_level_names[3], previous_value)
+        previous_value = facility
+    else:
+        facility = previous_value
+
+    # FacilitySubLevel1 - look for access_level_names[4] in ali_names, fallback to previous_value
+    if len(org.access_level_names) > 4:
+        facility_level_1 = ali_names.get(org.access_level_names[4], previous_value)
+        previous_value = facility_level_1
+    else:
+        facility_level_1 = previous_value
+
+    # FacilitySubLevel2 - look for access_level_names[5] in ali_names, fallback to previous_value
+    if len(org.access_level_names) > 5:
+        facility_level_2 = ali_names.get(org.access_level_names[5], previous_value)
+    else:
+        facility_level_2 = previous_value
+
+    # assume facility number is in a extra data field named "Facility Number" and Category code is in "Category Code"
+    facility_number = None
+    primary_category_code = None
+
+    # facility number and category code are not canonical fields
+    if state.extra_data:
+        # Look for facility number with different casing/formatting
+        for field_name in ["Facility Number", "facility number", "facility_number"]:
+            facility_number = state.extra_data.get(field_name)
+            if facility_number:
+                break
+
+        # Look for category code with different variations
+        for field_name in ["Category Code", "category code", "category_code"]:
+            primary_category_code = state.extra_data.get(field_name)
+            if primary_category_code:
+                break
+
+    # Build federal sub-elements only for fields that have values
+    federal_elements = []
+
+    if agency:
+        federal_elements.append(em.Agency(agency))
+    if subagency:
+        federal_elements.append(em.SubAgency(subagency))
+    if subagency_level_1:
+        federal_elements.append(em.SubAgencySubLevel1(subagency_level_1))
+    if subagency_level_2:
+        federal_elements.append(em.SubAgencySubLevel2(subagency_level_2))
+    if facility:
+        federal_elements.append(em.FederalFacility(facility))
+    if facility_level_1:
+        federal_elements.append(em.FacilitySubLevel1(facility_level_1))
+    if facility_level_2:
+        federal_elements.append(em.FacilitySubLevel2(facility_level_2))
+    if facility_number:
+        federal_elements.append(em.FacilityNumber(str(facility_number)))
+    if primary_category_code:
+        federal_elements.append(em.PrimaryCategoryCode(str(primary_category_code)))
+
+    # Only return FederalBuilding if there are sub-elements
+    if federal_elements:
+        return [em.FederalBuilding(*federal_elements)]
+    else:
+        return []
 
 
 def _get_measures(property_id):
