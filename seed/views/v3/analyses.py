@@ -360,7 +360,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         extra_data_columns = [c.column_name for c in columns if c.is_extra_data]
         num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, PropertyState, columns)
 
-        gfa_list = PropertyState.objects.filter(id__in=state_ids).values_list('gross_floor_area', flat=True)
+        gfa_list = PropertyState.objects.filter(id__in=state_ids).values_list("gross_floor_area", flat=True)
 
         return JsonResponse(
             {
