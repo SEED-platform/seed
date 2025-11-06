@@ -600,7 +600,9 @@
                     ng-model="org.audit_template_export_meters"
                     ng-disabled="::!auth.requires_owner"
                   />
-                  <h3 translate style="padding-left:5px;margin-top:12px">Meter Data</h3>
+                  <h3 translate style="padding-left: 5px; margin-top: 12px">
+                    Meter Data
+                  </h3>
                 </div>
                 <div style="display: flex; vertical-align: middle">
                   <input
@@ -610,7 +612,7 @@
                     ng-model="org.audit_template_export_measures"
                     ng-disabled="::!auth.requires_owner"
                   />
-                  <h3 translate style="padding-left:5px;margin-top:12px">
+                  <h3 translate style="padding-left: 5px; margin-top: 12px">
                     BuildingSync Measures
                   </h3>
                 </div>
@@ -625,16 +627,19 @@
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-5">
-                <p translate>Enable this functionality to send Federal Building fields to Audit Template.</p>
+                <p translate>
+                  Enable this functionality to send Federal Building fields to
+                  Audit Template.
+                </p>
                 <div style="display: flex; vertical-align: middle">
-                   <input
+                  <input
                     type="checkbox"
                     class="form-control"
                     style="width: 20px"
                     ng-model="org.audit_template_export_federal"
                     ng-disabled="::!auth.requires_owner"
                   />
-                  <h3 translate style="padding-left:5px; margin-top:12px">
+                  <h3 translate style="padding-left: 5px; margin-top: 12px">
                     Federal Building Fields
                   </h3>
                 </div>
@@ -643,11 +648,11 @@
                     <p translate>AT_FEDERAL_FIELDS_DESC</p>
                     <h3 translate>Agency Name</h3>
                     <p translate>AT_AGENCY_NAME_DESC</p>
-                      <input
-                        class="form-control"
-                        ng-model="org.audit_template_federal_agency"
-                        ng-disabled="::!auth.requires_owner"
-                      />
+                    <input
+                      class="form-control"
+                      ng-model="org.audit_template_federal_agency"
+                      ng-disabled="::!auth.requires_owner"
+                    />
                   </div>
                 </div>
               </div>

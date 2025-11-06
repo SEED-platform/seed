@@ -601,18 +601,18 @@ def _build_measures_element(em, property_id, building_id):
 
 
 def _build_federal_element(em, state, org):
-    """ example:
-        <auc:FederalBuilding>
-            <auc:Agency>DOD</auc:Agency>
-            <auc:SubAgency>Army</auc:SubAgency>
-            <auc:SubAgencySubLevel1>Accountable Organization</auc:SubAgencySubLevel1>
-            <auc:SubAgencySubLevel2>Accountable Sub Org</auc:SubAgencySubLevel2>
-            <auc:FederalFacility>Installation</auc:FederalFacility>
-            <auc:FacilitySubLevel1>Site</auc:FacilitySubLevel1>
-            <auc:FacilitySubLevel2>Site</auc:FacilitySubLevel2>
-            <auc:FacilityNumber>123456</auc:FacilityNumber>
-            <auc:PrimaryCategoryCode>123456</auc:PrimaryCategoryCode>
-        </auc:FederalBuilding>
+    """example:
+    <auc:FederalBuilding>
+        <auc:Agency>DOD</auc:Agency>
+        <auc:SubAgency>Army</auc:SubAgency>
+        <auc:SubAgencySubLevel1>Accountable Organization</auc:SubAgencySubLevel1>
+        <auc:SubAgencySubLevel2>Accountable Sub Org</auc:SubAgencySubLevel2>
+        <auc:FederalFacility>Installation</auc:FederalFacility>
+        <auc:FacilitySubLevel1>Site</auc:FacilitySubLevel1>
+        <auc:FacilitySubLevel2>Site</auc:FacilitySubLevel2>
+        <auc:FacilityNumber>123456</auc:FacilityNumber>
+        <auc:PrimaryCategoryCode>123456</auc:PrimaryCategoryCode>
+    </auc:FederalBuilding>
     """
 
     # Get the full path as names

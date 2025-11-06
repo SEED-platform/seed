@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0042_organizationuser_settings'),
+        ("orgs", "0042_organizationuser_settings"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='audit_template_export_federal',
+            model_name="organization",
+            name="audit_template_export_federal",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='organization',
-            name='audit_template_federal_agency',
+            model_name="organization",
+            name="audit_template_federal_agency",
             field=models.CharField(blank=True, max_length=128, null=True),
         ),
     ]
