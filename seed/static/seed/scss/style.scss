@@ -5318,7 +5318,8 @@ ul.r-list {
       display: flex;
       overflow-x: hidden;
       width: 100%;
-      height: 1570px !important;
+      height: 90vh !important;
+      margin-bottom: 10px;
     }
   }
 
@@ -5890,5 +5891,6 @@ tags-input .tags .tag-item {
 }
 
 .description-text {
-  max-width: 1000px;
+  margin-left: 20px;
+  margin-right: 20px;
 }

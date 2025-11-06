@@ -16,6 +16,7 @@ angular.module('SEED.controller.facilities_plan', [])
     'property_columns',
     'auth_payload',
     'facilities_plan_run_service',
+    'Notification',
     'spinner_utility',
     'uiGridConstants',
     // eslint-disable-next-line func-names
@@ -32,6 +33,7 @@ angular.module('SEED.controller.facilities_plan', [])
       property_columns,
       auth_payload,
       facilities_plan_run_service,
+      Notification,
       spinner_utility,
       uiGridConstants
     ) {
@@ -420,6 +422,36 @@ angular.module('SEED.controller.facilities_plan', [])
             columns: () => property_columns,
             existing_fpr: () => null,
             level_name_index: () => null
+          }
+        });
+      };
+
+      $scope.export_facilities_plan_run = () => {
+        facilities_plan_run_service.export_facilities_plan_run($scope.current_facilities_plan_run_id).then((response) => {
+          console.log('Export response:', response);
+
+          // Check the HTTP status from the response object
+          if (response.status === 200) {
+            // Get content type from headers
+            const contentType = response.headers('content-type') || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+            // Create blob from the response data (ArrayBuffer)
+            const blob = new Blob([response.data], { type: contentType });
+            saveAs(blob, 'facilities_plan.xlsx');
+
+            Notification.success('Export completed successfully');
+          } else {
+            // Handle non-200 status codes
+            Notification.error(`Export failed with status: ${response.status}`);
+          }
+        }).catch((error) => {
+          // Handle network errors, timeout, etc.
+
+          // Check if error response contains useful information
+          if (error.data && error.status) {
+            Notification.error(`Export failed: ${error.status} - ${error.statusText}`);
+          } else {
+            Notification.error('Export failed: Network error or timeout');
           }
         });
       };

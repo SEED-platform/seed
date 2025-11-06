@@ -2186,6 +2186,14 @@
               'label_service',
               ($stateParams, label_service) => label_service.get_labels($stateParams.inventory_type).then((labels) => _.filter(labels, (label) => !_.isEmpty(label.is_applied)))
             ],
+            footprint_column_name: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                const get_columns = $stateParams.inventory_type === 'properties' ? inventory_service.get_property_columns : inventory_service.get_taxlot_columns;
+                return get_columns().then((columns) => columns.find((col) => col.column_name === 'property_footprint')?.name);
+              }
+            ],
             group: () => null
           }
         })
@@ -2339,6 +2347,7 @@
           controller: 'inventory_group_detail_dashboard_controller',
           resolve: {
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            meter_types: ['meters_service', (meters_service) => meters_service.valid_energy_types_units()],
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
