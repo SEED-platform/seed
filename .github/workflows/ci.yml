@@ -54,7 +54,7 @@ jobs:
           docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py migrate
           docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
       - name: Setup pnpm
@@ -114,7 +114,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.9'
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
       - name: Install deps
