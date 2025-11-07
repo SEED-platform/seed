@@ -367,7 +367,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 "status": "success",
                 "total_records": len(state_ids),
                 "number_extra_data_fields": len(extra_data_columns),
-                "total_sqft": sum([x for x in gfa_list if x is not None]).magnitude,
+                "total_sqft": sum([x.magnitude for x in gfa_list if x is not None]) if any(x is not None for x in gfa_list) else 0,
                 "column_settings fields and counts": num_of_nonnulls_by_column_name,
             }
         )
