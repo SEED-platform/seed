@@ -81,7 +81,7 @@ class InventoryViewTests(DeleteModelsTestCase):
         self.assertIn("<auc:YearOfConstruction>1967</auc:YearOfConstruction>", response.content.decode("utf-8"))
 
     def test_upload_measures_specific_version(self):
-        filename = path.join(path.dirname(__file__), "data", "ex_1_v2.6.0.xml")
+        filename = path.join(path.dirname(__file__), "data", "ex_1_v2.7.0.xml")
 
         url = reverse("api:v3:building_files-list") + f"?organization_id={self.org.id}&cycle_id={self.cycle.id}"
         with open(filename, "rb") as f:
@@ -100,10 +100,10 @@ class InventoryViewTests(DeleteModelsTestCase):
         # now get the building sync that was just uploaded
         property_state_id = result["data"]["property_view"]["state"]["id"]
         # check that the property measures associated with this upload link to
-        # measures with schema_version v2.6.0
+        # measures with schema_version v2.7.0
         pms = PropertyMeasure.objects.filter(property_state_id=property_state_id)
         self.assertEqual(len(pms), 1)
-        self.assertEqual(pms[0].measure.schema_version, "2.6.0")
+        self.assertEqual(pms[0].measure.schema_version, "2.7.0")
         self.assertEqual(pms[0].measure.category, "service_hot_water_systems")
         self.assertEqual(pms[0].measure.name, "install_heat_pump_shw_system")
 
