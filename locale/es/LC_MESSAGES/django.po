@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-09-04 23:57\n"
+"PO-Revision-Date: 2025-11-04 22:12\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -117,6 +117,9 @@ msgstr "Esta página le permite ver la estructura del contenido de su organizaci
 msgid "ACCESS_LEVEL_UPLOAD_PROGRESS_MSG"
 msgstr "Guardando instancias de nivel de acceso en curso... Este proceso depende del tamaño del archivo y puede durar varios minutos."
 
+msgid "ADD_CYCLE_GOAL_DESC"
+msgstr "Agregue un nuevo ciclo al objetivo seleccionado para compararlo con la línea base. El último ciclo agregado se considerará el ciclo actual para fines de comparación. Los ciclos anteriores agregados permanecerán disponibles como referencia histórica."
+
 #, fuzzy
 msgid "ADD_FILES_TO"
 msgstr "Añadir archivos a {dataset_name}."
@@ -192,6 +195,9 @@ msgstr "Clave API"
 msgid "AT_ADVANCED_SETTINGS_TEXT"
 msgstr "Esta sección contiene las configuraciones necesarias si el flujo de trabajo de su organización incluirá enviar datos desde SEED a Audit Template para crear informes de plantilla de auditoría \"stub\" que luego se pueden completar en Audit Template. Si no desea crear informes de Audit Template stub desde SEED, puede ignorar estas configuraciones."
 
+msgid "AT_AGENCY_NAME_DESC"
+msgstr "Este debería ser el acrónimo de la Agencia (ej.: DOE)."
+
 #, fuzzy
 msgid "AT_ALL_DATA"
 msgstr "Los envíos de Plantillas de Auditoría se importarán independientemente de la fecha de envío. Puede configurar esta opción en la página de configuración de su organización de SEED."
@@ -211,6 +217,9 @@ msgstr "Cuando esta casilla está marcada, SEED sólo importará los envíos de 
 #, fuzzy
 msgid "AT_EMAIL_TEXT"
 msgstr "Utilice el correo electrónico asociado a su cuenta de <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Sitio web de Building Energy Score</a>."
+
+msgid "AT_FEDERAL_FIELDS_DESC"
+msgstr "Ingrese la agencia principal. Los demás campos de la agencia se determinarán según los niveles de acceso implementados en SEED. Para obtener más información, consulte el elemento BuildingSync FederalBuilding."
 
 #, fuzzy
 msgid "AT_ID_FIELD_TEXT"
@@ -354,6 +363,9 @@ msgstr "Añadir instancia de nivel de acceso"
 msgid "Add Column"
 msgstr "Añadir columna"
 
+msgid "Add Cycle to Goal"
+msgstr "Añadir ciclo a la meta"
+
 #, fuzzy
 msgid "Add Data Files"
 msgstr "Añadir archivos de datos"
@@ -384,6 +396,9 @@ msgstr "Añadir propiedades compartidas"
 #, fuzzy
 msgid "Add Shared Tax Lots"
 msgstr "Añadir lotes fiscales compartidos"
+
+msgid "Add a Cycle"
+msgstr "Agregar un ciclo"
 
 msgid "Add a Document"
 msgstr "Añadir un documento"
@@ -477,6 +492,9 @@ msgstr "Admin"
 #, fuzzy
 msgid "Advanced Settings"
 msgstr "Configuración avanzada"
+
+msgid "Agency Name"
+msgstr "Nombre de la agencia"
 
 msgid "Alias"
 msgstr "Alias"
@@ -647,6 +665,12 @@ msgstr "Medidas BuildingSync disponibles"
 msgid "Available Templates"
 msgstr "Plantillas disponibles"
 
+msgid "BB_SALESFORCE_LOGIN_FAILURE"
+msgstr "Hubo un error"
+
+msgid "BB_SALESFORCE_LOGIN_SUCCESS"
+msgstr "SEED ahora ha iniciado sesión en Salesforce."
+
 #, fuzzy
 msgid "BEFORE_GEOCODING"
 msgstr "Antes de la geocodificación"
@@ -676,6 +700,9 @@ msgstr "Volver a la lista"
 #, fuzzy
 msgid "Back to Mapping"
 msgstr "Volver a Cartografía"
+
+msgid "Baseline"
+msgstr "Base"
 
 #, fuzzy
 msgid "Baseline Cycle"
@@ -1008,6 +1035,12 @@ msgstr "Limpiar filtros"
 #, fuzzy
 msgid "Clear Labels"
 msgstr "Etiquetas transparentes"
+
+msgid "Client ID"
+msgstr "ID de cliente"
+
+msgid "Client Secret"
+msgstr "Secreto del cliente"
 
 #, fuzzy
 msgid "Close"
@@ -1405,6 +1438,9 @@ msgstr "Nombre actual"
 
 msgid "Current Password"
 msgstr "Contraseña Actual"
+
+msgid "Current Year Annual Report"
+msgstr "Informe anuale del año en curso"
 
 #, fuzzy
 msgid "Current password"
@@ -2004,6 +2040,9 @@ msgstr "Activar la geocodificación"
 msgid "Enable Labels in Public Feed"
 msgstr "Habilitar etiquetas en el feed público"
 
+msgid "Enable Portfolio Salesforce Integration"
+msgstr "Habilitar la integración de Salesforce (cartera de propiedades)"
+
 #, fuzzy
 msgid "Enable Public Endpoints"
 msgstr "Habilitar puntos finales públicos"
@@ -2012,9 +2051,11 @@ msgstr "Habilitar puntos finales públicos"
 msgid "Enable Public GeoJSON"
 msgstr "Activar GeoJSON público"
 
-#, fuzzy
 msgid "Enable Salesforce Integration"
-msgstr "Activar la integración de Salesforce"
+msgstr "Habilitar la integración de Salesforce (propiedades individuales)"
+
+msgid "Enable this functionality to send Federal Building fields to Audit Template."
+msgstr "Habilite esta funcionalidad para enviar los campos de Edificios Federales a la Plantilla de Auditoría."
 
 #, fuzzy
 msgid "Energy"
@@ -2272,6 +2313,9 @@ msgstr "Medidas prescriptivas federales BPS"
 #, fuzzy
 msgid "Federal BPS Recommended Measures"
 msgstr "Medidas federales recomendadas por el BPS"
+
+msgid "Federal Building Fields"
+msgstr "Campos de edificios federales"
 
 #, fuzzy
 msgid "Fetching your buildings from Audit Template..."
@@ -2602,6 +2646,9 @@ msgstr "Ir a Notas"
 msgid "Goal"
 msgstr "Objetivo"
 
+msgid "Goal Details"
+msgstr "Detalles del objetivo"
+
 #, fuzzy
 msgid "Goal Setup"
 msgstr "Configuración de la meta"
@@ -2671,6 +2718,9 @@ msgstr "Ocultar todas las etiquetas"
 #, fuzzy
 msgid "Highlights of SEED Platform™"
 msgstr "Aspectos destacados de la Plataforma SEED"
+
+msgid "Historical Annual Reports"
+msgstr "Informes anuales históricos"
 
 #, fuzzy
 msgid "Historical Note"
@@ -2754,6 +2804,12 @@ msgstr "Esta operación es irreversible."
 #, fuzzy
 msgid "ITEMS_WILL_NOT_CHANGE"
 msgstr "estos no cambiarán"
+
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Goal record associated with the selected Partner using the dropdown above."
+msgstr "Si desea sincronizar la información de la cartera con su instancia de Salesforce, seleccione el registro de objetivo de Salesforce asociado con el socio seleccionado utilizando el menú desplegable de arriba."
+
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Partner record using the dropdown above."
+msgstr "Si desea sincronizar la información de su cartera con su instancia de Salesforce, seleccione el registro de socio de Salesforce usando el menú desplegable de arriba."
 
 #, fuzzy
 msgid "Ignored duplicates of existing properties"
@@ -2908,6 +2964,9 @@ msgstr "Jurisdicción ID de propiedad"
 msgid "Jurisdiction Tax Lot ID"
 msgstr "Jurisdicción Número de identificación fiscal del lote"
 
+msgid "LINK_CYCLE_ERROR_TEXT"
+msgstr "Para vincular este ciclo a un Informe anual en su instancia de Salesforce, primero debe iniciar sesión en Salesforce."
+
 #, fuzzy
 msgid "LINK_OUT_CYCLE_MATCHES"
 msgstr "Los partidos fuera de este ciclo serán enlazados."
@@ -3037,6 +3096,9 @@ msgstr "Conectarse"
 #, fuzzy
 msgid "Log in to SEED Platform"
 msgstr "Iniciar sesión en la Plataforma SEED"
+
+msgid "Log in to Salesforce first to be able to configure Salesforce Partner and Goal associations here."
+msgstr "Primero, inicie sesión en Salesforce para poder configurar las asociaciones de socios y objetivos de Salesforce aquí."
 
 #, fuzzy
 msgid "Logging Email"
@@ -4480,6 +4542,9 @@ msgstr "Puesta en servicio a posteriori"
 msgid "Retry"
 msgstr "Reintentar"
 
+msgid "Return to Portfolio Summary Page"
+msgstr "Regresar a la página de resumen de la cartera"
+
 #, fuzzy
 msgid "Review Changes"
 msgstr "Revisar los cambios"
@@ -4487,6 +4552,9 @@ msgstr "Revisar los cambios"
 #, fuzzy
 msgid "Review Mapped Data"
 msgstr "Revisar datos cartográficos"
+
+msgid "Review and Sync to Salesforce"
+msgstr "Revisar y sincronizar con Salesforce"
 
 #, fuzzy
 msgid "Review matches"
@@ -4563,6 +4631,12 @@ msgstr "Estado de ejecución"
 
 msgid "Runs"
 msgstr "Ejecuciones"
+
+msgid "SALESFORCE_BENCHMARK_INTEGRATION_DESC"
+msgstr "Esta integración le permite conectar su organización con una instancia de Salesforce para optimizar la gestión de datos y la automatización del flujo de trabajo. Esta integración presupone que Salesforce está configurado con objetos de propiedad y referencia, que se actualizarán con datos de propiedad individuales de SEED."
+
+msgid "SALESFORCE_PORTFOLIO_INTEGRATION_DESC"
+msgstr "Esta integración también le permite conectar su organización con una instancia de Salesforce, pero supone que Salesforce está configurado con objetos de Objetivo e Informe anual que se actualizarán con datos de nivel de cartera (agregados de múltiples propiedades en SEED)."
 
 #, fuzzy
 msgid "SEED Field Containing Organization's Identifier"
@@ -4741,6 +4815,9 @@ msgstr "Introduzca la dirección de correo electrónico que se utilizará para n
 msgid "SF_MAPPINGS_TEXT"
 msgstr "Asigne los campos de su objeto de referencia de Salesforce a columnas en SEED. Utilice el Administrador de Objetos en Salesforce para recuperar los nombres de campo (no las etiquetas de campo), ej: Cycle__c (no Cycle). Estos campos sólo se enviarán a Salesforce cuando una propiedad tenga aplicada la etiqueta correspondiente."
 
+msgid "SF_PORTFOLIO_CONNECTION_TEXT"
+msgstr "Ingrese los datos de conexión de su instancia de Salesforce. Esto supone que su Salesforce está configurado con una aplicación de cliente externa para SEED."
+
 #, fuzzy
 msgid "SF_SCHEDULED_UPDATE_TEXT"
 msgstr "Si desea actualizar automáticamente Salesforce a diario, configure los siguientes campos"
@@ -4859,6 +4936,9 @@ msgstr "Compruébelo antes de continuar."
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Actualice la configuración de la columna de geocodificación en la página de configuración de columnas de su organización."
 
+msgid "SYNC_SALESFORCE_DESC"
+msgstr "Revise los detalles a continuación. Cuando esté satisfecho, haga clic en los botones de sincronización a continuación para enviar los datos de SEED a su instancia de Salesforce. El primer botón sincronizará los datos con el objetivo y los objetos del informe anual actual. El segundo botón sincronizará todos los objetos históricos del informe anual."
+
 #, fuzzy
 msgid "Salesforce"
 msgstr "Salesforce"
@@ -4866,6 +4946,9 @@ msgstr "Salesforce"
 #, fuzzy
 msgid "Salesforce Account Object Record Type"
 msgstr "Tipo de registro de objeto de cuenta de Salesforce"
+
+msgid "Salesforce Annual Report"
+msgstr "Informe anual de Salesforce"
 
 #, fuzzy
 msgid "Salesforce Connection Parameters"
@@ -4983,6 +5066,9 @@ msgstr "Seleccione las propiedades que desea actualizar"
 msgid "Select a Custom Report to get started!"
 msgstr "Seleccione un informe personalizado para empezar"
 
+msgid "Select a Cycle to compare against the Baseline Cycle"
+msgstr "Seleccione un ciclo para compararlo con el ciclo de referencia"
+
 msgid "Select a Facilities Plan Run from the dropdown below"
 msgstr "Seleccione una ejecución de plan de instalaciones del menú desplegable a continuación"
 
@@ -4993,12 +5079,18 @@ msgstr "Seleccione un tipo de objetivo. Un objetivo estándar calculará un EUI 
 msgid "Select a Program to get started!"
 msgstr "Seleccione un programa para empezar"
 
+msgid "Select a Salesforce Annual Report to associate with this Cycle"
+msgstr "Seleccione un informe anual de Salesforce para asociarlo con este ciclo"
+
 #, fuzzy
 msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
 msgstr "Seleccione una columna para mostrar los datos en este eje.  Sólo se mostrarán las columnas con uno de estos tipos de datos:"
 
 msgid "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
 msgstr "Seleccione una columna para mostrar los datos en este eje. Sólo se mostrarán las columnas con uno de estos tipos de datos:"
+
+msgid "Select a cycle to use as the baseline for comparison."
+msgstr "Seleccione un ciclo para utilizarlo como base para la comparación."
 
 #, fuzzy
 msgid "Select columns from the list below to make them appear in your Buildings List table."
@@ -5276,6 +5368,12 @@ msgstr "Resumen"
 msgid "Switch Profiles"
 msgstr "Perfiles de los interruptores"
 
+msgid "Sync Baseline and Current Report"
+msgstr "Sincronización de la línea base y el informe actual"
+
+msgid "Sync Historical Reports"
+msgstr "Sincronizar informes históricos"
+
 msgid "System"
 msgstr "Sistema"
 
@@ -5538,6 +5636,9 @@ msgstr "La página de resumen de la cartera compara 2 ciclos para calcular el pr
 msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 msgstr "También hay un enlace al foro de usuarios de la plataforma SEED, donde puedes ponerte en contacto con otros usuarios."
 
+msgid "There is no cycle selected for comparison yet"
+msgstr "Aún no hay ningún ciclo seleccionado para comparar"
+
 #, fuzzy
 msgid "There was an error loading the page"
 msgstr "Se ha producido un error al cargar la página"
@@ -5666,6 +5767,9 @@ msgstr "Total Propiedades"
 #, fuzzy
 msgid "Total rows in the import file"
 msgstr "Total de filas del fichero de importación"
+
+msgid "Try Again"
+msgstr "Intentar otra vez"
 
 msgid "Two Factor Profile"
 msgstr "Perfil de dos factores"
