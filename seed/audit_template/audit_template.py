@@ -238,7 +238,7 @@ class AuditTemplate:
         url = f"{self.API_URL}/building_sync/upload"
         display_field = getattr(state, self.org.property_display_field)
 
-        if state.audit_template_building_id:
+        if state.audit_template_building_id and file_only is False:
             return None, ["info", f"{display_field}: Existing Audit Template Property"]
 
         try:
