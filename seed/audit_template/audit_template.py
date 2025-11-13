@@ -334,8 +334,6 @@ class AuditTemplate:
                             em.Buildings(
                                 em.Building(
                                     {"ID": building_id},
-                                    # Conditionally include FederalBuilding element
-                                    *(_build_federal_element(em, state, org) if org.audit_template_export_federal else []),
                                     em.PremisesName(state.property_name),
                                     em.PremisesIdentifiers(
                                         em.PremisesIdentifier(
@@ -345,6 +343,8 @@ class AuditTemplate:
                                         )
                                     ),
                                     _build_address(em, state),
+                                    # Conditionally include FederalBuilding element
+                                    *(_build_federal_element(em, state, org) if org.audit_template_export_federal else []),
                                     em.FloorAreas(
                                         em.FloorArea(
                                             em.FloorAreaType("Gross"),
