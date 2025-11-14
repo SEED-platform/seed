@@ -1200,7 +1200,9 @@
       </div>
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <h3 translate>Enable Salesforce Integration (Individual Properties)</h3>
+          <h3 translate>
+            Enable Salesforce Integration (Individual Properties)
+          </h3>
           <p translate>SALESFORCE_BENCHMARK_INTEGRATION_DESC</p>
           <form class="form-horizontal" role="form">
             <div class="form-group">
@@ -2203,12 +2205,20 @@
       </div>
       <div class="section_content_container">
         <div class="section_content with_padding">
-          <h3 class="pad-top-20" translate>Enable Salesforce Integration (Portfolio of Properties)</h3>
+          <h3 class="pad-top-20" translate>
+            Enable Salesforce Integration (Portfolio of Properties)
+          </h3>
           <p translate>SALESFORCE_PORTFOLIO_INTEGRATION_DESC</p>
           <form class="form-horizontal" role="form">
             <div class="form-group">
               <div class="col-sm-4">
-                <input type="checkbox" class="form-control" style="width: 34px" ng-model="org.bb_salesforce_enabled" ng-disabled="::!auth.requires_owner" />
+                <input
+                  type="checkbox"
+                  class="form-control"
+                  style="width: 34px"
+                  ng-model="org.bb_salesforce_enabled"
+                  ng-disabled="::!auth.requires_owner"
+                />
               </div>
             </div>
           </form>
@@ -2217,7 +2227,10 @@
       <div ng-if="org.bb_salesforce_enabled" class="salesforce-form">
         <div class="section_header_container has_btm_margin">
           <div class="section_header">
-            <h2><i class="fa-solid fa-rss"></i> {$:: 'Salesforce Connection ' | translate $}</h2>
+            <h2>
+              <i class="fa-solid fa-rss"></i> {$:: 'Salesforce Connection ' |
+              translate $}
+            </h2>
           </div>
         </div>
         <div class="section_content_container">
@@ -2229,9 +2242,20 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label class="col-sm-2 col-sm-offset-1 control-label" for="salesforce_url" translate>URL</label>
+                <label
+                  class="col-sm-2 col-sm-offset-1 control-label"
+                  for="salesforce_url"
+                  translate
+                  >URL</label
+                >
                 <div class="col-sm-5">
-                  <input type="text" id="url" class="form-control" ng-model="bb_salesforce_configs.salesforce_url" ng-disabled="::!auth.requires_owner" />
+                  <input
+                    type="text"
+                    id="url"
+                    class="form-control"
+                    ng-model="bb_salesforce_configs.salesforce_url"
+                    ng-disabled="::!auth.requires_owner"
+                  />
                 </div>
               </div>
             </form>
@@ -2241,9 +2265,20 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label class="col-sm-2 col-sm-offset-1 control-label" for="client_id" translate>Client ID</label>
+                <label
+                  class="col-sm-2 col-sm-offset-1 control-label"
+                  for="client_id"
+                  translate
+                  >Client ID</label
+                >
                 <div class="col-sm-5">
-                  <input type="text" id="client_id" class="form-control" ng-model="bb_salesforce_configs.client_id" ng-disabled="::!auth.requires_owner" />
+                  <input
+                    type="text"
+                    id="client_id"
+                    class="form-control"
+                    ng-model="bb_salesforce_configs.client_id"
+                    ng-disabled="::!auth.requires_owner"
+                  />
                 </div>
               </div>
             </form>
@@ -2253,12 +2288,30 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <label class="col-sm-2 col-sm-offset-1 control-label" for="pclient_secretwd" translate>Client Secret</label>
+                <label
+                  class="col-sm-2 col-sm-offset-1 control-label"
+                  for="pclient_secretwd"
+                  translate
+                  >Client Secret</label
+                >
                 <div class="col-sm-5">
                   <div class="input-group">
-                    <input type="{$ secrets['pwd'] $}" class="form-control" id="pwd" ng-model="bb_salesforce_configs.client_secret" autocomplete="new-password" ng-disabled="::!auth.requires_owner" />
+                    <input
+                      type="{$ secrets['pwd'] $}"
+                      class="form-control"
+                      id="pwd"
+                      ng-model="bb_salesforce_configs.client_secret"
+                      autocomplete="new-password"
+                      ng-disabled="::!auth.requires_owner"
+                    />
                     <span class="input-group-btn">
-                      <button class="btn btn-default reveal" type="button" ng-click="toggle_secret('pwd')"><i class="glyphicon glyphicon-eye-open"></i></button>
+                      <button
+                        class="btn btn-default reveal"
+                        type="button"
+                        ng-click="toggle_secret('pwd')"
+                      >
+                        <i class="glyphicon glyphicon-eye-open"></i>
+                      </button>
                     </span>
                   </div>
                 </div>
@@ -2271,25 +2324,59 @@
           <div class="section_content with_padding">
             <form class="form-horizontal" role="form">
               <div class="form-group">
-                <div class="col-sm-11 text-center" style="align-items:center;">
-                  <i class="fab fa-salesforce" style="font-size:40px; color:#0D9DDA;"></i>
-                  <span style="margin-right:10px">Salesforce Connection Status:</span>
-                  <span ng-if="is_logged_into_bb_salesforce" class="label label-success"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span></span>
-                  <span ng-if="is_logged_into_bb_salesforce" style="margin: 0px 0px 15px 0px">
-                    <button class="btn btn-info portfolio-summary-btn" type="submit" ng-click="bb_logout_salesforce()">{$:: 'Logout' | translate $}</button>
+                <div class="col-sm-11 text-center" style="align-items: center">
+                  <i
+                    class="fab fa-salesforce"
+                    style="font-size: 40px; color: #0d9dda"
+                  ></i>
+                  <span style="margin-right: 10px"
+                    >Salesforce Connection Status:</span
+                  >
+                  <span
+                    ng-if="is_logged_into_bb_salesforce"
+                    class="label label-success"
+                    ><span
+                      class="glyphicon glyphicon-ok"
+                      aria-hidden="true"
+                    ></span
+                  ></span>
+                  <span
+                    ng-if="is_logged_into_bb_salesforce"
+                    style="margin: 0px 0px 15px 0px"
+                  >
+                    <button
+                      class="btn btn-info portfolio-summary-btn"
+                      type="submit"
+                      ng-click="bb_logout_salesforce()"
+                    >
+                      {$:: 'Logout' | translate $}
+                    </button>
                   </span>
-                  <span ng-if="!is_logged_into_bb_salesforce" class="label label-danger"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></span>
-                  <span ng-if="!is_logged_into_bb_salesforce" style="margin: 0px 0px 15px 15px">
-                    <button class="btn btn-info portfolio-summary-btn" type="submit" ng-click="bb_login_salesforce()">{$:: 'Login' | translate $}</button>
+                  <span
+                    ng-if="!is_logged_into_bb_salesforce"
+                    class="label label-danger"
+                    ><span
+                      class="glyphicon glyphicon-remove"
+                      aria-hidden="true"
+                    ></span
+                  ></span>
+                  <span
+                    ng-if="!is_logged_into_bb_salesforce"
+                    style="margin: 0px 0px 15px 15px"
+                  >
+                    <button
+                      class="btn btn-info portfolio-summary-btn"
+                      type="submit"
+                      ng-click="bb_login_salesforce()"
+                    >
+                      {$:: 'Login' | translate $}
+                    </button>
                   </span>
                 </div>
               </div>
             </form>
           </div>
         </div>
-
-
-
       </div>
     </uib-tab>
 

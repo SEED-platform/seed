@@ -5,16 +5,43 @@
 <div class="modal-body">
   <p translate>SYNC_SALESFORCE_DESC</p>
   <!-- goal details -->
-  <div class="sync-header" style="padding-left:10px;padding-top:5px;padding-bottom:5px;" translate>Goal Details</div>
+  <div
+    class="sync-header"
+    style="padding-left: 10px; padding-top: 5px; padding-bottom: 5px"
+    translate
+  >
+    Goal Details
+  </div>
   <div class="goal-details-container" style="margin: 10px">
-    <div ng-repeat="(k, v) in goal_details" class="goal-detail" style="display: flex">
-      <div class="goal-detail-key" style="width: 120px; font-weight: bold; margin:10px; align-items: end;">{$ k $}</div>
-      <div class="goal-detail-value" style="margin:10px;" uib-tooltip="{$ (v.length > 25) ? v : '' $}">{$ v $}</div>
+    <div
+      ng-repeat="(k, v) in goal_details"
+      class="goal-detail"
+      style="display: flex"
+    >
+      <div
+        class="goal-detail-key"
+        style="width: 120px; font-weight: bold; margin: 10px; align-items: end"
+      >
+        {$ k $}
+      </div>
+      <div
+        class="goal-detail-value"
+        style="margin: 10px"
+        uib-tooltip="{$ (v.length > 25) ? v : '' $}"
+      >
+        {$ v $}
+      </div>
     </div>
   </div>
 
   <!-- Baseline -->
-  <div class="sync-header" style="padding-left:10px;padding-top:5px;padding-bottom:5px;" translate>Baseline</div>
+  <div
+    class="sync-header"
+    style="padding-left: 10px; padding-top: 5px; padding-bottom: 5px"
+    translate
+  >
+    Baseline
+  </div>
   <div class="goal-details-container" style="margin: 10px">
     <table class="table table-striped">
       <thead>
@@ -26,14 +53,26 @@
       </thead>
       <tbody>
         <tr ng-repeat="(k, v) in baseline_cycle_goal_table">
-          <td class="col-sm-4" style="font-weight: bold;">{$ k $}</td>
+          <td class="col-sm-4" style="font-weight: bold">{$ k $}</td>
           <td class="col-sm-3">{$ v["seed"] $}</td>
-          <td class="col-sm-3" ng-class="{'mismatch-highlight': v['seed'] !== v['salesforce'], 'match-highlight': v['seed'] === v['salesforce']}">{$ v["salesforce"] $}</td>
+          <td
+            class="col-sm-3"
+            ng-class="{'mismatch-highlight': v['seed'] !== v['salesforce'], 'match-highlight': v['seed'] === v['salesforce']}"
+          >
+            {$ v["salesforce"] $}
+          </td>
+        </tr>
       </tbody>
     </table>
   </div>
   <!-- latest/current year -->
-  <div class="sync-header" style="padding-left:10px;padding-top:5px;padding-bottom:5px;" translate>Current Year Annual Report</div>
+  <div
+    class="sync-header"
+    style="padding-left: 10px; padding-top: 5px; padding-bottom: 5px"
+    translate
+  >
+    Current Year Annual Report
+  </div>
   <div class="goal-details-container" style="margin: 10px">
     <table class="table table-striped">
       <thead>
@@ -45,33 +84,65 @@
       </thead>
       <tbody>
         <tr ng-repeat="(k, v) in latest_cycle_goal_table">
-          <td class="col-sm-4" style="font-weight: bold;">{$ k $}</td>
+          <td class="col-sm-4" style="font-weight: bold">{$ k $}</td>
           <td class="col-sm-3">{$ v["seed"] $}</td>
-          <td class="col-sm-3" ng-class="{'mismatch-highlight': v['seed'] !== v['salesforce'], 'match-highlight': v['seed'] === v['salesforce']}">{$ v["salesforce"] $}</td>
+          <td
+            class="col-sm-3"
+            ng-class="{'mismatch-highlight': v['seed'] !== v['salesforce'], 'match-highlight': v['seed'] === v['salesforce']}"
+          >
+            {$ v["salesforce"] $}
+          </td>
         </tr>
         <tr>
-          <td class="col-sm-4" style="font-weight: bold;" translate>Report Status</td>
-          <td class="col-sm-3" style="padding-right:20px;">
-            <select id="report-status" class="form-control" ng-model="report_status" ng-options="s for s in report_status_options"></select>
+          <td class="col-sm-4" style="font-weight: bold" translate>
+            Report Status
+          </td>
+          <td class="col-sm-3" style="padding-right: 20px">
+            <select
+              id="report-status"
+              class="form-control"
+              ng-model="report_status"
+              ng-options="s for s in report_status_options"
+            ></select>
           </td>
           <td class="col-sm-3">{$:: report_status $}</td>
         </tr>
         <tr>
-          <td class="col-sm-4" style="font-weight: bold;" translate>Review Status</td>
-          <td class="col-sm-3" style="padding-right:20px;">
-            <select id="review-status" class="form-control" ng-model="review_status" ng-options="s for s in review_status_options"></select>
+          <td class="col-sm-4" style="font-weight: bold" translate>
+            Review Status
+          </td>
+          <td class="col-sm-3" style="padding-right: 20px">
+            <select
+              id="review-status"
+              class="form-control"
+              ng-model="review_status"
+              ng-options="s for s in review_status_options"
+            ></select>
           </td>
           <td class="col-sm-3">{$:: review_status $}</td>
         </tr>
       </tbody>
     </table>
-    <div style="display:flex; width: 100%;">
-      <button type="button" class="btn btn-primary col-sm-3 center-block"  ng-click="sync_latest_cycle(report_status, review_status)" translate>Sync Baseline and Current Report</button>
+    <div style="display: flex; width: 100%">
+      <button
+        type="button"
+        class="btn btn-primary col-sm-3 center-block"
+        ng-click="sync_latest_cycle(report_status, review_status)"
+        translate
+      >
+        Sync Baseline and Current Report
+      </button>
     </div>
   </div>
 
   <!-- Past years -->
-  <div class="sync-header" style="padding-left:10px;padding-top:5px;padding-bottom:5px;" translate>Historical Annual Reports</div>
+  <div
+    class="sync-header"
+    style="padding-left: 10px; padding-top: 5px; padding-bottom: 5px"
+    translate
+  >
+    Historical Annual Reports
+  </div>
   <div class="goal-details-container" style="margin: 10px">
     <table class="table">
       <thead>
@@ -81,19 +152,35 @@
       </thead>
       <tbody>
         <tr ng-repeat="(_, summary) in past_cycle_goals_table">
-          <td ng-repeat="(k, v) in summary"
-              ng-class="{'mismatch-sf': setMismatchHighlight(summary, k, $index), 'match-sf': setMatchHighlight(summary, k, $index), 'match-first': $index === 0}">
+          <td
+            ng-repeat="(k, v) in summary"
+            ng-class="{'mismatch-sf': setMismatchHighlight(summary, k, $index), 'match-sf': setMatchHighlight(summary, k, $index), 'match-first': $index === 0}"
+          >
             {$ v $}
           </td>
         </tr>
       </tbody>
     </table>
-    <div style="display:flex; width: 100%;">
-      <button type="button" class="btn btn-primary col-sm-3 center-block" ng-click="sync_past_cycles()" translate>Sync Historical Reports</button>
+    <div style="display: flex; width: 100%">
+      <button
+        type="button"
+        class="btn btn-primary col-sm-3 center-block"
+        ng-click="sync_past_cycles()"
+        translate
+      >
+        Sync Historical Reports
+      </button>
     </div>
   </div>
 </div>
 
 <div class="modal-footer">
-  <button type="button" class="btn btn-default r-margin-right-5" ng-click="dismiss()" translate>Dismiss</button>
+  <button
+    type="button"
+    class="btn btn-default r-margin-right-5"
+    ng-click="dismiss()"
+    translate
+  >
+    Dismiss
+  </button>
 </div>

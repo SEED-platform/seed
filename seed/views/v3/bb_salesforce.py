@@ -89,7 +89,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @get_bb_salesforce_config
     @action(detail=False, methods=["GET"])
     def logout(self, request, bb_salesforce_config):
-        org_id = request.query_params.get('organization_id')
+        org_id = request.query_params.get("organization_id")
         # delete access_token
         set_cache_raw(f"access_token_{org_id}", None)
 
