@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-10-23 21:54\n"
+"PO-Revision-Date: 2025-11-14 22:54\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -195,6 +195,9 @@ msgstr "Clave API"
 msgid "AT_ADVANCED_SETTINGS_TEXT"
 msgstr "Esta sección contiene las configuraciones necesarias si el flujo de trabajo de su organización incluirá enviar datos desde SEED a Audit Template para crear informes de plantilla de auditoría \"stub\" que luego se pueden completar en Audit Template. Si no desea crear informes de Audit Template stub desde SEED, puede ignorar estas configuraciones."
 
+msgid "AT_AGENCY_NAME_DESC"
+msgstr "Este debería ser el acrónimo de la Agencia (ej.: DOE)."
+
 #, fuzzy
 msgid "AT_ALL_DATA"
 msgstr "Los envíos de Plantillas de Auditoría se importarán independientemente de la fecha de envío. Puede configurar esta opción en la página de configuración de su organización de SEED."
@@ -214,6 +217,9 @@ msgstr "Cuando esta casilla está marcada, SEED sólo importará los envíos de 
 #, fuzzy
 msgid "AT_EMAIL_TEXT"
 msgstr "Utilice el correo electrónico asociado a su cuenta de <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Sitio web de Building Energy Score</a>."
+
+msgid "AT_FEDERAL_FIELDS_DESC"
+msgstr "Ingrese la agencia principal. Los demás campos de la agencia se determinarán según los niveles de acceso implementados en SEED. Para obtener más información, consulte el elemento BuildingSync FederalBuilding."
 
 #, fuzzy
 msgid "AT_ID_FIELD_TEXT"
@@ -486,6 +492,9 @@ msgstr "Admin"
 #, fuzzy
 msgid "Advanced Settings"
 msgstr "Configuración avanzada"
+
+msgid "Agency Name"
+msgstr "Nombre de la agencia"
 
 msgid "Alias"
 msgstr "Alias"
@@ -2045,6 +2054,9 @@ msgstr "Activar GeoJSON público"
 msgid "Enable Salesforce Integration"
 msgstr "Habilitar la integración de Salesforce (propiedades individuales)"
 
+msgid "Enable this functionality to send Federal Building fields to Audit Template."
+msgstr "Habilite esta funcionalidad para enviar los campos de Edificios Federales a la Plantilla de Auditoría."
+
 #, fuzzy
 msgid "Energy"
 msgstr "Energía"
@@ -2301,6 +2313,9 @@ msgstr "Medidas prescriptivas federales BPS"
 #, fuzzy
 msgid "Federal BPS Recommended Measures"
 msgstr "Medidas federales recomendadas por el BPS"
+
+msgid "Federal Building Fields"
+msgstr "Campos de edificios federales"
 
 #, fuzzy
 msgid "Fetching your buildings from Audit Template..."
@@ -4538,6 +4553,9 @@ msgstr "Revisar los cambios"
 msgid "Review Mapped Data"
 msgstr "Revisar datos cartográficos"
 
+msgid "Review and Sync to Salesforce"
+msgstr "Revisar y sincronizar con Salesforce"
+
 #, fuzzy
 msgid "Review matches"
 msgstr "Partidos de revisión"
@@ -5349,6 +5367,12 @@ msgstr "Resumen"
 #, fuzzy
 msgid "Switch Profiles"
 msgstr "Perfiles de los interruptores"
+
+msgid "Sync Baseline and Current Report"
+msgstr "Sincronización de la línea base y el informe actual"
+
+msgid "Sync Historical Reports"
+msgstr "Sincronizar informes históricos"
 
 msgid "System"
 msgstr "Sistema"

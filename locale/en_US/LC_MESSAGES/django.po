@@ -155,6 +155,9 @@ msgstr "API Key"
 msgid "AT_ADVANCED_SETTINGS_TEXT"
 msgstr "This section contains configurations necessary if your organization's workflow will include pushing data from SEED to Audit Template to create \"stub\" Audit Template reports that can then be completed in Audit Template. If you do not wish to make stub Audit Template reports from SEED, you can ignore these settings."
 
+msgid "AT_AGENCY_NAME_DESC"
+msgstr "This should be the Agency acronym (ex: DOE)"
+
 msgid "AT_ALL_DATA"
 msgstr "Audit Template submissions will be imported regardless of submission date. You can configure this setting in your SEED organization's settings page."
 
@@ -169,6 +172,9 @@ msgstr "When this checkbox is checked, SEED will only import Audit Template subm
 
 msgid "AT_EMAIL_TEXT"
 msgstr "Use the email associated with your account from <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Building Energy Score website</a>."
+
+msgid "AT_FEDERAL_FIELDS_DESC"
+msgstr "Input the top-level Agency. The rest of the Agency fields will be determined by the access levels implemented in SEED. For additional guidance, refer to the BuildingSync FederalBuilding element."
 
 msgid "AT_ID_FIELD_TEXT"
 msgstr "Enter the COLUMN NAME (not display name) of the SEED Field that contains your organization's custom Tax Identifier. The default is 'custom_id_1'. You can find this information on your organization's Column Settings page in SEED."
@@ -383,6 +389,9 @@ msgstr "Admin"
 
 msgid "Advanced Settings"
 msgstr "Advanced Settings"
+
+msgid "Agency Name"
+msgstr "Agency Name"
 
 msgid "Alias"
 msgstr "Alias"
@@ -1617,6 +1626,9 @@ msgstr "Enable Public GeoJSON"
 msgid "Enable Salesforce Integration"
 msgstr "Enable Salesforce Integration (Individual Properties)"
 
+msgid "Enable this functionality to send Federal Building fields to Audit Template."
+msgstr "Enable this functionality to send Federal Building fields to Audit Template."
+
 msgid "Energy"
 msgstr "Energy"
 
@@ -1818,6 +1830,9 @@ msgstr "Federal BPS Prescriptive Measures"
 
 msgid "Federal BPS Recommended Measures"
 msgstr "Federal BPS Recommended Measures"
+
+msgid "Federal Building Fields"
+msgstr "Federal Building Fields"
 
 msgid "Fetching your buildings from Audit Template..."
 msgstr "Fetching your buildings from Audit Template..."
@@ -3552,6 +3567,9 @@ msgstr "Review Changes"
 msgid "Review Mapped Data"
 msgstr "Review Mapped Data"
 
+msgid "Review and Sync to Salesforce"
+msgstr "Review and Sync to Salesforce"
+
 msgid "Review matches"
 msgstr "Review matches"
 
@@ -4182,6 +4200,12 @@ msgstr "Summary"
 
 msgid "Switch Profiles"
 msgstr "Switch Profiles"
+
+msgid "Sync Baseline and Current Report"
+msgstr "Sync Baseline and Current Report"
+
+msgid "Sync Historical Reports"
+msgstr "Sync Historical Reports"
 
 msgid "System"
 msgstr "System"

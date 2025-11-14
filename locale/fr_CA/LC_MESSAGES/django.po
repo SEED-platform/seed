@@ -157,6 +157,9 @@ msgstr "Clé API"
 msgid "AT_ADVANCED_SETTINGS_TEXT"
 msgstr "Cette section contient les configurations nécessaires si le flux de travail de votre organisation doit inclure la transmission de données de SEED vers Audit Template pour créer des rapports « ébauche » qui peuvent ensuite être complétés dans Audit Template. Si vous ne souhaitez pas créer de rapports Audit Template ébauche à partir de SEED, vous pouvez ignorer ces paramètres."
 
+msgid "AT_AGENCY_NAME_DESC"
+msgstr "Ceci devrait s'agir de l'acronyme de l'agence (ex : DOE)."
+
 msgid "AT_ALL_DATA"
 msgstr "Les soumissions de modèles d’audit seront importées quelle que soit la date de soumission. Vous pouvez configurer ce paramètre dans la page des paramètres de votre organisation SEED."
 
@@ -172,6 +175,9 @@ msgstr "Lorsque cette case est cochée, SEED importera uniquement les soumission
 
 msgid "AT_EMAIL_TEXT"
 msgstr "Utilisez l'e-mail associé à votre compte depuis <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
+
+msgid "AT_FEDERAL_FIELDS_DESC"
+msgstr "Saisissez l'organisme de niveau supérieur. Les autres champs de l'organisme seront déterminés par les niveaux d'accès définis dans SEED. Pour plus d'informations, consultez l'élément BuildingSync FederalBuilding."
 
 #, fuzzy
 msgid "AT_ID_FIELD_TEXT"
@@ -389,6 +395,9 @@ msgstr "Admin"
 
 msgid "Advanced Settings"
 msgstr "Réglages avancés"
+
+msgid "Agency Name"
+msgstr "Nom de l'agence"
 
 msgid "Alias"
 msgstr "Alias"
@@ -1633,6 +1642,9 @@ msgstr "Activer GeoJSON public"
 msgid "Enable Salesforce Integration"
 msgstr "Activer l'intégration Salesforce (propriétés individuelles)"
 
+msgid "Enable this functionality to send Federal Building fields to Audit Template."
+msgstr "Activez cette fonctionnalité pour envoyer les champs des bâtiments fédéraux au modèle d'audit."
+
 msgid "Energy"
 msgstr "Énergie"
 
@@ -1834,6 +1846,9 @@ msgstr "Mesures prescriptives du SPB fédéral"
 
 msgid "Federal BPS Recommended Measures"
 msgstr "Mesures recommandées par le BPS fédéral"
+
+msgid "Federal Building Fields"
+msgstr "Terrains de construction fédéraux"
 
 msgid "Fetching your buildings from Audit Template..."
 msgstr "Récupération de vos bâtiments à partir du modèle d'audit..."
@@ -3578,6 +3593,9 @@ msgstr "Revoir les Changements"
 msgid "Review Mapped Data"
 msgstr "Examiner les données mappées"
 
+msgid "Review and Sync to Salesforce"
+msgstr "Vérifier et synchroniser avec Salesforce"
+
 msgid "Review matches"
 msgstr "Examiner les correspondences"
 
@@ -4215,6 +4233,12 @@ msgstr "Résumé"
 
 msgid "Switch Profiles"
 msgstr "Changer de profil"
+
+msgid "Sync Baseline and Current Report"
+msgstr "Rapport de référence de synchronisation et rapport actuel"
+
+msgid "Sync Historical Reports"
+msgstr "Synchronisation des rapports historiques"
 
 msgid "System"
 msgstr "Système"
