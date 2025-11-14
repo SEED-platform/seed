@@ -108,6 +108,11 @@
             >
           </li>
           <li role="menuitem">
+            <a ng-click="toggleLayer('footprint_layer')" translate
+              >Toggle Footprints</a
+            >
+          </li>
+          <li role="menuitem">
             <a ng-click="toggleLayer('census_tract_layer')" translate
               >Toggle Census Tracts</a
             >
@@ -333,6 +338,15 @@
       ng-change="toggleLayer('taxlot_centroid_layer', layers.taxlot_centroid_layer.visible)"
     />
     {$:: 'Tax Lot UBID Centroids' | translate $}
+  </label>
+  <label>
+    <input
+      type="checkbox"
+      name="footprints"
+      ng-model="layers.footprint_layer.visible"
+      ng-change="toggleLayer('footprint_layer', layers.footprint_layer.visible)"
+    />
+    {$:: 'Footprints' | translate $}
   </label>
   <label>
     <input

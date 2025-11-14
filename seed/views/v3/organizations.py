@@ -161,6 +161,8 @@ def _dict_org(request, organizations):
             "audit_template_city_id": o.audit_template_city_id,
             "audit_template_export_meters": o.audit_template_export_meters,
             "audit_template_export_measures": o.audit_template_export_measures,
+            "audit_template_export_federal": o.audit_template_export_federal,
+            "audit_template_federal_agency": o.audit_template_federal_agency,
             "audit_template_conditional_import": o.audit_template_conditional_import,
             "audit_template_report_type": o.audit_template_report_type,
             "audit_template_status_types": o.audit_template_status_types,
@@ -715,6 +717,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         if audit_template_export_measures != org.audit_template_export_measures:
             org.audit_template_export_measures = audit_template_export_measures
 
+        audit_template_export_federal = posted_org.get("audit_template_export_federal", False)
+        if audit_template_export_federal != org.audit_template_export_federal:
+            org.audit_template_export_federal = audit_template_export_federal
+
+        audit_template_federal_agency = posted_org.get("audit_template_federal_agency", False)
+        if audit_template_federal_agency != org.audit_template_federal_agency:
+            org.audit_template_federal_agency = audit_template_federal_agency
+
         audit_template_conditional_import = posted_org.get("audit_template_conditional_import", False)
         if audit_template_conditional_import != org.audit_template_conditional_import:
             org.audit_template_conditional_import = audit_template_conditional_import
@@ -976,6 +986,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 "cycle_id": cycle.pk,
                 "chart_data": data,
                 "property_counts": {
+                    "cycle": cycle.name,
                     "yr_e": cycle.end.strftime("%Y"),
                     "num_properties": count_total,
                     "num_properties_w-data": count_with_data,
