@@ -52,12 +52,14 @@ class BuildingSync:
     BUILDINGSYNC_V2_3_0 = "2.3.0"
     BUILDINGSYNC_V2_4_0 = "2.4.0"
     BUILDINGSYNC_V2_6_0 = "2.6.0"
+    BUILDINGSYNC_V2_7_0 = "2.7.0"
     VERSION_MAPPINGS_DICT = {
         BUILDINGSYNC_V2_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_2_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_3_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_4_0: BASE_MAPPING_V2,
         BUILDINGSYNC_V2_6_0: BASE_MAPPING_V2,
+        BUILDINGSYNC_V2_7_0: BASE_MAPPING_V2,
     }
 
     def __init__(self):
@@ -137,8 +139,9 @@ class BuildingSync:
             raise ParsingError(f'Invalid version "{version}"')
 
         xml_string = f"""<?xml version="1.0"?>
-        <auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v{version}/BuildingSync.xsd">
+        <auc:BuildingSync xmlns:auc="http://buildingsync.net/schemas/bedes-auc/2019" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://buildingsync.net/schemas/bedes-auc/2019 https://raw.githubusercontent.com/BuildingSync/schema/v{version}/BuildingSync.xsd" version="{version}">
         </auc:BuildingSync>"""
+
         self.element_tree = etree.parse(StringIO(xml_string))
         self.version = version
 
@@ -159,6 +162,7 @@ class BuildingSync:
         :param column_mapping_profile: list, mappings from ColumnMappingProfile
         :return: string, as XML
         """
+
         if not property_state:
             return etree.tostring(self.element_tree, pretty_print=True).decode()
 
@@ -210,6 +214,7 @@ class BuildingSync:
             cls.BUILDINGSYNC_V2_3_0: "BuildingSync_v2_3_0.xsd",
             cls.BUILDINGSYNC_V2_4_0: "BuildingSync_v2_4_0.xsd",
             cls.BUILDINGSYNC_V2_6_0: "BuildingSync_v2_6_0.xsd",
+            cls.BUILDINGSYNC_V2_7_0: "BuildingSync_v2_7_0.xsd",
         }
         if version in schema_files:
             schema_path = os.path.join(schema_dir, schema_files[version])
