@@ -1269,7 +1269,7 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.dataViewChart.data.datasets = [{
           label: 'Sample Bar Chart',
           data: data.map((d) => d.EUI),
-          backgroundColor: ['#06732cff', ...new Array(data.length).fill('#458CC8')]
+          backgroundColor: ['#458CC8', ...new Array(data.length).fill('#06732cff')]
         }];
 
         // set goal bar
