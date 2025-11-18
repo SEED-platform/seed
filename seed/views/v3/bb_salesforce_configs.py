@@ -39,12 +39,14 @@ class BBSalesforceConfigsViewSet(ModelViewSetWithoutPatch, OrgMixin):
         bb_salesforce_configs = BBSalesforceConfig.objects.filter(organization_id=organization_id).first()
 
         if bb_salesforce_configs is not None:
-            bb_salesforce_configs = BBSalesforceConfigSerializer(bb_salesforce_configs).data
+            bb_salesforce_configs_data = BBSalesforceConfigSerializer(bb_salesforce_configs).data
+        else:
+            bb_salesforce_configs_data = {}  # or None, depending on your frontend expectations
 
         return JsonResponse(
             {
                 "status": "success",
-                "bb_salesforce_configs": bb_salesforce_configs,
+                "bb_salesforce_configs": bb_salesforce_configs_data,
             },
             status=status.HTTP_200_OK,
         )

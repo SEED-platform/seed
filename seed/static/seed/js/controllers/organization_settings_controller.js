@@ -72,12 +72,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     }
     $scope.salesforce_mappings = salesforce_mappings_payload;
 
-    $scope.bb_salesforce_config = {};
-    if (bb_salesforce_configs_payload !== null) {
-      $scope.bb_salesforce_configs = bb_salesforce_configs_payload;
-    } else {
-      $scope.bb_salesforce_configs = {};
-    }
+    $scope.bb_salesforce_configs = bb_salesforce_configs_payload;
 
     $scope.at_conf = {};
     if (audit_template_configs_payload.length > 0) {
@@ -104,7 +99,9 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
 
     // BB salesforce login status check
     $scope.is_logged_into_bb_salesforce = false;
-    $scope.get_bb_salesforce_login_status();
+    if ($scope.org.bb_salesforce_enabled) {
+      $scope.get_bb_salesforce_login_status();
+    }
 
     $scope.bb_login_salesforce = () => {
       bb_salesforce_service.get_login_url($scope.org.id)
@@ -451,7 +448,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
           }
         });
 
-      if ($scope.bb_salesforce_configs) {
+      if (Object.keys($scope.bb_salesforce_configs).length > 0) {
         bb_salesforce_service
           .update_bb_salesforce_config($scope.org.id, $scope.bb_salesforce_configs, $scope.conf, $scope.timezone)
           .then((response) => {
