@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("orgs", "0042_organizationuser_settings"),
+        ("orgs", "0044_add_at_federal_fields"),
     ]
 
     operations = [
