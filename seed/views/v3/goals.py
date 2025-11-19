@@ -142,7 +142,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     )
     @action(detail=True, methods=["GET"])
     def portfolio_summary(self, request, pk):
-        """seed/views/v3/property_view_labels.py
+        """
         Gets a Portfolio Summary dictionary given a goal
         """
         org_id = int(self.get_organization(request))
@@ -168,7 +168,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         """Bulk updates Goal-related fields for a given goal and property view ids"""
         org_id = self.get_organization(request)
         try:
-            goal = Goal.objects.get(pk=pk, goal__organization=org_id)
+            goal = Goal.objects.get(pk=pk, organization=org_id)
         except Goal.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
 
@@ -560,7 +560,6 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             headers={"Authorization": f"Bearer {access_token}"},
             timeout=300,
         )
-        # return response.json()
         annual_report = response.json()["records"][0]
 
         return JsonResponse(

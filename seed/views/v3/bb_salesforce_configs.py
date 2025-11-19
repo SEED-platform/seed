@@ -14,7 +14,6 @@ from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import BBSalesforceConfig
 from seed.serializers.bb_salesforce_config import BBSalesforceConfigSerializer
-from seed.serializers.systems import ServiceSerializer
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import ModelViewSetWithoutPatch
@@ -24,7 +23,7 @@ logger = logging.getLogger()
 
 class BBSalesforceConfigsViewSet(ModelViewSetWithoutPatch, OrgMixin):
     model = BBSalesforceConfig
-    serializer_class = ServiceSerializer
+    serializer_class = BBSalesforceConfigSerializer
     queryset = BBSalesforceConfig.objects.all()
 
     @method_decorator(

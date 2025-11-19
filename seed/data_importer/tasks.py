@@ -646,7 +646,7 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
         try:
             # start by marking everything false
             GoalNote.objects.filter(goal=goal).update(passed_checks=False)
-            # then, use the most recent cycle to set some true
+            # then, use the most recent cycle to set some true, no matter what the user was looking at
             most_recent_cycle_goal = CycleGoal.objects.filter(goal=goal).order_by("-current_cycle__end").first()
             property_ids = most_recent_cycle_goal.properties().values_list("id", flat=True)
             id_chunks = [list(chunk) for chunk in batch(property_ids, 100)]
