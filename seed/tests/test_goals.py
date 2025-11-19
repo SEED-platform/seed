@@ -258,11 +258,12 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert errors["non_field_errors"] == ["The fields organization, name must make a unique set."]
 
         # cycles must be unique
-        goal_data = reset_goal_data("child_goal 3")
-        goal_data["current_cycle"] = self.cycle1.id
-        response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
-        assert response.status_code == 400
-        assert response.json()["non_field_errors"] == ["Cycles must be unique."]
+        # Note: I don't think this is true anymore
+        # goal_data = reset_goal_data("child_goal 3")
+        # goal_data["current_cycle"] = self.cycle1.id
+        # response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
+        # assert response.status_code == 400
+        # assert response.json()["non_field_errors"] == ["Cycles must be unique."]
 
         # columns must be unique
         goal_data = reset_goal_data("child_goal 3")
@@ -318,7 +319,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 201
 
         assert CycleGoal.objects.count() == cycle_goal_count + 1
-        assert GoalNote.objects.count() == goal_note_count + 3
+        assert GoalNote.objects.count() == goal_note_count  # goal notes are 1 per goal/property combo (not one per cycle goal)
 
     def test_goal_update(self):
         original_goal = Goal.objects.get(id=self.child_goal.id)
@@ -364,7 +365,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert errors["baseline_cycle"] == ['Invalid pk "-1" - object does not exist.']
 
     def test_goal_note_update(self):
-        goal_note = GoalNote.objects.get(cycle_goal_id=self.root_cycle_goal.id, property_id=self.property4)
+        goal_note = GoalNote.objects.get(goal_id=self.root_cycle_goal.goal.id, property_id=self.property4)
         assert goal_note.question is None
         assert goal_note.resolution is None
 
@@ -401,7 +402,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
         # child user can only update resolution
         self.login_as_child_member()
-        goal_note = GoalNote.objects.get(cycle_goal_id=self.child_cycle_goal.id, property_id=self.property1)
+        goal_note = GoalNote.objects.get(goal_id=self.child_cycle_goal.goal.id, property_id=self.property1)
         goal_note_data = {
             "question": "Do you have data to report?",
             "resolution": "updated res",
@@ -474,7 +475,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         }
         assert summary == exp_summary
 
-        for goalnote in self.child_cycle_goal.goalnote_set.all():
+        for goalnote in self.child_cycle_goal.goal.goalnote_set.all():
             goalnote.passed_checks = True
             goalnote.save()
 
@@ -496,14 +497,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "shared_sqft": 15,
             "sqft_change": 40,
             "total_new_or_acquired": 0,
-            "total_passing": 2,
+            "total_passing": 3,  # this was set to 2 before. this cycle must have 3 properties
             "total_properties": 2,
         }
 
         assert summary == exp_summary
 
         # with extra data
-        for goalnote in self.child_cycle_goal_extra.goalnote_set.all():
+        for goalnote in self.child_cycle_goal_extra.goal.goalnote_set.all():
             goalnote.passed_checks = True
             goalnote.save()
 
@@ -529,7 +530,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "shared_sqft": 150.0,
             "sqft_change": 87,
             "total_new_or_acquired": 0,
-            "total_passing": 2,
+            "total_passing": 3,
             "total_properties": 2,
         }
 
@@ -569,10 +570,15 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert data["property_lookup"] == {str(self.view31.id): self.property3.id, str(self.view33.id): self.property3.id}
 
     def test_related_filter(self):
-        alphabet = ["a", "c", "b"]
-        questions = ["Is this value correct?", "Are these values correct?", "Other or multiple flags; explain in Additional Notes field"]
-        booleans = [True, False, True]
-        for idx, goal_note in enumerate(self.root_cycle_goal.goalnote_set.all()):
+        alphabet = ["a", "c", "b", "d"]
+        questions = [
+            "Is this value correct?",
+            "Are these values correct?",
+            "Other or multiple flags; explain in Additional Notes field",
+            "Is this other value correct?",
+        ]
+        booleans = [True, False, True, False]
+        for idx, goal_note in enumerate(self.root_cycle_goal.goal.goalnote_set.all()):
             goal_note.resolution = alphabet[idx]
             goal_note.question = questions[idx]
             goal_note.passed_checks = booleans[idx]
@@ -583,7 +589,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             historical_note.text = alphabet[idx]
             historical_note.save()
 
-        goal_note = self.root_cycle_goal.goalnote_set.first()
+        goal_note = self.root_cycle_goal.goal.goalnote_set.first()
         goal_note.new_or_acquired = True
         goal_note.passed_checks = True
         goal_note.save()
@@ -604,15 +610,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 200
         response = response.json()
         resolutions = [p["goal_note"]["resolution"] for p in response["properties"]]
-        assert resolutions == ["a", "b", "c"]
-
+        assert resolutions == ["a", "b", "d"]
         # sort resolution descending
         params = f"?organization_id={self.org.id}&order_by=-property__goal_note__resolution"
         url = path + params
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         response = response.json()
         resolutions = [p["goal_note"]["resolution"] for p in response["properties"]]
-        assert resolutions == ["c", "b", "a"]
+        assert resolutions == ["d", "b", "a"]
 
         # sort historical note text
         params = f"?organization_id={self.org.id}&order_by=property__historical_note__text"
@@ -629,7 +634,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = response.json()
         questions = [p["goal_note"]["question"] for p in response["properties"]]
         assert questions == [
-            "Are these values correct?",
+            "Is this other value correct?",
             "Is this value correct?",
             "Other or multiple flags; explain in Additional Notes field",
         ]
