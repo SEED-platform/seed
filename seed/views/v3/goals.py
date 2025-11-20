@@ -623,10 +623,14 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         baseline_cycle, current_cycle = (cycle_goal.goal.baseline_cycle, cycle_goal.current_cycle)
         key1, key2 = ("baseline", "current") if baseline_first else ("current", "baseline")
         cycle1, cycle2 = (baseline_cycle, current_cycle) if baseline_first else (current_cycle, baseline_cycle)
-        views1 = cycle1.propertyview_set.filter(
-            property__access_level_instance__lft__gte=access_level_instance.lft,
-            property__access_level_instance__rgt__lte=access_level_instance.rgt,
-        ).select_related("property")
+        views1 = (
+            cycle1.propertyview_set.filter(
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
+            .select_related("property")
+            .order_by("id")
+        )
 
         try:
             # Sorts initiated from Portfolio Summary that contain related model names (goal_note, historical_note) require custom handling

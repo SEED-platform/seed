@@ -1359,7 +1359,7 @@ class TestImportFileViewSetPermissions(AccessLevelBaseTestCase, DataMappingBaseT
     def test_import_file_validate_use_cases(self):
         url = reverse("api:v3:import_files-validate-use-cases", args=[self.import_file.pk]) + "?organization_id=" + str(self.org.pk)
 
-        with patch("seed.views.v3.bb_salesforce._get_pkce", return_value=None):
+        with patch("seed.data_importer.tasks._validate_use_cases", return_value=None):
             # root users can
             self.login_as_root_member()
             response = self.client.post(url, content_type="application/json")

@@ -578,14 +578,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "Is this other value correct?",
         ]
         booleans = [True, False, True, False]
-        for idx, goal_note in enumerate(self.root_cycle_goal.goal.goalnote_set.all()):
+        for idx, goal_note in enumerate(self.root_cycle_goal.goal.goalnote_set.order_by("property_id").all()):
             goal_note.resolution = alphabet[idx]
             goal_note.question = questions[idx]
             goal_note.passed_checks = booleans[idx]
             goal_note.new_or_acquired = booleans[idx]
             goal_note.save()
 
-        for idx, historical_note in enumerate(HistoricalNote.objects.filter(property__in=self.root_cycle_goal.properties())):
+        for idx, historical_note in enumerate(HistoricalNote.objects.filter(property__in=self.root_cycle_goal.properties().order_by("id"))):
             historical_note.text = alphabet[idx]
             historical_note.save()
 
