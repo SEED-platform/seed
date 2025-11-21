@@ -6,9 +6,12 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 from functools import wraps
 
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
+from rest_framework import status
 
 from seed.lib.superperms.orgs.models import OrganizationUser
+from seed.lib.superperms.orgs.permissions import get_org_id
+from seed.models import BBSalesforceConfig
 from seed.serializers.pint import PintJSONEncoder
 from seed.utils.api import drf_api_endpoint
 from seed.utils.cache import get_lock, lock_cache, make_key, unlock_cache
@@ -184,3 +187,33 @@ def decorator_to_mixin(decorator):
 
 
 DRFEndpointMixin = decorator_to_mixin(drf_api_endpoint)
+
+
+def get_bb_salesforce_config(func):
+    @wraps(func)
+    def _wrapper(*args, **kwargs):
+        org_id = get_org_id(args[1])
+        bb_salesforce_config = BBSalesforceConfig.objects.filter(organization=org_id).first()
+
+        # the status must be 200 or the portfolio summary page won't load at all. Handle missing configs case by case
+        if bb_salesforce_config is None:
+            return JsonResponse(
+                {"status": "error", "valid": False, "response": "Org has no portfolio Salesforce connection."}, status=status.HTTP_200_OK
+            )
+        elif (
+            bb_salesforce_config.salesforce_url is None
+            or bb_salesforce_config.client_id is None
+            or bb_salesforce_config.client_secret is None
+        ):
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "valid": False,
+                    "response": "Portfolio Salesforce Connection is not properly configured. Enter configuration details on the Org Settings page.",
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        return func(*args, **kwargs, bb_salesforce_config=bb_salesforce_config)
+
+    return _wrapper

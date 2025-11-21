@@ -281,9 +281,9 @@ angular.module('SEED.service.label', []).factory('label_service', [
       }
     ];
 
-    const get_property_view_labels_by_goal = (org_id, goal_id, cycle) => $http.get(
-      '/api/v3/property_view_labels/list_by_goal/',
-      { params: { organization_id: org_id, goal_id, cycle } }
+    const get_property_view_labels_by_goal = (org_id, goal_id, cycle_id) => $http.get(
+      '/api/v3/property_view_labels/list_by_cycle_goal/',
+      { params: { organization_id: org_id, goal_id, cycle_id } }
     )
       .then(map_labels);
 

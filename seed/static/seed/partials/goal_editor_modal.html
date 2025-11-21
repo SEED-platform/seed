@@ -86,6 +86,34 @@
                 </button>
               </li>
             </ul>
+            <div
+              style="
+                padding-top: 30px;
+                padding-bottom: 30px;
+                justify-content: center;
+                text-align: center;
+              "
+              ng-if="bb_salesforce_enabled"
+            >
+              <i
+                class="fab fa-salesforce"
+                style="font-size: 25px; color: #0d9dda"
+              ></i>
+              <span>Salesforce Connection Status:</span>
+              <span
+                ng-if="is_logged_into_salesforce"
+                class="label label-success"
+                ><span class="glyphicon glyphicon-ok" aria-hidden="true"></span
+              ></span>
+              <span
+                ng-if="!is_logged_into_salesforce"
+                class="label label-danger"
+                ><span
+                  class="glyphicon glyphicon-remove"
+                  aria-hidden="true"
+                ></span
+              ></span>
+            </div>
           </div>
           <!-- New Goal -->
 
@@ -163,28 +191,11 @@
                       required
                     ></select>
                   </li>
-                  <!-- Current Cycle -->
-                  <li class="r-row r-row-centered">
-                    <label
-                      for="select-current-cycle"
-                      class="r-pad-right-5 goal-label"
-                      translate
-                      >Current Cycle</label
-                    >
-                    <select
-                      id="select-current-cycle"
-                      class="form-control goal-form-control"
-                      ng-options="cycle.id as cycle.name for cycle in cycles"
-                      ng-change=""
-                      ng-model="goal.current_cycle"
-                      required
-                    ></select>
-                  </li>
                   <li class="r-info">
                     <i class="fa-solid fa-arrow-up r-pad-right-5"></i
                     ><span translate
-                      >Current Cycle will be measured against Baseline
-                      Cycle</span
+                      >Select a cycle to use as the baseline for
+                      comparison.</span
                     >
                   </li>
                 </ul>
@@ -412,7 +423,7 @@
                   </li>
                 </ul>
                 <!-- Commitment Sq Ft -->
-                <ul class="r-list" style="margin-bottom: 50px">
+                <ul class="r-list">
                   <li class="r-list-header" translate>Commitment</li>
                   <li class="r-row r-row-centered">
                     <label
@@ -435,6 +446,109 @@
                     ><span translate>Committed Area</span>
                   </li>
                 </ul>
+                <!-- Partner (only for BB Salesforce Enabled) -->
+                <div ng-if="bb_salesforce_enabled">
+                  <ul class="r-list">
+                    <li class="r-list-header" translate>
+                      Salesforce Partner Record
+                    </li>
+                    <li
+                      class="r-row r-row-centered"
+                      ng-if="is_logged_into_salesforce"
+                    >
+                      <label
+                        for="input-partner"
+                        class="r-pad-right-5 goal-label"
+                        translate
+                        >Salesforce Partner</label
+                      >
+                      <select
+                        id="select-eui-column1"
+                        class="form-control goal-form-control"
+                        ng-options="partner as partner.name for partner in partners"
+                        ng-change="changePossibleGoals(selected_partner)"
+                        ng-model="selected_partner"
+                        required
+                      ></select>
+                    </li>
+                    <li ng-if="is_logged_into_salesforce" class="r-info">
+                      <i class="fa-solid fa-arrow-up r-pad-right-5"></i
+                      ><span translate
+                        >If you wish to sync portfolio information with your
+                        Salesforce instance, select the Salesforce Partner
+                        record using the dropdown above.</span
+                      >
+                    </li>
+                    <li
+                      ng-if="!is_logged_into_salesforce"
+                      class="r-info"
+                      style="background-color: #fff"
+                    >
+                      <i
+                        class="fa-solid fa-warning r-pad-right-5 warning-message"
+                        style="font-size: 1.5em"
+                      ></i>
+                      <span
+                        class="warning-message"
+                        style="padding-left: 10px"
+                        translate
+                        >Log in to Salesforce first to be able to configure
+                        Salesforce Partner and Goal associations here.</span
+                      >
+                    </li>
+                  </ul>
+                  <!-- Goal -->
+                  <ul class="r-list" style="margin-bottom: 50px">
+                    <li class="r-list-header" translate>
+                      Salesforce Goal Record
+                    </li>
+                    <li
+                      class="r-row r-row-centered"
+                      ng-if="is_logged_into_salesforce"
+                    >
+                      <label
+                        for="input-partner"
+                        class="r-pad-right-5 goal-label"
+                        translate
+                        >Salesforce Goal</label
+                      >
+                      <select
+                        id="select-eui-column1"
+                        class="form-control goal-form-control"
+                        ng-options="goal as goal.name for goal in possible_goals"
+                        ng-change="changeSelectedGoal(selected_goal)"
+                        ng-model="selected_goal"
+                        required
+                      ></select>
+                    </li>
+                    <li class="r-info" ng-if="is_logged_into_salesforce">
+                      <i class="fa-solid fa-arrow-up r-pad-right-5"></i
+                      ><span translate
+                        >If you wish to sync portfolio information with your
+                        Salesforce instance, select the Salesforce Goal record
+                        associated with the selected Partner using the dropdown
+                        above.</span
+                      >
+                    </li>
+                    <li
+                      ng-if="!is_logged_into_salesforce"
+                      class="r-info"
+                      style="background-color: #fff"
+                    >
+                      <i
+                        class="fa-solid fa-warning r-pad-right-5 warning-message"
+                        style="font-size: 1.5em"
+                      ></i>
+                      <span
+                        class="warning-message"
+                        style="padding-left: 10px"
+                        translate
+                        >Log in to Salesforce first to be able to configure
+                        Salesforce Partner and Goal associations here.</span
+                      >
+                    </li>
+                  </ul>
+                </div>
               </div>
             </form>
           </div>
