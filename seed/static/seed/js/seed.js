@@ -49,6 +49,9 @@
     'SEED.controller.create_column_modal',
     'SEED.controller.service_modal',
     'SEED.controller.system_modal',
+    'SEED.controller.create_cycle_goal_modal',
+    'SEED.controller.cycle_goal_edit_modal',
+    'SEED.controller.cycle_goal_deletion_modal',
     'SEED.controller.create_organization_modal',
     'SEED.controller.create_sub_organization_modal',
     'SEED.controller.create_facilities_plan_run_modal',
@@ -121,6 +124,7 @@
     'SEED.controller.merge_modal',
     'SEED.controller.meter_deletion_modal',
     'SEED.controller.meter_edit_modal',
+    'SEED.controller.salesforce_login',
     'SEED.controller.system_meter_readings_upload_modal',
     'SEED.controller.group_meter_creation_modal',
     'SEED.controller.service_meter_creation_modal',
@@ -158,6 +162,7 @@
     'SEED.controller.set_update_to_now_modal',
     'SEED.controller.settings_profile_modal',
     'SEED.controller.show_populated_columns_modal',
+    'SEED.controller.sync_to_salesforce_modal',
     'SEED.controller.two_factor_profile',
     'SEED.controller.ubid_admin',
     'SEED.controller.ubid_admin_modal',
@@ -199,6 +204,7 @@
     'SEED.service.analyses',
     'SEED.service.audit_template',
     'SEED.service.auth',
+    'SEED.service.bb_salesforce',
     'SEED.service.cache_entry',
     'SEED.service.column_mappings',
     'SEED.service.columns',
@@ -1061,6 +1067,15 @@
           }
         })
         .state({
+          name: 'salesforce_login',
+          url: '/salesforce_login',
+          templateUrl: `${static_url}seed/partials/salesforce_login.html`,
+          controller: 'salesforce_login_controller',
+          resolve: {
+            organization_id: ['user_service', (user_service) => user_service.get_organization().id]
+          }
+        })
+        .state({
           name: 'dataset_detail',
           url: '/data/{dataset_id:int}',
           templateUrl: `${static_url}seed/partials/dataset_detail.html`,
@@ -1188,6 +1203,14 @@
               (salesforce_config_service, $stateParams) => {
                 const { organization_id } = $stateParams;
                 return salesforce_config_service.get_salesforce_configs(organization_id);
+              }
+            ],
+            bb_salesforce_configs_payload: [
+              'bb_salesforce_service',
+              '$stateParams',
+              (bb_salesforce_service, $stateParams) => {
+                const { organization_id } = $stateParams;
+                return bb_salesforce_service.get_bb_salesforce_configs(organization_id);
               }
             ],
             audit_template_configs_payload: [
@@ -2972,6 +2995,14 @@
               (auth_service, organization_payload) => {
                 const organization_id = organization_payload.organization.id;
                 return auth_service.is_authorized(organization_id, ['requires_owner']);
+              }
+            ],
+            is_logged_into_salesforce: [
+              'bb_salesforce_service',
+              'organization_payload',
+              (bb_salesforce_service, organization_payload) => {
+                const organization_id = organization_payload.organization.id;
+                return bb_salesforce_service.verify_token(organization_id, ['requires_owner']);
               }
             ]
           }

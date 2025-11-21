@@ -9,21 +9,25 @@ angular.module('SEED.controller.portfolio_summary', [])
     '$stateParams',
     '$uibModal',
     '$window',
+    '$timeout',
     'urls',
     'ah_service',
     'data_quality_service',
     'inventory_service',
     'label_service',
     'goal_service',
+    'bb_salesforce_service',
     'Notification',
     'cycles',
     'organization_payload',
     'access_level_tree',
     'auth_payload',
+    'is_logged_into_salesforce',
     'property_columns',
     'uiGridConstants',
     'gridUtil',
     'spinner_utility',
+    'user_service',
     // eslint-disable-next-line func-names
     function (
       $scope,
@@ -31,21 +35,25 @@ angular.module('SEED.controller.portfolio_summary', [])
       $stateParams,
       $uibModal,
       $window,
+      $timeout,
       urls,
       ah_service,
       data_quality_service,
       inventory_service,
       label_service,
       goal_service,
+      bb_salesforce_service,
       Notification,
       cycles,
       organization_payload,
       access_level_tree,
       auth_payload,
+      is_logged_into_salesforce,
       property_columns,
       uiGridConstants,
       gridUtil,
-      spinner_utility
+      spinner_utility,
+      user_service
     ) {
       $scope.organization = organization_payload.organization;
       $scope.viewer = $scope.menu.user.organization.user_role === 'viewer';
@@ -57,6 +65,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.level_names = access_level_tree.access_level_names;
       $scope.goal = {};
+      $scope.cycle_goal = {};
       $scope.columns = property_columns;
       $scope.cycle_columns = [];
       $scope.area_columns = [];
@@ -66,6 +75,9 @@ angular.module('SEED.controller.portfolio_summary', [])
       $scope.selected_count = 0;
       $scope.selected_option = 'none';
       $scope.search_query = '';
+      // if org has no salesforce configs, status will be 'error' and valid will be false
+      $scope.is_logged_into_salesforce = is_logged_into_salesforce.data.valid;
+      $scope.chart_initialized = false;
 
       $scope.search_for_goals = (query) => {
         const pattern = query.split('').join('.*');
@@ -88,47 +100,102 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
       initialize_columns();
 
+      const initChart = () => {
+        // initialize the chart once
+        if (!$scope.chart_initialized && $scope.hasValidGoal() && $scope.hasValidCycleGoal()) {
+          const canvas = document.getElementById('data-view-chart');
+          if (!canvas) {
+            console.warn('Canvas element with ID "data-view-chart" not found');
+            return;
+          }
+          const ctx = canvas.getContext('2d');
+          $scope.dataViewChart = new Chart(ctx, {
+            type: 'bar',
+            data: {},
+            options: {
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'top'
+                },
+                title: {
+                  display: true,
+                  text: 'Energy Use Intensity by Reporting Period'
+                },
+                annotation: {
+                  annotations: {
+                    line1: {
+                      type: 'line',
+                      yMin: 0,
+                      yMax: 0,
+                      borderWidth: 2,
+                      borderDash: [4]
+                    }
+                  }
+                }
+              }
+            }
+          });
+          $scope.chart_initialized = true;
+        }
+      };
+
       // Can only sort based on baseline or current, not both. In the event of a conflict, use the more recent.
       let baseline_first = false;
 
       const load_data = (page) => {
-        $scope.data_loading = true;
-        const per_page = 50;
-        const data = {
-          goal_id: $scope.goal.id,
-          page,
-          per_page,
-          baseline_first,
-          access_level_instance_id: $scope.goal.access_level_instance,
-          related_model_sort: $scope.related_model_sort
-        };
-        const column_filters = $scope.column_filters;
-        const order_by = $scope.column_sorts;
-        goal_service.load_data(data, column_filters, order_by).then((response) => {
-          const data = response.data;
-          $scope.inventory_pagination = data.pagination;
-          $scope.property_lookup = data.property_lookup;
-          $scope.data = data.properties;
-          get_all_labels();
-          set_grid_options();
-          $scope.data_valid = Boolean(data.properties);
-          $scope.data_loading = false;
-        });
+        if ($scope.goal.id && $scope.cycle_goal.id) {
+          $scope.data_loading = true;
+          const per_page = 50;
+          const data = {
+            goal_id: $scope.goal.id,
+            cycle_goal_id: $scope.cycle_goal.id,
+            page,
+            per_page,
+            baseline_first,
+            access_level_instance_id: $scope.goal.access_level_instance,
+            related_model_sort: $scope.related_model_sort
+          };
+          const column_filters = $scope.column_filters;
+          const order_by = $scope.column_sorts;
+          // this now only works if a cycle goal is also selected
+
+          goal_service.load_data(data, column_filters, order_by).then((response) => {
+            const data = response.data;
+            $scope.inventory_pagination = data.pagination;
+            $scope.property_lookup = data.property_lookup;
+            $scope.data = data.properties;
+            get_all_labels();
+            set_grid_options();
+            $scope.data_valid = Boolean(data.properties);
+            $scope.data_loading = false;
+          });
+        }
       };
 
-      // optionally pass a goal name to be set as $scope.goal - used on modal close
       const get_goals = (goal_name = false) => {
         goal_service.get_goals().then((result) => {
           $scope.goals = result.goals;
           $scope.goal_options = result.goals;
-          $scope.goal = goal_name ?
-            $scope.goals.find((goal) => goal.name === goal_name) :
-            $scope.goals[0];
-          format_goal_details();
-          load_summary();
-          load_data(1);
+          if (goal_name) {
+            $scope.goal = $scope.goals.find((goal) => goal.name === goal_name);
+          } else {
+            $scope.goal = $scope.goals.length > 0 ? $scope.goals[0] : {}; // Keep as empty object if no goals
+          }
+          // Note: the goal watcher will select a cycle goal and call reset_data()
+
+          // get EUIs for chart
+          goal_service.get_weighted_euis($scope.goal.id).then((data) => {
+            initChart();
+            $scope.updateChart(data.results);
+          });
+        }).catch((error) => {
+          console.error('Failed to load goals:', error);
+          $scope.goal = {}; // Ensure it stays as empty object on error
         });
       };
+      // initialize goals and cycle_goals
+      // TODO: should we remember the last goal loaded on initialization?
       get_goals();
 
       const reset_data = () => {
@@ -138,10 +205,37 @@ angular.module('SEED.controller.portfolio_summary', [])
 
       $scope.select_goal = (selected_goal) => {
         $scope.goal = selected_goal;
+        // also get cycle_goals and  default cycle_goal?
+        goal_service.get_cycle_goals($scope.goal.id).then((data) => {
+          $scope.cycle_goals = data.cycle_goals;
+          $scope.cycle_goal = $scope.cycle_goals.length > 0 ? $scope.cycle_goals.order_by('start', 'desc').first() : {};
+          // reset_data();
+          goal_service.get_weighted_euis($scope.goal.id).then((data) => {
+            initChart();
+            $scope.updateChart(data.results);
+          });
+        });
       };
 
+      $scope.select_cycle_goal = (selected_cycle_goal) => {
+        $scope.cycle_goal = selected_cycle_goal;
+        reset_data();
+      };
+
+      $scope.$watch('goal', (cur) => {
+        if (_.isEmpty(cur)) return;
+        // get cycle goals for this goal
+        goal_service.get_cycle_goals(cur.id).then((data) => {
+          $scope.cycle_goals = data.cycle_goals;
+          // set a cycle goal
+          // TODO: ordered with most current on top already?
+          $scope.cycle_goal = $scope.cycle_goals.length > 0 ? $scope.cycle_goals[0] : {};
+        });
+      });
+
       // If goal changes, reset grid filters and repopulate ui-grids
-      $scope.$watch('goal', (cur, old) => {
+      $scope.$watch('cycle_goal', (cur, old) => {
+        if (!$scope.cycle_goal) return;
         if ($scope.gridApi) $scope.reset_sorts_filters();
         $scope.data_valid = false;
         $scope.valid = true;
@@ -150,12 +244,16 @@ angular.module('SEED.controller.portfolio_summary', [])
           $scope.summary_valid = false;
         } else if (old?.id) { // prevent duplicate request on page load
           reset_data();
+        } else {
+          // do it anyway for now
+          reset_data();
         }
       });
 
       // selected goal details
       const format_goal_details = () => {
         $scope.change_selected_level_index();
+        if (_.isEmpty($scope.goal)) return;
         const access_level_instance = $scope.potential_level_instances.find((level) => level.id === $scope.goal.access_level_instance).name;
 
         const commitment_sqft = $scope.goal.commitment_sqft?.toLocaleString() || 'n/a';
@@ -163,9 +261,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           { // column 1
             Type: capitalize($scope.goal.type),
             'Baseline Cycle': $scope.goal.baseline_cycle_name,
-            'Current Cycle': $scope.goal.current_cycle_name,
             [$scope.goal.level_name]: access_level_instance,
-            'Total Properties': null,
             'Portfolio Target': `${$scope.goal.target_percentage} %`
           },
           { // column 2
@@ -194,6 +290,10 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.show_help = bool;
         _.delay($scope.updateHeight, 150);
       };
+
+      $scope.hasValidGoal = () => $scope.goal && $scope.goal.id && Object.keys($scope.goal).length > 1;
+
+      $scope.hasValidCycleGoal = () => $scope.cycle_goal && $scope.cycle_goal.id && Object.keys($scope.cycle_goal).length > 1;
 
       const get_goal_stats = (summary) => {
         const passing_sqft = summary.current_total_sqft;
@@ -224,30 +324,115 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.potential_level_instances = access_level_instances_by_depth[deepest_key];
       };
 
+      $scope.jump_to_overview_chart = () => {
+        const element = document.getElementById('partner-note-container');
+        if (element) {
+          element.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      };
+
+      $scope.login_salesforce = () => {
+        bb_salesforce_service.get_login_url($scope.organization.id)
+          .then((data) => {
+            // did we get a URL?
+            if (data.status === 'error') {
+              Notification.error({ message: `Cannot Login to Salesforce: ${data.response}`, delay: false });
+            } else if (data.url) {
+              $window.location.href = data.url;
+            }
+          })
+          .catch(() => {
+            Notification.error({ message: 'Cannot Login to Salesforce. Double check the Salesforce login URL in the Org Settings page.', delay: false });
+          });
+      };
+
+      $scope.logout_salesforce = () => {
+        bb_salesforce_service.logout_salesforce($scope.organization.id)
+          .then((data) => {
+            if (data.status === 'success') {
+              $scope.is_logged_into_salesforce = false;
+              Notification.success('Successfully logged out of Salesforce.');
+            } else {
+              Notification.error({ message: 'Error logging out of Salesforce. Please try again.', delay: 30000 });
+            }
+          })
+          .catch(() => {
+            Notification.error({ message: 'Error logging out of Salesforce. Please try again.', delay: 30000 });
+          });
+      };
+
       // GOAL EDITOR MODAL
       $scope.open_goal_editor_modal = () => {
-        const modalInstance = $uibModal.open({
-          templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
-          controller: 'goal_editor_modal_controller',
-          size: 'lg',
-          backdrop: 'static',
-          resolve: {
-            access_level_tree: () => access_level_tree,
-            area_columns: () => $scope.area_columns,
-            auth_payload: () => auth_payload,
-            columns: () => $scope.columns,
-            cycles: () => $scope.cycles,
-            eui_columns: () => $scope.eui_columns,
-            goal: () => $scope.goal,
-            organization: () => $scope.organization,
-            write_permission: () => $scope.write_permission
-          }
-        });
+        // Check if Salesforce is enabled for this organization
+        if (!$scope.organization.bb_salesforce_enabled) {
+          // If Salesforce is disabled, open modal with empty partners array
+          openModal([]);
+          return;
+        }
+        // If Salesforce is enabled, try to get partners
+        bb_salesforce_service.get_partners($scope.organization.id)
+          .then((partners) => {
+            openModal(partners);
+          })
+          .catch(() => {
+            // console.error('Error fetching partners:', error);
+            // Open Modal anyway without Salesforce data
+            openModal([]);
+            Notification.error({ message: 'Could not retrieve Salesforce data. Ensure that you are logged into Salesforce. You can still edit the goal, but Salesforce-related fields will be unavailable.', delay: false });
+          });
 
-        // on modal close
-        modalInstance.result.then((goal_name) => {
-          get_goals(goal_name);
-        });
+        // Helper function to open the modal with the given partners data
+        function openModal(partners) {
+          const modalInstance = $uibModal.open({
+            templateUrl: `${urls.static_url}seed/partials/goal_editor_modal.html`,
+            controller: 'goal_editor_modal_controller',
+            size: 'lg',
+            backdrop: 'static',
+            resolve: {
+              access_level_tree: () => access_level_tree,
+              area_columns: () => $scope.area_columns,
+              auth_payload: () => auth_payload,
+              columns: () => $scope.columns,
+              cycles: () => $scope.cycles,
+              eui_columns: () => $scope.eui_columns,
+              goal: () => $scope.goal,
+              organization: () => $scope.organization,
+              write_permission: () => $scope.write_permission,
+              is_logged_into_salesforce: () => $scope.is_logged_into_salesforce,
+              partners: () => partners
+            }
+          });
+          // on modal close
+          modalInstance.result.then((goal_name) => {
+            get_goals(goal_name);
+          });
+        }
+      };
+
+      // SYNC TO SALESFORCE MODAL
+      $scope.open_sync_to_salesforce_modal = () => {
+        goal_service.get_salesforce_summary($scope.goal.id)
+          .then((data) => {
+            const summary_data = data.data;
+            $uibModal.open({
+              templateUrl: `${urls.static_url}seed/partials/sync_to_salesforce_modal.html`,
+              controller: 'sync_to_salesforce_modal_controller',
+              size: 'lg',
+              backdrop: 'static',
+              resolve: {
+                goal: () => $scope.goal,
+                latest_cycle_goal: () => $scope.cycle_goals[0],
+                salesforce_summary_data: () => summary_data
+              }
+            });
+          })
+          .catch((error) => {
+            console.error('Error retrieving Salesforce summary data:', error);
+            Notification.error({ message: 'Unable to retrieve Salesforce summary data. Ensure that you are logged into Salesforce, refresh the page, and try again.', delay: false });
+          });
       };
 
       const refresh_data = () => {
@@ -259,14 +444,18 @@ angular.module('SEED.controller.portfolio_summary', [])
         $scope.summary_loading = true;
         $scope.show_access_level_instances = false;
         $scope.summary_valid = false;
-
-        goal_service.get_portfolio_summary($scope.goal.id).then((result) => {
-          const summary = result.data;
-          set_summary_grid_options(summary);
-        }).then(() => {
+        if ($scope.goal.id && $scope.cycle_goal && $scope.cycle_goal.id) {
+          goal_service.get_portfolio_summary($scope.goal.id, $scope.cycle_goal.id).then((result) => {
+            const summary = result.data;
+            set_summary_grid_options(summary);
+          }).then(() => {
+            $scope.summary_loading = false;
+            $scope.summary_valid = true;
+          });
+        } else {
           $scope.summary_loading = false;
-          $scope.summary_valid = true;
-        });
+          $scope.summary_valid = false;
+        }
       };
 
       $scope.page_change = (page) => {
@@ -312,22 +501,15 @@ angular.module('SEED.controller.portfolio_summary', [])
         }, 0);
       };
 
-      // retrieve labels, key = 'baseline' or 'current'
-      const get_labels = (key) => {
-        label_service.get_property_view_labels_by_goal($scope.organization.id, $scope.goal.id, key).then((labels) => {
-          if (key === 'baseline') {
-            $scope.baseline_labels = labels;
-            $scope.build_labels(key, $scope.baseline_labels);
-          } else {
-            $scope.current_labels = labels;
-            $scope.build_labels(key, $scope.current_labels);
-          }
-        });
-      };
-
       const get_all_labels = () => {
-        get_labels('baseline');
-        get_labels('current');
+        label_service.get_property_view_labels_by_cycle_goal($scope.organization.id, $scope.goal.id, $scope.goal.baseline_cycle).then((labels) => {
+          $scope.baseline_labels = labels;
+          $scope.build_labels('baseline', $scope.baseline_labels);
+        });
+        label_service.get_property_view_labels_by_cycle_goal($scope.organization.id, $scope.goal.id, $scope.cycle_goal.cycle.id).then((labels) => {
+          $scope.current_labels = labels;
+          $scope.build_labels('current', $scope.current_labels);
+        });
       };
 
       // Find labels that should be displayed and organize by applied inventory id
@@ -990,6 +1172,22 @@ angular.module('SEED.controller.portfolio_summary', [])
         });
       };
 
+      $scope.downloadChart = () => {
+        const a = document.createElement('a');
+        a.href = $scope.dataViewChart.toBase64Image();
+        a.download = 'portfolio_summary.png';
+        a.click();
+      };
+
+      $scope.downloadTable = () => {
+        const data = ['Cycle Name,Baseline?,EUI,Goal,Annual % Imp,Cumulative % Imp'];
+        console.log($scope.table_data);
+        $scope.table_data.forEach((d) => {
+          data.push(Object.values(d).join(','));
+        });
+        saveAs(new Blob([data.join('\r\n')], { type: 'text/csv' }), 'import_issues.csv');
+      };
+
       $scope.select_none = () => {
         $scope.gridApi.selection.clearSelectedRows();
         $scope.selected_count = 0;
@@ -1041,6 +1239,50 @@ angular.module('SEED.controller.portfolio_summary', [])
           $scope.gridApi.selection.clearSelectedRows();
           load_summary();
           load_data();
+        });
+      };
+
+      $scope.is_editing_partner_note = false;
+      $scope.update_is_editing_partner_note = (v) => {
+        $scope.is_editing_partner_note = Boolean(v);
+      };
+
+      $scope.update_partner_note = () => {
+        $scope.is_editing_partner_note = false;
+        goal_service.update_goal($scope.goal).then(() => {
+          Notification.primary('partner note updated');
+        });
+      };
+
+      $scope.updateChart = (data) => {
+        $scope.table_data = data;
+
+        // set data
+        $scope.dataViewChart.data.labels = data.map((d) => d['Cycle Name']);
+        $scope.dataViewChart.data.datasets = [{
+          label: 'Sample Bar Chart',
+          data: data.map((d) => d.EUI),
+          backgroundColor: ['#1E428A', ...new Array(data.length).fill('#06732cff')]
+        }];
+
+        // set goal bar
+        $scope.dataViewChart.options.plugins.annotation.annotations.line1.yMin = data[0].Goal;
+        $scope.dataViewChart.options.plugins.annotation.annotations.line1.yMax = data[0].Goal;
+
+        $scope.dataViewChart.update();
+      };
+
+      $scope.toggle_approval = async () => {
+        $scope.goal.partner_note_approval = !$scope.goal.partner_note_approval;
+        if ($scope.goal.partner_note_approval) {
+          $scope.goal.partner_note_approval_time = new Date().toJSON();
+          $scope.goal.partner_note_approval_user = await user_service.get_user_profile().then((uf) => uf.org_user_id);
+        } else {
+          $scope.goal.partner_note_approval_time = null;
+          $scope.goal.partner_note_approval_user = null;
+        }
+        goal_service.update_goal($scope.goal).then(() => {
+          Notification.primary('partner note approval updated');
         });
       };
 
@@ -1123,7 +1365,6 @@ angular.module('SEED.controller.portfolio_summary', [])
       };
 
       const set_summary_grid_options = (summary) => {
-        $scope.goal_details[0]['Total Properties'] = summary.total_properties.toLocaleString();
         get_goal_stats(summary);
         $scope.summary_data = [summary];
         $scope.summaryGridOptions = {
@@ -1137,6 +1378,46 @@ angular.module('SEED.controller.portfolio_summary', [])
             $scope.summaryGridApi = gridApi;
           }
         };
+      };
+
+      $scope.create_cycle_goal = () => {
+        $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/create_cycle_goal_modal.html`,
+          controller: 'create_cycle_goal_modal_controller',
+          resolve: {
+            goal: () => $scope.goal,
+            cycles: () => $scope.cycles,
+            bb_salesforce_enabled: () => $scope.organization.bb_salesforce_enabled,
+            is_logged_into_salesforce: () => $scope.is_logged_into_salesforce,
+            annual_reports: () => bb_salesforce_service.get_annual_report($scope.organization.id, $scope.goal.id)
+          }
+        });
+      };
+
+      $scope.open_cycle_goal_deletion_modal = () => {
+        $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/cycle_goal_deletion_modal.html`,
+          controller: 'cycle_goal_deletion_modal_controller',
+          resolve: {
+            organization_id: () => $scope.organization.id,
+            goal: () => $scope.goal,
+            cycle_goal: () => $scope.cycle_goal
+          }
+        });
+      };
+
+      $scope.open_cycle_goal_edit_modal = () => {
+        $uibModal.open({
+          templateUrl: `${urls.static_url}seed/partials/cycle_goal_edit_modal.html`,
+          controller: 'cycle_goal_edit_modal_controller',
+          resolve: {
+            goal: () => $scope.goal,
+            cycle_goal: () => $scope.cycle_goal,
+            bb_salesforce_enabled: () => $scope.organization.bb_salesforce_enabled,
+            is_logged_into_salesforce: () => $scope.is_logged_into_salesforce,
+            annual_reports: () => ($scope.is_logged_into_salesforce ? bb_salesforce_service.get_annual_report($scope.organization.id, $scope.goal.id) : Promise.resolve([]))
+          }
+        });
       };
 
       // --- DATA QUALITY ---
