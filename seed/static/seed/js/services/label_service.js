@@ -307,7 +307,7 @@ angular.module('SEED.service.label', []).factory('label_service', [
       update_property_labels,
       update_taxlot_labels,
       get_available_colors,
-      get_property_view_labels_by_cycle_goal,
+      get_property_view_labels_by_goal,
       lookup_label
     };
   }

@@ -504,11 +504,11 @@ angular.module('SEED.controller.portfolio_summary', [])
       const get_all_labels = () => {
         label_service.get_property_view_labels_by_cycle_goal($scope.organization.id, $scope.goal.id, $scope.goal.baseline_cycle).then((labels) => {
           $scope.baseline_labels = labels;
-          $scope.build_labels(key, $scope.baseline_labels);
+          $scope.build_labels('baseline', $scope.baseline_labels);
         });
         label_service.get_property_view_labels_by_cycle_goal($scope.organization.id, $scope.goal.id, $scope.cycle_goal.cycle.id).then((labels) => {
-            $scope.current_labels = labels;
-            $scope.build_labels(key, $scope.current_labels);
+          $scope.current_labels = labels;
+          $scope.build_labels('current', $scope.current_labels);
         });
       };
 
