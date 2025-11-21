@@ -1148,16 +1148,8 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       );
     }
 
-    // disable sorting (but not filtering) on related data until the backend can filter/sort over two models
     for (const i in $scope.columns) {
       const column = $scope.columns[i];
-      if (column.related) {
-        column.enableSorting = false;
-        // let title = 'Filtering disabled for property columns on the taxlot list.';
-        // if ($scope.inventory_type === 'properties') {
-        //   title = 'Filtering disabled for taxlot columns on the property list.';
-        // }
-      }
       if (column.derived_column != null) {
         column.enableSorting = false;
         const title = 'Sorting and filtering disabled for derived columns.';
