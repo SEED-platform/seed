@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 import logging
+import re
 import time
 from datetime import datetime
 
@@ -31,7 +32,7 @@ class PortfolioManagerSerializer(serializers.Serializer):
 
 class PortfolioManagerViewSet(GenericViewSet):
     """
-    This ViewSet contains two API views: /template_list/ and /report/ that are used to interface SEED with ESPM
+    This ViewSet contains four API views: /template_list/, /report/, /download/, and /custom_download/ that are used to interface SEED with ESPM
     """
 
     serializer_class = PortfolioManagerSerializer
@@ -219,43 +220,42 @@ class PortfolioManagerViewSet(GenericViewSet):
             required=["username", "password"],
         ),
     )
-    @action(detail=True, methods=["POST"])
-    def download(self, request, pk):
+    @action(detail=False, methods=["POST"])
+    def download(self, request):
         """Download a single property report from Portfolio Manager. The PK is the
         PM property ID that is on ESPM"""
-        if "username" not in request.data:
-            _log.debug(f"Invalid call to PM worker: missing username for PM account: {request.data!s}")
+        required_fields = {"username", "password", "property_ids", "start_date", "end_date"}
+        missing_fields = required_fields - set(request.data.keys())
+        if len(missing_fields) > 0:
             return JsonResponse(
-                {"status": "error", "message": "Invalid call to PM worker: missing username for PM account"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if "password" not in request.data:
-            _log.debug(f"Invalid call to PM worker: missing password for PM account: {request.data!s}")
-            return JsonResponse(
-                {"status": "error", "message": "Invalid call to PM worker: missing password for PM account"},
+                {"status": "error", "message": f"Invalid call to PM worker: missing fields {missing_fields}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         username = request.data["username"]
         password = request.data["password"]
-        if "filename" not in request.data:
-            filename = f"pm_{pk}_{datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')}.xlsx"
-        else:
-            filename = request.data["filename"]
+        property_ids = request.data["property_ids"]
+        start_date = datetime.strptime(request.data.get("start_date"), "%m/%d/%Y")
+        end_date = datetime.strptime(request.data.get("end_date"), "%m/%d/%Y")
 
+        #  generate and download meter data
         pm = PortfolioManagerImport(username, password)
         try:
-            content = pm.return_single_property_report(pk)
-
-            # return the excel file as the HTTP response
-            response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-            response["Content-Disposition"] = f'attachment; filename="{filename}"'
-            response.write(content)
-            return response
-
+            content = pm.generate_and_download_meter_data(property_ids, start_date, end_date)
         except PMError as pme:
-            _log.debug(f"{pme!s}: PM Property ID {pk}")
+            _log.debug(f"{pme!s}: {property_ids!s}")
             return JsonResponse({"status": "error", "message": str(pme)}, status=status.HTTP_400_BAD_REQUEST)
+
+        # return the Excel file
+        try:
+            response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response["Content-Disposition"] = 'attachment; filename="pm_report_export.xlsx"'
+            response.write(content)
+        except Exception as e:
+            _log.debug(f"ERROR downloading EXCEL report: {e}")
+            return JsonResponse({"status": "error", "message": "Malformed XML from template download"}, status=status.HTTP_400_BAD_REQUEST)
+
+        return response
 
 
 # TODO: Move this object to /seed/utils/portfolio_manager.py
@@ -472,7 +472,7 @@ class PortfolioManagerImport:
         # Now we need to wait while the report is being generated
         attempt_count = 0
         report_generation_complete = False
-        while attempt_count < 90:
+        while attempt_count < 24:
             attempt_count += 1
 
             # get the report data
@@ -496,7 +496,7 @@ class PortfolioManagerImport:
             if not this_matched_template:
                 raise PMError("Could not find a match for this report template id... odd at this point")
             if this_matched_template["pending"] == 1:
-                time.sleep(2)
+                time.sleep(5)
                 continue
             else:
                 report_generation_complete = True
@@ -586,6 +586,110 @@ class PortfolioManagerImport:
 
         except requests.exceptions.SSLError:
             raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+
+    def generate_and_download_meter_data(self, pm_property_ids: list[int], start_date: datetime, end_date: datetime):
+        # login if needed
+        if not self.authenticated_headers:
+            self.login_and_set_cookie_header()
+
+        # Get the csrf
+        response = requests.get(
+            "https://portfoliomanager.energystar.gov/pm/property/createCustomDownload/loadPage/maxPropertiesWithinLimit/true",
+            headers=self.authenticated_headers,
+            allow_redirects=True,
+            timeout=300,
+        )
+        csrf_header = re.findall('(?<=meta name="_csrf_header" content=")(.*)(?="/>)', response.text)[0]
+        csrf_token = re.findall('(?<=meta name="_csrf" content=")(.*)(?="/>)', response.text)[0]
+
+        # create custom download
+        response = requests.post(
+            "https://portfoliomanager.energystar.gov/pm/property/createCustomDownloadSubmit/",
+            headers={
+                **self.authenticated_headers,
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Accept-Encoding": "gzip, deflate, br, zstd",
+                "Content-Type": "application/x-www-form-urlencoded",
+                csrf_header: csrf_token,
+            },
+            data={
+                "_aggregateMeter": "on",
+                "_energyMeter": "on",
+                "_energyMeterEntries": "on",
+                "_meterEntries": "on",
+                "_meterType": "on",
+                "_propertyIds": "on",
+                "energyMeter": "true",
+                "energyMeterEntries": "true",
+                "includeInactiveMeters": "true",
+                "includeUnassociatedMeters": "false",
+                "meterEntries": "true",
+                "meterType": "true",
+                "selectionType": "MULTIPLE",
+                "selectedPropertyIdsAsString": pm_property_ids,
+                "customDownloadStartDate": start_date.strftime("%m/%d/%Y"),
+                "customDownloadEndDate": end_date.strftime("%m/%d/%Y"),
+            },
+            stream=True,
+            timeout=300,
+        )
+
+        # Now we need to wait while the report is being generated
+        attempt_count = 0
+        custom_download_found = False
+        while attempt_count < 24:
+            attempt_count += 1
+
+            # get the report data
+            try:
+                response = requests.post(
+                    "https://portfoliomanager.energystar.gov/pm/notifications.json",
+                    headers={
+                        **self.authenticated_headers,
+                        "Accept": "application/json",
+                        "Content-Type": "application/json",
+                        csrf_header: csrf_token,
+                    },
+                    timeout=300,
+                    data='{"page":1,"pageSize":100,"sort":{"column":"CREATE_DATE","ascending":true},"type":"Notices"}',
+                )
+            except requests.exceptions.SSLError:
+                raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+            if not response.status_code == status.HTTP_200_OK:
+                raise PMError("Unsuccessful response from report template rows query; aborting.")
+
+            notifications = response.json()["result"]["items"]
+            if len(notifications) == 0:
+                time.sleep(5)
+                continue
+
+            latest_notification = notifications[-1]
+            if latest_notification["notificationTypeCode"]["code"] == "CUSTOMPORTFOLIODOWNLOAD":
+                custom_download_found = True
+                break
+
+            else:
+                time.sleep(5)
+                continue
+
+        # Finally we can download the generated report
+        try:
+            response = requests.get(
+                f"https://portfoliomanager.energystar.gov/pm{latest_notification['notificationParameters'][1]['url']}",
+                headers=self.authenticated_headers,
+                timeout=300,
+            )
+        except requests.exceptions.SSLError:
+            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        if response.status_code != status.HTTP_200_OK:
+            error_message = "Unsuccessful response from GET trying to download generated report;"
+            error_message += f"Returned with a status code = {response.status_code};"
+            raise PMError(error_message)
+        if not custom_download_found:
+            raise PMError("custom report not generated successfully; aborting.")
+
+        return response.content
 
     def _parse_properties_v1(self, xml):
         """Parse the XML (in dict format) response from the ESPM API and return a list of

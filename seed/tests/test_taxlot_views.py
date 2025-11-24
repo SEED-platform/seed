@@ -120,7 +120,6 @@ class TaxLotViewTests(DataMappingBaseTestCase):
         ]
         self.assertEqual(note.note_type, Note.LOG)
         self.assertEqual(note.name, "Automatically Created")
-        # import pdb; pdb.set_trace()
         self.assertCountEqual(note.log_data, expected_log_data)
 
     def test_first_lat_long_edit(self):
