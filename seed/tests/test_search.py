@@ -320,7 +320,8 @@ class TestInventoryViewSearchParsers(TestCase):
         _, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, "property")
 
         annotation_key = f"related_jurisdiction_tax_lot_id_{related_column.id}_sort"
-        self.assertEqual(order_by, [annotation_key])
+        self.assertEqual(len(order_by), 1)
+        self.assertIsInstance(order_by[0], Collate)
         self.assertIn(annotation_key, annotations)
         self.assertIsInstance(annotations[annotation_key], Min)
 
