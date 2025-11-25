@@ -221,7 +221,7 @@ class PortfolioManagerViewSet(GenericViewSet):
         ),
     )
     @action(detail=False, methods=["POST"])
-    def download(self, request):
+    def meter_download(self, request):
         """Download a single property report from Portfolio Manager. The PK is the
         PM property ID that is on ESPM"""
         required_fields = {"username", "password", "property_ids", "start_date", "end_date"}

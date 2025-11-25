@@ -587,7 +587,7 @@ class PortfolioManagerCustomDownloadTest(TestCase):
 
         # Action
         resp = self.client.post(
-            reverse_lazy("api:v3:portfolio_manager-download"),
+            reverse_lazy("api:v3:portfolio_manager-meter-download"),
             json.dumps(
                 {
                     "username": self.pm_un,
@@ -622,7 +622,7 @@ class PortfolioManagerCustomDownloadTest(TestCase):
 
         # Action
         resp = self.client.post(
-            reverse_lazy("api:v3:portfolio_manager-download"),
+            reverse_lazy("api:v3:portfolio_manager-meter-download"),
             json.dumps(
                 {
                     "username": self.pm_un,
