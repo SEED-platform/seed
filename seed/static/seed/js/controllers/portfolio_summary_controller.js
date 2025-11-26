@@ -506,7 +506,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           $scope.baseline_labels = labels;
           $scope.build_labels('baseline', $scope.baseline_labels);
         });
-        label_service.get_property_view_labels_by_cycle_goal($scope.organization.id, $scope.goal.id, $scope.cycle_goal.cycle.id).then((labels) => {
+        label_service.get_property_view_labels_by_cycle_goal($scope.organization.id, $scope.goal.id, $scope.cycle_goal.current_cycle.id).then((labels) => {
           $scope.current_labels = labels;
           $scope.build_labels('current', $scope.current_labels);
         });

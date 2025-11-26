@@ -93,3 +93,16 @@ class PropertyLabelViewTests(AccessLevelBaseTestCase):
         assert labels[1]["goal"] is None
         assert labels[2]["goal"] == self.goal1.id
         assert labels[3]["goal"] == self.goal1.id
+
+    def test_list_by_cycle_goal_returns_goal_and_unattached_labels(self):
+        url = reverse_lazy("api:v3:property_view_labels-list-by-cycle-goal")
+        params = {"organization_id": self.org.id, "goal_id": self.goal1.id, "cycle_id": self.goal1.baseline_cycle.id}
+
+        response = self.client.get(url, params, content_type="application/json")
+        assert response.status_code == 200
+
+        labels = response.json()
+        assert len(labels) == 4
+        goals = [label["goal"] for label in labels]
+        assert goals.count(None) == 2
+        assert goals.count(self.goal1.id) == 2
