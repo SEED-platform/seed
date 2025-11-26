@@ -79,7 +79,7 @@ class PropertyLabelViewTests(AccessLevelBaseTestCase):
         self.pvl6 = PropertyViewLabel.objects.create(propertyview=self.view6, statuslabel=labels[4], goal=self.goal2)
 
     def test_property_view_label_viewset(self):
-        url = reverse_lazy("api:v3:property_view_labels-list-by-goal")
+        url = reverse_lazy("api:v3:property_view_labels-list-by-cycle-goal")
         params = {"organization_id": self.org.id, "goal_id": self.goal1.id, "cycle_id": self.cycle_goal.current_cycle.id}
         response = self.client.get(url, params, content_type="application/json")
         labels = response.json()
