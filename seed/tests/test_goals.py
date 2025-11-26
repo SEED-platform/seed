@@ -570,23 +570,46 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert data["property_lookup"] == {str(self.view31.id): self.property3.id, str(self.view33.id): self.property3.id}
 
     def test_related_filter(self):
-        alphabet = ["a", "c", "b", "d"]
-        questions = [
-            "Is this value correct?",
-            "Are these values correct?",
-            "Other or multiple flags; explain in Additional Notes field",
-            "Is this other value correct?",
-        ]
-        booleans = [True, False, True, False]
-        for idx, goal_note in enumerate(self.root_cycle_goal.goal.goalnote_set.order_by("property_id").all()):
-            goal_note.resolution = alphabet[idx]
-            goal_note.question = questions[idx]
-            goal_note.passed_checks = booleans[idx]
-            goal_note.new_or_acquired = booleans[idx]
+        goal_note_values = {
+            self.property1.id: {
+                "resolution": "a",
+                "question": "Is this value correct?",
+                "passed_checks": True,
+                "new_or_acquired": True,
+            },
+            # Property 2 is not in root_goal and will be ignored
+            self.property2.id: {
+                "resolution": "b",
+                "question": "Are these values correct?",
+                "passed_checks": False,
+                "new_or_acquired": False,
+            },
+            self.property3.id: {
+                "resolution": "c",
+                "question": "Other or multiple flags; explain in Additional Notes field",
+                "passed_checks": True,
+                "new_or_acquired": True,
+            },
+            self.property4.id: {
+                "resolution": "d",
+                "question": "Is this other value correct?",
+                "passed_checks": False,
+                "new_or_acquired": False,
+            },
+        }
+
+        for goal_note in self.root_cycle_goal.goal.goalnote_set.select_related("property"):
+            for field, value in goal_note_values[goal_note.property_id].items():
+                setattr(goal_note, field, value)
             goal_note.save()
 
-        for idx, historical_note in enumerate(HistoricalNote.objects.filter(property__in=self.root_cycle_goal.properties().order_by("id"))):
-            historical_note.text = alphabet[idx]
+        historical_note_values = {
+            self.property1.id: "x",
+            self.property3.id: "y",
+            self.property4.id: "z",
+        }
+        for historical_note in HistoricalNote.objects.filter(property__in=self.root_cycle_goal.properties()):
+            historical_note.text = historical_note_values.get(historical_note.property_id)
             historical_note.save()
 
         goal_note = self.root_cycle_goal.goal.goalnote_set.first()
@@ -610,22 +633,22 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 200
         response = response.json()
         resolutions = [p["goal_note"]["resolution"] for p in response["properties"]]
-        assert resolutions == ["a", "b", "d"]
+        assert resolutions == ["a", "c", "d"]
         # sort resolution descending
         params = f"?organization_id={self.org.id}&order_by=-property__goal_note__resolution"
         url = path + params
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         response = response.json()
         resolutions = [p["goal_note"]["resolution"] for p in response["properties"]]
-        assert resolutions == ["d", "b", "a"]
+        assert resolutions == ["d", "c", "a"]
 
         # sort historical note text
-        params = f"?organization_id={self.org.id}&order_by=property__historical_note__text"
+        params = f"?organization_id={self.org.id}&order_by=-property__historical_note__text"
         url = path + params
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         response = response.json()
         historical_notes = [p["historical_note"]["text"] for p in response["properties"]]
-        assert historical_notes == ["a", "b", "c"]
+        assert historical_notes == ["z", "y", "x"]
 
         # sort question
         params = f"?organization_id={self.org.id}&order_by=property__goal_note__question"
