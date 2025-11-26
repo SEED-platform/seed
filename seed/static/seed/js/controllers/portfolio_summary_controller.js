@@ -78,6 +78,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       // if org has no salesforce configs, status will be 'error' and valid will be false
       $scope.is_logged_into_salesforce = is_logged_into_salesforce.data.valid;
       $scope.chart_initialized = false;
+      $scope.related_model_sort = false;
 
       $scope.search_for_goals = (query) => {
         const pattern = query.split('').join('.*');
@@ -965,6 +966,8 @@ angular.module('SEED.controller.portfolio_summary', [])
         const formatted_columns = format_cycle_columns(grid_columns);
 
         $scope.column_filters = [];
+        $scope.column_sorts = [];
+        $scope.related_model_sort = false;
         // parse the filters and sorts
         for (const column of formatted_columns) {
           // format column if cycle specific
