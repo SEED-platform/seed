@@ -612,11 +612,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
             historical_note.text = historical_note_values.get(historical_note.property_id)
             historical_note.save()
 
-        goal_note = self.root_cycle_goal.goal.goalnote_set.first()
-        goal_note.new_or_acquired = True
-        goal_note.passed_checks = True
-        goal_note.save()
-
         # sort resolution ascending
         params = f"?organization_id={self.org.id}&order_by=property__goal_note__resolution"
         path = reverse_lazy("api:v3:goal-cycles-data", args=[self.root_goal.id, self.root_cycle_goal.id])
