@@ -616,8 +616,8 @@ msgstr "By Analysis"
 msgid "By Property"
 msgstr "By Property"
 
-msgid "By clicking the Log In button you accept the NREL Data Terms."
-msgstr "By clicking the Log In button you accept the NREL Data Terms."
+msgid "By clicking the Log In button you accept the Data Terms."
+msgstr "By clicking the Log In button you accept the Data Terms."
 
 msgid "CALC_ACCESS_LEVEL_DESC"
 msgstr "Select the Access Level and Instance of the data to include in the calculations."

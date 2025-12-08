@@ -198,7 +198,7 @@
     "Bulk Edit": "Bulk Edit",
     "By Analysis": "By Analysis",
     "By Property": "By Property",
-    "By clicking the Log In button you accept the NREL Data Terms.": "By clicking the Log In button you accept the NREL Data Terms.",
+    "By clicking the Log In button you accept the Data Terms.": "By clicking the Log In button you accept the Data Terms.",
     "CALC_ACCESS_LEVEL_DESC": "Select the Access Level and Instance of the data to include in the calculations.",
     "CALC_CYCLE_DESC": "Select the cycle to use for the calculations.",
     "CALC_DATA_COLS_DESC": "Select additional data columns to include in the  Facilities Plan table, if desired.",
