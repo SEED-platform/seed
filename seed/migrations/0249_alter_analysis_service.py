@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("seed", "0247_aggregatemetersystem"),
+        ("seed", "0248_update_bsync_measures_v2_7_0"),
     ]
 
     operations = [

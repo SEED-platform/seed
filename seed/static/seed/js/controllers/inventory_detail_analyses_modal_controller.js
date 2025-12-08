@@ -27,6 +27,7 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
     $scope.user = user;
     $scope.property_columns = property_columns;
     $scope.eui_columns = $scope.property_columns.filter((o) => o.data_type === 'eui');
+    $scope.area_columns = $scope.property_columns.filter((o) => o.data_type === 'area');
 
     $scope.new_analysis = {
       name: null,
@@ -139,7 +140,9 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
           };
           break;
         case 'HVAC Metrics':
-          $scope.new_analysis.configuration = {};
+          $scope.new_analysis.configuration = {
+            floor_area_column: null
+          };
           break;
         default:
           $log.error('Unknown analysis type.', $scope.new_analysis.service);
