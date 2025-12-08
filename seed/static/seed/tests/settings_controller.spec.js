@@ -40,7 +40,7 @@ describe('controller: organization_settings_controller', () => {
       },
       organization_payload: {
         organization: {
-          name: 'my org', id: 4, default_reports_x_axis_options: [], default_reports_y_axis_options: []
+          name: 'my org', id: 4, default_reports_x_axis_options: [], default_reports_y_axis_options: [], bb_salesforce_enabled: false
         }
       },
       query_threshold_payload: {
@@ -96,6 +96,7 @@ describe('controller: organization_settings_controller', () => {
           unique_benchmark_id_fieldname: 'Salesforce_Benchmark_ID__c'
         }
       ],
+      bb_salesforce_configs_payload: {},
       audit_template_configs_payload: [],
       property_column_names: { column_name: 'test', display_name: 'test' },
       taxlot_column_names: { column_name: 'test', display_name: 'test' },
@@ -134,6 +135,7 @@ describe('controller: organization_settings_controller', () => {
 
     // assertions
     expect(ctrl_scope.org).toEqual({
+      bb_salesforce_enabled: false,
       name: 'my org',
       id: 4,
       default_reports_x_axis_options: [],

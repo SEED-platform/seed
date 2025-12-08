@@ -866,7 +866,6 @@ class FakeGoalFactory(BaseFake):
         self,
         organization=None,
         baseline_cycle=None,
-        current_cycle=None,
         access_level_instance=None,
         eui_column1=None,
         area_column=None,
@@ -875,7 +874,6 @@ class FakeGoalFactory(BaseFake):
     ):
         organization = organization if organization is not None else self.organization
         baseline_cycle = baseline_cycle if baseline_cycle is not None else self.baseline_cycle
-        current_cycle = current_cycle if current_cycle is not None else self.current_cycle
         access_level_instance = access_level_instance if access_level_instance is not None else self.access_level_instance
         eui_column1 = eui_column1 if eui_column1 is not None else self.eui_column1
         target_percentage = target_percentage if target_percentage is not None else self.target_percentage
@@ -884,7 +882,6 @@ class FakeGoalFactory(BaseFake):
         config = {
             "organization": organization,
             "baseline_cycle": baseline_cycle,
-            "current_cycle": current_cycle,
             "access_level_instance": access_level_instance,
             "eui_column1": eui_column1,
             "area_column": area_column,

@@ -4609,6 +4609,47 @@ ul.r-list {
   border-bottom: 1px solid #b3b3b3;
 }
 
+.sync-header {
+  font-weight: bold;
+  color: #fff;
+  text-transform: uppercase;
+  background-color: #7b7b87;
+  text-shadow: none;
+  font-size: 18px;
+  border: none;
+}
+
+.mismatch-highlight {
+  background-color: #fff3cd !important; /* Light yellow background */
+  color: #856404; /* Dark yellow/brown text */
+  border: 1px solid #ffeaa7; /* Light yellow border */
+}
+
+.mismatch-sf {
+  background-color: #fff3cd !important; /* Light yellow background */
+  color: #856404; /* Dark yellow/brown text */
+  border: 1px solid #ffeaa7; /* Light yellow border */
+  border-right: 2px solid #ddd;
+}
+
+.match-highlight {
+  background-color: #d4edda !important; /* Light green background */
+  color: #155724; /* Dark green text */
+  border: 1px solid #c3e6cb; /* Light green border */
+}
+
+.match-sf {
+  background-color: #d4edda !important; /* Light green background */
+  color: #155724; /* Dark green text */
+  border: 1px solid #c3e6cb; /* Light green border */
+  border-right: 2px solid #ddd;
+}
+
+.match-first {
+  border-right: 2px solid #ddd;
+  font-weight: bold;
+}
+
 .r-small-header {
   text-transform: uppercase;
   font-weight: bold;
@@ -5217,7 +5258,7 @@ ul.r-list {
   }
 
   #portfolio-summary-selection-wrapper {
-    padding: 20px 24px 0;
+    padding: 15px 24px 0;
     display: flex;
 
     #portfolio-summary-selections {
@@ -5726,6 +5767,12 @@ tags-input .tags .tag-item {
   .bold {
     font-weight: bold;
   }
+}
+
+.warning-message {
+  color: $warningText;
+  font-size: 1.1em;
+  font-weight: 700;
 }
 
 #group-create {

@@ -9,7 +9,7 @@ from datetime import datetime
 from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Column, Goal, GoalNote, HistoricalNote
+from seed.models import Column, CycleGoal, Goal, GoalNote, HistoricalNote
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeCycleFactory,
@@ -98,7 +98,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.root_goal = Goal.objects.create(
             organization=self.org,
             baseline_cycle=self.cycle1,
-            current_cycle=self.cycle3,
             access_level_instance=self.root_ali,
             eui_column1=Column.objects.get(organization=self.org.id, column_name="source_eui_weather_normalized"),
             eui_column2=Column.objects.get(organization=self.org.id, column_name="source_eui"),
@@ -107,10 +106,11 @@ class GoalViewTests(AccessLevelBaseTestCase):
             target_percentage=20,
             name="root_goal",
         )
+        self.root_cycle_goal = CycleGoal.objects.create(current_cycle=self.cycle3, goal=self.root_goal)
+
         self.child_goal = Goal.objects.create(
             organization=self.org,
             baseline_cycle=self.cycle1,
-            current_cycle=self.cycle3,
             access_level_instance=self.child_ali,
             eui_column1=Column.objects.get(organization=self.org.id, column_name="source_eui_weather_normalized"),
             eui_column2=Column.objects.get(organization=self.org.id, column_name="source_eui"),
@@ -119,11 +119,11 @@ class GoalViewTests(AccessLevelBaseTestCase):
             target_percentage=20,
             name="child_goal",
         )
+        self.child_cycle_goal = CycleGoal.objects.create(current_cycle=self.cycle3, goal=self.child_goal)
 
         self.child_goal_extra = Goal.objects.create(
             organization=self.org,
             baseline_cycle=self.cycle1,
-            current_cycle=self.cycle3,
             access_level_instance=self.child_ali,
             eui_column1=extra_eui,
             eui_column2=None,
@@ -132,6 +132,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             target_percentage=20,
             name="child_goal_extra",
         )
+        self.child_cycle_goal_extra = CycleGoal.objects.create(current_cycle=self.cycle3, goal=self.child_goal_extra)
 
         user2_details = {
             "username": "test_user2@demo.com",
@@ -160,7 +161,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 200
         goal = response.json()["goal"]
         assert goal["id"] == self.child_goal.id
-        assert goal["current_cycle_property_view_ids"] == [self.view13.id, self.view33.id]
 
         url = reverse_lazy("api:v3:goals-detail", args=[999]) + "?organization_id=" + str(self.org.id)
         response = self.client.get(url, content_type="application/json")
@@ -196,7 +196,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
     def test_goal_create(self):
         goal_count = Goal.objects.count()
-        goal_note_count = GoalNote.objects.count()
         url = reverse_lazy("api:v3:goals-list") + "?organization_id=" + str(self.org.id)
         goal_columns = [
             "placeholder",
@@ -237,7 +236,6 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
         assert response.status_code == 201
         assert Goal.objects.count() == goal_count + 1
-        assert GoalNote.objects.count() == goal_note_count + 3
 
         goal_count = Goal.objects.count()
 
@@ -260,11 +258,12 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert errors["non_field_errors"] == ["The fields organization, name must make a unique set."]
 
         # cycles must be unique
-        goal_data = reset_goal_data("child_goal 3")
-        goal_data["current_cycle"] = self.cycle1.id
-        response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
-        assert response.status_code == 400
-        assert response.json()["non_field_errors"] == ["Cycles must be unique."]
+        # Note: I don't think this is true anymore
+        # goal_data = reset_goal_data("child_goal 3")
+        # goal_data["current_cycle"] = self.cycle1.id
+        # response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
+        # assert response.status_code == 400
+        # assert response.json()["non_field_errors"] == ["Cycles must be unique."]
 
         # columns must be unique
         goal_data = reset_goal_data("child_goal 3")
@@ -302,9 +301,28 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
         assert response.json()["non_field_errors"] == ["Organization mismatch."]
 
+    def test_cycle_goal_create(self):
+        cycle_goal_count = CycleGoal.objects.count()
+        goal_note_count = GoalNote.objects.count()
+        url = reverse_lazy("api:v3:goal-cycles-list", args=[self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        cycle_goal_data = {"current_cycle": self.cycle3.id}
+
+        # leaves have invalid permissions
+        self.login_as_child_member()
+        response = self.client.post(url, data=json.dumps(cycle_goal_data), content_type="application/json")
+        assert response.status_code == 403
+        assert CycleGoal.objects.count() == cycle_goal_count
+
+        # login correctly
+        self.login_as_root_member()
+        response = self.client.post(url, data=json.dumps(cycle_goal_data), content_type="application/json")
+        assert response.status_code == 201
+
+        assert CycleGoal.objects.count() == cycle_goal_count + 1
+        assert GoalNote.objects.count() == goal_note_count  # goal notes are 1 per goal/property combo (not one per cycle goal)
+
     def test_goal_update(self):
         original_goal = Goal.objects.get(id=self.child_goal.id)
-        goal_note_count = GoalNote.objects.count()
 
         # invalid permission
         self.login_as_child_member()
@@ -323,12 +341,9 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.json()["target_percentage"] == 99
         assert response.json()["baseline_cycle"] == self.cycle2.id
         assert response.json()["eui_column1"] == original_goal.eui_column1.id
-        # changing to cycle 2 adds a new property (and goal_note)
-        assert GoalNote.objects.count() == goal_note_count + 1
 
         goal_data = {"baseline_cycle": self.cycle1.id}
         response = self.client.put(url, data=json.dumps(goal_data), content_type="application/json")
-        assert GoalNote.objects.count() == goal_note_count
 
         # unexpected fields are ignored
         goal_data = {"name": "child_goal y", "baseline_cycle": self.cycle2.id, "unexpected": "invalid"}
@@ -350,7 +365,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert errors["baseline_cycle"] == ['Invalid pk "-1" - object does not exist.']
 
     def test_goal_note_update(self):
-        goal_note = GoalNote.objects.get(goal_id=self.root_goal.id, property_id=self.property4)
+        goal_note = GoalNote.objects.get(goal_id=self.root_cycle_goal.goal.id, property_id=self.property4)
         assert goal_note.question is None
         assert goal_note.resolution is None
 
@@ -387,7 +402,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
         # child user can only update resolution
         self.login_as_child_member()
-        goal_note = GoalNote.objects.get(goal_id=self.child_goal.id, property_id=self.property1)
+        goal_note = GoalNote.objects.get(goal_id=self.child_cycle_goal.goal.id, property_id=self.property1)
         goal_note_data = {
             "question": "Do you have data to report?",
             "resolution": "updated res",
@@ -423,12 +438,20 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
     def test_portfolio_summary(self):
         self.login_as_child_member()
-        url = reverse_lazy("api:v3:goals-portfolio-summary", args=[self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse_lazy("api:v3:goal-cycles-portfolio-summary", args=[self.root_goal.id, self.root_cycle_goal.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 404
         assert response.json()["message"] == "No such resource."
 
-        url = reverse_lazy("api:v3:goals-portfolio-summary", args=[self.child_goal.id]) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse_lazy("api:v3:goal-cycles-portfolio-summary", args=[self.child_goal.id, self.child_cycle_goal.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
         response = self.client.get(url, content_type="application/json")
         summary = response.json()
         # only properties with passed_checks and not new_or_acquired are included in calc
@@ -452,7 +475,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         }
         assert summary == exp_summary
 
-        for goalnote in self.child_goal.goalnote_set.all():
+        for goalnote in self.child_cycle_goal.goal.goalnote_set.all():
             goalnote.passed_checks = True
             goalnote.save()
 
@@ -474,18 +497,22 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "shared_sqft": 15,
             "sqft_change": 40,
             "total_new_or_acquired": 0,
-            "total_passing": 2,
+            "total_passing": 3,  # this was set to 2 before. this cycle must have 3 properties
             "total_properties": 2,
         }
 
         assert summary == exp_summary
 
         # with extra data
-        for goalnote in self.child_goal_extra.goalnote_set.all():
+        for goalnote in self.child_cycle_goal_extra.goal.goalnote_set.all():
             goalnote.passed_checks = True
             goalnote.save()
 
-        url = reverse_lazy("api:v3:goals-portfolio-summary", args=[self.child_goal_extra.id]) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse_lazy("api:v3:goal-cycles-portfolio-summary", args=[self.child_goal_extra.id, self.child_cycle_goal_extra.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
         response = self.client.get(url, content_type="application/json")
         summary = response.json()
         exp_summary = {
@@ -503,7 +530,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
             "shared_sqft": 150.0,
             "sqft_change": 87,
             "total_new_or_acquired": 0,
-            "total_passing": 2,
+            "total_passing": 3,
             "total_properties": 2,
         }
 
@@ -511,7 +538,11 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
     def test_goal_data(self):
         self.login_as_root_member()
-        url = reverse_lazy("api:v3:goals-data", args=[self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse_lazy("api:v3:goal-cycles-data", args=[self.root_goal.id, self.root_cycle_goal.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
         data = {
             "goal_id": self.root_goal.id,
             "page": 1,
@@ -539,28 +570,33 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert data["property_lookup"] == {str(self.view31.id): self.property3.id, str(self.view33.id): self.property3.id}
 
     def test_related_filter(self):
-        alphabet = ["a", "c", "b"]
-        questions = ["Is this value correct?", "Are these values correct?", "Other or multiple flags; explain in Additional Notes field"]
-        booleans = [True, False, True]
-        for idx, goal_note in enumerate(self.root_goal.goalnote_set.all()):
+        alphabet = ["a", "c", "b", "d"]
+        questions = [
+            "Is this value correct?",
+            "Are these values correct?",
+            "Other or multiple flags; explain in Additional Notes field",
+            "Is this other value correct?",
+        ]
+        booleans = [True, False, True, False]
+        for idx, goal_note in enumerate(self.root_cycle_goal.goal.goalnote_set.order_by("property_id").all()):
             goal_note.resolution = alphabet[idx]
             goal_note.question = questions[idx]
             goal_note.passed_checks = booleans[idx]
             goal_note.new_or_acquired = booleans[idx]
             goal_note.save()
 
-        for idx, historical_note in enumerate(HistoricalNote.objects.filter(property__in=self.root_goal.properties())):
+        for idx, historical_note in enumerate(HistoricalNote.objects.filter(property__in=self.root_cycle_goal.properties().order_by("id"))):
             historical_note.text = alphabet[idx]
             historical_note.save()
 
-        goal_note = self.root_goal.goalnote_set.first()
+        goal_note = self.root_cycle_goal.goal.goalnote_set.first()
         goal_note.new_or_acquired = True
         goal_note.passed_checks = True
         goal_note.save()
 
         # sort resolution ascending
         params = f"?organization_id={self.org.id}&order_by=property__goal_note__resolution"
-        path = reverse_lazy("api:v3:goals-data", args=[self.root_goal.id])
+        path = reverse_lazy("api:v3:goal-cycles-data", args=[self.root_goal.id, self.root_cycle_goal.id])
         url = path + params
         data = {
             "goal_id": self.root_goal.id,
@@ -574,15 +610,14 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 200
         response = response.json()
         resolutions = [p["goal_note"]["resolution"] for p in response["properties"]]
-        assert resolutions == ["a", "b", "c"]
-
+        assert resolutions == ["a", "b", "d"]
         # sort resolution descending
         params = f"?organization_id={self.org.id}&order_by=-property__goal_note__resolution"
         url = path + params
         response = self.client.put(url, data=json.dumps(data), content_type="application/json")
         response = response.json()
         resolutions = [p["goal_note"]["resolution"] for p in response["properties"]]
-        assert resolutions == ["c", "b", "a"]
+        assert resolutions == ["d", "b", "a"]
 
         # sort historical note text
         params = f"?organization_id={self.org.id}&order_by=property__historical_note__text"
@@ -599,7 +634,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = response.json()
         questions = [p["goal_note"]["question"] for p in response["properties"]]
         assert questions == [
-            "Are these values correct?",
+            "Is this other value correct?",
             "Is this value correct?",
             "Other or multiple flags; explain in Additional Notes field",
         ]
@@ -682,7 +717,6 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
         self.goal = Goal.objects.create(
             organization=self.org,
             baseline_cycle=self.cycle1,
-            current_cycle=self.cycle2,
             access_level_instance=self.root_ali,
             eui_column1=Column.objects.get(organization=self.org.id, column_name="source_eui_weather_normalized"),
             eui_column2=Column.objects.get(organization=self.org.id, column_name="source_eui"),
@@ -693,11 +727,16 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
             type="transaction",
             transactions_column=transactions,
         )
+        self.cycle_goal = CycleGoal.objects.create(current_cycle=self.cycle2, goal=self.goal)
 
         GoalNote.objects.all().update(passed_checks=True)
 
     def test_portfolio_summary(self):
-        url = reverse_lazy("api:v3:goals-portfolio-summary", args=[self.goal.id]) + "?organization_id=" + str(self.org.id)
+        url = (
+            reverse_lazy("api:v3:goal-cycles-portfolio-summary", args=[self.goal.id, self.cycle_goal.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
         response = self.client.get(url, content_type="application/json")
         summary = response.json()
 
@@ -729,7 +768,7 @@ class TransactionGoalViewTests(AccessLevelBaseTestCase):
         assert summary == exp_summary
 
     def test_goal_data(self):
-        url = reverse_lazy("api:v3:goals-data", args=[self.goal.id]) + "?organization_id=" + str(self.org.id)
+        url = reverse_lazy("api:v3:goal-cycles-data", args=[self.goal.id, self.cycle_goal.id]) + "?organization_id=" + str(self.org.id)
         data = {
             "goal_id": self.goal.id,
             "page": 1,
