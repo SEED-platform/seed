@@ -56,7 +56,7 @@ jobs:
           docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -116,7 +116,7 @@ jobs:
           python-version: '3.9'
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
       - name: Install deps
         run: |
           pip install --upgrade pip
