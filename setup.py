@@ -22,7 +22,7 @@ setup(
     packages=find_packages(),
     url="seed-platform.org",
     license="4-Clause BSD",
-    author="NREL/LBNL",
+    author="NLR/LBNL",
     author_email="info@seed-platform.org",
     description="The SEED Platform is a web-based application that helps organizations easily manage data on the energy performance of large groups of buildings.",
 )

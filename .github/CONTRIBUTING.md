@@ -119,9 +119,9 @@ For further questions or information:
 &nbsp;&nbsp;&nbsp;&nbsp;303.384.6183<br/>
 
 SEED is funded by the U.S. Department of Energy’s (DOE) Building Technologies Office (BTO), and
-managed by the National Renewable Energy Laboratory (NREL).
+managed by the National Laboratory of the Rockies (NLR).
 
-SEED is developed in collaboration with NREL, LBNL, and private firms.
+SEED is developed in collaboration with NLR, LBNL, and private firms.
 
 **Documents**
 

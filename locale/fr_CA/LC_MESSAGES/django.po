@@ -623,8 +623,9 @@ msgstr "Par analyse"
 msgid "By Property"
 msgstr "Par propriété"
 
-msgid "By clicking the Log In button you accept the NREL Data Terms."
-msgstr "En cliquant sur le bouton Connexion, vous acceptez les conditions d'utilisation des données NREL."
+#, fuzzy
+msgid "By clicking the Log In button you accept the Data Terms."
+msgstr "En cliquant sur le bouton Connexion, vous acceptez les conditions d'utilisation des données."
 
 msgid "CALC_ACCESS_LEVEL_DESC"
 msgstr "Sélectionnez le niveau d’accès et l’instance des données à inclure dans les calculs."
