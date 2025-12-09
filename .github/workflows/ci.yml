@@ -61,6 +61,15 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: 10
+      - name: Free up disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          echo "Disk space after cleanup:"
+          df -h
       - name: Install dependencies
         run: |
           npm install
