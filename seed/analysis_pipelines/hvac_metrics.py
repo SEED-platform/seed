@@ -9,6 +9,7 @@ from collections import Counter
 
 from celery import chain, shared_task
 from django.db.models import F
+from quantityfield.units import ureg
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -17,7 +18,6 @@ from seed.analysis_pipelines.pipeline import (
     task_create_analysis_property_views,
 )
 from seed.models import Analysis, AnalysisMessage, AnalysisPropertyView, Column, Element, PropertyView
-from quantityfield.units import ureg
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,7 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id, config):
             gfa = view.state.extra_data.get(gfa_column.column_name)
         else:
             gfa = getattr(view.state, gfa_column.column_name)
-        
+
         return float(gfa) if not isinstance(gfa, ureg.Quantity) else gfa.magnitude
 
     analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
