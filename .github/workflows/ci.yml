@@ -56,11 +56,20 @@ jobs:
           docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
+      - name: Free up disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          echo "Disk space after cleanup:"
+          df -h
       - name: Install dependencies
         run: |
           npm install
@@ -116,7 +125,7 @@ jobs:
           python-version: '3.9'
       - uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
       - name: Install deps
         run: |
           pip install --upgrade pip
