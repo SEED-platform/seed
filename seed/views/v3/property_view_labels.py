@@ -31,7 +31,7 @@ class PropertyViewLabelViewSet(ModelViewSetWithoutPatch, OrgMixin):
         ]
     )
     @action(detail=False, methods=["GET"])
-    def list_by_goal(self, request):
+    def list_by_cycle_goal(self, request):
         """
         Return property view labels that are attached to the passed cycle and
         a. unattached to any goal
