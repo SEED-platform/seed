@@ -198,7 +198,7 @@
     "Bulk Edit": "Modification en masse",
     "By Analysis": "Par analyse",
     "By Property": "Par propriété",
-    "By clicking the Log In button you accept the NREL Data Terms.": "En cliquant sur le bouton Connexion, vous acceptez les conditions d'utilisation des données NREL.",
+    "By clicking the Log In button you accept the Data Terms.": "En cliquant sur le bouton Connexion, vous acceptez les conditions d'utilisation des données.",
     "CALC_ACCESS_LEVEL_DESC": "Sélectionnez le niveau d’accès et l’instance des données à inclure dans les calculs.",
     "CALC_CYCLE_DESC": "Sélectionnez le cycle à utiliser pour les calculs.",
     "CALC_DATA_COLS_DESC": "Sélectionnez des colonnes de données supplémentaires à inclure dans le tableau Plan des installations, si vous le souhaitez.",
