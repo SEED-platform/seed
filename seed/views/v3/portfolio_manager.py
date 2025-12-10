@@ -220,6 +220,57 @@ class PortfolioManagerViewSet(GenericViewSet):
             required=["username", "password"],
         ),
     )
+    @action(detail=True, methods=["POST"])
+    def download(self, request, pk):
+        """Download a single property report from Portfolio Manager. The PK is the
+        PM property ID that is on ESPM"""
+        if "username" not in request.data:
+            _log.debug(f"Invalid call to PM worker: missing username for PM account: {request.data!s}")
+            return JsonResponse(
+                {"status": "error", "message": "Invalid call to PM worker: missing username for PM account"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if "password" not in request.data:
+            _log.debug(f"Invalid call to PM worker: missing password for PM account: {request.data!s}")
+            return JsonResponse(
+                {"status": "error", "message": "Invalid call to PM worker: missing password for PM account"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        username = request.data["username"]
+        password = request.data["password"]
+        if "filename" not in request.data:
+            filename = f"pm_{pk}_{datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')}.xlsx"
+        else:
+            filename = request.data["filename"]
+
+        pm = PortfolioManagerImport(username, password)
+        try:
+            content = pm.return_single_property_report(pk)
+
+            # return the excel file as the HTTP response
+            response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
+            response.write(content)
+            return response
+
+        except PMError as pme:
+            _log.debug(f"{pme!s}: PM Property ID {pk}")
+            return JsonResponse({"status": "error", "message": str(pme)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_integer_field("id", True, "ID of the ESPM Property to download")],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                "username": "string",
+                "password": "string",
+                "filename": "string",
+            },
+            description="ESPM account credentials.",
+            required=["username", "password"],
+        ),
+    )
     @action(detail=False, methods=["POST"])
     def meter_download(self, request):
         """Download a single property report from Portfolio Manager. The PK is the
