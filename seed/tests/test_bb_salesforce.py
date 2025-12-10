@@ -122,7 +122,7 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
                         "code": example_code,
                         "client_id": self.org.bb_salesforce_config.client_id,
                         "client_secret": self.org.bb_salesforce_config.client_secret,
-                        "redirect_uri": 'https://127.0.0.1:8000' + REDIRECT_URI_ENDING,
+                        "redirect_uri": "https://127.0.0.1:8000" + REDIRECT_URI_ENDING,
                         "code_verifier": example_code_verifier,
                     }
                 )
@@ -160,7 +160,7 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
                         "code": example_code,
                         "client_id": self.org.bb_salesforce_config.client_id,
                         "client_secret": self.org.bb_salesforce_config.client_secret,
-                        "redirect_uri": 'https://127.0.0.1:8000' + REDIRECT_URI_ENDING,
+                        "redirect_uri": "https://127.0.0.1:8000" + REDIRECT_URI_ENDING,
                         "code_verifier": example_code_verifier,
                     }
                 )
