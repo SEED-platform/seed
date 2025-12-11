@@ -90,12 +90,12 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id, config):
     analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
     for analysis_property_view in analysis_property_views:
-        # get GFA
-        gfa = get_gfa(property_view)
-
         # get property view and its elements
         property_view = property_views_by_apv_id[analysis_property_view.id]
         elements = Element.objects.filter(property=property_view.property)
+
+        # get GFA
+        gfa = get_gfa(property_view)
 
         # Calculate total cooling cap
         cooling_caps = elements.annotate(cooling_cap=F("extra_data__Nominal Cooling Cap. (Tons)")).values_list("cooling_cap", flat=True)
@@ -103,14 +103,12 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id, config):
 
         # Calculate AC Tonnage Coverage Area
         if gfa:
-            ac_tonnage_coverage_area =  gfa / total_cooling_cap
+            ac_tonnage_coverage_area = gfa / total_cooling_cap
         else:
             ac_tonnage_coverage_area = "NA"
 
         # Calculate most common refrigerant type
-        refrigerant_types = elements.annotate(refrigerant_type=F("extra_data__Refrigerant Type")).values_list(
-            "refrigerant_type", flat=True
-        )
+        refrigerant_types = elements.annotate(refrigerant_type=F("extra_data__Refrigerant Type")).values_list("refrigerant_type", flat=True)
         main_refrigerant_type = Counter(refrigerant_types).most_common(1)[0][0] if refrigerant_types else None
 
         # Calculate Total HVAC Electric Service Size
@@ -130,7 +128,7 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id, config):
         # update the analysis_property_view
         analysis_property_view.parsed_results = {
             "Total Nominal Cooling Capacity (tons)": total_cooling_cap,
-            "AC tonnage coverage area (sqft/ton)": ac_tonnage_per_area,
+            "AC tonnage coverage area (sqft/ton)": ac_tonnage_coverage_area,
             "Main Refrigerant Type": main_refrigerant_type,
             "Total HVAC Electric Service Size (Amps)": max_fuse,
             "Airflow Rate per unit Area (cfm/sqft)": airflow_rate_per_unit_area,
@@ -183,7 +181,6 @@ def _create_analysis_columns(analysis):
             "display_name": "Airflow Rate per unit Area",
             "description": " Airflow Rate per unit Area (cfm/sqft), created by HVAC Metric analysis",
         },
-      
     ]
 
     for col in column_meta:
