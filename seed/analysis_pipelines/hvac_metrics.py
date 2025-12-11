@@ -90,6 +90,9 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id, config):
     analysis_property_views = AnalysisPropertyView.objects.filter(id__in=analysis_property_view_ids)
     property_views_by_apv_id = AnalysisPropertyView.get_property_views(analysis_property_views)
     for analysis_property_view in analysis_property_views:
+        # get GFA
+        gfa = get_gfa(property_view)
+
         # get property view and its elements
         property_view = property_views_by_apv_id[analysis_property_view.id]
         elements = Element.objects.filter(property=property_view.property)
@@ -98,14 +101,19 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id, config):
         cooling_caps = elements.annotate(cooling_cap=F("extra_data__Nominal Cooling Cap. (Tons)")).values_list("cooling_cap", flat=True)
         total_cooling_cap = sum([c for c in cooling_caps if c is not None])
 
-        # Calculate most common refrigeration type
-        refrigeration_on_types = elements.annotate(refrigeration_on_type=F("extra_data__Refrigeration on Type")).values_list(
-            "refrigeration_on_type", flat=True
-        )
-        most_common_refrigeration_on_type = Counter(refrigeration_on_types).most_common(1)[0][0] if refrigeration_on_types else None
+        # Calculate AC Tonnage Coverage Area
+        if gfa:
+            ac_tonnage_coverage_area =  gfa / total_cooling_cap
+        else:
+            ac_tonnage_coverage_area = "NA"
 
-        # Calculate Total Electric Data Max Fuse
-        gfa = get_gfa(property_view)
+        # Calculate most common refrigerant type
+        refrigerant_types = elements.annotate(refrigerant_type=F("extra_data__Refrigerant Type")).values_list(
+            "refrigerant_type", flat=True
+        )
+        main_refrigerant_type = Counter(refrigerant_types).most_common(1)[0][0] if refrigerant_types else None
+
+        # Calculate Total HVAC Electric Service Size
         if gfa:
             max_fuses = elements.annotate(max_fuse=F("extra_data__Eletrical Data - Max Fuse")).values_list("max_fuse", flat=True)
             max_fuse = sum([f for f in max_fuses if f is not None]) / gfa
@@ -121,18 +129,21 @@ def _run_analysis(self, analysis_property_view_ids, analysis_id, config):
 
         # update the analysis_property_view
         analysis_property_view.parsed_results = {
-            "Total Nominal Cooling Cap. (Tons)": total_cooling_cap,
-            "Most Common Refrigeration On Type": most_common_refrigeration_on_type,
-            "Total Electric Data Max Fuse": max_fuse,
-            "Airflow Rate per unit Area": airflow_rate_per_unit_area,
+            "Total Nominal Cooling Capacity (tons)": total_cooling_cap,
+            "AC tonnage coverage area (sqft/ton)": ac_tonnage_per_area,
+            "Main Refrigerant Type": main_refrigerant_type,
+            "Total HVAC Electric Service Size (Amps)": max_fuse,
+            "Airflow Rate per unit Area (cfm/sqft)": airflow_rate_per_unit_area,
         }
         analysis_property_view.save()
 
         # write to property columns
         if "total_nominal_cooling_cap" in existing_columns:
             property_view.state.extra_data.update({"total_nominal_cooling_cap": total_cooling_cap})
-        if "most_common_refrigeration_on_type" in existing_columns:
-            property_view.state.extra_data.update({"most_common_refrigeration_on_type": most_common_refrigeration_on_type})
+        if "ac_tonnage_coverage_area" in existing_columns:
+            property_view.state.extra_data.update({"ac_tonnage_coverage_area": ac_tonnage_coverage_area})
+        if "main_refrigerant_type" in existing_columns:
+            property_view.state.extra_data.update({"main_refrigerant_type": main_refrigerant_type})
         if "airflow_rate_per_unit_area" in existing_columns:
             property_view.state.extra_data.update({"airflow_rate_per_unit_area": airflow_rate_per_unit_area})
         if "total_electric_data_max_fuse" in existing_columns:
@@ -148,25 +159,31 @@ def _create_analysis_columns(analysis):
     existing_columns = []
     column_meta = [
         {
-            "column_name": "total_nominal_cooling_cap",
-            "display_name": "Total Nominal Cooling Cap.",
-            "description": "created by HVAC Metric analysis",
+            "column_name": "total_nominal_cooling_capacity",
+            "display_name": "Total Nominal Cooling Capacity",
+            "description": "Total Nominal Cooling Capacity (tons), created by HVAC Metric analysis",
         },
         {
-            "column_name": "most_common_refrigeration_on_type",
-            "display_name": "Most Common Refrigeration On Type",
-            "description": "created by HVAC Metric analysis",
+            "column_name": "ac_tonnage_coverage_area",
+            "display_name": "AC Tonnage Coverage Area",
+            "description": "AC Tonnage Coverage Area (sqft/ton), created by HVAC Metric analysis",
+        },
+        {
+            "column_name": "main_refrigerant_type",
+            "display_name": "Main Refrigerant Type",
+            "description": "Main Refrigerant Type, created by HVAC Metric analysis",
+        },
+        {
+            "column_name": "total_hvac_electric_service_size",
+            "display_name": "Total HVAC Electric Service Size",
+            "description": "Total HVAC Electric Service Size (Amps), created by HVAC Metric analysis",
         },
         {
             "column_name": " airflow_rate_per_unit_area",
             "display_name": "Airflow Rate per unit Area",
-            "description": " Airflow Rate per unit Area",
+            "description": " Airflow Rate per unit Area (cfm/sqft), created by HVAC Metric analysis",
         },
-        {
-            "column_name": "total_electric_data_max_fuse",
-            "display_name": "Total Electric Data Max Fuse",
-            "description": "Total Electric Data Max Fuse",
-        },
+      
     ]
 
     for col in column_meta:
