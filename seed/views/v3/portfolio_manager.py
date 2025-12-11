@@ -258,7 +258,6 @@ class PortfolioManagerViewSet(GenericViewSet):
             _log.debug(f"{pme!s}: PM Property ID {pk}")
             return JsonResponse({"status": "error", "message": str(pme)}, status=status.HTTP_400_BAD_REQUEST)
 
-
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_integer_field("id", True, "ID of the ESPM Property to download")],
         request_body=AutoSchemaHelper.schema_factory(
