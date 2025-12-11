@@ -144,7 +144,7 @@ msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
 msgstr "The Element Statistics analysis looks through a property's element data (if any) to count the number of elements of type 'D.D.C. Control Panel'. It also generates the aggregated (average) condition index values for EISA 2007-432 elements and saves those quantities to the property."
 
 msgid "ANALYSIS_DESCRIPTION_HVACMetrics"
-msgstr "The HVAC Metrics analysis iterates through a property's element data (if any) to calculate 4 metrics: 1) AC tonnage coverage area, 2) Main Refrigerant Type, 3) Total HVAC Electric Service Size, and 4) Airflow Rate per unit Area"
+msgstr "The HVAC Metrics analysis iterates through a property's element data (if any) to calculate 4 metrics: 1) AC Tonnage Coverage Area, 2) Main Refrigerant Type, 3) Total HVAC Electric Service Size, and 4) Airflow Rate per Unit Area"
 
 msgid "AND"
 msgstr "AND"
