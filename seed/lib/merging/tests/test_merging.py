@@ -327,7 +327,6 @@ class StateFieldsTest(TestCase):
         priorities = {"field_1": "Favor Existing", "field_3": "Favor New"}
         result = merging._merge_extra_data(ed1, ed2, priorities, [])
         expected = {"field_1": "orig_value_1", "field_2": "new_value_2", "field_3": "only_in_ed1", "field_4": "only_in_ed2"}
-        logger.error(f"--- {result}")
         self.assertDictEqual(result, expected)
 
     def test_recognize_empty_column_setting_allows_empty_values_to_overwrite_nonempty_values(self):

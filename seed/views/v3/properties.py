@@ -2088,12 +2088,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             cycle__organization_id=org_id,
         )
 
-        logger.error("+++++++")
-        logger.error(request.data)
-        logger.error(request.data.get("values_by_column_id"))
-        logger.error(values_by_column_id)
-        logger.error("+++++++")
-
         for property_view in property_views:
             state = property_view.state
             for column_id, value in values_by_column_id.items():
