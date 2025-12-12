@@ -35,6 +35,13 @@ def _get_redirect_uri():
             # Check if domain contains 'example.com' (misconfigured)
             if "example.com" in current_site.domain:
                 return "https://127.0.0.1:8000"
+            # check if raw AWS domain
+            elif "us-east-1.elb.amazonaws.com" in current_site.domain:
+                # TODO - TEMPORARY
+                # will need to use ENV VAR to define the domain name b/c right now
+                # it's coming in as the raw AWS domain
+                # right now assume we are on dev1
+                return "https://dev1.seed-platform.org"
             else:
                 return f"https://{current_site.domain}"
         else:
