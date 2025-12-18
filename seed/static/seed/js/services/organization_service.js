@@ -163,6 +163,42 @@ angular.module('SEED.service.organization', []).factory('organization_service', 
     organization_factory.geocoding_columns = (org_id) => $http.get(`/api/v3/organizations/${org_id}/geocoding_columns/`).then((response) => response.data);
 
     organization_factory.reset_all_passwords = (org_id) => $http.post(`/api/v3/organizations/${org_id}/reset_all_passwords/`).then((response) => response.data);
+    
+    organization_factory.match_merge_link = function (org_id, inventory_type) {
+      return $http.post('/api/v3/organizations/' + org_id + '/match_merge_link/', {
+        inventory_type: inventory_type
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    organization_factory.geocoding_columns = function (org_id) {
+      return $http.get('/api/v3/organizations/' + org_id + '/geocoding_columns/').then(function (response) {
+        return response.data;
+      });
+    };
+
+    organization_factory.match_merge_link_preview = function (org_id, inventory_type, criteria_change_columns) {
+      return $http.post('/api/v3/organizations/' + org_id + '/match_merge_link_preview/', {
+        inventory_type: inventory_type,
+        add: criteria_change_columns.add,
+        remove: criteria_change_columns.remove
+      }).then(function (response) {
+        return response.data;
+      });
+    };
+
+    organization_factory.get_match_merge_link_result = function (org_id, match_merge_link_id) {
+      return $http.get('/api/v3/organizations/' + org_id + '/match_merge_link_result/' + '?match_merge_link_id=' + match_merge_link_id).then(function (response) {
+        return response.data;
+      });
+    };
+
+    organization_factory.reset_all_passwords = function (org_id) {
+      return $http.post('/api/v3/organizations/' + org_id + '/reset_all_passwords/').then(function (response) {
+        return response.data;
+      });
+    };
 
     organization_factory.insert_sample_data = (org_id) => $http.get(`/api/v3/organizations/${org_id}/insert_sample_data/`).then((response) => response.data);
 
