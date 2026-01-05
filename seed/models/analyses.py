@@ -202,10 +202,11 @@ class Analysis(models.Model):
         # HVAC Metrics
         elif self.service == self.HVACMETRICS:
             return [
-                {"name": "Total Nominal Cooling Cap. (Tons)", "value": results.get("Total Nominal Cooling Cap. (Tons)")},
-                {"name": "Most Common Refrigeration On Type", "value": results.get("Most Common Refrigeration On Type")},
-                {"name": "Total Electric Data Max Fuse", "value": results.get("Total Electric Data Max Fuse")},
-                {"name": "Airflow Rate per unit Area", "value": results.get("Airflow Rate per unit Area")},
+                {"name": "Total Nominal Cooling Cap. (Tons)", "value": results.get("Total Nominal Cooling Capacity (tons)")},
+                {"name": "Most Common Refrigeration On Type", "value": results.get("AC tonnage coverage area (sqft/ton)")},
+                {"name": "Main Refrigerant Type", "value": results.get("Main Refrigerant Type")},
+                {"name": "Total Electric Data Max Fuse", "value": results.get("Total HVAC Electric Service Size (Amps)")},
+                {"name": "Airflow Rate per unit Area", "value": results.get("Airflow Rate per unit Area (cfm/sqft)")},
             ]
 
         # Unexpected
