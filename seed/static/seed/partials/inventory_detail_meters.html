@@ -107,6 +107,10 @@
       <div class="jumbotron text-center" translate>No Data</div>
     </div>
 
+    <div class="graph" style="margin-left: 5vw; margin-right: 5vw" ng-hide="interval.selected == 'Exact'">
+      <canvas id="program-overview-chart"></canvas>
+    </div>
+
     <h4>Readings</h4>
     <div id="meters-readings-grid-container" ng-show="has_readings">
       <div
