@@ -212,7 +212,7 @@ angular.module('SEED.controller.insights_property', []).controller('insights_pro
           // if there's +3k properties, dont even bother charting them.
           $scope.chartStatusMessage = '';
           const num_properties = Object.values($scope.data.properties_by_cycles).reduce((acc, curr) => acc + curr.length, 0);
-          if (num_properties > 3000) {
+          if (num_properties > $scope.organization.max_data_charted) {
             $scope.data.properties_by_cycles = Object.keys($scope.data.properties_by_cycles).reduce((acc, k) => ({ ...acc, [k]: [] }), {});
             $scope.chartStatusMessage = 'Too much data, try a different ali';
           }

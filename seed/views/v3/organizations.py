@@ -184,6 +184,7 @@ def _dict_org(request, organizations):
                 Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_y_axis=True), many=True
             ).data,
             "require_2fa": o.require_2fa,
+            "max_data_charted": o.max_data_charted,
         }
         orgs.append(org)
 
@@ -754,6 +755,10 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.salesforce_enabled = salesforce_enabled
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
+
+        max_data_charted = posted_org.get("max_data_charted", False)
+        if max_data_charted != org.max_data_charted:
+            org.max_data_charted = max_data_charted
 
         bb_salesforce_enabled = posted_org.get("bb_salesforce_enabled", False)
         if bb_salesforce_enabled != org.bb_salesforce_enabled:
