@@ -273,6 +273,7 @@ class AnalysisPipeline(abc.ABC):
         from seed.analysis_pipelines.eeej import EEEJPipeline
         from seed.analysis_pipelines.element_statistics import ElementStatisticsPipeline
         from seed.analysis_pipelines.eui import EUIPipeline
+        from seed.analysis_pipelines.hvac_metrics import HVACMetricsPipeline
         from seed.analysis_pipelines.upgrade_recommendation import UpgradeRecommendationPipeline
 
         if analysis.service == Analysis.BSYNCR:
@@ -289,6 +290,8 @@ class AnalysisPipeline(abc.ABC):
             return ElementStatisticsPipeline(analysis.id)
         elif analysis.service == Analysis.UPGRADERECOMMENDATION:
             return UpgradeRecommendationPipeline(analysis.id)
+        elif analysis.service == Analysis.HVACMETRICS:
+            return HVACMetricsPipeline(analysis.id)
         else:
             raise AnalysisPipelineError(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 

@@ -26,6 +26,7 @@ class Analysis(models.Model):
     EEEJ = 5
     ELEMENTSTATISTICS = 6
     UPGRADERECOMMENDATION = 7
+    HVACMETRICS = 8
 
     SERVICE_TYPES = (
         (BSYNCR, "BSyncr"),
@@ -35,6 +36,7 @@ class Analysis(models.Model):
         (EEEJ, "EEEJ"),
         (ELEMENTSTATISTICS, "Element Statistics"),
         (UPGRADERECOMMENDATION, "Building Upgrade Recommendation"),
+        (HVACMETRICS, "HVAC Metrics"),
     )
 
     PENDING_CREATION = 8
@@ -196,6 +198,15 @@ class Analysis(models.Model):
 
             return [
                 {"name": "Building Upgrade Recommendation", "value": recommendation},
+            ]
+        # HVAC Metrics
+        elif self.service == self.HVACMETRICS:
+            return [
+                {"name": "Total Nominal Cooling Cap. (Tons)", "value": results.get("Total Nominal Cooling Capacity (tons)")},
+                {"name": "Most Common Refrigeration On Type", "value": results.get("AC tonnage coverage area (sqft/ton)")},
+                {"name": "Main Refrigerant Type", "value": results.get("Main Refrigerant Type")},
+                {"name": "Total Electric Data Max Fuse", "value": results.get("Total HVAC Electric Service Size (Amps)")},
+                {"name": "Airflow Rate per unit Area", "value": results.get("Airflow Rate per unit Area (cfm/sqft)")},
             ]
 
         # Unexpected

@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 
 import requests
+from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import JsonResponse
@@ -22,13 +23,34 @@ from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema, swagger
 from seed.utils.cache import get_cache_raw, set_cache_raw
 
 logger = logging.getLogger(__name__)
-REDIRECT_URI = "https://127.0.0.1:8000"
+
+REDIRECT_URI_ENDING = "/app/#/salesforce_login"
+
+
+def _get_redirect_uri():
+    """Get the redirect URI, falling back to localhost if no site is configured."""
+    try:
+        current_site = Site.objects.get_current()
+        if current_site and current_site.domain:
+            # Check if domain contains 'example.com' (misconfigured)
+            if "example.com" in current_site.domain:
+                return "https://127.0.0.1:8000"
+            # check if raw AWS domain
+            elif "us-east-1.elb.amazonaws.com" in current_site.domain:
+                # TODO - TEMPORARY
+                # will need to use ENV VAR to define the domain name b/c right now
+                # it's coming in as the raw AWS domain
+                # right now assume we are on dev1
+                return "https://dev1.seed-platform.org"
+            else:
+                return f"https://{current_site.domain}"
+        else:
+            return "https://127.0.0.1:8000"
+    except Exception:
+        return "https://127.0.0.1:8000"
 
 
 def _get_pkce(bb_salesforce_config):
-    logger.error("+++++++")
-    logger.error(f"{bb_salesforce_config.salesforce_url}/oauth2/pkce/generator")
-    logger.error("+++++++")
     response = requests.get(f"{bb_salesforce_config.salesforce_url}/oauth2/pkce/generator", timeout=10)
     return response.json()["code_verifier"], response.json()["code_challenge"]
 
@@ -65,12 +87,20 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
         code_verifier, code_challenge = _get_pkce(bb_salesforce_config)
         set_cache_raw(f"code_verifier_{org_id}", code_verifier)
 
+        redirect_uri = _get_redirect_uri()  # Get the redirect URI dynamically
+        if "us-east-1.elb.amazonaws.com" in redirect_uri:
+            # TODO: TEMPORARY
+            # will need to use ENV VAR to define the domain name b/c right now
+            # it's coming in as the raw AWS domain
+            redirect_uri = "https://dev1.seed-platform.org"
+        logger.warning(f"BB SALESFORCE REDIRECT URI: {redirect_uri + REDIRECT_URI_ENDING}")
+
         request = PreparedRequest()
         request.prepare_url(
             url=f"{bb_salesforce_config.salesforce_url}/oauth2/authorize",
             params={
                 "client_id": bb_salesforce_config.client_id,
-                "redirect_uri": REDIRECT_URI,
+                "redirect_uri": redirect_uri + REDIRECT_URI_ENDING,
                 "response_type": "code",
                 "code_challenge": code_challenge,
             },
@@ -115,6 +145,9 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
         # get the cached code validator
         code = request.query_params.get("code")
         code_verifier = get_cache_raw(f"code_verifier_{org_id}")
+
+        redirect_uri = _get_redirect_uri()  # Get the redirect URI dynamically
+
         # request a token
         response = requests.post(
             f"{bb_salesforce_config.salesforce_url}/oauth2/token",
@@ -123,7 +156,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
                 "code": code,
                 "client_id": bb_salesforce_config.client_id,
                 "client_secret": bb_salesforce_config.client_secret,
-                "redirect_uri": REDIRECT_URI,
+                "redirect_uri": redirect_uri + REDIRECT_URI_ENDING,
                 "code_verifier": code_verifier,
             },
             headers={"accept": "application/json"},

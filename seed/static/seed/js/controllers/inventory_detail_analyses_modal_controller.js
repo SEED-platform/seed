@@ -27,6 +27,7 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
     $scope.user = user;
     $scope.property_columns = property_columns;
     $scope.eui_columns = $scope.property_columns.filter((o) => o.data_type === 'eui');
+    $scope.area_columns = $scope.property_columns.filter((o) => o.data_type === 'area');
 
     $scope.new_analysis = {
       name: null,
@@ -136,6 +137,11 @@ angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller
             building_sqft_threshold: null,
             condition_index_threshold: null,
             ff_fired_equipment_rsl_threshold: null
+          };
+          break;
+        case 'HVAC Metrics':
+          $scope.new_analysis.configuration = {
+            floor_area_column: null
           };
           break;
         default:
