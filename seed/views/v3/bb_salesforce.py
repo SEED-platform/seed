@@ -35,6 +35,13 @@ def _get_redirect_uri():
             # Check if domain contains 'example.com' (misconfigured)
             if "example.com" in current_site.domain:
                 return "https://127.0.0.1:8000"
+            # check if raw AWS domain
+            elif "us-east-1.elb.amazonaws.com" in current_site.domain:
+                # TODO - TEMPORARY
+                # will need to use ENV VAR to define the domain name b/c right now
+                # it's coming in as the raw AWS domain
+                # right now assume we are on dev1
+                return "https://dev1.seed-platform.org"
             else:
                 return f"https://{current_site.domain}"
         else:
@@ -81,6 +88,11 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
         set_cache_raw(f"code_verifier_{org_id}", code_verifier)
 
         redirect_uri = _get_redirect_uri()  # Get the redirect URI dynamically
+        if "us-east-1.elb.amazonaws.com" in redirect_uri:
+            # TODO: TEMPORARY
+            # will need to use ENV VAR to define the domain name b/c right now
+            # it's coming in as the raw AWS domain
+            redirect_uri = "https://dev1.seed-platform.org"
         logger.warning(f"BB SALESFORCE REDIRECT URI: {redirect_uri + REDIRECT_URI_ENDING}")
 
         request = PreparedRequest()
