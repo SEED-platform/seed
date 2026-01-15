@@ -11,6 +11,7 @@ import unittest
 from datetime import datetime
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models import Q
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.urls import reverse
 from django.utils.timezone import (
@@ -34,6 +35,8 @@ from seed.models import (
     BuildingFile,
     Column,
     ColumnMappingProfile,
+    DerivedColumn,
+    DerivedColumnParameter,
     InventoryDocument,
     Meter,
     MeterReading,
@@ -52,6 +55,7 @@ from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeColumnListProfileFactory,
     FakeCycleFactory,
+    FakeDerivedColumnFactory,
     FakeNoteFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
@@ -78,6 +82,15 @@ COLUMNS_TO_SEND = [
 ]
 
 
+def _get_column_model_field(column):
+    if column.is_extra_data:
+        return "state__extra_data__" + column.column_name
+    elif column.derived_column:
+        return "state__derived_data__" + column.column_name
+    else:
+        return "state__" + column.column_name
+
+
 class PropertyViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
@@ -88,6 +101,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.derived_col_factory = FakeDerivedColumnFactory(organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE)
         self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.client.login(**user_details)
@@ -657,6 +671,190 @@ class PropertyViewTests(DataMappingBaseTestCase):
         false_post_params = json.dumps({"property_view_ids": [property_view_2.pk]})
         false_result = self.client.post(url, false_post_params, content_type="application/json")
         self.assertEqual(b"false", false_result.content)
+
+    def test_property_copy_into_cycle(self):
+        # Set Up
+        state = self.property_state_factory.get_property_state()
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+        new_cycle = self.cycle_factory.get_cycle()
+
+        # Action
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+        self.assertEqual(response.status_code, 201)
+
+        # Assertion - now theres 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+
+        # Assertion - states share the same column values
+        columns = [
+            _get_column_model_field(col)
+            for col in Column.objects.filter(organization=self.org, table_name="PropertyState").exclude(
+                column_name__in=["created", "updated"]
+            )
+        ]
+        old_view_tuple, new_view_tuple = views.values_list(*columns)
+        assert old_view_tuple == new_view_tuple
+
+    def test_property_copy_into_cycle_with_extra_data(self):
+        # Set Up
+        self.column1 = self.column_factory.get_column("column1", is_extra_data=True)
+
+        state = self.property_state_factory.get_property_state(extra_data={"column1": 4000})
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+        new_cycle = self.cycle_factory.get_cycle()
+
+        # Action
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+        self.assertEqual(response.status_code, 201)
+
+        # Assertion - now theres 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+
+        # Assertion - states share the same column values
+        columns = [
+            _get_column_model_field(col)
+            for col in Column.objects.filter(organization=self.org, table_name="PropertyState").exclude(
+                column_name__in=["created", "updated"]
+            )
+        ]
+        old_view_tuple, new_view_tuple = views.values_list(*columns)
+        assert old_view_tuple == new_view_tuple
+
+    def test_property_copy_into_cycle_with_derived_data(self):
+        # Set Up
+        derived_column = self.derived_col_factory.get_derived_column(expression="$gross_floor_area + 1", name="my_derived_column")
+        DerivedColumnParameter.objects.create(
+            parameter_name="gross_floor_area",
+            derived_column=derived_column,
+            source_column=Column.objects.get(organization=self.org, table_name="PropertyState", column_name="gross_floor_area"),
+        )
+        derived_column = Column.objects.get(derived_column=derived_column)
+
+        state = self.property_state_factory.get_property_state(gross_floor_area=100)
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+        new_cycle = self.cycle_factory.get_cycle()
+
+        # Action
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+        self.assertEqual(response.status_code, 201)
+
+        # Assertion - now theres 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+
+        # Assertion - new view has derived data
+        assert new_view.state.gross_floor_area.magnitude == 100
+        assert new_view.state.derived_data == {"my_derived_column": 101}
+
+    def test_property_copy_into_cycle_with_derived_data_but_not_param(self):
+        # Set Up
+        derived_column = self.derived_col_factory.get_derived_column(expression="$gross_floor_area + 1", name="my_derived_column")
+        DerivedColumnParameter.objects.create(
+            parameter_name="gross_floor_area",
+            derived_column=derived_column,
+            source_column=Column.objects.get(organization=self.org, table_name="PropertyState", column_name="gross_floor_area"),
+        )
+        derived_column = Column.objects.get(derived_column=derived_column)
+
+        state = self.property_state_factory.get_property_state(gross_floor_area=100)
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+        new_cycle = self.cycle_factory.get_cycle()
+
+        # Action - doesnt include gross_floor_area as a copied column
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id], "column_ids": []})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+        self.assertEqual(response.status_code, 201)
+
+        # Assertion - now theres 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+
+        # Assertion - new view has no derived data
+        assert new_view.state.gross_floor_area is None
+        assert new_view.state.derived_data == {"my_derived_column": None}
+
+    def test_property_copy_into_cycle_already_exists(self):
+        # Set Up
+        state = self.property_state_factory.get_property_state()
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+
+        new_cycle = self.cycle_factory.get_cycle()
+        new_state = self.property_state_factory.get_property_state()
+        new_view = PropertyView.objects.create(property=prop, cycle=new_cycle, state=new_state)
+        new_state_updated = new_state.updated
+
+        # Action
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+        self.assertEqual(response.status_code, 201)
+
+        # Assertion - theres still 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+        assert new_view.state_id == new_state.id
+        assert new_view.state.updated == new_state_updated
+
+    def test_property_copy_into_cycle_selected_columns(self):
+        # Set Up
+        state = self.property_state_factory.get_property_state(custom_id_1="hey", pm_property_id="ho")
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+        new_cycle = self.cycle_factory.get_cycle()
+        column_ids = []
+
+        # Action
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id], "column_ids": column_ids})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+        self.assertEqual(response.status_code, 201)
+
+        # Assertion - now theres 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+
+        # Assertion - states share the same column values for select columns and matching criteria
+        columns = Column.objects.filter(organization=self.org, table_name="PropertyState")
+        columns_that_should_match = [
+            _get_column_model_field(col)
+            for col in columns.filter(Q(id__in=column_ids) | Q(is_matching_criteria=True)).exclude(column_name__in=["created", "updated"])
+        ]
+        old_view_tuple, new_view_tuple = views.values(*columns_that_should_match)
+        assert all((a == b) for a, b in zip(old_view_tuple.values(), new_view_tuple.values()))
+
+        # Assertion - states do not share the same column values non-selected, non-matching criteria columns
+        columns_that_should_not_match = [
+            _get_column_model_field(col)
+            for col in columns.exclude(Q(id__in=column_ids) | Q(is_matching_criteria=True) | Q(column_name__in=["created", "updated"]))
+        ]
+        old_view_tuple, new_view_tuple = views.values(*columns_that_should_not_match)
+        assert all((a != b or a is None) for a, b in zip(old_view_tuple.values(), new_view_tuple.values()))
 
 
 class PropertyViewTestsPermissions(AccessLevelBaseTestCase):

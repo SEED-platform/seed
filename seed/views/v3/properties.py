@@ -990,6 +990,67 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             has_perm("can_modify_data"),
         ]
     )
+    @action(detail=False, methods=["POST"])
+    def copy_to_cycle(self, request):
+        org_id = self.get_organization(self.request)
+        data = request.data
+        cycle_pk = data.get("cycle_id", None)
+        view_ids = data.get("view_ids", None)
+        column_ids = data.get("column_ids", None)
+
+        #  get cycle
+        try:
+            cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+        except Cycle.DoesNotExist:
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "message": "Invalid cycle_id",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        #  create new views
+        views = PropertyView.objects.filter(id__in=view_ids)
+        new_view_ids = []
+        for view in views:
+            new_view = view.copy_to_cycle(cycle, column_ids)
+            if new_view:
+                new_view_ids.append(new_view.id)
+
+        #  update the derived columns
+        update_derived_data(new_view_ids, org_id)
+
+        #  return
+        return JsonResponse(
+            {
+                "status": "success",
+                "num_created": len(new_view_ids),
+                "num_already_existed": views.count() - len(new_view_ids),
+            },
+            encoder=PintJSONEncoder,
+            status=status.HTTP_201_CREATED,
+        )
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                "cycle_id": "integer",
+                "state": "object",
+            },
+            required=["cycle_id", "state"],
+        ),
+    )
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     def create(self, request):
         """
         Create a propertyState and propertyView via promote for given cycle
