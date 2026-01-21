@@ -2,10 +2,36 @@
   <h4 class="modal-title" translate>copy_to_different_cycle_modal</h4>
 </div>
 
-<div class="modal-body no_bottom_padding">
-
+<div class="modal-body">
+  <div class="row">
+    <label>{$:: 'Cycle' | translate $}:</label>
+    <select
+      class="form-control input-sm grow"
+      ng-model="selected_cycle"
+      ng-options="cycle as cycle.name for cycle in cycles"
+    ></select>
+  </div>
+  <div class="row">
+    <label>{$:: 'Column List Profile' | translate $}:</label>
+    <select
+      class="form-control input-sm grow"
+      ng-model="selected_column_list_profile"
+      ng-options="profile.name for profile in profiles"
+    ></select>
+    <!-- <input type="checkbox" class="" ng-model="historical_note.selected" />
+    <label
+      for="historical_note-value"
+      ng-class="{'disabled': !historical_note.selected}"
+      translate
+      >Overwrite existing properties in the cycle</label
+    > -->
 </div>
 
 <div class="modal-footer">
-
+  <button class="btn btn-primary r-margin-right-5" ng-click="save()" translate>
+    Save
+  </button>
+  <button class="btn btn-default r-margin-right-5" ng-click="dismiss()" translate>
+    Dismiss
+  </button>
 </div>

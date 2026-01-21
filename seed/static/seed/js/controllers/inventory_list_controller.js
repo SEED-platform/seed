@@ -1600,7 +1600,8 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
         resolve: {
           org: () => $scope.organization,
           cycles: () => $scope.cycle.cycles,
-          view_ids: () => selectedViewIds
+          view_ids: () => selectedViewIds,
+          profiles: () => inventory_service.get_column_list_profiles('List View Profile', $scope.inventory_type, false)
         }
       });
     };
