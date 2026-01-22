@@ -29,6 +29,7 @@ from .salesforce_configs import *
 from .salesforce_mappings import *
 from .sensors import *
 from .simulations import *
+from .statistics_setups import *
 from .building_file import *
 from .inventory_document import *
 from .inventory_groups import *
