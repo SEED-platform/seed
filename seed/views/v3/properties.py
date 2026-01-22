@@ -86,7 +86,7 @@ from seed.serializers.properties import (
     UpdatePropertyPayloadSerializer,
 )
 from seed.serializers.taxlots import TaxLotViewSerializer
-from seed.tasks import update_state_derived_data
+from seed.tasks import update_state_derived_data, copy_properties_to_cycle
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
@@ -1000,7 +1000,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         #  get cycle
         try:
-            cycle = Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+            Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
         except Cycle.DoesNotExist:
             return JsonResponse(
                 {
@@ -1010,27 +1010,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        #  create new views
-        views = PropertyView.objects.filter(id__in=view_ids)
-        new_view_ids = []
-        for view in views:
-            new_view = view.copy_to_cycle(cycle, column_ids)
-            if new_view:
-                new_view_ids.append(new_view.id)
-
-        #  update the derived columns
-        update_derived_data(new_view_ids, org_id)
-
-        #  return
-        return JsonResponse(
-            {
-                "status": "success",
-                "num_created": len(new_view_ids),
-                "num_already_existed": views.count() - len(new_view_ids),
-            },
-            encoder=PintJSONEncoder,
-            status=status.HTTP_201_CREATED,
-        )
+        result = copy_properties_to_cycle(view_ids, cycle_pk, column_ids, org_id)
+        return JsonResponse(result)
 
     @swagger_auto_schema(
         manual_parameters=[

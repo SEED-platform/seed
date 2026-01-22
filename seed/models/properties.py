@@ -943,7 +943,7 @@ class PropertyView(models.Model):
             self._import_filename = audit_log.import_filename
         return self._import_filename
 
-    def copy_to_cycle(self, cycle: Cycle, column_ids: list[int]):
+    def copy_to_cycle(self, cycle: Cycle, columns: list[Column]):
         """
         Creates a view in the give cycle with the same property and a state with given column matching
         this view's state
@@ -960,11 +960,6 @@ class PropertyView(models.Model):
         # if view already exist, exit
         if PropertyView.objects.filter(property=prop, cycle=cycle).count() > 0:
             return None
-
-        #  get chosen columns
-        columns = Column.objects.filter(organization=prop.organization_id, table_name="PropertyState").exclude(derived_column__isnull=False)
-        if column_ids is not None:
-            columns = columns.filter(Q(id__in=column_ids) | Q(is_matching_criteria=True))
 
         # build new state dict
         new_state_dict = {"organization": prop.organization_id, "extra_data": {}, "derived_data": {}}
