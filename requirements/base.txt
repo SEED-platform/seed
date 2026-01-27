@@ -10,7 +10,7 @@ django-celery-beat==2.8.1
 django-redis==6.0.0
 hiredis==3.2.1
 
-brotli==1.1.0
+brotli==1.2.0
 django-compressor==4.5.1
 django-extensions==3.2.3
 django-model-utils==5.0.0
