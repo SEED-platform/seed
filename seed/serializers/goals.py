@@ -14,7 +14,22 @@ from seed.serializers.cycles import CycleSerializer
 logger = logging.getLogger(__name__)
 
 
+class CycleGoalSerializer(serializers.ModelSerializer):
+    goal = serializers.IntegerField(source="goal.id", read_only=True)
+
+    def to_representation(self, obj):
+        result = super().to_representation(obj)
+        result["current_cycle"] = CycleSerializer(obj.current_cycle).data
+
+        return result
+
+    class Meta:
+        model = CycleGoal
+        fields = "__all__"
+
+
 class GoalSerializer(serializers.ModelSerializer):
+    # cycle_goals = CycleGoalSerializer(source="current_cycles", many=True, read_only=False)
     class Meta:
         model = Goal
         fields = "__all__"
@@ -31,6 +46,8 @@ class GoalSerializer(serializers.ModelSerializer):
             "eui_column2_name": self.get_column_name(obj.eui_column2),
             "eui_column3_name": self.get_column_name(obj.eui_column3),
             "area_column_name": self.get_column_name(obj.area_column),
+            "access_level_instance_name": obj.access_level_instance.name,
+            "cycle_goals": CycleGoalSerializer(obj.current_cycles, many=True).data,
         }
         if obj.type == "transaction":
             details["transactions_column_name"] = self.get_column_name(obj.transactions_column)
@@ -74,17 +91,3 @@ class GoalSerializer(serializers.ModelSerializer):
             return column.display_name
         else:
             return column.column_name
-
-
-class CycleGoalSerializer(serializers.ModelSerializer):
-    goal = serializers.IntegerField(source="goal.id", read_only=True)
-
-    def to_representation(self, obj):
-        result = super().to_representation(obj)
-        result["current_cycle"] = CycleSerializer(obj.current_cycle).data
-
-        return result
-
-    class Meta:
-        model = CycleGoal
-        fields = "__all__"
