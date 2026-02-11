@@ -306,7 +306,7 @@ Development
     STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
 
 - Run `pip3 install -r requirements/local.txt`.
-- Run `npm install` from root checkout of SEED.
+- Run `pnpm install` from root checkout of SEED.
 
 - If testing geocoding, then sign up for as a `MapQuest Developer`_ and create a new `MapQuest Key`_.
 - Add the key to the organization that you are using in development.
