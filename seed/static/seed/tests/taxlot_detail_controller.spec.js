@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-describe('controller: inventory_detail_controller', () => {
+describe('controller: taxlot_detail_controller', () => {
   // globals set up and used in each test scenario
   let controller;
   let ngFilter;
@@ -36,7 +36,7 @@ describe('controller: inventory_detail_controller', () => {
       // and return their promises
       mock_inventory_service = inventory_service;
 
-      spyOn(mock_inventory_service, 'update_taxlot').andCallFake((view_id, taxlot_state) => {
+      spyOn(mock_inventory_service, 'update_taxlot').and.callFake((view_id, taxlot_state) => {
         inventory_detail_controller_scope.item_state = taxlot_state;
         return $q.resolve({
           status: 'success'

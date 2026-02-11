@@ -19,12 +19,12 @@ describe('controller: members_controller', () => {
 
       mock_organization_service = organization_service;
 
-      spyOn(mock_organization_service, 'remove_user').andCallFake(() => $q.resolve({ status: 'success' }));
-      spyOn(mock_organization_service, 'get_organization_users').andCallFake(() => $q.resolve({
+      spyOn(mock_organization_service, 'remove_user').and.callFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_organization_service, 'get_organization_users').and.callFake(() => $q.resolve({
         status: 'success',
         users: [{ id: 1, first_name: 'Bob', last_name: 'D' }]
       }));
-      spyOn(mock_organization_service, 'update_role').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_organization_service, 'update_role').and.callFake(() => $q.resolve({ status: 'success' }));
     });
   });
 

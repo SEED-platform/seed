@@ -17,7 +17,7 @@ describe('controller: create_sub_organization_modal_controller', () => {
       ctrl_scope = $rootScope.$new();
 
       mock_organization_service = organization_service;
-      spyOn(mock_organization_service, 'create_sub_org').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_organization_service, 'create_sub_org').and.callFake(() => $q.resolve({ status: 'success' }));
     });
   });
 

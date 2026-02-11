@@ -25,6 +25,7 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
+        exclude: '(pnpm-lock\.yaml|pnpm-workspace\.yaml)'
         # for now ignoring html, javascript
         types_or: [yaml, markdown, css, scss]
   # https://docs.astral.sh/ruff/integrations/#pre-commit

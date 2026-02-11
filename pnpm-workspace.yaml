@@ -1,0 +1,16 @@
+packages:
+  - .
+  - ng_seed/seed-angular
+  - vendors
+
+ignoredBuiltDependencies:
+  - '@scarf/scarf'
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - core-js
+  - esbuild
+  - lmdb
+  - msgpackr-extract
+  - puppeteer
+  - unrs-resolver
