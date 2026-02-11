@@ -21,9 +21,9 @@ describe('controller: organization_settings_controller', () => {
       mock_organization_service = organization_service;
       mock_meters_service = meters_service;
 
-      spyOn(mock_organization_service, 'save_org_settings').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_organization_service, 'save_org_settings').and.callFake(() => $q.resolve({ status: 'success' }));
 
-      spyOn(mock_meters_service, 'valid_energy_types_units').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_meters_service, 'valid_energy_types_units').and.callFake(() => $q.resolve({ status: 'success' }));
     });
   });
 

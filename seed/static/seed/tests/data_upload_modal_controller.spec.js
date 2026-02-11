@@ -43,6 +43,8 @@ describe('controller: data_upload_modal_controller', () => {
       controller = $controller;
       data_upload_controller_scope = $rootScope.$new();
       modal_state = '';
+      global_step = 1;
+      global_dataset = {};
 
       // mock the uploader_service factory methods used in the controller
       // and return their promises
@@ -51,18 +53,18 @@ describe('controller: data_upload_modal_controller', () => {
       mock_matching_service = matching_service;
       mock_organization_service = organization_service;
       mock_auth_service = auth_service;
-      spyOn(mock_uploader_service, 'check_progress').andCallFake(() => $q.resolve({
+      spyOn(mock_uploader_service, 'check_progress').and.callFake(() => $q.resolve({
         status: 'success',
         progress: '25.0'
       }));
-      spyOn(mock_uploader_service, 'check_progress_loop').andCallFake((progress, num, num2, cb) => {
+      spyOn(mock_uploader_service, 'check_progress_loop').and.callFake((progress, num, num2, cb) => {
         cb();
         return $q.resolve({
           status: 'success',
           progress: '100.0'
         });
       });
-      spyOn(mock_uploader_service, 'create_dataset').andCallFake((dataset_name) => {
+      spyOn(mock_uploader_service, 'create_dataset').and.callFake((dataset_name) => {
         if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
@@ -75,7 +77,7 @@ describe('controller: data_upload_modal_controller', () => {
           message: 'name already in use'
         });
       });
-      spyOn(mock_uploader_service, 'save_raw_data').andCallFake((dataset_name) => {
+      spyOn(mock_uploader_service, 'save_raw_data').and.callFake((dataset_name) => {
         if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
@@ -87,7 +89,7 @@ describe('controller: data_upload_modal_controller', () => {
           status: 'error'
         });
       });
-      spyOn(mock_mapping_service, 'start_mapping').andCallFake((dataset_name) => {
+      spyOn(mock_mapping_service, 'start_mapping').and.callFake((dataset_name) => {
         if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
@@ -98,12 +100,12 @@ describe('controller: data_upload_modal_controller', () => {
           status: 'error'
         });
       });
-      spyOn(mock_matching_service, 'start_system_matching').andCallFake(() => $q.resolve({
+      spyOn(mock_matching_service, 'start_system_matching').and.callFake(() => $q.resolve({
         status: 'warning',
         file_id: 3
       }));
-      spyOn(mock_organization_service, 'get_organization').andCallFake(() => $q.resolve({ organization: {} }));
-      spyOn(mock_auth_service, 'is_authorized').andCallFake(() => $q.resolve({ auth: {} }));
+      spyOn(mock_organization_service, 'get_organization').and.callFake(() => $q.resolve({ organization: {} }));
+      spyOn(mock_auth_service, 'is_authorized').and.callFake(() => $q.resolve({ auth: {} }));
     });
   });
 

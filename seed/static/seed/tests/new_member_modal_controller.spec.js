@@ -17,7 +17,7 @@ describe('controller: new_member_modal_controller', () => {
       ctrl_scope = $rootScope.$new();
 
       mock_user_service = user_service;
-      spyOn(mock_user_service, 'add').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_user_service, 'add').and.callFake(() => $q.resolve({ status: 'success' }));
     });
   });
 

@@ -19,12 +19,12 @@ describe('controller: admin_controller', () => {
       mock_organization_service = organization_service;
       mock_uploader_service = uploader_service;
 
-      spyOn(mock_organization_service, 'get_organization_users').andCallFake(() => $q.reject({ status: 'fail' }));
-      spyOn(mock_organization_service, 'add_user_to_org').andCallFake(() => $q.reject({ status: 'fail' }));
-      spyOn(mock_organization_service, 'remove_user').andCallFake(() => $q.reject({ status: 'fail' }));
-      spyOn(mock_organization_service, 'get_organizations').andCallFake(() => $q.reject({ status: 'fail' }));
-      spyOn(mock_organization_service, 'delete_organization_inventory').andCallFake(() => $q.resolve({ status: 'success' }));
-      spyOn(mock_uploader_service, 'check_progress_loop').andCallFake((progress, num, num2, cb) => {
+      spyOn(mock_organization_service, 'get_organization_users').and.callFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'add_user_to_org').and.callFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'remove_user').and.callFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'get_organizations').and.callFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'delete_organization_inventory').and.callFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_uploader_service, 'check_progress_loop').and.callFake((progress, num, num2, cb) => {
         cb();
         return $q.resolve({
           status: 'success',

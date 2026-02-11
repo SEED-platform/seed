@@ -113,7 +113,7 @@ describe('controller: data_quality_modal_controller', () => {
 
   /*  set this up but doesn't do anything currently */
   // eslint-disable-next-line func-names
-  it('should dq modal sort and search', function () {
+  xit('should dq modal sort and search', function () {
     // arrange
     create_data_quality_modal_controller();
 

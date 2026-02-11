@@ -24,7 +24,7 @@ describe('controller: dataset_list_controller', () => {
       // mock the uploader_service factory methods used in the controller
       // and return their promises
       mock_uploader_service = uploader_service;
-      spyOn(mock_uploader_service, 'create_dataset').andCallFake((dataset_name) => {
+      spyOn(mock_uploader_service, 'create_dataset').and.callFake((dataset_name) => {
         if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
