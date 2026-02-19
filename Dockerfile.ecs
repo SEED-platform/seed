@@ -69,7 +69,7 @@ ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 
 # Install pip
 RUN bash -c "python3 -m ensurepip --upgrade && python3 -m pip install --upgrade pip setuptools && \
-    pip install supervisor==4.2.5"
+    pip install supervisor==4.3.0"
 
 ### Install python requirements
 WORKDIR /seed
