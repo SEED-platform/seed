@@ -117,7 +117,7 @@ angular.module('SEED.controller.portfolio_summary', [])
               responsive: true,
               plugins: {
                 legend: {
-                  position: 'top'
+                  display: false
                 },
                 title: {
                   display: true,
@@ -1263,7 +1263,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         // set data
         $scope.dataViewChart.data.labels = data.map((d) => d['Cycle Name']);
         $scope.dataViewChart.data.datasets = [{
-          label: 'Sample Bar Chart',
           data: data.map((d) => d.EUI),
           backgroundColor: ['#1E428A', ...new Array(data.length).fill('#06732cff')]
         }];
