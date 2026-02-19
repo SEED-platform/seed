@@ -469,7 +469,7 @@
     class="partner-note-container"
     style="margin-top: 20px; margin-bottom: 30px"
   >
-    <div style="margin-left:30px; margin-bottom: 20px;">
+    <div style="margin-left: 30px; margin-bottom: 20px">
       <h3 translate>Performance Data</h3>
     </div>
     <!-- CHART -->
@@ -489,7 +489,7 @@
     </div>
     <!--- PARTNER NOTE --->
     <div ng-if="hasValidGoal() && hasValidCycleGoal()" style="margin: 30px">
-      <div style="margin-left:20px;"><h4>Partner Notes</h4></div>
+      <div style="margin-left: 20px"><h4>Partner Notes</h4></div>
       <div class="col-md-6">
         <textarea
           class="form-control"
@@ -574,9 +574,7 @@
           ng-init="childIndex = $index;"
         >
           <tr>
-            <td
-              ng-repeat="(key, value) in cycle_goal"
-            >
+            <td ng-repeat="(key, value) in cycle_goal">
               <span> {$ value | tolerantNumber:2 $} </span>
             </td>
           </tr>
