@@ -1,0 +1,9 @@
+sharedWorkspaceLockfile: false
+
+packages:
+  - .
+  - ng_seed/seed-angular
+  - vendors
+
+onlyBuiltDependencies:
+  - puppeteer

@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: mapping_controller', () => {
@@ -23,11 +23,11 @@ describe('controller: mapping_controller', () => {
       mock_geocode_service = geocode_service;
       mock_organization_service = organization_service;
 
-      spyOn(mock_geocode_service, 'check_org_has_api_key').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_geocode_service, 'check_org_has_api_key').and.callFake(() => $q.resolve({ status: 'success' }));
 
-      spyOn(mock_geocode_service, 'check_org_has_geocoding_enabled').andCallFake(() => $q.resolve(true));
+      spyOn(mock_geocode_service, 'check_org_has_geocoding_enabled').and.callFake(() => $q.resolve(true));
 
-      spyOn(mock_organization_service, 'geocoding_columns').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_organization_service, 'geocoding_columns').and.callFake(() => $q.resolve({ status: 'success' }));
     });
   });
 
