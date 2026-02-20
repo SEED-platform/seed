@@ -53,6 +53,14 @@ for loc in ENV_VARS:
     if not locals().get(loc):
         raise Exception(f"{loc} Not defined as env variables")
 
+# Add any env variables that should be booleans to this list
+BOOL_ENV_VARS = ["EMAIL_USE_TLS", "EMAIL_USE_SSL"]
+
+for loc in BOOL_ENV_VARS:
+    locals()[loc] = locals().get(loc, "").lower() == "true"
+
+# TLS certificate verification is optional
+EMAIL_VERIFY_TLS = env_var("EMAIL_VERIFY_TLS", "true").lower() == "true"
 
 DEBUG = env_var("Debug", False)
 COMPRESS_ENABLED = True
