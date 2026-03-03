@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 Utility methods pertaining to data import tasks (save, mapping, matching).
@@ -11,7 +11,7 @@ from collections import defaultdict
 def kbtu_thermal_conversion_factors(country):
     """
     Returns thermal conversion factors provided by Portfolio Manager.
-    In the PM app, using NREL's test account, a property was created for each US
+    In the PM app, using NLR's test account, a property was created for each US
     and CAN. All possible Meters of different Type and Units were added.
     Readings of value 1 were added to deduce the factors provided below.
 

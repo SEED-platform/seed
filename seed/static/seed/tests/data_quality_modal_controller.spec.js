@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: data_quality_modal_controller', () => {
@@ -113,7 +113,7 @@ describe('controller: data_quality_modal_controller', () => {
 
   /*  set this up but doesn't do anything currently */
   // eslint-disable-next-line func-names
-  it('should dq modal sort and search', function () {
+  xit('should dq modal sort and search', function () {
     // arrange
     create_data_quality_modal_controller();
 

@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -310,6 +310,7 @@ class Organization(models.Model):
 
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
+    bb_salesforce_enabled = models.BooleanField(default=False)
 
     access_level_names = models.JSONField(default=list)
 

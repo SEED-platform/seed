@@ -27,7 +27,7 @@ else
 fi
 
 # collect static resources before starting
-./manage.py collectstatic --no-input -i package.json -i package-lock.json -i node_modules/openlayers-ext/index.html
+./manage.py collectstatic --no-input -i package.json -i package-lock.json -i node_modules/ol-ext/index.html
 
 # clean up previously-generated assets and re-compress
 rm -rf /seed/collected_static/CACHE
