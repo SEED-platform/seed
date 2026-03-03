@@ -80,7 +80,7 @@ JavaScript Dependencies
 
 .. code-block:: console
 
-    $ npm install
+    $ pnpm install
 
 
 Django Database Configuration
@@ -219,7 +219,7 @@ Generate static files:
 
 .. code-block:: console
 
-    $ python3 manage.py collectstatic --settings=config.settings.prod -i package.json -i package-lock.json -i node_modules/openlayers-ext/index.html
+    $ python3 manage.py collectstatic --settings=config.settings.prod -i package.json -i package-lock.json -i node_modules/ol-ext/index.html
 
 Update ``config/settings/local_untracked.py``:
 

@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -961,11 +961,6 @@ class DataQualityCheck(models.Model):
         current_view = row["current"].propertyview_set.first() if row["current"] else None
 
         def check_range():
-            # _log.error("++++++")
-            # _log.error(rule.name)
-            # _log.error(f"min: {rule.min} max: {rule.max}")
-            # _log.error(f"value: {value} type: {type(value)}")
-            # _log.error(f"result: {(rule.min is None or value > float(rule.min)) and (rule.max is None or value < float(rule.max))}")
             return (rule.min is None or value > float(rule.min)) and (rule.max is None or value < float(rule.max))
 
         def append_to_apply_labels():
@@ -988,8 +983,7 @@ class DataQualityCheck(models.Model):
                 if rule.condition == Rule.RULE_RANGE:
                     result = check_range()
                     results.append(result)
-                    # _log.error(f"result: {result}")
-                    # _log.error("^^^^^^^^")
+
                     append_to_apply_labels()
                     if not result:
                         self.add_result_range_error(row["current"].id, rule, data_type, value)

@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -12,7 +12,7 @@ from responses import matchers
 from seed.models import BBSalesforceConfig, Goal
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.cache import get_cache_raw, set_cache_raw
-from seed.views.v3.bb_salesforce import REDIRECT_URI
+from seed.views.v3.bb_salesforce import REDIRECT_URI_ENDING
 
 
 class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
@@ -59,7 +59,7 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
         assert (
             response.json()["url"] == f"{self.salesforce_url}/oauth2/authorize?"
             f"client_id={self.bb_salesforce_config.client_id}&"
-            f"redirect_uri={quote_plus(REDIRECT_URI)}&"
+            f"redirect_uri={quote_plus('https://127.0.0.1:8000' + REDIRECT_URI_ENDING)}&"
             "response_type=code&"
             f"code_challenge={example_code_challenge}"
         )
@@ -122,7 +122,7 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
                         "code": example_code,
                         "client_id": self.org.bb_salesforce_config.client_id,
                         "client_secret": self.org.bb_salesforce_config.client_secret,
-                        "redirect_uri": REDIRECT_URI,
+                        "redirect_uri": "https://127.0.0.1:8000" + REDIRECT_URI_ENDING,
                         "code_verifier": example_code_verifier,
                     }
                 )
@@ -160,7 +160,7 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
                         "code": example_code,
                         "client_id": self.org.bb_salesforce_config.client_id,
                         "client_secret": self.org.bb_salesforce_config.client_secret,
-                        "redirect_uri": REDIRECT_URI,
+                        "redirect_uri": "https://127.0.0.1:8000" + REDIRECT_URI_ENDING,
                         "code_verifier": example_code_verifier,
                     }
                 )

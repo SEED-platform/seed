@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: new_member_modal_controller', () => {
@@ -17,7 +17,7 @@ describe('controller: new_member_modal_controller', () => {
       ctrl_scope = $rootScope.$new();
 
       mock_user_service = user_service;
-      spyOn(mock_user_service, 'add').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_user_service, 'add').and.callFake(() => $q.resolve({ status: 'success' }));
     });
   });
 

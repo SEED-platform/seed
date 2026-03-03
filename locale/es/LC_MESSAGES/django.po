@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-11-14 23:01\n"
+"PO-Revision-Date: 2025-12-11 17:45\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -179,6 +179,9 @@ msgstr "El análisis EUI sumará las lecturas de los contadores de la propiedad 
 
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
 msgstr "El análisis de estadísticas de elementos analiza los datos de elementos de una propiedad (si los hay) para contar la cantidad de elementos del tipo \"Panel de control DDC\". También genera los valores de índice de condición agregados (promedio) para los elementos de EISA 2007-432 y guarda esas cantidades en la propiedad."
+
+msgid "ANALYSIS_DESCRIPTION_HVACMetrics"
+msgstr "El análisis de métricas de HVAC itera a través de los datos de los elementos de una propiedad (si los hay) para calcular 4 métricas: 1) Área de cobertura de tonelaje de CA, 2) Tipo de refrigerante principal, 3) Tamaño total del servicio eléctrico de HVAC y 4) Tasa de flujo de aire por unidad de área."
 
 #, fuzzy
 msgid "AND"
@@ -773,8 +776,8 @@ msgid "By Property"
 msgstr "Por propiedad"
 
 #, fuzzy
-msgid "By clicking the Log In button you accept the NREL Data Terms."
-msgstr "Al hacer clic en el botón Iniciar sesión, acepta las Condiciones de datos del NREL."
+msgid "By clicking the Log In button you accept the Data Terms."
+msgstr "Al hacer clic en el botón Iniciar sesión, acepta las Condiciones de datos."
 
 msgid "CALC_ACCESS_LEVEL_DESC"
 msgstr "Seleccione el nivel de acceso y la instancia de los datos que se incluirán en los cálculos."

@@ -7,7 +7,7 @@ from django.db.models import F
 
 # rgm Jan 2018: The change-over to units-aware columns (ie. everything with
 # `*_pint` as a suffix) is invasive and so inherently a bit risky, as there is a
-# ton of existing data in production with NREL/LBL that makes use of these
+# ton of existing data in production with NLR/LBL that makes use of these
 # columns. We'd like to have an escape hatch in case of unforeseen problems,
 # hence we're renaming the existing unitless columns for EUI and areas to be
 # suffixed `*_orig` so that rolling back is a straightforward matter of:

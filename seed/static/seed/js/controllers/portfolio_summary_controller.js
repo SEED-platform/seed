@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.controller.portfolio_summary', [])
@@ -78,6 +78,7 @@ angular.module('SEED.controller.portfolio_summary', [])
       // if org has no salesforce configs, status will be 'error' and valid will be false
       $scope.is_logged_into_salesforce = is_logged_into_salesforce.data.valid;
       $scope.chart_initialized = false;
+      $scope.related_model_sort = false;
 
       $scope.search_for_goals = (query) => {
         const pattern = query.split('').join('.*');
@@ -116,7 +117,7 @@ angular.module('SEED.controller.portfolio_summary', [])
               responsive: true,
               plugins: {
                 legend: {
-                  position: 'top'
+                  display: false
                 },
                 title: {
                   display: true,
@@ -506,7 +507,7 @@ angular.module('SEED.controller.portfolio_summary', [])
           $scope.baseline_labels = labels;
           $scope.build_labels('baseline', $scope.baseline_labels);
         });
-        label_service.get_property_view_labels_by_cycle_goal($scope.organization.id, $scope.goal.id, $scope.cycle_goal.cycle.id).then((labels) => {
+        label_service.get_property_view_labels_by_cycle_goal($scope.organization.id, $scope.goal.id, $scope.cycle_goal.current_cycle.id).then((labels) => {
           $scope.current_labels = labels;
           $scope.build_labels('current', $scope.current_labels);
         });
@@ -965,6 +966,8 @@ angular.module('SEED.controller.portfolio_summary', [])
         const formatted_columns = format_cycle_columns(grid_columns);
 
         $scope.column_filters = [];
+        $scope.column_sorts = [];
+        $scope.related_model_sort = false;
         // parse the filters and sorts
         for (const column of formatted_columns) {
           // format column if cycle specific
@@ -1260,7 +1263,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         // set data
         $scope.dataViewChart.data.labels = data.map((d) => d['Cycle Name']);
         $scope.dataViewChart.data.datasets = [{
-          label: 'Sample Bar Chart',
           data: data.map((d) => d.EUI),
           backgroundColor: ['#1E428A', ...new Array(data.length).fill('#06732cff')]
         }];

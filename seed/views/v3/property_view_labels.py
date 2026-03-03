@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -31,7 +31,7 @@ class PropertyViewLabelViewSet(ModelViewSetWithoutPatch, OrgMixin):
         ]
     )
     @action(detail=False, methods=["GET"])
-    def list_by_goal(self, request):
+    def list_by_cycle_goal(self, request):
         """
         Return property view labels that are attached to the passed cycle and
         a. unattached to any goal
