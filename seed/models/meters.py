@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -64,6 +64,9 @@ class Meter(models.Model):
     POTABLE_INDOOR = 27
     POTABLE_MIXED = 28
     POTABLE_OUTDOOR = 29
+    HEATING_DEGREE_DAYS = 30
+    COOLING_DEGREE_DAYS = 31
+    AVERAGE_TEMPERATURE = 32
     CUSTOM_METER = 99
 
     # Taken from EnergyStar Portfolio Manager
@@ -98,6 +101,9 @@ class Meter(models.Model):
         (POTABLE_INDOOR, "Potable Indoor"),
         (POTABLE_OUTDOOR, "Potable Outdoor"),
         (POTABLE_MIXED, "Potable: Mixed Indoor/Outdoor"),
+        (HEATING_DEGREE_DAYS, "Heating Degree Days"),
+        (COOLING_DEGREE_DAYS, "Cooling Degree Days"),
+        (AVERAGE_TEMPERATURE, "Average Temperature"),
     )
     ENERGY_TYPE_BY_METER_TYPE = dict(ENERGY_TYPES)
 

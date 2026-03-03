@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -53,7 +53,11 @@ class TaxLotProperty(models.Model):
             "property_view",
             "taxlot_view",
         )
-        index_together = [["cycle", "property_view"], ["cycle", "taxlot_view"], ["property_view", "taxlot_view"]]
+        indexes = [
+            models.Index(fields=["cycle", "property_view"]),
+            models.Index(fields=["cycle", "taxlot_view"]),
+            models.Index(fields=["property_view", "taxlot_view"]),
+        ]
 
     @classmethod
     def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None, units={}):
@@ -329,6 +333,12 @@ class TaxLotProperty(models.Model):
                 goal_note = obj.property.goalnote_set.filter(goal=goal_id).first()
                 obj_dict["goal_note"] = goal_note.serialize() if goal_note else None
                 obj_dict["historical_note"] = obj.property.historical_note.serialize()
+
+            # add non goal label ids
+            if this_cls == "Property":
+                obj_dict["labels"] = list(obj.propertyviewlabel_set.filter(goal__isnull=True).values_list("statuslabel_id", flat=True))
+            else:
+                obj_dict["labels"] = list(obj.labels.values_list("id", flat=True))
 
             results.append(obj_dict)
 

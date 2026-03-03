@@ -1,0 +1,57 @@
+<div
+  class="page_header_container"
+  style="padding-top: 50px; padding-left: 30px; padding-right: 30px"
+>
+  <div
+    ng-if="AUTHENTICATION_STATE == 'SUCCESS'"
+    class="alert alert-success"
+    role="alert"
+  >
+    <i class="fa fa-check-circle"></i>
+    <span translate>BB_SALESFORCE_LOGIN_SUCCESS</span>
+  </div>
+  <div
+    ng-if="AUTHENTICATION_STATE == 'SUCCESS'"
+    style="margin-top: 20px; display: flex; align-items: center"
+  >
+    <button
+      class="btn btn-primary portfolio-summary-btn"
+      type="submit"
+      ui-sref="portfolio_summary()"
+      ui-sref-active="active"
+    >
+      {$:: 'Return to Portfolio Summary Page' | translate $}
+    </button>
+    <span style="padding-left: 20px; padding-right: 20px">or</span>
+    <button
+      class="btn btn-primary portfolio-summary-btn"
+      type="submit"
+      ui-sref="organization_settings(::{organization_id: organization_id})"
+      ui-sref-active="active"
+    >
+      {$:: 'Return to Organization Settings Page' | translate $}
+    </button>
+  </div>
+
+  <div
+    ng-if="AUTHENTICATION_STATE == 'FAILURE'"
+    class="alert alert-danger"
+    role="alert"
+  >
+    <i class="fa fa-exclamation-circle"></i>
+    <span translate>BB_SALESFORCE_LOGIN_FAILURE</span> {$ error_message $}
+  </div>
+  <div
+    ng-if="AUTHENTICATION_STATE == 'FAILURE'"
+    style="margin-top: 20px; display: flex; align-items: center"
+  >
+    <button
+      class="btn btn-primary portfolio-summary-btn"
+      type="submit"
+      ng-click="login_salesforce()"
+      ng-if="write_permission"
+    >
+      {$:: 'Try Again' | translate $}
+    </button>
+  </div>
+</div>

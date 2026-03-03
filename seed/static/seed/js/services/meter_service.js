@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.service.meter', []).factory('meter_service', [
@@ -27,26 +27,26 @@ angular.module('SEED.service.meter', []).factory('meter_service', [
       .then((response) => response)
       .catch((response) => response);
 
-    meter_factory.update_meter_connection = (organization_id, meter_id, meter_config, property_view_id = null, group_id = null) => {
+    meter_factory.update_meter = (organization_id, meter_id, alias, connection_config, property_view_id = null, group_id = null) => {
       if (property_view_id) {
-        return meter_factory.update_property_meter_connection(organization_id, meter_id, meter_config, property_view_id);
+        return meter_factory.update_property_meter(organization_id, meter_id, alias, connection_config, property_view_id);
       } if (group_id) {
-        return meter_factory.update_group_meter_connection(organization_id, meter_id, meter_config, group_id);
+        return meter_factory.update_group_meter(organization_id, meter_id, alias, connection_config, group_id);
       }
     };
 
-    meter_factory.update_property_meter_connection = (organization_id, meter_id, meter_config, property_view_id) => $http
+    meter_factory.update_property_meter = (organization_id, meter_id, alias, connection_config, property_view_id) => $http
       .put(
-        `/api/v3/properties/${property_view_id}/meters/${meter_id}/update_connection/?organization_id=${organization_id}`,
-        { meter_config }
+        `/api/v3/properties/${property_view_id}/meters/${meter_id}/?organization_id=${organization_id}`,
+        { alias, connection_config }
       )
       .then((response) => response)
       .catch((response) => response);
 
-    meter_factory.update_group_meter_connection = (organization_id, meter_id, meter_config, group_id) => $http
+    meter_factory.update_group_meter = (organization_id, meter_id, alias, connection_config, group_id) => $http
       .put(
-        `/api/v3/inventory_groups/${group_id}/meters/${meter_id}/update_connection/?organization_id=${organization_id}`,
-        { meter_config }
+        `/api/v3/inventory_groups/${group_id}/meters/${meter_id}/?organization_id=${organization_id}`,
+        { alias, connection_config }
       )
       .then((response) => response)
       .catch((response) => response);

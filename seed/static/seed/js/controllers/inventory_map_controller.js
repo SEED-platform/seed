@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 /* eslint-disable no-underscore-dangle */
@@ -15,10 +15,26 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
   'user_service',
   'organization_service',
   'labels',
+  'footprint_column_name',
   'group',
   'urls',
   // eslint-disable-next-line func-names
-  function ($scope, $stateParams, $state, $log, $uibModal, cycles, inventory_service, map_service, user_service, organization_service, labels, group, urls) {
+  function (
+    $scope,
+    $stateParams,
+    $state,
+    $log,
+    $uibModal,
+    cycles,
+    inventory_service,
+    map_service,
+    user_service,
+    organization_service,
+    labels,
+    footprint_column_name,
+    group,
+    urls
+  ) {
     $scope.inventory_type = $stateParams.inventory_type;
     const isPropertiesTab = $scope.inventory_type === 'properties';
     if ($stateParams.group_id) {
@@ -113,7 +129,8 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
         property_centroid_layer: { zIndex: 4, visible: isPropertiesTab },
         taxlot_bb_layer: { zIndex: 5, visible: !isPropertiesTab },
         taxlot_centroid_layer: { zIndex: 6, visible: !isPropertiesTab },
-        points_layer: { zIndex: 7, visible: true }
+        points_layer: { zIndex: 7, visible: true },
+        footprint_layer: { zIndex: 8, visible: true }
       };
 
       const buildingSources = (records) => {
@@ -129,18 +146,18 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
         return new ol.source.Vector({ features });
       };
 
-      const boundingBoxSource = (records) => {
+      const getSources = (records, field) => {
         const features = records.reduce((acc, record) => {
-          if (record.bounding_box) {
+          if (record[field]) {
             try {
-              const feature = new ol.format.WKT().readFeature(record.bounding_box, {
+              const feature = new ol.format.WKT().readFeature(record[field], {
                 dataProjection: 'EPSG:4326',
                 featureProjection: 'EPSG:3857'
               });
               feature.setProperties(record);
               acc.push(feature);
             } catch (e) {
-              console.error(`Failed to process bounding box for id ${record.id}`);
+              console.error(`Failed to process ${field} for id ${record.id}`);
             }
           }
           return acc;
@@ -149,25 +166,9 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
         return new ol.source.Vector({ features });
       };
 
-      const centroidSource = (records) => {
-        const features = records.reduce((acc, record) => {
-          if (record.centroid) {
-            try {
-              const feature = new ol.format.WKT().readFeature(record.centroid, {
-                dataProjection: 'EPSG:4326',
-                featureProjection: 'EPSG:3857'
-              });
-              feature.setProperties(record);
-              acc.push(feature);
-            } catch (e) {
-              console.error(`Failed to process centroid for id ${record.id}`);
-            }
-          }
-          return acc;
-        }, []);
-
-        return new ol.source.Vector({ features });
-      };
+      const boundingBoxSource = (records) => getSources(records, 'bounding_box');
+      const centroidSource = (records) => getSources(records, 'centroid');
+      const footprintSource = (records) => getSources(records, footprint_column_name);
 
       const censusTractSource = async () => {
         let geojson = {
@@ -273,6 +274,12 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
       $scope.property_centroid_layer = new ol.layer.Vector({
         source: centroidSource($scope.geocoded_properties),
         zIndex: $scope.layers.property_centroid_layer.zIndex,
+        style: propertyStyle
+      });
+
+      $scope.footprint_layer = new ol.layer.Vector({
+        source: footprintSource($scope.geocoded_properties),
+        zIndex: $scope.layers.footprint_layer.zIndex,
         style: propertyStyle
       });
 
@@ -487,6 +494,7 @@ angular.module('SEED.controller.inventory_map', []).controller('inventory_map_co
         $scope.filteredRecords = records.length;
 
         $scope.points_layer.setSource(pointsSource(records));
+        $scope.footprint_layer.setSource(footprintSource(records));
 
         if (isPropertiesTab) {
           $scope.hexbin_layer.setSource(hexbinSource(records));

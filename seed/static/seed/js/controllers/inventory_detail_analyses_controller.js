@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.controller.inventory_detail_analyses', []).controller('inventory_detail_analyses_controller', [
@@ -165,6 +165,5 @@ angular.module('SEED.controller.inventory_detail_analyses', []).controller('inve
           }
         });
     };
-    $scope.has_children = (value) => typeof value === 'object';
   }
 ]);

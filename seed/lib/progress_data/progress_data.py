@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -164,7 +164,7 @@ class ProgressData:
         self.data["progress"] = value
         self.data["status"] = "running"
         self.data["completed_records"] = round(value / 100.0 * self.data["total_records"])
-        self.data["status_message"] = f'{self.data["completed_records"]:,} / {self.data["total_records"]:,}'
+        self.data["status_message"] = f"{self.data['completed_records']:,} / {self.data['total_records']:,}"
 
         self.save()
 

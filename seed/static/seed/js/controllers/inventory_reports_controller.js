@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * This controller handles the inventory reports page, watching for and remembering
@@ -65,6 +65,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
     $scope.filter_groups = filter_groups;
     $scope.report_configurations = report_configurations;
     $scope.filter_group_id = null;
+    $scope.order_by_x = null;
 
     $scope.has_children = (obj) => {
       // check if the access level selected has children levels for stats table
@@ -94,6 +95,13 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       // for (const key in $scope.potential_level_instances) {
       //   $scope.potential_level_instances[key].name = path_to_string($scope.potential_level_instances[key].path);
       // }
+      const group_by_level = $scope.level_names[new_level_instance_depth];
+      $scope.xAxisVars.splice($scope.xAxisVars.length - 1, 1, {
+        name: group_by_level,
+        label: group_by_level,
+        varName: group_by_level,
+        axisLabel: group_by_level
+      });
       $scope.access_level_instance_id = null;
       $scope.setModified();
     };
@@ -237,7 +245,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
        $scope.xAxisVars consists of columns specified as numeric types.
 
-       $scope.uAxisVars consists of manually defined columns specified.
+       $scope.yAxisVars consists of manually defined columns specified.
        Ideally, if we need to add new variables, we should just be able to add a new object to
        either of these arrays. (However, at first when adding new variables we might need to add
        new functionality to the directive to handle any idiosyncrasies of graphing that new variable.)
@@ -281,6 +289,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
     const localStorageXAxisKey = `${base_storage_key}.xaxis`;
     const localStorageYAxisKey = `${base_storage_key}.yaxis`;
+    const localStorageAggregationTypeKey = `${base_storage_key}.aggregationType`;
     const localStorageALIndex = `${base_storage_key}.ALIndex`;
     const localStorageALIID = `${base_storage_key}.ALIID`;
     const localStorageReportConfigID = `${base_storage_key}.RCID`;
@@ -293,9 +302,17 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       // Currently selected x and y variables - check local storage first, otherwise initialize to first choice
       $scope.yAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageYAxisKey)) || $scope.yAxisVars[0];
       $scope.xAxisSelectedItem = JSON.parse(localStorage.getItem(localStorageXAxisKey)) || $scope.xAxisVars[0];
+      $scope.aggregationType = JSON.parse(localStorage.getItem(localStorageAggregationTypeKey)) || 'Sum';
 
       $scope.level_name_index = JSON.parse(localStorage.getItem(localStorageALIndex)) || '0';
       const new_level_instance_depth = parseInt($scope.level_name_index, 10) + parseInt(users_depth, 10);
+      const group_by_level = $scope.level_names[new_level_instance_depth];
+      $scope.xAxisVars.push({
+        name: group_by_level,
+        label: group_by_level,
+        varName: group_by_level,
+        axisLabel: group_by_level
+      });
       $scope.potential_level_instances = access_level_instances_by_depth[new_level_instance_depth];
       $scope.access_level_instance_id = JSON.parse(localStorage.getItem(localStorageALIID)) || parseInt($scope.users_access_level_instance_id, 10);
     }
@@ -485,8 +502,8 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       clearChartData();
       $scope.chartStatusMessage = 'Loading data...';
       $scope.aggChartStatusMessage = 'Loading data...';
-      getChartData();
       getAggChartData();
+      getChartData();
       updateChartTitlesAndAxes();
       updateStorage();
     };
@@ -533,13 +550,15 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       try {
         interpolationParams = {
           x_axis_label: $translate.instant($scope.xAxisSelectedItem.label),
-          y_axis_label: $translate.instant($scope.yAxisSelectedItem.label)
+          y_axis_label: $translate.instant($scope.yAxisSelectedItem.label),
+          aggregationType: $translate.instant($scope.aggregationType)
         };
       } catch (e) {
         $log.error('$sce issue... missing translation');
         interpolationParams = {
           x_axis_label: $scope.xAxisSelectedItem.label,
-          y_axis_label: $scope.yAxisSelectedItem.label
+          y_axis_label: $scope.yAxisSelectedItem.label,
+          aggregationType: $scope.aggregationType
         };
       }
       $scope.chart1Title = $translate.instant('X_VERSUS_Y', interpolationParams);
@@ -558,10 +577,10 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
         controller: 'export_report_modal_controller',
         resolve: {
           axes_data: () => ({
-            xVar: $scope.chartData.xAxisVarName,
-            xLabel: $scope.chartData.xAxisTitle,
-            yVar: $scope.chartData.yAxisVarName,
-            yLabel: $scope.chartData.yAxisTitle
+            xVar: $scope.chartData.yAxisVarName,
+            xLabel: $scope.chartData.yAxisTitle,
+            yVar: $scope.chartData.xAxisVarName,
+            yLabel: $scope.chartData.xAxisTitle
           }),
           cycles: () => $scope.selected_cycles,
           filter_group_id: () => $scope.filter_group_id
@@ -609,12 +628,16 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
               yAxisVarName: $scope.yAxisSelectedItem.varName,
               yAxisType: $scope.yAxisSelectedItem.axisType,
               yAxisMin: $scope.yAxisSelectedItem.axisMin,
+              yAxisMax: $scope.yAxisSelectedItem.axisMax,
               xAxisTickFormat: $scope.xAxisSelectedItem.axisTickFormat,
               yAxisTickFormat: $scope.yAxisSelectedItem.axisTickFormat
             };
 
-            // new chartJS chart data
+            // yAxisVars.axisMin and axisMax are unused and will remain 'undefined'.
+            // They may be placeholders for future functionality.
+            // Leaving them undefined is ideal, as it lets Chart.js automatically determine the proper min/max values.
             $scope.scatterChart.options.scales.y.min = $scope.yAxisSelectedItem.axisMin;
+            $scope.scatterChart.options.scales.y.max = $scope.yAxisSelectedItem.axisMax;
             $scope.scatterChart.options.scales.y.type = $scope.chartData.chartData.every((d) => typeof d.y === 'number') ? 'linear' : 'category';
 
             if ($scope.chartData.chartData.every((d) => typeof d.x === 'number')) {
@@ -634,7 +657,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
               // restore title text as this syntax overwrites it
               $scope.scatterChart.options.scales.x = {
                 type: 'category',
-                labels: Array.from([...new Set($scope.chartData.chartData.map((d) => d.x))]).sort(),
+                labels: Object.entries($scope.order_by_x).sort(([, a], [, b]) => a > b).map(([k]) => k),
                 title: {
                   display: true,
                   text: $scope.xAxisSelectedItem.label
@@ -693,10 +716,27 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
 
       $scope.aggChartIsLoading = true;
       inventory_reports_service
-        .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id, $scope.filter_group_id)
+        .get_aggregated_report_data(xVar, yVar, $scope.selected_cycles, $scope.access_level_instance_id, $scope.filter_group_id, $scope.aggregationType)
         .then(
           (data) => {
             data = data.aggregated_data;
+
+            // if categorical, sort by most x of recent cycle, then by cycle
+            const is_category = data.chart_data.every((d) => typeof d.y === 'number') ? 'linear' : 'category';
+            if (is_category) {
+              const most_recent_year_end = Math.max(...data.chart_data.map((d) => Number(d.yr_e)));
+              const data_from_most_recent_year = data.chart_data.filter((d) => d.yr_e === String(most_recent_year_end));
+              $scope.order_by_x = data_from_most_recent_year.sort((a, b) => a.x < b.x).reduce((acc, curr, i) => {
+                acc[curr.y] = i;
+                return acc;
+              }, {});
+
+              data.chart_data = data.chart_data.sort((a, b) => {
+                if (a.y === b.y) return a.yr_e < b.yr_e ? 1 : -1;
+                return $scope.order_by_x[a.y] > $scope.order_by_x[b.y] ? 1 : -1;
+              });
+            }
+
             $scope.aggPropertyCounts = data.property_counts;
             const propertyCounts = data.property_counts;
             const colorsArr = mapColors(propertyCounts);
@@ -707,7 +747,11 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
             };
 
             // new agg chart
-            const the_data = _.orderBy($scope.aggChartData.chartData, ['y'], ['acs']);
+            const the_data = $scope.aggChartData.chartData;
+            $scope.barChart.options.scales.y.min = undefined;
+            $scope.barChart.options.scales.y.max = undefined;
+            $scope.barChart.options.scales.x.min = undefined;
+            $scope.barChart.options.scales.x.max = undefined;
             $scope.barChart.data.labels = the_data.map((a) => a.y);
             $scope.barChart.data.datasets[0].data = the_data.map((a) => a.x);
             // add the colors to the datapoints, need to create a hash map first
@@ -749,6 +793,7 @@ angular.module('SEED.controller.inventory_reports', []).controller('inventory_re
       // Save axis and cycle selections
       localStorage.setItem(localStorageXAxisKey, JSON.stringify($scope.xAxisSelectedItem ?? ''));
       localStorage.setItem(localStorageYAxisKey, JSON.stringify($scope.yAxisSelectedItem ?? ''));
+      localStorage.setItem(localStorageAggregationTypeKey, JSON.stringify($scope.aggregationType ?? ''));
       localStorage.setItem(localStorageSelectedCycles, JSON.stringify($scope.selected_cycles));
       localStorage.setItem(localStorageALIndex, JSON.stringify($scope.level_name_index));
       localStorage.setItem(localStorageALIID, JSON.stringify($scope.access_level_instance_id));

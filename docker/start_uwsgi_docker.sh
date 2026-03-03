@@ -27,14 +27,14 @@ else
 fi
 
 # collect static resources before starting
-./manage.py collectstatic --no-input -i package.json -i package-lock.json -i node_modules/openlayers-ext/index.html
+./manage.py collectstatic --no-input -i package.json -i package-lock.json -i node_modules/ol-ext/index.html
 
 # clean up previously-generated assets and re-compress
 rm -rf /seed/collected_static/CACHE
 ./manage.py compress --force
 
 # set the permissions in the /seed/collected_static folder
-chown -R uwsgi /seed/collected_static
+chown -R 1000 /seed/collected_static
 
 # Run any migrations before starting -- always for now
 ./manage.py migrate
@@ -42,4 +42,4 @@ chown -R uwsgi /seed/collected_static
 echo "Creating default user"
 ./manage.py create_default_user --username=$SEED_ADMIN_USER --password=$SEED_ADMIN_PASSWORD --organization=$SEED_ADMIN_ORG
 
-/usr/bin/uwsgi --ini /seed/docker/uwsgi.ini
+uwsgi --ini /seed/docker/uwsgi.ini

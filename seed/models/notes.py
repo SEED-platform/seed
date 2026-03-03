@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -52,7 +52,7 @@ class Note(models.Model):
 
     class Meta:
         ordering = ["-created"]
-        index_together = [["organization", "note_type"]]
+        indexes = [models.Index(fields=["organization", "note_type"])]
 
     @classmethod
     def create_from_edit(cls, user_id, view, new_values, previous_values):

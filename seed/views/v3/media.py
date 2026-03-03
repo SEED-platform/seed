@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -9,10 +9,11 @@ import re
 
 from django.conf import settings
 from django.http import HttpResponse
+from django.utils.decorators import method_decorator
 from rest_framework import generics
 
 from seed.models import Analysis, AnalysisOutputFile, BuildingFile, ImportFile, InventoryDocument, Organization
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -35,14 +36,19 @@ def check_file_permission(user, filepath):
     organization = None
     if base_dir == "uploads":
         try:
-            import_file = ImportFile.objects.get(file__in=[absolute_filepath, filepath], deleted=False)
+            # there could be more than one file of the same name if the same file was used to import properties and meters
+            import_file = ImportFile.objects.filter(file__in=[absolute_filepath, filepath], deleted=False).first()
+            if import_file is None:
+                raise ModelForFileNotFoundError("ImportFile not found")
         except ImportFile.DoesNotExist:
             raise ModelForFileNotFoundError("ImportFile not found")
         organization = import_file.import_record.super_organization
 
     elif base_dir == "buildingsync_files":
         try:
-            building_file = BuildingFile.objects.get(file__in=[absolute_filepath, filepath])
+            building_file = BuildingFile.objects.filter(file__in=[absolute_filepath, filepath]).first()
+            if building_file is None:
+                raise ModelForFileNotFoundError("BuildingFile not found")
         except BuildingFile.DoesNotExist:
             raise ModelForFileNotFoundError("BuildingFile not found")
         organization = building_file.property_state.organization
@@ -59,7 +65,9 @@ def check_file_permission(user, filepath):
 
     elif base_dir == "analysis_output_files":
         try:
-            analysis_output_file = AnalysisOutputFile.objects.get(file__in=[absolute_filepath, filepath])
+            analysis_output_file = AnalysisOutputFile.objects.filter(file__in=[absolute_filepath, filepath]).first()
+            if analysis_output_file is None:
+                raise ModelForFileNotFoundError("AnalysisOutputFile not found")
             analysis_property_view = analysis_output_file.analysis_property_views.first()
             if analysis_property_view is None:
                 raise ModelForFileNotFoundError(
@@ -71,7 +79,9 @@ def check_file_permission(user, filepath):
 
     elif base_dir == "inventory_documents":
         try:
-            inventory_document = InventoryDocument.objects.get(file__in=[absolute_filepath, filepath])
+            inventory_document = InventoryDocument.objects.filter(file__in=[absolute_filepath, filepath]).first()
+            if inventory_document is None:
+                raise ModelForFileNotFoundError("InventoryDocument not found")
         except InventoryDocument.DoesNotExist:
             raise ModelForFileNotFoundError("InventoryDocument not found")
         organization = inventory_document.property.organization
@@ -93,7 +103,9 @@ def check_file_permission(user, filepath):
 
 
 class MediaViewSet(generics.RetrieveAPIView, OrgMixin):
-    @api_endpoint_class
+    @method_decorator(
+        api_endpoint,
+    )
     def retrieve(self, request, filepath):
         filepath = os.path.normpath(filepath)
         try:

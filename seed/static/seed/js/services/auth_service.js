@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.service.auth', []).factory('auth_service', [
@@ -37,6 +37,11 @@ angular.module('SEED.service.auth', []).factory('auth_service', [
         }
       )
       .then((response) => response.data));
+
+    auth_factory.logout = async () => {
+      await $http.post('/accounts/logout/');
+      window.location.href = '/account/login/';
+    };
 
     return auth_factory;
   }

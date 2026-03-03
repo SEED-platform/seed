@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.controller.inventory_detail_meters', []).controller('inventory_detail_meters_controller', [
@@ -55,7 +55,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
       view_id: $stateParams.view_id
     };
 
-    const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source} - ${source_id ?? 'None'}`;
+    const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source ?? 'None'} - ${source_id ?? 'None'}`;
 
     const resetSelections = () => {
       $scope.sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);

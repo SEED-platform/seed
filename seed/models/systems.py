@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -71,6 +71,10 @@ class BatterySystem(System):
     power_capacity = QuantityField("kW", null=False)
     energy_capacity = QuantityField("kWh", null=False)
     voltage = QuantityField("V", null=False)
+
+
+class AggregateMeterSystem(System):
+    pass
 
 
 class Service(models.Model):

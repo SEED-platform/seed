@@ -93,6 +93,9 @@ msgstr "Cette page vous permet de visualiser la structure du contenu de votre or
 msgid "ACCESS_LEVEL_UPLOAD_PROGRESS_MSG"
 msgstr "Enregistrement des instances de niveau d'accès en cours... Ce processus dépend de la taille de votre fichier et peut prendre plusieurs minutes."
 
+msgid "ADD_CYCLE_GOAL_DESC"
+msgstr "Ajoutez un nouveau cycle à l'objectif sélectionné pour le comparer à la référence. Le dernier cycle ajouté sera considéré comme le cycle «actuel» à des fins de comparaison. Les cycles plus anciens resteront disponibles pour référence historique."
+
 msgid "ADD_FILES_TO"
 msgstr "Ajoutez des fichiers à {dataset_name}."
 
@@ -140,7 +143,10 @@ msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "L'analyse EUI additionnera les relevés de compteurs de la propriété au cours des douze derniers mois pour calculer la consommation d'énergie par pied carré et par an. S'il manque des relevés de compteur, l'analyse renvoie une couverture inférieure à 100 % pour alerter l'utilisateur qu'il manque un relevé de compteur."
 
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
-msgstr "L'analyse des statistiques des éléments examine les données des éléments d'une propriété (le cas échéant) pour compter le nombre d'éléments de type « Panneau de contrôle DDC ». Elle génère également les valeurs d'indice de condition agrégées (moyennes) pour les éléments d'émission de portée 1 et enregistre ces quantités dans la propriété."
+msgstr "L'analyse des statistiques des éléments examine les données des éléments d'une propriété (le cas échéant) pour compter le nombre d'éléments de type « Panneau de contrôle DDC ». Elle génère également les valeurs d'indice de condition agrégées (moyennes) pour les éléments EISA 2007-432 et enregistre ces quantités dans la propriété."
+
+msgid "ANALYSIS_DESCRIPTION_HVACMetrics"
+msgstr "L'analyse des indicateurs CVC parcourt les données des éléments d'un bâtiment (le cas échéant) pour calculer quatre indicateurs : 1) la surface couverte par la puissance frigorifique, 2) le type de fluide frigorigène principal, 3) la capacité électrique totale du système CVC et 4) le débit d'air par unité de surface."
 
 msgid "AND"
 msgstr "ET"
@@ -150,6 +156,12 @@ msgstr "Documentation de l'API"
 
 msgid "API Key"
 msgstr "Clé API"
+
+msgid "AT_ADVANCED_SETTINGS_TEXT"
+msgstr "Cette section contient les configurations nécessaires si le flux de travail de votre organisation doit inclure la transmission de données de SEED vers Audit Template pour créer des rapports « ébauche » qui peuvent ensuite être complétés dans Audit Template. Si vous ne souhaitez pas créer de rapports Audit Template ébauche à partir de SEED, vous pouvez ignorer ces paramètres."
+
+msgid "AT_AGENCY_NAME_DESC"
+msgstr "Ceci devrait s'agir de l'acronyme de l'agence (ex : DOE)."
 
 msgid "AT_ALL_DATA"
 msgstr "Les soumissions de modèles d’audit seront importées quelle que soit la date de soumission. Vous pouvez configurer ce paramètre dans la page des paramètres de votre organisation SEED."
@@ -167,9 +179,25 @@ msgstr "Lorsque cette case est cochée, SEED importera uniquement les soumission
 msgid "AT_EMAIL_TEXT"
 msgstr "Utilisez l'e-mail associé à votre compte depuis <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
 
+msgid "AT_FEDERAL_FIELDS_DESC"
+msgstr "Saisissez l'organisme de niveau supérieur. Les autres champs de l'organisme seront déterminés par les niveaux d'accès définis dans SEED. Pour plus d'informations, consultez l'élément BuildingSync FederalBuilding."
+
+#, fuzzy
+msgid "AT_ID_FIELD_TEXT"
+msgstr "Saisissez le NOM DE COLONNE (et non le nom d'affichage) du champ SEED qui contient l'identifiant fiscal personnalisé de votre organisation. La valeur par défaut est « custom_id_1 ». Vous pouvez trouver ces informations sur la page Paramètres de colonne de votre organisation dans SEED."
+
+msgid "AT_IMPORT_DEFAULT_CYCLE_DESC"
+msgstr "Le processus d'importation récupère chaque soumission de modèle d'audit et compare sa date de soumission à toutes les dates de début et de fin des cycles SEED afin de déterminer à quel cycle rattacher les données. Si aucune correspondance n'est trouvée, vous pouvez choisir d'ajouter un cycle par défaut auquel rattacher les données, quelle que soit la comparaison des dates de soumission. Si aucun cycle par défaut n'est spécifié, les données non correspondantes ne seront pas importées."
+
 #, fuzzy
 msgid "AT_MOST_RECENT_ONLY"
 msgstr "Seules les soumissions Audit Template qui ont été soumises plus récemment que la mise à jour la plus récente de l'inventaire SEED seront importées. Vous pouvez configurer ce paramètre dans la page des paramètres de votre organisation SEED."
+
+msgid "AT_OPTIONAL_DEFAULT_CYCLE"
+msgstr "Cycle par défaut pour l'importation (facultatif)"
+
+msgid "AT_OPTIONAL_EXPORTS_TEXT"
+msgstr "Utilisez les cases à cocher ci-dessous si vous souhaitez inclure des données supplémentaires dans vos exportations BuildingSync qui créent des rapports de modèles d'audit de stub."
 
 msgid "AT_PASS_TEXT"
 msgstr "Utilisez le mot de passe associé à votre compte sur le <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
@@ -182,6 +210,10 @@ msgstr "Si votre organisation a configuré un formulaire de rapport personnalis�
 
 msgid "AT_SUBMISSION_STATUS"
 msgstr "SEED importera les données des soumissions avec les statuts suivants dans le modèle d'audit."
+
+#, fuzzy
+msgid "AT_TAX_ID_NAME"
+msgstr "Saisissez le nom d'identifiant fiscal personnalisé qui a été configuré dans le modèle de rapport d'audit configurable de votre juridiction. La valeur par défaut est « City Custom Building ID »."
 
 #. Helper text for the Audit Template token in organization settings.
 msgid "AT_TOKEN_TEXT"
@@ -265,6 +297,9 @@ msgstr "Ajouter une instance de niveau d'accès"
 msgid "Add Column"
 msgstr "Ajouter une colonne"
 
+msgid "Add Cycle to Goal"
+msgstr "Ajouter un cycle à l'objectif"
+
 msgid "Add Data Files"
 msgstr "Ajouter des fichiers de données"
 
@@ -288,6 +323,9 @@ msgstr "Ajouter des propriétés partagées"
 
 msgid "Add Shared Tax Lots"
 msgstr "Ajouter des lots d'impôt partagés"
+
+msgid "Add a Cycle"
+msgstr "Ajouter un cycle"
 
 msgid "Add a Document"
 msgstr "Ajouter un document"
@@ -361,8 +399,17 @@ msgstr "Admin"
 msgid "Advanced Settings"
 msgstr "Réglages avancés"
 
+msgid "Agency Name"
+msgstr "Nom de l'agence"
+
 msgid "Alias"
 msgstr "Alias"
+
+msgid "All Canonical Fields"
+msgstr "Tous les champs canoniques"
+
+msgid "All Extra Data Fields"
+msgstr "Tous les champs de données supplémentaires"
 
 msgid "An Audit Template organization token, user email and password are required"
 msgstr "Un jeton d'organisation Audit Template, un e-mail d'utilisateur et un mot de passe sont requis"
@@ -376,11 +423,17 @@ msgstr "Analyses"
 msgid "Analysis"
 msgstr "Analyse"
 
+msgid "Analysis Deleted Successfully"
+msgstr "Analyse supprimée avec succès"
+
 msgid "Analysis Name"
 msgstr "Nom de l'analyse"
 
 msgid "Analysis Name (User Defined)"
 msgstr "Nom de l'analyse (défini par l'utilisateur)"
+
+msgid "Analysis Run"
+msgstr "Exécution de l'analyse"
 
 msgid "Analysis State"
 msgstr "État d'analyse"
@@ -485,6 +538,12 @@ msgstr "Mesures BuildingSync disponibles"
 msgid "Available Templates"
 msgstr "Modèles disponibles"
 
+msgid "BB_SALESFORCE_LOGIN_FAILURE"
+msgstr "Il y a eu une erreur"
+
+msgid "BB_SALESFORCE_LOGIN_SUCCESS"
+msgstr "SEED est désormais connecté à Salesforce."
+
 msgid "BEFORE_GEOCODING"
 msgstr "Avant le géocodage"
 
@@ -507,6 +566,9 @@ msgstr "Retour à la Liste"
 
 msgid "Back to Mapping"
 msgstr "Retournez à les mappages"
+
+msgid "Baseline"
+msgstr "Ligne de base"
 
 msgid "Baseline Cycle"
 msgstr "Cycle de référence"
@@ -543,9 +605,6 @@ msgstr "Dossiers de construction (État principal uniquement)"
 msgid "Building Filters"
 msgstr "Filtres de bâtiments"
 
-msgid "Building Performance Standard (BPS) Compliance Pathway Support"
-msgstr "Assistance au parcours de conformité aux normes de performance des bâtiments (BPS)"
-
 msgid "Building Square Footage Threshold"
 msgstr "Seuil de superficie en pieds carrés du bâtiment"
 
@@ -558,8 +617,37 @@ msgstr "Mesures recommandées par BuildingSync"
 msgid "Buildings"
 msgstr "Bâtiments"
 
-msgid "By clicking the Log In button you accept the NREL Data Terms."
-msgstr "En cliquant sur le bouton Connexion, vous acceptez les conditions d'utilisation des données NREL."
+msgid "Bulk Edit"
+msgstr "Modification en masse"
+
+msgid "By Analysis"
+msgstr "Par analyse"
+
+msgid "By Property"
+msgstr "Par propriété"
+
+#, fuzzy
+msgid "By clicking the Log In button you accept the Data Terms."
+msgstr "En cliquant sur le bouton Connexion, vous acceptez les conditions d'utilisation des données."
+
+msgid "CALC_ACCESS_LEVEL_DESC"
+msgstr "Sélectionnez le niveau d’accès et l’instance des données à inclure dans les calculs."
+
+#, fuzzy
+msgid "CALC_CYCLE_DESC"
+msgstr "Sélectionnez le cycle à utiliser pour les calculs."
+
+msgid "CALC_DATA_COLS_DESC"
+msgstr "Sélectionnez des colonnes de données supplémentaires à inclure dans le tableau Plan des installations, si vous le souhaitez."
+
+msgid "CEWE_ELEMENTS_COMMENT"
+msgstr "(Généré par la bibliothèque de la base de connaissances des technologies ESTCP)"
+
+msgid "CEWE_ELEMENTS_SUBTITLE"
+msgstr "Inclut les éléments de construction applicables avec les valeurs RSL les plus basses"
+
+msgid "CEWE_ELEMENTS_TITLE"
+msgstr "Soutien au parcours de conformité de l'évaluation complète de l'énergie et de l'eau (CEWE)  "
 
 msgid "CLICK_LEGEND"
 msgstr "Cliquez sur une étiquette ci-dessous pour l'afficher/masquer sur le graphique"
@@ -627,6 +715,9 @@ msgstr "Normalement, lorsqu'un enregistrement importé est fusionné dans un aut
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complétez et Actualisez la Page"
 
+msgid "COMPLIANCE_CYCLE_YEAR_DESC"
+msgstr "Identifiez la colonne SEED utilisée pour stocker les informations sur l'année du cycle de conformité. Si elle n'existe pas encore, créez-la dans la page Paramètres de colonne."
+
 msgid "CONDITION_INDEX_THRESHOLD_HELP"
 msgstr "L'indice de condition à utiliser comme seuil de comparaison dans les calculs."
 
@@ -674,6 +765,9 @@ msgstr "Créer un enregistreur de données"
 
 msgid "CURRENTLY_GEOCODING"
 msgstr "Géocodage en cours"
+
+msgid "Calculate the Plan"
+msgstr "Calculer le plan"
 
 msgid "Campus"
 msgstr "Campus"
@@ -745,6 +839,12 @@ msgstr "Effacer les filtres"
 msgid "Clear Labels"
 msgstr "Effacer les étiquettes"
 
+msgid "Client ID"
+msgstr "ID client"
+
+msgid "Client Secret"
+msgstr "Secret client"
+
 msgid "Close"
 msgstr "Fermer"
 
@@ -815,6 +915,9 @@ msgstr "Complète"
 msgid "Compliance"
 msgstr "Conformité"
 
+msgid "Compliance Cycle Year Column"
+msgstr "Colonne Année du cycle de conformité"
+
 msgid "Compliance Information"
 msgstr "Informations de conformité"
 
@@ -867,6 +970,9 @@ msgstr "Confirmer"
 
 msgid "Confirm Audit Template Building Import?"
 msgstr "Confirmer l'importation de la création du modèle d'audit ?"
+
+msgid "Confirm New Password"
+msgstr "Confirmer le Nouveau Mot de Passe"
 
 msgid "Confirm Save Mappings?"
 msgstr "Confirmer enregistrer les mappages?"
@@ -943,6 +1049,9 @@ msgstr "Créer un groupe"
 msgid "Create Meter"
 msgstr "Créer un compteur"
 
+msgid "Create New Plan Run"
+msgstr "Créer un nouveau plan d'exécution"
+
 msgid "Create New Sub-Organization"
 msgstr "Créer nouvelle sous-organisation"
 
@@ -979,6 +1088,12 @@ msgstr "Créer une nouvelle sous-organisation"
 
 msgid "Create a Program to get started!"
 msgstr "Créez un programme pour commencer !"
+
+msgid "Create a Property"
+msgstr "Créer une propriété"
+
+msgid "Create a Tax Lot"
+msgstr "Créer un lot fiscal"
 
 msgid "Create a new rule"
 msgstr "Créer une nouvelle règle"
@@ -1041,6 +1156,12 @@ msgstr "Méthode actuelle"
 
 msgid "Current Name"
 msgstr "Nom Actuel"
+
+msgid "Current Password"
+msgstr "Mot de Passe Actuel"
+
+msgid "Current Year Annual Report"
+msgstr "Rapport annuel de l'année en cours"
 
 msgid "Current password"
 msgstr "Mot de passe actuel"
@@ -1113,6 +1234,9 @@ msgstr "Mappage des données et Validation ({filename})"
 
 msgid "DELETED_LABEL_NAMED"
 msgstr "Supprimée étiquette {label_name}"
+
+msgid "DELETE_ANALYSIS_TEXT"
+msgstr "Êtes-vous sûr de vouloir supprimer cette analyse ? Cette action est irréversible."
 
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Supprimer l'étiquette '{label_name}' et le retirer de tous les bâtiments auxquels il a été appliqué?"
@@ -1240,6 +1364,9 @@ msgstr "Supprimer une instance de niveau d'accès"
 msgid "Delete All Mappings"
 msgstr "Supprimer tous les mappages"
 
+msgid "Delete Analysis"
+msgstr "Supprimer l'analyse"
+
 msgid "Delete Group"
 msgstr "Supprimer le groupe"
 
@@ -1308,6 +1435,9 @@ msgstr "Équipe de développement"
 msgid "Dismiss"
 msgstr "Rejeter"
 
+msgid "Display Columns"
+msgstr "Colonnes d'Affichage"
+
 msgid "Display Name"
 msgstr "Afficher un nom"
 
@@ -1325,6 +1455,9 @@ msgstr "Domaine"
 
 msgid "Done"
 msgstr "Fait"
+
+msgid "Download Output Files"
+msgstr "Télécharger les fichiers de sortie"
 
 msgid "Download Sample Data"
 msgstr "Télécharger les exemples de données"
@@ -1353,11 +1486,17 @@ msgstr "Faites glisser ici"
 msgid "Duplicate"
 msgstr "Copie"
 
+msgid "Duplicate Data File Headers are not allowed. Modify the import file and try again."
+msgstr "Les en-têtes de fichiers de données en double ne sont pas autorisés. Modifiez le fichier d'importation et réessayez."
+
 msgid "Duplicates"
 msgstr "Copies"
 
 msgid "EDIT_GOAL_NOTES"
 msgstr "Modifier les champs pour les propriétés sélectionnées"
+
+msgid "ELECTRIC_ENERGY_USAGE_DESC"
+msgstr "Identifiez la colonne SEED utilisée pour stocker la consommation d’énergie électrique."
 
 msgid "EMAIL_TEMPLATE_EXAMPLE"
 msgstr "\"La latitude et la longitude de votre bâtiment sont \\{\\{latitude\\}\\}, \\{\\{longitude\\}\\}!\""
@@ -1417,6 +1556,9 @@ msgstr "Type de borne de recharge pour véhicule électrique"
 msgid "EXCLUDE"
 msgstr "EXCLURE"
 
+msgid "EXCLUDE_FROM_PLAN_DESC"
+msgstr "Identifiez la colonne SEED (booléenne) utilisée pour indiquer si un bien doit être exclu du plan. Une valeur de 1 (vrai) indique que le bien doit être dépriorisé, quelle que soit sa consommation énergétique, tandis qu'une valeur de 0 (faux) indique que son inclusion dans le pourcentage d'installations configuré ci-dessus doit être prise en compte. Si cette colonne n'existe pas encore, créez-la dans la page « Paramètres des colonnes »."
+
 msgid "EXTRA_DATA_COL_TYPE_CHANGE"
 msgstr "Pour les champs «données supplémentaires», cela permet à l'utilisateur de définir le type, tel que Texte, Numéro, Date, etc."
 
@@ -1456,6 +1598,9 @@ msgstr "Écoulé:"
 msgid "Electric EUI Field"
 msgstr "Champ de l'UEI électrique"
 
+msgid "Electric Energy Usage Column"
+msgstr "Colonne sur la consommation d'énergie électrique"
+
 #: seed/landing/forms.py:13
 msgid "Email"
 msgstr "Email"
@@ -1489,6 +1634,9 @@ msgstr "Activer le géocodage"
 msgid "Enable Labels in Public Feed"
 msgstr "Activer les étiquettes dans le flux public"
 
+msgid "Enable Portfolio Salesforce Integration"
+msgstr "Activer l'intégration Salesforce (portefeuille de propriétés)"
+
 msgid "Enable Public Endpoints"
 msgstr "Activer les points de terminaison publics"
 
@@ -1496,7 +1644,10 @@ msgid "Enable Public GeoJSON"
 msgstr "Activer GeoJSON public"
 
 msgid "Enable Salesforce Integration"
-msgstr "Activer la fonctionnalité Salesforce"
+msgstr "Activer l'intégration Salesforce (propriétés individuelles)"
+
+msgid "Enable this functionality to send Federal Building fields to Audit Template."
+msgstr "Activez cette fonctionnalité pour envoyer les champs des bâtiments fédéraux au modèle d'audit."
 
 msgid "Energy"
 msgstr "Énergie"
@@ -1509,6 +1660,12 @@ msgstr "Capacité énergétique (kWh)"
 
 msgid "Energy Metric"
 msgstr "Métrique énergétique"
+
+msgid "Energy Running Sum Percentage"
+msgstr "Pourcentage de la somme cumulée d'énergie"
+
+msgid "Energy Usage Columns"
+msgstr "Colonnes sur la consommation d'énergie"
 
 msgid "Energy data file"
 msgstr "Fichier de données d'énergie"
@@ -1558,6 +1715,9 @@ msgstr "Exemple d'utilisation"
 
 msgid "Exclude"
 msgstr "Exclure"
+
+msgid "Exclude From Plan Column"
+msgstr "Colonne Exclure du plan"
 
 msgid "Exclude From Uniqueness"
 msgstr "Exclure de l'unicité"
@@ -1631,6 +1791,15 @@ msgstr "Exporter des propriétés vers votre compte de modèle d'audit"
 msgid "Exporting selected properties..."
 msgstr "Exportation des propriétés sélectionnées..."
 
+msgid "FACILITIES_PLAN_EXISTS_DESC"
+msgstr "Sélectionnez une exécution de plan d'installations dans la liste déroulante ci-dessous ou créez une nouvelle exécution de plan"
+
+msgid "FACILITIES_PLAN_NOT_EXISTS_DESC"
+msgstr "Créer une nouvelle exécution du plan des installations"
+
+msgid "FACILITIES_PLAN_SETUP_DESC"
+msgstr "Utilisez les paramètres ci-dessous pour configurer un plan d'installations afin d'identifier les installations qui représentent un pourcentage précis de la consommation énergétique globale de l'organisation. Initialement développé pour identifier les installations couvertes par l'article 432 de la loi de 2007 sur l'indépendance et la sécurité énergétiques (EISA 432), ce plan peut également être utilisé à d'autres fins de planification. Cette section contient les principaux paramètres requis. Des configurations supplémentaires peuvent être effectuées par niveau d'accès ou cycle dans l'onglet « Plan d'installations » de la section « Informations »."
+
 msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
 msgstr "Échec du géocodage : votre clé API MapQuest n'est pas valide. Mettez à jour votre clé API MapQuest ou désactivez le géocodage dans les paramètres de l'organisation."
 
@@ -1664,6 +1833,12 @@ msgstr "Types de fichiers pris en charge: <strong>.csv</strong>, <strong>.xls</s
 msgid "FOSSIL_FUEL_EUI_HELP"
 msgstr "Le seuil d'IEC en matière de combustibles fossiles pour le bâtiment (y compris le gaz, etc.)"
 
+msgid "Facilities Plan"
+msgstr "Plan des installations"
+
+msgid "Facilities Plan Run"
+msgstr "Planification des installations"
+
 msgid "Failed to delete inventory"
 msgstr "Échec de la suppression de l'inventaire"
 
@@ -1675,6 +1850,9 @@ msgstr "Mesures prescriptives du SPB fédéral"
 
 msgid "Federal BPS Recommended Measures"
 msgstr "Mesures recommandées par le BPS fédéral"
+
+msgid "Federal Building Fields"
+msgstr "Terrains de construction fédéraux"
 
 msgid "Fetching your buildings from Audit Template..."
 msgstr "Récupération de vos bâtiments à partir du modèle d'audit..."
@@ -1794,6 +1972,12 @@ msgstr "Dans le tableau ci-dessous, sélectionnez les règles que vous souhaitez
 msgid "Funding from"
 msgstr "Financement à partir de"
 
+msgid "GAS_ENERGY_USAGE_DESC"
+msgstr "Identifiez la colonne SEED utilisée pour stocker la consommation d’énergie du gaz."
+
+msgid "GENERIC_FP_DESC"
+msgstr "Sélectionnez un plan d'installations générique créé dans les paramètres de l'organisation. Si vous n'y avez pas accès, demandez à votre administrateur d'en créer un."
+
 msgid "GEOCODED_MANUALLY"
 msgstr "géocodé manuellement"
 
@@ -1876,8 +2060,17 @@ msgstr "Guide de l'outil SFTool de la GSA"
 msgid "Gas EUI Field"
 msgstr "Champ de l'UEI gazier"
 
+msgid "Gas Energy Usage Column"
+msgstr "Colonne sur la consommation d'énergie du gaz"
+
+msgid "General Configurations"
+msgstr "Configurations générales"
+
 msgid "Generate Token"
 msgstr "Générer un jeton"
+
+msgid "Generic Facilities Plan Selection"
+msgstr "Sélection du plan d'installations génériques"
 
 msgid "Geocode"
 msgstr "Géocodage"
@@ -1921,6 +2114,9 @@ msgstr "Accéder aux Notes"
 
 msgid "Goal"
 msgstr "Objectif"
+
+msgid "Goal Details"
+msgstr "Détails de l'objectif"
 
 msgid "Goal Setup"
 msgstr "Configuration des objectifs"
@@ -1980,6 +2176,9 @@ msgstr "Masquer toutes les étiquettes"
 msgid "Highlights of SEED Platform™"
 msgstr "Points forts de la Plate-Forme SEED™"
 
+msgid "Historical Annual Reports"
+msgstr "Rapports annuels historiques"
+
 msgid "Historical Note"
 msgstr "Note historique"
 
@@ -1997,6 +2196,9 @@ msgstr "<label class=\"label label-danger\">Copie</label> - si les champs sont m
 
 msgid "IMPORT_ANOTHER_QUESTION"
 msgstr "Voulez-vous ajouter un autre fichier?"
+
+msgid "INCLUDE_IN_DENOMINATOR_DESC"
+msgstr "Identifiez la colonne SEED (booléenne) utilisée pour indiquer si un bien doit être inclus dans le calcul de la consommation énergétique totale. Une valeur de 1 (vrai) indique que la consommation énergétique du bien doit être prise en compte pour calculer la consommation énergétique totale de l'organisation, tandis qu'une valeur de 0 (faux) indique que le bien ne doit pas être inclus dans les calculs de la consommation énergétique totale et ne sera pas inclus dans le plan. Si cette colonne n'existe pas encore, créez-la dans la page « Paramètres des colonnes »."
 
 msgid "INCLUDE_SHARED_PROPERTIES"
 msgstr "Inclure dans vos Liste de Propriétés toutes les propriétés partagées avec vous."
@@ -2039,6 +2241,12 @@ msgstr "Cette opération est irréversible."
 
 msgid "ITEMS_WILL_NOT_CHANGE"
 msgstr "ceux-ci ne changeront pas"
+
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Goal record associated with the selected Partner using the dropdown above."
+msgstr "Si vous souhaitez synchroniser les informations du portefeuille avec votre instance Salesforce, sélectionnez l'enregistrement d'objectif Salesforce associé au partenaire sélectionné à l'aide de la liste déroulante ci-dessus."
+
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Partner record using the dropdown above."
+msgstr "Si vous souhaitez synchroniser les informations du portefeuille avec votre instance Salesforce, sélectionnez l'enregistrement du partenaire Salesforce à l'aide de la liste déroulante ci-dessus."
 
 msgid "Ignored duplicates of existing properties"
 msgstr "Copies ignorées des propriétés existantes"
@@ -2089,11 +2297,11 @@ msgstr "Inclure tout"
 msgid "Include CSV Label Header"
 msgstr "Inclure l'en-tête d'étiquette CSV"
 
+msgid "Include In Total Denominator Column"
+msgstr "Inclure dans la colonne Dénominateur total"
+
 msgid "Include Notes"
 msgstr "Inclure des notes"
-
-msgid "Includes Elements with Scope 1 Emissions Only"
-msgstr "Comprend uniquement les éléments dont les émissions relèvent du champ d'application 1"
 
 msgid "Indication Label"
 msgstr "Étiquette d'indication"
@@ -2157,6 +2365,9 @@ msgstr "Juridiction"
 
 msgid "Jurisdiction Tax Lot ID"
 msgstr "ID de lot d'impôt de juridiction"
+
+msgid "LINK_CYCLE_ERROR_TEXT"
+msgstr "Pour lier ce cycle à un rapport annuel dans votre instance Salesforce, vous devez d’abord vous connecter à Salesforce."
 
 msgid "LINK_OUT_CYCLE_MATCHES"
 msgstr "Les matchs en dehors de ce cycle seront liés."
@@ -2259,6 +2470,9 @@ msgstr "S'identifier"
 #: seed/landing/templates/landing/home.html:16
 msgid "Log in to SEED Platform"
 msgstr "Connectez-vous à SEED Platform"
+
+msgid "Log in to Salesforce first to be able to configure Salesforce Partner and Goal associations here."
+msgstr "Connectez-vous d’abord à Salesforce pour pouvoir configurer les associations de partenaires et d’objectifs Salesforce ici."
 
 msgid "Logging Email"
 msgstr "Adresse courriel pour reportage"
@@ -2623,11 +2837,20 @@ msgstr "Nouvelle analyse"
 msgid "New Build or Acquisition"
 msgstr "Nouvelle construction ou acquisition"
 
+msgid "New Facilities Plan"
+msgstr "Nouveau plan d'installations"
+
+msgid "New Facilities Run Plan"
+msgstr "Plan de gestion des nouvelles installations"
+
 msgid "New Goal"
 msgstr "Nouvel Objectif"
 
 msgid "New Note"
 msgstr "Nouvelle note"
+
+msgid "New Password"
+msgstr "Nouveau Mot de Passe"
 
 msgid "New User Email"
 msgstr "E-mail du nouvel utilisateur"
@@ -2725,6 +2948,9 @@ msgstr "Propriétés du nombre"
 msgid "Number of Properties"
 msgstr "Nombre de propriétés"
 
+msgid "Number of Runs"
+msgstr "Nombre d'Exécutions"
+
 msgid "Number of Tax Lots"
 msgstr "Nombre de lots d'impôt"
 
@@ -2759,6 +2985,9 @@ msgstr "Afficher uniquement les colonnes remplies"
 msgid "Only one terms of service is allowed to be active"
 msgstr "Un seul des termes du service est autorisé à être actif"
 
+msgid "Optional Data Exports"
+msgstr "Exportations de données facultatives"
+
 msgid "Options"
 msgstr "Options"
 
@@ -2782,6 +3011,9 @@ msgstr "Paramètres de l'organisation"
 
 msgid "Organization Sharing"
 msgstr "Partage de l'organisation"
+
+msgid "Organization's identifier name"
+msgstr "Nom d'Identification de l'Organisation"
 
 msgid "Organizations"
 msgstr "Organisations"
@@ -2949,6 +3181,9 @@ msgstr "Pourcentage (%)"
 msgid "Permanently delete extra_data columns and all associated data"
 msgstr "Supprimer définitivement les colonnes extra_data et toutes les données associées"
 
+msgid "Plan last Run at"
+msgstr "Planifiez la dernière course à"
+
 #: seed/landing/templates/landing/password_set.html:16
 msgid "Please enter your new password twice so we can verify you typed it in correctly."
 msgstr "Entrez votre nouveau mot de passe deux fois afin que nous puissions vérifier que vous l'avez tapé correctement."
@@ -2963,6 +3198,9 @@ msgstr "Passez à la page suivante et configurez votre compte:"
 
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Rejoignez le forum SEED-Platform Dev où vous pouvez vous connecter avec d'autres développeurs."
+
+msgid "Please review SEED Headers. Duplicate values are not allowed."
+msgstr "Veuillez vérifier les en-têtes SEED. Les valeurs en double ne sont pas autorisées."
 
 msgid "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
 msgstr "Veuillez vérifier les noms de colonne SEED ou les noms de colonne du fichier importé. Les noms de colonne qui correspondent à un nom de colonne dérivée existant ne sont pas autorisés."
@@ -3197,11 +3435,17 @@ msgstr "Renommer la Colonne"
 msgid "RENAME_SYS_LEVEL_COL"
 msgstr "Renommer permet aux utilisateurs de modifier le nom du champ sous-jacent affiché dans Nom de colonne / Nom de champ. Renommer un champ signifie que ce champ sera modifié dans toutes les données de l'organisation."
 
+msgid "REQUIRE_IN_PLAN_DESC"
+msgstr "Identifiez la colonne SEED (booléenne) utilisée pour indiquer si un bien doit être inclus dans le plan, quelle que soit sa consommation énergétique. Une valeur de 1 (vrai) indique que le bien sera prioritaire et classé en premier dans le pourcentage d'installations configuré ci-dessus. Une valeur de 0 (faux) indique que le bien peut être inclus dans le pourcentage d'installations, mais qu'il pourrait ne pas être inclus dans le plan en raison de sa consommation énergétique. Si cette colonne n'existe pas encore, créez-la dans la page « Paramètres des colonnes »."
+
 msgid "REVIEW YOUR DATA MAPPINGS"
 msgstr "EXAMINER VOS MAPPAGES DE DONNÉES"
 
 msgid "REVIEW_MATCHING_CRITERIA"
 msgstr "Vérifiez vos critères de correspondance sur la page Paramètres de colonne avant d'importer des données pour la première fois. Vous ne pourrez pas supprimer des champs des critères de correspondance une fois les données ajoutées à votre organisation."
+
+msgid "RUNNING_SUM_PERCENTAGE_DESC"
+msgstr "Définissez la fraction en pourcentage (entre 0 et 1) des installations à inclure dans le plan en fonction de la consommation énergétique totale."
 
 msgid "Read more here."
 msgstr "Lire la suite ici."
@@ -3304,6 +3548,9 @@ msgstr "Date limite de déclaration"
 msgid "Reports"
 msgstr "Rapports"
 
+msgid "Require In Plan Column"
+msgstr "Colonne Exigé dans le plan"
+
 msgid "Require two-factor authentication"
 msgstr "Exiger une authentification à deux facteurs"
 
@@ -3341,11 +3588,17 @@ msgstr "Rétrospection de mise en service"
 msgid "Retry"
 msgstr "Recommencez"
 
+msgid "Return to Portfolio Summary Page"
+msgstr "Retour à la page de résumé du portefeuille"
+
 msgid "Review Changes"
 msgstr "Revoir les Changements"
 
 msgid "Review Mapped Data"
 msgstr "Examiner les données mappées"
+
+msgid "Review and Sync to Salesforce"
+msgstr "Vérifier et synchroniser avec Salesforce"
 
 msgid "Review matches"
 msgstr "Examiner les correspondences"
@@ -3403,6 +3656,19 @@ msgstr "ID d'exécution"
 
 msgid "Run Status"
 msgstr "État de l'exécution"
+
+msgid "Runs"
+msgstr "Exécutions"
+
+msgid "SALESFORCE_BENCHMARK_INTEGRATION_DESC"
+msgstr "Cette intégration vous permet de connecter votre organisation à une instance Salesforce pour une gestion optimisée des données et l'automatisation des flux de travaux. Elle suppose que Salesforce est configuré avec des objets Propriété et Benchmark, qui seront mis à jour avec les données de propriété individuelles de SEED."
+
+msgid "SALESFORCE_PORTFOLIO_INTEGRATION_DESC"
+msgstr "Cette intégration vous permet également de connecter votre organisation à une instance Salesforce, mais suppose que Salesforce est configuré avec des objets Objectif et Rapport annuel qui seront mis à jour avec des données au niveau du portefeuille (agrégées à partir de plusieurs propriétés dans SEED)."
+
+#, fuzzy
+msgid "SEED Field Containing Organization's Identifier"
+msgstr "Champ SEED contenant l'identifiant de l'organisation"
 
 msgid "SEED Field Name"
 msgstr "Nom du champ SEED"
@@ -3538,6 +3804,9 @@ msgstr "Inscrivez l'adresse courriel à utiliser pour le reportage des errors re
 msgid "SF_MAPPINGS_TEXT"
 msgstr "Associez les champs de données de votre objet Benchmark dans l'application Salesforce avec le nom du champ dans l'application SEED. Vous pouvez utiliser le gestionnaire d'object dans Salesforce pour trouver les noms de champs (et non les étiquettes de champs)"
 
+msgid "SF_PORTFOLIO_CONNECTION_TEXT"
+msgstr "Saisissez les informations de connexion à votre instance Salesforce. Cela suppose que votre instance Salesforce a été configurée avec une application client externe pour SEED."
+
 msgid "SF_SCHEDULED_UPDATE_TEXT"
 msgstr "Si vous désirez faire une mise à jour automatique de l'application Salesforce quotidiennement, configurez les champs ci-dessous"
 
@@ -3613,6 +3882,9 @@ msgstr "Cliquez sur les boutons d'édition pour modifier les étiquettes individ
 msgid "SQUARE_FOOTAGE_THRESHOLD_HELP"
 msgstr "La superficie brute à utiliser comme seuil de comparaison dans les calculs"
 
+msgid "STEAM_ENERGY_USAGE_DESC"
+msgstr "Identifiez la colonne SEED utilisée pour stocker la consommation d’énergie de la vapeur."
+
 msgid "STEP 1: Map Your Data"
 msgstr "ÉTAPE 1: Mappez vos données"
 
@@ -3629,11 +3901,17 @@ msgstr "Veuillez vérifier les points suivants avant de continuer."
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Mettez à jour les paramètres de colonne de géocodage dans la page des paramètres de colonne de votre organisation."
 
+msgid "SYNC_SALESFORCE_DESC"
+msgstr "Vérifiez les détails ci-dessous. Lorsque vous êtes satisfait, cliquez sur les boutons «Synchroniser» ci-dessous pour transférer les données SEED vers votre instance Salesforce. Le premier bouton synchronisera les données avec l'objectif et les objets du rapport annuel actuel. Le second bouton synchronisera tous les objets historiques du rapport annuel."
+
 msgid "Salesforce"
 msgstr "Salesforce"
 
 msgid "Salesforce Account Object Record Type"
 msgstr "Type d'enregistrement pour Compte Salesforce"
+
+msgid "Salesforce Annual Report"
+msgstr "Rapport annuel de Salesforce"
 
 msgid "Salesforce Connection Parameters"
 msgstr "Paramètres pour la Connexion Salesforce"
@@ -3664,6 +3942,9 @@ msgstr "Enregistrer Les Modifications"
 
 msgid "Save Concatenation"
 msgstr "Enregistrer la concaténation"
+
+msgid "Save Facilities Plan"
+msgstr "Plan d'installations de sauvegarde"
 
 msgid "Save Mappings"
 msgstr "Enregistrer les mappages"
@@ -3721,17 +4002,29 @@ msgstr "Sélectionnez les propriétés à mettre à jour"
 msgid "Select a Custom Report to get started!"
 msgstr "Sélectionnez un rapport personnalisé pour commencer !"
 
+msgid "Select a Cycle to compare against the Baseline Cycle"
+msgstr "Sélectionnez un cycle à comparer au cycle de référence"
+
+msgid "Select a Facilities Plan Run from the dropdown below"
+msgstr "Sélectionnez un plan d'installations dans la liste déroulante ci-dessous"
+
 msgid "Select a Goal Type. A Standard goal will calculate a standard EUI per sqft. A Transaction goal will also calculate an EUI per transaction."
 msgstr "Sélectionnez un type d'objectif. Un objectif standard calculera un EUI standard par pied carré. Un objectif de transaction calculera également un EUI par transaction."
 
 msgid "Select a Program to get started!"
 msgstr "Sélectionnez un programme pour commencer !"
 
+msgid "Select a Salesforce Annual Report to associate with this Cycle"
+msgstr "Sélectionnez un rapport annuel Salesforce à associer à ce cycle"
+
 msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
 msgstr "Sélectionnez une colonne pour afficher les données sur cet axe. Seules les colonnes contenant l'un de ces types de données seront répertoriées :"
 
 msgid "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
 msgstr "Sélectionnez une colonne pour afficher les données sur cet axe. Seules les colonnes ayant l'un de ces types de données seront listées :"
+
+msgid "Select a cycle to use as the baseline for comparison."
+msgstr "Sélectionnez un cycle à utiliser comme base de comparaison."
 
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Liste des bâtiments."
@@ -3762,6 +4055,9 @@ msgstr "Sélectionnez le type de fichier (s) que vous souhaitez ajouter à"
 
 msgid "Select which columns to include in the list:"
 msgstr "Sélectionnez les colonnes à inclure dans la liste:"
+
+msgid "Selected Facilities Plan"
+msgstr "Plan d'installations sélectionnées"
 
 msgid "Selected Properties"
 msgstr "Propriétés Sélectionnées"
@@ -3894,6 +4190,9 @@ msgstr "Etat (Propriété)"
 msgid "State (Tax Lot)"
 msgstr "État (lot d'impôt)"
 
+msgid "Steam Energy Usage Column"
+msgstr "Colonne sur la consommation d'énergie de la vapeur"
+
 msgid "Step 1: Add Access Levels"
 msgstr "Étape 1: ajouter des niveaux d'accès"
 
@@ -3938,6 +4237,12 @@ msgstr "Résumé"
 
 msgid "Switch Profiles"
 msgstr "Changer de profil"
+
+msgid "Sync Baseline and Current Report"
+msgstr "Rapport de référence de synchronisation et rapport actuel"
+
+msgid "Sync Historical Reports"
+msgstr "Synchronisation des rapports historiques"
 
 msgid "System"
 msgstr "Système"
@@ -4146,6 +4451,9 @@ msgstr "La page de résumé du portefeuille compare deux cycles pour calculer le
 msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 msgstr "Il y a aussi un lien vers le forum SEED-Platform Users, où vous pouvez vous connecter avec d'autres utilisateurs."
 
+msgid "There is no cycle selected for comparison yet"
+msgstr "Aucun cycle n'est encore sélectionné pour la comparaison"
+
 msgid "There was an error loading the page"
 msgstr "Une erreur s'est produite lors du chargement de la page"
 
@@ -4167,6 +4475,9 @@ msgstr "Ce nom d'étiquette est déjà pris."
 #: seed/validators.py:17
 msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "Ce mot de passe doit contenir au moins% (quantité) d% (type) s caractères."
+
+msgid "This plan has not yet been run"
+msgstr "Ce plan n'a pas encore été exécuté"
 
 #, fuzzy
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
@@ -4242,6 +4553,9 @@ msgstr "Total des propriétés"
 
 msgid "Total rows in the import file"
 msgstr "Nombre total de lignes dans le fichier d'importation"
+
+msgid "Try Again"
+msgstr "Essayer à nouveau"
 
 msgid "Two Factor Profile"
 msgstr "Profil à deux facteurs"
@@ -4361,6 +4675,9 @@ msgstr "Calculs de résumé de portefeuille inattendus ?"
 msgid "Uniformat Category"
 msgstr "Catégorie Uniformat"
 
+msgid "Unique name which will be displayed in the dropdown selector"
+msgstr "Nom unique qui sera affiché dans le sélecteur déroulant"
+
 msgid "Units"
 msgstr "Unités"
 
@@ -4376,6 +4693,9 @@ msgstr "Exportations infructueuses"
 msgid "Until last date of"
 msgstr "Jusqu'à la dernière date de"
 
+msgid "Update"
+msgstr "Mise à jour"
+
 msgid "Update Charts"
 msgstr "Mettre à jour les graphiques"
 
@@ -4384,6 +4704,9 @@ msgstr "Mettre à jour les données dérivées"
 
 msgid "Update Filters"
 msgstr "Mise à jour les filtres"
+
+msgid "Update Password"
+msgstr "Mettre à Jour le Mot de Passe"
 
 msgid "Update Property Labels"
 msgstr "Mettre à jour les étiquettes de propriété"
@@ -4518,6 +4841,9 @@ msgstr "Afficher le suivi de la conformité"
 
 msgid "View Project"
 msgstr "Voir le projet"
+
+msgid "View Report"
+msgstr "Voir le rapport"
 
 msgid "View by Property"
 msgstr "Examiner par propriété"

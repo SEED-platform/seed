@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -12,7 +12,7 @@ from django.utils.timezone import make_aware
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.utils.generic import split_model_fields
 from seed.utils.strings import titlecase
-from seed.utils.time import convert_datestr
+from seed.utils.time_utils import convert_datestr
 
 
 class DummyClass:

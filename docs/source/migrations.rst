@@ -38,6 +38,30 @@ local_untracked.py file
         ),
     )
 
+Version 3.3.2
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.3.1
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.3.0
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.2.5
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.2.4
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.2.3
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
 Version 3.2.2
 -------------
 - There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
@@ -282,7 +306,7 @@ Development
     STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
 
 - Run `pip3 install -r requirements/local.txt`.
-- Run `npm install` from root checkout of SEED.
+- Run `pnpm install` from root checkout of SEED.
 
 - If testing geocoding, then sign up for as a `MapQuest Developer`_ and create a new `MapQuest Key`_.
 - Add the key to the organization that you are using in development.

@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author 'Piper Merriam <pmerriam@quickleft.com'
@@ -297,7 +297,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
             }
         )
     elif data_type in {"date", "datetime"}:
-        annotations.update({final_field_name: Cast(text_field_name, output_field=models.DateTimeField())})
+        annotations.update({final_field_name: Cast(text_field_name, output_field=models.DateField())})
     elif data_type == "boolean":
         annotations.update({final_field_name: Cast(text_field_name, output_field=models.BooleanField())})
     else:
@@ -454,49 +454,55 @@ def build_view_filters_and_sorts(
 
     new_filters = Q()
     annotations = {}
-    for filter_expression, filter_value in filters.items():
-        filter_column = filter_expression.split("__")[0]
-        is_access_level_instance = filter_column in access_level_names
-        # when the filter value is "", we want to be sure to include None and "".
-        if filter_value == "":
-            if is_access_level_instance:
-                is_null_filter_expression = filter_expression
-                is_null_filter_value = filter_column
 
-            elif filter_expression.endswith("__ne"):
-                is_null_filter_expression = filter_expression.replace("__ne", "__isnull")
-                is_null_filter_value = False
+    for filter_expression in filters:
+        # filter_expressions with multiple filter_values come in as comma separated strings.
+        raw = filters.get(filter_expression)
+        filter_values = raw.split(",") if isinstance(raw, str) else [raw]
 
-            # if exactly "", only return null
-            elif filter_expression.endswith("__exact"):
-                is_null_filter_expression = filter_expression.replace("__exact", "__isnull")
-                is_null_filter_value = True
+        for filter_value in filter_values:
+            filter_column = filter_expression.split("__")[0]
+            is_access_level_instance = filter_column in access_level_names
+            # when the filter value is "", we want to be sure to include None and "".
+            if filter_value == "":
+                if is_access_level_instance:
+                    is_null_filter_expression = filter_expression
+                    is_null_filter_value = filter_column
 
-            parsed_filters, parsed_annotations = _parse_view_filter(
-                is_null_filter_expression, is_null_filter_value, columns_by_name, inventory_type, access_level_names
-            )
+                elif filter_expression.endswith("__ne"):
+                    is_null_filter_expression = filter_expression.replace("__ne", "__isnull")
+                    is_null_filter_value = False
 
-            # if column data_type is "string", also filter on the empty string
-            filter = QueryFilter.parse(filter_expression)
-            column_data_type = columns_by_name.get(filter.field_name, {}).get("data_type")
-            if column_data_type in {"string", "None"}:
-                empty_string_parsed_filters, _ = _parse_view_filter(
+                # if exactly "", only return null
+                elif filter_expression.endswith("__exact"):
+                    is_null_filter_expression = filter_expression.replace("__exact", "__isnull")
+                    is_null_filter_value = True
+
+                parsed_filters, parsed_annotations = _parse_view_filter(
+                    is_null_filter_expression, is_null_filter_value, columns_by_name, inventory_type, access_level_names
+                )
+
+                # if column data_type is "string", also filter on the empty string
+                filter = QueryFilter.parse(filter_expression)
+                column_data_type = columns_by_name.get(filter.field_name, {}).get("data_type")
+                if column_data_type in {"string", "None"}:
+                    empty_string_parsed_filters, _ = _parse_view_filter(
+                        filter_expression, filter_value, columns_by_name, inventory_type, access_level_names
+                    )
+
+                    if filter_expression.endswith("__ne"):
+                        parsed_filters &= empty_string_parsed_filters
+
+                    elif filter_expression.endswith("__exact"):
+                        parsed_filters |= empty_string_parsed_filters
+
+            else:
+                parsed_filters, parsed_annotations = _parse_view_filter(
                     filter_expression, filter_value, columns_by_name, inventory_type, access_level_names
                 )
 
-                if filter_expression.endswith("__ne"):
-                    parsed_filters &= empty_string_parsed_filters
-
-                elif filter_expression.endswith("__exact"):
-                    parsed_filters |= empty_string_parsed_filters
-
-        else:
-            parsed_filters, parsed_annotations = _parse_view_filter(
-                filter_expression, filter_value, columns_by_name, inventory_type, access_level_names
-            )
-
-        new_filters &= parsed_filters
-        annotations.update(parsed_annotations)
+            new_filters &= parsed_filters
+            annotations.update(parsed_annotations)
 
     order_by = []
 

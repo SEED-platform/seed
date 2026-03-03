@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -7,10 +7,10 @@ import datetime
 import logging
 import os.path as osp
 import pathlib
+from datetime import timezone as tz
 
 import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone as tz
 from quantityfield.units import ureg
 
 from seed.data_importer import match, tasks

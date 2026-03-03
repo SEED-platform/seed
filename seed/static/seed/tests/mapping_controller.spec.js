@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: mapping_controller', () => {
@@ -23,11 +23,11 @@ describe('controller: mapping_controller', () => {
       mock_geocode_service = geocode_service;
       mock_organization_service = organization_service;
 
-      spyOn(mock_geocode_service, 'check_org_has_api_key').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_geocode_service, 'check_org_has_api_key').and.callFake(() => $q.resolve({ status: 'success' }));
 
-      spyOn(mock_geocode_service, 'check_org_has_geocoding_enabled').andCallFake(() => $q.resolve(true));
+      spyOn(mock_geocode_service, 'check_org_has_geocoding_enabled').and.callFake(() => $q.resolve(true));
 
-      spyOn(mock_organization_service, 'geocoding_columns').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_organization_service, 'geocoding_columns').and.callFake(() => $q.resolve({ status: 'success' }));
     });
   });
 
@@ -314,7 +314,7 @@ describe('controller: mapping_controller', () => {
 
   //     // act
   //     mapping_controller_scope.$digest();
-  //     mapping_controller_scope.get_mapped_buildings();
+  //     mapping_controller_scope.start_mapped_buildings();
   //     mapping_controller_scope.$digest();
 
   //     // assertions
@@ -330,7 +330,7 @@ describe('controller: mapping_controller', () => {
     for (let i = mapping_controller_scope.mappings.length - 1; i >= 0; i--) {
       mapping_controller_scope.change(mapping_controller_scope.mappings[i]);
     }
-    const duplicates_found = mapping_controller_scope.duplicates_present;
+    const duplicates_found = mapping_controller_scope.duplicate_headers_present || mapping_controller_scope.duplicate_suggestions_present;
 
     // assertions
     expect(duplicates_found).toBe(false);
@@ -348,7 +348,7 @@ describe('controller: mapping_controller', () => {
       mapping_controller_scope.mappings[i].suggestion = 'PM Property ID';
       mapping_controller_scope.change(mapping_controller_scope.mappings[i]);
     }
-    const duplicates_found = mapping_controller_scope.duplicates_present;
+    const duplicates_found = mapping_controller_scope.duplicate_headers_present || mapping_controller_scope.duplicate_suggestions_present;
 
     // assertions
     expect(duplicates_found).toBe(true);

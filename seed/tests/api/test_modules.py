@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -394,7 +394,7 @@ def export_data(header, main_url, organization_id, log):
         "profile_id": None,
         "export_type": "csv",
     }
-    result = requests.post(f"{main_url}/api/v3/tax_lot_properties/export/", headers=header, params=params, json=payload, timeout=300)
+    result = requests.post(f"{main_url}/api/v3/tax_lot_properties/start_export/", headers=header, params=params, json=payload, timeout=300)
     check_status(result, partmsg, log, piid_flag="export")
 
     # Get IDs for some taxlots
@@ -413,5 +413,5 @@ def export_data(header, main_url, organization_id, log):
         "profile_id": None,
         "export_type": "csv",
     }
-    result = requests.post(f"{main_url}/api/v3/tax_lot_properties/export/", headers=header, params=params, json=payload, timeout=300)
+    result = requests.post(f"{main_url}/api/v3/tax_lot_properties/start_export/", headers=header, params=params, json=payload, timeout=300)
     check_status(result, partmsg, log, piid_flag="export")

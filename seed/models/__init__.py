@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 # Do not sort these imports since order is important
@@ -47,6 +47,8 @@ from .goals import *
 from .goal_notes import *
 from .audit_template_configs import *
 from .systems import *
+from .bb_salesforce_config import *
+from .facilities_plan import *
 
 from .certification import GreenAssessment, GreenAssessmentProperty, GreenAssessmentURL
 from .report_configurations import *

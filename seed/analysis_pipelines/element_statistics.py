@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -15,7 +15,7 @@ from seed.analysis_pipelines.pipeline import (
     analysis_pipeline_task,
     task_create_analysis_property_views,
 )
-from seed.lib.tkbl.tkbl import SCOPE_ONE_EMISSION_CODES
+from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.lib.uniformat.uniformat import uniformat_data
 from seed.models import Analysis, AnalysisPropertyView, Column, Element
 
@@ -143,7 +143,7 @@ def _create_element_columns(analysis):
             "description": data["code"] if "definition" not in data else data["code"] + ": " + data["definition"],
         }
         for data in uniformat_data
-        if data["code"] in SCOPE_ONE_EMISSION_CODES
+        if data["code"] in EISA432_CODES
     }
 
     for code, col in column_meta_by_code.items():

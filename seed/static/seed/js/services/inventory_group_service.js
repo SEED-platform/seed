@@ -63,6 +63,12 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
       return group;
     });
 
+    group_factory.get_group_properties = (organization_id, group_id) => $http.get(`/api/v3/inventory_groups/${group_id}/properties`, {
+      params: {
+        organization_id
+      }
+    }).then((response) => response.data.data);
+
     group_factory.new_group = (data) => $http.post('/api/v3/inventory_groups/', data, {
       params: {
         organization_id: user_service.get_organization().id
@@ -87,6 +93,17 @@ angular.module('SEED.service.inventory_group', []).factory('inventory_group_serv
         params: {
           organization_id: user_service.get_organization().id,
           cycle_id
+        }
+      }
+    ).then((response) => response.data.data);
+
+    group_factory.get_sankey_data = (id, cycle_id, meter_type) => $http.get(
+      `/api/v3/inventory_groups/${id}/dashboard_sankey/`,
+      {
+        params: {
+          organization_id: user_service.get_organization().id,
+          cycle_id,
+          meter_type
         }
       }
     ).then((response) => response.data.data);
