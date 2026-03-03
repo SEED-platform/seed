@@ -3,8 +3,8 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from django.core.management.base import BaseCommand
 from django.contrib.sites.models import Site
+from django.core.management.base import BaseCommand
 
 
 class Command(BaseCommand):

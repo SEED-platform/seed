@@ -316,6 +316,10 @@ SIMPLE_JWT = {
 }
 
 
+def env_var(key, default=None):
+    return os.environ.get(key, default)
+
+
 def yn(s: Union[bool, str]) -> bool:
     if isinstance(s, bool):
         return s

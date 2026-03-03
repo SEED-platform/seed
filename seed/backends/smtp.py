@@ -1,4 +1,8 @@
-# seed/backends/smtp.py
+"""
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+"""
+
 from django.conf import settings
 from django.core.mail.backends.smtp import EmailBackend as BaseBackend
 from django.core.mail.utils import DNS_NAME
@@ -22,9 +26,7 @@ class EmailBackend(BaseBackend):
         if self.use_ssl:
             connection_params["context"] = self.ssl_context
         try:
-            self.connection = self.connection_class(
-                self.host, self.port, **connection_params
-            )
+            self.connection = self.connection_class(self.host, self.port, **connection_params)
 
             # TLS/SSL are mutually exclusive, so only attempt TLS over
             # non-secure connections.
