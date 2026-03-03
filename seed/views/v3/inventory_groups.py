@@ -29,9 +29,27 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch, SEEDOrgNoPatchOrOrgCre
 logger = logging.getLogger()
 
 
-@method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer")])
-@method_decorator(name="create", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
-@method_decorator(name="update", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_viewer"),
+    ],
+    name="list",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+    ],
+    name="create",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+    ],
+    name="update",
+)
 class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = InventoryGroupSerializer
     model = InventoryGroup
@@ -78,7 +96,11 @@ class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
             description="selected: optional list of inventory ids. [] returns all groups.",
         ),
     )
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def filter(self, request):
         # Given inventory ids, return group info & inventory ids that are in those groups
