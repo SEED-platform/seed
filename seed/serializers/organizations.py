@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -37,6 +37,7 @@ class SaveSettingsOrganizationSerializer(serializers.Serializer):
     audit_template_user = serializers.CharField(max_length=128)
     audit_template_password = serializers.CharField(max_length=128)
     salesforce_enabled = serializers.BooleanField()
+    bb_salesforce_enabled = serializers.BooleanField()
     ubid_threshold = serializers.FloatField(min_value=0.0001, max_value=1)
 
 

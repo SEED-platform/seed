@@ -2,10 +2,11 @@
 <html lang="en">
   <head>
     <title>SEED JS Spec Runner</title>
-    <link href="{{ STATIC_URL }}node_modules/jasmine/lib/jasmine-core/jasmine.css" rel="stylesheet" type="text/css" />
+    <link href="{{ STATIC_URL }}node_modules/jasmine-core/lib/jasmine-core/jasmine.css" rel="stylesheet" type="text/css" />
 
-    <script src="{{ STATIC_URL }}node_modules/jasmine/lib/jasmine-core/jasmine.js"></script>
-    <script src="{{ STATIC_URL }}node_modules/jasmine/lib/jasmine-core/jasmine-html.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/jasmine-core/lib/jasmine-core/jasmine.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/jasmine-core/lib/jasmine-core/jasmine-html.js"></script>
+    <script src="{{ STATIC_URL }}node_modules/jasmine-core/lib/jasmine-core/boot0.js"></script>
     {% include "seed/_vendor_scripts.html" %}
     <script src="{{ STATIC_URL }}node_modules/angular-mocks/angular-mocks.js"></script>
     {% include "seed/_js_urls.html" %}
@@ -16,12 +17,15 @@
     {% endfor %}
 
     <script>
-      const jasmineEnv = jasmine.getEnv();
-      jasmineEnv.updateInterval = 1_000;
-      jasmineEnv.addReporter(new jasmine.HtmlReporter());
-      window.onload = () => jasmineEnv.execute();
+      // Clear beforeunload after all tests complete to prevent "unsaved changes" warning when refreshing
+      jasmine.getEnv().addReporter({
+        jasmineDone: () => {
+          window.onbeforeunload = null;
+        }
+      });
     </script>
-  </head>
 
+    <script src="{{ STATIC_URL }}node_modules/jasmine-core/lib/jasmine-core/boot1.js"></script>
+  </head>
   <body></body>
 </html>

@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.controller.inventory_summary', []).controller('inventory_summary_controller', [
@@ -25,12 +25,12 @@ angular.module('SEED.controller.inventory_summary', []).controller('inventory_su
       data: [],
       columnDefs: [
         { field: 'Summary' },
-        { field: 'Count', cellFilter: 'number' }
+        { field: 'Value', cellFilter: 'number' }
       ],
       onRegisterApi: (gridApi) => {
         $scope.summaryGridOptions = gridApi;
       },
-      minRowsToShow: 2
+      minRowsToShow: 3
     };
 
     $scope.countGridOptions = {
@@ -78,11 +78,15 @@ angular.module('SEED.controller.inventory_summary', []).controller('inventory_su
         $scope.table_data = [
           {
             Summary: 'Total Records',
-            Count: data.total_records
+            Value: data.total_records
           },
           {
             Summary: 'Number of Extra Data Fields',
-            Count: data.number_extra_data_fields
+            Value: data.number_extra_data_fields
+          },
+          {
+            Summary: 'Total Square Feet',
+            Value: data.total_sqft
           }
         ];
         $scope.summaryGridOptions.data = $scope.table_data;
