@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: update_item_labels_modal_controller', () => {
@@ -104,13 +104,13 @@ describe('controller: update_item_labels_modal_controller', () => {
       // and return their promises (if necessary).
       mock_label_service = label_service;
 
-      spyOn(mock_label_service, 'get_labels').andCallFake(() => $q.resolve(all_available_labels));
-      spyOn(mock_label_service, 'create_label').andCallFake(() => $q.resolve(return_obj_for_create_label));
-      spyOn(mock_label_service, 'get_available_colors').andCallFake(() => available_colors);
+      spyOn(mock_label_service, 'get_labels').and.callFake(() => $q.resolve(all_available_labels));
+      spyOn(mock_label_service, 'create_label').and.callFake(() => $q.resolve(return_obj_for_create_label));
+      spyOn(mock_label_service, 'get_available_colors').and.callFake(() => available_colors);
 
       // mock the notification service
       mock_notification = Notification;
-      spyOn(mock_notification, 'primary').andCallFake(() => {
+      spyOn(mock_notification, 'primary').and.callFake(() => {
         // Do nothing
       });
 

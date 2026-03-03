@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -462,7 +462,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        return_value = do_checks(org_id, None, None, import_file.pk)
+        return_value = do_checks(org_id, None, None, None, import_file.pk)
         # step 5: create a new model instance
         return JsonResponse(
             {

@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -10,7 +10,7 @@ from django.forms.models import model_to_dict
 from django.urls import reverse_lazy
 from quantityfield.units import ureg
 
-from seed.models import Column, DerivedColumnParameter, Goal, PropertyView, PropertyViewLabel
+from seed.models import Column, CycleGoal, DerivedColumnParameter, Goal, PropertyView, PropertyViewLabel
 from seed.models.data_quality import DataQualityCheck, DataQualityTypeCastError, Rule, StatusLabel, UnitMismatchError
 from seed.models.derived_columns import DerivedColumn
 from seed.models.models import ASSESSED_RAW
@@ -513,7 +513,6 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
         self.goal = Goal.objects.create(
             organization=self.org,
             baseline_cycle=self.cycle1,
-            current_cycle=self.cycle2,
             access_level_instance=self.root_ali,
             eui_column1=Column.objects.get(organization=self.org.id, column_name="source_eui_weather_normalized"),
             eui_column2=Column.objects.get(organization=self.org.id, column_name="source_eui"),
@@ -522,6 +521,7 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
             target_percentage=20,
             name="goal1",
         )
+        self.cycle_goal = CycleGoal.objects.create(current_cycle=self.cycle2, goal=self.goal, salesforce_annual_report_id="123")
 
         # create default rules
         self.dq = DataQualityCheck.retrieve(self.org.id)

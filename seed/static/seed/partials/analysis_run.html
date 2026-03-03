@@ -65,7 +65,11 @@
               class="analysis-results"
               scrolling="no"
               ng-attr-src="{$:: file.file $}"
-              onload="this.style.height = this.contentWindow.document.documentElement.scrollHeight + 'px'"
+              onload="
+                this.style.height =
+                  this.contentWindow.document.documentElement.scrollHeight +
+                  'px'
+              "
             ></iframe>
             <div ng-repeat-end ng-if="!$last">
               <br />

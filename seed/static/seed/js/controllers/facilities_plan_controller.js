@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.controller.facilities_plan', [])
@@ -157,6 +157,7 @@ angular.module('SEED.controller.facilities_plan', [])
       };
 
       const set_grid_options = () => {
+        $scope.show_full_labels = { baseline: false, current: false };
         $scope.selected_ids = [];
         spinner_utility.hide();
         $scope.gridOptions = {
@@ -206,13 +207,13 @@ angular.module('SEED.controller.facilities_plan', [])
             });
 
             const selectionChanged = () => {
-              // console.log(gridApi.selection.getSelectedRows());
               $scope.selected_ids = gridApi.selection.getSelectedRows().map((row) => row.property_view_id);
               $scope.selected_count = $scope.selected_ids.length;
-              // console.log($scope.selected_ids);
             };
             gridApi.selection.on.rowSelectionChanged($scope, selectionChanged);
             gridApi.selection.on.rowSelectionChangedBatch($scope, selectionChanged);
+
+            gridApi.edit.on.afterCellEdit($scope, () => {});
           }
         };
       };
@@ -413,6 +414,7 @@ angular.module('SEED.controller.facilities_plan', [])
        Opens a modal to create facilities plan run
       * */
       $scope.create_facilities_plan_run = () => {
+        console.log('create_facilities_plan_run');
         $uibModal.open({
           templateUrl: `${urls.static_url}seed/partials/create_facilities_plan_run_modal.html`,
           controller: 'create_facilities_plan_run_modal_controller',
