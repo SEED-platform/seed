@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
@@ -8,10 +8,12 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import locale
 import os
+from datetime import datetime
 from os import path
 from pathlib import Path
 from unittest import skip, skipIf
 
+import pandas as pd
 import pytest
 import requests
 import xmltodict
@@ -537,3 +539,121 @@ class PortfolioManagerReportParsingTest(TestCase):
             self.assertEqual(properties[0]["portfolioManagerPropertyId"], "22178843")
             self.assertIsNone(properties[0]["parentPropertyId"])
             self.assertEqual(properties[0]["propertyFloorAreaBuildingsAndParking"], "89250.0")
+
+
+class PortfolioManagerCustomDownloadTest(TestCase):
+    def setUp(self):
+        user_details = {
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+        }
+        self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
+        self.org, _, _ = create_organization(self.user)
+        self.client.login(**user_details)
+
+        self.pm_un = os.environ.get(PM_UN)
+        self.pm_pw = os.environ.get(PM_PW)
+        if not self.pm_un or not self.pm_pw:
+            self.fail(f"Somehow PM test was initiated without {PM_UN} or {PM_PW} in the environment")
+
+    def test_generate_and_download_meter_data(self):
+        # SetUp
+        pm = PortfolioManagerImport(self.pm_un, self.pm_pw)
+        ids = ["16731961"]
+        start_date = datetime(2019, 1, 1)
+        end_date = datetime(2019, 12, 31)
+
+        # Action
+        excel_b = pm.generate_and_download_meter_data(ids, start_date, end_date)
+
+        # Assertion
+        xl = pd.ExcelFile(excel_b)
+        assert xl.sheet_names == ["Meters", "Meter Entries"]
+
+        meters_df = xl.parse("Meters", header=5)
+        assert meters_df[["Portfolio Manager ID", "Portfolio Manager Meter ID"]].to_dict("records") == [
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110290980},
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110290981},
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110291021},
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110291022},
+        ]
+
+        meter_readings_df = xl.parse("Meter Entries", header=5)
+        assert meter_readings_df["Portfolio Manager Meter ID"].value_counts().to_dict() == {110291021: 11, 110291022: 11}
+
+    def test_custom_download(self):
+        # SetUp
+        ids = ["16731961"]
+
+        # Action
+        resp = self.client.post(
+            reverse_lazy("api:v3:portfolio_manager-meter-download"),
+            json.dumps(
+                {
+                    "username": self.pm_un,
+                    "password": self.pm_pw,
+                    "property_ids": ids,
+                    "start_date": "01/01/2019",
+                    "end_date": "12/31/2019",
+                }
+            ),
+            content_type="application/json",
+        )
+
+        # Assertion
+        assert resp.status_code == 200
+        xl = pd.ExcelFile(resp.content)
+        assert xl.sheet_names == ["Meters", "Meter Entries"]
+
+        meters_df = xl.parse("Meters", header=5)
+        assert meters_df[["Portfolio Manager ID", "Portfolio Manager Meter ID"]].to_dict("records") == [
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110290980},
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110290981},
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110291021},
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110291022},
+        ]
+
+        meter_readings_df = xl.parse("Meter Entries", header=5)
+        assert meter_readings_df["Portfolio Manager Meter ID"].value_counts().to_dict() == {110291021: 11, 110291022: 11}
+
+    def test_custom_download_multiple(self):
+        # SetUp
+        ids = ["16731961", "22178849"]
+
+        # Action
+        resp = self.client.post(
+            reverse_lazy("api:v3:portfolio_manager-meter-download"),
+            json.dumps(
+                {
+                    "username": self.pm_un,
+                    "password": self.pm_pw,
+                    "property_ids": ids,
+                    "start_date": "01/01/2019",
+                    "end_date": "12/31/2019",
+                }
+            ),
+            content_type="application/json",
+        )
+
+        # Assertion
+        assert resp.status_code == 200
+        xl = pd.ExcelFile(resp.content)
+        assert xl.sheet_names == ["Meters", "Meter Entries"]
+
+        meters_df = xl.parse("Meters", header=5)
+        assert meters_df[["Portfolio Manager ID", "Portfolio Manager Meter ID"]].to_dict("records") == [
+            {"Portfolio Manager ID": 22178849, "Portfolio Manager Meter ID": 139067336},
+            {"Portfolio Manager ID": 22178849, "Portfolio Manager Meter ID": 139067339},
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110290980},
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110290981},
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110291021},
+            {"Portfolio Manager ID": 16731961, "Portfolio Manager Meter ID": 110291022},
+        ]
+
+        meter_readings_df = xl.parse("Meter Entries", header=5)
+        assert meter_readings_df["Portfolio Manager Meter ID"].value_counts().to_dict() == {
+            139067336: 12,
+            139067339: 12,
+            110291021: 11,
+            110291022: 11,
+        }

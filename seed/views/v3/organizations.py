@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -161,6 +161,8 @@ def _dict_org(request, organizations):
             "audit_template_city_id": o.audit_template_city_id,
             "audit_template_export_meters": o.audit_template_export_meters,
             "audit_template_export_measures": o.audit_template_export_measures,
+            "audit_template_export_federal": o.audit_template_export_federal,
+            "audit_template_federal_agency": o.audit_template_federal_agency,
             "audit_template_conditional_import": o.audit_template_conditional_import,
             "audit_template_report_type": o.audit_template_report_type,
             "audit_template_status_types": o.audit_template_status_types,
@@ -168,6 +170,7 @@ def _dict_org(request, organizations):
             "audit_template_tracking_id_name": o.audit_template_tracking_id_name,
             "audit_template_tracking_id_field": o.audit_template_tracking_id_field,
             "salesforce_enabled": o.salesforce_enabled,
+            "bb_salesforce_enabled": o.bb_salesforce_enabled,
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
             "access_level_names": o.access_level_names,
@@ -211,6 +214,7 @@ def _dict_org_brief(request, organizations):
             "user_role": user_role,
             "display_decimal_places": o.display_decimal_places,
             "salesforce_enabled": o.salesforce_enabled,
+            "bb_salesforce_enabled": o.bb_salesforce_enabled,
             "access_level_names": o.access_level_names,
             "audit_template_conditional_import": o.audit_template_conditional_import,
             "property_display_field": o.property_display_field,
@@ -343,11 +347,23 @@ class OrganizationViewSet(viewsets.ViewSet):
         if brief:
             if request.user.is_superuser:
                 qs = Organization.objects.only(
-                    "id", "name", "parent_org_id", "display_decimal_places", "salesforce_enabled", "access_level_names"
+                    "id",
+                    "name",
+                    "parent_org_id",
+                    "display_decimal_places",
+                    "salesforce_enabled",
+                    "bb_salesforce_enabled",
+                    "access_level_names",
                 )
             else:
                 qs = request.user.orgs.only(
-                    "id", "name", "parent_org_id", "display_decimal_places", "salesforce_enabled", "access_level_names"
+                    "id",
+                    "name",
+                    "parent_org_id",
+                    "display_decimal_places",
+                    "salesforce_enabled",
+                    "bb_salesforce_enabled",
+                    "access_level_names",
                 )
 
             orgs = _dict_org_brief(request, qs)
@@ -715,6 +731,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         if audit_template_export_measures != org.audit_template_export_measures:
             org.audit_template_export_measures = audit_template_export_measures
 
+        audit_template_export_federal = posted_org.get("audit_template_export_federal", False)
+        if audit_template_export_federal != org.audit_template_export_federal:
+            org.audit_template_export_federal = audit_template_export_federal
+
+        audit_template_federal_agency = posted_org.get("audit_template_federal_agency", False)
+        if audit_template_federal_agency != org.audit_template_federal_agency:
+            org.audit_template_federal_agency = audit_template_federal_agency
+
         audit_template_conditional_import = posted_org.get("audit_template_conditional_import", False)
         if audit_template_conditional_import != org.audit_template_conditional_import:
             org.audit_template_conditional_import = audit_template_conditional_import
@@ -730,6 +754,10 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.salesforce_enabled = salesforce_enabled
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
+
+        bb_salesforce_enabled = posted_org.get("bb_salesforce_enabled", False)
+        if bb_salesforce_enabled != org.bb_salesforce_enabled:
+            org.bb_salesforce_enabled = bb_salesforce_enabled
 
         require_2fa = posted_org.get("require_2fa", False)
         if require_2fa != org.require_2fa:
@@ -976,6 +1004,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                 "cycle_id": cycle.pk,
                 "chart_data": data,
                 "property_counts": {
+                    "cycle": cycle.name,
                     "yr_e": cycle.end.strftime("%Y"),
                     "num_properties": count_total,
                     "num_properties_w-data": count_with_data,
