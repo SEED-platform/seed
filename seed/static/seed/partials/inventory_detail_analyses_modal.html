@@ -60,6 +60,9 @@
             >
               Building Upgrade Recommendation
             </option>
+            <option ng-option value="HVAC Metrics" selected="selected">
+              HVAC Metrics
+            </option>
           </select>
         </div>
         <div
@@ -683,6 +686,25 @@
               >
             </div>
           </div>
+        </div>
+        <div class="form-group" ng-if="new_analysis.service == 'HVAC Metrics'">
+          <label class="control-label sectionLabel pad-top-10" translate
+            >Floor Area</label
+          >
+          <select
+            class="form-control"
+            ng-model="new_analysis.configuration.floor_area_column"
+            ng-dropdown
+            required
+          >
+            <option
+              ng-repeat="col in area_columns"
+              selected="selected"
+              ng-value="col.id"
+            >
+              {$:: col.displayName $}
+            </option>
+          </select>
         </div>
       </form>
       <p ng-if="error" class="alert alert-danger" ng-bind-html="error"></p>

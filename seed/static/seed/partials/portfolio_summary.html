@@ -30,11 +30,11 @@
         <label
           class="goal-select-label"
           for="goal-select"
-          ng-show="goal"
+          ng-if="hasValidGoal()"
           translate
           >GOAL</label
         >
-        <div uib-dropdown class="dropdown-search" ng-if="goal">
+        <div uib-dropdown class="dropdown-search" ng-if="hasValidGoal()">
           <button
             id=""
             type="button"
@@ -73,8 +73,12 @@
         </button>
       </div>
       <!-- GOAL DETAILS -->
-      <div class="goal-details-container" ng-if="valid">
-        <div class="goal-details-column" style="margin-left: 10px">
+      <div
+        class="goal-details-container"
+        style="margin-left: 20px !important"
+        ng-if="hasValidGoal()"
+      >
+        <div class="goal-details-column" style="margin: 10px">
           <div ng-repeat="(k, v) in goal_details[0]" class="goal-detail">
             <div class="goal-detail-key" style="width: 120px">{$ k $}:</div>
             <div
@@ -85,7 +89,7 @@
             </div>
           </div>
         </div>
-        <div class="goal-details-column">
+        <div class="goal-details-column" ng-if="hasValidGoal()">
           <div ng-repeat="(k, v) in goal_details[1]" class="goal-detail">
             <div class="goal-detail-key">{$ k $}:</div>
             <div
@@ -97,9 +101,132 @@
           </div>
         </div>
       </div>
+      <!-- SALEFORCE CONNECTION-->
+      <div
+        style="display: flex; margin: 10px; margin-bottom: 0px"
+        ng-if="organization.bb_salesforce_enabled"
+      >
+        <div class="col-md-7" style="margin-left: 0px !important">
+          <p>
+            Salesforce portfolio functionality is enabled for this organization.
+            Configure connection details by clicking on
+            <a
+              ui-sref="organization_settings(::{organization_id: organization.id})"
+              >{$:: 'Salesforce settings' | translate $}</a
+            >
+            and navigating to the Salesforce tab.
+          </p>
+        </div>
+        <div class="col-md-5">
+          <span style="margin-right: 10px">Salesforce Connection Status:</span>
+          <span ng-if="is_logged_into_salesforce" class="label label-success"
+            ><span class="glyphicon glyphicon-ok" aria-hidden="true"></span
+          ></span>
+          <span
+            ng-if="is_logged_into_salesforce"
+            style="margin: 0px 0px 15px 0px"
+          >
+            <button
+              class="btn btn-default portfolio-summary-btn"
+              type="submit"
+              ng-click="logout_salesforce()"
+              ng-if="write_permission"
+            >
+              {$:: 'Logout' | translate $}
+            </button>
+          </span>
+          <span ng-if="!is_logged_into_salesforce" class="label label-danger"
+            ><span class="glyphicon glyphicon-remove" aria-hidden="true"></span
+          ></span>
+          <span
+            ng-if="!is_logged_into_salesforce"
+            style="margin: 0px 0px 15px 0px"
+          >
+            <button
+              class="btn btn-default portfolio-summary-btn"
+              type="submit"
+              ng-click="login_salesforce()"
+              ng-if="write_permission"
+            >
+              {$:: 'Login' | translate $}
+            </button>
+          </span>
+        </div>
+      </div>
+      <!-- CYCLE GOALS -->
+      <div style="display: flex; flex-direction: row; margin-top: 0px">
+        <span
+          ng-if="cycle_goals.length == 0"
+          style="font-size: 1.1em; margin-top: 5px; margin-right: 20px"
+          translate
+          >There is no cycle selected for comparison yet</span
+        >
+        <div
+          class="btn-group"
+          role="group"
+          aria-label="Cycle Goal Selection"
+          ng-if="hasValidGoal() && hasValidCycleGoal()"
+        >
+          <button
+            ng-repeat="cycle_goal_option in cycle_goals | orderBy:'current_cycle.end'"
+            ng-click="select_cycle_goal(cycle_goal_option)"
+            class="btn"
+            ng-class="{
+              'btn-primary': cycle_goal === cycle_goal_option,
+              'btn-light': cycle_goal !== cycle_goal_option
+            }"
+          >
+            {$ cycle_goal_option.current_cycle.name $}
+          </button>
+        </div>
+        <button
+          ng-if="hasValidGoal()"
+          ng-click="create_cycle_goal()"
+          class="btn btn-primary"
+          style="margin-left: 10px"
+          translate
+        >
+          Add a Cycle
+        </button>
+      </div>
+      <div
+        style="
+          display: flex;
+          margin-left: 20px;
+          margin-top: 10px;
+          align-items: baseline;
+          gap: 5px;
+        "
+        ng-if="cycle_goal.id !== undefined"
+      >
+        <p>Currently Viewing: {$ cycle_goal.current_cycle.name $}</p>
+        <button
+          type="button"
+          class="btn-primary"
+          style="border-radius: 4px"
+          title="Edit Cycle Goal"
+          ng-click="open_cycle_goal_edit_modal()"
+        >
+          <i class="fa-solid fa-pencil"></i>
+        </button>
+        <button
+          type="button"
+          class="btn-danger"
+          style="border-radius: 4px"
+          title="Edit Cycle Goal"
+        >
+          <i
+            class="fa-solid fa-xmark"
+            ng-click="open_cycle_goal_deletion_modal()"
+          ></i>
+        </button>
+      </div>
     </div>
 
-    <div class="goal-header-column" ng-if="valid">
+    <div
+      ng-if="hasValidGoal() && hasValidCycleGoal() && valid"
+      class="goal-header-column"
+    >
       <table class="table table-striped table-bordered">
         <tbody>
           <tr ng-repeat="stat in goal_stats">
@@ -108,8 +235,26 @@
           </tr>
         </tbody>
       </table>
+      <div
+        style="
+          padding-top: 5px;
+          align-items: center;
+          justify-content: center;
+          display: flex;
+        "
+      >
+        <button
+          class="btn btn-primary"
+          type="submit"
+          ng-click="jump_to_overview_chart()"
+          ng-if="hasValidGoal() && hasValidCycleGoal()"
+        >
+          {$:: 'Jump to Overview Chart' | translate $}
+        </button>
+      </div>
     </div>
   </div>
+
   <div id="portfolio-summary-selection-wrapper">
     <!-- Summary Table-->
     <div
@@ -117,12 +262,14 @@
       class="wide-900"
       ng-if="summary_loading || summary_valid"
     >
-      <div style="display: flex">
-        <h3 translate>Portfolio Summary</h3>
-        <i
-          class="ui-grid-icon-info-circled"
-          ng-mouseenter="toggle_help(true)"
-        ></i>
+      <div>
+        <div style="display: flex">
+          <h3 translate>Portfolio Summary</h3>
+          <i
+            class="ui-grid-icon-info-circled"
+            ng-mouseenter="toggle_help(true)"
+          ></i>
+        </div>
       </div>
       <div
         class="alert alert-warning portfolio-summary-help-text"
@@ -249,6 +396,16 @@
             </li>
           </ul>
         </div>
+        <div ng-if="is_logged_into_salesforce" style="margin-left: 20px">
+          <button
+            class="btn btn-primary portfolio-summary-btn"
+            type="submit"
+            ng-click="open_sync_to_salesforce_modal()"
+            ng-if="write_permission"
+          >
+            {$:: 'Review and Sync to Salesforce' | translate $}
+          </button>
+        </div>
       </div>
     </div>
     <div>
@@ -305,5 +462,128 @@
     <uib-progress class="progress-striped active">
       <uib-bar value="100" type="info"></uib-bar>
     </uib-progress>
+  </div>
+
+  <div
+    id="partner-note-container"
+    class="partner-note-container"
+    style="margin-top: 20px; margin-bottom: 30px"
+  >
+    <div style="margin-left: 30px; margin-bottom: 20px">
+      <h3 translate>Performance Data</h3>
+    </div>
+    <!-- CHART -->
+    <div style="display: flex; gap: 30px">
+      <div
+        ng-if="hasValidGoal() && hasValidCycleGoal()"
+        style="margin-left: 5vw; margin-right: 5vw; width: 50%"
+      >
+        <canvas id="data-view-chart" width="800" height="400"></canvas>
+        <div style="margin-top: 20px">
+          <button type="button" class="btn btn-info" ng-click="downloadChart()">
+            <i class="fa-solid fa-share-from-square" aria-hidden="true"></i>
+            <span translate>Export Chart</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!--- PARTNER NOTE --->
+    <div ng-if="hasValidGoal() && hasValidCycleGoal()" style="margin: 30px">
+      <div style="margin-left: 20px"><h4>Partner Notes</h4></div>
+      <div class="col-md-6">
+        <textarea
+          class="form-control"
+          id="partner_note"
+          ng-model="goal.partner_note"
+          placeholder="Partner notes..."
+          ng-disabled="!is_editing_partner_note"
+          rows="4"
+          style="resize: vertical; min-height: 100px; min-width: 300px"
+        >
+        </textarea>
+        <div
+          style="
+            align-items: end;
+            justify-content: right;
+            display: flex;
+            margin-top: 10px;
+          "
+        >
+          <button
+            class="btn btn-primary portfolio-summary-btn"
+            type="submit"
+            ng-click="update_is_editing_partner_note(true)"
+            ng-if="write_permission && !is_editing_partner_note"
+          >
+            {$:: 'Edit Note' | translate $}
+          </button>
+          <button
+            class="btn btn-primary portfolio-summary-btn"
+            type="submit"
+            ng-click="update_partner_note()"
+            ng-if="write_permission && is_editing_partner_note"
+          >
+            {$:: 'Save' | translate $}
+          </button>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <p>
+          If your organization requires partner approval for notes, please
+          ensure that the appropriate stakeholders are notified. Partner: once
+          you have reviewed and edited the note above, please check the box
+          below to indicate your approval.
+        </p>
+        <label class="control-label sectionLabel">Partner Approval </label>
+        <input
+          ng-model="goal.partner_note_approval"
+          type="checkbox"
+          class="form-control"
+          ng-click="toggle_approval()"
+          style="width: 34px; cursor: pointer"
+        />
+        <label
+          class="control-label sectionLabel text-muted"
+          ng-if="goal.partner_note_approval_time"
+          >Approved on {$ goal.partner_note_approval_time $} by {$
+          goal.partner_note_approval_user_name $}</label
+        >
+      </div>
+    </div>
+  </div>
+  <div class="partner-table-container" style="margin: 20px 50px 20px 50px">
+    <div
+      ng-if="hasValidGoal() && hasValidCycleGoal()"
+      id="cycle-{$ $index $}"
+      class="collapse in"
+    >
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th translate>Cycle Name</th>
+            <th translate>Baseline?</th>
+            <th translate>EUI</th>
+            <th translate>Goal</th>
+            <th translate>Annual % Imp</th>
+            <th translate>Cumulative % Imp</th>
+          </tr>
+        </thead>
+        <tbody
+          ng-repeat="cycle_goal in table_data track by $index"
+          ng-init="childIndex = $index;"
+        >
+          <tr>
+            <td ng-repeat="(key, value) in cycle_goal">
+              <span> {$ value | tolerantNumber:2 $} </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <button type="button" class="btn btn-info" ng-click="downloadTable()">
+        <i class="fa-solid fa-share-from-square" aria-hidden="true"></i>
+        <span translate>Export Table</span>
+      </button>
+    </div>
   </div>
 </div>

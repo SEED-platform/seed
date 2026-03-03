@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: organization_settings_controller', () => {
@@ -21,9 +21,9 @@ describe('controller: organization_settings_controller', () => {
       mock_organization_service = organization_service;
       mock_meters_service = meters_service;
 
-      spyOn(mock_organization_service, 'save_org_settings').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_organization_service, 'save_org_settings').and.callFake(() => $q.resolve({ status: 'success' }));
 
-      spyOn(mock_meters_service, 'valid_energy_types_units').andCallFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_meters_service, 'valid_energy_types_units').and.callFake(() => $q.resolve({ status: 'success' }));
     });
   });
 
@@ -40,7 +40,7 @@ describe('controller: organization_settings_controller', () => {
       },
       organization_payload: {
         organization: {
-          name: 'my org', id: 4, default_reports_x_axis_options: [], default_reports_y_axis_options: []
+          name: 'my org', id: 4, default_reports_x_axis_options: [], default_reports_y_axis_options: [], bb_salesforce_enabled: false
         }
       },
       query_threshold_payload: {
@@ -96,6 +96,7 @@ describe('controller: organization_settings_controller', () => {
           unique_benchmark_id_fieldname: 'Salesforce_Benchmark_ID__c'
         }
       ],
+      bb_salesforce_configs_payload: {},
       audit_template_configs_payload: [],
       property_column_names: { column_name: 'test', display_name: 'test' },
       taxlot_column_names: { column_name: 'test', display_name: 'test' },
@@ -134,6 +135,7 @@ describe('controller: organization_settings_controller', () => {
 
     // assertions
     expect(ctrl_scope.org).toEqual({
+      bb_salesforce_enabled: false,
       name: 'my org',
       id: 4,
       default_reports_x_axis_options: [],

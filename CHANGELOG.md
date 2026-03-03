@@ -1,3 +1,46 @@
+# SEED Version 3.3.2
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Improve matching logic to avoid duplicate columns by @perryr16 in https://github.com/SEED-platform/seed/pull/5096
+* Groups sankey by @kflemin in https://github.com/SEED-platform/seed/pull/5097
+* Add footprint to detail and list map by @perryr16 in https://github.com/SEED-platform/seed/pull/5113
+### Improvements 📈
+* Add a default_cycle option to the Audit Template import workflow by @kflemin in https://github.com/SEED-platform/seed/pull/5051
+* Add gfa to facilities plan by @haneslinger in https://github.com/SEED-platform/seed/pull/5027
+* Fix inventory list date filters by @perryr16 in https://github.com/SEED-platform/seed/pull/5074
+* Add aggregate meter system and service page by @haneslinger in https://github.com/SEED-platform/seed/pull/5078
+* Add option to change meter names by @haneslinger in https://github.com/SEED-platform/seed/pull/5090
+* Handle multiple inventory list filters by @perryr16 in https://github.com/SEED-platform/seed/pull/5091
+* Improve SEED export to import process by @perryr16 in https://github.com/SEED-platform/seed/pull/5094
+* Create facilities plan export by @haneslinger in https://github.com/SEED-platform/seed/pull/5102
+* Allow US date style filters by @perryr16 in https://github.com/SEED-platform/seed/pull/5104
+* Include footprint in geojson export geometry by @perryr16 in https://github.com/SEED-platform/seed/pull/5099
+* Freeze portfolio summary headers by @perryr16 in https://github.com/SEED-platform/seed/pull/5116
+* Display cycle name on report table by @perryr16 in https://github.com/SEED-platform/seed/pull/5112
+* Update buildingsync to version 2.7.0 and add federal bldg fields by @kflemin in https://github.com/SEED-platform/seed/pull/5133
+* Bump django from 4.2.24 to 4.2.26 in /requirements by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5132
+* XML Updates for AT Workflow by @kflemin in https://github.com/SEED-platform/seed/pull/5137
+### Maintenance 🧹
+* Bump django from 4.2.23 to 4.2.24 in /requirements by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5071
+* Bump djangorestframework-simplejwt from 5.3.1 to 5.5.1 in /requirements by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5072
+* deps: bump the prod-deps group across 1 directory with 15 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5073
+* deps: bump the prod-deps group with 5 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5085
+### Bug Fixes 🐛
+* Fix the ability to click invite links by @axelstudios in https://github.com/SEED-platform/seed/pull/5060
+* Fix export race condition by @perryr16 in https://github.com/SEED-platform/seed/pull/5061
+* Fix bug introduced when adding default_cycle to audit template workflow by @kflemin in https://github.com/SEED-platform/seed/pull/5066
+* Fix export to AT bug by @kflemin in https://github.com/SEED-platform/seed/pull/5070
+* Fix method to download XML files by @kflemin in https://github.com/SEED-platform/seed/pull/5086
+* Omit field from state during import by @perryr16 in https://github.com/SEED-platform/seed/pull/5093
+* Fix meter creation by @haneslinger in https://github.com/SEED-platform/seed/pull/5101
+* Reset scale bounds on report change by @perryr16 in https://github.com/SEED-platform/seed/pull/5111
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.3.1...v3.3.2
+
 # SEED Version 3.3.1
 
 <!-- Release notes generated using configuration in .github/release.yml at develop -->

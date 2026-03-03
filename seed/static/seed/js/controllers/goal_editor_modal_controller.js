@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.controller.goal_editor_modal', [])
@@ -20,6 +20,8 @@ angular.module('SEED.controller.goal_editor_modal', [])
     'goal',
     'organization',
     'write_permission',
+    'is_logged_into_salesforce',
+    'partners',
     // eslint-disable-next-line func-names
     function (
       $scope,
@@ -37,11 +39,15 @@ angular.module('SEED.controller.goal_editor_modal', [])
       eui_columns,
       goal,
       organization,
-      write_permission
+      write_permission,
+      is_logged_into_salesforce,
+      partners
     ) {
       $scope.auth = auth_payload.auth;
       $scope.organization = organization;
+      $scope.bb_salesforce_enabled = $scope.organization.bb_salesforce_enabled;
       $scope.write_permission = write_permission;
+      $scope.is_logged_into_salesforce = is_logged_into_salesforce;
       $scope.access_level_tree = access_level_tree.access_level_tree;
       $scope.level_names = access_level_tree.access_level_names.map((level, i) => ({
         index: i,
@@ -55,8 +61,40 @@ angular.module('SEED.controller.goal_editor_modal', [])
       if (!eui_columns.find((col) => col.id === null && col.displayName === '')) {
         $scope.eui_columns.unshift({ id: null, displayName: '' });
       }
+      $scope.goal = goal || {};
+
+      // partners and goals could be empty, handle this safely
+      $scope.partners = (partners && partners.results && partners.results.length > 0) ? partners.results : [];
+      const set_partners_goals = () => {
+        $scope.selected_partner = {};
+        $scope.possible_goals = [];
+        $scope.selected_goal = {};
+
+        // Add safety check for goal existence
+        if ($scope.goal && $scope.goal.salesforce_partner_id !== null) {
+          $scope.selected_partner = $scope.partners.find((p) => p.id === $scope.goal.salesforce_partner_id);
+          if ($scope.selected_partner) {
+            $scope.possible_goals = $scope.selected_partner.goals || [];
+            $scope.selected_goal = $scope.possible_goals.find((g) => g.id === $scope.goal.salesforce_goal_id);
+          }
+        }
+      };
+
+      $scope.changePossibleGoals = (partner) => {
+        $scope.selected_partner = partner;
+        $scope.possible_goals = $scope.selected_partner.goals;
+      };
+
+      $scope.changeSelectedGoal = (goal) => {
+        $scope.selected_goal = goal;
+        $scope.goal.salesforce_partner_id = $scope.selected_partner.id;
+        $scope.goal.salesforce_partner_name = $scope.selected_partner.name;
+        $scope.goal.salesforce_goal_id = $scope.selected_goal.id;
+        $scope.goal.salesforce_goal_name = $scope.selected_goal.name;
+      };
 
       $scope.goal = goal || {};
+      set_partners_goals();
       $scope.valid = false;
       $scope.goal_types = ['standard', 'transaction'];
 
@@ -82,6 +120,7 @@ angular.module('SEED.controller.goal_editor_modal', [])
 
       $scope.set_goal = (goal) => {
         $scope.goal = goal;
+        set_partners_goals();
         $scope.change_selected_level_index();
       };
 

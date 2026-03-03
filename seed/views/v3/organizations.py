@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -88,18 +88,6 @@ def _dict_org(request, organizations):
 
     orgs = []
     for o in organizations:
-        org_cycles = Cycle.objects.filter(organization=o).only("id", "name").order_by("name")
-        cycles = []
-        for c in org_cycles:
-            cycles.append(
-                {
-                    "name": c.name,
-                    "cycle_id": c.pk,
-                    "num_properties": PropertyView.objects.filter(cycle=c).count(),
-                    "num_taxlots": TaxLotView.objects.filter(cycle=c).count(),
-                }
-            )
-
         # We don't wish to double count sub organization memberships.
         org_users = (
             OrganizationUser.objects.select_related("user")
@@ -110,15 +98,39 @@ def _dict_org(request, organizations):
         owners = []
         role_level = None
         user_is_owner = False
+        ali = None
         for ou in org_users:
-            if ou.role_level == ROLE_OWNER:
+            owner = ou.role_level == ROLE_OWNER
+            viewer = ou.role_level == ROLE_VIEWER
+            if owner:
                 owners.append({"first_name": ou.user.first_name, "last_name": ou.user.last_name, "email": ou.user.email, "id": ou.user.id})
 
-                if ou.user == request.user:
-                    user_is_owner = True
-
             if ou.user == request.user:
+                user_is_owner = owner
+                user_is_viewer = viewer
                 role_level = get_js_role(ou.role_level)
+                ali = ou.access_level_instance
+
+        cycles = []
+        if ali:
+            org_cycles = Cycle.objects.filter(organization=o).only("id", "name").order_by("name")
+            for c in org_cycles:
+                cycles.append(
+                    {
+                        "name": c.name,
+                        "cycle_id": c.pk,
+                        "num_properties": PropertyView.objects.filter(
+                            cycle=c,
+                            property__access_level_instance__lft__gte=ali.lft,
+                            property__access_level_instance__rgt__lte=ali.rgt,
+                        ).count(),
+                        "num_taxlots": TaxLotView.objects.filter(
+                            cycle=c,
+                            taxlot__access_level_instance__lft__gte=ali.lft,
+                            taxlot__access_level_instance__rgt__lte=ali.rgt,
+                        ).count(),
+                    }
+                )
 
         org = {
             "name": o.name,
@@ -127,7 +139,7 @@ def _dict_org(request, organizations):
             "number_of_users": len(org_users),
             "user_is_owner": user_is_owner,
             "user_role": role_level,
-            "owners": owners,
+            "owners": [] if user_is_viewer else owners,
             "sub_orgs": _dict_org(request, o.child_orgs.all()),
             "is_parent": o.is_parent,
             "parent_id": o.parent_id,
@@ -161,6 +173,8 @@ def _dict_org(request, organizations):
             "audit_template_city_id": o.audit_template_city_id,
             "audit_template_export_meters": o.audit_template_export_meters,
             "audit_template_export_measures": o.audit_template_export_measures,
+            "audit_template_export_federal": o.audit_template_export_federal,
+            "audit_template_federal_agency": o.audit_template_federal_agency,
             "audit_template_conditional_import": o.audit_template_conditional_import,
             "audit_template_report_type": o.audit_template_report_type,
             "audit_template_status_types": o.audit_template_status_types,
@@ -168,6 +182,7 @@ def _dict_org(request, organizations):
             "audit_template_tracking_id_name": o.audit_template_tracking_id_name,
             "audit_template_tracking_id_field": o.audit_template_tracking_id_field,
             "salesforce_enabled": o.salesforce_enabled,
+            "bb_salesforce_enabled": o.bb_salesforce_enabled,
             "ubid_threshold": o.ubid_threshold,
             "inventory_count": o.property_set.count() + o.taxlot_set.count(),
             "access_level_names": o.access_level_names,
@@ -211,6 +226,7 @@ def _dict_org_brief(request, organizations):
             "user_role": user_role,
             "display_decimal_places": o.display_decimal_places,
             "salesforce_enabled": o.salesforce_enabled,
+            "bb_salesforce_enabled": o.bb_salesforce_enabled,
             "access_level_names": o.access_level_names,
             "audit_template_conditional_import": o.audit_template_conditional_import,
             "property_display_field": o.property_display_field,
@@ -343,11 +359,23 @@ class OrganizationViewSet(viewsets.ViewSet):
         if brief:
             if request.user.is_superuser:
                 qs = Organization.objects.only(
-                    "id", "name", "parent_org_id", "display_decimal_places", "salesforce_enabled", "access_level_names"
+                    "id",
+                    "name",
+                    "parent_org_id",
+                    "display_decimal_places",
+                    "salesforce_enabled",
+                    "bb_salesforce_enabled",
+                    "access_level_names",
                 )
             else:
                 qs = request.user.orgs.only(
-                    "id", "name", "parent_org_id", "display_decimal_places", "salesforce_enabled", "access_level_names"
+                    "id",
+                    "name",
+                    "parent_org_id",
+                    "display_decimal_places",
+                    "salesforce_enabled",
+                    "bb_salesforce_enabled",
+                    "access_level_names",
                 )
 
             orgs = _dict_org_brief(request, qs)
@@ -715,6 +743,14 @@ class OrganizationViewSet(viewsets.ViewSet):
         if audit_template_export_measures != org.audit_template_export_measures:
             org.audit_template_export_measures = audit_template_export_measures
 
+        audit_template_export_federal = posted_org.get("audit_template_export_federal", False)
+        if audit_template_export_federal != org.audit_template_export_federal:
+            org.audit_template_export_federal = audit_template_export_federal
+
+        audit_template_federal_agency = posted_org.get("audit_template_federal_agency", False)
+        if audit_template_federal_agency != org.audit_template_federal_agency:
+            org.audit_template_federal_agency = audit_template_federal_agency
+
         audit_template_conditional_import = posted_org.get("audit_template_conditional_import", False)
         if audit_template_conditional_import != org.audit_template_conditional_import:
             org.audit_template_conditional_import = audit_template_conditional_import
@@ -730,6 +766,10 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.salesforce_enabled = salesforce_enabled
             # if salesforce_enabled was toggled, must start/stop auto sync functionality
             toggle_salesforce_sync(salesforce_enabled, org.id)
+
+        bb_salesforce_enabled = posted_org.get("bb_salesforce_enabled", False)
+        if bb_salesforce_enabled != org.bb_salesforce_enabled:
+            org.bb_salesforce_enabled = bb_salesforce_enabled
 
         require_2fa = posted_org.get("require_2fa", False)
         if require_2fa != org.require_2fa:

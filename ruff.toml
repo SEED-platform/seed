@@ -78,6 +78,9 @@ ignore = [
     "S105", # hardcoded-password-string
     "S307", # suspicious-eval-usage
 ]
+"config/settings/*.py" = [
+    "F405", # undefined-local-with-import-star-usage
+]
 "seed/**/migrations/*" = [
     "ARG001", # unused-function-argument
     "RUF012", # mutable-class-default

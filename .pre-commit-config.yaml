@@ -12,6 +12,7 @@ repos:
       - id: check-toml
       - id: check-xml
       - id: check-yaml
+        exclude: '(pnpm-lock\.yaml|pnpm-workspace\.yaml)'
       - id: debug-statements
       - id: end-of-file-fixer
         exclude: seed/static/seed/locales/
@@ -25,6 +26,7 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
+        exclude: '(pnpm-lock\.yaml|pnpm-workspace\.yaml)'
         # for now ignoring html, javascript
         types_or: [yaml, markdown, css, scss]
   # https://docs.astral.sh/ruff/integrations/#pre-commit
