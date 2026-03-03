@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -2087,12 +2087,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             property__access_level_instance__rgt__lte=ali.rgt,
             cycle__organization_id=org_id,
         )
-
-        logger.error("+++++++")
-        logger.error(request.data)
-        logger.error(request.data.get("values_by_column_id"))
-        logger.error(values_by_column_id)
-        logger.error("+++++++")
 
         for property_view in property_views:
             state = property_view.state

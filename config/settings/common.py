@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -316,6 +316,10 @@ SIMPLE_JWT = {
 }
 
 
+def env_var(key, default=None):
+    return os.environ.get(key, default)
+
+
 def yn(s: Union[bool, str]) -> bool:
     if isinstance(s, bool):
         return s
@@ -332,7 +336,7 @@ BSYNCR_SERVER_PORT = os.environ.get("BSYNCR_SERVER_PORT", "80")
 # BUILDINGSYNC DEFAULT VERSION in SEED (don't include the v)
 # This will be used as the default version in various places within SEED (BETTER export, BSync File import, etc.)
 # It will also be used by the Audit Template import/export (ensure this is coordinated with AT)
-BUILDINGSYNC_VERSION = os.environ.get("BUILDINGSYNC_VERSION", "2.6.0")
+BUILDINGSYNC_VERSION = os.environ.get("BUILDINGSYNC_VERSION", "2.7.0")
 
 # LBNL's BETTER tool host location
 BETTER_HOST = os.environ.get("BETTER_HOST", "https://better.lbl.gov")

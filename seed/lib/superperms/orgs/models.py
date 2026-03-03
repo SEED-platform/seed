@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -303,11 +303,14 @@ class Organization(models.Model):
     audit_template_sync_enabled = models.BooleanField(default=False)
     audit_template_export_meters = models.BooleanField(default=False)
     audit_template_export_measures = models.BooleanField(default=False)
+    audit_template_export_federal = models.BooleanField(default=False)
+    audit_template_federal_agency = models.CharField(blank=True, null=True, max_length=128)
     audit_template_tracking_id_name = models.CharField(blank=True, max_length=128, default="City Custom Building ID")
     audit_template_tracking_id_field = models.CharField(blank=True, max_length=128, default="custom_id_1")
 
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
+    bb_salesforce_enabled = models.BooleanField(default=False)
 
     access_level_names = models.JSONField(default=list)
 
@@ -338,7 +341,7 @@ class Organization(models.Model):
         # TODO: this could get messy and could be better implemented
         # TODO: add additional calls to populate measure here when default version is incremented
         Measure.populate_measures(self.id)  # this populates bsync v1.0.0 (default) measures
-        Measure.populate_measures(self.id, schema_version="2.6.0")  # this populates bsync v2.6.0 measures
+        Measure.populate_measures(self.id, schema_version="2.7.0")  # this populates bsync v2.7.0 measures
 
     def is_member(self, user):
         """Return True if user object has a relation to this organization."""

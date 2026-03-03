@@ -968,9 +968,7 @@ a:not([href]) {
           justify-content: center;
 
           @media (width >= 992px) {
-            & {
-              flex-direction: row;
-            }
+            flex-direction: row;
 
             &:not(:first-of-type) {
               padding-top: 30px;
@@ -4207,7 +4205,7 @@ FAQ page
 }
 
 .clean-list {
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   & > .row {
     padding: 5px;
@@ -4607,6 +4605,47 @@ ul.r-list {
   background-color: #cdcdcd;
   text-shadow: 0 1px 0 white;
   border-bottom: 1px solid #b3b3b3;
+}
+
+.sync-header {
+  font-weight: bold;
+  color: #fff;
+  text-transform: uppercase;
+  background-color: #7b7b87;
+  text-shadow: none;
+  font-size: 18px;
+  border: none;
+}
+
+.mismatch-highlight {
+  background-color: #fff3cd !important; /* Light yellow background */
+  color: #856404; /* Dark yellow/brown text */
+  border: 1px solid #ffeaa7; /* Light yellow border */
+}
+
+.mismatch-sf {
+  background-color: #fff3cd !important; /* Light yellow background */
+  color: #856404; /* Dark yellow/brown text */
+  border: 1px solid #ffeaa7; /* Light yellow border */
+  border-right: 2px solid #ddd;
+}
+
+.match-highlight {
+  background-color: #d4edda !important; /* Light green background */
+  color: #155724; /* Dark green text */
+  border: 1px solid #c3e6cb; /* Light green border */
+}
+
+.match-sf {
+  background-color: #d4edda !important; /* Light green background */
+  color: #155724; /* Dark green text */
+  border: 1px solid #c3e6cb; /* Light green border */
+  border-right: 2px solid #ddd;
+}
+
+.match-first {
+  border-right: 2px solid #ddd;
+  font-weight: bold;
 }
 
 .r-small-header {
@@ -5217,7 +5256,7 @@ ul.r-list {
   }
 
   #portfolio-summary-selection-wrapper {
-    padding: 20px 24px 0;
+    padding: 15px 24px 0;
     display: flex;
 
     #portfolio-summary-selections {
@@ -5475,7 +5514,7 @@ ul.r-list {
   .gradient-container {
     align-items: end;
     display: grid;
-    grid-gap: 8px;
+    gap: 8px;
     grid-template-columns: 45px minmax(40px, 1fr) 45px;
     width: 100%;
 
@@ -5528,7 +5567,7 @@ tags-input .tags .tag-item {
 }
 
 .tooltip-long {
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .cell-edit {
@@ -5728,6 +5767,12 @@ tags-input .tags .tag-item {
   }
 }
 
+.warning-message {
+  color: $warningText;
+  font-size: 1.1em;
+  font-weight: 700;
+}
+
 #group-create {
   display: flex;
   justify-content: space-between;
@@ -5740,7 +5785,7 @@ tags-input .tags .tag-item {
 }
 
 .elements-wrap {
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   white-space: normal;
   min-width: 350px;
 }

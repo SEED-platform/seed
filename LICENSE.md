@@ -1,4 +1,4 @@
-SEED Platform™, Copyright (c) 2017, 2025 Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform™, Copyright (c) 2017, 2026 Alliance for Energy Innovation, LLC, and other contributors.
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification, are permitted

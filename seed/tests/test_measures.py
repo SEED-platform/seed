@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -21,6 +21,7 @@ class TestMeasures(TestCase):
         # Populate measure calls for every schema version run automatically when an org is created
         # BuildingSync v1.0.0 has 222 enums
         # BuildingSync v2.6.0 has 329 enums
+        # BuildingSync v2.7.0 has 551 enums
         # total is 551
         self.assertEqual(Measure.objects.count(), 551)
 
@@ -46,7 +47,7 @@ class TestMeasures(TestCase):
 
         objs = []
         for m in measures:
-            objs.append(Measure.objects.get(category=m[0], name=m[1], schema_version="2.6.0"))
+            objs.append(Measure.objects.get(category=m[0], name=m[1], schema_version="2.7.0"))
 
         obj_ids = [m.id for m in objs]
         obj_names = [f"{m.category}.{m.name}" for m in objs]

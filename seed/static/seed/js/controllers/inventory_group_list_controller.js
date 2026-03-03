@@ -8,7 +8,6 @@ angular.module('SEED.controller.inventory_group_list', [])
     '$state',
     '$stateParams',
     '$uibModal',
-    '$translate',
     'Notification',
     'modified_service',
     'inventory_service',
@@ -17,14 +16,12 @@ angular.module('SEED.controller.inventory_group_list', [])
     'access_level_tree',
     'inventory_groups',
     'current_inventory_group',
-    'organization_payload',
     // eslint-disable-next-line func-names
     function (
       $scope,
       $state,
       $stateParams,
       $uibModal,
-      $translate,
       Notification,
       modified_service,
       inventory_service,
@@ -32,13 +29,12 @@ angular.module('SEED.controller.inventory_group_list', [])
       urls,
       access_level_tree,
       inventory_groups,
-      current_inventory_group,
-      organization_payload
+      current_inventory_group
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.inventory_groups = inventory_groups;
       $scope.currentInventoryGroup = current_inventory_group;
-      $scope.org_id = organization_payload;
+      $scope.org = user_service.get_organization();
 
       $scope.edit_inventory_group = (group_id) => {
         const selected_group = $scope.inventory_groups.find((g) => g.id === group_id);
@@ -79,7 +75,7 @@ angular.module('SEED.controller.inventory_group_list', [])
           action: _.constant(action),
           data: _.constant(data),
           inventory_type: () => ($scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot'),
-          org_id: () => user_service.get_organization().id
+          org_id: () => $scope.org.id
         }
       });
 

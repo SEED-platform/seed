@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 
@@ -24,7 +24,7 @@ describe('controller: inventory_detail_controller', () => {
       // and return their promises
       mock_building_service = inventory_service;
 
-      spyOn(mock_building_service, 'update_property').andCallFake((view_id, state) => {
+      spyOn(mock_building_service, 'update_property').and.callFake((view_id, state) => {
         mock_building = state;
         return $q.resolve({
           status: 'success'
