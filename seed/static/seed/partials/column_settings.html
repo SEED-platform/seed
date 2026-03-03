@@ -314,7 +314,9 @@
                 <input
                   type="checkbox"
                   ng-checked="all_recognize_empty"
-                  class="no-click"
+                  ng-click="toggle_all_recognize_empty(); $event.stopPropagation()"
+                  aria-label="{$:: 'Toggle recognize empty for all' | translate $}"
+                  title="{$:: 'Toggle recognize empty for all' | translate $}"
                 />
               </th>
               <th class="sub_head"></th>
