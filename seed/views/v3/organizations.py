@@ -88,18 +88,6 @@ def _dict_org(request, organizations):
 
     orgs = []
     for o in organizations:
-        org_cycles = Cycle.objects.filter(organization=o).only("id", "name").order_by("name")
-        cycles = []
-        for c in org_cycles:
-            cycles.append(
-                {
-                    "name": c.name,
-                    "cycle_id": c.pk,
-                    "num_properties": PropertyView.objects.filter(cycle=c).count(),
-                    "num_taxlots": TaxLotView.objects.filter(cycle=c).count(),
-                }
-            )
-
         # We don't wish to double count sub organization memberships.
         org_users = (
             OrganizationUser.objects.select_related("user")
@@ -110,15 +98,39 @@ def _dict_org(request, organizations):
         owners = []
         role_level = None
         user_is_owner = False
+        ali = None
         for ou in org_users:
-            if ou.role_level == ROLE_OWNER:
+            owner = ou.role_level == ROLE_OWNER
+            viewer = ou.role_level == ROLE_VIEWER
+            if owner:
                 owners.append({"first_name": ou.user.first_name, "last_name": ou.user.last_name, "email": ou.user.email, "id": ou.user.id})
 
-                if ou.user == request.user:
-                    user_is_owner = True
-
             if ou.user == request.user:
+                user_is_owner = owner
+                user_is_viewer = viewer
                 role_level = get_js_role(ou.role_level)
+                ali = ou.access_level_instance
+
+        cycles = []
+        if ali:
+            org_cycles = Cycle.objects.filter(organization=o).only("id", "name").order_by("name")
+            for c in org_cycles:
+                cycles.append(
+                    {
+                        "name": c.name,
+                        "cycle_id": c.pk,
+                        "num_properties": PropertyView.objects.filter(
+                            cycle=c,
+                            property__access_level_instance__lft__gte=ali.lft,
+                            property__access_level_instance__rgt__lte=ali.rgt,
+                        ).count(),
+                        "num_taxlots": TaxLotView.objects.filter(
+                            cycle=c,
+                            taxlot__access_level_instance__lft__gte=ali.lft,
+                            taxlot__access_level_instance__rgt__lte=ali.rgt,
+                        ).count(),
+                    }
+                )
 
         org = {
             "name": o.name,
@@ -127,7 +139,7 @@ def _dict_org(request, organizations):
             "number_of_users": len(org_users),
             "user_is_owner": user_is_owner,
             "user_role": role_level,
-            "owners": owners,
+            "owners": [] if user_is_viewer else owners,
             "sub_orgs": _dict_org(request, o.child_orgs.all()),
             "is_parent": o.is_parent,
             "parent_id": o.parent_id,

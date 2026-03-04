@@ -46,6 +46,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
 
     const originalColumns = angular.copy(columns);
     $scope.columns = columns;
+    $scope.all_recognize_empty = $scope.columns.every((col) => col.recognize_empty);
     const initial_matching_ids = columns.reduce((acc, cur) => {
       if (cur.is_matching_criteria) acc.push(cur.id);
       return acc;
@@ -143,6 +144,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
 
     $scope.change_recognize_empty = (column) => {
       column.recognize_empty = !column.recognize_empty;
+      $scope.all_recognize_empty = $scope.columns.every((col) => col.recognize_empty);
       $scope.setModified();
     };
 
@@ -315,6 +317,14 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
       } else {
         default_sort_toggle();
       }
+    };
+
+    $scope.toggle_all_recognize_empty = () => {
+      $scope.all_recognize_empty = !$scope.all_recognize_empty;
+      $scope.columns.forEach((col) => {
+        col.recognize_empty = $scope.all_recognize_empty;
+      });
+      $scope.setModified();
     };
 
     const column_update_complete = (match_link_summary) => {

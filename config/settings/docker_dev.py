@@ -16,11 +16,6 @@ from kombu import Exchange, Queue
 
 from config.settings.common import *  # noqa: F403
 
-
-def env_var(key, default=None):
-    return os.environ.get(key, default)
-
-
 # override MEDIA_URL (requires nginx which dev stack doesn't use)
 MEDIA_URL = "/media/"
 

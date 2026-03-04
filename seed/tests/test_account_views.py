@@ -18,7 +18,8 @@ from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-from seed.tests.util import FakeRequest
+from seed.test_helpers.fake import FakePropertyFactory, FakePropertyViewFactory, FakeTaxLotFactory, FakeTaxLotViewFactory
+from seed.tests.util import AccessLevelBaseTestCase, FakeRequest
 from seed.utils.organizations import create_organization
 from seed.utils.users import get_js_role, get_role_from_js
 from seed.views.main import _get_default_org
@@ -880,6 +881,69 @@ class AccountsViewTests(TestCase):
         )
         self.assertEqual("success", json.loads(resp.content)["status"])
         self.assertTrue(Organization.objects.filter(name="test").exists())
+
+
+class AccountsViewAHTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.taxlot_factory = FakeTaxLotFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
+
+        self.child_viewer_user_details = {"username": "child_viewer@demo.com", "password": "test_pass"}
+        self.child_viewer_user = User.objects.create_user(**self.child_viewer_user_details)
+        self.org.add_member(self.child_viewer_user, self.child_level_instance.pk, ROLE_VIEWER)
+        self.org.save()
+
+        self.cycle = self.org.cycles.first()
+        # create 5 properties and 3 taxlots for both users
+        for i in range(5):
+            self.property_view_factory.get_property_view(organization=self.org, cycle=self.cycle, user=self.root_owner_user)
+            if i < 3:
+                self.taxlot_view_factory.get_taxlot_view(organization=self.org, cycle=self.cycle, user=self.root_owner_user)
+
+        for i in range(5):
+            prprty = self.property_factory.get_property(organization=self.org, access_level_instance=self.child_level_instance)
+            taxlot = self.taxlot_factory.get_taxlot(organization=self.org, access_level_instance=self.child_level_instance)
+            self.property_view_factory.get_property_view(organization=self.org, cycle=self.cycle, prprty=prprty)
+            if i < 3:
+                self.taxlot_view_factory.get_taxlot_view(organization=self.org, cycle=self.cycle, taxlot=taxlot)
+
+    def test_org_data_permissions(self):
+        """
+        Org data for non owners:
+        - does not include organization owners list
+        - number of properties/taxlots include only those the user has ALI access to
+        """
+        self.login_as_root_owner()
+        response = self.client.get(reverse_lazy("api:v3:organizations-list"))
+        data = response.json()["organizations"][0]
+
+        self.assertEqual(len(data["owners"]), 2)
+        cycle_data = data["cycles"][0]
+        self.assertEqual(cycle_data["num_properties"], 10)
+        self.assertEqual(cycle_data["num_taxlots"], 6)
+
+        # member can see owners, child sees limited properties/taxlots
+        self.login_as_child_member()
+        response = self.client.get(reverse_lazy("api:v3:organizations-list"))
+
+        data = response.json()["organizations"][0]
+        self.assertEqual(len(data["owners"]), 2)
+        cycle_data = data["cycles"][0]
+        self.assertEqual(cycle_data["num_properties"], 5)
+        self.assertEqual(cycle_data["num_taxlots"], 3)
+
+        # viewer cannot see owners
+        self.client.login(**self.child_viewer_user_details)
+        response = self.client.get(reverse_lazy("api:v3:organizations-list"))
+
+        data = response.json()["organizations"][0]
+        self.assertEqual(len(data["owners"]), 0)
+        cycle_data = data["cycles"][0]
+        self.assertEqual(cycle_data["num_properties"], 5)
+        self.assertEqual(cycle_data["num_taxlots"], 3)
 
 
 class AuthViewTests(TestCase):
