@@ -185,7 +185,6 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         )
         return status, message
 
-
     # flatten state / extra_data
     flat_state = {}
     for key, val in result["state"].items():
@@ -229,7 +228,9 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     # if it doesn't: first try to get Account as specified in Account Name column. If there's nothing in that column,
     # or if it is invalid, use the provided default account name. if that's not provided either, error out.
     # NOTE: skipping this if not configured (not erroring out)
-    print(f" CONFIG: {config.contact_email_column_id}, {config.benchmark_contact_fieldname}, {config.account_name_column_id}, {config.default_contact_account_name}")
+    print(
+        f" CONFIG: {config.contact_email_column_id}, {config.benchmark_contact_fieldname}, {config.account_name_column_id}, {config.default_contact_account_name}"
+    )
     if (
         config.contact_email_column_id
         and config.benchmark_contact_fieldname
