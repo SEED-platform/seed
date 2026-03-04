@@ -185,6 +185,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         )
         return status, message
 
+
     # flatten state / extra_data
     flat_state = {}
     for key, val in result["state"].items():
@@ -207,6 +208,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     """ RETRIEVE BENCHMARK ID """
     # grab the benchmark ID from the record
     benchmark_id_colname = Column.objects.get(pk=config.seed_benchmark_id_column_id)
+    print(f" config unique benchmark id fieldname: {config.unique_benchmark_id_fieldname}")
 
     # we don't know if this will be in extra_data or canonical fields
     benchmark_id = None
@@ -227,6 +229,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     # if it doesn't: first try to get Account as specified in Account Name column. If there's nothing in that column,
     # or if it is invalid, use the provided default account name. if that's not provided either, error out.
     # NOTE: skipping this if not configured (not erroring out)
+    print(f" CONFIG: {config.contact_email_column_id}, {config.benchmark_contact_fieldname}, {config.account_name_column_id}, {config.default_contact_account_name}")
     if (
         config.contact_email_column_id
         and config.benchmark_contact_fieldname
@@ -262,7 +265,9 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                                 organization settings page."
                     return status, message
         try:
+            print(f" contact info: {contact_info}")
             contact_record = salesforce_client.find_contact_by_email(contact_info["email"])
+            print(f"contact record found by email: {contact_record}")
         except Exception as e:
             message = f"Error retrieving Salesforce Contact by email for property {property_view.id}: {e!s}"
             return status, message
@@ -418,6 +423,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         params[config.data_admin_contact_fieldname] = contact_record["Id"]
 
     """ SPECIAL FIELD MAPPINGS FOR LABELS AND CYCLE NAME """
+    print(f" config: {config.status_fieldname}, {config.labels_fieldname}, {config.cycle_fieldname}")
     # create benchmark params
     if config.status_fieldname:
         # check if violation or compliant label is applied
@@ -460,8 +466,13 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         return status, message
 
     """ PERFORM UPDATE """
+    print(f" about to perform update with params: {params}, benchmark ID: {benchmark_id}")
     try:
-        salesforce_client.update_benchmark(benchmark_id, **params)
+        # first retrieve the correct benchmark record using the custom ID name/value:
+        print(f" config unique benchmark id fieldname: {config.unique_benchmark_id_fieldname}")
+        benchmark = salesforce_client.get_benchmark_by_custom_id(config.unique_benchmark_id_fieldname, benchmark_id)
+        print(f" retrieved benchmark with id: {benchmark['Id']}, {benchmark}")
+        salesforce_client.update_benchmark(benchmark["Id"], **params)
         status = True
 
         # check whether label should be removed flag
