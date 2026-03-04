@@ -12,6 +12,7 @@ repos:
       - id: check-toml
       - id: check-xml
       - id: check-yaml
+        exclude: '(pnpm-lock\.yaml|pnpm-workspace\.yaml)'
       - id: debug-statements
       - id: end-of-file-fixer
         exclude: seed/static/seed/locales/
