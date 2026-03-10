@@ -15,7 +15,6 @@ from pathlib import Path
 from random import randint
 
 import numpy as np
-import dateutil
 from celery import shared_task
 from django.conf import settings
 from django.contrib.auth.forms import PasswordResetForm
@@ -38,8 +37,8 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import save_raw_data
 from seed.decorators import ajax_request
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.progress_data.progress_data import ProgressData
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_OWNER,
@@ -74,15 +73,10 @@ from seed.serializers.pint import add_pint_unit_suffix, apply_display_unit_prefe
 from seed.serializers.report_configurations import ReportConfigurationSerializer
 from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
-from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.cache import get_cache_raw, set_cache_raw
-from seed.utils.generic import median, round_down_hundred_thousand
+from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.geocode import geocode_buildings
-from seed.utils.match import (
-    match_merge_link,
-    get_matching_criteria_column_names,
-    whole_org_match_merge_link
-)
+from seed.utils.match import get_matching_criteria_column_names, match_merge_link, whole_org_match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.organizations import create_organization, create_suborganization, set_default_2fa_method
 from seed.utils.properties import pair_unpair_property_taxlot
@@ -248,10 +242,10 @@ def _dict_org_brief(request, organizations):
 
 
 def _get_match_merge_link_key(identifier):
-    return "org_match_merge_link_result__%s" % identifier
+    return f"org_match_merge_link_result__{identifier}"
 
 
-@shared_task(serializer='pickle', ignore_result=True)
+@shared_task(serializer="pickle", ignore_result=True)
 def cache_match_merge_link_result(summary, identifier, progress_key):
     result_key = _get_match_merge_link_key(identifier)
     set_cache_raw(result_key, summary)
@@ -363,12 +357,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         result_key = _get_match_merge_link_key(identifier)
         set_cache_raw(result_key, {})
 
-        progress_data = ProgressData(func_name='org_match_merge_link', unique_id=identifier)
+        progress_data = ProgressData(func_name="org_match_merge_link", unique_id=identifier)
         progress_data.delete()
 
         whole_org_match_merge_link.apply_async(
-            args=(org_id, state_class_name, proposed_columns),
-            link=cache_match_merge_link_result.s(identifier, progress_data.key)
+            args=(org_id, state_class_name, proposed_columns), link=cache_match_merge_link_result.s(identifier, progress_data.key)
         )
 
         return progress_data.key
@@ -963,12 +956,9 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
-            {
-                'inventory_type': 'string'
-            },
-            required=['inventory_type'],
-            description='Properties:\n'
-                        '- inventory_type: either "properties" or "taxlots"'
+            {"inventory_type": "string"},
+            required=["inventory_type"],
+            description='Properties:\n- inventory_type: either "properties" or "taxlots"',
         )
     )
     @method_decorator(
@@ -978,42 +968,43 @@ class OrganizationViewSet(viewsets.ViewSet):
             has_perm("requires_member"),
         ]
     )
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=["POST"])
     def match_merge_link(self, request, pk=None):
         """
         Run match_merge_link for an org.
         """
-        inventory_type = request.data.get('inventory_type', None)
-        if inventory_type not in ['properties', 'taxlots']:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Provided inventory type should either be "properties" or "taxlots".'},
-                                status=status.HTTP_404_NOT_FOUND)
+        inventory_type = request.data.get("inventory_type", None)
+        if inventory_type not in ["properties", "taxlots"]:
+            return JsonResponse(
+                {"status": "error", "message": 'Provided inventory type should either be "properties" or "taxlots".'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         try:
             org = Organization.objects.get(pk=pk)
         except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {"status": "error", "message": "Could not retrieve organization at pk = " + str(pk)}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        state_class_name = 'PropertyState' if inventory_type == 'properties' else 'TaxLotState'
+        state_class_name = "PropertyState" if inventory_type == "properties" else "TaxLotState"
 
         progress_key = self._start_whole_org_match_merge_link(org.id, state_class_name)
 
-        return JsonResponse({'progress_key': progress_key})
+        return JsonResponse({"progress_key": progress_key})
 
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'inventory_type': 'string',
-                'add': ['string'],
-                'remove': ['string'],
+                "inventory_type": "string",
+                "add": ["string"],
+                "remove": ["string"],
             },
-            required=['inventory_type'],
-            description='Properties:\n'
-                        '- inventory_type: either "properties" or "taxlots"\n'
-                        '- add: list of column names\n'
-                        '- remove: list of column names'
+            required=["inventory_type"],
+            description="Properties:\n"
+            '- inventory_type: either "properties" or "taxlots"\n'
+            "- add: list of column names\n"
+            "- remove: list of column names",
         )
     )
     @method_decorator(
@@ -1023,53 +1014,44 @@ class OrganizationViewSet(viewsets.ViewSet):
             has_perm("requires_member"),
         ]
     )
-    @action(detail=True, methods=['POST'])
+    @action(detail=True, methods=["POST"])
     def match_merge_link_preview(self, request, pk=None):
         """
         Run match_merge_link preview for an org and record type.
         """
-        inventory_type = request.data.get('inventory_type', None)
-        if inventory_type not in ['properties', 'taxlots']:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Provided inventory type should either be "properties" or "taxlots".'},
-                                status=status.HTTP_404_NOT_FOUND)
+        inventory_type = request.data.get("inventory_type", None)
+        if inventory_type not in ["properties", "taxlots"]:
+            return JsonResponse(
+                {"status": "error", "message": 'Provided inventory type should either be "properties" or "taxlots".'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
 
         try:
             org = Organization.objects.get(pk=pk)
         except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {"status": "error", "message": "Could not retrieve organization at pk = " + str(pk)}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        state_class_name = 'PropertyState' if inventory_type == 'properties' else 'TaxLotState'
+        state_class_name = "PropertyState" if inventory_type == "properties" else "TaxLotState"
 
         current_columns = get_matching_criteria_column_names(org.id, state_class_name)
 
-        add = set(request.data.get('add', []))
-        remove = set(request.data.get('remove', []))
+        add = set(request.data.get("add", []))
+        remove = set(request.data.get("remove", []))
 
-        provided_columns = Column.objects.filter(
-            column_name__in=add.union(remove),
-            organization_id=org.id,
-            table_name=state_class_name
-        )
+        provided_columns = Column.objects.filter(column_name__in=add.union(remove), organization_id=org.id, table_name=state_class_name)
         if provided_columns.count() != (len(add) + len(remove)):
-            return JsonResponse({'status': 'error',
-                                 'message': 'Invalid column names provided.'},
-                                status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse({"status": "error", "message": "Invalid column names provided."}, status=status.HTTP_404_NOT_FOUND)
 
         proposed_columns = current_columns.union(add).difference(remove)
 
         progress_key = self._start_whole_org_match_merge_link(org.id, state_class_name, list(proposed_columns))
 
-        return JsonResponse({'progress_key': progress_key})
+        return JsonResponse({"progress_key": progress_key})
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_integer_field(
-            'match_merge_link_id',
-            required=True,
-            description='ID of match merge link'
-        )]
+        manual_parameters=[AutoSchemaHelper.query_integer_field("match_merge_link_id", required=True, description="ID of match merge link")]
     )
     @method_decorator(
         [
@@ -1078,21 +1060,20 @@ class OrganizationViewSet(viewsets.ViewSet):
             has_perm("requires_member"),
         ]
     )
-    @action(detail=True, methods=['GET'])
+    @action(detail=True, methods=["GET"])
     def match_merge_link_result(self, request, pk=None):
         try:
             Organization.objects.get(pk=pk)
         except ObjectDoesNotExist:
-            return JsonResponse({'status': 'error',
-                                 'message': 'Could not retrieve organization at pk = ' + str(pk)},
-                                status=status.HTTP_404_NOT_FOUND)
+            return JsonResponse(
+                {"status": "error", "message": "Could not retrieve organization at pk = " + str(pk)}, status=status.HTTP_404_NOT_FOUND
+            )
 
-        identifier = request.query_params['match_merge_link_id']
+        identifier = request.query_params["match_merge_link_id"]
         result_key = _get_match_merge_link_key(identifier)
 
         # using unsafe serialization b/c the result might not be a dict
         return JsonResponse(get_cache_raw(result_key), safe=False)
-    
 
     @method_decorator(
         [

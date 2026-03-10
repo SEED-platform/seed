@@ -163,7 +163,7 @@ angular.module('SEED.service.organization', []).factory('organization_service', 
     organization_factory.geocoding_columns = (org_id) => $http.get(`/api/v3/organizations/${org_id}/geocoding_columns/`).then((response) => response.data);
 
     organization_factory.reset_all_passwords = (org_id) => $http.post(`/api/v3/organizations/${org_id}/reset_all_passwords/`).then((response) => response.data);
-    
+
     organization_factory.match_merge_link = function (org_id, inventory_type) {
       return $http.post('/api/v3/organizations/' + org_id + '/match_merge_link/', {
         inventory_type: inventory_type
