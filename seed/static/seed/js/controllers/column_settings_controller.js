@@ -254,15 +254,13 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
     $scope.isModified = () => modified_service.isModified();
 
     $scope.complete_column_update = function () {
-      var matching_criteria_changed = _.find(_.values(diff), function (delta) {
-        return _.has(delta, 'is_matching_criteria');
-      });
+      const matching_criteria_changed = _.find(_.values(diff), (delta) => _.has(delta, 'is_matching_criteria'));
 
       if (matching_criteria_changed) {
         // reset the spinner and run whole org match merge link
         spinner_utility.show(undefined, $('.display')[0]);
 
-        organization_service.match_merge_link($scope.org.id, $scope.inventory_type).then(function (response) {
+        organization_service.match_merge_link($scope.org.id, $scope.inventory_type).then((response) => {
           uploader_service.check_progress_loop(
             response.progress_key,
             0,
@@ -271,9 +269,9 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
               organization_service.get_match_merge_link_result($scope.org.id, response.unique_id).then(() => column_update_complete());
             },
             () => {},
-            { progress: 0 },
+            { progress: 0 }
           );
-        })
+        });
       } else {
         column_update_complete();
       }
@@ -437,7 +435,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
         spinner_utility: () => spinner_utility,
         table_name: () => ($scope.inventory_type === 'properties' ? 'PropertyState' : 'TaxLotState'),
         $q: () => $q,
-        complete_column_update: () => $scope.complete_column_update,
+        complete_column_update: () => $scope.complete_column_update
       }
     });
 
