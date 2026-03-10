@@ -400,6 +400,11 @@ def _parse_view_filter(
     return updated_filter.to_q(new_filter_value), annotations
 
 
+def _clean_annotation_alias(name: str) -> str:
+    """Replace any characters that are invalid in Django annotation aliases (e.g. spaces) with underscores."""
+    return re.sub(r"[^a-zA-Z0-9_]", "_", name)
+
+
 def _parse_view_sort(
     sort_expression: str,
     columns_by_name: dict[str, dict],
@@ -439,7 +444,7 @@ def _parse_view_sort(
         column = related_columns_by_name[column_name]
         related_prefix = "taxlotproperty__taxlot_view__" if inventory_type == "property" else "taxlotproperty__property_view__"
         state_prefix = f"{related_prefix}state"
-        annotation_name = f"related_{column['name']}_sort"
+        annotation_name = _clean_annotation_alias(f"related_{column['name']}_sort")
 
         if column["is_extra_data"]:
             expression = _build_related_extra_data_expression(column["column_name"], column["data_type"], state_prefix)
@@ -462,7 +467,7 @@ def _parse_view_sort(
 
 
 def build_view_filters_and_sorts(
-    filters: QueryDict, columns: list[dict], inventory_type: str, access_level_names: list[str] = []
+    filters: QueryDict, columns: list[dict], inventory_type: str, access_level_names: list[str] = [], include_sorts: bool = True
 ) -> tuple[Q, AnnotationDict, list[str]]:
     """Build a query object usable for `*View.filter(...)` as well as a list of
     column names for usable for `*View.order_by(...)`.
@@ -562,13 +567,14 @@ def build_view_filters_and_sorts(
 
     order_by = []
 
-    for sort_expression in filters.getlist("order_by", ["id"]):
-        parsed_sort, parsed_annotations = _parse_view_sort(
-            sort_expression, columns_by_name, related_columns_by_name, inventory_type, access_level_names
-        )
-        if parsed_sort is not None:
-            order_by.append(parsed_sort)
-            annotations.update(parsed_annotations)
+    if include_sorts:
+        for sort_expression in filters.getlist("order_by", ["id"]):
+            parsed_sort, parsed_annotations = _parse_view_sort(
+                sort_expression, columns_by_name, related_columns_by_name, inventory_type, access_level_names
+            )
+            if parsed_sort is not None:
+                order_by.append(parsed_sort)
+                annotations.update(parsed_annotations)
 
     return new_filters, annotations, order_by
 

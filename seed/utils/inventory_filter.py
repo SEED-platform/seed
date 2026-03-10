@@ -125,7 +125,7 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
             exclude_derived=True,
         )
         try:
-            filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database, other_inventory_type)
+            filters, annotations, _ = build_view_filters_and_sorts(request.query_params, other_columns_from_database, other_inventory_type, include_sorts=False)
         except FilterError as e:
             return JsonResponse({"status": "error", "message": f"Error filtering: {e!s}"}, status=status.HTTP_400_BAD_REQUEST)
 
