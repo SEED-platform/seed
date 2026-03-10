@@ -129,7 +129,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
 
     $scope.matching_status = (column) => {
       if (column.is_extra_data) return 'ineligible';
-      if ($scope.org.access_level_names.length > 1  && initial_matching_ids.includes(column.id)) return 'locked';
+      if ($scope.org.access_level_names.length > 1 && $scope.org.inventory_count && initial_matching_ids.includes(column.id)) return 'locked';
       return 'eligible';
     };
 
