@@ -145,6 +145,9 @@ msgstr "L'analyse EUI additionnera les relevés de compteurs de la propriété a
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
 msgstr "L'analyse des statistiques des éléments examine les données des éléments d'une propriété (le cas échéant) pour compter le nombre d'éléments de type « Panneau de contrôle DDC ». Elle génère également les valeurs d'indice de condition agrégées (moyennes) pour les éléments EISA 2007-432 et enregistre ces quantités dans la propriété."
 
+msgid "ANALYSIS_DESCRIPTION_HVACMetrics"
+msgstr "L'analyse des indicateurs CVC parcourt les données des éléments d'un bâtiment (le cas échéant) pour calculer quatre indicateurs : 1) la surface couverte par la puissance frigorifique, 2) le type de fluide frigorigène principal, 3) la capacité électrique totale du système CVC et 4) le débit d'air par unité de surface."
+
 msgid "AND"
 msgstr "ET"
 

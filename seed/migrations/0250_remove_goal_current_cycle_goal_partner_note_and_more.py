@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
     dependencies = [
         ("orgs", "0044_add_bb_salesforce_enabled"),
-        ("seed", "0248_update_bsync_measures_v2_7_0"),
+        ("seed", "0249_alter_analysis_service"),
     ]
 
     operations = [

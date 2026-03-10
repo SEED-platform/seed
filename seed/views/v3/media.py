@@ -1,15 +1,16 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
+import mimetypes
 import os
-import re
 
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
+from django.utils.text import get_valid_filename
 from rest_framework import generics
 
 from seed.models import Analysis, AnalysisOutputFile, BuildingFile, ImportFile, InventoryDocument, Organization
@@ -114,20 +115,25 @@ class MediaViewSet(generics.RetrieveAPIView, OrgMixin):
             logger.debug(f"Failed to locate organization for file: {e!s}")
             return HttpResponse(status=404)
 
-        if user_has_permission:
-            # Attempt to remove NamedTemporaryFile suffix
-            filename = os.path.basename(filepath)
-            name, ext = os.path.splitext(filename)
-            pattern = re.compile("(.*?)(_[a-zA-Z0-9]{7})$")
-            match = pattern.match(name)
-            if match:
-                filename = match.groups()[0] + ext
-
-            response = HttpResponse()
-            if ext != ".html":
-                response["Content-Disposition"] = f"attachment; filename={filename}"
-            response["X-Accel-Redirect"] = f"/protected/{filepath}"
-            return response
-        else:
-            # 404 instead of 403 to avoid leaking information
+        if not user_has_permission:
             return HttpResponse(status=404)
+
+        filename = os.path.basename(filepath)
+        ext = os.path.splitext(filename)[1]
+        absolute_filepath = os.path.join(settings.MEDIA_ROOT, filepath)
+
+        if not os.path.exists(absolute_filepath):
+            return HttpResponse(status=404)
+
+        # Serve file through Django
+        with open(absolute_filepath, "rb") as f:
+            file_data = f.read()
+
+        content_type, _ = mimetypes.guess_type(filename)
+        response = HttpResponse(file_data, content_type=content_type or "application/octet-stream")
+
+        if ext != ".html":
+            safe_download_name = get_valid_filename(filename)
+            response["Content-Disposition"] = f'attachment; filename="{safe_download_name}"'
+
+        return response

@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -314,6 +314,10 @@ SIMPLE_JWT = {
     "TOKEN_OBTAIN_SERIALIZER": "seed.landing.serializers.SeedTokenObtainPairSerializer",
     "ROTATE_REFRESH_TOKENS": True,
 }
+
+
+def env_var(key, default=None):
+    return os.environ.get(key, default)
 
 
 def yn(s: Union[bool, str]) -> bool:
