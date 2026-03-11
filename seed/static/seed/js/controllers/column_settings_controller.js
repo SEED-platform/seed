@@ -15,6 +15,8 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
   'auth_payload',
   'columns_service',
   'modified_service',
+  'organization_service',
+  'uploader_service',
   'spinner_utility',
   'urls',
   'naturalSort',
@@ -33,6 +35,8 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
     auth_payload,
     columns_service,
     modified_service,
+    organization_service,
+    uploader_service,
     spinner_utility,
     urls,
     naturalSort,
@@ -125,7 +129,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
 
     $scope.matching_status = (column) => {
       if (column.is_extra_data) return 'ineligible';
-      if ($scope.org.inventory_count && initial_matching_ids.includes(column.id)) return 'locked';
+      if ($scope.org.access_level_names.length > 1 && $scope.org.inventory_count && initial_matching_ids.includes(column.id)) return 'locked';
       return 'eligible';
     };
 
@@ -249,6 +253,30 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
 
     $scope.isModified = () => modified_service.isModified();
 
+    $scope.complete_column_update = function () {
+      const matching_criteria_changed = _.find(_.values(diff), (delta) => _.has(delta, 'is_matching_criteria'));
+
+      if (matching_criteria_changed) {
+        // reset the spinner and run whole org match merge link
+        spinner_utility.show(undefined, $('.display')[0]);
+
+        organization_service.match_merge_link($scope.org.id, $scope.inventory_type).then((response) => {
+          uploader_service.check_progress_loop(
+            response.progress_key,
+            0,
+            1,
+            (response) => {
+              organization_service.get_match_merge_link_result($scope.org.id, response.unique_id).then(() => column_update_complete());
+            },
+            () => {},
+            { progress: 0 }
+          );
+        });
+      } else {
+        column_update_complete();
+      }
+    };
+
     // Table Sorting
     const default_sort_toggle = () => {
       $scope.column_sort = 'default';
@@ -360,6 +388,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
       }
 
       modified_service.resetModified();
+      $scope.modal_instance.dismiss();
       $state.reload();
     };
 
@@ -378,14 +407,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
         return;
       }
 
-      const modal_instance = $scope.open_confirm_column_settings_modal();
-      modal_instance.result
-        .then((data) => {
-          column_update_complete(data);
-        })
-        .catch(() => {
-          // User cancelled
-        });
+      $scope.modal_instance = $scope.open_confirm_column_settings_modal();
     };
 
     $scope.open_create_column_modal = () => $uibModal.open({
@@ -412,7 +434,8 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
         columns_service: () => columns_service,
         spinner_utility: () => spinner_utility,
         table_name: () => ($scope.inventory_type === 'properties' ? 'PropertyState' : 'TaxLotState'),
-        $q: () => $q
+        $q: () => $q,
+        complete_column_update: () => $scope.complete_column_update
       }
     });
 

@@ -965,7 +965,7 @@
     "OR": "OU",
     "ORGANIZATION_WATER_USE_DISPLAY_UNITS": "Affichage de l'unité de mesure pour l'utilisation de l'eau",
     "ORGANIZATION_WUI_DISPLAY_UNITS": "Affichage de l'unité de mesure de l'intensité d'utilisation de l'eau (WUI)",
-    "ORG_MATCH_MERGE_LINK_WARNING": "AVERTISSEMENT: Vous avez modifié les critères selon lesquels les données de votre organisation seront mises en correspondance et fusionnées. Une fois qu'une colonne a été ajoutée aux critères de correspondance d'une organisation, elle ne peut pas être supprimée tant que l'organisation dispose d'un inventaire.",
+    "ORG_MATCH_MERGE_LINK_WARNING": "AVERTISSEMENT: Vous avez modifié les critères de correspondance et de fusion des données de votre organisation. Si l’organisation utilise plusieurs niveaux d’accès: une fois qu’une colonne a été ajoutée aux critères de correspondance, elle ne peut plus être supprimée tant que l’organisation dispose de stocks. Les critères de correspondance peuvent être supprimés dans les organisations n’utilisant pas de niveaux d’accès.",
     "OVERWRITE_COLUMN_DATA_QUESTION": "Écraser les données?",
     "Occupied Floor Area": "Surface occupée",
     "Only Show Populated Columns": "Afficher uniquement les colonnes remplies",
