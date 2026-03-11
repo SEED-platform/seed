@@ -20,13 +20,13 @@ jobs:
       matrix:
         test_env: [django, functional, api]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Cache Docker layers
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: /tmp/.buildx-cache
           # using `-v3` in key to clear old cache due to errors
@@ -56,7 +56,7 @@ jobs:
           docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
@@ -72,10 +72,9 @@ jobs:
           df -h
       - name: Install dependencies
         run: |
-          npm install
-          pnpm -C ng_seed/seed-angular install
-          sudo apt update
-          sudo apt install -y xvfb
+          pnpm install
+          sudo apt-get update
+          sudo apt-get install -y xvfb
       - name: Test Django
         if: ${{ matrix.test_env == 'django' }}
         env:
@@ -102,7 +101,7 @@ jobs:
           DISPLAY: ':99'
         run: |
           Xvfb :99 &
-          npm test
+          pnpm test
       - name: Test API
         if: ${{ matrix.test_env == 'api' }}
         run: |
@@ -117,7 +116,7 @@ jobs:
       matrix:
         tox_env: [docs, precommit, mypy, lint]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: true
       - uses: actions/setup-python@v6
@@ -125,13 +124,17 @@ jobs:
           python-version: '3.9'
       - uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 24
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
       - name: Install deps
         run: |
           pip install --upgrade pip
           pip install tox==4.30.2
-          sudo apt update
-          sudo apt install gdal-bin
+          sudo apt-get update
+          sudo apt-get install gdal-bin
       - name: Setup config
         run: |
           cat <<EOF > config/settings/local_untracked.py

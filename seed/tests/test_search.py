@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -9,7 +9,7 @@ from typing import Union
 
 import pytest
 from django.db import models
-from django.db.models import Q
+from django.db.models import Min, Q
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce, Collate, Replace
 from django.http.request import QueryDict
@@ -311,6 +311,39 @@ class TestInventoryViewSearchParsers(TestCase):
                 repr(test_case.expected_annotations),
                 f'Failed "{test_case.name}"; actual: {annotations}; expected: {test_case.expected_annotations}',
             )
+
+    def test_order_by_related_columns(self):
+        columns = Column.retrieve_all(self.fake_org, "property", only_used=False, include_related=True)
+        related_column = Column.objects.get(table_name="TaxLotState", column_name="jurisdiction_tax_lot_id")
+        query_dict = QueryDict(f"order_by=jurisdiction_tax_lot_id_{related_column.id}")
+
+        _, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, "property")
+
+        annotation_key = f"related_jurisdiction_tax_lot_id_{related_column.id}_sort"
+        self.assertEqual(len(order_by), 1)
+        self.assertIsInstance(order_by[0], Collate)
+        self.assertIn(annotation_key, annotations)
+        self.assertIsInstance(annotations[annotation_key], Min)
+
+    def test_order_by_related_extra_data_columns(self):
+        Column.objects.create(
+            column_name="related_extra",
+            data_type="string",
+            is_extra_data=True,
+            table_name="TaxLotState",
+            organization=self.fake_org,
+        )
+        columns = Column.retrieve_all(self.fake_org, "property", only_used=False, include_related=True)
+        related_column = Column.objects.get(table_name="TaxLotState", column_name="related_extra")
+        query_dict = QueryDict(f"order_by=related_extra_{related_column.id}")
+
+        _, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, "property")
+
+        annotation_key = f"related_related_extra_{related_column.id}_sort"
+        self.assertEqual(len(order_by), 1)
+        self.assertIsInstance(order_by[0], Collate)
+        self.assertIn(annotation_key, annotations)
+        self.assertIsInstance(annotations[annotation_key], Min)
 
     def test_filter_and_sorts_parser_annotations_works(self):
         # -- Setup

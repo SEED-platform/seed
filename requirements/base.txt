@@ -1,5 +1,5 @@
 # Django
-django==4.2.26
+django==4.2.29
 
 # Persistence stores
 psycopg2-binary==2.9.10
@@ -10,7 +10,7 @@ django-celery-beat==2.8.1
 django-redis==6.0.0
 hiredis==3.2.1
 
-brotli==1.1.0
+brotli==1.2.0
 django-compressor==4.5.1
 django-extensions==3.2.3
 django-model-utils==5.0.0
@@ -62,7 +62,7 @@ simple-salesforce==1.12.8
 # geospatial and pnnl/buildingid-py
 shapely==2.0.7
 usaddress==0.5.16
-pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@3cb82c9
+pnnl-buildingid @ git+https://github.com/SEED-platform/buildingid@1073675
 
 django-treebeard==4.7.1
 

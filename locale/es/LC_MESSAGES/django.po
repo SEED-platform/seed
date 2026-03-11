@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-12-11 17:45\n"
+"PO-Revision-Date: 2026-03-10 20:51\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -3751,9 +3751,8 @@ msgstr "Visualización de la unidad de medida del consumo de agua"
 msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
 msgstr "Visualización de la unidad de medida para la intensidad de uso del agua (WUI)"
 
-#, fuzzy
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
-msgstr "ADVERTENCIA: Ha modificado los criterios con los que se compararán y combinarán los datos de su organización. Una vez que se ha añadido una columna a los criterios de correspondencia de una organización, no se puede eliminar mientras la organización tenga inventario."
+msgstr "ADVERTENCIA: Ha modificado los criterios con los que se compararán y fusionarán los datos de su organización. Si la organización utiliza más de un nivel de acceso, una vez que se haya añadido una columna a los criterios de coincidencia de una organización, no se podrá eliminar mientras la organización tenga inventario. Los criterios de coincidencia se pueden eliminar en organizaciones que no utilicen niveles de acceso."
 
 #, fuzzy
 msgid "OVERWRITE_COLUMN_DATA_QUESTION"
