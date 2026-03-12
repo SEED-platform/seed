@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.controller.inventory_detail_meters', []).controller('inventory_detail_meters_controller', [
@@ -133,6 +133,75 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
       }
     };
 
+    const canvas = document.getElementById('program-overview-chart');
+    const ctx = canvas.getContext('2d');
+
+    $scope.meterReadingsChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: []
+      },
+      options: {
+        scales: {},
+        plugins: {
+          legend: {
+            onClick: () => {}
+          }
+        }
+      }
+    });
+    $scope.meterReadingsChart.update();
+
+    const colors = [
+      '#a6cee3',
+      '#1f78b4',
+      '#b2df8a',
+      '#33a02c',
+      '#fb9a99',
+      '#e31a1c',
+      '#fdbf6f',
+      '#ff7f00',
+      '#cab2d6',
+      '#6a3d9a'
+    ];
+
+    $scope.reloadChart = () => {
+      if ($scope.interval.selected === 'Exact') return;
+
+      // init empty data obj
+      const dataForChart = {
+        labels: $scope.data.map((d) => d[$scope.interval.selected.toLowerCase()]),
+        datasets: $scope.meterReadGridOptions.columnDefs.slice(1).map((c, i) => ({
+          id: c.field,
+          label: c.displayName,
+          data: [],
+          yAxisID: c.displayName.slice(c.field.length + 2, -1),
+          backgroundColor: colors[i % colors.length],
+          borderColor: colors[i % colors.length]
+        }))
+      };
+
+      // fill data object
+      $scope.data.forEach((readingsForTime) => {
+        dataForChart.datasets.forEach((dataset) => {
+          dataset.data.push(readingsForTime[dataset.id]);
+        });
+      });
+      $scope.meterReadingsChart.data = dataForChart;
+      $scope.meterReadingsChart.update();
+
+      // set scale
+      const yAxisIDs = new Set(dataForChart.datasets.map((d) => d.yAxisID));
+      yAxisIDs.forEach((axis) => {
+        $scope.meterReadingsChart.options.scales[axis].title.text = axis;
+        $scope.meterReadingsChart.options.scales[axis].title.display = true;
+      });
+      Object.keys($scope.meterReadingsChart.options.scales).forEach((k) => {
+        if (!yAxisIDs.has(k)) { delete $scope.meterReadingsChart.options.scales[k]; }
+      });
+      $scope.meterReadingsChart.update();
+    };
+
     $scope.meterReadGridOptions = {
       data: 'data',
       columnDefs: property_meter_usage.column_defs,
@@ -245,6 +314,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
       $scope.has_meters = meters.length > 0;
       $scope.has_readings = $scope.data.length > 0;
       $scope.apply_column_settings();
+      $scope.reloadChart();
     };
 
     // refresh_readings make an API call to refresh the base readings data
@@ -271,6 +341,7 @@ angular.module('SEED.controller.inventory_detail_meters', []).controller('invent
 
           resetSelections();
           $scope.applyFilters();
+          $scope.reloadChart();
           spinner_utility.hide();
         });
     };

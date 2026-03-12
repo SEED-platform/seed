@@ -55,7 +55,7 @@ ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
 
 # Install pip
 RUN bash -c "python3 -m ensurepip --upgrade && python3 -m pip install --upgrade pip setuptools && \
-    pip install supervisor==4.2.5"
+    pip install supervisor==4.3.0"
 
 ### Install python requirements
 WORKDIR /seed
@@ -70,28 +70,20 @@ RUN pip install watchdog[watchmedo]
 
 ### Install JavaScript requirements - do this first because they take awhile
 ### and the dependencies will probably change slower than python packages.
-### README.md stops the no readme warning
 COPY ./package.json /seed/package.json
-COPY ./package-lock.json /seed/package-lock.json
+COPY ./pnpm-lock.yaml /seed/pnpm-lock.yaml
+COPY ./pnpm-workspace.yaml /seed/pnpm-workspace.yaml
 COPY ./vendors/package.json /seed/vendors/package.json
-COPY ./vendors/package-lock.json /seed/vendors/package-lock.json
-COPY ./ng_seed/seed-angular/package.json /seed/ng_seed/seed-angular/package.json
-COPY ./ng_seed/seed-angular/pnpm-lock.yaml /seed/ng_seed/seed-angular/pnpm-lock.yaml
-COPY ./ng_seed/seed-angular/pnpm-workspace.yaml /seed/ng_seed/seed-angular/pnpm-workspace.yaml
-COPY ./README.md /seed/README.md
-# unsafe-perm allows the package.json postinstall script to run with the elevated permissions
-RUN npm install --unsafe-perm
+COPY ./ng_seed/seed-angular /seed/ng_seed/seed-angular
+### Build SEED Angular then cleanup
+RUN npm install -g pnpm && \
+    pnpm install && \
+    pnpm -C /seed/ng_seed/seed-angular build
 
 ### Copy over the remaining part of the SEED application and some helpers
-WORKDIR /seed
 COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 RUN git config --system --add safe.directory /seed
-
-### Build SEED Angular
-RUN npm install -g pnpm
-RUN pnpm -C /seed/ng_seed/seed-angular install
-RUN pnpm -C /seed/ng_seed/seed-angular build
 
 EXPOSE 80
 

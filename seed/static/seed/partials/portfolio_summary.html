@@ -467,8 +467,11 @@
   <div
     id="partner-note-container"
     class="partner-note-container"
-    style="margin-top: 30px; margin-bottom: 30px"
+    style="margin-top: 20px; margin-bottom: 30px"
   >
+    <div style="margin-left: 30px; margin-bottom: 20px">
+      <h3 translate>Performance Data</h3>
+    </div>
     <!-- CHART -->
     <div style="display: flex; gap: 30px">
       <div
@@ -486,7 +489,7 @@
     </div>
     <!--- PARTNER NOTE --->
     <div ng-if="hasValidGoal() && hasValidCycleGoal()" style="margin: 30px">
-      <h4>Partner Notes</h4>
+      <div style="margin-left: 20px"><h4>Partner Notes</h4></div>
       <div class="col-md-6">
         <textarea
           class="form-control"
@@ -549,7 +552,7 @@
       </div>
     </div>
   </div>
-  <div class="partner-table-container">
+  <div class="partner-table-container" style="margin: 20px 50px 20px 50px">
     <div
       ng-if="hasValidGoal() && hasValidCycleGoal()"
       id="cycle-{$ $index $}"
@@ -571,10 +574,7 @@
           ng-init="childIndex = $index;"
         >
           <tr>
-            <td
-              style="font-weight: bold"
-              ng-repeat="(key, value) in cycle_goal"
-            >
+            <td ng-repeat="(key, value) in cycle_goal">
               <span> {$ value | tolerantNumber:2 $} </span>
             </td>
           </tr>

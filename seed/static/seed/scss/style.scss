@@ -968,9 +968,7 @@ a:not([href]) {
           justify-content: center;
 
           @media (width >= 992px) {
-            & {
-              flex-direction: row;
-            }
+            flex-direction: row;
 
             &:not(:first-of-type) {
               padding-top: 30px;
@@ -4207,7 +4205,7 @@ FAQ page
 }
 
 .clean-list {
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 
   & > .row {
     padding: 5px;
@@ -5516,7 +5514,7 @@ ul.r-list {
   .gradient-container {
     align-items: end;
     display: grid;
-    grid-gap: 8px;
+    gap: 8px;
     grid-template-columns: 45px minmax(40px, 1fr) 45px;
     width: 100%;
 
@@ -5569,7 +5567,7 @@ tags-input .tags .tag-item {
 }
 
 .tooltip-long {
-  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .cell-edit {
@@ -5787,7 +5785,7 @@ tags-input .tags .tag-item {
 }
 
 .elements-wrap {
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   white-space: normal;
   min-width: 350px;
 }
