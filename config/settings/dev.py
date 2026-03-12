@@ -32,7 +32,7 @@ DATABASES = {
     },
 }
 
-MIDDLEWARE = ("seed.utils.nocache.DisableClientSideCachingMiddleware", *MIDDLEWARE)  # noqa: F405
+MIDDLEWARE = ("seed.utils.nocache.DisableClientSideCachingMiddleware", *MIDDLEWARE)
 
 LOGGING = {
     "version": 1,
