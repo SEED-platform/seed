@@ -150,8 +150,8 @@
           <div class="graph" style="margin-left: 3vw; margin-right: 2vw">
             <canvas id="property-insights-chart"></canvas>
           </div>
-          <div ng-show="chartStatusMessage" class="status-message">
-            {$ chartStatusMessage | translate $}
+          <div ng-show="chartStatusMessage" class="status-message" style="margin-left: 3vw; margin-right: 2vw">
+            <i class="fa-solid fa-triangle-exclamation"></i> {$ 'CHART_STATUS_MESSAGE' | translate $}
             <div
               class="progress progress-striped active"
               ng-show="chartIsLoading"

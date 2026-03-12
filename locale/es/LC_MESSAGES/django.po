@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2026-03-10 20:51\n"
+"PO-Revision-Date: 2026-03-12 21:08\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -797,6 +797,9 @@ msgstr "Incluye elementos de construcción aplicables con los valores RSL más b
 
 msgid "CEWE_ELEMENTS_TITLE"
 msgstr "Apoyo a la vía de cumplimiento de la Evaluación Integral de Energía y Agua (CEWE)  "
+
+msgid "CHART_STATUS_MESSAGE"
+msgstr "Demasiados datos para representarlos en el gráfico. Pruebe con un nivel de acceso diferente, agregue un grupo de filtros a su programa o aumente el límite en la página de configuración de su organización."
 
 #, fuzzy
 msgid "CLICK_LEGEND"
