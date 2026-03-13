@@ -253,7 +253,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
 
     $scope.isModified = () => modified_service.isModified();
 
-    $scope.complete_column_update = function () {
+    $scope.complete_column_update = function complete_column_update() {
       const matching_criteria_changed = _.find(_.values(diff), (delta) => _.has(delta, 'is_matching_criteria'));
 
       if (matching_criteria_changed) {

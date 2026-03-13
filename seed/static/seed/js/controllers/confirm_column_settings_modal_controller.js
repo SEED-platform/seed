@@ -267,7 +267,7 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
 
     // Preview
     // Agg function returning last value of matching criteria field (all should be the same if they match)
-    $scope.matching_field_value = function (aggregation, fieldValue) {
+    $scope.matching_field_value = function matching_field_value(aggregation, fieldValue) {
       aggregation.value = fieldValue;
     };
 
@@ -351,7 +351,7 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
           displayName: 'Cycle',
           pinnedLeft: true,
           treeAggregationType: uiGridGroupingConstants.aggregation.COUNT,
-          customTreeAggregationFinalizerFn: function (aggregation) {
+          customTreeAggregationFinalizerFn: function customTreeAggregationFinalizerFn(aggregation) {
             aggregation.rendered = `total cycles: ${aggregation.value}`;
           },
           minWidth: default_min_width,
@@ -380,7 +380,7 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
       data: 'data',
       enableColumnResizing: true,
       enableFiltering: true,
-      onRegisterApi: function (gridApi) {
+      onRegisterApi: function onRegisterApi(gridApi) {
         $scope.gridApi = gridApi;
 
         // used to allow filtering for child branches of grouping tree
