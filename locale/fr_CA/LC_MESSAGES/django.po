@@ -1,15 +1,14 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-04 14:26-0700\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: lokalise.com\n"
+"Project-Id-Version: SEED Platform\n"
+"PO-Revision-Date: 2026-03-12 21:08\n"
+"Last-Translator: lokalise.com\n"
+"Language-Team: lokalise.com\n\n"
+"Language: fr_CA\n"
 
 msgid "# Of Files"
 msgstr "Nombre de fichiers"
@@ -648,6 +647,9 @@ msgstr "Inclut les éléments de construction applicables avec les valeurs RSL l
 
 msgid "CEWE_ELEMENTS_TITLE"
 msgstr "Soutien au parcours de conformité de l'évaluation complète de l'énergie et de l'eau (CEWE)  "
+
+msgid "CHART_STATUS_MESSAGE"
+msgstr "Trop de données à représenter graphiquement. Essayez un autre niveau d'accès, ajoutez un groupe de filtres à votre programme ou augmentez la limite dans les paramètres de votre organisation."
 
 msgid "CLICK_LEGEND"
 msgstr "Cliquez sur une étiquette ci-dessous pour l'afficher/masquer sur le graphique"
@@ -2970,7 +2972,7 @@ msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
 msgstr "Affichage de l'unité de mesure de l'intensité d'utilisation de l'eau (WUI)"
 
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
-msgstr "AVERTISSEMENT: Vous avez modifié les critères selon lesquels les données de votre organisation seront mises en correspondance et fusionnées. Une fois qu'une colonne a été ajoutée aux critères de correspondance d'une organisation, elle ne peut pas être supprimée tant que l'organisation dispose d'un inventaire."
+msgstr "AVERTISSEMENT: Vous avez modifié les critères de correspondance et de fusion des données de votre organisation. Si l’organisation utilise plusieurs niveaux d’accès: une fois qu’une colonne a été ajoutée aux critères de correspondance, elle ne peut plus être supprimée tant que l’organisation dispose de stocks. Les critères de correspondance peuvent être supprimés dans les organisations n’utilisant pas de niveaux d’accès."
 
 msgid "OVERWRITE_COLUMN_DATA_QUESTION"
 msgstr "Écraser les données?"

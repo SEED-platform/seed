@@ -15,7 +15,9 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
   'proposed_changes',
   'columns_service',
   'spinner_utility',
+  'uiGridGroupingConstants',
   '$q',
+  'complete_column_update',
   '$interval',
   'uploader_service',
   'table_name',
@@ -35,7 +37,9 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
     proposed_changes,
     columns_service,
     spinner_utility,
+    uiGridGroupingConstants,
     $q,
+    complete_column_update,
     $interval,
     uploader_service,
     table_name,
@@ -220,6 +224,7 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
             0,
             1,
             (response) => {
+              complete_column_update();
               $scope.result = `${response.message} in ${$scope.elapsed}`;
               $scope.state = 'done';
               $interval.cancel($scope.interval);
@@ -259,6 +264,205 @@ angular.module('SEED.controller.confirm_column_settings_modal', []).controller('
         }
       }
     };
+
+    // Preview
+    // Agg function returning last value of matching criteria field (all should be the same if they match)
+    $scope.matching_field_value = function matching_field_value(aggregation, fieldValue) {
+      aggregation.value = fieldValue;
+    };
+
+    function prioritize_sort(grid, sortColumns) {
+      // To maintain grouping while giving users the ability to have some sorting,
+      // matching columns are given top priority followed by the hidden linking ID column.
+      // Lastly, non-matching columns are given next priority so that users can sort within a grouped set.
+      if (sortColumns.length > 1) {
+        const matching_cols = _.filter(sortColumns, (col) => col.colDef.is_matching_criteria);
+        const linking_id_col = _.find(sortColumns, ['name', 'id']);
+        const remaining_cols = _.filter(sortColumns, (col) => !col.colDef.is_matching_criteria && !(col.name === 'id'));
+        sortColumns = matching_cols.concat(linking_id_col).concat(remaining_cols);
+        _.forEach(sortColumns, (col, index) => {
+          col.sort.priority = index;
+        });
+      }
+    }
+
+    // Takes raw cycle-partitioned records and returns array of cycle-aware records
+    const format_preview_records = (raw_inventory) => _.reduce(raw_inventory, (all_records, records, cycle_id) => {
+      const cycle = _.find($scope.cycles, { id: parseInt(cycle_id, 10) });
+      _.forEach(records, (record) => {
+        record.cycle_name = cycle.name;
+        record.cycle_start = cycle.start;
+        all_records.push(record);
+      });
+      return all_records;
+    }, []);
+
+    // Builds preview columns using non-extra_data columns
+    function build_preview_columns() {
+      // create copy in order to not change original column objects.
+      const preview_column_defs = _.reject(_.cloneDeep($scope.columns), 'is_extra_data');
+      const default_min_width = 50;
+      const autopin_width = 100;
+      const column_def_defaults = {
+        headerCellFilter: 'translate',
+        minWidth: default_min_width,
+        width: 125,
+        groupingShowAggregationMenu: false
+      };
+
+      _.map(preview_column_defs, (col) => {
+        const options = {};
+        if (col.data_type === 'datetime') {
+          options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
+          options.filter = inventory_service.dateFilter();
+        } else {
+          options.filter = inventory_service.combinedFilter();
+        }
+
+        // For matching criteria values, always pin left and show values in aggregate rows.
+        if ($scope.proposed_matching_criteria_columns.includes(col.column_name)) {
+          col.pinnedLeft = true;
+
+          // Help indicate matching columns are given preferred sort priority
+          col.displayName += '*';
+          options.headerCellClass = 'matching-column-header';
+
+          options.customTreeAggregationFn = $scope.matching_field_value;
+          options.width = autopin_width;
+        }
+        return _.defaults(col, options, column_def_defaults);
+      });
+
+      // Grouping Settings
+      preview_column_defs.unshift(
+        {
+          displayName: 'Linking ID',
+          grouping: { groupPriority: 0 },
+          name: 'id',
+          sort: { priority: 0, direction: 'desc' },
+          pinnedLeft: true,
+          visible: false,
+          suppressRemoveSort: true, // since grouping relies on sorting
+          minWidth: default_min_width,
+          width: autopin_width
+        },
+        {
+          name: 'cycle_name',
+          displayName: 'Cycle',
+          pinnedLeft: true,
+          treeAggregationType: uiGridGroupingConstants.aggregation.COUNT,
+          customTreeAggregationFinalizerFn: function customTreeAggregationFinalizerFn(aggregation) {
+            aggregation.rendered = `total cycles: ${aggregation.value}`;
+          },
+          minWidth: default_min_width,
+          width: autopin_width,
+          groupingShowAggregationMenu: false
+        },
+        {
+          name: 'cycle_start',
+          displayName: 'Cycle Start',
+          cellFilter: 'date:\'yyyy-MM-dd\'',
+          filter: inventory_service.dateFilter(),
+          type: 'date',
+          sort: { priority: 1, direction: 'asc' },
+          pinnedLeft: true,
+          minWidth: default_min_width,
+          width: autopin_width,
+          groupingShowAggregationMenu: false
+        }
+      );
+
+      return preview_column_defs;
+    }
+
+    // Initialize preview table as empty for now.
+    $scope.match_merge_link_preview = {
+      data: 'data',
+      enableColumnResizing: true,
+      enableFiltering: true,
+      onRegisterApi: function onRegisterApi(gridApi) {
+        $scope.gridApi = gridApi;
+
+        // used to allow filtering for child branches of grouping tree
+        $scope.gridApi.table_category = 'year-over-year';
+
+        $scope.gridApi.core.on.filterChanged($scope, () => {
+        // This is a workaround for losing the state of expanded rows during filtering.
+          _.delay($scope.gridApi.treeBase.expandAllRows, 500);
+        });
+
+        // Prioritized to maintain grouping.
+        $scope.gridApi.core.on.sortChanged($scope, prioritize_sort);
+      }
+    };
+
+    // Preview Loading Helpers
+    function build_proposed_matching_columns(result) {
+      // Summarize proposed matching_criteria_columns for pinning and to create preview
+      const criteria_additions = _.filter($scope.change_summary_data, (change) => change.is_matching_criteria);
+      const criteria_removals = _.filter($scope.change_summary_data, (change) => change.is_matching_criteria === false);
+
+      $scope.criteria_changes = {
+        add: _.map(criteria_additions, 'column_name'),
+        remove: _.map(criteria_removals, 'column_name')
+      };
+
+      let base_and_add;
+      if ($scope.inventory_type === 'properties') {
+        base_and_add = _.union(result.PropertyState, $scope.criteria_changes.add);
+      } else {
+        base_and_add = _.union(result.TaxLotState, $scope.criteria_changes.add);
+      }
+      $scope.proposed_matching_criteria_columns = _.difference(base_and_add, $scope.criteria_changes.remove);
+    }
+
+    function build_preview(summary) {
+      $scope.data = format_preview_records(summary);
+      $scope.preview_columns = build_preview_columns();
+      $scope.match_merge_link_preview.columnDefs = $scope.preview_columns;
+    }
+
+    function preview_loading_complete() {
+      $scope.preview_loading = false;
+      spinner_utility.hide();
+    }
+
+    function get_preview() {
+      // Use new proposed matching_criteria_columns to request a preview then render this preview.
+      const spinner_options = {
+        scale: 0.40,
+        position: 'relative',
+        left: '100%'
+      };
+      spinner_utility.show(spinner_options, $('#spinner_placeholder')[0]);
+
+      organization_service.match_merge_link_preview($scope.org_id, $scope.inventory_type, $scope.criteria_changes)
+        .then((response) => {
+          uploader_service.check_progress_loop(
+            response.progress_key,
+            0,
+            1,
+            (completion_notice) => {
+              organization_service.get_match_merge_link_result($scope.org_id, completion_notice.unique_id)
+                .then(build_preview)
+                .then(preview_loading_complete);
+            },
+            () => { /* Do nothing */ },
+            { progress: 0 }
+          );
+        });
+    }
+
+    // Get and Show Preview (If matching criteria changes exist.)
+    $scope.matching_criteria_exists = _.find(_.values($scope.change_summary_data), (delta) => _.has(delta, 'is_matching_criteria'));
+
+    if ($scope.matching_criteria_exists) {
+      $scope.preview_loading = true;
+
+      organization_service.matching_criteria_columns($scope.org_id)
+        .then(build_proposed_matching_columns)
+        .then(get_preview);
+    }
 
     $scope.setRunningState = () => {
       $scope.eta = $scope.etaFn();
