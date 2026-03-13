@@ -206,6 +206,7 @@
     "CEWE_ELEMENTS_COMMENT": "(Generado por la biblioteca de base de conocimientos de ESTCP Technologies)",
     "CEWE_ELEMENTS_SUBTITLE": "Incluye elementos de construcción aplicables con los valores RSL más bajos",
     "CEWE_ELEMENTS_TITLE": "Apoyo a la vía de cumplimiento de la Evaluación Integral de Energía y Agua (CEWE)  ",
+    "CHART_STATUS_MESSAGE": "Demasiados datos para representarlos en el gráfico. Pruebe con un nivel de acceso diferente, agregue un grupo de filtros a su programa o aumente el límite en la página de configuración de su organización.",
     "CLICK_LEGEND": "Haga clic en una etiqueta para mostrarla u ocultarla en el gráfico",
     "COLUMN_NAME_DUPLICATE_ERROR": "Error: El nuevo nombre de columna no coincide con el anterior.",
     "COLUMN_NAME_EXISTS_WARNING": "Advertencia: El nombre de la columna ya existe.",

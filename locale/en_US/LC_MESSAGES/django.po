@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2026-03-10 20:51\n"
+"PO-Revision-Date: 2026-03-12 21:08\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: en_US\n"
@@ -638,6 +638,9 @@ msgstr "Includes Applicable Building Elements with Lowest RSL Values"
 
 msgid "CEWE_ELEMENTS_TITLE"
 msgstr "Comprehensive Energy and Water Evaluation (CEWE) Compliance Pathway Support  "
+
+msgid "CHART_STATUS_MESSAGE"
+msgstr "Too much data to chart. Try a different Access Level, add a Filter Group to your program, or increase the limit in your Organization Settings page."
 
 msgid "CLICK_LEGEND"
 msgstr "Click a label below to show/hide it on the chart"
