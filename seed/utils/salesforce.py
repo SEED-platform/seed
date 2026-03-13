@@ -458,15 +458,11 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
 
     """ PERFORM UPDATE """
     try:
-        # # first retrieve the correct benchmark record using the custom ID name/value:
-
         # determine the correct Salesforce benchmark record ID to update
         sf_benchmark_id = None
         if getattr(config, "unique_benchmark_id_fieldname", None):
             # first retrieve the correct benchmark record using the custom ID name/value:
-            benchmark = salesforce_client.get_benchmark_by_custom_id(
-                config.unique_benchmark_id_fieldname, benchmark_id
-            )
+            benchmark = salesforce_client.get_benchmark_by_custom_id(config.unique_benchmark_id_fieldname, benchmark_id)
             if not isinstance(benchmark, dict) or "Id" not in benchmark:
                 # Explicit message when benchmark cannot be found/used
                 message = (
@@ -479,10 +475,7 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         else:
             # fallback: assume benchmark_id is already the Salesforce benchmark ID
             sf_benchmark_id = benchmark_id
-            print(
-                " no unique benchmark id fieldname configured; "
-                f"using provided benchmark ID directly: {sf_benchmark_id}"
-            )
+            # print(f" no unique benchmark id fieldname configured; using provided benchmark ID directly: {sf_benchmark_id}")
         salesforce_client.update_benchmark(sf_benchmark_id, **params)
 
         status = True

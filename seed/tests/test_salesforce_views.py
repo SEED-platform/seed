@@ -262,17 +262,15 @@ class SalesforceViewTests(DataMappingBaseTestCase):
 
         self.assertEqual(status, True)
 
-    @patch('seed.utils.salesforce.test_connection')
-    @patch('seed_salesforce.salesforce_client.SalesforceClient')
-    def test_benchmark_lookup_with_unique_id_success(self, mock_client_class, mock_test_connection):
+    @patch("seed.utils.salesforce.test_connection")
+    def test_benchmark_lookup_with_unique_id_success(self, mock_test_connection):
         """Test successful benchmark lookup using unique_benchmark_id_fieldname"""
         # Setup mocks
         mock_client = Mock()
-        mock_client_class.return_value = mock_client
         mock_test_connection.return_value = (True, None, mock_client)
 
         # Mock successful benchmark lookup
-        mock_benchmark_record = {'Id': 'a01Ea00000VqqMf', 'Name': 'Test Benchmark'}
+        mock_benchmark_record = {"Id": "a01Ea00000VqqMf", "Name": "Test Benchmark"}
         mock_client.get_benchmark_by_custom_id.return_value = mock_benchmark_record
         mock_client.update_benchmark.return_value = None
 
@@ -300,13 +298,12 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         # Assertions
         self.assertTrue(status)
         mock_client.get_benchmark_by_custom_id.assert_called_once_with("Custom_Benchmark_ID__c", "CUSTOM_BENCHMARK_001")
-        mock_client.update_benchmark.assert_called_once_with("a01Ea00000VqqMf",
-                                                           Status__c='Compliance Label',
-                                                           Benchmark_Square_Footage__c=state.gross_floor_area,
-                                                           Site_EUI_kBtu_ft2__c=50.0)
+        mock_client.update_benchmark.assert_called_once_with(
+            "a01Ea00000VqqMf", Status__c="Compliance Label", Benchmark_Square_Footage__c=state.gross_floor_area, Site_EUI_kBtu_ft2__c=50.0
+        )
 
-    @patch('seed.utils.salesforce.test_connection')
-    @patch('seed_salesforce.salesforce_client.SalesforceClient')
+    @patch("seed.utils.salesforce.test_connection")
+    @patch("seed_salesforce.salesforce_client.SalesforceClient")
     def test_benchmark_lookup_with_unique_id_not_found(self, mock_client_class, mock_test_connection):
         """Test benchmark lookup failure when benchmark not found in Salesforce"""
         # Setup mocks
@@ -343,8 +340,8 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         mock_client.get_benchmark_by_custom_id.assert_called_once_with("Custom_Benchmark_ID__c", "NONEXISTENT_BENCHMARK")
         mock_client.update_benchmark.assert_not_called()
 
-    @patch('seed.utils.salesforce.test_connection')
-    @patch('seed_salesforce.salesforce_client.SalesforceClient')
+    @patch("seed.utils.salesforce.test_connection")
+    @patch("seed_salesforce.salesforce_client.SalesforceClient")
     def test_benchmark_lookup_with_unique_id_invalid_response(self, mock_client_class, mock_test_connection):
         """Test benchmark lookup failure when response is invalid (missing Id)"""
         # Setup mocks
@@ -353,7 +350,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         mock_test_connection.return_value = (True, None, mock_client)
 
         # Mock invalid benchmark lookup response (missing 'Id' field)
-        mock_client.get_benchmark_by_custom_id.return_value = {'Name': 'Test Benchmark'}
+        mock_client.get_benchmark_by_custom_id.return_value = {"Name": "Test Benchmark"}
 
         # Setup test data
         state = self.property_state_factory.get_property_state()
@@ -381,8 +378,8 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         mock_client.get_benchmark_by_custom_id.assert_called_once_with("Custom_Benchmark_ID__c", "INVALID_RESPONSE_BENCHMARK")
         mock_client.update_benchmark.assert_not_called()
 
-    @patch('seed.utils.salesforce.test_connection')
-    @patch('seed_salesforce.salesforce_client.SalesforceClient')
+    @patch("seed.utils.salesforce.test_connection")
+    @patch("seed_salesforce.salesforce_client.SalesforceClient")
     def test_benchmark_lookup_fallback_to_direct_id(self, mock_client_class, mock_test_connection):
         """Test fallback behavior when unique_benchmark_id_fieldname is not configured"""
         # Setup mocks
@@ -417,13 +414,15 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         # Assertions
         self.assertTrue(status)
         mock_client.get_benchmark_by_custom_id.assert_not_called()  # Should not be called in fallback mode
-        mock_client.update_benchmark.assert_called_once_with("a01Ea00000VqqMf",  # Direct ID used
-                                                           Status__c='Compliance Label',
-                                                           Benchmark_Square_Footage__c=state.gross_floor_area,
-                                                           Site_EUI_kBtu_ft2__c=75.0)
+        mock_client.update_benchmark.assert_called_once_with(
+            "a01Ea00000VqqMf",  # Direct ID used
+            Status__c="Compliance Label",
+            Benchmark_Square_Footage__c=state.gross_floor_area,
+            Site_EUI_kBtu_ft2__c=75.0,
+        )
 
-    @patch('seed.utils.salesforce.test_connection')
-    @patch('seed_salesforce.salesforce_client.SalesforceClient')
+    @patch("seed.utils.salesforce.test_connection")
+    @patch("seed_salesforce.salesforce_client.SalesforceClient")
     def test_benchmark_lookup_with_empty_string_fieldname(self, mock_client_class, mock_test_connection):
         """Test fallback behavior when unique_benchmark_id_fieldname is empty string"""
         # Setup mocks
@@ -455,13 +454,12 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         # Assertions
         self.assertTrue(status)
         mock_client.get_benchmark_by_custom_id.assert_not_called()
-        mock_client.update_benchmark.assert_called_once_with("a01Ea00000VqqMf",
-                                                           Status__c='Compliance Label',
-                                                           Benchmark_Square_Footage__c=None,
-                                                           Site_EUI_kBtu_ft2__c=state.site_eui)
+        mock_client.update_benchmark.assert_called_once_with(
+            "a01Ea00000VqqMf", Status__c="Compliance Label", Benchmark_Square_Footage__c=None, Site_EUI_kBtu_ft2__c=state.site_eui
+        )
 
-    @patch('seed.utils.salesforce.test_connection')
-    @patch('seed_salesforce.salesforce_client.SalesforceClient')
+    @patch("seed.utils.salesforce.test_connection")
+    @patch("seed_salesforce.salesforce_client.SalesforceClient")
     def test_benchmark_lookup_exception_handling(self, mock_client_class, mock_test_connection):
         """Test exception handling during benchmark lookup"""
         # Setup mocks
