@@ -9,7 +9,8 @@ import locale
 import logging
 import os.path
 from collections import OrderedDict
-from typing import Any, Callable, Literal, Optional
+from collections.abc import Callable
+from typing import Any, Literal
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
@@ -1521,11 +1522,11 @@ class Column(models.Model):
     @staticmethod
     def retrieve_all(
         org_id: int,
-        inventory_type: Optional[Literal["property", "taxlot"]] = None,
+        inventory_type: Literal["property", "taxlot"] | None = None,
         only_used: bool = False,
         include_related: bool = True,
         exclude_derived: bool = False,
-        column_ids: Optional[list[int]] = None,
+        column_ids: list[int] | None = None,
     ) -> list[dict]:
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the

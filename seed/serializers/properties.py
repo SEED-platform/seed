@@ -419,7 +419,7 @@ class PropertyViewListSerializer(serializers.ListSerializer, OrgMixin, ProfileId
             record = certset.setdefault(certification.view_id, [])
             record.append(GreenAssessmentPropertyReadOnlySerializer(certification).data)
         for row in results:
-            row["certifications"] = certset.get(row["id"], None)
+            row["certifications"] = certset.get(row["id"])
         return results
 
 

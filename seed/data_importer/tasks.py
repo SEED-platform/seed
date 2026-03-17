@@ -16,11 +16,9 @@ import zipfile
 from _csv import Error
 from bisect import bisect_left
 from collections import defaultdict, namedtuple
-from datetime import date, datetime
-from datetime import timezone as tz
+from datetime import UTC, date, datetime
 from itertools import chain
 from math import ceil
-from typing import Optional, Union
 
 from celery import chain as celery_chain
 from celery import chord, group, shared_task
@@ -678,7 +676,7 @@ def map_data_synchronous(import_file_id: int) -> dict:
 
     # Check for duplicate column headers
     column_headers = import_file.first_row_columns or []
-    duplicate_tracker: dict = collections.defaultdict(lambda: 0)
+    duplicate_tracker: dict = collections.defaultdict(int)
     for header in column_headers:
         duplicate_tracker[header] += 1
         if duplicate_tracker[header] > 1:
@@ -724,7 +722,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
 
     # Check for duplicate column headers
     column_headers = import_file.first_row_columns or []
-    duplicate_tracker = collections.defaultdict(lambda: 0)
+    duplicate_tracker = collections.defaultdict(int)
     for header in column_headers:
         duplicate_tracker[header] += 1
         if duplicate_tracker[header] > 1:
@@ -1336,7 +1334,7 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
             {'<source_id/usage_point_id> - <type>": {'error': "<error_message>"}},
         ]
     """
-    agg_results_summary = collections.defaultdict(lambda: 0)
+    agg_results_summary = collections.defaultdict(int)
     error_comments = collections.defaultdict(set)
 
     if not isinstance(import_results, list):
@@ -1740,7 +1738,7 @@ def add_dictionary_repr_to_hash(hash_obj, dict_obj: dict):
     return hash_obj
 
 
-def hash_state_object(obj: Union[PropertyState, TaxLotState], include_extra_data=True, prefetched_columns: Optional[list[str]] = None):
+def hash_state_object(obj: PropertyState | TaxLotState, include_extra_data=True, prefetched_columns: list[str] | None = None):
     m = hashlib.md5()  # noqa: S324
     for field in prefetched_columns or Column.retrieve_db_field_name_for_hash_comparison(type(obj), obj.organization_id):
         # Default to a random value so we can distinguish between this and None.
@@ -1750,7 +1748,7 @@ def hash_state_object(obj: Union[PropertyState, TaxLotState], include_extra_data
             # if this is a datetime, then make sure to save the string as a naive datetime.
             # Somehow, somewhere the data are being saved in mapping with a timezone,
             # then in matching they are removed (but the time is updated correctly)
-            m.update(str(make_naive(obj_val).astimezone(tz.utc).isoformat()).encode("utf-8"))
+            m.update(str(make_naive(obj_val).astimezone(UTC).isoformat()).encode("utf-8"))
         elif isinstance(obj_val, GEOSGeometry):
             m.update(GEOSGeometry(obj_val, srid=4326).wkt.encode("utf-8"))
         else:

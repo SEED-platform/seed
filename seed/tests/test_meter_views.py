@@ -6,8 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import ast
 import copy
 import json
-from datetime import datetime
-from datetime import timezone as tz
+from datetime import UTC, datetime
 
 from django.urls import reverse
 
@@ -225,8 +224,8 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.meter = Meter.objects.create(property=self.property)
         self.meter_reading = MeterReading.objects.create(
             meter=self.meter,
-            start_time=datetime(2024, 1, 1, 0, 0, tzinfo=tz.utc),
-            end_time=datetime(2024, 1, 2, 0, 0, tzinfo=tz.utc),
+            start_time=datetime(2024, 1, 1, 0, 0, tzinfo=UTC),
+            end_time=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
             reading=12345,
             source_unit="kWh",
             conversion_factor=1,

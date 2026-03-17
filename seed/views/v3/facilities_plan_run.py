@@ -8,7 +8,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import io
 import logging
 from pathlib import Path
-from typing import Literal, Union
+from typing import Literal
 
 import pandas as pd
 from django.contrib.postgres.expressions import ArraySubquery
@@ -94,7 +94,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         page = request.query_params.get("page", 1)
         per_page = request.query_params.get("per_page", 100)
-        inventory_type: Union[Literal["property", "taxlot"]] = "property"
+        inventory_type: Literal["property", "taxlot"] = "property"
         access_level_instance = fpr.ali
         columns_from_database = Column.retrieve_all(
             org_id=org_id,

@@ -293,7 +293,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         self.sf_config.save()
 
         # Test the function
-        status, message = update_salesforce_property(self.org.id, view.id)
+        status, _message = update_salesforce_property(self.org.id, view.id)
 
         # Assertions
         self.assertTrue(status)
@@ -409,7 +409,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         self.sf_config.save()
 
         # Test the function
-        status, message = update_salesforce_property(self.org.id, view.id)
+        status, _message = update_salesforce_property(self.org.id, view.id)
 
         # Assertions
         self.assertTrue(status)
@@ -449,7 +449,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         self.sf_config.save()
 
         # Test the function
-        status, message = update_salesforce_property(self.org.id, view.id)
+        status, _message = update_salesforce_property(self.org.id, view.id)
 
         # Assertions
         self.assertTrue(status)

@@ -23,7 +23,7 @@ Ruff is used to statically verify code syntax. To run ruff locally call:
 
 .. code-block:: bash
 
-    tox -e precommit -- ruff
+    tox -e precommit -- ruff-check
     tox -e precommit -- ruff-format
 
 Python Type Hints

@@ -265,7 +265,8 @@ class SEEDOrgPermissionsTests(TestCase):
         mock_value_error = mock.PropertyMock(side_effect=ValueError)
         type(mock_view).get_queryset = mock_value_error
         mock_view.queryset = None
-        pytest.raises(AssertionError, permissions.has_permission, mock_request, mock_view)
+        with pytest.raises(AssertionError):
+            permissions.has_permission(mock_request, mock_view)
 
 
 class SEEDPublicPermissionsTests(TestCase):

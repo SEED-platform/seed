@@ -65,7 +65,8 @@ class TestOrgMixin(TestCase):
 
         # assert raises exception if org_id does not match user
         mock_get_org_id.return_value = self.org.id * 100
-        pytest.raises(PermissionDenied, self.mixin_class.get_organization, mock_request, True)
+        with pytest.raises(PermissionDenied):
+            self.mixin_class.get_organization(mock_request, True)
 
         # test first org id returned if not defined on request
         mock_get_org_id.return_value = None
@@ -187,12 +188,14 @@ class TestOrgValidateMixin(TestCase):
         # assert raises exception if organization_id is None
         mock_instance = mock.MagicMock()
         mock_instance.organization_id = None
-        pytest.raises(PermissionDenied, self.mixin_class.validate_org, mock_instance, self.user, self.org_validator)
+        with pytest.raises(PermissionDenied):
+            self.mixin_class.validate_org(mock_instance, self.user, self.org_validator)
 
         # assert raises exception if organization_id does not match
         mock_instance = mock.MagicMock()
         mock_instance.organization_id = self.org.id * 100
-        pytest.raises(PermissionDenied, self.mixin_class.validate_org, mock_instance, self.user, self.org_validator)
+        with pytest.raises(PermissionDenied):
+            self.mixin_class.validate_org(mock_instance, self.user, self.org_validator)
 
         # assert does raises exception if organization_id matches
         did_not_raise_exception = False
@@ -213,7 +216,8 @@ class TestOrgValidateMixin(TestCase):
             pass
 
         my_class = OrgValidateClass()
-        pytest.raises(ValidationError, my_class.validate, {})
+        with pytest.raises(ValidationError):
+            my_class.validate({})
 
     def test_validate(self):
         """Test validate method"""
@@ -221,13 +225,15 @@ class TestOrgValidateMixin(TestCase):
         mock_instance = mock.MagicMock()
         mock_instance.organization_id = None
         data = {"foreign_key": mock_instance}
-        pytest.raises(PermissionDenied, self.mixin_class.validate, data)
+        with pytest.raises(PermissionDenied):
+            self.mixin_class.validate(data)
 
         # assert raises exception if organization_id does not match
         mock_instance = mock.MagicMock()
         mock_instance.organization_id = self.org.id * 100
         data = {"foreign_key": mock_instance}
-        pytest.raises(PermissionDenied, self.mixin_class.validate, data)
+        with pytest.raises(PermissionDenied):
+            self.mixin_class.validate(data)
 
         # assert does not raises exception if organization_id matches
         did_not_raise_exception = False
@@ -268,7 +274,8 @@ class TestOrgQuerySetMixin(TestCase):
             request = mock_request
 
         mixin_class = OrgQuerySetMixinClass()
-        pytest.raises(AttributeError, mixin_class.get_queryset)
+        with pytest.raises(AttributeError):
+            mixin_class.get_queryset()
 
     @mock.patch("seed.utils.api.get_org_id")
     def test_get_queryset(self, mock_get_org_id):
