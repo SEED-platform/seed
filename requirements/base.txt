@@ -56,7 +56,7 @@ geojson==3.2.0
 buildingsync-asset-extractor==v0.2.1
 
 # Salesforce Integration
-seed-salesforce==0.1.1
+seed-salesforce==0.2.0
 simple-salesforce==1.12.8
 
 # geospatial and pnnl/buildingid-py
