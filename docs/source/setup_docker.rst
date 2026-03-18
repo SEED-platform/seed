@@ -119,7 +119,7 @@ While the containers are running (i.e., after running the docker compose up comm
 
 .. code-block:: bash
 
-    docker exec -it seed_web ./manage.py test --settings config.settings.docker_dev
+    docker exec -it seed_web ./manage.py test --settings config.settings.docker_test
 
 Add the setting  :code:`--nocapture` in order to see :code:`stdout` while running tests.  You will need to do this in order to make use of debugging as described below or the output to your debug commands will not display until after the break point has passed and the tests are finished.
 

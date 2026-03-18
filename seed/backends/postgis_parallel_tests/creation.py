@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from time import sleep
 
 from django.db.backends.postgresql.creation import DatabaseCreation as PostGISDatabaseCreation
 
@@ -34,9 +35,33 @@ class DatabaseCreation(PostGISDatabaseCreation):
             if cursor.fetchone()[0].lower() == "on":
                 cursor.execute("SELECT timescaledb_post_restore()")
 
+    def _disconnect_source_database_sessions(self):
+        with self._source_database_cursor() as cursor:
+            for _ in range(20):
+                cursor.execute(
+                    """
+                    SELECT pg_terminate_backend(pid)
+                    FROM pg_stat_activity
+                    WHERE datname = current_database()
+                      AND pid <> pg_backend_pid()
+                    """
+                )
+                cursor.execute(
+                    """
+                    SELECT COUNT(*)
+                    FROM pg_stat_activity
+                    WHERE datname = current_database()
+                      AND pid <> pg_backend_pid()
+                    """
+                )
+                if cursor.fetchone()[0] == 0:
+                    return
+                sleep(0.25)
+
     def _clone_test_db(self, suffix, verbosity, keepdb=False):
         restore_mode_changed = self._enter_timescaledb_restore_mode()
         try:
+            self._disconnect_source_database_sessions()
             super()._clone_test_db(suffix, verbosity, keepdb)
         finally:
             if restore_mode_changed:
