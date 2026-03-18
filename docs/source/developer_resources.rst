@@ -23,8 +23,8 @@ Ruff is used to statically verify code syntax. To run ruff locally call:
 
 .. code-block:: bash
 
-    tox -e precommit -- ruff-check
-    tox -e precommit -- ruff-format
+    uv run tox -e precommit -- ruff-check
+    uv run tox -e precommit -- ruff-format
 
 Python Type Hints
 ^^^^^^^^^^^^^^^^^
@@ -63,7 +63,7 @@ To run the same typechecking applied in CI (i.e., using mypy) you can run the fo
 
 .. code-block:: bash
 
-    tox -e mypy
+    uv run tox -e mypy
 
 
 Django Notes

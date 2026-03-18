@@ -7,6 +7,8 @@ import datetime
 import logging
 
 from celery import chain, shared_task
+from dateutil import parser as dateutil_parser
+from django.utils import timezone
 
 from seed.analysis_pipelines.pipeline import (
     AnalysisPipeline,
@@ -35,6 +37,22 @@ VALID_METERS = [Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICI
 TIME_PERIOD = datetime.timedelta(days=365)
 
 
+def _as_aware_datetime(value):
+    if isinstance(value, str):
+        value = dateutil_parser.parse(value)
+
+    if isinstance(value, datetime.date) and not isinstance(value, datetime.datetime):
+        value = datetime.datetime.combine(value, datetime.time.min)
+
+    if not isinstance(value, datetime.datetime):
+        return value
+
+    if timezone.is_naive(value):
+        return timezone.make_aware(value, timezone.get_current_timezone())
+
+    return value
+
+
 def _get_valid_meters(property_view_ids, config):
     """Performs basic validation of the properties for running EUI and returns any errors.
 
@@ -49,12 +67,12 @@ def _get_valid_meters(property_view_ids, config):
     if select_meters == "all":
         pass  # different for each view
     elif select_meters == "date_range":
-        end_time = config["meter"]["end_date"]
-        start_time = config["meter"]["start_date"]
+        end_time = _as_aware_datetime(config["meter"]["end_date"])
+        start_time = _as_aware_datetime(config["meter"]["start_date"])
     elif select_meters == "select_cycle":
         cycle = Cycle.objects.get(pk=config["cycle_id"])
-        end_time = cycle.end
-        start_time = cycle.start
+        end_time = _as_aware_datetime(cycle.end)
+        start_time = _as_aware_datetime(cycle.start)
     else:
         AnalysisPipelineError("configuration.select_meters must be either 'all', 'date_range', or 'select_cycle'.")
 

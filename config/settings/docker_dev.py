@@ -108,6 +108,18 @@ if local_untracked_spec is None:
 else:
     from config.settings.local_untracked import *  # noqa: F403
 
+if SEED_TESTING:
+    # Apply the test-only overrides after local_untracked so local DB settings
+    # cannot accidentally disable the parallel-safe backend.
+    DATABASES["default"]["ENGINE"] = "seed.backends.postgis_parallel_tests"
+    DATABASES["default"]["CONN_MAX_AGE"] = 0
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "seed-docker-tests",
+        }
+    }
+
 # salesforce testing
 if "SF_INSTANCE" not in vars():
     # use env vars

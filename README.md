@@ -28,15 +28,15 @@ or from the front end by clicking the API documentation link in the sidebar.
 
 ### Starting SEED Platform
 
-In production the following two commands will run the web server (uWSGI) and
+In production the following two commands will run the web server (Hypercorn) and
 the background task manager (Celery) with:
 
 ```
-bin/start_uwsgi.sh
+bin/start_hypercorn.sh
 bin/start_celery.sh
 ```
 
-In development mode, you can start the web server (uWSGI) and the background
+In development mode, you can start Django and the background
 task manager (Celery) with:
 
 ```

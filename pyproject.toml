@@ -8,7 +8,7 @@ license-files = ["LICENSE.md"]
 requires-python = ">=3.12"
 dependencies = [
     # Django core
-    "django==4.2.28",
+    "django==4.2.29",
     # Persistence (database)
     "psycopg2-binary==2.9.11",
     # Background jobs / scheduling / caching
@@ -16,6 +16,7 @@ dependencies = [
     "django-celery-beat==2.8.1",
     "django-redis==6.0.0",
     "hiredis==3.3.0",
+    "tblib==3.2.2",
     # Assets / compression / utilities
     "brotli==1.2.0",
     "django-compressor==4.6.0",
@@ -30,7 +31,7 @@ dependencies = [
     # API / auth / docs
     "djangorestframework==3.16.1",
     "djangorestframework-simplejwt==5.5.1",
-    "drf-yasg==1.21.14",
+    "drf-yasg==1.21.15",
     "django-filter==22.1", # Update after drf-spectacular
     "drf-nested-routers==0.95.0",
     # Email / messaging
@@ -44,7 +45,7 @@ dependencies = [
     # Data formats / parsing / IO
     "Markdown==3.10.2",
     "pyyaml==6.0.3",
-    "xmltodict==1.0.2",
+    "xmltodict==1.0.4",
     "xmlschema==4.1.0",
     "lark==1.2.2",
     "requests==2.32.5",
@@ -65,12 +66,12 @@ dependencies = [
     "buildingsync-asset-extractor==0.3.0", # BuildingSync Asset Extractor (includes lxml dependency required by SEED)
     "tkbl==0.7",
     "seed-salesforce==0.1.1",
-    "simple-salesforce==1.12.8",
+    "simple-salesforce==1.12.9",
     # Compatibility / backports
     "importlib-metadata==8.7.1", # Remove once a version newer than 8.5.0 has been released that fixes Django autoreload
     # AWS / SES
-    "boto3==1.42.45",
-    "django-ses==4.7.1",
+    "boto3==1.42.70",
+    "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",
     # Misc
@@ -89,26 +90,26 @@ dev = [
     # Debug tooling
     "django-debug-toolbar==6.2.0",
     # Test runner + Django integration + utilities
-    "pytest==9.0.2",
-    "pytest-django==4.11.1",
-    "responses==0.25.8",
-    "vcrpy==7.0.0",
-    "Faker==37.6.0",
+    "pytest>=9.0.2",
+    "pytest-django>=4.12.0",
+    "responses==0.26.0",
+    "vcrpy==8.1.1",
+    "Faker==40.11.0",
     "mock==5.2.0",
-    "hypothesis==6.138.16",
+    "hypothesis==6.151.9",
     # Coverage / reporting
-    "coverage==7.10.6",
-    "coveralls==4.0.1", # https://github.com/TheKevJames/coveralls-python/pull/542
+    "coverage==7.13.5",
+    "coveralls==4.1.0",
     # Local/CI orchestration
-    "tox==4.30.2", # Keep this in sync with ci.yml
-    "psutil==7.0.0",
+    "tox-uv-bare==1.33.4",
+    "psutil==7.2.2",
     # Static code analysis / hooks
     "pre-commit>=4.5.1",
     # Documentation & spelling
-    "Sphinx==7.4.7", # TODO update after python 3.9
-    "sphinxcontrib-spelling==8.0.0",
-    "sphinx_rtd_theme==3.0.2",
-    "docutils==0.21.2", # TODO update after python 3.9
+    "Sphinx==9.1.0",
+    "sphinxcontrib-spelling==8.0.2",
+    "sphinx_rtd_theme==3.1.0",
+    "docutils==0.22.4",
 ]
 
 [tool.pytest.ini_options]

@@ -309,9 +309,10 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         label_assignments = defaultdict(list)
         for prop_label in self.PropertyViewLabels.objects.all():
             label_assignments[prop_label.statuslabel_id].append(prop_label.propertyview_id)
+        label_assignments = {label_id: sorted(inventory_ids) for label_id, inventory_ids in label_assignments.items()}
         expected_label_assignments = {
-            self.status_label.id: [pvid_1, pvid_2, pvid_3],
-            self.status_label_2.id: [pvid_1, pvid_2, pvid_3],
+            self.status_label.id: sorted([pvid_1, pvid_2, pvid_3]),
+            self.status_label_2.id: sorted([pvid_1, pvid_2, pvid_3]),
         }
         self.assertEqual(label_assignments, expected_label_assignments)
 
@@ -331,9 +332,10 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         label_assignments = defaultdict(list)
         for prop_label in self.PropertyViewLabels.objects.all():
             label_assignments[prop_label.statuslabel_id].append(prop_label.propertyview_id)
+        label_assignments = {label_id: sorted(inventory_ids) for label_id, inventory_ids in label_assignments.items()}
         expected_label_assignments = {
-            self.status_label.id: [pvid_3],
-            self.status_label_2.id: [pvid_1, pvid_2, pvid_3],
+            self.status_label.id: sorted([pvid_3]),
+            self.status_label_2.id: sorted([pvid_1, pvid_2, pvid_3]),
         }
         self.assertEqual(label_assignments, expected_label_assignments)
 

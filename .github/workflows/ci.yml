@@ -48,12 +48,12 @@ jobs:
           DJANGO_LOG_LEVEL: ERROR
         run: |
           # verify no migrations need to be made...
-          docker exec seed_web python manage.py makemigrations --check --dry-run
+          docker exec seed_web uv run python manage.py makemigrations --check --dry-run
 
           # run migrations
-          docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py migrate
-          docker exec --env DJANGO_LOG_LEVEL seed_web ./manage.py create_default_user --username=demo@example.com --password=demo123
-          docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -c 'echo "y" | ./manage.py make_superuser --user demo@example.com'
+          docker exec --env DJANGO_LOG_LEVEL seed_web uv run python manage.py migrate
+          docker exec --env DJANGO_LOG_LEVEL seed_web uv run python manage.py create_default_user --username=demo@example.com --password=demo123
+          docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -lc 'echo "y" | uv run python manage.py make_superuser --user demo@example.com'
       - uses: actions/setup-node@v6
         with:
           node-version: 24
@@ -89,9 +89,9 @@ jobs:
           DJANGO_LOG_LEVEL: ERROR
         run: |
           docker exec seed_web touch /seed/config/settings/local_untracked.py
-          docker exec --env SEED_PM_UN --env SEED_PM_PW --env DJANGO_LOG_LEVEL --env SF_INSTANCE --env SF_USERNAME --env SF_PASSWORD --env SF_SECURITY_TOKEN --env SF_DOMAIN seed_web coverage run manage.py test --settings=config.settings.docker_dev
+          docker exec --env SEED_PM_UN --env SEED_PM_PW --env DJANGO_LOG_LEVEL --env SF_INSTANCE --env SF_USERNAME --env SF_PASSWORD --env SF_SECURITY_TOKEN --env SF_DOMAIN seed_web /bin/bash -lc 'uv run coverage run manage.py test --settings=config.settings.docker_dev --parallel="$(nproc)"'
           if [[ ! -z "${COVERALLS_REPO_TOKEN}" ]]; then
-            docker exec --env COVERALLS_REPO_TOKEN seed_web coveralls
+            docker exec --env COVERALLS_REPO_TOKEN seed_web uv run coveralls
           else
             echo "INFO: Env var COVERALLS_REPO_TOKEN was not found, skipping coveralls update"
           fi
@@ -105,8 +105,8 @@ jobs:
       - name: Test API
         if: ${{ matrix.test_env == 'api' }}
         run: |
-          docker exec seed_web ./manage.py create_test_user_json --username demo@example.com --host http://localhost --file ./seed/tests/api/api_test_user.json
-          docker exec seed_web python seed/tests/api/test_seed_host_api.py --noinput --nofile
+          docker exec seed_web uv run python manage.py create_test_user_json --username demo@example.com --host http://localhost --file ./seed/tests/api/api_test_user.json
+          docker exec seed_web uv run python seed/tests/api/test_seed_host_api.py --noinput --nofile
       - name: Web container logs
         if: ${{ always() }}
         run: docker logs seed_web
@@ -121,7 +121,10 @@ jobs:
           submodules: true
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.9'
+          python-version-file: '.python-version'
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
       - uses: actions/setup-node@v6
         with:
           node-version: 24
@@ -131,8 +134,7 @@ jobs:
           version: 10
       - name: Install deps
         run: |
-          pip install --upgrade pip
-          pip install tox==4.30.2
+          uv sync --frozen --all-groups
           sudo apt-get update
           sudo apt-get install gdal-bin
       - name: Setup config
@@ -145,4 +147,4 @@ jobs:
           }
           EOF
       - name: Run tox
-        run: tox -e ${{ matrix.tox_env }}
+        run: uv run tox -e ${{ matrix.tox_env }}

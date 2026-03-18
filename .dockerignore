@@ -4,6 +4,7 @@
 .dockerignore
 .idea
 .tox
+.venv
 ./docker-compose*.yml
 ./deploy.sh
 **/*.pyc

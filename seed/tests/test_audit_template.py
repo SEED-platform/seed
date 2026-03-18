@@ -4,14 +4,13 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 from unittest import mock
 
 from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
-from django.utils import timezone as tz
 from lxml import etree
 
 # from seed.audit_template.audit_template import build_xml
@@ -184,8 +183,8 @@ class ExportToAuditTemplate(TestCase):
         # Set Up
         self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)
         MeterReading.objects.create(
-            start_time=datetime(2019, 1, 1, 0, 0, 0, tzinfo=tz.utc),
-            end_time=datetime(2019, 2, 1, 0, 0, 0, tzinfo=tz.utc),
+            start_time=datetime(2019, 1, 1, 0, 0, 0, tzinfo=UTC),
+            end_time=datetime(2019, 2, 1, 0, 0, 0, tzinfo=UTC),
             reading=123,
             meter_id=self.meter.id,
             conversion_factor=1,
@@ -232,8 +231,8 @@ class ExportToAuditTemplate(TestCase):
         # get the timeseries ID attribute from teh timeseries element
         timeseries_id = meter_reading.attrib["ID"]
 
-        self.assertEqual(start_time.text, datetime(2019, 1, 1, 0, 0, 0, tzinfo=tz.utc).isoformat())
-        self.assertEqual(end_time.text, datetime(2019, 2, 1, 0, 0, 0, tzinfo=tz.utc).isoformat())
+        self.assertEqual(start_time.text, datetime(2019, 1, 1, 0, 0, 0, tzinfo=UTC).isoformat())
+        self.assertEqual(end_time.text, datetime(2019, 2, 1, 0, 0, 0, tzinfo=UTC).isoformat())
 
         # # scenario has 1 all resource total
         totals = scenario.findall("auc:AllResourceTotals/auc:AllResourceTotal", namespaces=tree.nsmap)
@@ -305,8 +304,8 @@ class ExportToAuditTemplate(TestCase):
 
         self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)
         MeterReading.objects.create(
-            start_time=datetime(2019, 1, 1, 0, 0, 0, tzinfo=tz.utc),
-            end_time=datetime(2019, 2, 1, 0, 0, 0, tzinfo=tz.utc),
+            start_time=datetime(2019, 1, 1, 0, 0, 0, tzinfo=UTC),
+            end_time=datetime(2019, 2, 1, 0, 0, 0, tzinfo=UTC),
             reading=123,
             meter_id=self.meter.id,
             conversion_factor=1,

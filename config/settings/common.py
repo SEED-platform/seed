@@ -17,8 +17,7 @@ PROTOCOL = os.environ.get("PROTOCOL", "https")
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.seed"
 
 TIME_ZONE = "America/Los_Angeles"
 USE_TZ = True

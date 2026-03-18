@@ -53,8 +53,8 @@ class TestOrgMixin(TestCase):
 
     def tearDown(self):
         self.user.delete()
-        self.org.delete()
         self.org_user.delete()
+        self.org.delete()
 
     @mock.patch("seed.utils.api.get_user_org")
     @mock.patch("seed.utils.api.get_org_id")
@@ -110,8 +110,8 @@ class TestOrgCreateMixin(TestCase):
 
     def tearDown(self):
         self.user.delete()
-        self.org.delete()
         self.org_user.delete()
+        self.org.delete()
 
     @mock.patch("seed.utils.api.get_org_id")
     def test_get_perform_create(self, mock_get_org_id):
@@ -144,8 +144,8 @@ class TestOrgUpdateMixin(TestCase):
 
     def tearDown(self):
         self.user.delete()
-        self.org.delete()
         self.org_user.delete()
+        self.org.delete()
 
     @mock.patch("seed.utils.api.get_org_id")
     def test_get_perform_update(self, mock_get_org_id):
@@ -180,8 +180,8 @@ class TestOrgValidateMixin(TestCase):
 
     def tearDown(self):
         self.user.delete()
-        self.org.delete()
         self.org_user.delete()
+        self.org.delete()
 
     def test_validate_org(self):
         """Test validate_org method."""
@@ -260,8 +260,8 @@ class TestOrgQuerySetMixin(TestCase):
 
     def tearDown(self):
         self.user.delete()
-        self.org.delete()
         self.org_user.delete()
+        self.org.delete()
 
     def test_get_queryset_exception(self):
         """Test get_queryset method raise exception is self.model not set"""
@@ -320,8 +320,8 @@ class TestProfileIdMixin(TestCase):
     def tearDown(self):
         PropertyView.objects.all().delete()
         self.user.delete()
-        self.org.delete()
         self.org_user.delete()
+        self.org.delete()
 
     def test_get_profile_id(self):
         """test get_organization method"""

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 cd /seed
 
 # Check if 'DISABLE_SERVICE_CHECKS_ON_START' is not set or if its value is 'TRUE'
@@ -42,4 +44,7 @@ chown -R 1000 /seed/collected_static
 echo "Creating default user"
 ./manage.py create_default_user --username=$SEED_ADMIN_USER --password=$SEED_ADMIN_PASSWORD --organization=$SEED_ADMIN_ORG
 
-uwsgi --ini /seed/docker/uwsgi.ini
+WORKERS="${HYPERCORN_WORKERS:-$(($(nproc) / 2))}"
+WORKERS=$(($WORKERS > 1 ? $WORKERS : 1))
+
+exec hypercorn config.asgi:seed --bind 127.0.0.1:8000 --workers "$WORKERS"

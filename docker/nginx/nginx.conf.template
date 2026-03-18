@@ -83,7 +83,7 @@ http {
 
     # the upstream component nginx needs to connect to
     upstream seed_upstream {
-        server unix:///tmp/uwsgi-seed.sock;
+        server 127.0.0.1:8000;
     }
 
     # helper to apply CSP only to html responses
@@ -136,7 +136,7 @@ http {
         }
 
         location /api {
-            include seed-uwsgi.conf;
+            include seed-proxy.conf;
             include seed-security-headers.conf;
             # Disable API caching
             add_header Cache-Control "no-cache, no-store";
@@ -174,7 +174,7 @@ http {
         }
 
         location / {
-            include seed-uwsgi.conf;
+            include seed-proxy.conf;
         }
     }
 }

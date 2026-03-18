@@ -1745,10 +1745,12 @@ def hash_state_object(obj: PropertyState | TaxLotState, include_extra_data=True,
         obj_val = getattr(obj, field, "FOO")
         m.update(field.encode("utf-8"))
         if isinstance(obj_val, datetime):
-            # if this is a datetime, then make sure to save the string as a naive datetime.
-            # Somehow, somewhere the data are being saved in mapping with a timezone,
-            # then in matching they are removed (but the time is updated correctly)
-            m.update(str(make_naive(obj_val).astimezone(UTC).isoformat()).encode("utf-8"))
+            # Normalize aware datetimes to naive UTC so hash comparisons are stable
+            # across platforms and timezone implementations.
+            if django_tz.is_aware(obj_val):
+                obj_val = make_naive(obj_val, timezone=UTC)
+
+            m.update(obj_val.isoformat().encode("utf-8"))
         elif isinstance(obj_val, GEOSGeometry):
             m.update(GEOSGeometry(obj_val, srid=4326).wkt.encode("utf-8"))
         else:

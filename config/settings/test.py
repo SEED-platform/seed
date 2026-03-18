@@ -71,6 +71,17 @@ if local_untracked_spec is None:
 else:
     from config.settings.local_untracked import *  # noqa: F403
 
+# Use a test-only PostGIS backend that pauses Timescale background workers
+# while Django clones the template test database for parallel runs.
+DATABASES["default"]["ENGINE"] = "seed.backends.postgis_parallel_tests"
+DATABASES["default"]["CONN_MAX_AGE"] = 0
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "seed-tests",
+    }
+}
+
 
 # suppress some logging on faker -- only show warnings or greater
 logging.getLogger("faker.factory").setLevel(logging.ERROR)

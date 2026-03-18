@@ -47,3 +47,33 @@ def parse_datetime(maybe_datetime):
         return dateutil.parser.parse(maybe_datetime)
     else:
         return None
+
+
+def localize_datetime(value, tz, is_dst=None):
+    """
+    Convert a naive datetime to an aware datetime without relying on Django's
+    deprecated ``is_dst`` passthrough.
+
+    ``pytz`` timezones support ``localize`` for DST disambiguation. For other
+    timezone implementations, fall back to Django's ``make_aware``.
+    """
+    if hasattr(tz, "localize"):
+        return tz.localize(value, is_dst=is_dst)
+
+    if is_dst is not None:
+        raise ValueError("is_dst can only be used with pytz timezones")
+
+    return make_aware(value, timezone=tz)
+
+
+def localize_datetime_with_dst_fallbacks(value, tz):
+    """
+    Localize a naive datetime while preserving the historical SEED behavior for
+    ambiguous and nonexistent timestamps around DST transitions.
+    """
+    try:
+        return localize_datetime(value, tz)
+    except pytz.AmbiguousTimeError:
+        return localize_datetime(value, tz, is_dst=False)
+    except pytz.NonExistentTimeError:
+        return localize_datetime(value, tz, is_dst=True)

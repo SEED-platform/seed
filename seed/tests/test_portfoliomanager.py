@@ -9,6 +9,7 @@ import json
 import locale
 import os
 from datetime import datetime
+from io import BytesIO
 from os import path
 from pathlib import Path
 from unittest import skip, skipIf
@@ -567,7 +568,7 @@ class PortfolioManagerCustomDownloadTest(TestCase):
         excel_b = pm.generate_and_download_meter_data(ids, start_date, end_date)
 
         # Assertion
-        xl = pd.ExcelFile(excel_b)
+        xl = pd.ExcelFile(BytesIO(excel_b))
         assert xl.sheet_names == ["Meters", "Meter Entries"]
 
         meters_df = xl.parse("Meters", header=5)
@@ -602,7 +603,7 @@ class PortfolioManagerCustomDownloadTest(TestCase):
 
         # Assertion
         assert resp.status_code == 200
-        xl = pd.ExcelFile(resp.content)
+        xl = pd.ExcelFile(BytesIO(resp.content))
         assert xl.sheet_names == ["Meters", "Meter Entries"]
 
         meters_df = xl.parse("Meters", header=5)
@@ -637,7 +638,7 @@ class PortfolioManagerCustomDownloadTest(TestCase):
 
         # Assertion
         assert resp.status_code == 200
-        xl = pd.ExcelFile(resp.content)
+        xl = pd.ExcelFile(BytesIO(resp.content))
         assert xl.sheet_names == ["Meters", "Meter Entries"]
 
         meters_df = xl.parse("Meters", header=5)

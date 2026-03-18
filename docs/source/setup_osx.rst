@@ -25,13 +25,12 @@ ready for general development. If this is not the case, skip to Prerequisites.  
 * `git clone git@github.com:seed-platform/seed.git`
 * create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
 * to enable geocoding, get MapQuest API key and attach it to your organization
-* `export DJANGO_SETTINGS_MODULE=config.settings.dev` in all terminals used by SEED (celery terminal and runserver terminal)
-* `pip install -r requirements/local.txt`
-    * for condas python, you way need to run this command to get pip install to succeed: `conda install -c conda-forge python-crfsuite`
-* pnpm install
-* `./manage.py migrate`
-* `./manage.py create_default_user`
-* `./manage.py runserver`
+* `export DJANGO_SETTINGS_MODULE=config.settings.dev` in all terminals used by SEED (celery terminal and Hypercorn terminal)
+* `uv sync`
+* `pnpm install`
+* `uv run python manage.py migrate`
+* `uv run python manage.py create_default_user`
+* `uv run hypercorn config.asgi:seed --bind 127.0.0.1:8000 --reload`
 * `DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l INFO -c 4 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler`
 * navigate to `http://127.0.0.1:8000/app/#/profile/admin` in your browser to add users to organizations
 * main app runs at `127.0.0.1:8000/app`
@@ -208,19 +207,19 @@ Make sure PostgreSQL command line scripts are in your PATH (if using MacPorts)
 
     export PATH=$PATH:/opt/local/lib/postgresql94/bin
 
-Some packages (uWSGI) may need to find your C compiler. Make sure you have
-'gcc' on your system, and then also export this to the `CC` environment
-variable:
+Some packages with native extensions may need to find your C compiler. Make
+sure you have 'gcc' on your system, and then also export this to the `CC`
+environment variable:
 
 .. code-block:: bash
 
     export CC=gcc
 
-Install requirements with `pip`
+Install Python dependencies with `uv`
 
 .. code-block:: bash
 
-    pip install -r requirements/local.txt
+    uv sync
 
 NodeJS/npm
 ----------
@@ -365,7 +364,7 @@ duplicate instances:
 
     ./bin/start-seed.sh
 
-When this script is done, the Django stand-alone server will be running in
+When this script is done, Hypercorn will be running in
 the foreground.
 
 Login

@@ -3,9 +3,9 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import re
+
 from django.conf import settings
-from django.conf.urls.static import static
-from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
@@ -13,7 +13,7 @@ from rest_framework import permissions
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from two_factor.urls import urlpatterns as two_factor_urls
 
-from config.views import robots_txt
+from config.views import debug_media_serve, debug_static_serve, robots_txt
 from ng_seed.views import seed_angular
 from seed.api.base.urls import urlpatterns as api
 from seed.landing.views import CustomLoginView, password_reset_complete, password_reset_confirm, password_reset_done
@@ -78,9 +78,10 @@ if settings.DEBUG:
     from django.contrib import admin
 
     admin.autodiscover()
-    urlpatterns += staticfiles_urlpatterns()
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    urlpatterns += [
+        re_path(rf"^{re.escape(settings.STATIC_URL.lstrip('/'))}(?P<path>.*)$", debug_static_serve, name="static"),
+        re_path(rf"^{re.escape(settings.MEDIA_URL.lstrip('/'))}(?P<path>.*)$", debug_media_serve, name="media"),
+    ]
     urlpatterns += [
         # test URLs
         path("angular_js_tests/", angular_js_tests, name="angular_js_tests"),

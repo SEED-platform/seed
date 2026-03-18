@@ -184,8 +184,8 @@ class SEEDOrgPermissionsTests(TestCase):
 
     def tearDown(self):
         self.user.delete()
-        self.org.delete()
         self.org_user.delete()
+        self.org.delete()
 
     @mock.patch("seed.lib.superperms.orgs.permissions.get_org_id")
     def test_has_perm(self, mock_get_org_id):
@@ -280,8 +280,8 @@ class SEEDPublicPermissionsTests(TestCase):
 
     def tearDown(self):
         self.user.delete()
-        self.org.delete()
         self.org_user.delete()
+        self.org.delete()
 
     @mock.patch("seed.lib.superperms.orgs.permissions.is_authenticated")
     @mock.patch("seed.lib.superperms.orgs.permissions.get_org_id")

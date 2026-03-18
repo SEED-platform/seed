@@ -5,9 +5,16 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 import uuid
+from importlib import import_module
 
 import requests
-from seed_readingtools import check_progress, check_status, read_map_file, upload_file
+
+_seed_readingtools = import_module(".seed_readingtools", __package__) if __package__ else import_module("seed_readingtools")
+
+check_progress = _seed_readingtools.check_progress
+check_status = _seed_readingtools.check_status
+read_map_file = _seed_readingtools.read_map_file
+upload_file = _seed_readingtools.upload_file
 
 
 def upload_match_sort(header, main_url, organization_id, dataset_id, cycle_id, filepath, filetype, mappingfilepath, log):
