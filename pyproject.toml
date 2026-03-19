@@ -65,7 +65,7 @@ dependencies = [
     # Integrations
     "buildingsync-asset-extractor==0.3.0", # BuildingSync Asset Extractor (includes lxml dependency required by SEED)
     "tkbl==0.7",
-    "seed-salesforce==0.1.1",
+    "seed-salesforce==0.2.0",
     "simple-salesforce==1.12.9",
     # Compatibility / backports
     "importlib-metadata==8.7.1", # Remove once a version newer than 8.5.0 has been released that fixes Django autoreload

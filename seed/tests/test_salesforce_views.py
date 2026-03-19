@@ -8,11 +8,12 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 import pytest
+from django.conf import settings
 from django.db import IntegrityError, transaction
+from django.test.testcases import SerializeMixin
 from django.urls import reverse
 from django.utils.timezone import get_current_timezone
 
-from config.settings.test import SF_DOMAIN, SF_INSTANCE, SF_PASSWORD, SF_SECURITY_TOKEN, SF_USERNAME
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import ROLE_MEMBER
 from seed.models import Column, PropertyView, SalesforceConfig, SalesforceMapping
@@ -32,7 +33,12 @@ from seed.utils.salesforce import update_salesforce_property
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 
 
-class SalesforceViewTests(DataMappingBaseTestCase):
+class SalesforceLiveTestsMixin(SerializeMixin):
+    # These tests use the same live Salesforce sandbox records and must not run in parallel.
+    lockfile = __file__
+
+
+class SalesforceViewTests(SalesforceLiveTestsMixin, DataMappingBaseTestCase):
     def setUp(self):
         user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
         self.api_view = LabelInventoryViewSet()
@@ -190,8 +196,8 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         self.org.save()
 
         payload_data = {"salesforce_config": {"instance": None, "username": None, "password": None, "security_token": None}}
-        if SF_DOMAIN == "test":
-            payload_data["salesforce_config"]["domain"] = SF_DOMAIN
+        if settings.SF_DOMAIN == "test":
+            payload_data["salesforce_config"]["domain"] = settings.SF_DOMAIN
 
         response = self.client.post(
             reverse("api:v3:salesforce_configs-salesforce-connection") + "?organization_id=" + str(self.org.id),
@@ -212,15 +218,15 @@ class SalesforceViewTests(DataMappingBaseTestCase):
 
         payload_data = {
             "salesforce_config": {
-                "instance": SF_INSTANCE,
-                "username": SF_USERNAME,
-                "password": SF_PASSWORD,
-                "security_token": SF_SECURITY_TOKEN,
+                "instance": settings.SF_INSTANCE,
+                "username": settings.SF_USERNAME,
+                "password": settings.SF_PASSWORD,
+                "security_token": settings.SF_SECURITY_TOKEN,
             }
         }
 
-        if SF_DOMAIN == "test":
-            payload_data["salesforce_config"]["domain"] = SF_DOMAIN
+        if settings.SF_DOMAIN == "test":
+            payload_data["salesforce_config"]["domain"] = settings.SF_DOMAIN
 
         response = self.client.post(
             reverse("api:v3:salesforce_configs-salesforce-connection") + "?organization_id=" + str(self.org.id),
@@ -250,12 +256,12 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         # print(f" view data: {pdata}")
 
         # enable sf
-        self.sf_config.url = SF_INSTANCE
-        self.sf_config.username = SF_USERNAME
-        self.sf_config.password = encrypt(SF_PASSWORD)
-        self.sf_config.security_token = SF_SECURITY_TOKEN
-        if SF_DOMAIN == "test":
-            self.sf_config.domain = SF_DOMAIN
+        self.sf_config.url = settings.SF_INSTANCE
+        self.sf_config.username = settings.SF_USERNAME
+        self.sf_config.password = encrypt(settings.SF_PASSWORD)
+        self.sf_config.security_token = settings.SF_SECURITY_TOKEN
+        if settings.SF_DOMAIN == "test":
+            self.sf_config.domain = settings.SF_DOMAIN
         self.sf_config.save()
 
         status, _message = update_salesforce_property(self.org.id, view.id)
@@ -528,7 +534,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
     # TODO: test auto sync works and sets date
 
 
-class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
+class SalesforceViewTestPermissions(SalesforceLiveTestsMixin, AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
 
@@ -699,12 +705,12 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
         self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
 
         # enable sf
-        self.sf_config.url = SF_INSTANCE
-        self.sf_config.username = SF_USERNAME
-        self.sf_config.password = encrypt(SF_PASSWORD)
-        self.sf_config.security_token = SF_SECURITY_TOKEN
-        if SF_DOMAIN == "test":
-            self.sf_config.domain = SF_DOMAIN
+        self.sf_config.url = settings.SF_INSTANCE
+        self.sf_config.username = settings.SF_USERNAME
+        self.sf_config.password = encrypt(settings.SF_PASSWORD)
+        self.sf_config.security_token = settings.SF_SECURITY_TOKEN
+        if settings.SF_DOMAIN == "test":
+            self.sf_config.domain = settings.SF_DOMAIN
         self.sf_config.save()
 
         url = reverse("api:v3:properties-update-salesforce") + f"?organization_id={self.org.pk}"

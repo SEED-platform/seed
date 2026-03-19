@@ -20,7 +20,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 
-from seed.celery import app
+from seed.celery_app import app
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.utils.api import api_endpoint

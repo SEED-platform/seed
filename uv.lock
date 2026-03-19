@@ -2547,7 +2547,7 @@ requires-dist = [
     { name = "pyyaml", specifier = "==6.0.3" },
     { name = "qrcode", extras = ["pil"], specifier = "==7.4.2" },
     { name = "requests", specifier = "==2.32.5" },
-    { name = "seed-salesforce", specifier = "==0.1.1" },
+    { name = "seed-salesforce", specifier = "==0.2.0" },
     { name = "semantic-version", specifier = "==2.10.0" },
     { name = "sentry-sdk", specifier = "==2.14.0" },
     { name = "shapely", specifier = "==2.1.2" },
@@ -2585,15 +2585,15 @@ dev = [
 
 [[package]]
 name = "seed-salesforce"
-version = "0.1.1"
+version = "0.2.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "python-dateutil" },
     { name = "simple-salesforce" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f3/1d/07d98aef7aa0f5e94ad49fa7e54cad770e26602bb8207dfa9927421ef2cb/seed_salesforce-0.1.1.tar.gz", hash = "sha256:aef31597e5319a158273ef67674dd6798fa329249e0712c0111e541e581e67c2", size = 7539, upload-time = "2024-10-09T21:38:01.068Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/aa/7a/3616e3faac0693ccd0172e69113ce261db0e0e9943ce389e887cd4f3af6f/seed_salesforce-0.2.0.tar.gz", hash = "sha256:7559af4d95d367c94610a78832d1f95ffd54735f34b146cca3408c3ccaaeb322", size = 7145, upload-time = "2026-03-04T18:58:01.342Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a9/e2/01e85b1891fa52e44624438d48c262264cf8792125cbe0a5f53833b5203e/seed_salesforce-0.1.1-py3-none-any.whl", hash = "sha256:e8435c4a435975fc3487709499ab61fb4400c8c8466f574aaa16d5442685a92f", size = 7571, upload-time = "2024-10-09T21:37:59.591Z" },
+    { url = "https://files.pythonhosted.org/packages/89/fa/625cf2cfb6f2883c36e5cd55b6f25fe21b040033ee844295866d0dff72ee/seed_salesforce-0.2.0-py3-none-any.whl", hash = "sha256:63b205d1ab329264868c612d53d60007605dc86d081b24de9483815c0f8dbaba", size = 8282, upload-time = "2026-03-04T18:57:59.742Z" },
 ]
 
 [[package]]
