@@ -9,9 +9,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 # use importlib module to find the local_untracked file rather than a hard-coded path
 import importlib
 import os
-import sys
 
-from celery.utils import LOG_LEVELS
 from kombu import Exchange, Queue
 
 from config.settings.common import *  # noqa: F403
@@ -21,9 +19,6 @@ MEDIA_URL = "/media/"
 
 # Gather all the settings from the docker environment variables
 ENV_VARS = ["POSTGRES_DB", "POSTGRES_PORT", "POSTGRES_USER", "POSTGRES_PASSWORD"]
-
-# determine if running tests
-SEED_TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
 
 for loc in ENV_VARS:
     locals()[loc] = os.environ.get(loc)
@@ -61,29 +56,20 @@ DATABASES = {
     }
 }
 
-if SEED_TESTING:
-    CELERY_BROKER_BACKEND = "memory"
-    CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_TASK_EAGER_PROPAGATES = True
-    # this celery log level is currently not overridden.
-    CELERY_LOG_LEVEL = LOG_LEVELS["WARNING"]
-
-    TESTING_MAPQUEST_API_KEY = env_var("TESTING_MAPQUEST_API_KEY", "<your_key_here>")
+# Redis / Celery config
+if "REDIS_PASSWORD" in os.environ:
+    CELERY_BROKER_URL = f"redis://:{env_var('REDIS_PASSWORD')}@{env_var('REDIS_HOST', 'db-redis')}:6379/1"
 else:
-    # Redis / Celery config
-    if "REDIS_PASSWORD" in os.environ:
-        CELERY_BROKER_URL = f"redis://:{env_var('REDIS_PASSWORD')}@{env_var('REDIS_HOST', 'db-redis')}:6379/1"
-    else:
-        CELERY_BROKER_URL = f"redis://{env_var('REDIS_HOST', 'db-redis')}:6379/1"
+    CELERY_BROKER_URL = f"redis://{env_var('REDIS_HOST', 'db-redis')}:6379/1"
 
-    CACHES = {
-        "default": {
-            "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": CELERY_BROKER_URL,
-        }
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": CELERY_BROKER_URL,
     }
+}
 
-    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 CELERY_TASK_DEFAULT_QUEUE = "seed-docker"
 # note - Queue and Exchange objects are imported in common.py
@@ -107,18 +93,6 @@ if local_untracked_spec is None:
     print("Unable to find the local_untracked in config/settings/local_untracked.py; Continuing with base settings...")
 else:
     from config.settings.local_untracked import *  # noqa: F403
-
-if SEED_TESTING:
-    # Apply the test-only overrides after local_untracked so local DB settings
-    # cannot accidentally disable the parallel-safe backend.
-    DATABASES["default"]["ENGINE"] = "seed.backends.postgis_parallel_tests"
-    DATABASES["default"]["CONN_MAX_AGE"] = 0
-    CACHES = {
-        "default": {
-            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-            "LOCATION": "seed-docker-tests",
-        }
-    }
 
 # salesforce testing
 if "SF_INSTANCE" not in vars():
