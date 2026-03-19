@@ -3,10 +3,10 @@ from contextlib import contextmanager
 from multiprocessing import cpu_count
 from time import sleep
 
-from django.db.backends.postgresql.creation import DatabaseCreation as PostGISDatabaseCreation
+from django.db.backends.postgresql.creation import DatabaseCreation as PostgreSQLDatabaseCreation
 
 
-class DatabaseCreation(PostGISDatabaseCreation):
+class DatabaseCreation(PostgreSQLDatabaseCreation):
     _hold_restore_mode_for_parallel = False
     _block_source_database_connections = False
     _remaining_parallel_clones = 0

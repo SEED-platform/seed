@@ -112,10 +112,6 @@ dev = [
     "docutils==0.22.4",
 ]
 
-[tool.pytest.ini_options]
-testpaths = "ghedesigner/tests"
-addopts = ["--cov=ghedesigner", "--cov-report=html"]
-
 [tool.ruff]
 target-version = "py312"
 
