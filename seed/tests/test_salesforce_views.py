@@ -10,7 +10,6 @@ from unittest.mock import Mock, patch
 import pytest
 from django.conf import settings
 from django.db import IntegrityError, transaction
-from django.test.testcases import SerializeMixin
 from django.urls import reverse
 from django.utils.timezone import get_current_timezone
 
@@ -33,12 +32,7 @@ from seed.utils.salesforce import update_salesforce_property
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 
 
-class SalesforceLiveTestsMixin(SerializeMixin):
-    # These tests use the same live Salesforce sandbox records and must not run in parallel.
-    lockfile = __file__
-
-
-class SalesforceViewTests(SalesforceLiveTestsMixin, DataMappingBaseTestCase):
+class SalesforceViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
         self.api_view = LabelInventoryViewSet()
@@ -534,7 +528,7 @@ class SalesforceViewTests(SalesforceLiveTestsMixin, DataMappingBaseTestCase):
     # TODO: test auto sync works and sets date
 
 
-class SalesforceViewTestPermissions(SalesforceLiveTestsMixin, AccessLevelBaseTestCase):
+class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
 
