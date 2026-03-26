@@ -42,7 +42,7 @@ street-address==0.4.0
 xlrd<2.0.0  # Version 2 removes xlsx support
 xlsxwriter==3.2.8
 xmltodict==1.0.2
-requests==2.32.5
+requests==2.33.0
 probablepeople==0.5.6
 xmlschema==4.1.0
 lark==1.2.2
