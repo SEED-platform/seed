@@ -4,7 +4,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import numbers
-from typing import Union
 
 from django.db import models
 
@@ -218,7 +217,7 @@ class ComplianceMetric(models.Model):
 
         return "y" if differential >= 0 else "n"
 
-    def _get_column_data(self, data: dict, column: Column) -> Union[float, bool]:
+    def _get_column_data(self, data: dict, column: Column) -> float | bool:
         """Get the column data from the dictionary version of the property state.
         Also, cast the datatype based on the column data_type as needed.
 

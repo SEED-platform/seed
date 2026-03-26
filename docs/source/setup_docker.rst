@@ -90,8 +90,8 @@ overwrite the database or celery configuration!
     docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
 If the server doesn't start successfully, and :code:`docker compose logs` doesn't help,
-the django development server probably failed to start due to an error in your config or code.
-Unfortunately docker/django logging doesn't appear to work when the container is first started.
+the Hypercorn dev server probably failed to start due to an error in your config or code.
+Unfortunately docker application logging doesn't appear to work when the container is first started.
 Just try running the server yourself with docker exec, and see what the output is.
 
 The development docker-compose file has some configurable parameters for specifying volumes to use:
@@ -119,7 +119,7 @@ While the containers are running (i.e., after running the docker compose up comm
 
 .. code-block:: bash
 
-    docker exec -it seed_web ./manage.py test --settings config.settings.docker_dev
+    docker exec -it seed_web ./manage.py test --settings config.settings.docker_test
 
 Add the setting  :code:`--nocapture` in order to see :code:`stdout` while running tests.  You will need to do this in order to make use of debugging as described below or the output to your debug commands will not display until after the break point has passed and the tests are finished.
 

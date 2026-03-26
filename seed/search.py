@@ -5,8 +5,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 Search methods pertaining to buildings.
 """
 
-from __future__ import annotations
-
 import json
 import logging
 import operator

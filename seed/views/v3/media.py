@@ -31,14 +31,23 @@ def check_file_permission(user, filepath):
     :param user: SEEDUser
     :param filepath: string, path to the file relative to MEDIA_ROOT
     """
-    absolute_filepath = os.path.join(settings.MEDIA_ROOT, filepath)
-    filepath_parts = filepath.split("/")
+    normalized_filepath = filepath.replace("\\", "/")
+    absolute_filepath = os.path.join(settings.MEDIA_ROOT, os.path.normpath(normalized_filepath.lstrip("/\\")))
+    filepath_parts = normalized_filepath.split("/")
     base_dir = filepath_parts[0]
+    candidate_paths = {
+        absolute_filepath,
+        absolute_filepath.replace("\\", "/"),
+        normalized_filepath,
+        os.path.normpath(normalized_filepath),
+        filepath,
+        os.path.normpath(filepath),
+    }
     organization = None
     if base_dir == "uploads":
         try:
             # there could be more than one file of the same name if the same file was used to import properties and meters
-            import_file = ImportFile.objects.filter(file__in=[absolute_filepath, filepath], deleted=False).first()
+            import_file = ImportFile.objects.filter(file__in=candidate_paths, deleted=False).first()
             if import_file is None:
                 raise ModelForFileNotFoundError("ImportFile not found")
         except ImportFile.DoesNotExist:
@@ -47,7 +56,7 @@ def check_file_permission(user, filepath):
 
     elif base_dir == "buildingsync_files":
         try:
-            building_file = BuildingFile.objects.filter(file__in=[absolute_filepath, filepath]).first()
+            building_file = BuildingFile.objects.filter(file__in=candidate_paths).first()
             if building_file is None:
                 raise ModelForFileNotFoundError("BuildingFile not found")
         except BuildingFile.DoesNotExist:
@@ -66,7 +75,7 @@ def check_file_permission(user, filepath):
 
     elif base_dir == "analysis_output_files":
         try:
-            analysis_output_file = AnalysisOutputFile.objects.filter(file__in=[absolute_filepath, filepath]).first()
+            analysis_output_file = AnalysisOutputFile.objects.filter(file__in=candidate_paths).first()
             if analysis_output_file is None:
                 raise ModelForFileNotFoundError("AnalysisOutputFile not found")
             analysis_property_view = analysis_output_file.analysis_property_views.first()
@@ -80,7 +89,7 @@ def check_file_permission(user, filepath):
 
     elif base_dir == "inventory_documents":
         try:
-            inventory_document = InventoryDocument.objects.filter(file__in=[absolute_filepath, filepath]).first()
+            inventory_document = InventoryDocument.objects.filter(file__in=candidate_paths).first()
             if inventory_document is None:
                 raise ModelForFileNotFoundError("InventoryDocument not found")
         except InventoryDocument.DoesNotExist:

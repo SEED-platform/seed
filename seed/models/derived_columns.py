@@ -3,8 +3,6 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from __future__ import annotations
-
 import copy
 from typing import Any
 

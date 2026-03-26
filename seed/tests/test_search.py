@@ -5,7 +5,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Union
 
 import pytest
 from django.db import models
@@ -238,7 +237,7 @@ class TestInventoryViewSearchParsers(TestCase):
         class TestCase:
             name: str
             input: QueryDict
-            expected_order_by: list[Union[str, Collate]]
+            expected_order_by: list[str | Collate]
             expected_annotations: dict
 
         # -- Setup

@@ -105,10 +105,14 @@ class TestFields(DeleteModelsTestCase):
         result = field.to_internal_value(None)
         expected = None
         self.assertEqual(result, expected)
-        pytest.raises(ValidationError, field.to_internal_value, 1.54)
-        pytest.raises(ValidationError, field.to_internal_value, "ten")
-        pytest.raises(ValidationError, field.to_internal_value, 0)
-        pytest.raises(ValidationError, field.to_internal_value, -10)
+        with pytest.raises(ValidationError):
+            field.to_internal_value(1.54)
+        with pytest.raises(ValidationError):
+            field.to_internal_value("ten")
+        with pytest.raises(ValidationError):
+            field.to_internal_value(0)
+        with pytest.raises(ValidationError):
+            field.to_internal_value(-10)
 
 
 class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):

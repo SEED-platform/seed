@@ -23,15 +23,13 @@ exclude_lines =
 
 [run]
 omit =
-    *tests*
-    *migrations*
-    *urls*
-    *site-packages*
-    *django-*
-    *src*
-    *settings*
     *config*
+    *django-*
+    *migrations*
+    *settings*
+    *site-packages*
     *test_helpers*
-    *virtualenv*
+    *tests*
     *tos*
     *tos_i18n* # TOS package is clone of pip package, needs removed when updated.
+    *urls*

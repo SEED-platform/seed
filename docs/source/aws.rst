@@ -22,9 +22,9 @@ Ubuntu server 18.04 LTS
 
     sudo apt-get update
     sudo apt-get upgrade
-    sudo apt-get install -y libpq-dev python-dev python-pip libatlas-base-dev \
+    sudo apt-get install -y libpq-dev python-dev libatlas-base-dev \
     gfortran build-essential g++ npm libxml2-dev libxslt1-dev git mercurial \
-    libssl-dev libffi-dev curl uwsgi-core uwsgi-plugin-python
+    libssl-dev libffi-dev curl nginx
 
 
 PostgreSQL and Redis are not included in the above commands. For a quick installation on AWS it
@@ -60,14 +60,14 @@ Clone the **SEED** repository from **github**
 
     $ git clone git@github.com:SEED-platform/seed.git
 
-enter the repo and install the python dependencies from `requirements`_
+enter the repo and sync the Python environment with `uv`_
 
-.. _requirements: https://github.com/SEED-platform/seed/blob/main/requirements/aws.txt
+.. _uv: https://docs.astral.sh/uv/
 
 .. code-block:: console
 
     $ cd seed
-    $ sudo pip install -r requirements/aws.txt
+    $ uv sync --frozen --no-dev
 
 
 JavaScript Dependencies

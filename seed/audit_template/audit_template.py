@@ -317,6 +317,7 @@ class AuditTemplate:
         }
         nsmap.update(NAMESPACES)
         em = ElementMaker(namespace=BUILDINGSYNC_URI, nsmap=nsmap)
+        metering_scenarios = _build_metering_scenarios(em, view.property.id, building_id) if org.audit_template_export_meters else []
 
         doc = em.BuildingSync(
             {
@@ -360,11 +361,7 @@ class AuditTemplate:
                     em.Reports(
                         em.Report(
                             {"ID": report_id},
-                            *(
-                                [em.Scenarios(*_build_metering_scenarios(em, view.property.id, building_id))]
-                                if org.audit_template_export_meters and _build_metering_scenarios(em, view.property.id, building_id)
-                                else []
-                            ),
+                            *([em.Scenarios(*metering_scenarios)] if len(metering_scenarios) > 0 else []),
                             em.LinkedPremisesOrSystem(
                                 em.Building(em.LinkedBuildingID({"IDref": building_id})),
                             ),

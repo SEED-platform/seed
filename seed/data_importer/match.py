@@ -6,7 +6,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import datetime as dt
 import math
 from collections import defaultdict
-from typing import Union
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -390,7 +389,7 @@ def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass
     existing_views = (
         ViewClass.objects.select_related("state").filter(**{f"{class_name}__organization_id": cycle.organization_id}).exclude(cycle=cycle)
     )
-    view_lookup: dict[int, Union[PropertyState, TaxLotState]] = {view.state.id: view for view in existing_views}
+    view_lookup: dict[int, PropertyState | TaxLotState] = {view.state.id: view for view in existing_views}
     match_lookup: dict[tuple, list[dict[str, any]]] = defaultdict(list)
     for state in ({k: getattr(view.state, k) for k in ["id", "hash_object", "updated", *matching_columns]} for view in existing_views):
         match_lookup[tuple(state[c] for c in tuple_values)].append(state)
@@ -604,7 +603,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     tuple_values = matching_columns.copy()
     tuple_values.discard("ubid")
     existing_views = ViewClass.objects.select_related("state").filter(cycle_id=cycle)
-    state_lookup: dict[int, Union[PropertyState, TaxLotState]] = {view.state.id: view.state for view in existing_views}
+    state_lookup: dict[int, PropertyState | TaxLotState] = {view.state.id: view.state for view in existing_views}
     match_lookup: dict[tuple, list[dict[str, any]]] = defaultdict(list)
     for state in ({k: getattr(view.state, k) for k in ["id", "hash_object", "updated", *matching_columns]} for view in existing_views):
         match_lookup[tuple(state[c] for c in tuple_values)].append(state)
@@ -638,7 +637,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     # If multiple matches are found, merge them together, pass along the resulting record.
     # Otherwise, add current -State to be promoted as-is.
     merged_between_existing_count = 0
-    merge_state_pairs: list[Union[tuple[PropertyState, PropertyState], tuple[TaxLotState, TaxLotState]]] = []
+    merge_state_pairs: list[tuple[PropertyState, PropertyState] | tuple[TaxLotState, TaxLotState]] = []
     batch_size = math.ceil(len(unmatched_states) / 100)
 
     for idx, state in enumerate(unmatched_states):

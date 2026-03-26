@@ -81,7 +81,8 @@ class TestDecorators(TestCase):
             self.assertEqual(int(get_lock(key)), self.locked)
             raise TestError("Test exception!")
 
-        pytest.raises(TestError, fake_func, self.pk)
+        with pytest.raises(TestError):
+            fake_func(self.pk)
         # Even though execution failed part way through a call, we unlock.
         self.assertEqual(int(get_lock(key)), self.unlocked)
 

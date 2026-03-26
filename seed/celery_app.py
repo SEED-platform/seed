@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -15,6 +14,3 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
 app = celery.Celery("seed")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 app.autodiscover_tasks(lambda: (*settings.SEED_CORE_APPS, "seed.analysis_pipelines"))
-
-if __name__ == "__main__":
-    app.start()

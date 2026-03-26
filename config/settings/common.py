@@ -5,7 +5,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import os
 from datetime import timedelta
-from typing import Union
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
@@ -18,8 +17,7 @@ PROTOCOL = os.environ.get("PROTOCOL", "https")
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.seed"
 
 TIME_ZONE = "America/Los_Angeles"
 USE_TZ = True
@@ -307,6 +305,7 @@ SWAGGER_SETTINGS = {
     "DOC_EXPANSION": "none",
     "LOGOUT_URL": "/accounts/logout",
 }
+SWAGGER_USE_COMPAT_RENDERERS = False
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
@@ -320,7 +319,7 @@ def env_var(key, default=None):
     return os.environ.get(key, default)
 
 
-def yn(s: Union[bool, str]) -> bool:
+def yn(s: bool | str) -> bool:
     if isinstance(s, bool):
         return s
     if isinstance(s, str):

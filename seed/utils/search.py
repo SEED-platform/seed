@@ -10,7 +10,7 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from functools import reduce
-from typing import Any, Union
+from typing import Any
 
 from django.db import models
 from django.db.models import Case, IntegerField, Min, Q, Value, When
@@ -205,7 +205,7 @@ class QueryFilterOperator(Enum):
 @dataclass
 class QueryFilter:
     field_name: str
-    operator: Union[QueryFilterOperator, None]
+    operator: QueryFilterOperator | None
     is_negated: bool
 
     @classmethod
@@ -343,7 +343,7 @@ def _build_related_extra_data_expression(column_name: str, data_type: str, state
 
 def _parse_view_filter(
     filter_expression: str,
-    filter_value: Union[str, bool],
+    filter_value: str | bool,
     columns_by_name: dict[str, dict],
     inventory_type: str,
     access_level_names: list[str],
@@ -368,7 +368,7 @@ def _parse_view_filter(
         filter.is_negated = filter_expression.endswith("__exact")
 
         if filter_expression.endswith("__icontains"):
-            level = filter_expression.split("__")[0]
+            level = filter_expression.split("__", maxsplit=1)[0]
             updated_expression += f"__{level}"
 
         updated_filter = QueryFilter(updated_expression, filter.operator, filter.is_negated)
@@ -411,7 +411,7 @@ def _parse_view_sort(
     related_columns_by_name: dict[str, dict],
     inventory_type: str,
     access_level_names: list[str],
-) -> tuple[Union[None, str, Collate], AnnotationDict]:
+) -> tuple[None | str | Collate, AnnotationDict]:
     """Parse a sort expression
 
     :param sort_expression: should be a valid Column.column_name. Optionally prefixed

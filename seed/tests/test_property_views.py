@@ -65,6 +65,7 @@ from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.organizations import create_organization
 from seed.utils.properties import pair_unpair_property_taxlot
+from seed.utils.time_utils import localize_datetime
 
 COLUMNS_TO_SEND = [
     "project_id",
@@ -2394,8 +2395,8 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             # November 2019 reading between DST transition
             reading_details = {
                 "meter_id": meter.id,
-                "start_time": make_aware(datetime(2019, 11, 3, 1, 59, 59), timezone=tz_obj, is_dst=True),
-                "end_time": make_aware(datetime(2019, 11, 3, 1, 59, 59), timezone=tz_obj, is_dst=False),
+                "start_time": localize_datetime(datetime(2019, 11, 3, 1, 59, 59), tz_obj, is_dst=True),
+                "end_time": localize_datetime(datetime(2019, 11, 3, 1, 59, 59), tz_obj, is_dst=False),
                 "reading": 100,
                 "source_unit": "kBtu (thousand Btu)",
                 "conversion_factor": 1,

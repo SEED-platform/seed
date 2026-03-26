@@ -1,6 +1,6 @@
 {
   "name": "seed",
-  "version": "3.3.2",
+  "version": "3.4.0",
   "description": "Standard Energy Efficiency Data (SEED) Platform™",
   "license": "SEE LICENSE IN LICENSE.md",
   "directories": {
@@ -40,6 +40,7 @@
     "eslint:fix": "eslint --fix \"seed/{docs,static}/**/*.js\"",
     "lint": "run-p -c eslint prettier stylelint",
     "lint:fix": "run-p -c eslint:fix prettier:fix stylelint:fix",
+    "preinstall": "npx -y only-allow pnpm",
     "prettier": "prettier -c seed/static/seed/partials",
     "prettier:fix": "prettier -w seed/static/seed/partials",
     "stylelint": "stylelint seed/landing/static/landing/scss/landing.scss seed/static/seed/scss/style.scss",

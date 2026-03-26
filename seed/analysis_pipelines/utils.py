@@ -162,7 +162,7 @@ def calendarize_meter_readings(meter_readings):
     :return: List[SimpleMeterReading]
     """
     all_meter_readings = sorted(meter_readings, key=lambda reading: reading.start_time)
-    aggregated_readings_by_start_time = defaultdict(lambda: 0)
+    aggregated_readings_by_start_time = defaultdict(int)
     for meter_reading in all_meter_readings:
         sr = _split_reading(meter_reading)
         for monthly_reading in sr:

@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import subprocess
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -19,7 +20,7 @@ from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 
-from seed.celery import app
+from seed.celery_app import app
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.utils.api import api_endpoint
@@ -32,8 +33,8 @@ _log = logging.getLogger(__name__)
 def angular_js_tests(request):
     """Jasmine JS unit test code covering AngularJS unit tests"""
     debug = settings.DEBUG
-    spec_directory = os.path.join("seed", "static", "seed", "tests")
-    spec_files = [f for f in os.listdir(spec_directory) if f.endswith(".spec.js")]
+    spec_directory = Path(__file__).parent.parent / "static" / "seed" / "tests"
+    spec_files = [f.name for f in spec_directory.iterdir() if f.name.endswith(".spec.js")]
     return render(request, "seed/jasmine_tests/AngularJSTests.html", {**locals(), "spec_files": spec_files})
 
 

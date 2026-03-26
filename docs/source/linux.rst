@@ -25,9 +25,9 @@ Install the following base packages to run SEED:
     sudo add-apt-repository ppa:timescale/timescaledb-ppa
     sudo apt update
     sudo apt upgrade
-    sudo apt install libpq-dev python3-dev python3-pip libatlas-base-dev \
+    sudo apt install libpq-dev python3-dev libatlas-base-dev \
     gfortran build-essential nodejs npm libxml2-dev libxslt1-dev git \
-    libssl-dev libffi-dev curl uwsgi-core uwsgi-plugin-python mercurial
+    libssl-dev libffi-dev curl nginx mercurial
     sudo apt install gdal-bin postgis
     sudo apt install redis-server
     sudo apt install timescaledb-postgresql-10 postgresql-contrib
@@ -65,14 +65,14 @@ clone the **seed** repository from **github**
 
     $ git clone git@github.com:SEED-platform/seed.git
 
-enter the repo and install the python dependencies from `requirements`_
+enter the repo and sync the Python environment with `uv`_
 
-.. _requirements: https://github.com/SEED-platform/seed/blob/main/requirements/local.txt
+.. _uv: https://docs.astral.sh/uv/
 
 .. code-block:: console
 
     $ cd seed
-    $ pip3 install -r requirements/local.txt
+    $ uv sync --frozen
 
 
 JavaScript Dependencies
@@ -186,23 +186,20 @@ can be started:
 Running the development web server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The Django dev server (not for production use) can be a quick and easy way to
-get an instance up and running. The dev server runs by default on port 8000
-and can be run on any port. See Django's `runserver documentation`_ for more
-options.
-
-.. _runserver documentation: https://docs.djangoproject.com/en/1.6/ref/django-admin/#django-admin-runserver
+Hypercorn can be used directly during development to run the ASGI app on port
+8000 and reload when Python files change.
 
 .. code-block:: console
 
-    $ python3 manage.py runserver --settings=config.settings.dev
+    $ DJANGO_SETTINGS_MODULE=config.settings.dev uv run hypercorn config.asgi:seed --bind 127.0.0.1:8000 --reload
 
 
 Running a production web server
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Our recommended web server is uwsgi sitting behind nginx. The python package ``uwsgi`` is needed for this, and
-should install to ``/usr/local/bin/uwsgi`` We recommend using ``dj-static`` to load static files.
+Our recommended web server is Hypercorn sitting behind nginx. Hypercorn is already
+included in the SEED Python environment, so there is no separate web server package
+to install.
 
 .. note::
 
@@ -212,7 +209,7 @@ should install to ``/usr/local/bin/uwsgi`` We recommend using ``dj-static`` to l
 
 .. code-block:: console
 
-    $ pip3 install uwsgi dj-static
+    $ uv sync --frozen
 
 
 Generate static files:
@@ -238,8 +235,8 @@ Start the web server (this also starts celery):
 
 .. warning::
 
-    Note that uwsgi has port set to ``80``. In a production setting, a dedicated web server such as nginx would be
-    receiving requests on port 80 and passing requests to uwsgi running on a different port, e.g 8000.
+    Note that nginx should receive requests on port ``80`` and pass them to Hypercorn
+    running on a different port, e.g. ``8000``.
 
 
 

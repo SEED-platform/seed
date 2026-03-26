@@ -11,9 +11,8 @@ import xlrd
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from django.utils.timezone import make_aware
 from drf_yasg.utils import swagger_auto_schema
-from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
+from pytz import timezone
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 
@@ -58,6 +57,7 @@ from seed.models import (
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.import_file import verify_data_types
+from seed.utils.time_utils import localize_datetime_with_dst_fallbacks
 
 _log = logging.getLogger(__name__)
 
@@ -1111,22 +1111,8 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             the_tz = timezone(TIME_ZONE)
             unaware_start = datetime.strptime(raw_reading["Start Date"], "%Y-%m-%d %H:%M:%S")
             unaware_end = datetime.strptime(raw_reading["End Date"], "%Y-%m-%d %H:%M:%S")
-            try:
-                start_time = make_aware(unaware_start, timezone=the_tz)
-            except AmbiguousTimeError:
-                # Handle timestamp that occurs twice due to "falling back" to standard time
-                start_time = make_aware(unaware_start, timezone=the_tz, is_dst=False)
-            except NonExistentTimeError:
-                # Handle timestamp that doesn't exist due to "springing forward" to dst
-                start_time = make_aware(unaware_start, timezone=the_tz, is_dst=True)
-            try:
-                end_time = make_aware(unaware_end, timezone=the_tz)
-            except AmbiguousTimeError:
-                # Handle timestamp that occurs twice due to "falling back" to standard time
-                end_time = make_aware(unaware_end, timezone=the_tz, is_dst=False)
-            except NonExistentTimeError:
-                # Handle timestamp that doesn't exist due to "springing forward" to dst
-                end_time = make_aware(unaware_end, timezone=the_tz, is_dst=True)
+            start_time = localize_datetime_with_dst_fallbacks(unaware_start, the_tz)
+            end_time = localize_datetime_with_dst_fallbacks(unaware_end, the_tz)
 
             # if a meter readings file is re-uploaded, it will UPDATE the values in defaults
             # rather than keeping the values and ignoring incoming new data

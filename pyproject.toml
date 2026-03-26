@@ -1,0 +1,119 @@
+[project]
+name = "seed"
+version = "3.4.0"
+description = "Standard Energy Efficiency Data (SEED) Platform™ is a web-based application that helps organizations easily manage data on the energy performance of large groups of buildings."
+readme = "README.md"
+license = "BSD-3-Clause"
+license-files = ["LICENSE.md"]
+requires-python = ">=3.12"
+dependencies = [
+    # Django core
+    "django==4.2.29",
+    # Persistence (database)
+    "psycopg2-binary==2.9.11",
+    # Background jobs / scheduling / caching
+    "celery==5.6.2",
+    "django-celery-beat==2.8.1",
+    "django-redis==6.0.0",
+    "hiredis==3.3.0",
+    "tblib==3.2.2",
+    # Assets / compression / utilities
+    "brotli==1.2.0",
+    "django-compressor==4.6.0",
+    "django-extensions==3.2.3",
+    "django-model-utils==5.0.0",
+    "django-treebeard==4.7.1",
+    # Date / time
+    "pytz==2025.2",
+    "python-dateutil==2.9.0.post0",
+    # Units
+    "django-pint==0.7.3",
+    # API / auth / docs
+    "djangorestframework==3.16.1",
+    "djangorestframework-simplejwt==5.5.1",
+    "drf-yasg==1.21.15",
+    "django-filter==22.1", # Update after drf-spectacular
+    "drf-nested-routers==0.95.0",
+    # Email / messaging
+    "django-post-office==3.11.0",
+    # Observability / monitoring
+    "sentry-sdk==2.14.0",
+    # Security / 2FA
+    "django-two-factor-auth[phonenumbers]==1.17.0",
+    "qrcode[pil]==7.4.2",
+    "pyotp==2.9.0",
+    # Data formats / parsing / IO
+    "Markdown==3.10.2",
+    "pyyaml==6.0.3",
+    "xmltodict==1.0.4",
+    "xmlschema==4.1.0",
+    "lark==1.2.2",
+    "requests==2.32.5",
+    "polling==0.3.2",
+    # Tabular / Excel
+    "pandas==2.3.3",
+    "xlsxwriter==3.2.9",
+    "xlrd<2.0.0", # Version 2 removes xlsx support
+    # Matching / address parsing
+    "jellyfish==1.2.1",
+    "street-address==0.4.0",
+    "probablepeople==0.5.6",
+    "usaddress==0.5.16",
+    # Geo / Building data
+    "shapely==2.1.2",
+    "buildingid==2.2.1",
+    # Integrations
+    "buildingsync-asset-extractor==0.3.0", # BuildingSync Asset Extractor (includes lxml dependency required by SEED)
+    "tkbl==0.7",
+    "seed-salesforce==0.2.0",
+    "simple-salesforce==1.12.9",
+    # Compatibility / backports
+    "importlib-metadata==8.7.1", # Remove once a version newer than 8.5.0 has been released that fixes Django autoreload
+    # AWS / SES
+    "boto3==1.42.70",
+    "django-ses==4.7.2",
+    # Server
+    "hypercorn==0.18.0",
+    # Misc
+    "geojson==3.2.0", # only used in managed tasks at the moment
+    "semantic-version==2.10.0",
+]
+
+[project.urls]
+Homepage = "https://seed-platform.org/"
+Repository = "https://github.com/SEED-platform/seed"
+Documentation = "https://seed-platform.readthedocs.io/en/stable/"
+Issues = "https://github.com/SEED-platform/seed/issues"
+
+[dependency-groups]
+dev = [
+    # Debug tooling
+    "django-debug-toolbar==6.2.0",
+    # Test runner + Django integration + utilities
+    "pytest>=9.0.2",
+    "pytest-django>=4.12.0",
+    "responses==0.26.0",
+    "vcrpy==8.1.1",
+    "Faker==40.11.0",
+    "mock==5.2.0",
+    "hypothesis==6.151.9",
+    # Coverage / reporting
+    "coverage==7.13.5",
+    "coveralls==4.1.0",
+    # Local/CI orchestration
+    "tox-uv-bare==1.33.4",
+    "psutil==7.2.2",
+    # Static code analysis / hooks
+    "pre-commit>=4.5.1",
+    # Documentation & spelling
+    "Sphinx==9.1.0",
+    "sphinxcontrib-spelling==8.0.2",
+    "sphinx_rtd_theme==3.1.0",
+    "docutils==0.22.4",
+]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.uv]
+default-groups = ["dev"]
