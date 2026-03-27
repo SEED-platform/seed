@@ -17,6 +17,7 @@
     "node": ">=24",
     "pnpm": ">=10"
   },
+  "packageManager": "pnpm@10.33.0",
   "dependencies": {
     "sass": "1.79.4"
   },
@@ -40,7 +41,6 @@
     "eslint:fix": "eslint --fix \"seed/{docs,static}/**/*.js\"",
     "lint": "run-p -c eslint prettier stylelint",
     "lint:fix": "run-p -c eslint:fix prettier:fix stylelint:fix",
-    "preinstall": "npx -y only-allow pnpm",
     "prettier": "prettier -c seed/static/seed/partials",
     "prettier:fix": "prettier -w seed/static/seed/partials",
     "stylelint": "stylelint seed/landing/static/landing/scss/landing.scss seed/static/seed/scss/style.scss",
