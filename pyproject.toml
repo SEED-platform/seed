@@ -94,9 +94,9 @@ dev = [
     "pytest-django>=4.12.0",
     "responses==0.26.0",
     "vcrpy==8.1.1",
-    "Faker==40.11.0",
+    "Faker==40.11.1",
     "mock==5.2.0",
-    "hypothesis==6.151.9",
+    "hypothesis==6.151.10",
     # Coverage / reporting
     "coverage==7.13.5",
     "coveralls==4.1.0",
