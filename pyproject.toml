@@ -48,7 +48,7 @@ dependencies = [
     "xmltodict==1.0.4",
     "xmlschema==4.1.0",
     "lark==1.2.2",
-    "requests==2.32.5",
+    "requests==2.33.0",
     "polling==0.3.2",
     # Tabular / Excel
     "pandas==2.3.3",
