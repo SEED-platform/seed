@@ -4,8 +4,10 @@ ARG NGINX_LISTEN_OPTS
 # DESCRIPTION:      Image with seed platform and dependencies running in development mode
 # TO_BUILD_AND_RUN: docker compose build && docker compose up
 
-FROM node:22-alpine3.19
+FROM node:24-alpine
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+RUN corepack enable
 
 ARG NGINX_LISTEN_OPTS
 
@@ -64,12 +66,12 @@ COPY ./package.json /seed/package.json
 COPY ./pnpm-lock.yaml /seed/pnpm-lock.yaml
 COPY ./pnpm-workspace.yaml /seed/pnpm-workspace.yaml
 COPY ./vendors/package.json /seed/vendors/package.json
+COPY ./vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
 COPY ./ng_seed/seed-angular /seed/ng_seed/seed-angular
 ### Build SEED Angular then cleanup
-RUN npm install -g pnpm && \
-    pnpm install && \
+RUN pnpm install --frozen-lockfile && \
     pnpm -C /seed/ng_seed/seed-angular build && \
-    pnpm install --prod && \
+    pnpm install --prod --frozen-lockfile --ignore-scripts && \
     rm -rf /seed/ng_seed/seed-angular/node_modules && \
     pnpm store prune
 
