@@ -212,12 +212,12 @@ class UbidUtilMethods(TestCase):
         jaccard = ubid_jaccard("85FPPRRH+9G7-26-30-26-38", "85FPPRRH+9HR-25-30-27-39")
         self.assertAlmostEqual(jaccard, 0.8650632911251763)
 
-        # nrel cafe
+        # nlr cafe
         ubid_cafe = "85FPPRR9+3C-0-0-0-0"
         ubid_cafe_larger = "85FPPRR9+3C-1-1-1-1"
         ubid_cafe_north = "85FPPRR9+4C-0-0-1-0"
 
-        # nrel FTLB
+        # nlr FTLB
         ubid_ftlb = "85FPPRR9+38-0-0-0-0"
         ubid_ftlb_west = "85FPPRR9+38-0-0-0-2"
         ubid_ftlb_south = "85FPPRR9+28-1-0-0-1"

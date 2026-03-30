@@ -2,7 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
-:author nicholas.long@nrel.gov
+:author nicholas.long@nlr.gov
 
 Methods to help with string parsing etc.
 """

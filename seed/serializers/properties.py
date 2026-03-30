@@ -3,7 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
-:author Nicholas Long  <nicholas.long@nrel.gov>
+:author Nicholas Long  <nicholas.long@nlr.gov>
 """
 
 import json

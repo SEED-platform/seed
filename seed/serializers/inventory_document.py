@@ -2,7 +2,7 @@
 SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
-:author Katherine Fleming <katherine.fleming@nrel.gov>
+:author Katherine Fleming <katherine.fleming@nlr.gov>
 """
 
 from rest_framework import serializers
