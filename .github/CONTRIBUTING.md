@@ -113,10 +113,10 @@ how to use your new functionality.
 
 For further questions or information:
 
-&nbsp;&nbsp;&nbsp;&nbsp;Nicholas Long<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;SEED Principal Investigator<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;nicholas.long@nrel.gov<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;303.384.6183<br/>
+    Nicholas Long
+    SEED Principal Investigator
+    nicholas.long@nlr.gov
+    303.384.6183
 
 SEED is funded by the U.S. Department of Energy’s (DOE) Building Technologies Office (BTO), and
 managed by the National Laboratory of the Rockies (NLR).
