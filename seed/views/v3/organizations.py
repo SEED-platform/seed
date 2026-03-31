@@ -102,6 +102,7 @@ def _dict_org(request, organizations):
         owners = []
         role_level = None
         user_is_owner = False
+        user_is_viewer = False
         ali = None
         for ou in org_users:
             owner = ou.role_level == ROLE_OWNER
