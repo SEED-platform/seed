@@ -66,6 +66,10 @@ COMPRESS_STORAGE = "compressor.storage.BrotliCompressorFileStorage"
 SESSION_COOKIE_SECURE = env_var("SESSION_COOKIE_SECURE", False)
 CSRF_COOKIE_SECURE = env_var("CSRF_COOKIE_SECURE", False)
 
+# Trust the original request scheme forwarded by nginx so Django can perform
+# secure-origin and CSRF checks correctly behind reverse proxies.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 ALLOWED_HOSTS_ENV = env_var("ALLOWED_HOSTS")
 if ALLOWED_HOSTS_ENV:
     ALLOWED_HOSTS = ALLOWED_HOSTS_ENV.split(",")
