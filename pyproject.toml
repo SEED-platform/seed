@@ -88,20 +88,20 @@ Issues = "https://github.com/SEED-platform/seed/issues"
 [dependency-groups]
 dev = [
     # Debug tooling
-    "django-debug-toolbar==6.2.0",
+    "django-debug-toolbar==6.3.0",
     # Test runner + Django integration + utilities
-    "pytest>=9.0.2",
+    "pytest>=9.0.3",
     "pytest-django>=4.12.0",
     "responses==0.26.0",
     "vcrpy==8.1.1",
-    "Faker==40.11.1",
+    "Faker==40.13.0",
     "mock==5.2.0",
-    "hypothesis==6.151.10",
+    "hypothesis==6.151.12",
     # Coverage / reporting
     "coverage==7.13.5",
     "coveralls==4.1.0",
     # Local/CI orchestration
-    "tox-uv-bare==1.33.4",
+    "tox-uv-bare==1.35.1",
     "psutil==7.2.2",
     # Static code analysis / hooks
     "pre-commit>=4.5.1",
