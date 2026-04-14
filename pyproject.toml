@@ -90,7 +90,7 @@ dev = [
     # Debug tooling
     "django-debug-toolbar==6.2.0",
     # Test runner + Django integration + utilities
-    "pytest>=9.0.2",
+    "pytest>=9.0.3",
     "pytest-django>=4.12.0",
     "responses==0.26.0",
     "vcrpy==8.1.1",
