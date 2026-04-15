@@ -76,7 +76,7 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
 
         # token_active = type(devices[0]) == Token?
         if methods.get("email") is True and not email_active:
-            email_device = EmailDevice.objects.create(user=user, name="default", email=user.username)
+            email_device = EmailDevice.objects.create(user=user, name="default")
             if email_device:
                 [device.delete() for device in devices]
                 # just for user confirmation
