@@ -196,4 +196,4 @@ def set_default_2fa_method(org):
     for user in org.users.iterator():
         devices = list(devices_for_user(user))
         if not devices:
-            EmailDevice.objects.create(user=user, name="default", email=user.username)
+            EmailDevice.objects.create(user=user, name="default")
