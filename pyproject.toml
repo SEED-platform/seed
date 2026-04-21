@@ -29,7 +29,7 @@ dependencies = [
     # Units
     "django-pint==0.7.3",
     # Forms / filtering
-    "django-crispy-forms==2.5",
+    "django-crispy-forms<=2.6", # Update after Django v5.2
     "django-filter==22.1", # Update after drf-spectacular
     # API / auth / docs
     "djangorestframework==3.17.1",
@@ -37,7 +37,7 @@ dependencies = [
     "drf-yasg==1.21.15",
     "drf-nested-routers==0.95.0",
     # Email / messaging
-    "django-post-office==3.11.0",
+    "django-post-office==3.11.2",
     # Observability / monitoring
     "sentry-sdk==2.14.0",
     # Security / 2FA
@@ -72,7 +72,7 @@ dependencies = [
     # Compatibility / backports
     "importlib-metadata==8.7.1", # Remove once a version newer than 8.5.0 has been released that fixes Django autoreload
     # AWS / SES
-    "boto3==1.42.89",
+    "boto3~=1.42.92",
     "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",
@@ -96,7 +96,7 @@ dev = [
     "pytest-django>=4.12.0",
     "responses==0.26.0",
     "vcrpy==8.1.1",
-    "Faker==40.13.0",
+    "Faker~=40.15.0",
     "mock==5.2.0",
     "hypothesis==6.152.1",
     # Coverage / reporting

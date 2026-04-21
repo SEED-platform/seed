@@ -70,30 +70,30 @@ wheels = [
 
 [[package]]
 name = "boto3"
-version = "1.42.89"
+version = "1.42.92"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "botocore" },
     { name = "jmespath" },
     { name = "s3transfer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/bb/0c/f7bccb22b245cabf392816baba20f9e95f78ace7dbc580fd40136e80e732/boto3-1.42.89.tar.gz", hash = "sha256:3e43aacc0801bba9bcd23a8c271c089af297a69565f783fcdd357ae0e330bf1e", size = 113165, upload-time = "2026-04-13T19:36:17.516Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e7/3b/84cafa37e85a57618554bd2bc21bd569417097f45f18c23ef488e6c69683/boto3-1.42.92.tar.gz", hash = "sha256:55ec6ef6fc81f46d567a7d1d398d1e5c375d468905d0ccd9e1f767f0c77dbe9b", size = 113207, upload-time = "2026-04-20T19:38:17.293Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b9/33/55103ba5ef9975ea54b8d39e69b76eb6e9fded3beae5f01065e26951a3a1/boto3-1.42.89-py3-none-any.whl", hash = "sha256:6204b189f4d0c655535f43d7eaa57ff4e8d965b8463c97e45952291211162932", size = 140556, upload-time = "2026-04-13T19:36:13.894Z" },
+    { url = "https://files.pythonhosted.org/packages/8f/8f/350ffd50aaa515429464deb1dc85893a21a64cb41892feb6b22ce87304ad/boto3-1.42.92-py3-none-any.whl", hash = "sha256:c90d9a170faa0585755fa103a3cd9595e1f53443864e902c180f3d8177589125", size = 140555, upload-time = "2026-04-20T19:38:14.323Z" },
 ]
 
 [[package]]
 name = "botocore"
-version = "1.42.89"
+version = "1.42.92"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "jmespath" },
     { name = "python-dateutil" },
     { name = "urllib3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/0f/cc/e6be943efa9051bd15c2ee14077c2b10d6e27c9e9385fc43a03a5c4ed8b5/botocore-1.42.89.tar.gz", hash = "sha256:95ac52f472dad29942f3088b278ab493044516c16dbf9133c975af16527baa99", size = 15206290, upload-time = "2026-04-13T19:36:02.321Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d5/0a/6785ce224ba4483b3e1282d959e1dd2c2898823336f013464c43cb154036/botocore-1.42.92.tar.gz", hash = "sha256:f1193d3057a2d0267353d7ef4e136be37ea432336d097fcb1951fae566ca3a22", size = 15235239, upload-time = "2026-04-20T19:38:05.085Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/91/f1/90a7b8eda38b7c3a65ca7ee0075bdf310b6b471cb1b95fab6e8994323a50/botocore-1.42.89-py3-none-any.whl", hash = "sha256:d9b786c8d9db6473063b4cc5be0ba7e6a381082307bd6afb69d4216f9fa95f35", size = 14887287, upload-time = "2026-04-13T19:35:56.677Z" },
+    { url = "https://files.pythonhosted.org/packages/32/b8/41d4d7ba75a4fb4f11362e96371a12695bc6ba0bb7cc680137db0213f97e/botocore-1.42.92-py3-none-any.whl", hash = "sha256:09ddefddbb1565ceef4b44b4b6e61b1ca5f12701d1494ecc85c1133d1b1e81fb", size = 14916275, upload-time = "2026-04-20T19:38:01.684Z" },
 ]
 
 [[package]]
@@ -773,15 +773,15 @@ wheels = [
 
 [[package]]
 name = "django-post-office"
-version = "3.11.0"
+version = "3.11.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "django" },
     { name = "nh3" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/06/e9/a06d9dfd11b69ed84d5c6aabbb9b9d5de3a9e84cb11d57737a0100bc42ef/django_post_office-3.11.0.tar.gz", hash = "sha256:bbe262590ce8650ffc117ad88e7b08687a3efb2f167e88fa1fad070cc2abba64", size = 104461, upload-time = "2026-01-04T11:19:14.538Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7a/1b/65bd500cea15666c67c89da6f646eaa54d4c11e15ced9f5c7b1373091fa4/django_post_office-3.11.2.tar.gz", hash = "sha256:7899fd697404340db789c1d0663fe76f0055d6efce41ceb10f909f68d0a45957", size = 91636, upload-time = "2026-04-16T14:18:56.434Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/59/59/648d9c781778a438aebc4d41753dddd5eff94693dc5324f6e0c8045a15f3/django_post_office-3.11.0-py3-none-any.whl", hash = "sha256:4845f95f3b253a7e1d40d24eda25308f34a048fe324d953a8d87b2cf9ec54f73", size = 238073, upload-time = "2026-01-04T11:19:12.338Z" },
+    { url = "https://files.pythonhosted.org/packages/93/16/557c9fa9b1c9e464e2f13c9b80a9dd236d1a0c24cb5accccd820fdc2e6ec/django_post_office-3.11.2-py3-none-any.whl", hash = "sha256:03110496add62f93d1e5b2279343166cec71785d904b9eaf1f1ca8baf25bb324", size = 86131, upload-time = "2026-04-16T14:18:55.012Z" },
 ]
 
 [[package]]
@@ -1013,14 +1013,14 @@ wheels = [
 
 [[package]]
 name = "faker"
-version = "40.13.0"
+version = "40.15.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/89/95/4822ffe94723553789aef783104f4f18fc20d7c4c68e1bbd633e11d09758/faker-40.13.0.tar.gz", hash = "sha256:a0751c84c3abac17327d7bb4c98e8afe70ebf7821e01dd7d0b15cd8856415525", size = 1962043, upload-time = "2026-04-06T16:44:55.68Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7f/13/6741787bd91c4109c7bed047d68273965cd52ce8a5f773c471b949334b6d/faker-40.15.0.tar.gz", hash = "sha256:20f3a6ec8c266b74d4c554e34118b21c3c2056c0b4a519d15c8decb3a4e6e795", size = 1967447, upload-time = "2026-04-17T20:05:27.555Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/da/8a/708103325edff16a0b0e004de0d37db8ba216a32713948c64d71f6d4a4c2/faker-40.13.0-py3-none-any.whl", hash = "sha256:c1298fd0d819b3688fb5fd358c4ba8f56c7c8c740b411fd3dbd8e30bf2c05019", size = 1994597, upload-time = "2026-04-06T16:44:53.698Z" },
+    { url = "https://files.pythonhosted.org/packages/a7/a7/a600f8f30d4505e89166de51dd121bd540ab8e560e8cf0901de00a81de8c/faker-40.15.0-py3-none-any.whl", hash = "sha256:71ab3c3370da9d2205ab74ffb0fd51273063ad562b3a3bb69d0026a20923e318", size = 2004447, upload-time = "2026-04-17T20:05:25.437Z" },
 ]
 
 [[package]]
@@ -2590,7 +2590,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "boto3", specifier = "==1.42.89" },
+    { name = "boto3", specifier = "~=1.42.92" },
     { name = "brotli", specifier = "==1.2.0" },
     { name = "buildingid", specifier = "==2.2.1" },
     { name = "buildingsync-asset-extractor", specifier = "==0.3.0" },
@@ -2598,12 +2598,12 @@ requires-dist = [
     { name = "django", specifier = "==4.2.30" },
     { name = "django-celery-beat", specifier = "==2.9.0" },
     { name = "django-compressor", specifier = "==4.6.0" },
-    { name = "django-crispy-forms", specifier = "==2.5" },
+    { name = "django-crispy-forms", specifier = "<=2.6" },
     { name = "django-extensions", specifier = "==3.2.3" },
     { name = "django-filter", specifier = "==22.1" },
     { name = "django-model-utils", specifier = "==5.0.0" },
     { name = "django-pint", specifier = "==0.7.3" },
-    { name = "django-post-office", specifier = "==3.11.0" },
+    { name = "django-post-office", specifier = "==3.11.2" },
     { name = "django-redis", specifier = "==6.0.0" },
     { name = "django-ses", specifier = "==4.7.2" },
     { name = "django-treebeard", specifier = "==4.7.1" },
@@ -2652,7 +2652,7 @@ dev = [
     { name = "django-debug-toolbar", specifier = "==6.3.0" },
     { name = "djangorestframework-stubs", specifier = ">=3.16.9" },
     { name = "docutils", specifier = "==0.22.4" },
-    { name = "faker", specifier = "==40.13.0" },
+    { name = "faker", specifier = "~=40.15.0" },
     { name = "hypothesis", specifier = "==6.152.1" },
     { name = "mock", specifier = "==5.2.0" },
     { name = "pre-commit", specifier = ">=4.5.1" },
