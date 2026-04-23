@@ -18,7 +18,7 @@ angular.module('SEED.controller.copy_to_different_cycle_modal', []).controller('
     uploader_service,
     cycles,
     view_ids,
-    profiles,
+    profiles
   ) {
     $scope.selected_cycle = null;
     $scope.selected_column_list_profile = null;
@@ -35,25 +35,25 @@ angular.module('SEED.controller.copy_to_different_cycle_modal', []).controller('
     $scope.save = () => {
       $scope.status.in_progress = true;
       inventory_service.copy_to_cycle(
-        cycle_id=$scope.selected_cycle.id,
-        view_ids=view_ids,
-        column_ids=$scope.selected_column_list_profile.columns.map(c => c.id)
+        cycle_id = $scope.selected_cycle.id,
+        view_ids = view_ids,
+        column_ids = $scope.selected_column_list_profile.columns.map((c) => c.id)
       ).then((response) => {
-          const data = response.data;
-          if (response.status !== 200) {
-            handle_response(data.message, true);
-            $uibModalInstance.close();
-          } else {
-            uploader_service.check_progress_loop(
-              data.progress_key,
-              0,
-              1,
-              (data) => handle_response(data.message),
-              (data) => handle_response(data.data.message, true),
-              $scope.status
-            );
-          }
-        })
+        const data = response.data;
+        if (response.status !== 200) {
+          handle_response(data.message, true);
+          $uibModalInstance.close();
+        } else {
+          uploader_service.check_progress_loop(
+            data.progress_key,
+            0,
+            1,
+            (data) => handle_response(data.message),
+            (data) => handle_response(data.data.message, true),
+            $scope.status
+          );
+        }
+      })
         .catch(() => handle_response('Unexpected Error.', true));
     };
 

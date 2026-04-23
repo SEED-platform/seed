@@ -563,6 +563,7 @@ def copy_properties_to_cycle(property_view_ids, cycle_id, column_ids, org_id):
 
     return progress_data.result()
 
+
 @shared_task
 def _copy_property_to_cycle_chunk(progress_key, property_view_ids, cycle_id, column_ids):
     progress_data = ProgressData.from_key(progress_key)
@@ -578,13 +579,14 @@ def _copy_property_to_cycle_chunk(progress_key, property_view_ids, cycle_id, col
         new_view = view.copy_to_cycle(cycle, columns)
         if new_view:
             new_view_ids.append(new_view.id)
-            
+
         progress_data.step()
 
     progress_data.data["num_created"] += len(new_view_ids)
     progress_data.save()
 
     return new_view_ids
+
 
 @shared_task
 def _finish_copy_property_to_cycle(property_view_ids, progress_key, org_id):
@@ -596,6 +598,7 @@ def _finish_copy_property_to_cycle(property_view_ids, progress_key, org_id):
 
     progress_data = ProgressData.from_key(progress_key)
     progress_data.finish_with_success("Updated Derived Data")
+
 
 @shared_task
 def update_state_derived_data(property_state_ids=[], taxlot_state_ids=[], derived_column_ids=[]):

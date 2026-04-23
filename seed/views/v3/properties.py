@@ -86,7 +86,7 @@ from seed.serializers.properties import (
     UpdatePropertyPayloadSerializer,
 )
 from seed.serializers.taxlots import TaxLotViewSerializer
-from seed.tasks import update_state_derived_data, copy_properties_to_cycle
+from seed.tasks import copy_properties_to_cycle, update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results

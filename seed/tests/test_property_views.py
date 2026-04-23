@@ -7,6 +7,7 @@ import ast
 import json
 import os
 import pathlib
+import time
 import unittest
 from datetime import datetime
 
@@ -19,7 +20,6 @@ from django.utils.timezone import (
     make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 )
 from pytz import timezone
-from seed.tests.api.seed_readingtools import check_progress, check_status, read_map_file, upload_file
 
 from config.settings.common import BASE_DIR, TIME_ZONE
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -684,7 +684,9 @@ class PropertyViewTests(DataMappingBaseTestCase):
         params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
         url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
         response = self.client.post(url, params, content_type="application/json")
-        response = self.client.get(reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json")
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
 
         # Assertion - returned
         self.assertEqual(response.json()["num_created"], 1)
@@ -719,7 +721,9 @@ class PropertyViewTests(DataMappingBaseTestCase):
         params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
         url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
         response = self.client.post(url, params, content_type="application/json")
-        response = self.client.get(reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json")
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
 
         # Assertion - returned
         self.assertEqual(response.json()["num_created"], 1)
@@ -760,8 +764,11 @@ class PropertyViewTests(DataMappingBaseTestCase):
         params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
         url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
         response = self.client.post(url, params, content_type="application/json")
-        import time; time.sleep(4)
-        response = self.client.get(reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json")
+
+        time.sleep(4)
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
 
         # Assertion - returned
         self.assertEqual(response.json()["num_created"], 1)
@@ -796,12 +803,14 @@ class PropertyViewTests(DataMappingBaseTestCase):
         params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id], "column_ids": []})
         url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
         response = self.client.post(url, params, content_type="application/json")
-        response = self.client.get(reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json")
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
 
         # Assertion - returned
         self.assertEqual(response.json()["num_created"], 1)
         self.assertEqual(response.status_code, 200)
-    
+
         # Assertion - now theres 2 views
         views = PropertyView.objects.filter(property=prop)
         assert views.count() == 2
@@ -827,7 +836,9 @@ class PropertyViewTests(DataMappingBaseTestCase):
         params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
         url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
         response = self.client.post(url, params, content_type="application/json")
-        response = self.client.get(reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json")
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
 
         # Assertion - returned
         self.assertEqual(response.json()["num_created"], 0)
@@ -853,7 +864,9 @@ class PropertyViewTests(DataMappingBaseTestCase):
         params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id], "column_ids": column_ids})
         url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
         response = self.client.post(url, params, content_type="application/json")
-        response = self.client.get(reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json")
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
 
         # Assertion - returned
         self.assertEqual(response.json()["num_created"], 1)
