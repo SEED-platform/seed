@@ -1,10 +1,13 @@
 ARG NGINX_LISTEN_OPTS
 
-# AUTHOR:           Clay Teeter <teeterc@gmail.com>, Nicholas Long <nicholas.long@nrel.gov>
+# AUTHOR:           Clay Teeter <teeterc@gmail.com>, Nicholas Long <nicholas.long@nlr.gov>
 # DESCRIPTION:      Image with seed platform and dependencies running in development mode
 # TO_BUILD_AND_RUN: docker compose build && docker compose up
 
-FROM node:22-alpine3.19
+FROM node:24-alpine
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+RUN corepack enable
 
 ARG NGINX_LISTEN_OPTS
 
@@ -44,60 +47,38 @@ RUN apk add --no-cache \
 ##   - coreutils is required due to an issue with our wait-for-it.sch script:
 ##     https://github.com/vishnubob/wait-for-it/issues/71
 
-# Install pyenv and Python globally
-ENV PYTHON_VERSION=3.9.22
-ENV PYENV_ROOT="/opt/pyenv"
-ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
+ENV UV_LINK_MODE=copy
+ENV UV_PYTHON_INSTALL_DIR="/opt/uv/python"
+ENV UV_PROJECT_ENVIRONMENT="/seed/.venv"
+ENV PATH="/seed/.venv/bin:$PATH"
 
-RUN git clone https://github.com/pyenv/pyenv.git $PYENV_ROOT && \
-    $PYENV_ROOT/bin/pyenv install $PYTHON_VERSION && \
-    $PYENV_ROOT/bin/pyenv global $PYTHON_VERSION && \
-    ln -sf $PYENV_ROOT/shims/python /usr/local/bin/python && \
-    ln -sf $PYENV_ROOT/shims/python3 /usr/local/bin/python3 && \
-    ln -sf $PYENV_ROOT/shims/pip /usr/local/bin/pip && \
-    ln -sf $PYENV_ROOT/shims/pip3 /usr/local/bin/pip3
-
-# Make sure non-root users inherit pyenv paths
-ENV PYENV_ROOT="/opt/pyenv"
-ENV PATH="$PYENV_ROOT/bin:$PYENV_ROOT/shims:$PATH"
-
-# Install pip
-RUN bash -c "python3 -m ensurepip --upgrade && python3 -m pip install --upgrade pip setuptools && \
-    pip install supervisor==4.2.5"
-
-### Install python requirements
+### Install python dependencies
 WORKDIR /seed
-COPY ./requirements.txt /seed/requirements.txt
-COPY ./requirements/*.txt /seed/requirements/
-RUN pip uninstall -y enum34
-RUN pip install -r requirements/aws.txt
+COPY ./.python-version /seed/.python-version
+COPY ./pyproject.toml /seed/pyproject.toml
+COPY ./uv.lock /seed/uv.lock
+RUN uv sync --frozen --managed-python --no-dev --no-install-project && \
+    uv pip install supervisor==4.3.0
 
 ### Install JavaScript requirements - do this first because they take a while
 ### and the dependencies will probably change slower than python packages.
-### README.md stops the no readme warning
 COPY ./package.json /seed/package.json
-COPY ./package-lock.json /seed/package-lock.json
+COPY ./pnpm-lock.yaml /seed/pnpm-lock.yaml
+COPY ./pnpm-workspace.yaml /seed/pnpm-workspace.yaml
 COPY ./vendors/package.json /seed/vendors/package.json
-COPY ./vendors/package-lock.json /seed/vendors/package-lock.json
-COPY ./ng_seed/seed-angular/package.json /seed/ng_seed/seed-angular/package.json
-COPY ./ng_seed/seed-angular/pnpm-lock.yaml /seed/ng_seed/seed-angular/pnpm-lock.yaml
-COPY ./ng_seed/seed-angular/pnpm-workspace.yaml /seed/ng_seed/seed-angular/pnpm-workspace.yaml
-COPY ./README.md /seed/README.md
-# unsafe-perm allows the package.json postinstall script to run with the elevated permissions
-RUN npm install --omit=dev --unsafe-perm
+COPY ./vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
+COPY ./ng_seed/seed-angular /seed/ng_seed/seed-angular
+### Build SEED Angular then cleanup
+RUN pnpm install --frozen-lockfile && \
+    pnpm -C /seed/ng_seed/seed-angular build && \
+    pnpm install --prod --frozen-lockfile --ignore-scripts && \
+    rm -rf /seed/ng_seed/seed-angular/node_modules && \
+    pnpm store prune
 
 ### Copy over the remaining part of the SEED application and some helpers
-WORKDIR /seed
 COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 RUN git config --system --add safe.directory /seed
-
-### Build SEED Angular then cleanup
-RUN npm install -g pnpm
-RUN pnpm -C /seed/ng_seed/seed-angular install
-RUN pnpm -C /seed/ng_seed/seed-angular build
-RUN rm -rf /seed/ng_seed/seed-angular/node_modules
-RUN pnpm store prune
 
 # nginx configuration - replace the root/default nginx config file and add included files
 COPY ./docker/nginx/*.conf /etc/nginx/

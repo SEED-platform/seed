@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -161,7 +161,7 @@ class TestColumns(TestCase):
 
     def test_save_column_mapping_by_file_exception(self):
         self.mapping_import_file = os.path.abspath("./no-file.csv")
-        with pytest.raises(Exception, match="Mapping file does not exist: .*/no-file.csv"):
+        with pytest.raises(Exception, match=r"Mapping file does not exist: .*[/\\]no-file\.csv"):
             Column.create_mappings_from_file(self.mapping_import_file, self.fake_org, self.fake_user)
 
     def test_save_column_mapping_by_file(self):

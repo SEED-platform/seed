@@ -1,15 +1,16 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
+import mimetypes
 import os
-import re
 
 from django.conf import settings
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
+from django.utils.text import get_valid_filename
 from rest_framework import generics
 
 from seed.models import Analysis, AnalysisOutputFile, BuildingFile, ImportFile, InventoryDocument, Organization
@@ -30,14 +31,23 @@ def check_file_permission(user, filepath):
     :param user: SEEDUser
     :param filepath: string, path to the file relative to MEDIA_ROOT
     """
-    absolute_filepath = os.path.join(settings.MEDIA_ROOT, filepath)
-    filepath_parts = filepath.split("/")
+    normalized_filepath = filepath.replace("\\", "/")
+    absolute_filepath = os.path.join(settings.MEDIA_ROOT, os.path.normpath(normalized_filepath.lstrip("/\\")))
+    filepath_parts = normalized_filepath.split("/")
     base_dir = filepath_parts[0]
+    candidate_paths = {
+        absolute_filepath,
+        absolute_filepath.replace("\\", "/"),
+        normalized_filepath,
+        os.path.normpath(normalized_filepath),
+        filepath,
+        os.path.normpath(filepath),
+    }
     organization = None
     if base_dir == "uploads":
         try:
             # there could be more than one file of the same name if the same file was used to import properties and meters
-            import_file = ImportFile.objects.filter(file__in=[absolute_filepath, filepath], deleted=False).first()
+            import_file = ImportFile.objects.filter(file__in=candidate_paths, deleted=False).first()
             if import_file is None:
                 raise ModelForFileNotFoundError("ImportFile not found")
         except ImportFile.DoesNotExist:
@@ -46,7 +56,7 @@ def check_file_permission(user, filepath):
 
     elif base_dir == "buildingsync_files":
         try:
-            building_file = BuildingFile.objects.filter(file__in=[absolute_filepath, filepath]).first()
+            building_file = BuildingFile.objects.filter(file__in=candidate_paths).first()
             if building_file is None:
                 raise ModelForFileNotFoundError("BuildingFile not found")
         except BuildingFile.DoesNotExist:
@@ -65,7 +75,7 @@ def check_file_permission(user, filepath):
 
     elif base_dir == "analysis_output_files":
         try:
-            analysis_output_file = AnalysisOutputFile.objects.filter(file__in=[absolute_filepath, filepath]).first()
+            analysis_output_file = AnalysisOutputFile.objects.filter(file__in=candidate_paths).first()
             if analysis_output_file is None:
                 raise ModelForFileNotFoundError("AnalysisOutputFile not found")
             analysis_property_view = analysis_output_file.analysis_property_views.first()
@@ -79,7 +89,7 @@ def check_file_permission(user, filepath):
 
     elif base_dir == "inventory_documents":
         try:
-            inventory_document = InventoryDocument.objects.filter(file__in=[absolute_filepath, filepath]).first()
+            inventory_document = InventoryDocument.objects.filter(file__in=candidate_paths).first()
             if inventory_document is None:
                 raise ModelForFileNotFoundError("InventoryDocument not found")
         except InventoryDocument.DoesNotExist:
@@ -114,20 +124,25 @@ class MediaViewSet(generics.RetrieveAPIView, OrgMixin):
             logger.debug(f"Failed to locate organization for file: {e!s}")
             return HttpResponse(status=404)
 
-        if user_has_permission:
-            # Attempt to remove NamedTemporaryFile suffix
-            filename = os.path.basename(filepath)
-            name, ext = os.path.splitext(filename)
-            pattern = re.compile("(.*?)(_[a-zA-Z0-9]{7})$")
-            match = pattern.match(name)
-            if match:
-                filename = match.groups()[0] + ext
-
-            response = HttpResponse()
-            if ext != ".html":
-                response["Content-Disposition"] = f"attachment; filename={filename}"
-            response["X-Accel-Redirect"] = f"/protected/{filepath}"
-            return response
-        else:
-            # 404 instead of 403 to avoid leaking information
+        if not user_has_permission:
             return HttpResponse(status=404)
+
+        filename = os.path.basename(filepath)
+        ext = os.path.splitext(filename)[1]
+        absolute_filepath = os.path.join(settings.MEDIA_ROOT, filepath)
+
+        if not os.path.exists(absolute_filepath):
+            return HttpResponse(status=404)
+
+        # Serve file through Django
+        with open(absolute_filepath, "rb") as f:
+            file_data = f.read()
+
+        content_type, _ = mimetypes.guess_type(filename)
+        response = HttpResponse(file_data, content_type=content_type or "application/octet-stream")
+
+        if ext != ".html":
+            safe_download_name = get_valid_filename(filename)
+            response["Content-Disposition"] = f'attachment; filename="{safe_download_name}"'
+
+        return response

@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -11,9 +11,8 @@ import xlrd
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from django.utils.timezone import make_aware
 from drf_yasg.utils import swagger_auto_schema
-from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
+from pytz import timezone
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 
@@ -57,6 +56,8 @@ from seed.models import (
 )
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.import_file import verify_data_types
+from seed.utils.time_utils import localize_datetime_with_dst_fallbacks
 
 _log = logging.getLogger(__name__)
 
@@ -1110,22 +1111,8 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             the_tz = timezone(TIME_ZONE)
             unaware_start = datetime.strptime(raw_reading["Start Date"], "%Y-%m-%d %H:%M:%S")
             unaware_end = datetime.strptime(raw_reading["End Date"], "%Y-%m-%d %H:%M:%S")
-            try:
-                start_time = make_aware(unaware_start, timezone=the_tz)
-            except AmbiguousTimeError:
-                # Handle timestamp that occurs twice due to "falling back" to standard time
-                start_time = make_aware(unaware_start, timezone=the_tz, is_dst=False)
-            except NonExistentTimeError:
-                # Handle timestamp that doesn't exist due to "springing forward" to dst
-                start_time = make_aware(unaware_start, timezone=the_tz, is_dst=True)
-            try:
-                end_time = make_aware(unaware_end, timezone=the_tz)
-            except AmbiguousTimeError:
-                # Handle timestamp that occurs twice due to "falling back" to standard time
-                end_time = make_aware(unaware_end, timezone=the_tz, is_dst=False)
-            except NonExistentTimeError:
-                # Handle timestamp that doesn't exist due to "springing forward" to dst
-                end_time = make_aware(unaware_end, timezone=the_tz, is_dst=True)
+            start_time = localize_datetime_with_dst_fallbacks(unaware_start, the_tz)
+            end_time = localize_datetime_with_dst_fallbacks(unaware_end, the_tz)
 
             # if a meter readings file is re-uploaded, it will UPDATE the values in defaults
             # rather than keeping the values and ignoring incoming new data
@@ -1170,6 +1157,25 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             },
             status=status.HTTP_200_OK,
         )
+
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @action(detail=True, methods=["POST"])
+    def verify_data_type_mapping(self, request, pk):
+        """
+        Verify that non-text columns don't contain null values, indicatative of data type mapping errors.
+        """
+        org_id = self.get_organization(request)
+
+        try:
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
+        except ImportFile.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_400_BAD_REQUEST)
+        verify_data_types(org_id, import_file.id)
+        import_file.refresh_from_db()
+
+        warnings = import_file.mapping_error_messages
+        response_status = "warning" if warnings else "success"
+        return JsonResponse({"status": response_status, "message": warnings})
 
 
 def get_conversion_factor(type_name, unit, _kbtu_thermal_conversion_factors, _kgal_water_conversion_factors):

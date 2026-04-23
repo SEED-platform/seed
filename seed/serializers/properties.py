@@ -1,9 +1,9 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
-:author Nicholas Long  <nicholas.long@nrel.gov>
+:author Nicholas Long  <nicholas.long@nlr.gov>
 """
 
 import json
@@ -419,7 +419,7 @@ class PropertyViewListSerializer(serializers.ListSerializer, OrgMixin, ProfileId
             record = certset.setdefault(certification.view_id, [])
             record.append(GreenAssessmentPropertyReadOnlySerializer(certification).data)
         for row in results:
-            row["certifications"] = certset.get(row["id"], None)
+            row["certifications"] = certset.get(row["id"])
         return results
 
 

@@ -36,10 +36,10 @@ Views
     :undoc-members:
     :show-inheritance:
 
-WSGI
+ASGI
 ----
 
-.. automodule:: config.wsgi
+.. automodule:: config.asgi
     :members:
     :undoc-members:
     :show-inheritance:

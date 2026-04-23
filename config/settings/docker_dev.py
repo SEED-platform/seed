@@ -1,34 +1,24 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
-:author nicholas.long@nrel.gov
+:author nicholas.long@nlr.gov
 :description File contains settings needed to run SEED with docker
 """
 
 # use importlib module to find the local_untracked file rather than a hard-coded path
 import importlib
 import os
-import sys
 
-from celery.utils import LOG_LEVELS
 from kombu import Exchange, Queue
 
 from config.settings.common import *  # noqa: F403
-
-
-def env_var(key, default=None):
-    return os.environ.get(key, default)
-
 
 # override MEDIA_URL (requires nginx which dev stack doesn't use)
 MEDIA_URL = "/media/"
 
 # Gather all the settings from the docker environment variables
 ENV_VARS = ["POSTGRES_DB", "POSTGRES_PORT", "POSTGRES_USER", "POSTGRES_PASSWORD"]
-
-# determine if running tests
-SEED_TESTING = len(sys.argv) > 1 and sys.argv[1] == "test"
 
 for loc in ENV_VARS:
     locals()[loc] = os.environ.get(loc)
@@ -66,29 +56,20 @@ DATABASES = {
     }
 }
 
-if SEED_TESTING:
-    CELERY_BROKER_BACKEND = "memory"
-    CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_TASK_EAGER_PROPAGATES = True
-    # this celery log level is currently not overridden.
-    CELERY_LOG_LEVEL = LOG_LEVELS["WARNING"]
-
-    TESTING_MAPQUEST_API_KEY = env_var("TESTING_MAPQUEST_API_KEY", "<your_key_here>")
+# Redis / Celery config
+if "REDIS_PASSWORD" in os.environ:
+    CELERY_BROKER_URL = f"redis://:{env_var('REDIS_PASSWORD')}@{env_var('REDIS_HOST', 'db-redis')}:6379/1"
 else:
-    # Redis / Celery config
-    if "REDIS_PASSWORD" in os.environ:
-        CELERY_BROKER_URL = f"redis://:{env_var('REDIS_PASSWORD')}@{env_var('REDIS_HOST', 'db-redis')}:6379/1"
-    else:
-        CELERY_BROKER_URL = f"redis://{env_var('REDIS_HOST', 'db-redis')}:6379/1"
+    CELERY_BROKER_URL = f"redis://{env_var('REDIS_HOST', 'db-redis')}:6379/1"
 
-    CACHES = {
-        "default": {
-            "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": CELERY_BROKER_URL,
-        }
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": CELERY_BROKER_URL,
     }
+}
 
-    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 CELERY_TASK_DEFAULT_QUEUE = "seed-docker"
 # note - Queue and Exchange objects are imported in common.py

@@ -6,7 +6,6 @@
 .idea
 .project
 .pydevproject
-.python-version
 .vscode
 *~
 *~$*

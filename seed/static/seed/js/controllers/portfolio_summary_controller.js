@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.controller.portfolio_summary', [])
@@ -117,7 +117,7 @@ angular.module('SEED.controller.portfolio_summary', [])
               responsive: true,
               plugins: {
                 legend: {
-                  position: 'top'
+                  display: false
                 },
                 title: {
                   display: true,
@@ -1263,7 +1263,6 @@ angular.module('SEED.controller.portfolio_summary', [])
         // set data
         $scope.dataViewChart.data.labels = data.map((d) => d['Cycle Name']);
         $scope.dataViewChart.data.datasets = [{
-          label: 'Sample Bar Chart',
           data: data.map((d) => d.EUI),
           backgroundColor: ['#1E428A', ...new Array(data.length).fill('#06732cff')]
         }];

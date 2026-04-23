@@ -1,12 +1,11 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import re
 from functools import reduce
 from operator import and_, or_
-from typing import Optional
 
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
@@ -376,7 +375,7 @@ class InventoryFilter:
         elif self.inventory_type == "taxlot":
             profile_inventory_type = VIEW_LIST_TAXLOT
 
-        show_columns: Optional[list[int]] = None
+        show_columns: list[int] | None = None
         if self.shown_column_ids and self.profile_id:
             raise InventoryFilterError(
                 JsonResponse(

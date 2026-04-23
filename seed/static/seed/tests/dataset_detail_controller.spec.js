@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: dataset_detail_controller', () => {
@@ -24,7 +24,7 @@ describe('controller: dataset_detail_controller', () => {
       // mock the dataset_service factory methods used in the controller
       // and return their promises
       mock_dataset_service = dataset_service;
-      spyOn(mock_dataset_service, 'get_dataset').andCallFake(() => {
+      spyOn(mock_dataset_service, 'get_dataset').and.callFake(() => {
         const fake_importfiles = [
           {
             name: 'DC_CoveredBuildings_50k.csv',
@@ -60,7 +60,7 @@ describe('controller: dataset_detail_controller', () => {
         return $q.resolve(fake_payload);
       });
 
-      spyOn(mock_dataset_service, 'delete_file').andCallFake(() => {
+      spyOn(mock_dataset_service, 'delete_file').and.callFake(() => {
         delete_called = true;
         // console.log({d: 'delete_called'});
         return $q.resolve({

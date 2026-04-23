@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -10,8 +10,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from django.utils.timezone import make_aware
-from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
+from pytz import timezone
 
 from config.settings.common import TIME_ZONE
 from seed.data_importer.utils import (
@@ -23,6 +22,7 @@ from seed.data_importer.utils import (
 from seed.lib.mcm import reader
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Meter, Property, PropertyView
+from seed.utils.time_utils import localize_datetime_with_dst_fallbacks
 
 _log = logging.getLogger(__name__)
 
@@ -283,23 +283,8 @@ class MetersParser:
                 unaware_start = datetime.strptime(raw_start, "%Y-%m-%d %H:%M:%S")
                 unaware_end = datetime.strptime(raw_details["End Date"], "%Y-%m-%d %H:%M:%S")
 
-            try:
-                start_time = make_aware(unaware_start, timezone=self._tz)
-            except AmbiguousTimeError:
-                # Handle timestamp that occurs twice due to "falling back" to standard time
-                start_time = make_aware(unaware_start, timezone=self._tz, is_dst=False)
-            except NonExistentTimeError:
-                # Handle timestamp that doesn't exist due to "springing forward" to dst
-                start_time = make_aware(unaware_start, timezone=self._tz, is_dst=True)
-
-            try:
-                end_time = make_aware(unaware_end, timezone=self._tz)
-            except AmbiguousTimeError:
-                # Handle timestamp that occurs twice due to "falling back" to standard time
-                end_time = make_aware(unaware_end, timezone=self._tz, is_dst=False)
-            except NonExistentTimeError:
-                # Handle timestamp that doesn't exist due to "springing forward" to dst
-                end_time = make_aware(unaware_end, timezone=self._tz, is_dst=True)
+            start_time = localize_datetime_with_dst_fallbacks(unaware_start, self._tz)
+            end_time = localize_datetime_with_dst_fallbacks(unaware_end, self._tz)
 
             meter_details = {
                 "source": self._source_type,

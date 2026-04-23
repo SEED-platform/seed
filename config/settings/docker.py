@@ -1,8 +1,8 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
-:author nicholas.long@nrel.gov
+:author nicholas.long@nlr.gov
 :description File contains settings needed to run SEED with docker
 """
 
@@ -11,11 +11,6 @@ import os
 from kombu import Exchange, Queue
 
 from config.settings.common import *  # noqa: F403
-
-
-def env_var(key, default=None):
-    return os.environ.get(key, default)
-
 
 # Gather all the settings from the docker environment variables
 ENV_VARS = [
@@ -53,6 +48,14 @@ for loc in ENV_VARS:
     if not locals().get(loc):
         raise Exception(f"{loc} Not defined as env variables")
 
+# Add any env variables that should be booleans to this list
+BOOL_ENV_VARS = ["EMAIL_USE_TLS", "EMAIL_USE_SSL"]
+
+for loc in BOOL_ENV_VARS:
+    locals()[loc] = yn(locals().get(loc, ""))
+
+# TLS certificate verification is optional
+EMAIL_VERIFY_TLS = yn(env_var("EMAIL_VERIFY_TLS", "true"))
 
 DEBUG = env_var("Debug", False)
 COMPRESS_ENABLED = True
@@ -62,6 +65,10 @@ COMPRESS_STORAGE = "compressor.storage.BrotliCompressorFileStorage"
 # Make sure to disable secure cookies and csrf when using Cloudflare
 SESSION_COOKIE_SECURE = env_var("SESSION_COOKIE_SECURE", False)
 CSRF_COOKIE_SECURE = env_var("CSRF_COOKIE_SECURE", False)
+
+# Trust the original request scheme forwarded by nginx so Django can perform
+# secure-origin and CSRF checks correctly behind reverse proxies.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 ALLOWED_HOSTS_ENV = env_var("ALLOWED_HOSTS")
 if ALLOWED_HOSTS_ENV:
@@ -73,8 +80,8 @@ else:
 # another backend (e.g., SMTP), then please update this model to support both and
 # create a pull request.
 EMAIL_BACKEND = env_var("DJANGO_EMAIL_BACKEND", "django_ses.SESBackend")
-PASSWORD_RESET_EMAIL = SERVER_EMAIL  # noqa: F405
-DEFAULT_FROM_EMAIL = SERVER_EMAIL  # noqa: F405
+PASSWORD_RESET_EMAIL = SERVER_EMAIL
+DEFAULT_FROM_EMAIL = SERVER_EMAIL
 POST_OFFICE = {
     "BACKENDS": {
         "default": EMAIL_BACKEND,
@@ -146,7 +153,7 @@ LOGGING = {
     },
 }
 
-if "default" in SECRET_KEY:  # noqa: F405
+if "default" in SECRET_KEY:
     print("WARNING: SECRET_KEY is defaulted. Makes sure to override SECRET_KEY in local_untracked or env var")
 
 if "SENTRY_RAVEN_DSN" in os.environ:

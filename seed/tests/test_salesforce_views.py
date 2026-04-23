@@ -1,17 +1,18 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
 from datetime import datetime
+from unittest.mock import Mock, patch
 
 import pytest
+from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.urls import reverse
 from django.utils.timezone import get_current_timezone
 
-from config.settings.test import SF_DOMAIN, SF_INSTANCE, SF_PASSWORD, SF_SECURITY_TOKEN, SF_USERNAME
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import ROLE_MEMBER
 from seed.models import Column, PropertyView, SalesforceConfig, SalesforceMapping
@@ -189,8 +190,8 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         self.org.save()
 
         payload_data = {"salesforce_config": {"instance": None, "username": None, "password": None, "security_token": None}}
-        if SF_DOMAIN == "test":
-            payload_data["salesforce_config"]["domain"] = SF_DOMAIN
+        if settings.SF_DOMAIN == "test":
+            payload_data["salesforce_config"]["domain"] = settings.SF_DOMAIN
 
         response = self.client.post(
             reverse("api:v3:salesforce_configs-salesforce-connection") + "?organization_id=" + str(self.org.id),
@@ -211,15 +212,15 @@ class SalesforceViewTests(DataMappingBaseTestCase):
 
         payload_data = {
             "salesforce_config": {
-                "instance": SF_INSTANCE,
-                "username": SF_USERNAME,
-                "password": SF_PASSWORD,
-                "security_token": SF_SECURITY_TOKEN,
+                "instance": settings.SF_INSTANCE,
+                "username": settings.SF_USERNAME,
+                "password": settings.SF_PASSWORD,
+                "security_token": settings.SF_SECURITY_TOKEN,
             }
         }
 
-        if SF_DOMAIN == "test":
-            payload_data["salesforce_config"]["domain"] = SF_DOMAIN
+        if settings.SF_DOMAIN == "test":
+            payload_data["salesforce_config"]["domain"] = settings.SF_DOMAIN
 
         response = self.client.post(
             reverse("api:v3:salesforce_configs-salesforce-connection") + "?organization_id=" + str(self.org.id),
@@ -249,17 +250,251 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         # print(f" view data: {pdata}")
 
         # enable sf
-        self.sf_config.url = SF_INSTANCE
-        self.sf_config.username = SF_USERNAME
-        self.sf_config.password = encrypt(SF_PASSWORD)
-        self.sf_config.security_token = SF_SECURITY_TOKEN
-        if SF_DOMAIN == "test":
-            self.sf_config.domain = SF_DOMAIN
+        self.sf_config.url = settings.SF_INSTANCE
+        self.sf_config.username = settings.SF_USERNAME
+        self.sf_config.password = encrypt(settings.SF_PASSWORD)
+        self.sf_config.security_token = settings.SF_SECURITY_TOKEN
+        if settings.SF_DOMAIN == "test":
+            self.sf_config.domain = settings.SF_DOMAIN
         self.sf_config.save()
 
         status, _message = update_salesforce_property(self.org.id, view.id)
 
         self.assertEqual(status, True)
+
+    @patch("seed.utils.salesforce.test_connection")
+    def test_benchmark_lookup_with_unique_id_success(self, mock_test_connection):
+        """Test successful benchmark lookup using unique_benchmark_id_fieldname"""
+        # Setup mocks
+        mock_client = Mock()
+        mock_test_connection.return_value = (True, None, mock_client)
+
+        # Mock successful benchmark lookup
+        mock_benchmark_record = {"Id": "a01Ea00000VqqMf", "Name": "Test Benchmark"}
+        mock_client.get_benchmark_by_custom_id.return_value = mock_benchmark_record
+        mock_client.update_benchmark.return_value = None
+
+        # Setup test data
+        state = self.property_state_factory.get_property_state()
+        state.extra_data["Salesforce Benchmark ID"] = "CUSTOM_BENCHMARK_001"
+        state.extra_data["Property GFA - Calculated (Buildings and Parking) (ft2)"] = state.gross_floor_area
+        state.site_eui = 50.0
+        state.save()
+
+        property = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
+
+        # Add required labels
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.ind_label.id])
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
+
+        # Configure Salesforce settings with unique_benchmark_id_fieldname
+        self.sf_config.unique_benchmark_id_fieldname = "Custom_Benchmark_ID__c"
+        self.sf_config.save()
+
+        # Test the function
+        status, _message = update_salesforce_property(self.org.id, view.id)
+
+        # Assertions
+        self.assertTrue(status)
+        mock_client.get_benchmark_by_custom_id.assert_called_once_with("Custom_Benchmark_ID__c", "CUSTOM_BENCHMARK_001")
+        mock_client.update_benchmark.assert_called_once_with(
+            "a01Ea00000VqqMf", Status__c="Compliance Label", Benchmark_Square_Footage__c=state.gross_floor_area, Site_EUI_kBtu_ft2__c=50.0
+        )
+
+    @patch("seed.utils.salesforce.test_connection")
+    @patch("seed_salesforce.salesforce_client.SalesforceClient")
+    def test_benchmark_lookup_with_unique_id_not_found(self, mock_client_class, mock_test_connection):
+        """Test benchmark lookup failure when benchmark not found in Salesforce"""
+        # Setup mocks
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_test_connection.return_value = (True, None, mock_client)
+
+        # Mock failed benchmark lookup (returns None)
+        mock_client.get_benchmark_by_custom_id.return_value = None
+
+        # Setup test data
+        state = self.property_state_factory.get_property_state()
+        state.extra_data["Salesforce Benchmark ID"] = "NONEXISTENT_BENCHMARK"
+        state.save()
+
+        property = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
+
+        # Add required labels
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.ind_label.id])
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
+
+        # Configure Salesforce settings with unique_benchmark_id_fieldname
+        self.sf_config.unique_benchmark_id_fieldname = "Custom_Benchmark_ID__c"
+        self.sf_config.save()
+
+        # Test the function
+        status, message = update_salesforce_property(self.org.id, view.id)
+
+        # Assertions
+        self.assertFalse(status)
+        self.assertIn("benchmark not found in Salesforce", message)
+        self.assertIn("NONEXISTENT_BENCHMARK", message)
+        mock_client.get_benchmark_by_custom_id.assert_called_once_with("Custom_Benchmark_ID__c", "NONEXISTENT_BENCHMARK")
+        mock_client.update_benchmark.assert_not_called()
+
+    @patch("seed.utils.salesforce.test_connection")
+    @patch("seed_salesforce.salesforce_client.SalesforceClient")
+    def test_benchmark_lookup_with_unique_id_invalid_response(self, mock_client_class, mock_test_connection):
+        """Test benchmark lookup failure when response is invalid (missing Id)"""
+        # Setup mocks
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_test_connection.return_value = (True, None, mock_client)
+
+        # Mock invalid benchmark lookup response (missing 'Id' field)
+        mock_client.get_benchmark_by_custom_id.return_value = {"Name": "Test Benchmark"}
+
+        # Setup test data
+        state = self.property_state_factory.get_property_state()
+        state.extra_data["Salesforce Benchmark ID"] = "INVALID_RESPONSE_BENCHMARK"
+        state.save()
+
+        property = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
+
+        # Add required labels
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.ind_label.id])
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
+
+        # Configure Salesforce settings with unique_benchmark_id_fieldname
+        self.sf_config.unique_benchmark_id_fieldname = "Custom_Benchmark_ID__c"
+        self.sf_config.save()
+
+        # Test the function
+        status, message = update_salesforce_property(self.org.id, view.id)
+
+        # Assertions
+        self.assertFalse(status)
+        self.assertIn("benchmark not found in Salesforce", message)
+        self.assertIn("INVALID_RESPONSE_BENCHMARK", message)
+        mock_client.get_benchmark_by_custom_id.assert_called_once_with("Custom_Benchmark_ID__c", "INVALID_RESPONSE_BENCHMARK")
+        mock_client.update_benchmark.assert_not_called()
+
+    @patch("seed.utils.salesforce.test_connection")
+    @patch("seed_salesforce.salesforce_client.SalesforceClient")
+    def test_benchmark_lookup_fallback_to_direct_id(self, mock_client_class, mock_test_connection):
+        """Test fallback behavior when unique_benchmark_id_fieldname is not configured"""
+        # Setup mocks
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_test_connection.return_value = (True, None, mock_client)
+
+        # Should not call get_benchmark_by_custom_id in fallback mode
+        mock_client.update_benchmark.return_value = None
+
+        # Setup test data
+        state = self.property_state_factory.get_property_state()
+        state.extra_data["Salesforce Benchmark ID"] = "a01Ea00000VqqMf"  # Direct Salesforce ID
+        state.extra_data["Property GFA - Calculated (Buildings and Parking) (ft2)"] = state.gross_floor_area
+        state.site_eui = 75.0
+        state.save()
+
+        property = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
+
+        # Add required labels
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.ind_label.id])
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
+
+        # Configure Salesforce settings WITHOUT unique_benchmark_id_fieldname
+        self.sf_config.unique_benchmark_id_fieldname = None
+        self.sf_config.save()
+
+        # Test the function
+        status, _message = update_salesforce_property(self.org.id, view.id)
+
+        # Assertions
+        self.assertTrue(status)
+        mock_client.get_benchmark_by_custom_id.assert_not_called()  # Should not be called in fallback mode
+        mock_client.update_benchmark.assert_called_once_with(
+            "a01Ea00000VqqMf",  # Direct ID used
+            Status__c="Compliance Label",
+            Benchmark_Square_Footage__c=state.gross_floor_area,
+            Site_EUI_kBtu_ft2__c=75.0,
+        )
+
+    @patch("seed.utils.salesforce.test_connection")
+    @patch("seed_salesforce.salesforce_client.SalesforceClient")
+    def test_benchmark_lookup_with_empty_string_fieldname(self, mock_client_class, mock_test_connection):
+        """Test fallback behavior when unique_benchmark_id_fieldname is empty string"""
+        # Setup mocks
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_test_connection.return_value = (True, None, mock_client)
+
+        mock_client.update_benchmark.return_value = None
+
+        # Setup test data
+        state = self.property_state_factory.get_property_state()
+        state.extra_data["Salesforce Benchmark ID"] = "a01Ea00000VqqMf"
+        state.save()
+
+        property = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
+
+        # Add required labels
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.ind_label.id])
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
+
+        # Configure Salesforce settings with empty unique_benchmark_id_fieldname
+        self.sf_config.unique_benchmark_id_fieldname = ""
+        self.sf_config.save()
+
+        # Test the function
+        status, _message = update_salesforce_property(self.org.id, view.id)
+
+        # Assertions
+        self.assertTrue(status)
+        mock_client.get_benchmark_by_custom_id.assert_not_called()
+        mock_client.update_benchmark.assert_called_once_with(
+            "a01Ea00000VqqMf", Status__c="Compliance Label", Benchmark_Square_Footage__c=None, Site_EUI_kBtu_ft2__c=state.site_eui
+        )
+
+    @patch("seed.utils.salesforce.test_connection")
+    @patch("seed_salesforce.salesforce_client.SalesforceClient")
+    def test_benchmark_lookup_exception_handling(self, mock_client_class, mock_test_connection):
+        """Test exception handling during benchmark lookup"""
+        # Setup mocks
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_test_connection.return_value = (True, None, mock_client)
+
+        # Mock exception during benchmark lookup
+        mock_client.get_benchmark_by_custom_id.side_effect = Exception("Salesforce API Error")
+
+        # Setup test data
+        state = self.property_state_factory.get_property_state()
+        state.extra_data["Salesforce Benchmark ID"] = "ERROR_BENCHMARK"
+        state.save()
+
+        property = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
+
+        # Add required labels
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.ind_label.id])
+        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
+
+        # Configure Salesforce settings with unique_benchmark_id_fieldname
+        self.sf_config.unique_benchmark_id_fieldname = "Custom_Benchmark_ID__c"
+        self.sf_config.save()
+
+        # Test the function
+        status, message = update_salesforce_property(self.org.id, view.id)
+
+        # Assertions
+        self.assertFalse(status)
+        self.assertIn("An exception of type Exception occurred", message)
+        self.assertIn("Salesforce API Error", message)
+        mock_client.get_benchmark_by_custom_id.assert_called_once_with("Custom_Benchmark_ID__c", "ERROR_BENCHMARK")
+        mock_client.update_benchmark.assert_not_called()
 
     def test_multiple_salesforce_configs_illegal(self):
         """test that you can't have 2 salesforce_configs records per org
@@ -464,12 +699,12 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
         self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
 
         # enable sf
-        self.sf_config.url = SF_INSTANCE
-        self.sf_config.username = SF_USERNAME
-        self.sf_config.password = encrypt(SF_PASSWORD)
-        self.sf_config.security_token = SF_SECURITY_TOKEN
-        if SF_DOMAIN == "test":
-            self.sf_config.domain = SF_DOMAIN
+        self.sf_config.url = settings.SF_INSTANCE
+        self.sf_config.username = settings.SF_USERNAME
+        self.sf_config.password = encrypt(settings.SF_PASSWORD)
+        self.sf_config.security_token = settings.SF_SECURITY_TOKEN
+        if settings.SF_DOMAIN == "test":
+            self.sf_config.domain = settings.SF_DOMAIN
         self.sf_config.save()
 
         url = reverse("api:v3:properties-update-salesforce") + f"?organization_id={self.org.pk}"

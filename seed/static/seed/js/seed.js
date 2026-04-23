@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * AngularJS app 'config.seed' for SEED SPA
@@ -1998,12 +1998,7 @@
               const currentInventoryGroup = _.first(inventory_groups);
               if (currentInventoryGroup) inventory_service.save_last_inventory_group(currentInventoryGroup.id, $stateParams.inventory_type);
               return currentInventoryGroup;
-            }],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ]
+            }]
           }
         })
         .state({

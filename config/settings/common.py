@@ -1,11 +1,10 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import os
 from datetime import timedelta
-from typing import Union
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
@@ -18,8 +17,7 @@ PROTOCOL = os.environ.get("PROTOCOL", "https")
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.seed"
 
 TIME_ZONE = "America/Los_Angeles"
 USE_TZ = True
@@ -93,6 +91,7 @@ DJANGO_CORE_APPS = (
     "django.contrib.gis",
     "compressor",
     "django_extensions",
+    "crispy_forms",
     "django_filters",
     "rest_framework",
     "post_office",
@@ -133,6 +132,7 @@ POST_OFFICE = {
 HIGH_DEPENDENCY_APPS = ("seed.landing",)  # 'landing' contains SEEDUser
 
 INSTALLED_APPS = HIGH_DEPENDENCY_APPS + DJANGO_CORE_APPS + SEED_CORE_APPS
+CRISPY_TEMPLATE_PACK = "bootstrap3"
 
 # apps to auto load name spaced URLs for JS use (see seed.urls)
 SEED_URL_APPS = ("seed",)
@@ -281,7 +281,7 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
-    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.openapi.AutoSchema",
     "PAGE_SIZE": 25,
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
     "DATETIME_INPUT_FORMATS": ("%Y:%m:%d", "iso-8601", "%Y-%m-%d"),
@@ -307,6 +307,7 @@ SWAGGER_SETTINGS = {
     "DOC_EXPANSION": "none",
     "LOGOUT_URL": "/accounts/logout",
 }
+SWAGGER_USE_COMPAT_RENDERERS = False
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
@@ -316,7 +317,11 @@ SIMPLE_JWT = {
 }
 
 
-def yn(s: Union[bool, str]) -> bool:
+def env_var(key, default=None):
+    return os.environ.get(key, default)
+
+
+def yn(s: bool | str) -> bool:
     if isinstance(s, bool):
         return s
     if isinstance(s, str):

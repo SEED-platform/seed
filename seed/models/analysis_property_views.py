@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -95,6 +95,6 @@ class AnalysisPropertyView(models.Model):
 
         return {
             # we use .get() here because the PropertyView might not exist anymore!
-            apv.id: property_views_by_property_cycle_id.get((apv.property_id, apv.cycle_id), None)
+            apv.id: property_views_by_property_cycle_id.get((apv.property_id, apv.cycle_id))
             for apv in analysis_property_views
         }

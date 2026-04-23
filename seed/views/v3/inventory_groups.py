@@ -21,9 +21,10 @@ from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, Property, PropertyView, System
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
+from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.meters import PropertyMeterReadingsExporter, update_meter_connection
-from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+from seed.utils.viewsets import ModelViewSetWithoutPatch, SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 logger = logging.getLogger()
 
@@ -49,7 +50,7 @@ logger = logging.getLogger()
     ],
     name="update",
 )
-class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
+class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = InventoryGroupSerializer
     model = InventoryGroup
     filter_backends = (ColumnListProfileFilterBackend,)
@@ -85,6 +86,16 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_string_field("inventory_type", required=True, description="property or tax_lot"),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {"selected": ["integer"]},
+            description="selected: optional list of inventory ids. [] returns all groups.",
+        ),
+    )
     @method_decorator(
         [
             has_perm("requires_viewer"),

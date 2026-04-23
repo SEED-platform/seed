@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -9,7 +9,8 @@ import locale
 import logging
 import os.path
 from collections import OrderedDict
-from typing import Any, Callable, Literal, Optional
+from collections.abc import Callable
+from typing import Any, Literal
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
@@ -1126,6 +1127,7 @@ class Column(models.Model):
                         "from_units": mapping.get("from_units"),
                         "to_field": mapping["to_field"],
                         "to_table_name": mapping["to_table_name"],
+                        "to_data_type": mapping.get("to_data_type"),
                     }
                 )
             else:
@@ -1520,11 +1522,11 @@ class Column(models.Model):
     @staticmethod
     def retrieve_all(
         org_id: int,
-        inventory_type: Optional[Literal["property", "taxlot"]] = None,
+        inventory_type: Literal["property", "taxlot"] | None = None,
         only_used: bool = False,
         include_related: bool = True,
         exclude_derived: bool = False,
-        column_ids: Optional[list[int]] = None,
+        column_ids: list[int] | None = None,
     ) -> list[dict]:
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the

@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -210,7 +210,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             user.first_name = first_name
             user.last_name = last_name
             if org.require_2fa:
-                EmailDevice.objects.create(user=user, name="default", email=user.email)
+                EmailDevice.objects.create(user=user, name="default")
         user.save()
 
         try:

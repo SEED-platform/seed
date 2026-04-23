@@ -70,8 +70,8 @@ master_doc = "index"
 
 # General information about the project.
 project = "SEED Platform"
-copyright = "2017, 2025, Alliance for Sustainable Energy, LLC, and other contributors."
-author = "Alliance for Sustainable Energy, LLC, and other contributors."
+copyright = "2017, 2026, Alliance for Energy Innovation, LLC, and other contributors."
+author = "Alliance for Energy Innovation, LLC, and other contributors."
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -100,7 +100,7 @@ language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
-exclude_patterns = []
+exclude_patterns: list[str] = []
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -228,7 +228,7 @@ htmlhelp_basename = "SEED-Platform-documentation"
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     # 'papersize': 'letterpaper',
     # The font size ('10pt', '11pt' or '12pt').

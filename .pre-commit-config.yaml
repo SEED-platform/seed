@@ -1,6 +1,6 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
         args: ["--maxkb=2000"]
@@ -12,6 +12,7 @@ repos:
       - id: check-toml
       - id: check-xml
       - id: check-yaml
+        exclude: pnpm-lock\.yaml|pnpm-workspace\.yaml
       - id: debug-statements
       - id: end-of-file-fixer
         exclude: seed/static/seed/locales/
@@ -25,14 +26,17 @@ repos:
     rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
-        # for now ignoring html, javascript
+        args: [--no-cache]
+        exclude: pnpm-lock\.yaml|pnpm-workspace\.yaml
         types_or: [yaml, markdown, css, scss]
-  # https://docs.astral.sh/ruff/integrations/#pre-commit
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.8
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.20.2
     hooks:
-      # Run the linter
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix, --output-format=full] #, --unsafe-fixes]
-      # Run the formatter
+      - id: mypy
+        args: [--install-types, --non-interactive, --show-error-codes]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.11
+    hooks:
+      - id: ruff-check
+        args: [--fix, --exit-non-zero-on-fix, --output-format=full]
       - id: ruff-format
