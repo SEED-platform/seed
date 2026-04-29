@@ -69,10 +69,8 @@ dependencies = [
     "tkbl==0.7",
     "seed-salesforce==0.2.0",
     "simple-salesforce==1.12.9",
-    # Compatibility / backports
-    "importlib-metadata==8.7.1", # Remove once a version newer than 8.5.0 has been released that fixes Django autoreload
     # AWS / SES
-    "boto3~=1.42.92",
+    "boto3~=1.42.97",
     "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",

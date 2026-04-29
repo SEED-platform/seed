@@ -206,7 +206,7 @@ LOGGING = {
     },
 }
 
-LOGIN_REDIRECT_URL = "/app/#/profile/two_factor_profile"
+LOGIN_REDIRECT_URL = "/app/"
 
 APPEND_SLASH = True
 
