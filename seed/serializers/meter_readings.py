@@ -7,19 +7,17 @@ from collections import OrderedDict
 
 import dateutil.parser
 from django.core.exceptions import ValidationError
-from django.db import connection
 from django.utils.timezone import make_aware
-from psycopg2.extras import execute_values
 from pytz import timezone
 from rest_framework import serializers
 
 from config.settings.common import TIME_ZONE
-from seed.models import MeterReading
+from seed.models import METER_READING_FIELDS, MeterReading, bulk_upsert_meter_readings
 
 # import logging
 # _log = logging.getLogger(__name__)
 
-meter_fields = ["meter_id", "start_time", "end_time", "reading", "source_unit", "conversion_factor"]
+meter_fields = METER_READING_FIELDS
 
 
 class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
@@ -30,27 +28,7 @@ class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
         return data
 
     def create(self, validated_data) -> list[MeterReading]:
-        upsert_sql = (
-            f"INSERT INTO seed_meterreading({', '.join(meter_fields)}) "  # noqa: S608
-            "VALUES %s "
-            "ON CONFLICT (meter_id, start_time, end_time) "
-            "DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor "
-            f"RETURNING {', '.join(meter_fields)}"
-        )
-
-        with connection.cursor() as cursor:
-            results: list[tuple] = execute_values(
-                cursor,
-                upsert_sql,
-                validated_data,
-                template="(%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)",
-                fetch=True,
-            )
-
-        # Convert list of tuples to list of MeterReadings for response
-        updated_readings = [MeterReading(**{field: result[i] for i, field in enumerate(meter_fields)}) for result in results]
-
-        return updated_readings
+        return bulk_upsert_meter_readings(MeterReading(**datum) for datum in validated_data)
 
     def validate(self, data):
         # duplicate start and end date pairs will cause sql errors
@@ -89,22 +67,7 @@ class MeterReadingSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data) -> MeterReading:
-        # Can't use update_or_insert here due to manually setting the primary key for timescale
-        upsert_sql = (
-            f"INSERT INTO seed_meterreading({', '.join(meter_fields)}) "  # noqa: S608
-            "VALUES (%(meter_id)s, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s) "
-            "ON CONFLICT (meter_id, start_time, end_time) "
-            "DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor "
-            f"RETURNING {', '.join(meter_fields)}"
-        )
-
-        with connection.cursor() as cursor:
-            cursor.execute(upsert_sql, validated_data)
-            result: tuple = cursor.fetchone()
-
-        # Convert tuple to MeterReading for response
-        updated_reading = MeterReading(**{field: result[i] for i, field in enumerate(meter_fields)})
-        return updated_reading
+        return bulk_upsert_meter_readings([MeterReading(**validated_data)])[0]
 
     def to_representation(self, obj):
         result = OrderedDict(super().to_representation(obj))
