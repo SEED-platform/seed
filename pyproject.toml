@@ -8,7 +8,7 @@ license-files = ["LICENSE.md"]
 requires-python = ">=3.12"
 dependencies = [
     # Django core
-    "django==4.2.30",
+    "django==5.2.13",
     # Persistence (database)
     "psycopg[binary]==3.3.3",
     # Background jobs / scheduling / caching

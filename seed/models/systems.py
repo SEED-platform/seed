@@ -45,7 +45,8 @@ class DESSystem(System):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=Q(heating_capacity__isnull=False) | Q(cooling_capacity__isnull=False), name="heating_or_cooling_capacity_required"
+                condition=Q(heating_capacity__isnull=False) | Q(cooling_capacity__isnull=False),
+                name="heating_or_cooling_capacity_required",
             )
         ]
 
