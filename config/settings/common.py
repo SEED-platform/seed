@@ -89,6 +89,7 @@ DJANGO_CORE_APPS = (
     "django.contrib.admin",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    "django.contrib.postgres",
     "compressor",
     "django_extensions",
     "django_filters",
