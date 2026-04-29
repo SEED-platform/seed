@@ -20,16 +20,15 @@ dependencies = [
     # Assets / compression / utilities
     "brotli==1.2.0",
     "django-compressor==4.6.0",
-    "django-extensions==3.2.3",
+    "django-extensions==4.1",
     "django-model-utils==5.0.0",
-    "django-treebeard==4.7.1",
+    "django-treebeard==5.0.5",
     # Date / time
     "python-dateutil==2.9.0.post0",
     # Units
-    "django-pint==0.7.3",
+    "django-pint==1.0.4",
     # Forms / filtering
-    "django-crispy-forms<=2.6", # Update after Django v5.2
-    "django-filter==22.1", # Update after drf-spectacular
+    "django-filter==25.2",
     # API / auth / docs
     "djangorestframework==3.17.1",
     "djangorestframework-simplejwt==5.5.1",
