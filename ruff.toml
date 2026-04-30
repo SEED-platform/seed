@@ -65,7 +65,6 @@ ignore = [
     "RUF012",  # mutable-class-default
     "S106",    # hardcoded-password-func-arg
     "S311",    # suspicious-non-cryptographic-random-usage
-    "S320",    # suspicious-xmle-tree-usage
     "S603",    # subprocess-without-shell-equals-true
     "S607",    # start-process-with-partial-path
     "S701",    # jinja2-autoescape-false

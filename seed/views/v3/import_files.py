@@ -10,13 +10,12 @@ from random import randint
 import xlrd
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
+from django.utils import timezone as django_timezone
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
-from pytz import timezone
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 
-from config.settings.common import TIME_ZONE
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
@@ -1108,7 +1107,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             # process dates
-            the_tz = timezone(TIME_ZONE)
+            the_tz = django_timezone.get_default_timezone()
             unaware_start = datetime.strptime(raw_reading["Start Date"], "%Y-%m-%d %H:%M:%S")
             unaware_end = datetime.strptime(raw_reading["End Date"], "%Y-%m-%d %H:%M:%S")
             start_time = localize_datetime_with_dst_fallbacks(unaware_start, the_tz)

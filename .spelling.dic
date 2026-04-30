@@ -406,8 +406,6 @@ pyotp
 Pyright
 pytest
 pytype
-pytz
-pytztimezone
 pyyaml
 qqfile
 qrcode

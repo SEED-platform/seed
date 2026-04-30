@@ -9,9 +9,8 @@ from collections import defaultdict
 from django.core.paginator import Paginator
 from django.db.models import Avg
 from django.db.models.functions import TruncMonth, TruncYear
-from pytz import timezone
+from django.utils import timezone as django_timezone
 
-from config.settings.common import TIME_ZONE
 from seed.models import Sensor, SensorReading
 
 
@@ -33,7 +32,7 @@ class PropertySensorReadingsExporter:
         )
         self.org_id = org_id
         self.show_only_occupied_readings = show_only_occupied_readings
-        self.tz = timezone(TIME_ZONE)
+        self.tz = django_timezone.get_default_timezone()
 
     def readings_and_column_defs(self, interval, page, per_page):
         if interval == "Exact":
@@ -123,7 +122,7 @@ class PropertySensorReadingsExporter:
 
             # group by month and avg readings
             readings_avg_by_month = (
-                sensor_readings.annotate(month=TruncMonth("timestamp"))
+                sensor_readings.annotate(month=TruncMonth("timestamp", tzinfo=self.tz))
                 .values("month")
                 .order_by("month")
                 .annotate(avg=Avg("reading"))
@@ -165,7 +164,7 @@ class PropertySensorReadingsExporter:
                 sensor_readings = sensor_readings.filter(is_occupied=True)
 
             readings_avg_by_year = (
-                sensor_readings.annotate(year=TruncYear("timestamp"))
+                sensor_readings.annotate(year=TruncYear("timestamp", tzinfo=self.tz))
                 .values("year")
                 .order_by("year")
                 .annotate(avg=Avg("reading"))

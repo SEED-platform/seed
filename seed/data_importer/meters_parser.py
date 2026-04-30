@@ -10,9 +10,8 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from pytz import timezone
+from django.utils import timezone as django_timezone
 
-from config.settings.common import TIME_ZONE
 from seed.data_importer.utils import (
     fahrenheit_temperature_conversion_factors,
     kbtu_thermal_conversion_factors,
@@ -60,7 +59,7 @@ class MetersParser:
     corresponding MeterReading objects details.
     """
 
-    _tz = timezone(TIME_ZONE)
+    _tz = django_timezone.get_default_timezone()
 
     def __init__(self, org_id, meters_and_readings_details, source_type=Meter.PORTFOLIO_MANAGER, property_id=None, system_id=None):
         # defaulted to None to show it hasn't been cached yet

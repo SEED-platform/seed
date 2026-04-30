@@ -1,6 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: 'pip'
+  - package-ecosystem: 'uv'
     directory: '/'
     schedule:
       interval: 'weekly'
@@ -15,13 +15,6 @@ updates:
     labels:
       - 'Maintenance'
     ignore:
-      - dependency-name: 'qrcode'
-      - dependency-name: 'urllib3'
-      - dependency-name: 'django-extensions'
-      - dependency-name: 'pytz'
-      - dependency-name: 'sentry-sdk'
-      - dependency-name: 'djangorestframework-simplejwt'
-      - dependency-name: 'django-filter'
       - dependency-name: 'xlrd'
 
   - package-ecosystem: 'github-actions'

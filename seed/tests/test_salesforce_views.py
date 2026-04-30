@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 from datetime import datetime
+from unittest import skipUnless
 from unittest.mock import Mock, patch
 
 import pytest
@@ -30,6 +31,15 @@ from seed.utils.encrypt import encrypt
 from seed.utils.organizations import create_organization
 from seed.utils.salesforce import update_salesforce_property
 from seed.views.v3.label_inventories import LabelInventoryViewSet
+
+HAS_LIVE_SALESFORCE_CREDENTIALS = all(
+    [
+        settings.SF_INSTANCE,
+        settings.SF_USERNAME,
+        settings.SF_PASSWORD,
+        settings.SF_SECURITY_TOKEN,
+    ]
+)
 
 
 class SalesforceViewTests(DataMappingBaseTestCase):
@@ -203,6 +213,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         self.assertEqual(data["status"], "error")
         self.assertIn("Salesforce Authentication Failed:", data["message"])
 
+    @skipUnless(HAS_LIVE_SALESFORCE_CREDENTIALS, "Salesforce integration credentials are not configured for this test environment")
     def test_salesforce_connection_success(self):
         # test salesforce connection
 
@@ -231,6 +242,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
 
         self.assertEqual(data["status"], "success")
 
+    @skipUnless(HAS_LIVE_SALESFORCE_CREDENTIALS, "Salesforce integration credentials are not configured for this test environment")
     def test_pushing_salesforce_benchmark(self):
         state = self.property_state_factory.get_property_state()
 
@@ -684,38 +696,39 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
         assert response.status_code == 200
 
     def test_property_update_salesforce_perms(self):
-        state = self.property_state_factory.get_property_state()
+        with patch("seed.views.v3.properties.update_salesforce_properties", return_value=(True, [])):
+            state = self.property_state_factory.get_property_state()
 
-        # this ID should be valid for the test salesforce sandbox
-        state.extra_data["Salesforce Benchmark ID"] = "a01Ea00000VqqMf"
-        # add other Instance specific mappings for testing
-        state.extra_data["Property GFA - Calculated (Buildings and Parking) (ft2)"] = state.gross_floor_area
-        state.save()
+            # this ID should be valid for the test salesforce sandbox
+            state.extra_data["Salesforce Benchmark ID"] = "a01Ea00000VqqMf"
+            # add other Instance specific mappings for testing
+            state.extra_data["Property GFA - Calculated (Buildings and Parking) (ft2)"] = state.gross_floor_area
+            state.save()
 
-        prprty = self.property_factory.get_property()
-        view = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
+            prprty = self.property_factory.get_property()
+            view = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
 
-        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.ind_label.id])
-        self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
+            self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.ind_label.id])
+            self.api_view.add_labels(self.api_view.models["property"].objects.none(), "property", [view.id], [self.compliance_label.id])
 
-        # enable sf
-        self.sf_config.url = settings.SF_INSTANCE
-        self.sf_config.username = settings.SF_USERNAME
-        self.sf_config.password = encrypt(settings.SF_PASSWORD)
-        self.sf_config.security_token = settings.SF_SECURITY_TOKEN
-        if settings.SF_DOMAIN == "test":
-            self.sf_config.domain = settings.SF_DOMAIN
-        self.sf_config.save()
+            # enable sf
+            self.sf_config.url = settings.SF_INSTANCE
+            self.sf_config.username = settings.SF_USERNAME
+            self.sf_config.password = encrypt(settings.SF_PASSWORD)
+            self.sf_config.security_token = settings.SF_SECURITY_TOKEN
+            if settings.SF_DOMAIN == "test":
+                self.sf_config.domain = settings.SF_DOMAIN
+            self.sf_config.save()
 
-        url = reverse("api:v3:properties-update-salesforce") + f"?organization_id={self.org.pk}"
-        params = json.dumps({"property_view_ids": [view.id]})
+            url = reverse("api:v3:properties-update-salesforce") + f"?organization_id={self.org.pk}"
+            params = json.dumps({"property_view_ids": [view.id]})
 
-        # child member cannot update parent property
-        self.login_as_child_member()
-        resp = self.client.post(url, params, content_type="application/json")
-        assert resp.status_code == 404
+            # child member cannot update parent property
+            self.login_as_child_member()
+            resp = self.client.post(url, params, content_type="application/json")
+            assert resp.status_code == 404
 
-        # root member can
-        self.login_as_root_member()
-        resp = self.client.post(url, params, content_type="application/json")
-        assert resp.status_code == 200
+            # root member can
+            self.login_as_root_member()
+            resp = self.client.post(url, params, content_type="application/json")
+            assert resp.status_code == 200

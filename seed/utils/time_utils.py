@@ -7,8 +7,16 @@ import calendar
 import datetime
 
 import dateutil
-import pytz
+from dateutil import tz as dateutil_tz
 from django.utils.timezone import make_aware
+
+
+class NonExistentTimeError(ValueError):
+    pass
+
+
+class AmbiguousTimeError(ValueError):
+    pass
 
 
 def convert_datestr(datestr, make_tz_aware=False):
@@ -24,7 +32,10 @@ def convert_datestr(datestr, make_tz_aware=False):
     try:
         value = dateutil.parser.parse(datestr)
         if make_tz_aware:
-            value = make_aware(value, pytz.UTC)
+            if value.tzinfo is None:
+                value = make_aware(value, timezone=datetime.UTC)
+            else:
+                value = value.astimezone(datetime.UTC)
         return value
     except (TypeError, ValueError):
         return None
@@ -54,14 +65,31 @@ def localize_datetime(value, tz, is_dst=None):
     Convert a naive datetime to an aware datetime without relying on Django's
     deprecated ``is_dst`` passthrough.
 
-    ``pytz`` timezones support ``localize`` for DST disambiguation. For other
-    timezone implementations, fall back to Django's ``make_aware``.
+    Some timezone implementations support ``localize`` for DST
+    disambiguation. For other timezone implementations, fall back to
+    Django's ``make_aware``.
     """
     if hasattr(tz, "localize"):
         return tz.localize(value, is_dst=is_dst)
 
-    if is_dst is not None:
-        raise ValueError("is_dst can only be used with pytz timezones")
+    aware = value.replace(tzinfo=tz)
+
+    if not dateutil_tz.datetime_exists(aware):
+        if is_dst is None:
+            raise NonExistentTimeError(value)
+
+        if is_dst:
+            return dateutil_tz.resolve_imaginary(aware)
+
+        resolved = dateutil_tz.resolve_imaginary(aware)
+        gap = resolved.replace(tzinfo=None) - value
+        return (value - gap).replace(tzinfo=tz)
+
+    if dateutil_tz.datetime_ambiguous(aware):
+        if is_dst is None:
+            raise AmbiguousTimeError(value)
+
+        return aware.replace(fold=0 if is_dst else 1)
 
     return make_aware(value, timezone=tz)
 
@@ -73,7 +101,10 @@ def localize_datetime_with_dst_fallbacks(value, tz):
     """
     try:
         return localize_datetime(value, tz)
-    except pytz.AmbiguousTimeError:
+    except AmbiguousTimeError:
         return localize_datetime(value, tz, is_dst=False)
-    except pytz.NonExistentTimeError:
-        return localize_datetime(value, tz, is_dst=True)
+    except NonExistentTimeError:
+        if hasattr(tz, "localize"):
+            return localize_datetime(value, tz, is_dst=True)
+
+        return dateutil_tz.resolve_imaginary(value.replace(tzinfo=tz))
