@@ -10,7 +10,7 @@ dependencies = [
     # Django core
     "django==4.2.30",
     # Persistence (database)
-    "psycopg2-binary==2.9.11",
+    "psycopg[binary]==3.3.3",
     # Background jobs / scheduling / caching
     "celery==5.6.3",
     "django-celery-beat==2.9.0",
@@ -98,7 +98,7 @@ dev = [
     "vcrpy==8.1.1",
     "Faker~=40.15.0",
     "mock==5.2.0",
-    "hypothesis==6.152.1",
+    "hypothesis==6.152.3",
     # Coverage / reporting
     "coverage==7.13.5",
     "coveralls==4.1.0",
@@ -106,7 +106,7 @@ dev = [
     "tox-uv-bare==1.35.1",
     "psutil==7.2.2",
     # Static code analysis / hooks
-    "pre-commit>=4.5.1",
+    "pre-commit>=4.6.0",
     # Documentation & spelling
     "Sphinx==9.1.0",
     "sphinxcontrib-spelling==8.0.2",

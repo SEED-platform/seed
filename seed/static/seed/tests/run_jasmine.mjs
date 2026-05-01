@@ -8,7 +8,10 @@ import isPortReachable from 'is-port-reachable';
 import puppeteer from 'puppeteer';
 
 // Launch a headless browser
-const browser = await puppeteer.launch({ headless: 'shell' });
+const browser = await puppeteer.launch({
+  channel: 'chrome',
+  headless: 'shell'
+});
 const page = await browser.newPage();
 
 // Navigate to the Jasmine SpecRunner
