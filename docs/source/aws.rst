@@ -99,7 +99,7 @@ instance you have manually installed within your infrastructure.
     # Database
     DATABASES = {
         'default': {
-            'ENGINE':'django.db.backends.postgresql_psycopg2',
+            'ENGINE':'django.contrib.gis.db.backends.postgis',
             'NAME': 'seed',
             'USER': '',
             'PASSWORD': '',

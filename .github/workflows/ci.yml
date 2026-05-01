@@ -97,6 +97,7 @@ jobs:
         if: ${{ matrix.test_env == 'functional' }}
         env:
           DISPLAY: ':99'
+          PUPPETEER_SKIP_DOWNLOAD: true
         run: |
           Xvfb :99 &
           pnpm test
