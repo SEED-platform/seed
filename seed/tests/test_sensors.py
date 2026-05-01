@@ -11,6 +11,8 @@ from django.urls import reverse
 from django.utils.timezone import make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 
 from config.settings.common import TIME_ZONE
+from seed.data_importer.tasks import _save_sensor_readings_task
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.models.sensors import DataLogger, Sensor, SensorReading
 from seed.test_helpers.fake import FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase
@@ -252,6 +254,44 @@ class PropertySensorViewTests(AccessLevelBaseTestCase):
                 {"year": 2000, "s1 (moo)": 3.0, "s2 (moo)": 13.0},
                 {"year": 2100, "s1 (moo)": 4.0, "s2 (moo)": 14.0},
             ],
+        )
+
+    def test_save_sensor_readings_task_uses_local_schedule_boundaries(self):
+        data_logger = DataLogger.objects.create(
+            property_id=self.property_1.id,
+            display_name="logger",
+            is_occupied_data=[
+                (datetime(2020, 1, 1, 8, 0, tzinfo=ZoneInfo(TIME_ZONE)).isoformat(), True),
+                (datetime(2020, 1, 1, 17, 0, tzinfo=ZoneInfo(TIME_ZONE)).isoformat(), False),
+            ],
+        )
+        sensor = Sensor.objects.create(
+            data_logger=data_logger,
+            display_name="sensor 1",
+            sensor_type="first",
+            units="one",
+            column_name="sensor 1",
+        )
+        progress_data = ProgressData("save-sensor-readings-test", self.id())
+        progress_data.total = 1
+        progress_data.save()
+
+        result = _save_sensor_readings_task(
+            [
+                ("2020-01-01 07:59:00", 1.0),
+                ("2020-01-01 08:00:00", 2.0),
+                ("2020-01-01 16:59:00", 3.0),
+                ("2020-01-01 17:00:00", 4.0),
+            ],
+            data_logger.id,
+            sensor.column_name,
+            progress_data.key,
+        )
+
+        self.assertEqual(result[sensor.column_name]["count"], 4)
+        self.assertEqual(
+            list(SensorReading.objects.filter(sensor=sensor).order_by("timestamp").values_list("is_occupied", flat=True)),
+            [False, True, True, False],
         )
 
     def test_delete_data_logger(self):

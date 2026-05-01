@@ -19,12 +19,19 @@ from seed.models import METER_READING_FIELDS, MeterReading, bulk_upsert_meter_re
 meter_fields = METER_READING_FIELDS
 
 
+def _parse_local_meter_reading_datetime(value, field_name):
+    parsed = datetime.fromisoformat(value)
+    if django_timezone.is_aware(parsed):
+        raise serializers.ValidationError({"status": "error", "message": f"{field_name} must be non-time zone aware"})
+
+    return make_aware(parsed, timezone=django_timezone.get_default_timezone())
+
+
 class MeterReadingBulkCreateUpdateSerializer(serializers.ListSerializer):
     def to_internal_value(self, data):
-        default_tz = django_timezone.get_default_timezone()
         for datum in data:
-            datum["start_time"] = make_aware(datetime.fromisoformat(datum["start_time"]), timezone=default_tz)
-            datum["end_time"] = make_aware(datetime.fromisoformat(datum["end_time"]), timezone=default_tz)
+            datum["start_time"] = _parse_local_meter_reading_datetime(datum["start_time"], "start_time")
+            datum["end_time"] = _parse_local_meter_reading_datetime(datum["end_time"], "end_time")
         return data
 
     def create(self, validated_data) -> list[MeterReading]:
@@ -48,23 +55,9 @@ class MeterReadingSerializer(serializers.ModelSerializer):
         exclude = ("meter",)
         list_serializer_class = MeterReadingBulkCreateUpdateSerializer
 
-    def _tz_aware(self, dt):
-        return dt.tzinfo is not None and dt.tzinfo.utcoffset(dt) is not None
-
     def to_internal_value(self, data):
-        default_tz = django_timezone.get_default_timezone()
-        # check if the value being passed is time zone aware, if so, then error
-        # because we only support non-time zone aware values
-        start_time = datetime.fromisoformat(data["start_time"])
-        if self._tz_aware(start_time):
-            raise serializers.ValidationError({"status": "error", "message": "start_time must be non-time zone aware"})
-
-        end_time = datetime.fromisoformat(data["end_time"])
-        if self._tz_aware(end_time):
-            raise serializers.ValidationError({"status": "error", "message": "end_time must be non-time zone aware"})
-
-        data["start_time"] = make_aware(start_time, timezone=default_tz)
-        data["end_time"] = make_aware(end_time, timezone=default_tz)
+        data["start_time"] = _parse_local_meter_reading_datetime(data["start_time"], "start_time")
+        data["end_time"] = _parse_local_meter_reading_datetime(data["end_time"], "end_time")
         return data
 
     def create(self, validated_data) -> MeterReading:

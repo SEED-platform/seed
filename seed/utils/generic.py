@@ -175,7 +175,10 @@ def parse_date(value):
 
     # ISO/Partial ISO Format
     with suppress(ValueError, TypeError):
-        return timezone.make_aware(datetime.fromisoformat(s))
+        parsed = datetime.fromisoformat(s)
+        if timezone.is_aware(parsed):
+            return parsed
+        return timezone.make_aware(parsed)
 
     if re.fullmatch(r"\d{4}", s):  # YYYY
         return timezone.make_aware(datetime(int(s), 1, 1))
