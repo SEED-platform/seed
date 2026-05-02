@@ -241,6 +241,14 @@
           >
             Update with Audit Template
           </option>
+          <option
+            ng-show="menu.user.organization.user_role !== 'viewer'"
+            value="open_copy_to_different_cycle_modal"
+            ng-disabled="selectedCount === 0"
+            translate
+          >
+            Copy Inventory to New Cycle
+          </option>
         </optgroup>
         <optgroup label="{$:: 'Options' | translate $}">
           <option

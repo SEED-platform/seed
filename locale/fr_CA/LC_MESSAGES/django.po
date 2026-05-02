@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2026-03-12 21:08\n"
+"PO-Revision-Date: 2026-04-23 19:06\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: fr_CA\n"
@@ -575,6 +575,9 @@ msgstr "Cycle de référence"
 msgid "Begin Update"
 msgstr "Démarrer la mise à jour"
 
+msgid "Benchmark Configuration "
+msgstr "Configuration de référence "
+
 #: seed/models/models.py:135
 #, fuzzy
 msgid "Benchmarking"
@@ -985,8 +988,17 @@ msgstr "Confirmer la supprimation"
 msgid "Confirm new password"
 msgstr "Confirmer le nouveau mot de passe"
 
+msgid "Connected to Salesforce"
+msgstr "Connecté à Salesforce"
+
 msgid "Connection"
 msgstr "Connexion"
+
+msgid "Connection Status"
+msgstr "État de la connexion"
+
+msgid "Connection error"
+msgstr "Erreur de connexion"
 
 msgid "Contact"
 msgstr "Contact"
@@ -1017,6 +1029,12 @@ msgstr "Copier des bâtiments"
 
 msgid "Copy Data File Headers directly to SEED Headers"
 msgstr "Copiez les en-têtes de fichiers de données directement dans les en-têtes SEED"
+
+msgid "Copy Inventory"
+msgstr "Copier l'inventaire"
+
+msgid "Copy Inventory to New Cycle"
+msgstr "Copier l'inventaire vers le nouveau cycle"
 
 msgid "Copy into Data File Headers"
 msgstr "Copier dans les en-têtes de fichiers de données"
@@ -1647,6 +1665,12 @@ msgstr "Activer GeoJSON public"
 
 msgid "Enable Salesforce Integration"
 msgstr "Activer l'intégration Salesforce (propriétés individuelles)"
+
+msgid "Enable Salesforce Integration (Individual Properties)"
+msgstr "Activer l'intégration Salesforce (Propriétés individuelles)"
+
+msgid "Enable Salesforce Integration (Portfolio of Properties)"
+msgstr "Activer l'intégration Salesforce (Portefeuille de propriétés)"
 
 msgid "Enable this functionality to send Federal Building fields to Audit Template."
 msgstr "Activez cette fonctionnalité pour envoyer les champs des bâtiments fédéraux au modèle d'audit."
@@ -2479,6 +2503,9 @@ msgstr "Connectez-vous d’abord à Salesforce pour pouvoir configurer les assoc
 msgid "Logging Email"
 msgstr "Adresse courriel pour reportage"
 
+msgid "Login"
+msgstr "Se connecter"
+
 msgid "Logout"
 msgstr "Déconnexion"
 
@@ -2921,6 +2948,9 @@ msgstr "Pas nul"
 
 msgid "Not all inventory items were successfully deleted"
 msgstr "Tous les éléments de l'inventaire n'ont pas été supprimés"
+
+msgid "Not connected to Salesforce"
+msgstr "Non connecté à Salesforce"
 
 msgid "Not seeing your column?"
 msgstr "Vous ne voyez pas votre colonne?"
@@ -3737,6 +3767,9 @@ msgstr "Si votre objet Benchmark a un champ pour capturer le Contact, inscrivez 
 msgid "SF_BENCHMARK_ID_FIELDNAME_TEXT"
 msgstr "Nom du champ dans l'application Salesforce utilisé pour identifier uniquement un object 'Benchmark'. Example: 'Salesforce_Benchmark_ID__c'"
 
+msgid "SF_BUILDING_DESC"
+msgstr "Cette intégration vous permet de connecter votre organisation à une instance Salesforce pour une gestion des données optimisée et une automatisation des flux de travail. Elle suppose que Salesforce est configuré avec les objets Propriété et Benchmark, qui seront mis à jour avec les données de chaque propriété issues de SEED."
+
 msgid "SF_COMPLIANCE_LABEL_TEXT"
 msgstr "Étiquette qui signale qu'une propriété est en conformité. Example: 'Comforme'"
 
@@ -3808,6 +3841,9 @@ msgstr "Associez les champs de données de votre objet Benchmark dans l'applicat
 
 msgid "SF_PORTFOLIO_CONNECTION_TEXT"
 msgstr "Saisissez les informations de connexion à votre instance Salesforce. Cela suppose que votre instance Salesforce a été configurée avec une application client externe pour SEED."
+
+msgid "SF_PORTFOLIO_DESC"
+msgstr "Cette intégration vous permet également de connecter votre organisation à une instance Salesforce, mais suppose que Salesforce est configuré avec des objets Objectif et Rapport annuel qui seront mis à jour avec des données au niveau du portefeuille (agrégées à partir de plusieurs propriétés dans SEED)."
 
 msgid "SF_SCHEDULED_UPDATE_TEXT"
 msgstr "Si vous désirez faire une mise à jour automatique de l'application Salesforce quotidiennement, configurez les champs ci-dessous"
@@ -3915,6 +3951,9 @@ msgstr "Type d'enregistrement pour Compte Salesforce"
 msgid "Salesforce Annual Report"
 msgstr "Rapport annuel de Salesforce"
 
+msgid "Salesforce Connection"
+msgstr "Connexion Salesforce"
+
 msgid "Salesforce Connection Parameters"
 msgstr "Paramètres pour la Connexion Salesforce"
 
@@ -3935,6 +3974,9 @@ msgstr "Intégration de Salesforce"
 
 msgid "Salesforce Unique Benchmark ID Fieldname"
 msgstr "Unique nom de champ pour Benchmark ID Salesforce"
+
+msgid "Salesforce connection successful"
+msgstr "Connexion à Salesforce réussie"
 
 msgid "Save"
 msgstr "Enregistrer"
@@ -4025,8 +4067,14 @@ msgstr "Sélectionnez une colonne pour afficher les données sur cet axe. Seules
 msgid "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
 msgstr "Sélectionnez une colonne pour afficher les données sur cet axe. Seules les colonnes ayant l'un de ces types de données seront listées :"
 
+msgid "Select a cycle to copy inventory to."
+msgstr "Sélectionnez un cycle où copier l'inventaire."
+
 msgid "Select a cycle to use as the baseline for comparison."
 msgstr "Sélectionnez un cycle à utiliser comme base de comparaison."
+
+msgid "Select a profile to specify which fields should be copied. If you do not have any column list profiles, dismiss the modal and create one in the Column List Profiles tab first."
+msgstr "Sélectionnez un profil pour spécifier les champs à copier. Si vous n'avez aucun profil de liste de colonnes, fermez la fenêtre modale et créez-en un dans l'onglet « Profils de liste de colonnes »."
 
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Liste des bâtiments."

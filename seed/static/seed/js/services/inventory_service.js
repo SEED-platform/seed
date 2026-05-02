@@ -1170,6 +1170,21 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
       })
       .then((response) => response.data.data);
 
+    inventory_service.copy_to_cycle = (cycle_id, view_ids, column_ids) => $http
+      .post(
+        '/api/v3/properties/copy_to_cycle/',
+        {
+          cycle_id,
+          view_ids,
+          column_ids
+        },
+        {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        }
+      ).then((response) => response.data);
+
     inventory_service.get_column_list_profiles = (profile_location, inventory_type, brief = false) => $http
       .get('/api/v3/column_list_profiles/', {
         params: {

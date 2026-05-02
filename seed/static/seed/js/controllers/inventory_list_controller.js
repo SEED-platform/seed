@@ -1584,6 +1584,20 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       });
     };
 
+    $scope.open_copy_to_different_cycle_modal = (selectedViewIds) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/copy_to_different_cycle_modal.html`,
+        controller: 'copy_to_different_cycle_modal_controller',
+        backdrop: 'static',
+        resolve: {
+          org: () => $scope.organization,
+          cycles: () => $scope.cycle.cycles,
+          view_ids: () => selectedViewIds,
+          profiles: () => inventory_service.get_column_list_profiles('List View Profile', $scope.inventory_type, false)
+        }
+      });
+    };
+
     $scope.model_actions = 'none';
     const elSelectActions = document.getElementById('select-actions');
     $scope.run_action = (viewIds = [], action = null) => {
@@ -1686,6 +1700,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           break;
         case 'update_derived_columns':
           $scope.open_update_derived_data_modal(selectedViewIds);
+          break;
+        case 'open_copy_to_different_cycle_modal':
+          $scope.open_copy_to_different_cycle_modal(selectedViewIds);
           break;
         default:
           console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');

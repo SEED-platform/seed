@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2026-03-12 21:08\n"
+"PO-Revision-Date: 2026-04-23 19:06\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: en_US\n"
@@ -569,6 +569,9 @@ msgstr "Baseline Cycle"
 msgid "Begin Update"
 msgstr "Begin Update"
 
+msgid "Benchmark Configuration "
+msgstr "Benchmark Configuration "
+
 #: seed/models/models.py:135
 msgid "Benchmarking"
 msgstr "Benchmarking"
@@ -971,8 +974,17 @@ msgstr "Confirm delete"
 msgid "Confirm new password"
 msgstr "Confirm new password"
 
+msgid "Connected to Salesforce"
+msgstr "Connected to Salesforce"
+
 msgid "Connection"
 msgstr "Connection"
+
+msgid "Connection Status"
+msgstr "Connection Status"
+
+msgid "Connection error"
+msgstr "Connection error"
 
 msgid "Contact"
 msgstr "Contact"
@@ -1003,6 +1015,12 @@ msgstr "Copy Buildings"
 
 msgid "Copy Data File Headers directly to SEED Headers"
 msgstr "Copy Data File Headers directly to SEED Headers"
+
+msgid "Copy Inventory"
+msgstr "Copy Inventory"
+
+msgid "Copy Inventory to New Cycle"
+msgstr "Copy Inventory to New Cycle"
 
 msgid "Copy into Data File Headers"
 msgstr "Copy into Data File Headers"
@@ -1630,6 +1648,12 @@ msgstr "Enable Public GeoJSON"
 
 msgid "Enable Salesforce Integration"
 msgstr "Enable Salesforce Integration (Individual Properties)"
+
+msgid "Enable Salesforce Integration (Individual Properties)"
+msgstr "Enable Salesforce Integration (Individual Properties)"
+
+msgid "Enable Salesforce Integration (Portfolio of Properties)"
+msgstr "Enable Salesforce Integration (Portfolio of Properties)"
 
 msgid "Enable this functionality to send Federal Building fields to Audit Template."
 msgstr "Enable this functionality to send Federal Building fields to Audit Template."
@@ -2458,6 +2482,9 @@ msgstr "Log in to Salesforce first to be able to configure Salesforce Partner an
 msgid "Logging Email"
 msgstr "Logging Email"
 
+msgid "Login"
+msgstr "Login"
+
 msgid "Logout"
 msgstr "Logout"
 
@@ -2899,6 +2926,9 @@ msgstr "Not Null"
 
 msgid "Not all inventory items were successfully deleted"
 msgstr "Not all inventory items were successfully deleted"
+
+msgid "Not connected to Salesforce"
+msgstr "Not connected to Salesforce"
 
 msgid "Not seeing your column?"
 msgstr "Not seeing your column?"
@@ -3707,6 +3737,9 @@ msgstr "If your Salesforce Benchmark Record stores a Salesforce Contact relation
 msgid "SF_BENCHMARK_ID_FIELDNAME_TEXT"
 msgstr "Fieldname of the Salesforce field that is used to uniquely identify Benchmark records. Example: 'Salesforce_Benchmark_ID__c'"
 
+msgid "SF_BUILDING_DESC"
+msgstr "This integration allows you to connect your organization with a Salesforce instance for enhanced data management and workflow automation. This integration assumes Salesforce is configured with Property and Benchmark objects, which will be updated with individual property data from SEED."
+
 msgid "SF_COMPLIANCE_LABEL_TEXT"
 msgstr "Label used to designate that a SEED property is in compliance. Example: 'Complied'"
 
@@ -3778,6 +3811,9 @@ msgstr "Map your Salesforce Benchmark Object's fields to columns in SEED. Use th
 
 msgid "SF_PORTFOLIO_CONNECTION_TEXT"
 msgstr "Enter your Salesforce instance connection details. This assumes your Salesforce has been configured with an External Client App for SEED."
+
+msgid "SF_PORTFOLIO_DESC"
+msgstr "This integration also allows you to connect your organization with a Salesforce instance, but assumes Salesforce is configured with Goal and Annual Report objects which will be updated  with portfolio-level data (aggregated from multiple properties in SEED)."
 
 msgid "SF_SCHEDULED_UPDATE_TEXT"
 msgstr "If you would like to automatically update Salesforce on a daily basis, configure the fields below"
@@ -3881,6 +3917,9 @@ msgstr "Salesforce Account Object Record Type"
 msgid "Salesforce Annual Report"
 msgstr "Salesforce Annual Report"
 
+msgid "Salesforce Connection"
+msgstr "Salesforce Connection"
+
 msgid "Salesforce Connection Parameters"
 msgstr "Salesforce Connection Parameters"
 
@@ -3901,6 +3940,9 @@ msgstr "Salesforce Integration"
 
 msgid "Salesforce Unique Benchmark ID Fieldname"
 msgstr "Salesforce Unique Benchmark ID Fieldname"
+
+msgid "Salesforce connection successful"
+msgstr "Salesforce connection successful"
 
 msgid "Save"
 msgstr "Save"
@@ -3991,8 +4033,14 @@ msgstr "Select a column to show data on this axis.  Only columns with one of the
 msgid "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
 msgstr "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
 
+msgid "Select a cycle to copy inventory to."
+msgstr "Select a cycle to copy inventory to."
+
 msgid "Select a cycle to use as the baseline for comparison."
 msgstr "Select a cycle to use as the baseline for comparison."
+
+msgid "Select a profile to specify which fields should be copied. If you do not have any column list profiles, dismiss the modal and create one in the Column List Profiles tab first."
+msgstr "Select a profile to specify which fields should be copied. If you do not have any column list profiles, dismiss the modal and create one in the Column List Profiles tab first."
 
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Select columns from the list below to make them appear in your Buildings List table."

@@ -86,7 +86,7 @@ from seed.serializers.properties import (
     UpdatePropertyPayloadSerializer,
 )
 from seed.serializers.taxlots import TaxLotViewSerializer
-from seed.tasks import update_state_derived_data
+from seed.tasks import copy_properties_to_cycle, update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
@@ -970,6 +970,48 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                "cycle_id": "integer",
+                "state": "object",
+            },
+            required=["cycle_id", "state"],
+        ),
+    )
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
+    @action(detail=False, methods=["POST"])
+    def copy_to_cycle(self, request):
+        org_id = self.get_organization(self.request)
+        data = request.data
+        cycle_pk = data.get("cycle_id", None)
+        view_ids = data.get("view_ids", None)
+        column_ids = data.get("column_ids", None)
+
+        #  get cycle
+        try:
+            Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+        except Cycle.DoesNotExist:
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "message": "Invalid cycle_id",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        result = copy_properties_to_cycle(view_ids, cycle_pk, column_ids, org_id)
+        return JsonResponse(result)
 
     @swagger_auto_schema(
         manual_parameters=[
