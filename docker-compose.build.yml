@@ -4,7 +4,7 @@
 services:
   db-postgres:
     container_name: seed_postgres
-    image: timescale/timescaledb-postgis:latest-pg12
+    image: timescale/timescaledb-ha:pg18.3-ts2.26.4-oss
   db-redis:
     container_name: seed_redis
     image: redis:5.0.1

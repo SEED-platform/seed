@@ -4,7 +4,7 @@ Upgrade a SEED database from Postgres 12 to Postgres 18
 Assumptions
 -----------
 
-- This process assumes that you're currently using Postgres 12.7 with TimescaleDB 2.3.0 from ``timescale/timescaledb-postgis:2.3.0-pg12`` or ``timescale/timescaledb-postgis:latest-pg12``
+- This process assumes that the source database is Postgres 12.7 with TimescaleDB 2.3.0 from ``timescale/timescaledb-postgis:2.3.0-pg12`` or ``timescale/timescaledb-postgis:latest-pg12``
 - This also assumes that you have a directory in the host filesystem, e.g. ``~/share``, that is bind mounted to ``/share`` in your existing database container
 
 1. Create a dump of the current database
