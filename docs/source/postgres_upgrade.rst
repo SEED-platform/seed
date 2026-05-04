@@ -28,9 +28,9 @@ Once the container has finished initializing, open a separate shell
    psql -d seed -U seeduser -c "DROP EXTENSION timescaledb;"
    psql -d seed -U seeduser -c "CREATE EXTENSION timescaledb WITH VERSION '2.3.0';"
    psql -d seed -U seeduser -c "SELECT timescaledb_pre_restore();"
-   pg_restore -d seed -U seeduser /share/seed-pg12-ts2.3.0.dump
+   pg_restore --exit-on-error -d seed -U seeduser /share/seed-pg12-ts2.3.0.dump
    psql -d seed -U seeduser -c "SELECT timescaledb_post_restore();"
-   psql -d seed -U seeduser -c "ALTER EXTENSION timescaledb UPDATE;"
+   psql -X -d seed -U seeduser -c "ALTER EXTENSION timescaledb UPDATE TO '2.15.3';"
    pg_dump -d seed -U seeduser -Fc -f /share/seed-pg13-ts2.15.3.dump
 
 3. Create a temporary Postgres 16 container using the Docker image ``timescale/timescaledb-ha:pg16.13-ts2.26.4-oss``
@@ -48,9 +48,9 @@ Once the container has finished initializing, open a separate shell
    psql -d seed -U seeduser -c "DROP EXTENSION timescaledb;"
    psql -d seed -U seeduser -c "CREATE EXTENSION timescaledb WITH VERSION '2.15.3';"
    psql -d seed -U seeduser -c "SELECT timescaledb_pre_restore();"
-   pg_restore -d seed -U seeduser /share/seed-pg13-ts2.15.3.dump
+   pg_restore --exit-on-error -d seed -U seeduser /share/seed-pg13-ts2.15.3.dump
    psql -d seed -U seeduser -c "SELECT timescaledb_post_restore();"
-   psql -d seed -U seeduser -c "ALTER EXTENSION timescaledb UPDATE;"
+   psql -X -d seed -U seeduser -c "ALTER EXTENSION timescaledb UPDATE TO '2.26.4';"
    pg_dump -d seed -U seeduser -Fc --compress=zstd:6 -f /share/seed-pg16-ts2.26.4.dump
 
 4. Start the new, permanent Postgres 18 container using the Docker image ``timescale/timescaledb-ha:pg18.3-ts2.26.4-oss``
@@ -66,6 +66,58 @@ Once the container has finished initializing, open a separate shell
    docker exec -it seed-pg18 bash
    psql -d seed -U seeduser -c "CREATE EXTENSION postgis;"
    psql -d seed -U seeduser -c "SELECT timescaledb_pre_restore();"
-   pg_restore -d seed -U seeduser /share/seed-pg16-ts2.26.4.dump
+   pg_restore --exit-on-error -d seed -U seeduser /share/seed-pg16-ts2.26.4.dump
    psql -d seed -U seeduser -c "SELECT timescaledb_post_restore();"
-   pg_dump -d seed -U seeduser -Fc --compress=zstd:6 -f /share/seed-pg18.dump
+
+5. Finally, run the following sql query to disable TimescaleDB telemetry and background jobs (that will fail because they aren't licensed as part of the OSS images)
+
+.. code-block:: sql
+
+   DO $$
+   DECLARE
+     bgw_job_table regclass;
+     rows_changed integer;
+   BEGIN
+     -- Persist telemetry-off for future sessions on this database.
+     EXECUTE format(
+       'ALTER DATABASE %I SET timescaledb.telemetry_level = %L',
+       current_database(),
+       'off'
+     );
+
+     -- Locate TimescaleDB background-job catalog table.
+     bgw_job_table := to_regclass('_timescaledb_config.bgw_job');
+
+     IF bgw_job_table IS NULL THEN
+       bgw_job_table := to_regclass('_timescaledb_catalog.bgw_job');
+     END IF;
+
+     IF bgw_job_table IS NULL THEN
+       RAISE NOTICE 'No TimescaleDB background job table found; skipping job disable step.';
+       RETURN;
+     END IF;
+
+     -- Disable only the known internal jobs we intend to suppress.
+     EXECUTE format($SQL$
+       UPDATE %s
+          SET scheduled = false
+        WHERE scheduled IS TRUE
+          AND (
+               (
+                 proc_schema = '_timescaledb_functions'
+                 AND proc_name IN (
+                   'policy_job_stat_history_retention',
+                   'policy_telemetry'
+                 )
+               )
+               OR application_name LIKE 'Job History Log Retention Policy %%'
+               OR application_name LIKE 'Telemetry Reporter %%'
+          )
+     $SQL$, bgw_job_table);
+
+     GET DIAGNOSTICS rows_changed = ROW_COUNT;
+
+     RAISE NOTICE 'Disabled % TimescaleDB background job(s) in %.',
+       rows_changed,
+       bgw_job_table;
+   END $$;
