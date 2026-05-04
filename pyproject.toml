@@ -8,9 +8,9 @@ license-files = ["LICENSE.md"]
 requires-python = ">=3.12"
 dependencies = [
     # Django core
-    "django==4.2.30",
+    "django==6.0.4",
     # Persistence (database)
-    "psycopg[binary]==3.3.3",
+    "psycopg[binary]==3.3.4",
     # Background jobs / scheduling / caching
     "celery==5.6.3",
     "django-celery-beat==2.9.0",
@@ -22,12 +22,12 @@ dependencies = [
     "django-compressor==4.6.0",
     "django-extensions==3.2.3",
     "django-model-utils==5.0.0",
-    "django-treebeard==4.7.1",
+    "django-treebeard==5.0.5",
     # Date / time
     "pytz==2026.1.post1",
     "python-dateutil==2.9.0.post0",
     # Units
-    "django-pint==0.7.3",
+    "django-pint==1.0.4",
     # Forms / filtering
     "django-crispy-forms<=2.6", # Update after Django v5.2
     "django-filter==22.1", # Update after drf-spectacular
@@ -53,7 +53,7 @@ dependencies = [
     "requests==2.33.1",
     "polling==0.3.2",
     # Tabular / Excel
-    "pandas==2.3.3",
+    "pandas==3.0.2",
     "xlsxwriter==3.2.9",
     "xlrd<2.0.0", # Version 2 removes xlsx support
     # Matching / address parsing
@@ -63,16 +63,16 @@ dependencies = [
     "usaddress==0.5.16",
     # Geo / Building data
     "shapely==2.1.2",
-    "buildingid==2.2.1",
+    "buildingid==2.3.0",
     # Integrations
     "buildingsync-asset-extractor==0.3.0", # BuildingSync Asset Extractor (includes lxml dependency required by SEED)
     "tkbl==0.7",
     "seed-salesforce==0.2.0",
     "simple-salesforce==1.12.9",
     # Compatibility / backports
-    "importlib-metadata==8.7.1", # Remove once a version newer than 8.5.0 has been released that fixes Django autoreload
+    "importlib-metadata==9.0.0", # Remove once a version newer than 8.5.0 has been released that fixes Django autoreload
     # AWS / SES
-    "boto3~=1.42.92",
+    "boto3~=1.43.3",
     "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",
