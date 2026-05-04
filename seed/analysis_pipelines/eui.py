@@ -7,7 +7,6 @@ import datetime
 import logging
 
 from celery import chain, shared_task
-from dateutil import parser as dateutil_parser
 from django.utils import timezone
 
 from seed.analysis_pipelines.pipeline import (
@@ -39,7 +38,7 @@ TIME_PERIOD = datetime.timedelta(days=365)
 
 def _as_aware_datetime(value):
     if isinstance(value, str):
-        value = dateutil_parser.parse(value)
+        value = datetime.datetime.fromisoformat(value)
 
     if isinstance(value, datetime.date) and not isinstance(value, datetime.datetime):
         value = datetime.datetime.combine(value, datetime.time.min)

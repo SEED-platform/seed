@@ -131,7 +131,7 @@ fi
 echo "Tagging local containers"
 docker tag seedplatform/seed:latest 127.0.0.1:5000/seed
 docker tag timescale/timescaledb-ha:$DOCKER_PG_VERSION 127.0.0.1:5000/postgres-seed
-docker tag redis:5.0.1 127.0.0.1:5000/redis
+docker tag redis:8-alpine 127.0.0.1:5000/redis
 
 sleep 3
 echo "Pushing tagged versions to local registry"

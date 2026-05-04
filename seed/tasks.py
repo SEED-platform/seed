@@ -6,10 +6,9 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import itertools
 import math
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from random import randint
 
-import pytz
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
@@ -518,7 +517,7 @@ def sync_audit_template(org_id):
 
 @shared_task
 def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):
-    now = datetime.now(pytz.UTC)
+    now = datetime.now(UTC)
     progress_data = ProgressData.from_key(progress_key)
     progress_data.total = 100
     id_count = len(property_view_ids) + len(taxlot_view_ids)

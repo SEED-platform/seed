@@ -6,8 +6,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 from datetime import datetime
 
-import dateutil
-
 
 class CeleryDatetimeSerializer(json.JSONEncoder):
     def default(self, obj):
@@ -19,7 +17,7 @@ class CeleryDatetimeSerializer(json.JSONEncoder):
     @staticmethod
     def seed_decoder(obj):
         if "__type__" in obj and obj["__type__"] == "__datetime__":
-            return dateutil.parser.parse(obj["iso8601"])
+            return datetime.fromisoformat(obj["iso8601"])
         return obj
 
     # Encoder function

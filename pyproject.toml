@@ -8,9 +8,9 @@ license-files = ["LICENSE.md"]
 requires-python = ">=3.12"
 dependencies = [
     # Django core
-    "django==4.2.30",
+    "django~=6.0.4",
     # Persistence (database)
-    "psycopg[binary]==3.3.3",
+    "psycopg[binary]~=3.3.4",
     # Background jobs / scheduling / caching
     "celery==5.6.3",
     "django-celery-beat==2.9.0",
@@ -20,17 +20,15 @@ dependencies = [
     # Assets / compression / utilities
     "brotli==1.2.0",
     "django-compressor==4.6.0",
-    "django-extensions==3.2.3",
+    "django-extensions==4.1",
     "django-model-utils==5.0.0",
-    "django-treebeard==4.7.1",
+    "django-treebeard==5.0.5",
     # Date / time
-    "pytz==2026.1.post1",
     "python-dateutil==2.9.0.post0",
     # Units
-    "django-pint==0.7.3",
+    "django-pint==1.0.4",
     # Forms / filtering
-    "django-crispy-forms<=2.6", # Update after Django v5.2
-    "django-filter==22.1", # Update after drf-spectacular
+    "django-filter==25.2",
     # API / auth / docs
     "djangorestframework==3.17.1",
     "djangorestframework-simplejwt==5.5.1",
@@ -39,10 +37,10 @@ dependencies = [
     # Email / messaging
     "django-post-office==3.11.2",
     # Observability / monitoring
-    "sentry-sdk==2.14.0",
+    "sentry-sdk==2.59.0",
     # Security / 2FA
     "django-two-factor-auth[phonenumbers]==1.18.1",
-    "qrcode[pil]==7.4.2",
+    "qrcode[pil]==8.2",
     "pyotp==2.9.0",
     # Data formats / parsing / IO
     "Markdown==3.10.2",
@@ -69,10 +67,8 @@ dependencies = [
     "tkbl==0.7",
     "seed-salesforce==0.2.0",
     "simple-salesforce==1.12.9",
-    # Compatibility / backports
-    "importlib-metadata==8.7.1", # Remove once a version newer than 8.5.0 has been released that fixes Django autoreload
     # AWS / SES
-    "boto3~=1.42.92",
+    "boto3~=1.43.3",
     "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",
@@ -98,7 +94,7 @@ dev = [
     "vcrpy==8.1.1",
     "Faker~=40.15.0",
     "mock==5.2.0",
-    "hypothesis==6.152.3",
+    "hypothesis~=6.152.4",
     # Coverage / reporting
     "coverage==7.13.5",
     "coveralls==4.1.0",
@@ -118,8 +114,7 @@ dev = [
     "types-Markdown>=3.10.2.20260408",
     "types-PyYAML>=6.0.12.20260408",
     "types-python-dateutil>=2.9.0.20260408",
-    "types-pytz>=2026.1.1.20260408",
-    "types-requests>=2.33.0.20260408",
+    "types-requests>=2.33.0.20260503",
 ]
 
 [tool.ruff]

@@ -19,7 +19,7 @@ services:
         max-file: "5"
   db-redis:
     container_name: seed_redis
-    image: redis:5.0.1
+    image: redis:8-alpine
   web:
     container_name: seed_web
     image: seedplatform/seed:latest
