@@ -8,9 +8,9 @@ license-files = ["LICENSE.md"]
 requires-python = ">=3.12"
 dependencies = [
     # Django core
-    "django==6.0.4",
+    "django~=6.0.4",
     # Persistence (database)
-    "psycopg[binary]==3.3.3",
+    "psycopg[binary]~=3.3.4",
     # Background jobs / scheduling / caching
     "celery==5.6.3",
     "django-celery-beat==2.9.0",
@@ -37,7 +37,7 @@ dependencies = [
     # Email / messaging
     "django-post-office==3.11.2",
     # Observability / monitoring
-    "sentry-sdk==2.58.0",
+    "sentry-sdk==2.59.0",
     # Security / 2FA
     "django-two-factor-auth[phonenumbers]==1.18.1",
     "qrcode[pil]==8.2",
@@ -68,7 +68,7 @@ dependencies = [
     "seed-salesforce==0.2.0",
     "simple-salesforce==1.12.9",
     # AWS / SES
-    "boto3~=1.43.0",
+    "boto3~=1.43.3",
     "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",
@@ -114,7 +114,7 @@ dev = [
     "types-Markdown>=3.10.2.20260408",
     "types-PyYAML>=6.0.12.20260408",
     "types-python-dateutil>=2.9.0.20260408",
-    "types-requests>=2.33.0.20260408",
+    "types-requests>=2.33.0.20260503",
 ]
 
 [tool.ruff]
