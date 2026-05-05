@@ -1,71 +1,95 @@
-FROM node:24-alpine
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+# syntax=docker/dockerfile:1.7
 
-RUN corepack enable
+ARG UV_VERSION=0.11.9
 
-RUN apk add --no-cache \
-        postgresql-dev \
-        coreutils \
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
+
+FROM node:24-alpine AS dev-base
+COPY --from=uv /uv /uvx /bin/
+
+WORKDIR /seed
+
+COPY ./.python-version /seed/.python-version
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    apk add --no-cache \
         alpine-sdk \
-        pcre \
-        pcre-dev \
-        libxslt-dev \
-        linux-headers \
-        libffi-dev \
         bash \
         bash-completion \
-        nginx \
         brotli \
-        nginx-mod-http-brotli \
-        openssl-dev \
-        geos-dev \
+        bzip2-dev \
+        cargo \
+        coreutils \
         gdal \
         gdal-dev \
-        gcc \
+        geos-dev \
+        git \
+        libffi-dev \
+        libpq-dev \
+        libxml2-dev \
+        libxslt-dev \
+        linux-headers \
         musl-dev \
-        cargo \
-        tzdata \
-        bzip2-dev \
+        ncurses-dev \
+        nginx \
+        nginx-mod-http-brotli \
+        openssl-dev \
+        pcre \
+        pcre-dev \
         readline-dev \
         sqlite-dev \
-        ncurses-dev \
+        tzdata \
         xz-dev \
-        zlib-dev \
-        libxml2-dev && \
-    mkdir -p /var/log/supervisord && \
-    mkdir -p /run/nginx
+        zlib-dev && \
+    corepack enable && \
+    uv python install && \
+    python_path="$(uv python find)" && \
+    ln -sf "${python_path}" /usr/local/bin/python3 && \
+    ln -sf "${python_path}" /usr/local/bin/python && \
+    mkdir -p /run/nginx /var/log/supervisord
 
 ## Note on some of the commands above:
-##   - coreutils is required due to an issue with our wait-for-it.sch script:
+##   - coreutils is required due to an issue with our wait-for-it.sh script:
 ##     https://github.com/vishnubob/wait-for-it/issues/71
 
-ENV UV_LINK_MODE=copy
-ENV UV_PYTHON_INSTALL_DIR="/opt/uv/python"
-ENV UV_PROJECT_ENVIRONMENT="/seed/.venv"
+ENV GDAL_LIBRARY_PATH="/usr/lib/libgdal.so" \
+    GEOS_LIBRARY_PATH="/usr/lib/libgeos_c.so" \
+    PNPM_STORE_DIR="/pnpm/store" \
+    npm_config_python="/usr/local/bin/python3" \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_INSTALL_DIR="/opt/uv/python" \
+    UV_PROJECT_ENVIRONMENT="/seed/.venv"
 ENV PATH="/seed/.venv/bin:$PATH"
 
-### Install python dependencies
-WORKDIR /seed
-COPY ./.python-version /seed/.python-version
+FROM dev-base AS python-dev-deps
 COPY ./pyproject.toml /seed/pyproject.toml
 COPY ./uv.lock /seed/uv.lock
-RUN uv sync --frozen --managed-python --no-install-project && \
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --managed-python --no-install-project && \
     uv pip install supervisor==4.3.0 remote-pdb "watchdog[watchmedo]"
 
-### Install JavaScript requirements - do this first because they take awhile
-### and the dependencies will probably change slower than python packages.
+FROM dev-base AS frontend-dev-deps
 COPY ./package.json /seed/package.json
 COPY ./pnpm-lock.yaml /seed/pnpm-lock.yaml
 COPY ./pnpm-workspace.yaml /seed/pnpm-workspace.yaml
 COPY ./vendors/package.json /seed/vendors/package.json
 COPY ./vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
 COPY ./ng_seed/seed-angular /seed/ng_seed/seed-angular
-### Build SEED Angular then cleanup
-RUN pnpm install --frozen-lockfile && \
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile --store-dir "${PNPM_STORE_DIR}" && \
     pnpm -C /seed/ng_seed/seed-angular build
 
-### Copy over the remaining part of the SEED application and some helpers
+FROM dev-base AS dev
+
+COPY --from=python-dev-deps /opt/uv/python /opt/uv/python
+COPY --from=python-dev-deps /seed/.venv /seed/.venv
+
+### Copy over the SEED application and prebuilt frontend assets
 COPY . /seed/
+COPY --from=frontend-dev-deps /seed/node_modules /seed/node_modules
+COPY --from=frontend-dev-deps /seed/vendors/node_modules /seed/vendors/node_modules
+COPY --from=frontend-dev-deps /seed/ng_seed/seed-angular/node_modules /seed/ng_seed/seed-angular/node_modules
+COPY --from=frontend-dev-deps /seed/collected_static/ng-app /seed/collected_static/ng-app
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 RUN git config --system --add safe.directory /seed
 

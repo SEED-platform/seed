@@ -1,6 +1,6 @@
 [project]
 name = "seed"
-version = "3.5.0"
+version = "3.4.0"
 description = "Standard Energy Efficiency Data (SEED) Platform™ is a web-based application that helps organizations easily manage data on the energy performance of large groups of buildings."
 readme = "README.md"
 license = "BSD-3-Clause"
@@ -8,7 +8,7 @@ license-files = ["LICENSE.md"]
 requires-python = ">=3.12"
 dependencies = [
     # Django core
-    "django~=6.0.4",
+    "django~=6.0.5",
     # Persistence (database)
     "psycopg[binary]~=3.3.4",
     # Background jobs / scheduling / caching
@@ -118,7 +118,7 @@ dev = [
 ]
 
 [tool.ruff]
-target-version = "py312"
+target-version = "py314"
 
 [tool.uv]
 default-groups = ["dev"]

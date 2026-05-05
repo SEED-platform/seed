@@ -13,6 +13,9 @@ from seed.serializers.celery import CeleryDatetimeSerializer
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+GDAL_LIBRARY_PATH = os.environ.get("GDAL_LIBRARY_PATH")
+GEOS_LIBRARY_PATH = os.environ.get("GEOS_LIBRARY_PATH")
+
 PROTOCOL = os.environ.get("PROTOCOL", "https")
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
