@@ -4,9 +4,8 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 
-import pytz
 from django.test import TransactionTestCase
 from django.urls import reverse
 
@@ -32,7 +31,7 @@ class ReportConfigurationTests(TransactionTestCase):
         self.other_org, _, _ = create_organization(self.user, "test-organization-b")
         self.client.login(**user_details)
         self.cycle1 = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(
-            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=UTC)
         )
 
         self.filter_group = FilterGroup.objects.create(

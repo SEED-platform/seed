@@ -27,6 +27,13 @@ Following instructions `for Mac <https://docs.docker.com/docker-for-mac/install/
 Building and Running Containers for Non-Development
 -------------------------------------------------------
 
+The Docker Compose database service uses ``timescale/timescaledb-ha:pg18.3-ts2.26.4-oss``.
+The image's default ``PGDATA`` directory is ``/home/postgres/pgdata/data``; compose mounts the
+``seed_pgdata`` volume at ``/home/postgres/pgdata`` so the container can manage its ``data``
+subdirectory.
+Existing Postgres 12 volumes cannot be started directly with this image; migrate by dump/restore
+or recreate the volume before starting Postgres 18.
+
 * Run Docker Compose
 
     .. code-block:: bash

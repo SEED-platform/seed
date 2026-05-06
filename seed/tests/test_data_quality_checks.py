@@ -3,11 +3,13 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.forms.models import model_to_dict
 from django.urls import reverse_lazy
+from django.utils import timezone
 from quantityfield.units import ureg
 
 from seed.models import Column, CycleGoal, DerivedColumnParameter, Goal, PropertyView, PropertyViewLabel
@@ -368,6 +370,19 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         self.assertFalse(rule.maximum_valid("9999"))
         with pytest.raises(DataQualityTypeCastError):
             self.assertEqual(rule.maximum_valid("not-a-number"), "")
+
+    def test_date_rules_compare_aware_datetimes_in_local_wall_time(self):
+        rule = Rule.objects.create(name="date_rule", data_type=Rule.TYPE_DATE, min=20200101, max=20200101)
+        value = datetime(2020, 1, 1, 0, 30, tzinfo=UTC)
+
+        with timezone.override(ZoneInfo("America/Denver")):
+            self.assertFalse(rule.minimum_valid(value))
+            self.assertTrue(rule.maximum_valid(value))
+
+            f_min, f_max, f_value = rule.format_strings(value)
+            self.assertEqual(f_value, "2019-12-31 17:30:00")
+            self.assertEqual(f_min, "2020-01-01 00:00:00")
+            self.assertEqual(f_max, "2020-01-01 00:00:00")
 
     def test_min_value_quantities(self):
         rule = Rule.objects.create(name="min_str_rule", data_type=Rule.TYPE_EUI, min=10, max=100, units="kBtu/ft**2/year")

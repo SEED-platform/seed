@@ -119,13 +119,16 @@ class DatabaseCreation(PostgreSQLDatabaseCreation):
 
         self._remaining_parallel_clones = 0
 
-    def create_test_db(self, verbosity=1, autoclobber=False, serialize=True, keepdb=False):
-        test_database_name = super().create_test_db(
-            verbosity=verbosity,
-            autoclobber=autoclobber,
-            serialize=serialize,
-            keepdb=keepdb,
-        )
+    def create_test_db(self, verbosity=1, autoclobber=False, serialize=None, keepdb=False):
+        create_kwargs = {
+            "verbosity": verbosity,
+            "autoclobber": autoclobber,
+            "keepdb": keepdb,
+        }
+        if serialize is not None:
+            create_kwargs["serialize"] = serialize
+
+        test_database_name = super().create_test_db(**create_kwargs)
 
         parallel_processes = self._parallel_test_processes_requested()
         if parallel_processes > 1:

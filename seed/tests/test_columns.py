@@ -4,7 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import os.path
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
 import pytest
 from django.core.exceptions import ValidationError
@@ -1274,6 +1274,10 @@ class TestColumnCasting(TestCase):
             self.assertEqual(date(2010, 1, 1), r)
             r = Column.cast_column_value("datetime", date_str)
             self.assertEqual(timezone.make_aware(datetime(2010, 1, 1)), r)
+
+    def test_cast_offset_aware_iso_datetime(self):
+        result = Column.cast_column_value("datetime", "2010-01-01T00:00:00+00:00")
+        self.assertEqual(datetime(2010, 1, 1, tzinfo=UTC), result)
 
     def test_cast_values_with_errors(self):
         with pytest.raises(ColumnCastError) as exc:
