@@ -7,6 +7,7 @@ import json
 import os
 import pathlib
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
@@ -14,7 +15,6 @@ from django.utils.timezone import (
     get_current_timezone,
     make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 )
-from pytz import timezone
 
 from config.settings.common import TIME_ZONE
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -66,7 +66,7 @@ class GreenButtonImportTest(DataMappingBaseTestCase):
             matching_results_data={"property_id": self.property_1.id},
         )
 
-        self.tz_obj = timezone(TIME_ZONE)
+        self.tz_obj = ZoneInfo(TIME_ZONE)
 
     def test_green_button_import_base_case(self):
         url = reverse("api:v3:import_files-start-save-data", args=[self.import_file.id])

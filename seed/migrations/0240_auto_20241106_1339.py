@@ -84,7 +84,7 @@ class Migration(migrations.Migration):
         migrations.AddConstraint(
             model_name="dessystem",
             constraint=models.CheckConstraint(
-                check=models.Q(("heating_capacity__isnull", False), ("cooling_capacity__isnull", False), _connector="OR"),
+                condition=models.Q(("heating_capacity__isnull", False), ("cooling_capacity__isnull", False), _connector="OR"),
                 name="heating_or_cooling_capacity_required",
             ),
         ),

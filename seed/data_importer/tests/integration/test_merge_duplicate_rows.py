@@ -7,8 +7,8 @@ import datetime
 import logging
 import os.path as osp
 import pathlib
+from zoneinfo import ZoneInfo
 
-import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
 from quantityfield.units import ureg
 
@@ -151,7 +151,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
     def test_hash_release_date(self):
         """The hash_state_object method makes the timezones naive, so this should work because
         the date times are equivalent, even though the database objects are not"""
-        ps1_dt = datetime.datetime(2010, 1, 1, 0, 0, tzinfo=datetime.UTC).astimezone(pytz.timezone("America/Los_Angeles"))
+        ps1_dt = datetime.datetime(2010, 1, 1, 0, 0, tzinfo=datetime.UTC).astimezone(ZoneInfo("America/Los_Angeles"))
         ps1 = PropertyState.objects.create(
             organization=self.org,
             address_line_1="123 fake st",

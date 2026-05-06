@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 def landing_page(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse("seed:home"))
+        return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
     else:
         return redirect("two_factor:login")
 
@@ -144,7 +144,7 @@ def activate(request, uidb64, token):
         user.is_active = True
         user.save()
         login(request, user)
-        return HttpResponseRedirect(reverse("seed:home"))
+        return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
     else:
         return render(request, "account_activation_invalid.html", {"debug": settings.DEBUG})
 
@@ -212,15 +212,14 @@ class CustomLoginView(LoginView):
         return self.handle_2fa_prompt(response, user)
 
     def handle_2fa_prompt(self, response, user):
-        # django-two-factor-auth will always try to redirect users to the 2 factor profile.
-        # override and send users home if they have already been prompted.
+        # django-two-factor-auth will always try to redirect users to its default
+        # post-login destination. Keep the redirect aligned with SEED's app home.
         if not getattr(user, "prompt_2fa", False) and isinstance(response, HttpResponseRedirect):
-            # user has already been prompted
-            return HttpResponseRedirect(reverse("seed:home"))
+            return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
         else:
             user.prompt_2fa = False
             user.save()
-        return HttpResponseRedirect("/app/#/profile/two_factor_profile")
+        return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
 
     def render(self, form=None, **kwargs):
         # Conditionally show the `Create my Account` button

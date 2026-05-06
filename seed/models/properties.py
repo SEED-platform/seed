@@ -149,8 +149,8 @@ def post_save_property(sender, instance, created, **kwargs):
 class PropertyState(models.Model):
     """Store a single property. This contains all the state information about the property
 
-    For property_timezone, use the pytz timezone strings. The US has the following and a full
-    list can be created by calling pytz.all_timezones in Python:
+    For property_timezone, use IANA timezone strings. The US has the following and a full
+    list is available from ``zoneinfo.available_timezones()``:
         * US/Alaska
         * US/Aleutian
         * US/Arizona

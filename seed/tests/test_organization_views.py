@@ -4,9 +4,8 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 
-import pytz
 from django.urls import reverse
 from xlrd import open_workbook
 
@@ -242,7 +241,7 @@ class TestOrganizationViewsWithFilters(AccessLevelBaseTestCase):
         self.org, _, _ = create_organization(self.superuser, "test-organization-a")
         self.client.login(**user_details)
         self.cycle1 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
-            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=UTC)
         )
 
         self.label1 = Label.objects.create(name="label1", super_organization=self.org, color="red")

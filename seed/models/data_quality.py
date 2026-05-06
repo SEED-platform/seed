@@ -10,10 +10,9 @@ from collections import defaultdict
 from datetime import date, datetime
 from random import randint
 
-import pytz
 from django.apps import apps
 from django.db import IntegrityError, models
-from django.utils.timezone import get_current_timezone, make_aware, make_naive
+from django.utils.timezone import get_current_timezone, make_naive
 from pint.errors import DimensionalityError
 from quantityfield.units import ureg
 
@@ -25,6 +24,13 @@ from seed.utils.goals import percentage_difference
 from seed.utils.time_utils import convert_datestr
 
 _log = logging.getLogger(__name__)
+
+
+def _localize_datetime_for_rule_compare(value):
+    if value.tzinfo is None:
+        return value
+
+    return make_naive(value, get_current_timezone())
 
 
 class ComparisonError(Exception):
@@ -492,8 +498,8 @@ class Rule(models.Model):
             return True
         else:
             if isinstance(value, datetime):
-                value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
-                rule_min = make_aware(datetime.strptime(str(int(rule_min)), "%Y%m%d"), pytz.UTC)
+                value = _localize_datetime_for_rule_compare(value)
+                rule_min = datetime.strptime(str(int(rule_min)), "%Y%m%d")
             elif isinstance(value, date):
                 rule_min = datetime.strptime(str(int(rule_min)), "%Y%m%d").date()
             elif isinstance(value, int):
@@ -531,8 +537,8 @@ class Rule(models.Model):
             return True
         else:
             if isinstance(value, datetime):
-                value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
-                rule_max = make_aware(datetime.strptime(str(int(rule_max)), "%Y%m%d"), pytz.UTC)
+                value = _localize_datetime_for_rule_compare(value)
+                rule_max = datetime.strptime(str(int(rule_max)), "%Y%m%d")
             elif isinstance(value, date):
                 rule_max = datetime.strptime(str(int(rule_max)), "%Y%m%d").date()
             elif isinstance(value, int):
@@ -602,7 +608,7 @@ class Rule(models.Model):
 
         # Get the formatted values for reporting
         if isinstance(value, datetime):
-            f_value = str(make_naive(value, pytz.UTC))
+            f_value = str(_localize_datetime_for_rule_compare(value))
             if f_min is not None:
                 f_min = str(datetime.strptime(str(int(self.min)), "%Y%m%d"))
             if f_max is not None:

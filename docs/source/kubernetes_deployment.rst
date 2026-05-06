@@ -162,6 +162,12 @@ This chart contains the deployment specification for the Celery container to con
     - name: POSTGRES_PASSWORD
       value: <super-secret-password>  # must match db-postgres-deployment.yaml and web-celery-deployment.yaml
 
+db-postgres-deployment.yaml
+***************************
+SEED uses the TimescaleDB HA PostgreSQL 18 image ``timescale/timescaledb-ha:pg18.3-ts2.26.4-oss``.
+By default ``PGDATA`` is set to ``/home/postgres/pgdata/data``. Mount the persistent volume at
+``/home/postgres/pgdata`` so the image can manage its ``data`` subdirectory.
+
 bsyncr-deployment.yaml
 **********************
 This chart contains the deployment specification for the bsyncr analysis server.  Request a NOAA token from `this website <https://www.ncdc.noaa.gov/cdo-web/token>`_.

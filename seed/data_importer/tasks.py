@@ -14,7 +14,7 @@ import time
 import traceback
 import zipfile
 from _csv import Error
-from bisect import bisect_left
+from bisect import bisect_right
 from collections import defaultdict, namedtuple
 from datetime import UTC, date, datetime
 from itertools import chain
@@ -23,7 +23,6 @@ from math import ceil
 from celery import chain as celery_chain
 from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
-from dateutil import parser
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -99,6 +98,29 @@ from seed.utils.ubid import decode_unique_ids
 _log = get_task_logger(__name__)
 
 STR_TO_CLASS = {"TaxLotState": TaxLotState, "PropertyState": PropertyState}
+
+
+def _as_local_naive_datetime(value):
+    if isinstance(value, str):
+        value = datetime.fromisoformat(value)
+
+    if django_tz.is_aware(value):
+        return make_naive(value, timezone=django_tz.get_default_timezone())
+
+    return value
+
+
+def _is_occupied_at_timestamp(occupied_timestamps, occupied_states, timestamp):
+    if not occupied_timestamps:
+        return False
+
+    normalized_timestamp = _as_local_naive_datetime(timestamp)
+    last_state_index = bisect_right(occupied_timestamps, normalized_timestamp) - 1
+
+    if last_state_index < 0:
+        return False
+
+    return occupied_states[last_state_index]
 
 
 @shared_task(ignore_result=True)
@@ -1042,11 +1064,11 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
             with transaction.atomic():
                 is_occupied_data = DataLogger.objects.get(id=data_logger_id).is_occupied_data
                 [occupied_timestamps, is_occupied_arr] = list(zip(*is_occupied_data))
-                occupied_timestamps = [datetime.fromisoformat(t) for t in occupied_timestamps]
+                occupied_timestamps = [_as_local_naive_datetime(t) for t in occupied_timestamps]
 
                 reading_strings = []
                 for timestamp, value in readings_tuples:
-                    is_occupied = is_occupied_arr[bisect_left(occupied_timestamps, parser.parse(timestamp)) - 1]
+                    is_occupied = _is_occupied_at_timestamp(occupied_timestamps, is_occupied_arr, timestamp)
                     reading_strings.append(f"({sensor.id}, '{timestamp}', '{value}', '{is_occupied}')")
 
                 sql = (

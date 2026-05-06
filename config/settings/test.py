@@ -41,7 +41,10 @@ INTERNAL_IPS = ("127.0.0.1",)
 COMPRESS_ENABLED = False
 if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
     COMPRESS_PRECOMPILERS = ()
-    COMPRESS_FILTERS = {"css": ["compressor.filters.css_default.CssAbsoluteFilter"]}
+    COMPRESS_FILTERS = {
+        "css": ["compressor.filters.css_default.CssAbsoluteFilter"],
+        "js": [],
+    }
 
 ALLOWED_HOSTS = ["*"]
 

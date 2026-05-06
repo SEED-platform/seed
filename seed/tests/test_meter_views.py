@@ -778,6 +778,40 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             response.json()["non_field_errors"], ["Error: Each reading must have a unique combination of start_time end end_time."]
         )
 
+    def test_bulk_import_rejects_time_aware_values(self):
+        property_view = self.property_view_factory.get_property_view()
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + f"?organization_id={self.org.id}"
+
+        payload = {
+            "type": "Electric",
+            "source": "Manual Entry",
+            "source_id": "1234567890",
+            "connection_type": "Imported",
+        }
+
+        response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        meter_pk = response.json()["id"]
+
+        url = (
+            reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk})
+            + f"?organization_id={self.org.id}"
+        )
+
+        payload = [
+            {
+                "start_time": "2023-02-14T22:27:30Z",
+                "end_time": "2023-02-14T22:28:30",
+                "reading": 1000000,
+                "source_unit": "Wh (Watt-hours)",
+                "conversion_factor": 0.00341,
+            }
+        ]
+
+        response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["status"], "error")
+        self.assertEqual(response.json()["message"], "start_time must be non-time zone aware")
+
     def test_delete_meter_readings(self):
         # would be nice to make a factory out of the meter / meter reading requests
         property_view = self.property_view_factory.get_property_view()
