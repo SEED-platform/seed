@@ -136,4 +136,4 @@ class ReportConfigurationViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         except ObjectDoesNotExist:
             return JsonResponse({"success": False, "message": "Cannot find report configuration"}, status=status.HTTP_400_BAD_REQUEST)
 
-        return JsonResponse({"success": True, "message": "Report Configuration deleted"})
+        return JsonResponse({"success": True, "message": "Report Configuration deleted"}, status=status.HTTP_204_NO_CONTENT)
