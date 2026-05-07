@@ -35,6 +35,7 @@ class PortfolioManagerViewSet(GenericViewSet):
     This ViewSet contains four API views: /template_list/, /report/, /download/, and /custom_download/ that are used to interface SEED with ESPM
     """
 
+    queryset = ()
     serializer_class = PortfolioManagerSerializer
 
     @swagger_auto_schema(

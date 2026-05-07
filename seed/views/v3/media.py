@@ -15,6 +15,7 @@ from rest_framework import generics
 
 from seed.models import Analysis, AnalysisOutputFile, BuildingFile, ImportFile, InventoryDocument, Organization
 from seed.utils.api import OrgMixin, api_endpoint
+from seed.utils.api_schema import EmptySerializer
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -113,6 +114,9 @@ def check_file_permission(user, filepath):
 
 
 class MediaViewSet(generics.RetrieveAPIView, OrgMixin):
+    queryset = ()
+    serializer_class = EmptySerializer
+
     @method_decorator(
         api_endpoint,
     )

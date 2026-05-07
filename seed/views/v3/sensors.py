@@ -9,13 +9,14 @@ from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import DataLogger, PropertyView, Sensor
 from seed.utils.api import OrgMixin, ProfileIdMixin
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api_schema import EmptySerializer, swagger_auto_schema_org_query_param
 from seed.utils.sensors import PropertySensorReadingsExporter
 
 
 class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     # For the Swagger page, GenericAPIView asserts a value exists for `queryset`
     queryset = Sensor.objects.none()
+    serializer_class = EmptySerializer
 
     @method_decorator(
         [

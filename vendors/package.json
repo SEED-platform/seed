@@ -4,7 +4,7 @@
   "engines": {
     "node": ">=24"
   },
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@11.0.8",
   "dependencies": {
     "@fontsource/pt-sans": "^5.2.8",
     "@fontsource/pt-sans-narrow": "^5.2.8",

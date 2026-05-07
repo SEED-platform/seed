@@ -10,6 +10,7 @@ from seed.utils.api import OrgMixin, api_endpoint
 
 
 class OrganizationUserViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin):
+    queryset = OrganizationUser.objects.none()
     serializer_class = OrganizationUserSerializer
 
     @method_decorator(

@@ -63,6 +63,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install supervisor==4.3.0
 
 FROM build-base AS frontend-build
+ENV CI=true
+
 COPY ./package.json /seed/package.json
 COPY ./pnpm-lock.yaml /seed/pnpm-lock.yaml
 COPY ./pnpm-workspace.yaml /seed/pnpm-workspace.yaml
@@ -70,10 +72,13 @@ COPY ./vendors/package.json /seed/vendors/package.json
 COPY ./vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
 COPY ./ng_seed/seed-angular /seed/ng_seed/seed-angular
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
-    pnpm install --frozen-lockfile --store-dir "${PNPM_STORE_DIR}" && \
-    pnpm -C /seed/ng_seed/seed-angular build
+    pnpm install --frozen-lockfile --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false && \
+    cd /seed/ng_seed/seed-angular && \
+    ./node_modules/.bin/ng build
 
 FROM build-base AS node-runtime-deps
+ENV CI=true
+
 COPY ./package.json /seed/package.json
 COPY ./pnpm-lock.yaml /seed/pnpm-lock.yaml
 COPY ./pnpm-workspace.yaml /seed/pnpm-workspace.yaml
@@ -83,7 +88,7 @@ COPY ./ng_seed/seed-angular/package.json /seed/ng_seed/seed-angular/package.json
 COPY ./ng_seed/seed-angular/pnpm-lock.yaml /seed/ng_seed/seed-angular/pnpm-lock.yaml
 COPY ./ng_seed/seed-angular/pnpm-workspace.yaml /seed/ng_seed/seed-angular/pnpm-workspace.yaml
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
-    pnpm install --prod --frozen-lockfile --ignore-scripts --store-dir "${PNPM_STORE_DIR}" && \
+    pnpm install --prod --frozen-lockfile --ignore-scripts --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false && \
     rm -rf /seed/ng_seed/seed-angular/node_modules
 
 FROM node:24-alpine AS runtime
