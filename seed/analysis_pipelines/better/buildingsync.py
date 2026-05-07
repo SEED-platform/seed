@@ -44,6 +44,22 @@ BETTER_TO_BSYNC_PROPERTY_TYPE = {
     "Restaurant": "Food service",
     "Public Library": "Assembly-Public",
     "Other": "Other",
+    "Adult Education": "Education-Adult",
+    "Barracks": "Lodging-Barracks",
+    "College/University": "Education-Higher",
+    "Convenience Store with Gas Station": "Gas station",
+    "Convenience Store without Gas Station": "Convenience store",
+    "Enclosed Mall": "Retail-Enclosed mall",
+    "Mailing Center/Post Office": "Service-Postal",
+    "Medical Office": "Health care-Outpatient non-diagnostic",
+    "Outpatient Rehabilitation/Physical Therapy": "Health care-Outpatient rehabilitation",
+    "Pre-school/Daycare": "Education-Preschool or daycare",
+    "Prison/Incarceration": "Public safety-Correctional facility",
+    "Residence Hall/Dormitory": "Lodging-Institutional",
+    "Urgent Care/Clinic/Other Outpatient": "Health care-Outpatient facility",
+    "Veterinary Office": "Health care-Veterinary",
+    "Vocational School": "Education-Vocational",
+    "Wholesale Club/Supercenter": "Retail-Hypermarket",
 }
 
 # maps SEED Meter types to BuildingSync ResourceUse types
