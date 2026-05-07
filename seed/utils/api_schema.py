@@ -6,6 +6,11 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from drf_yasg import openapi
 from drf_yasg.inspectors import SwaggerAutoSchema
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import serializers
+
+
+class EmptySerializer(serializers.Serializer):
+    pass
 
 
 class AutoSchemaHelper(SwaggerAutoSchema):

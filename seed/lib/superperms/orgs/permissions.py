@@ -194,6 +194,9 @@ class SEEDOrgPermissions(BasePermission):
 
     def has_permission(self, request, view):
         """Determines if user has correct permissions, called by DRF."""
+        if getattr(view, "swagger_fake_view", False) is True:
+            return True
+
         # Workaround to ensure this is not applied to the root view when using DefaultRouter.
         value_error = False
         try:
