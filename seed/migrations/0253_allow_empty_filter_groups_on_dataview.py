@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0252_alter_propertyview_labels'),
+        ("seed", "0252_alter_propertyview_labels"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='dataview',
-            name='filter_groups',
-            field=models.ManyToManyField(blank=True, to='seed.filtergroup'),
+            model_name="dataview",
+            name="filter_groups",
+            field=models.ManyToManyField(blank=True, to="seed.filtergroup"),
         ),
     ]
