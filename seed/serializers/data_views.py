@@ -7,6 +7,7 @@ from django.db import transaction
 from rest_framework import serializers
 
 from seed.models.data_views import DataView, DataViewParameter
+from seed.models.filter_group import FilterGroup
 
 
 class DataViewParameterSerializer(serializers.ModelSerializer):
@@ -18,16 +19,21 @@ class DataViewParameterSerializer(serializers.ModelSerializer):
 
 class DataViewSerializer(serializers.ModelSerializer):
     parameters = DataViewParameterSerializer(many=True)
+    filter_groups = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=FilterGroup.objects.all(),
+        required=False,
+        allow_empty=True,
+    )
 
     class Meta:
         model = DataView
         fields = ["id", "cycles", "filter_groups", "name", "organization", "parameters"]
-        # fields = '__all__'
 
     def create(self, validated_data):
         with transaction.atomic():
             cycles = validated_data.pop("cycles")
-            filter_groups = validated_data.pop("filter_groups")
+            filter_groups = validated_data.pop("filter_groups", [])
             parameters = validated_data.pop("parameters")
             data_view = DataView.objects.create(**validated_data)
             data_view.cycles.set(cycles)
@@ -43,9 +49,9 @@ class DataViewSerializer(serializers.ModelSerializer):
         with transaction.atomic():
             instance.organization = validated_data.get("organization", instance.organization)
             instance.name = validated_data.get("name", instance.name)
-            if validated_data.get("filter_groups"):
+            if "filter_groups" in validated_data:
                 instance.filter_groups.set(validated_data["filter_groups"])
-            if validated_data.get("cycles"):
+            if "cycles" in validated_data:
                 instance.cycles.set(validated_data["cycles"])
 
             instance.save()

@@ -24,7 +24,7 @@ class DataView(models.Model):
     name = models.CharField(max_length=255, unique=True)
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     cycles = models.ManyToManyField(Cycle)
-    filter_groups = models.ManyToManyField(FilterGroup)
+    filter_groups = models.ManyToManyField(FilterGroup, blank=True)
 
     def get_inventory(self, user_ali):
         views_by_filter_group_id, _ = self.views_by_filter(user_ali)
@@ -33,6 +33,22 @@ class DataView(models.Model):
     def views_by_filter(self, user_ali):
         filter_group_views = {}
         views_by_filter_group_id = {}
+
+        if not self.filter_groups.exists():
+            # No filter groups: include all property views per cycle
+            views_by_filter_group_id[0] = {}
+            filter_group_views[0] = {}
+            for cycle in self.cycles.all():
+                views = PropertyView.objects.filter(
+                    cycle=cycle,
+                    property__organization=self.organization,
+                )
+                filter_group_views[0][cycle.id] = views
+                for view in views:
+                    view_name = self._format_property_display_field(view)
+                    views_by_filter_group_id[0][view.id] = view_name
+            return views_by_filter_group_id, filter_group_views
+
         for filter_group in self.filter_groups.all():
             views_by_filter_group_id[filter_group.id] = {}
             filter_group_views[filter_group.id] = {}
@@ -104,13 +120,17 @@ class DataView(models.Model):
         response["views_by_filter_group_id"], views_by_filter = self.views_by_filter(user_ali)
 
         # assign data based on source column id
+        # Build list of (filter_id, filter_name) pairs
+        filter_entries = [(fg.id, fg.name) for fg in self.filter_groups.all()]
+        if not filter_entries:
+            filter_entries = [(0, "All")]
+
         for column in columns:
             data = response["columns_by_id"]
             column_id = column.id
             data[column_id] = {"filter_groups_by_id": {}, "unit": None}
 
-            for filter_group in self.filter_groups.all():
-                filter_id = filter_group.id
+            for filter_id, _filter_name in filter_entries:
                 data[column_id]["filter_groups_by_id"][filter_id] = {"cycles_by_id": {}}
 
                 for cycle in self.cycles.all():
@@ -134,9 +154,11 @@ class DataView(models.Model):
 
     def _format_graph_data(self, response, columns, views_by_filter):
         # {filter_group: filter_group.name, column: column.column_name, aggregation: aggregation.name, data: [1,2,3]},
-        for filter_group in self.filter_groups.all():
-            filter_id = filter_group.id
-            filter_name = filter_group.name
+        filter_entries = [(fg.id, fg.name) for fg in self.filter_groups.all()]
+        if not filter_entries:
+            filter_entries = [(0, "All")]
+
+        for filter_id, filter_name in filter_entries:
             for column in columns:
                 for aggregation in [Avg, Max, Min, Sum, Count]:  # NEED TO ADD 'views_by_label' for scatter plot
                     self._format_aggregation_name(aggregation)
