@@ -7,7 +7,7 @@ import contextlib
 import logging
 
 from django.db import models
-from django.db.models import Avg, Count, F, Max, Min, Sum
+from django.db.models import Avg, Count, F, Max, Min, Q, Sum
 from django.http import QueryDict
 
 from seed.lib.superperms.orgs.models import Organization
@@ -27,6 +27,8 @@ class DataView(models.Model):
     filter_groups = models.ManyToManyField(FilterGroup, blank=True)
 
     def get_inventory(self, user_ali):
+        if not self.filter_groups.exists():
+            return {}
         views_by_filter_group_id, _ = self.views_by_filter(user_ali)
         return views_by_filter_group_id
 
@@ -303,6 +305,8 @@ class DataView(models.Model):
         org_id = self.organization.id
         columns = Column.retrieve_all(org_id=org_id, inventory_type="property", only_used=False, include_related=False)
         annotations = {}
+        order_by = []
+        filters = Q()
         try:
             filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, "property")
         except Exception:
