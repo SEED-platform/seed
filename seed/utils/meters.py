@@ -188,6 +188,9 @@ class PropertyMeterReadingsExporter:
         for meter in self.meters:
             field_name, conversion_factor = self._build_column_def(meter, column_defs)
 
+            if not meter.meter_readings.exists():
+                continue
+
             min_time = meter.meter_readings.earliest("start_time").start_time.astimezone(tz=self.tz)
             max_time = meter.meter_readings.latest("end_time").end_time.astimezone(tz=self.tz)
 
