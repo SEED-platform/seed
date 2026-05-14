@@ -65,11 +65,15 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             for c in columns
         ]
 
+        gfa_list = PropertyState.objects.filter(id__in=state_ids).values_list("gross_floor_area", flat=True)
+        total_sqft = sum(x.magnitude for x in gfa_list if x is not None) if any(x is not None for x in gfa_list) else 0
+
         return JsonResponse(
             {
                 "status": "success",
                 "total_records": len(state_ids),
                 "number_extra_data_fields": len(extra_data_columns),
+                "total_sqft": total_sqft,
                 "stats": stats,
             }
         )
