@@ -25,9 +25,10 @@ class TestAnalysisViews(AccessLevelBaseTestCase):
         Column.objects.create(table_name="PropertyState", column_name="extra_field", organization=self.org, is_extra_data=True)
 
         for i in range(5):
-            self.property_view_factory.get_property_view(cycle=self.cycle)
+            state = self.property_state_factory.get_property_state(gross_floor_area=(i + 1) * 10)
+            self.property_view_factory.get_property_view(cycle=self.cycle, state=state)
         for i in range(5):
-            details = {"custom_id_1": i, "extra_data": {"extra_field": f"extra {i}"}}
+            details = {"custom_id_1": i, "extra_data": {"extra_field": f"extra {i}"}, "gross_floor_area": i + 1}
             state = self.property_state_factory.get_property_state(**details)
             self.property_view_factory.get_property_view(cycle=self.cycle, state=state)
 
@@ -37,6 +38,7 @@ class TestAnalysisViews(AccessLevelBaseTestCase):
         self.assertEqual(response.status_code, 200)
         response = response.json()
         self.assertEqual(response["status"], "success")
+        self.assertEqual(response["total_sqft"], 165)
         stats = response["stats"]
 
         address_line_1 = next(stat for stat in stats if stat["column_name"] == "address_line_1")
