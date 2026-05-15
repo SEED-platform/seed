@@ -94,12 +94,12 @@ dev = [
     "vcrpy==8.1.1",
     "Faker~=40.15.0",
     "mock==5.2.0",
-    "hypothesis~=6.152.4",
+    "hypothesis~=6.152.7",
     # Coverage / reporting
-    "coverage==7.13.5",
+    "coverage==7.14.0",
     "coveralls==4.1.0",
     # Local/CI orchestration
-    "tox-uv-bare==1.35.1",
+    "tox-uv-bare==1.35.2",
     "psutil==7.2.2",
     # Static code analysis / hooks
     "pre-commit>=4.6.0",
@@ -110,11 +110,11 @@ dev = [
     "docutils==0.22.4",
     # Types
     "celery-types>=0.26.0",
-    "djangorestframework-stubs>=3.16.9",
+    "djangorestframework-stubs>=3.17.0",
     "types-Markdown>=3.10.2.20260408",
     "types-PyYAML>=6.0.12.20260408",
-    "types-python-dateutil>=2.9.0.20260408",
-    "types-requests>=2.33.0.20260503",
+    "types-python-dateutil>=2.9.0.20260508",
+    "types-requests>=2.33.0.20260513",
 ]
 
 [tool.ruff]
