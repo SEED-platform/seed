@@ -26,10 +26,11 @@ no point in following any particular API since:
 """
 
 import datetime
+from typing import Any
 
 from django.utils.dateparse import parse_datetime
 
-REGISTRY = {}
+REGISTRY: dict[str, dict[str, Any]] = {}
 
 
 def make_flipper(owner, expires, label, kind, initial_value):
