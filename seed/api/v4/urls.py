@@ -7,6 +7,7 @@ from django.urls import include, path
 from rest_framework import routers
 
 from seed.views.v4.analyses import AnalysisViewSet
+from seed.views.v4.meter_readings import MeterReadingsViewSet
 from seed.views.v4.organization_users import OrganizationUserViewSet
 from seed.views.v4.taxlot_properties import TaxLotPropertyViewSet
 
@@ -18,4 +19,6 @@ api_v4_router.register(r"tax_lot_properties", TaxLotPropertyViewSet, basename="t
 
 urlpatterns = [
     path("", include(api_v4_router.urls)),
+    path("meters/<int:meter_pk>/readings/", MeterReadingsViewSet.as_view({"get": "list"}), name="meter-readings-list"),
+    path("meters/<int:meter_pk>/readings/count/", MeterReadingsViewSet.as_view({"get": "count"}), name="meter-readings-count"),
 ]
