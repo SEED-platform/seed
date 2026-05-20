@@ -5,8 +5,10 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import re
 from collections import namedtuple
+from collections.abc import Callable
 from functools import wraps
 from importlib import import_module
+from typing import Any
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
@@ -84,7 +86,7 @@ def get_all_urls(urllist, prefix=""):
 # pylint: disable=global-variable-not-assigned
 # API endpoint decorator
 # simple list of all 'registered' endpoints
-endpoints = []
+endpoints: list[Callable[..., Any]] = []
 
 
 def api_endpoint(fn):
