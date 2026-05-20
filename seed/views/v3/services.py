@@ -130,7 +130,7 @@ class ServiceViewSet(ModelViewSetWithoutPatch, OrgMixin):
             )
 
         for property_id in property_ids:
-            Meter.objects.create(
+            Meter.objects.get_or_create(
                 property_id=property_id,
                 type=Meter.type_lookup[type],
                 service_id=pk,

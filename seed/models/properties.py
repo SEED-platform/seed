@@ -102,14 +102,20 @@ class Property(models.Model):
             # the property has already gone through merge_relationships()
             for source_meter in source_property.meters.filter(scenario_id=None):
                 with transaction.atomic():
-                    target_meter, created = self.meters.get_or_create(
-                        is_virtual=source_meter.is_virtual,
-                        source=source_meter.source,
-                        source_id=source_meter.source_id,
-                        type=source_meter.type,
-                    )
+                    meter_match = {
+                        "is_virtual": source_meter.is_virtual,
+                        "source": source_meter.source,
+                        "source_id": source_meter.source_id,
+                        "type": source_meter.type,
+                        "system_id": source_meter.system_id,
+                        "service_id": source_meter.service_id,
+                        "connection_type": source_meter.connection_type,
+                    }
+                    target_meter = self.meters.filter(**meter_match).first()
+                    created = target_meter is None
 
                     if created:
+                        target_meter = self.meters.create(**meter_match)
                         # If self didn't have a similar meter and a new one was created,
                         # decide what to do depending on whether source meters need to persist.
                         if source_persists:
