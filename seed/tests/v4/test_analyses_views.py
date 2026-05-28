@@ -24,12 +24,16 @@ class TestAnalysisViews(AccessLevelBaseTestCase):
 
         Column.objects.create(table_name="PropertyState", column_name="extra_field", organization=self.org, is_extra_data=True)
 
-        for i in range(5):
-            self.property_view_factory.get_property_view(cycle=self.cycle)
-        for i in range(5):
-            details = {"custom_id_1": i, "extra_data": {"extra_field": f"extra {i}"}}
+        gfa_values_without_extra_data = [10, 20, 30, 40, 50]
+        for gfa in gfa_values_without_extra_data:
+            state = self.property_state_factory.get_property_state(gross_floor_area=gfa)
+            self.property_view_factory.get_property_view(cycle=self.cycle, state=state)
+        gfa_values_with_extra_data = [1, 2, 3, 4, 5]
+        for i, gfa in enumerate(gfa_values_with_extra_data):
+            details = {"custom_id_1": i, "extra_data": {"extra_field": f"extra {i}"}, "gross_floor_area": gfa}
             state = self.property_state_factory.get_property_state(**details)
             self.property_view_factory.get_property_view(cycle=self.cycle, state=state)
+        self.expected_total_sqft = sum(gfa_values_without_extra_data) + sum(gfa_values_with_extra_data)
 
     def test_stats(self):
         url = reverse_lazy("api:v4:analyses-stats") + f"?organization_id={self.org.id}&cycle_id={self.cycle.id}"
@@ -37,6 +41,7 @@ class TestAnalysisViews(AccessLevelBaseTestCase):
         self.assertEqual(response.status_code, 200)
         response = response.json()
         self.assertEqual(response["status"], "success")
+        self.assertEqual(response["total_sqft"], self.expected_total_sqft)
         stats = response["stats"]
 
         address_line_1 = next(stat for stat in stats if stat["column_name"] == "address_line_1")
