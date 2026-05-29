@@ -37,7 +37,7 @@ dependencies = [
     # Email / messaging
     "django-post-office==3.11.2",
     # Observability / monitoring
-    "sentry-sdk==2.60.0",
+    "sentry-sdk==2.61.0",
     # Security / 2FA
     "django-two-factor-auth[phonenumbers]==1.18.1",
     "qrcode[pil]==8.2",
@@ -68,12 +68,12 @@ dependencies = [
     "seed-salesforce==0.2.0",
     "simple-salesforce==1.12.9",
     # AWS / SES
-    "boto3~=1.43.8",
+    "boto3~=1.43.17",
     "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",
     # Misc
-    "geojson==3.2.0", # only used in managed tasks at the moment
+    "geojson==3.3.0", # only used in managed tasks at the moment
     "semantic-version==2.10.0",
 ]
 
