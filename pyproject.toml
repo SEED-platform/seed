@@ -8,21 +8,21 @@ license-files = ["LICENSE.md"]
 requires-python = ">=3.12"
 dependencies = [
     # Django core
-    "django~=6.0.5",
+    "django~=6.0.6",
     # Persistence (database)
     "psycopg[binary]~=3.3.4",
     # Background jobs / scheduling / caching
     "celery==5.6.3",
     "django-celery-beat==2.9.0",
-    "django-redis==6.0.0",
-    "hiredis==3.3.1",
+    "django-redis==7.0.0",
+    "hiredis==3.4.0",
     "tblib==3.2.2",
     # Assets / compression / utilities
     "brotli==1.2.0",
     "django-compressor==4.6.0",
     "django-extensions==4.1",
     "django-model-utils==5.0.0",
-    "django-treebeard==5.1.0",
+    "django-treebeard==5.2.2",
     # Date / time
     "python-dateutil==2.9.0.post0",
     # Units
@@ -37,7 +37,7 @@ dependencies = [
     # Email / messaging
     "django-post-office==3.11.2",
     # Observability / monitoring
-    "sentry-sdk==2.61.0",
+    "sentry-sdk==2.62.0",
     # Security / 2FA
     "django-two-factor-auth[phonenumbers]==1.18.1",
     "qrcode[pil]==8.2",
@@ -51,7 +51,7 @@ dependencies = [
     "requests==2.34.2",
     "polling==0.3.2",
     # Tabular / Excel
-    "pandas==2.3.3",
+    "pandas<3",
     "xlsxwriter==3.2.9",
     "xlrd<2.0.0", # Version 2 removes xlsx support
     # Matching / address parsing
@@ -68,7 +68,7 @@ dependencies = [
     "seed-salesforce==0.2.0",
     "simple-salesforce==1.12.9",
     # AWS / SES
-    "boto3~=1.43.17",
+    "boto3~=1.43.24",
     "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",
