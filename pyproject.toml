@@ -68,7 +68,7 @@ dependencies = [
     "seed-salesforce==0.2.0",
     "simple-salesforce==1.12.9",
     # AWS / SES
-    "boto3~=1.43.24",
+    "boto3~=1.43.28",
     "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",
