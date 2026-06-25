@@ -109,6 +109,22 @@ jobs:
       - name: Web container logs
         if: ${{ always() }}
         run: docker logs seed_web
+  ecs-docker-build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Build Dockerfile.ecs.ci
+        run: |
+          docker buildx build \
+            --file Dockerfile.ecs.ci \
+            --tag seedplatform/seed:ecs-ci \
+            --load \
+            .
+
   formatting:
     runs-on: ubuntu-24.04
     strategy:
