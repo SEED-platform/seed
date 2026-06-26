@@ -22,7 +22,7 @@ dependencies = [
     "django-compressor==4.6.0",
     "django-extensions==4.1",
     "django-model-utils==5.0.0",
-    "django-treebeard==5.2.2",
+    "django-treebeard==5.3.0",
     # Date / time
     "python-dateutil==2.9.0.post0",
     # Units
@@ -37,11 +37,11 @@ dependencies = [
     # Email / messaging
     "django-post-office==3.11.2",
     # Observability / monitoring
-    "sentry-sdk==2.62.0",
+    "sentry-sdk==2.63.0",
     # Security / 2FA
     "django-two-factor-auth[phonenumbers]==1.18.1",
     "qrcode[pil]==8.2",
-    "pyotp==2.9.0",
+    "pyotp==2.10.0",
     # Data formats / parsing / IO
     "Markdown==3.10.2",
     "pyyaml==6.0.3",
@@ -68,7 +68,7 @@ dependencies = [
     "seed-salesforce==0.2.0",
     "simple-salesforce==1.12.9",
     # AWS / SES
-    "boto3~=1.43.24",
+    "boto3~=1.43.36",
     "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",
