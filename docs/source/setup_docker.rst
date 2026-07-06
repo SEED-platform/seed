@@ -5,6 +5,10 @@ Docker works natively on Linux, macOS, and Windows through Docker Engine or
 Docker Desktop. These instructions assume Docker Compose v2, which is invoked
 as ``docker compose``.
 
+Docker Compose starts the required PostgreSQL/PostGIS/TimescaleDB and Redis
+containers. Developers do not need to install PostgreSQL, PostGIS, TimescaleDB,
+or Redis on the host machine.
+
 Before building, initialize the Angular UI submodule:
 
 .. code-block:: bash
@@ -31,11 +35,15 @@ Follow instructions `for Mac <https://docs.docker.com/docker-for-mac/install/>`_
 or `for Windows <https://docs.docker.com/docker-for-windows/install/>`_.
 Docker Desktop includes Compose v2.
 
+On Windows, use Docker Desktop with the WSL 2 backend. Run repository commands
+from a WSL 2 shell when you need Linux-compatible paths or shell behavior.
+
 
 Building and Running Containers for Non-Development
 -------------------------------------------------------
 
 The Docker Compose database service uses ``timescale/timescaledb-ha:pg18.3-ts2.26.4-oss``.
+The Redis service uses ``redis:8-alpine``.
 The image's default ``PGDATA`` directory is ``/home/postgres/pgdata/data``; compose mounts the
 ``seed_pgdata`` volume at ``/home/postgres/pgdata`` so the container can manage its ``data``
 subdirectory.

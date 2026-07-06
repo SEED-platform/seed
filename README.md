@@ -25,7 +25,7 @@ or from the front end by clicking the API documentation link in the sidebar.
 ### Installation
 
 - Production on Amazon Web Service: See [Installation Notes][production-aws-url]
-- Development on macOS: [Installation Notes][development-mac-osx]
+- Development on macOS or Windows: [Installation Notes][development-local]
 - Development using Docker: [Installation Notes][development-docker]
 
 For local development, initialize the Angular UI submodule before installing
@@ -83,7 +83,7 @@ See the information in the [LICENSE.md](LICENSE.md) file.
 [code-documentation]: https://seed-platform.org/code_documentation/latest/
 [code-documentation-links]: https://seed-platform.org/developer_resources/
 [development-docker]: https://github.com/SEED-platform/seed/blob/develop/docs/source/setup_docker.rst
-[development-mac-osx]: https://github.com/SEED-platform/seed/blob/develop/docs/source/setup_osx.rst
+[development-local]: https://github.com/SEED-platform/seed/blob/develop/docs/source/setup_osx.rst
 [production-aws-url]: http://www.github.com/seed-platform/seed/wiki/Installation
 [developer-resources]: https://github.com/SEED-platform/seed/blob/develop/docs/source/developer_resources.rst
 [developer-testing-notes]: https://github.com/SEED-platform/seed/blob/develop/docs/source/developer_resources.rst#testing

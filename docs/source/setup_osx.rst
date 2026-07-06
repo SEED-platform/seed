@@ -1,27 +1,35 @@
-Installation on macOS
-=====================
+Local Development on macOS and Windows
+======================================
 
-These instructions are for running SEED locally on macOS for development.
+These instructions are for running SEED locally for development while using
+Docker containers for PostgreSQL/PostGIS/TimescaleDB and Redis.
 
 SEED currently uses:
 
 * Python 3.14 in ``.python-version``; ``pyproject.toml`` requires Python 3.12 or newer.
 * ``uv`` for Python installation and dependency management.
-* PostgreSQL with PostGIS. PostgreSQL 16 is a good local development target.
-* Redis for cache. Basic local development only runs Celery tasks eagerly in
-  the Django process.
+* Docker Compose services for PostgreSQL/PostGIS/TimescaleDB and Redis.
 * Node 24 and pnpm 11 for JavaScript dependencies.
 * A separate Angular UI checked out as the ``ng_seed/seed-angular`` git submodule.
 
 Quick Installation Instructions
 -------------------------------
 
-This section assumes Homebrew and git are already installed.
+macOS developers can use Homebrew for application tooling. PostgreSQL,
+PostGIS, TimescaleDB, and Redis should run in Docker, not through Homebrew.
 
 .. code-block:: bash
 
-    brew install graphviz postgresql@16 postgis redis uv node@24
+    brew install graphviz uv node@24
     corepack enable
+
+Windows developers should use Docker Desktop with the WSL 2 backend enabled.
+Run the repository commands from a WSL 2 shell. Do not install native Windows
+PostgreSQL, PostGIS, TimescaleDB, or Redis for SEED development.
+
+Clone the repository and install dependencies:
+
+.. code-block:: bash
 
     git clone git@github.com:SEED-platform/seed.git
     cd seed
@@ -32,8 +40,14 @@ This section assumes Homebrew and git are already installed.
 
     cp config/settings/local_untracked.py.dist config/settings/local_untracked.py
 
-Edit ``config/settings/local_untracked.py`` for your local database and Redis
-settings. Then run:
+Start the Docker database and Redis services:
+
+.. code-block:: bash
+
+    docker volume create --name=seed_pgdata
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db-postgres db-redis
+
+Edit ``config/settings/local_untracked.py`` to point at those services. Then run:
 
 .. code-block:: bash
 
@@ -50,65 +64,40 @@ To see the new Angular application at http://127.0.0.1:8000/ng-app/, build its
 static files and run the Django server. For active Angular development, see
 ``ng_seed/README.md``.
 
-PostgreSQL, PostGIS, and TimescaleDB
-------------------------------------
+Docker Postgres and Redis with Local Django
+-------------------------------------------
 
-Install and start PostgreSQL 16:
-
-.. code-block:: bash
-
-    brew install postgresql@16 postgis
-    brew services start postgresql@16
-
-Make sure the PostgreSQL 16 binaries are in your shell path. Homebrew prints
-the exact path after installation; on Apple Silicon it is usually:
+When running Django directly on the host, use the repository's Docker services
+for Postgres and Redis:
 
 .. code-block:: bash
 
-    export PATH="/opt/homebrew/opt/postgresql@16/bin:$PATH"
+    docker volume create --name=seed_pgdata
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db-postgres db-redis
 
-Create a local database and user. The development settings default to a
-database named ``seed`` with user/password ``postgres``/``postgres``, but those
-values can be changed in ``config/settings/local_untracked.py``.
+The Compose database service uses the repository's configured
+TimescaleDB/Postgres image, currently
+``timescale/timescaledb-ha:pg18.3-ts2.26.4-oss``. It creates the default
+database from the Compose environment:
 
-.. code-block:: bash
+* database: ``seed``
+* user: ``seed``
+* password: ``super-secret-password``
+* host from local Django: ``127.0.0.1``
+* port from local Django: ``5432``
 
-    createuser -P postgres
-    createdb -O postgres seed
-    psql -d seed -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+The dev Compose override publishes Redis on ``127.0.0.1:6379`` for local
+Django.
 
-Some SEED features use TimescaleDB. If you need those features locally, install
-a TimescaleDB build compatible with your PostgreSQL version, add
-``timescaledb`` to ``shared_preload_libraries`` in ``postgresql.conf``, restart
-PostgreSQL, and enable the extension:
-
-.. code-block:: bash
-
-    psql -d seed -c "CREATE EXTENSION IF NOT EXISTS timescaledb;"
-
-The Docker development environment uses the repository's configured
-TimescaleDB/Postgres image instead, which is currently
-``timescale/timescaledb-ha:pg18.3-ts2.26.4-oss``.
-
-Using Docker Postgres and Redis with Local Django
--------------------------------------------------
-
-If you want to run Django directly on macOS, but use the repository's Docker
-services for Postgres and Redis, start only those services:
+If you need to recreate the database from scratch, stop the services and remove
+the development volume:
 
 .. code-block:: bash
 
-    docker compose up -d db-postgres db-redis
-
-Make sure ``config/settings/local_untracked.py`` matches the Docker database
-you intend to use. For example, if your local settings point at a database named
-``seeddev1`` with user ``seed``, create that database in the running container
-and enable PostGIS before running migrations:
-
-.. code-block:: bash
-
-    docker exec seed_postgres createdb -U seed -O seed seeddev1
-    docker exec seed_postgres psql -U seed -d seeddev1 -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+    docker volume rm seed_pgdata
+    docker volume create --name=seed_pgdata
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db-postgres db-redis
 
 Then run the normal local setup commands:
 
@@ -123,17 +112,7 @@ The default ``create_default_user`` credentials are ``demo@seed-platform.org``
 with password ``demo`` in organization ``demo``. Pass ``--username``,
 ``--password``, and ``--organization`` if you want different local credentials.
 
-Redis
------
-
-Install and start Redis:
-
-.. code-block:: bash
-
-    brew install redis
-    brew services start redis
-
-Configure ``config/settings/local_untracked.py`` to use local Redis:
+Configure ``config/settings/local_untracked.py`` to use Docker Redis:
 
 .. code-block:: python
 
@@ -206,7 +185,7 @@ Create your local settings file:
 
 At minimum, update the ``DATABASES``, ``CELERY_BROKER_URL``, ``CACHES``,
 ``CELERY_RESULT_BACKEND``, and eager Celery values. A typical local database
-section is:
+section that points at the Docker database container is:
 
 .. code-block:: python
 
@@ -214,8 +193,8 @@ section is:
         "default": {
             "ENGINE": "django.contrib.gis.db.backends.postgis",
             "NAME": "seed",
-            "USER": "postgres",
-            "PASSWORD": "postgres",
+            "USER": "seed",
+            "PASSWORD": "super-secret-password",
             "HOST": "127.0.0.1",
             "PORT": "5432",
         }
