@@ -14,6 +14,7 @@
 *.swp
 *.swo
 *.swn
+.pnpm-store
 seed_issues.csv
 web_root/css/compressed.*.css
 web_root/js/compressed.*.js
