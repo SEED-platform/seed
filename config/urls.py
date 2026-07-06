@@ -64,7 +64,6 @@ urlpatterns = [
     path("api/version/", version, name="version"),
     path("api/", include((api, "seed"), namespace="api")),
     path("account/login/", CustomLoginView.as_view(), name="login"),
-    path("account/login", CustomLoginView.as_view()),
     path("", include(two_factor_urls)),
     # test sentry error
     path("sentry-debug/", trigger_error),
