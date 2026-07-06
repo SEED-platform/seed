@@ -109,8 +109,9 @@ overwrite the database or celery configuration!
 
     docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
-The AngularJS application is available at ``http://localhost/app/``. The new
-Angular application is available at ``http://localhost/ng-app/``.
+The AngularJS application is available at ``http://localhost/app/``. To see the
+new Angular application at ``http://localhost/ng-app/``, build the Angular
+assets and launch the container stack.
 
 The health check is available at ``http://localhost/api/health_check/``. A
 healthy container stack returns ``200 OK`` with ``postgres``, ``redis``, and

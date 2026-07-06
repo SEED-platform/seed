@@ -259,8 +259,8 @@ Ubuntu
     sudo timescaledb-tune
     sudo service postgresql restart
 
-Max OSX
-^^^^^^^
+macOS
+^^^^^
 
 .. code-block:: console
 

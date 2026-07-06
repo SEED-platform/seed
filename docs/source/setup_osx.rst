@@ -46,8 +46,8 @@ Run Django management commands through ``uv`` as ``uv run manage.py <command>``.
 
 The AngularJS application runs at http://127.0.0.1:8000/app/.
 
-The new Angular application runs at http://127.0.0.1:8000/ng-app/ after its
-static files have been built. For active Angular development, see
+To see the new Angular application at http://127.0.0.1:8000/ng-app/, build its
+static files and run the Django server. For active Angular development, see
 ``ng_seed/README.md``.
 
 PostgreSQL, PostGIS, and TimescaleDB
