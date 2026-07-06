@@ -221,8 +221,13 @@ class CustomLoginView(LoginView):
             user.save()
         return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
 
-    def render(self, form=None, **kwargs):
-        # Conditionally show the `Create my Account` button
-        kwargs.setdefault("context", {})["self_registration"] = settings.INCLUDE_ACCT_REG
+    def get_context_data(self, form, **kwargs):
+        context = super().get_context_data(form, **kwargs)
+        context.setdefault("other_devices", [])
+        context.setdefault("backup_tokens", 0)
+        context.setdefault("cancel_url", "")
 
-        return super().render(form, **kwargs)
+        # Conditionally show the `Create my Account` button
+        context.setdefault("context", {})["self_registration"] = settings.INCLUDE_ACCT_REG
+
+        return context

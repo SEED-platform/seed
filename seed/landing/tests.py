@@ -22,3 +22,11 @@ class UserLoginTest(TestCase):
         response = self.client.post(self.login_url, self.user_details, secure=True)
         self.assertTrue(response.status_code == 302)
         self.assertTrue(response.url == "/account/login/")
+
+    def test_two_factor_login_template_has_no_missing_username_context(self):
+        with self.assertNoLogs("django.template", level="DEBUG"):
+            response = self.client.get("/account/login/", secure=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="id_auth-username"')
+        self.assertNotContains(response, 'name="username"')
