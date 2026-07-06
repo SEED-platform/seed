@@ -10,9 +10,11 @@ and cost-effective method to improve the quality and availability of data to
 help demonstrate the economic and environmental benefits of energy efficiency,
 to implement programs, and to target investment activity.
 
-The SEED application is written in Python/Django, with AngularJS, Bootstrap,
-and other javascript libraries used for the front-end. The back-end database
-is required to be PostgreSQL.
+The SEED application is written in Python/Django. The front end includes the
+legacy AngularJS application and a newer Angular application in the
+`ng_seed/seed-angular` submodule. The back-end database is PostgreSQL with
+PostGIS; Docker development currently uses the repository's configured
+TimescaleDB/Postgres image.
 
 The SEED web application provides both a browser-based interface for users to
 upload and manage their building data, as well as a full set of APIs that app
@@ -23,26 +25,47 @@ or from the front end by clicking the API documentation link in the sidebar.
 ### Installation
 
 - Production on Amazon Web Service: See [Installation Notes][production-aws-url]
-- Development on Mac OSX: [Installation Notes][development-mac-osx]
+- Development on macOS: [Installation Notes][development-mac-osx]
 - Development using Docker: [Installation Notes][development-docker]
+
+For local development, initialize the Angular UI submodule before installing
+dependencies or building Docker images:
+
+```bash
+git submodule update --init ng_seed/seed-angular
+```
 
 ### Starting SEED Platform
 
 In production the following two commands will run the web server (Hypercorn) and
 the background task manager (Celery) with:
 
-```
+```bash
 bin/start_hypercorn.sh
 bin/start_celery.sh
 ```
 
-In development mode, you can start Django and the background
-task manager (Celery) with:
+For basic local development only, run Celery tasks eagerly in the Django process
+by setting `CELERY_TASK_ALWAYS_EAGER = True` and
+`CELERY_TASK_EAGER_PROPAGATES = True` in `config/settings/local_untracked.py`.
+Then start Django with:
 
+```bash
+uv run manage.py runserver
 ```
-./manage.py runserver
-celery -A seed worker -l INFO -c 4 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler
+
+Run Django management commands through `uv` as `uv run manage.py <command>`.
+
+Testing workflows that need real asynchronous behavior and production
+deployments should run Celery as a separate worker/task. For that mode, set
+`CELERY_TASK_ALWAYS_EAGER = False` and run the worker separately:
+
+```bash
+uv run celery -A seed worker -l INFO -c 4 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler
 ```
+
+The legacy AngularJS app is served at `/app/`. The newer Angular app is served
+at `/ng-app/` after its static assets have been built.
 
 ### Developer Resources
 

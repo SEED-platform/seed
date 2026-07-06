@@ -1,27 +1,35 @@
 Installation using Docker
 =========================
 
-Docker works natively on Linux, Mac OSX, and Windows 10. If you are using an older version of
-Windows (and some older versions of Mac OSX), you will need to install Docker Toolbox.
+Docker works natively on Linux, macOS, and Windows through Docker Engine or
+Docker Desktop. These instructions assume Docker Compose v2, which is invoked
+as ``docker compose``.
 
-Choose either `Docker Native (Windows/OSX)`_  or `Docker Native (Ubuntu)`_ to
-install Docker.
+Before building, initialize the Angular UI submodule:
+
+.. code-block:: bash
+
+    git submodule update --init ng_seed/seed-angular
+
+The Dockerfiles install Python with ``uv`` and use Node 24 with pnpm through
+Corepack. The development image also builds the Angular UI assets that Django
+serves from ``/ng-app/``.
 
 Docker Native (Ubuntu)
 ----------------------
 
 Follow instructions `here <https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/>`_.
 
-* `Install Docker Compose <https://docs.docker.com/compose/install/>`_
+* `Install Docker Compose <https://docs.docker.com/compose/install/>`_ if your
+  Docker installation does not already include Compose v2.
 
 
-Docker Native (Windows/OSX)
----------------------------
+Docker Native (Windows/macOS)
+-----------------------------
 
-Following instructions `for Mac <https://docs.docker.com/docker-for-mac/install/>`_ or
-`for Windows <https://docs.docker.com/docker-for-windows/install/>`_. Note that for OSX you must have docker desktop version `3.0 or later <https://github.com/concourse/concourse/issues/6038>`.
-
-* `Install Docker Compose <https://docs.docker.com/compose/install/>`_
+Follow instructions `for Mac <https://docs.docker.com/docker-for-mac/install/>`_
+or `for Windows <https://docs.docker.com/docker-for-windows/install/>`_.
+Docker Desktop includes Compose v2.
 
 
 Building and Running Containers for Non-Development
@@ -31,8 +39,10 @@ The Docker Compose database service uses ``timescale/timescaledb-ha:pg18.3-ts2.2
 The image's default ``PGDATA`` directory is ``/home/postgres/pgdata/data``; compose mounts the
 ``seed_pgdata`` volume at ``/home/postgres/pgdata`` so the container can manage its ``data``
 subdirectory.
-Existing Postgres 12 volumes cannot be started directly with this image; migrate by dump/restore
-or recreate the volume before starting Postgres 18.
+Existing volumes from older major Postgres versions cannot be started directly
+with this image. If you need to keep data from an older Postgres volume, follow
+the dump/restore process in :doc:`postgres_upgrade` before starting Postgres 18.
+If you do not need the old data, recreate the database volume instead.
 
 * Run Docker Compose
 
@@ -52,7 +62,7 @@ or recreate the volume before starting Postgres 18.
 
 * Login to container
 
-    The docker-compose file creates a default user and password. Below are the defaults but can
+    The Docker Compose file creates a default user and password. Below are the defaults but can
     be overridden by setting environment variables.
 
     .. code-block:: bash
@@ -69,9 +79,9 @@ or recreate the volume before starting Postgres 18.
 Using Docker for Development
 ----------------------------
 
-The development environment is configured for live reloading (i.e., restart webserver when files change)
-and debugging. It builds off the base docker-compose.yml, so it's necessary
-to specify the files being used in docker-compose commands as seen below.
+The development environment is configured for live reloading and debugging. It
+builds from ``Dockerfile-dev`` and layers ``docker-compose.dev.yml`` on top of
+the base ``docker-compose.yml``.
 
 Build
 ^^^^^
@@ -81,6 +91,9 @@ Build
     # create volumes for the database and media directory
     docker volume create --name=seed_pgdata
     docker volume create --name=seed_media
+
+    # initialize the Angular UI submodule
+    git submodule update --init ng_seed/seed-angular
 
     # build the images
     docker compose -f docker-compose.yml -f docker-compose.dev.yml build
@@ -96,12 +109,21 @@ overwrite the database or celery configuration!
 
     docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
+The AngularJS application is available at ``http://localhost/app/``. The new
+Angular application is available at ``http://localhost/ng-app/``.
+
+The health check is available at ``http://localhost/api/health_check/``. A
+healthy container stack returns ``200 OK`` with ``postgres``, ``redis``, and
+``celery`` all set to ``success``. If the endpoint returns ``418 I'm a Teapot``,
+one of the required services is not connected; the JSON response identifies the
+failing service.
+
 If the server doesn't start successfully, and :code:`docker compose logs` doesn't help,
 the Hypercorn dev server probably failed to start due to an error in your config or code.
 Unfortunately docker application logging doesn't appear to work when the container is first started.
 Just try running the server yourself with docker exec, and see what the output is.
 
-The development docker-compose file has some configurable parameters for specifying volumes to use:
+The development Docker Compose file has some configurable parameters for specifying volumes to use:
 
 - SEED_DB_VOLUME: the name of the docker volume to mount for postgres
 - SEED_MEDIA_VOLUME: the name of the docker volume to mount for the seed media folder
@@ -126,7 +148,7 @@ While the containers are running (i.e., after running the docker compose up comm
 
 .. code-block:: bash
 
-    docker exec -it seed_web ./manage.py test --settings config.settings.docker_test
+    docker exec -it seed_web uv run manage.py test --settings config.settings.docker_test
 
 Add the setting  :code:`--nocapture` in order to see :code:`stdout` while running tests.  You will need to do this in order to make use of debugging as described below or the output to your debug commands will not display until after the break point has passed and the tests are finished.
 
@@ -149,8 +171,4 @@ To connect to the remote session, run netcat from inside the container (using th
 
     docker exec -it seed_web nc 127.0.0.1:41653
 
-.. _MacPorts: https://www.macports.org/
-.. _Homebrew: http://brew.sh/
-.. _npm: https://www.npmjs.com/
-.. _nodejs.org: http://nodejs.org/
 .. _Be Patient: https://www.youtube.com/watch?v=f4hkPn0Un_Q
