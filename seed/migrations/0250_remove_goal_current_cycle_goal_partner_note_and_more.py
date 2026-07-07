@@ -11,6 +11,64 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunSQL(
+            sql="""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM pg_constraint
+                    WHERE conrelid = 'orgs_organization'::regclass
+                      AND contype = 'p'
+                ) THEN
+                    ALTER TABLE orgs_organization
+                    ADD CONSTRAINT orgs_organization_pkey PRIMARY KEY (id);
+                END IF;
+
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM pg_constraint
+                    WHERE conrelid = 'orgs_organizationuser'::regclass
+                      AND contype = 'p'
+                ) THEN
+                    ALTER TABLE orgs_organizationuser
+                    ADD CONSTRAINT orgs_organizationuser_pkey PRIMARY KEY (id);
+                END IF;
+
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM pg_constraint
+                    WHERE conrelid = 'orgs_organizationuser'::regclass
+                      AND conname = 'unique_user_for_organization'
+                ) THEN
+                    ALTER TABLE orgs_organizationuser
+                    ADD CONSTRAINT unique_user_for_organization UNIQUE (user_id, organization_id);
+                END IF;
+
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM pg_constraint
+                    WHERE conrelid = 'seed_cycle'::regclass
+                      AND contype = 'p'
+                ) THEN
+                    ALTER TABLE seed_cycle
+                    ADD CONSTRAINT seed_cycle_pkey PRIMARY KEY (id);
+                END IF;
+
+                IF NOT EXISTS (
+                    SELECT 1
+                    FROM pg_constraint
+                    WHERE conrelid = 'seed_goal'::regclass
+                      AND contype = 'p'
+                ) THEN
+                    ALTER TABLE seed_goal
+                    ADD CONSTRAINT seed_goal_pkey PRIMARY KEY (id);
+                END IF;
+            END
+            $$;
+            """,
+            reverse_sql=migrations.RunSQL.noop,
+        ),
         migrations.RemoveField(
             model_name="goal",
             name="current_cycle",
