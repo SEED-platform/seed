@@ -1,19 +1,15 @@
 ARG NGINX_LISTEN_OPTS
 
-# AUTHOR:           Clay Teeter <teeterc@gmail.com>, Nicholas Long <nicholas.long@nlr.gov>
-# DESCRIPTION:      Image with seed platform and dependencies running in development mode
-# TO_BUILD_AND_RUN: docker compose build && docker compose up
+# CI variant of Dockerfile.ecs — identical except NREL internal cert fetch is omitted
+# since raw.github.nrel.gov is not reachable from public GitHub Actions runners.
+# See Dockerfile.ecs for the production build used at NREL.
 
 FROM node:24-alpine
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 RUN corepack enable
 
-# Install necessary dependencies (curl and ca-certificates)
-RUN apk add --no-cache curl ca-certificates && \
-curl -fsSLk -o /usr/local/share/ca-certificates/nrel_root.crt https://raw.github.nrel.gov/TADA/nrel-certs/v20180329/certs/nrel_root.pem && \
-curl -fsSLk -o /usr/local/share/ca-certificates/nrel_xca1.crt https://raw.github.nrel.gov/TADA/nrel-certs/v20180329/certs/nrel_xca1.pem && \
-update-ca-certificates
+RUN apk add --no-cache curl ca-certificates
 
 ARG NGINX_LISTEN_OPTS
 
@@ -107,7 +103,7 @@ RUN chmod +x ./docker/maintenance.sh
 # Supervisor looks in /etc/supervisor for the configuration file.
 COPY ./docker/supervisor-seed.conf /etc/supervisor/supervisord.conf
 
-# entrypoint sets some permissions on directories that may be shared volumes
+# entrypoint sets some permissions on directories that may be shared volunteers
 COPY ./docker/seed-entrypoint.sh /usr/local/bin/seed-entrypoint
 RUN chmod 775 /usr/local/bin/seed-entrypoint
 ENTRYPOINT ["seed-entrypoint"]
