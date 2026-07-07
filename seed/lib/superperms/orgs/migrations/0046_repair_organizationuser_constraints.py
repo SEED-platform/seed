@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
                     ALTER TABLE orgs_organizationuser
                     ADD CONSTRAINT unique_user_for_organization UNIQUE (user_id, organization_id);
                 END IF;
-            END
+            END;
             $$;
             """,
             reverse_sql=migrations.RunSQL.noop,
