@@ -1,5 +1,15 @@
-# Generated manually to repair databases that recorded old orgs migrations
-# without retaining the OrganizationUser table constraints.
+# Generated manually to repair production databases that recorded earlier orgs
+# migrations as applied without retaining the database constraints those
+# migrations should have created.
+#
+# Later seed migrations add foreign keys that reference orgs_organization and
+# orgs_organizationuser. PostgreSQL requires the referenced columns to be backed
+# by a primary key or unique constraint, so those later migrations fail if a
+# database is missing these constraints even though Django thinks the historical
+# migrations already ran.
+#
+# Each ALTER TABLE is guarded by pg_constraint checks so this migration is safe
+# on databases that already have the expected constraints.
 
 from django.db import migrations
 
@@ -14,6 +24,7 @@ class Migration(migrations.Migration):
             sql="""
             DO $$
             BEGIN
+                -- Required for foreign keys that reference orgs_organization(id).
                 IF NOT EXISTS (
                     SELECT 1
                     FROM pg_constraint
@@ -24,6 +35,7 @@ class Migration(migrations.Migration):
                     ADD CONSTRAINT orgs_organization_pkey PRIMARY KEY (id);
                 END IF;
 
+                -- Required for foreign keys that reference orgs_organizationuser(id).
                 IF NOT EXISTS (
                     SELECT 1
                     FROM pg_constraint
@@ -34,6 +46,7 @@ class Migration(migrations.Migration):
                     ADD CONSTRAINT orgs_organizationuser_pkey PRIMARY KEY (id);
                 END IF;
 
+                -- Restores the model-level uniqueness guarantee added in orgs 0026.
                 IF NOT EXISTS (
                     SELECT 1
                     FROM pg_constraint
