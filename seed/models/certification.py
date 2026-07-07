@@ -275,7 +275,8 @@ class GreenAssessmentProperty(models.Model):
         kwargs.setdefault("name", "Update log")
         kwargs.setdefault("description", "New audit log added.")
         if "parent" not in kwargs or "ancestor" not in kwargs:
-            previous_log = GreenAssessmentPropertyAuditLog.objects.filter(greenassessmentproperty=self).order_by("created").last()
+            # Tie-break on id so previous-log selection is deterministic on created ties.
+            previous_log = GreenAssessmentPropertyAuditLog.objects.filter(greenassessmentproperty=self).order_by("-created", "-id").first()
             if previous_log:
                 kwargs.setdefault("ancestor", previous_log.ancestor)
                 kwargs.setdefault("parent", previous_log)

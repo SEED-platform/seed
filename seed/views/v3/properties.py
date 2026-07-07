@@ -1428,7 +1428,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         bs = BuildingSync()
         # Check if there is an existing BuildingSync XML file to merge
-        bs_file = property_view.state.building_files.order_by("created").last()
+        # Tie-break on id so "latest" selection is deterministic on created ties.
+        bs_file = property_view.state.building_files.order_by("-created", "-id").first()
         if bs_file is not None and os.path.exists(bs_file.file.path):
             bs.import_file(bs_file.file.path)
 
@@ -1458,7 +1459,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         hpxml = HPXML()
         # Check if there is an existing BuildingSync XML file to merge
-        hpxml_file = property_view.state.building_files.filter(file_type=BuildingFile.HPXML).order_by("-created").first()
+        # Tie-break on id so "latest" selection is deterministic on created ties.
+        hpxml_file = property_view.state.building_files.filter(file_type=BuildingFile.HPXML).order_by("-created", "-id").first()
         if hpxml_file is not None and os.path.exists(hpxml_file.file.path):
             hpxml.import_file(hpxml_file.file.path)
             xml = hpxml.export(property_view.state)
