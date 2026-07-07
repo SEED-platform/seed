@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
                     ALTER TABLE seed_goal
                     ADD CONSTRAINT seed_goal_pkey PRIMARY KEY (id);
                 END IF;
-            END
+            END;
             $$;
             """,
             reverse_sql=migrations.RunSQL.noop,
