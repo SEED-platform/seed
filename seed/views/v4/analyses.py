@@ -1,17 +1,29 @@
-from django.http import JsonResponse
+"""
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+"""
+
 from django.utils.decorators import method_decorator
-from rest_framework import status, viewsets
+from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
-from seed.models import AccessLevelInstance, Analysis, Column, Cycle, PropertyState, PropertyView
-from seed.models.columns import EXCLUDED_API_FIELDS
+from seed.models import Analysis
 from seed.serializers.analyses import AnalysisSerializer
 from seed.utils.api import OrgMixin, api_endpoint
+from seed.views.v4.property import build_property_stats_response
 
 
 class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
+    """
+    Compatibility namespace for v4 analyses routes.
+
+    The `stats` action is inventory/property-view based rather than analysis-run based.
+    Canonical placement is `properties-stats`; this endpoint is kept so
+    existing clients using `analyses-stats` continue to work.
+    """
+
     serializer_class = AnalysisSerializer
     model = Analysis
 
@@ -24,56 +36,8 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     )
     @action(detail=False, methods=["GET"])
     def stats(self, request):
-        """Get all property and taxlot columns that have data in them for an org"""
-        org_id = self.get_organization(request)
-        cycle_id = request.query_params.get("cycle_id")
-
-        if not cycle_id:
-            return JsonResponse({"success": False, "message": "cycle_id parameter is missing"}, status=status.HTTP_400_BAD_REQUEST)
-
-        try:
-            Cycle.objects.get(id=cycle_id, organization_id=org_id)
-        except Cycle.DoesNotExist:
-            return JsonResponse({"success": False, "message": "Cycle does not exist"}, status=status.HTTP_404_NOT_FOUND)
-
-        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
-        state_ids = PropertyView.objects.filter(
-            property__organization_id=org_id,
-            cycle_id=cycle_id,
-            property__access_level_instance__lft__gte=access_level_instance.lft,
-            property__access_level_instance__rgt__lte=access_level_instance.rgt,
-        ).values_list("state_id", flat=True)
-
-        if not state_ids:
-            return JsonResponse({"success": False, "message": "No properties found for the given cycle"}, status=status.HTTP_404_NOT_FOUND)
-
-        columns = (
-            Column.objects.filter(organization_id=org_id, derived_column=None, table_name="PropertyState")
-            .exclude(column_name__in=EXCLUDED_API_FIELDS)
-            .only("column_name", "display_name", "is_extra_data")
-        )
-
-        extra_data_columns = [c.column_name for c in columns if c.is_extra_data]
-        num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, PropertyState, columns)
-        stats = [
-            {
-                "column_name": c.column_name,
-                "display_name": c.display_name or c.column_name.replace("_", " "),
-                "is_extra_data": c.is_extra_data,
-                "count": num_of_nonnulls_by_column_name.get(c.column_name, 0),
-            }
-            for c in columns
-        ]
-
-        gfa_list = list(PropertyState.objects.filter(id__in=state_ids).values_list("gross_floor_area", flat=True))
-        total_sqft = sum(x.magnitude for x in gfa_list if x is not None)
-
-        return JsonResponse(
-            {
-                "status": "success",
-                "total_records": len(state_ids),
-                "number_extra_data_fields": len(extra_data_columns),
-                "total_sqft": total_sqft,
-                "stats": stats,
-            }
+        return build_property_stats_response(
+            request=request,
+            org_id=self.get_organization(request),
+            access_level_instance_id=self.request.access_level_instance_id,
         )
