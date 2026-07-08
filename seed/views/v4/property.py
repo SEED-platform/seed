@@ -132,8 +132,7 @@ def _build_unit_metadata(column, org) -> dict:
     }
 
 
-def _build_property_views_queryset(org_id: int, access_level_instance_id: int, selected_cycle_ids: list[int]):
-    access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+def _build_property_views_queryset(org_id: int, access_level_instance: AccessLevelInstance, selected_cycle_ids: list[int]):
     return PropertyView.objects.filter(
         property__organization_id=org_id,
         cycle_id__in=selected_cycle_ids,
@@ -669,8 +668,9 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
         cycle_summaries = []
         any_records = False
         total_records = 0
+        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         for selected_cycle_id in selected_cycle_ids:
-            property_views_qs = _build_property_views_queryset(org_id, self.request.access_level_instance_id, [selected_cycle_id])
+            property_views_qs = _build_property_views_queryset(org_id, access_level_instance, [selected_cycle_id])
             state_ids = list(property_views_qs.values_list("state_id", flat=True))
             cycle_total_records = len(state_ids)
             total_records += cycle_total_records
