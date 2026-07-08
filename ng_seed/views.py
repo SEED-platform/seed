@@ -36,15 +36,23 @@ def _serve_file(request, path, content_type=None, streaming=True):
 
 def seed_angular(request):
     requested_path = request.path.replace("/ng-app/", "", 1)
+    ng_app_root = Path(settings.STATIC_ROOT) / "ng-app"
+    browser_root = ng_app_root / "browser"
 
     # Serve static files first
     if requested_path and "." in requested_path:
-        static_path = Path(settings.STATIC_ROOT) / "ng-app" / requested_path
-        if static_path.exists():
-            return _serve_file(request, static_path)
+        static_candidates = [
+            ng_app_root / requested_path,
+            browser_root / requested_path,
+        ]
+        for static_path in static_candidates:
+            if static_path.exists():
+                return _serve_file(request, static_path)
 
     # Otherwise serve index.html
-    index_path = Path(settings.STATIC_ROOT) / "ng-app" / "index.html"
+    index_path = ng_app_root / "index.html"
+    if not index_path.exists():
+        index_path = browser_root / "index.html"
     if not index_path.exists():
         raise Http404("seed-angular static files not found")
     return _serve_file(request, index_path, content_type="text/html", streaming=False)
