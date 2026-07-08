@@ -24,7 +24,6 @@ from seed.serializers.pint import DEFAULT_UNITS, pretty_units_from_spec
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 
-ALLOWED_STAT_FIELDS = {"column_name", "display_name", "is_extra_data", "count"}
 NUMERIC_DATA_TYPES = {"number", "float", "integer", "area", "eui", "ghg", "ghg_intensity", "wui", "water_use"}
 NON_STRING_DATA_TYPES = {"boolean", "date", "datetime", "geometry"}
 
@@ -33,25 +32,6 @@ def _parse_bool(value: str | None, default: bool = False) -> bool:
     if value is None:
         return default
     return value.lower() in {"1", "true", "yes", "on"}
-
-
-def _parse_cycle_ids(cycle_id: str | None, cycle_ids: str | None) -> list[int] | None:
-    raw_values: list[str] = []
-    if cycle_id:
-        raw_values.append(cycle_id)
-    if cycle_ids:
-        raw_values.extend([value.strip() for value in cycle_ids.split(",") if value.strip()])
-
-    if not raw_values:
-        return None
-
-    try:
-        parsed = [int(value) for value in raw_values]
-    except ValueError:
-        return []
-
-    # Preserve request order while removing duplicates.
-    return list(dict.fromkeys(parsed))
 
 
 def _parse_cycle_ids_only(cycle_ids: str | None) -> list[int] | None:
@@ -150,10 +130,6 @@ def _build_unit_metadata(column, org) -> dict:
         "display_unit_spec": raw_unit_spec,
         "display_unit_name": _safe_pretty_units(raw_unit_spec),
     }
-
-
-def _build_state_ids(org_id: int, access_level_instance_id: int, selected_cycle_ids: list[int]):
-    return list(_build_property_views_queryset(org_id, access_level_instance_id, selected_cycle_ids).values_list("state_id", flat=True))
 
 
 def _build_property_views_queryset(org_id: int, access_level_instance_id: int, selected_cycle_ids: list[int]):
@@ -610,138 +586,8 @@ def _build_column_summary_for_state_ids(state_ids: list[int], selected_column_na
     return results
 
 
-def build_property_stats_response(request, org_id: int, access_level_instance_id: int) -> JsonResponse:
-    cycle_id = request.query_params.get("cycle_id")
-    cycle_ids = request.query_params.get("cycle_ids")
-    column_names = request.query_params.get("column_names")
-    fields = request.query_params.get("fields")
-    include_zero_counts = _parse_bool(request.query_params.get("include_zero_counts"), default=True)
-    include_totals = _parse_bool(request.query_params.get("include_totals"), default=True)
-
-    selected_cycle_ids = _parse_cycle_ids(cycle_id, cycle_ids)
-    if selected_cycle_ids is None:
-        return JsonResponse(
-            {"success": False, "message": "cycle_id or cycle_ids parameter is required"}, status=status.HTTP_400_BAD_REQUEST
-        )
-    if not selected_cycle_ids:
-        return JsonResponse(
-            {"success": False, "message": "cycle_id and cycle_ids must be valid integers"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
-    is_valid, error_response = _validate_cycles(org_id, selected_cycle_ids)
-    if not is_valid:
-        return error_response
-
-    state_ids = _build_state_ids(org_id, access_level_instance_id, selected_cycle_ids)
-
-    if not state_ids:
-        return JsonResponse(
-            {"success": False, "message": "No properties found for the given cycle selection"}, status=status.HTTP_404_NOT_FOUND
-        )
-
-    selected_column_names: list[str] | None = None
-    if column_names:
-        selected_column_names = [name.strip() for name in column_names.split(",") if name.strip()]
-    columns = _get_columns(org_id, selected_column_names)
-
-    extra_data_columns = [c.column_name for c in columns if c.is_extra_data]
-    num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, PropertyState, columns)
-
-    selected_fields = ALLOWED_STAT_FIELDS
-    if fields:
-        requested_fields = {field.strip() for field in fields.split(",") if field.strip()}
-        selected_fields = requested_fields & ALLOWED_STAT_FIELDS
-        if not selected_fields:
-            return JsonResponse(
-                {
-                    "success": False,
-                    "message": "fields must include at least one of: column_name, display_name, is_extra_data, count",
-                },
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-    stats = [
-        {
-            key: value
-            for key, value in {
-                "column_name": c.column_name,
-                "display_name": c.display_name or c.column_name.replace("_", " "),
-                "is_extra_data": c.is_extra_data,
-                "count": num_of_nonnulls_by_column_name.get(c.column_name, 0),
-            }.items()
-            if key in selected_fields
-        }
-        for c in columns
-        if include_zero_counts or num_of_nonnulls_by_column_name.get(c.column_name, 0) > 0
-    ]
-
-    response = {
-        "status": "success",
-        "total_records": len(state_ids),
-        "number_extra_data_fields": len(extra_data_columns),
-        "stats": stats,
-    }
-
-    if include_totals:
-        gfa_list = list(PropertyState.objects.filter(id__in=state_ids).values_list("gross_floor_area", flat=True))
-        total_sqft = sum(x.magnitude for x in gfa_list if x is not None)
-        response["total_sqft"] = total_sqft
-
-    if selected_column_names is not None:
-        response["selected_column_names"] = selected_column_names
-    response["selected_cycle_ids"] = selected_cycle_ids
-    response["selected_fields"] = sorted(selected_fields)
-
-    return JsonResponse(response)
-
-
 class PropertyViewSet(viewsets.ViewSet, OrgMixin):
     pagination_class = None
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                "cycle_id",
-                required=False,
-                description="Optional single cycle ID. Use cycle_ids for multi-cycle stats.",
-            ),
-            AutoSchemaHelper.query_string_field(
-                "cycle_ids",
-                required=False,
-                description="Optional comma-separated cycle IDs. Can be combined with cycle_id.",
-            ),
-            AutoSchemaHelper.query_string_field(
-                "column_names", required=False, description="Optional comma-separated property column names to include"
-            ),
-            AutoSchemaHelper.query_string_field(
-                "fields",
-                required=False,
-                description="Optional comma-separated fields from: column_name, display_name, is_extra_data, count",
-            ),
-            AutoSchemaHelper.query_boolean_field(
-                "include_zero_counts",
-                required=False,
-                description="If false, exclude columns with zero populated values",
-            ),
-            AutoSchemaHelper.query_boolean_field("include_totals", required=False, description="If false, skip total_sqft aggregation"),
-        ]
-    )
-    @method_decorator(
-        [
-            api_endpoint,
-            ajax_request,
-            has_perm("requires_viewer"),
-        ]
-    )
-    @action(detail=False, methods=["GET"])
-    def stats(self, request):
-        """Canonical v4 location for property column completeness stats."""
-        return build_property_stats_response(
-            request=request,
-            org_id=self.get_organization(request),
-            access_level_instance_id=self.request.access_level_instance_id,
-        )
 
     @swagger_auto_schema(
         manual_parameters=[
@@ -754,7 +600,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_string_field(
                 "column_names",
                 required=True,
-                description="Required comma-separated property column names to summarize",
+                description="Required comma-separated property column names to summarize, or 'all' to evaluate all property columns",
             ),
             AutoSchemaHelper.query_boolean_field(
                 "include_raw_data",
@@ -782,7 +628,7 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
         cycle_ids = request.query_params.get("cycle_ids")
         include_raw_data = _parse_bool(request.query_params.get("include_raw_data"), default=False)
         raw_data_limit = _parse_int(request.query_params.get("raw_data_limit"))
-        selected_column_names = _parse_csv(request.query_params.get("column_names"))
+        requested_column_names = _parse_csv(request.query_params.get("column_names"))
         org = Organization.objects.get(pk=org_id)
 
         if raw_data_limit is not None and raw_data_limit < 1:
@@ -790,8 +636,15 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
                 {"success": False, "message": "raw_data_limit must be a positive integer"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        if not selected_column_names:
+        if not requested_column_names:
             return JsonResponse({"success": False, "message": "column_names parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        all_columns_requested = len(requested_column_names) == 1 and requested_column_names[0].lower() == "all"
+        if all_columns_requested and include_raw_data:
+            return JsonResponse(
+                {"success": False, "message": "include_raw_data cannot be true when column_names=all"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         selected_cycle_ids = _parse_cycle_ids_only(cycle_ids)
         if selected_cycle_ids is None:
@@ -803,9 +656,10 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
         if not is_valid:
             return error_response
 
-        columns = _get_columns(org_id, selected_column_names)
+        columns = _get_columns(org_id, None if all_columns_requested else requested_column_names)
+        selected_column_names = [c.column_name for c in columns] if all_columns_requested else requested_column_names
         by_name = {c.column_name: c for c in columns}
-        missing_columns = [name for name in selected_column_names if name not in by_name]
+        missing_columns = [] if all_columns_requested else [name for name in requested_column_names if name not in by_name]
         if missing_columns:
             return JsonResponse(
                 {"success": False, "message": "One or more columns do not exist", "missing_columns": missing_columns},

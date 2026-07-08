@@ -49,87 +49,18 @@ class TestAnalysisViews(AccessLevelBaseTestCase):
             self.property_view_factory.get_property_view(cycle=self.cycle, state=state)
         self.expected_total_sqft = sum(gfa_values_without_extra_data) + sum(gfa_values_with_extra_data)
 
-    def test_stats(self):
-        url = reverse_lazy("api:v4:analyses-stats") + f"?organization_id={self.org.id}&cycle_id={self.cycle.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        response = response.json()
-        self.assertEqual(response["status"], "success")
-        self.assertEqual(response["total_sqft"], self.expected_total_sqft)
-        stats = response["stats"]
-
-        address_line_1 = next(stat for stat in stats if stat["column_name"] == "address_line_1")
-        address_line_2 = next(stat for stat in stats if stat["column_name"] == "address_line_2")
-        custom_id_1 = next(stat for stat in stats if stat["column_name"] == "custom_id_1")
-        extra_field = next(stat for stat in stats if stat["column_name"] == "extra_field")
-
-        self.assertEqual(address_line_1["count"], 10)
-        self.assertEqual(address_line_1["display_name"], "Address Line 1")
-        self.assertEqual(address_line_1["is_extra_data"], False)
-        self.assertEqual(address_line_2["count"], 0)
-        self.assertEqual(custom_id_1["count"], 5)
-        self.assertEqual(extra_field["count"], 5)
-        self.assertEqual(extra_field["is_extra_data"], True)
-
-    def test_stats_can_filter_columns_and_fields(self):
-        url = (
-            reverse_lazy("api:v4:analyses-stats")
-            + f"?organization_id={self.org.id}&cycle_id={self.cycle.id}"
-            + "&column_names=address_line_1,extra_field"
-            + "&fields=column_name,count"
-        )
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        result = response.json()
-
-        self.assertEqual(result["status"], "success")
-        self.assertEqual(result["selected_column_names"], ["address_line_1", "extra_field"])
-        self.assertEqual(sorted(result["selected_fields"]), ["column_name", "count"])
-        self.assertEqual(len(result["stats"]), 2)
-
-        for stat in result["stats"]:
-            self.assertEqual(sorted(stat.keys()), ["column_name", "count"])
-
-        by_name = {row["column_name"]: row for row in result["stats"]}
-        self.assertEqual(by_name["address_line_1"]["count"], 10)
-        self.assertEqual(by_name["extra_field"]["count"], 5)
-
-    def test_stats_can_exclude_zero_count_columns(self):
-        url = reverse_lazy("api:v4:analyses-stats") + f"?organization_id={self.org.id}&cycle_id={self.cycle.id}&include_zero_counts=false"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-
-        stats = response.json()["stats"]
-        column_names = {row["column_name"] for row in stats}
-        self.assertIn("address_line_1", column_names)
-        self.assertNotIn("address_line_2", column_names)
-
-    def test_stats_available_under_tax_lot_properties_viewset(self):
-        url = reverse_lazy("api:v4:tax_lot_properties-stats") + f"?organization_id={self.org.id}&cycle_id={self.cycle.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-
-        payload = response.json()
-        self.assertEqual(payload["status"], "success")
-        self.assertEqual(payload["total_sqft"], self.expected_total_sqft)
-
-    def test_stats_available_under_properties_viewset(self):
-        url = reverse_lazy("api:v4:properties-stats") + f"?organization_id={self.org.id}&cycle_id={self.cycle.id}"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-
-        payload = response.json()
-        self.assertEqual(payload["status"], "success")
-        self.assertEqual(payload["total_sqft"], self.expected_total_sqft)
-
-    def test_stats_can_span_multiple_cycles(self):
+    def test_column_summary_can_span_multiple_cycles(self):
         second_cycle = self.cycle_factory.get_cycle()
         second_cycle_gfa_values = [100, 200]
         for gfa in second_cycle_gfa_values:
             state = self.property_state_factory.get_property_state(gross_floor_area=gfa)
             self.property_view_factory.get_property_view(cycle=second_cycle, state=state)
 
-        url = reverse_lazy("api:v4:properties-stats") + f"?organization_id={self.org.id}&cycle_ids={self.cycle.id},{second_cycle.id}"
+        url = (
+            reverse_lazy("api:v4:properties-column-summary")
+            + f"?organization_id={self.org.id}&cycle_ids={self.cycle.id},{second_cycle.id}"
+            + "&column_names=gross_floor_area"
+        )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
 
@@ -137,7 +68,10 @@ class TestAnalysisViews(AccessLevelBaseTestCase):
         self.assertEqual(payload["status"], "success")
         self.assertEqual(payload["selected_cycle_ids"], [self.cycle.id, second_cycle.id])
         self.assertEqual(payload["total_records"], 12)
-        self.assertEqual(payload["total_sqft"], self.expected_total_sqft + sum(second_cycle_gfa_values))
+
+        cycle_records = {c["cycle_id"]: c["total_records"] for c in payload["cycles"]}
+        self.assertEqual(cycle_records[self.cycle.id], 10)
+        self.assertEqual(cycle_records[second_cycle.id], 2)
 
     def test_column_summary_returns_typed_stats_and_unit_metadata(self):
         url = (
@@ -277,3 +211,33 @@ class TestAnalysisViews(AccessLevelBaseTestCase):
         self.assertEqual(stats["uniqueness_ratio"], 1.0)
         self.assertEqual(len(stats["top_k"]), 5)
         self.assertEqual(stats["top_k"][0], {"value": "extra 0", "count": 1})
+
+    def test_column_summary_can_evaluate_all_columns(self):
+        url = (
+            reverse_lazy("api:v4:properties-column-summary") + f"?organization_id={self.org.id}&cycle_ids={self.cycle.id}&column_names=all"
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        payload = response.json()
+        self.assertEqual(payload["status"], "success")
+        self.assertEqual(payload["include_raw_data"], False)
+        self.assertGreater(len(payload["selected_column_names"]), 2)
+
+        cycle_data = payload["cycles"][0]
+        by_name = {row["column_name"]: row for row in cycle_data["columns"]}
+        self.assertIn("gross_floor_area", by_name)
+        self.assertIn("extra_field", by_name)
+
+    def test_column_summary_disallows_raw_data_for_all_columns(self):
+        url = (
+            reverse_lazy("api:v4:properties-column-summary")
+            + f"?organization_id={self.org.id}&cycle_ids={self.cycle.id}"
+            + "&column_names=all"
+            + "&include_raw_data=true"
+        )
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 400)
+        payload = response.json()
+        self.assertFalse(payload["success"])
+        self.assertIn("column_names=all", payload["message"])

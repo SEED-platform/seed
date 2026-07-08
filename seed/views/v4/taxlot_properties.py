@@ -16,56 +16,10 @@ from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.v4.inventory_filter import InventoryFilter
-from seed.views.v4.property import build_property_stats_response
 
 
 class TaxLotPropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin):
     serializer_class = TaxLotPropertySerializer
-
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                "cycle_id",
-                required=False,
-                description="Optional single cycle ID. Use cycle_ids for multi-cycle stats.",
-            ),
-            AutoSchemaHelper.query_string_field(
-                "cycle_ids",
-                required=False,
-                description="Optional comma-separated cycle IDs. Can be combined with cycle_id.",
-            ),
-            AutoSchemaHelper.query_string_field(
-                "column_names", required=False, description="Optional comma-separated property column names to include"
-            ),
-            AutoSchemaHelper.query_string_field(
-                "fields",
-                required=False,
-                description="Optional comma-separated fields from: column_name, display_name, is_extra_data, count",
-            ),
-            AutoSchemaHelper.query_boolean_field(
-                "include_zero_counts",
-                required=False,
-                description="If false, exclude columns with zero populated values",
-            ),
-            AutoSchemaHelper.query_boolean_field("include_totals", required=False, description="If false, skip total_sqft aggregation"),
-        ]
-    )
-    @method_decorator(
-        [
-            api_endpoint,
-            ajax_request,
-            has_perm("requires_viewer"),
-        ]
-    )
-    @action(detail=False, methods=["GET"])
-    def stats(self, request):
-        """Compatibility alias for property column completeness stats."""
-        return build_property_stats_response(
-            request=request,
-            org_id=self.get_organization(request),
-            access_level_instance_id=self.request.access_level_instance_id,
-        )
 
     @swagger_auto_schema(
         manual_parameters=[
