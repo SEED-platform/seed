@@ -1,4 +1,4 @@
-name: "Copilot Setup Steps"
+name: 'Copilot Setup Steps'
 
 # Prepares the environment for the GitHub Copilot coding agent so it can build
 # the SEED dev image, bring up the Docker stack, and run the Django test suite
