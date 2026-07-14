@@ -13,6 +13,10 @@ services:
     volumes:
       - ref_seed_pgdata:/home/postgres/pgdata
       - ./share:/share
+  db-redis:
+    container_name: seed_redis
+    ports:
+      - "6379:6379"
   web:
     container_name: seed_web
     image: seedplatform/seed:develop

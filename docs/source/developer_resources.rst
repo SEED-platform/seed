@@ -3,6 +3,7 @@ Developer Resources
 
 .. toctree::
     migrations
+    postgres_upgrade
     translation
 
 General Notes
@@ -292,8 +293,8 @@ user:
     psql -d seed -U seeduser -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
     psql -d seed -U seeduser -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
 
-    ./manage.py migrate
-    ./manage.py create_default_user \
+    uv run manage.py migrate
+    uv run manage.py create_default_user \
         --username=demo@seed-platform.org \
         --password=password \
         --organization=testorg
@@ -316,10 +317,10 @@ Restoring a Database Dump
 
     psql -d seed -U seeduser -c 'SELECT timescaledb_post_restore();'
 
-    ./manage.py migrate
+    uv run manage.py migrate
 
     # if needed add a user to the database
-    ./manage.py create_default_user \
+    uv run manage.py create_default_user \
         --username=demo@seed-platform.org \
         --password=password \
         --organization=testorg

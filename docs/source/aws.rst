@@ -27,17 +27,13 @@ Ubuntu server 18.04 LTS
     libssl-dev libffi-dev curl nginx
 
 
-PostgreSQL and Redis are not included in the above commands. For a quick installation on AWS it
-is okay to install PostgreSQL and Redis locally on the AWS instance. If a more permanent and
-scalable solution, it is recommended to use AWS's hosted Redis (ElastiCache) and PostgreSQL service.
+PostgreSQL and Redis are not included in the above commands. Use AWS hosted
+services, such as RDS for PostgreSQL and ElastiCache for Redis, or run the
+repository's Docker Compose services with the configured PostgreSQL/PostGIS/
+TimescaleDB and Redis images. Do not install PostgreSQL, PostGIS, TimescaleDB,
+or Redis directly on the host for a new SEED deployment.
 
 .. note:: postgresql ``>=9.4`` is required to support `JSON Type`_
-
-.. code-block:: console
-
-    # To install PostgreSQL and Redis locally
-    sudo apt-get install redis-server
-    sudo apt-get install postgresql postgresql-contrib
 
 .. _`JSON Type`: https://www.postgresql.org/docs/9.4/datatype-json.html
 
