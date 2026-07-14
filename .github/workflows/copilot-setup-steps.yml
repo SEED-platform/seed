@@ -1,0 +1,95 @@
+name: 'Copilot Setup Steps'
+
+# Prepares the environment for the GitHub Copilot coding agent so it can build
+# the SEED dev image, bring up the Docker stack, and run the Django test suite
+# (including the live Salesforce integration tests) exactly like CI does.
+#
+# The Salesforce tests in seed/tests/test_salesforce_views.py are guarded by
+# @skipUnless(HAS_LIVE_SALESFORCE_CREDENTIALS, ...) and only run when all of
+# SF_INSTANCE, SF_USERNAME, SF_PASSWORD and SF_SECURITY_TOKEN are set.
+#
+# Those values are NOT provided here. Add them (plus the SF_DOMAIN variable) to
+# the repository's `copilot` environment so Copilot injects them into the
+# agent's shell:
+#   Settings > Environments > copilot
+#     - Environment secrets: SF_INSTANCE, SF_USERNAME, SF_PASSWORD, SF_SECURITY_TOKEN
+#     - Environment variables: SF_DOMAIN
+#
+# The agent must then forward them into the container when running the tests, e.g.:
+#   docker exec --env SF_INSTANCE --env SF_USERNAME --env SF_PASSWORD \
+#     --env SF_SECURITY_TOKEN --env SF_DOMAIN seed_web /bin/bash -lc \
+#     'uv run python manage.py test seed.tests.test_salesforce_views \
+#        --settings=config.settings.docker_test'
+
+# Automatically run the setup steps when they are changed to allow for easy
+# validation, and allow manual testing through the repository's "Actions" tab.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
+  copilot-setup-steps:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 59
+
+    # Lowest permissions needed for the steps below. Copilot gets its own token.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          submodules: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Free up disk space
+        run: |
+          echo "Disk space before cleanup:"
+          df -h
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+          echo "Disk space after cleanup:"
+          df -h
+
+      - name: Build Docker dev image
+        run: |
+          docker buildx build \
+            --tag seedplatform/seed:develop \
+            --load \
+            --file Dockerfile-dev .
+
+      - name: Start the stack
+        env:
+          DJANGO_LOG_LEVEL: ERROR
+        run: |
+          docker volume create --name=seed_pgdata
+          docker volume create --name=seed_media
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+
+      - name: Migrate and seed default user
+        env:
+          DJANGO_LOG_LEVEL: ERROR
+        run: |
+          docker exec --env DJANGO_LOG_LEVEL seed_web uv run python manage.py migrate
+          docker exec --env DJANGO_LOG_LEVEL seed_web uv run python manage.py create_default_user --username=demo@example.com --password=demo
+          docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -lc 'echo "y" | uv run python manage.py make_superuser --user demo@example.com'
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Install frontend dependencies
+        run: pnpm install
