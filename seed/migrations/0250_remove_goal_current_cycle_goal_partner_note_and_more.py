@@ -3,6 +3,21 @@
 import django.db.models.deletion
 from django.db import migrations, models
 
+from seed.utils.migrations import add_missing_primary_keys_sql
+
+# Databases restored from some production backups are missing primary keys on the
+# tables this migration references. The operations below add foreign keys to
+# orgs_organization(user) and seed_cycle/seed_goal, which PostgreSQL rejects when
+# the referenced column has no primary key. Repair those keys first (idempotent)
+# so this migration can run on databases that have not applied it yet. Databases
+# that already applied 0250 are repaired by 0254_repair_missing_primary_keys.
+REPAIR_REFERENCED_PRIMARY_KEYS = add_missing_primary_keys_sql(
+    "orgs_organization",
+    "orgs_organizationuser",
+    "seed_cycle",
+    "seed_goal",
+)
+
 
 class Migration(migrations.Migration):
     dependencies = [
@@ -11,6 +26,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunSQL(
+            sql=REPAIR_REFERENCED_PRIMARY_KEYS,
+            reverse_sql=migrations.RunSQL.noop,
+        ),
         migrations.RemoveField(
             model_name="goal",
             name="current_cycle",

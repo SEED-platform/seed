@@ -55,6 +55,7 @@ buildingsnapshot
 BuildingSnapshot
 BuildingSnapshots
 buildingsync
+buildx
 bytestring
 calendarize
 CAMX
@@ -275,6 +276,7 @@ Linux
 localhost
 locator
 Locator
+locmem
 loggedInFunctionalTestCaseFactory
 LoggedInTests
 loggedout
@@ -329,6 +331,8 @@ NMBE
 NOAA
 nocapture
 nodejs
+nofile
+noinput
 noncanonicalprojectbuildings
 nondefault
 nones
@@ -547,6 +551,7 @@ unicode
 uniformat
 unitted
 unittest
+unittests
 unlinkable
 UNMAPPABLE
 unmatch
@@ -613,4 +618,5 @@ yml
 yubikey
 zinfo
 اضافية
+بيانات
 بيانات"

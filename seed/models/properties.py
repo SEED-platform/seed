@@ -939,7 +939,8 @@ class PropertyView(models.Model):
     def import_filename(self):
         """Get the import file name form the audit logs"""
         if not getattr(self, "_import_filename", None):
-            audit_log = PropertyAuditLog.objects.filter(view_id=self.pk).order_by("created").first()
+            # Tie-break on id for stable results if created timestamps are equal.
+            audit_log = PropertyAuditLog.objects.filter(view_id=self.pk).order_by("created", "id").first()
             self._import_filename = audit_log.import_filename
         return self._import_filename
 

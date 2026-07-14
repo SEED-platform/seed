@@ -141,7 +141,8 @@ def export_data(args):
             notes_key = "taxlot_notes"
 
         if include_notes:
-            for note in list(record.notes.all().order_by("created")):
+            # Tie-break on id for stable note ordering when created timestamps match.
+            for note in list(record.notes.all().order_by("created", "id")):
                 note_string.append(note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" + note.text)
             data[i][notes_key] = "\n----------\n".join(note_string)
 

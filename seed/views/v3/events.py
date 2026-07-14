@@ -27,7 +27,8 @@ class EventViewSet(viewsets.ViewSet, OrgMixin):
         page = request.query_params.get("page", 1)
         per_page = request.query_params.get("per_page", 100000)
 
-        events = Event.objects.filter(property_id=property_pk).order_by("-created").select_subclasses()
+        # Tie-break on id so event ordering is deterministic on created ties.
+        events = Event.objects.filter(property_id=property_pk).order_by("-created", "-id").select_subclasses()
 
         paginator = Paginator(events, per_page)
         try:

@@ -74,7 +74,9 @@ def public_feed(org, request, cycles, endpoint="feed"):
 
 
 def _add_states_to_data(base_url, state_class, view_string, page, per_page, labels, cycles, org, endpoint):
-    states = state_class.objects.filter(**{f"{view_string}__cycle__in": cycles, "organization": org}).order_by("-updated")
+    # Secondary id sort makes feed order stable when multiple states share an
+    # identical updated timestamp.
+    states = state_class.objects.filter(**{f"{view_string}__cycle__in": cycles, "organization": org}).order_by("-updated", "-id")
 
     if labels is not None and org.public_feed_labels:
         states = states.filter(**{f"{view_string}__labels__name__in": labels})
