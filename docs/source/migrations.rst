@@ -240,7 +240,7 @@ Version 2.6.0
 -------------
 
 Version 2.6.0 includes support for meters and time series data storage. In order to use this release
-you must first install `TimescaleDB`_.
+you must use a PostgreSQL service that provides TimescaleDB.
 
 Docker-based Deployment
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -248,27 +248,12 @@ Docker-based deployments shouldn't require running any additional commands for i
 timescaledb installation will happen automatically when updating the postgres container. Also,
 the installation of the extension occurs in a Django migration.
 
-Ubuntu
-^^^^^^
+Non-Docker Deployment
+^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: console
-
-    sudo add-apt-repository ppa:timescale/timescaledb-ppa
-    sudo apt update
-    sudo apt install timescaledb-postgresql-10
-    sudo timescaledb-tune
-    sudo service postgresql restart
-
-Max OSX
-^^^^^^^
-
-.. code-block:: console
-
-   brew tap timescale/tap
-   brew install timescaledb
-   /usr/local/bin/timescaledb_move.sh
-   timescaledb-tune
-   brew services restart postgresql
+For new deployments, use a managed PostgreSQL service with TimescaleDB support
+or the repository's configured Docker PostgreSQL/PostGIS/TimescaleDB image
+instead of installing TimescaleDB directly on the application host.
 
 Version 2.5.2
 -------------
