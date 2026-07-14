@@ -1,382 +1,262 @@
-Installation on OSX
-===================
+Local Development on macOS and Windows
+======================================
 
-.. _virtualenv: https://virtualenv.pypa.io/en/latest/
-.. _pyenv: https://github.com/pyenv/pyenv
-.. _virtualenvwrapper: https://virtualenvwrapper.readthedocs.io/en/latest/
-.. _MacPorts: https://www.macports.org/
-.. _Homebrew: http://brew.sh/
-.. _npm: https://www.npmjs.com/
-.. _nodejs.org: http://nodejs.org/
+These instructions are for running SEED locally for development while using
+Docker containers for PostgreSQL/PostGIS/TimescaleDB and Redis.
 
-These instructions are for installing and running SEED on Mac OSX in
-development mode.
+SEED currently uses:
+
+* Python 3.14 in ``.python-version``; ``pyproject.toml`` requires Python 3.12 or newer.
+* ``uv`` for Python installation and dependency management.
+* Docker Compose services for PostgreSQL/PostGIS/TimescaleDB and Redis.
+* Node 24 and pnpm 11 for JavaScript dependencies.
+* A separate Angular UI checked out as the ``ng_seed/seed-angular`` git submodule.
 
 Quick Installation Instructions
 -------------------------------
 
-This section is intended for developers who may already have their machine
-ready for general development. If this is not the case, skip to Prerequisites.  Note that SEED uses python 3.
-
-* install Postgres 11.1 and redis for cache and message broker
-* install PostGIS 2.5 and enable it on the database using `CREATE EXTENSION postgis;`
-* install TimescaleDB 1.5.0
-* use a virtualenv (if desired)
-* `git clone git@github.com:seed-platform/seed.git`
-* create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
-* to enable geocoding, get MapQuest API key and attach it to your organization
-* `export DJANGO_SETTINGS_MODULE=config.settings.dev` in all terminals used by SEED (celery terminal and Hypercorn terminal)
-* `uv sync`
-* `pnpm install`
-* `uv run python manage.py migrate`
-* `uv run python manage.py create_default_user`
-* `uv run hypercorn config.asgi:seed --bind 127.0.0.1:8000 --reload`
-* `DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l INFO -c 4 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler`
-* navigate to `http://127.0.0.1:8000/app/#/profile/admin` in your browser to add users to organizations
-* main app runs at `127.0.0.1:8000/app`
-
-The `python manage.py create_default_user` will setup a default `superuser`
-which must be used to access the system the first time. The management command
-can also create other superusers.
-
-.. code-block:: console
-
-    ./manage.py create_default_user --username=demo@seed-platform.org --organization=lbl --password=demo123
-
-
-Prerequisites
--------------
-
-These instructions assume you have MacPorts_ or Homebrew_. Your system
-should have the following dependencies already installed:
-
-* git (`port install git` or `brew install git`)
-* graphviz (`brew install graphviz`)
-* pyenv_ (Recommended)
-
-    .. note::
-
-        Although you *could* install Python packages globally, this is the
-        easiest way to install Python packages. Setting these up first will
-        help avoid polluting your base Python installation and make it much
-        easier to switch between different versions of the code.
-
-    .. code-block:: bash
-
-        brew install pyenv
-        brew install pyenv-virtualenv
-        pyenv install <python3 version you want>
-        pyenv virtualenv <python3 version you want> seed
-        pyenv local seed
-
-
-PostgreSQL 11.1
----------------
-
-MacPorts::
-
-    sudo su - root
-    port install postgresql94-server postgresql94 postgresql94-doc
-    # init db
-    mkdir -p /opt/local/var/db/postgresql94/defaultdb
-    chown postgres:postgres /opt/local/var/db/postgresql94/defaultdb
-    su postgres -c '/opt/local/lib/postgresql94/bin/initdb -D /opt/local/var/db/postgresql94/defaultdb'
-
-    # At this point, you may want to add start/stop scripts or aliases to
-    # ~/.bashrc or your virtualenv ``postactivate`` script
-    # (in ``~/.virtualenvs/{env-name}/bin/postactivate``).
-
-    alias pg_start='sudo su postgres -c "/opt/local/lib/postgresql94/bin/pg_ctl \
-        -D /opt/local/var/db/postgresql94/defaultdb \
-        -l /opt/local/var/db/postgresql94/defaultdb/postgresql.log start"'
-    alias pg_stop='sudo su postgres -c "/opt/local/lib/postgresql94/bin/pg_ctl \
-        -D /opt/local/var/db/postgresql94/defaultdb stop"'
-
-    pg_start
-
-    sudo su - postgres
-    PATH=$PATH:/opt/local/lib/postgresql94/bin/
-
-Homebrew::
-
-    brew install postgres
-    # follow the post install instructions to add to launchagents or call
-    # manually with `postgres -D /usr/local/var/postgres`
-    # Skip the remaining Postgres instructions!
-
-
-
-Configure PostgreSQL. Replace 'seeddb', 'seeduser' with desired db/user. By
-default use password `seedpass` when prompted. Use the code block below in development only since
-the seeduser is a SUPERUSER.
+macOS developers can use Homebrew for application tooling. PostgreSQL,
+PostGIS, TimescaleDB, and Redis should run in Docker, not through Homebrew.
 
 .. code-block:: bash
 
-    createuser -P seeduser
-    createdb `whoami`
-    psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
-    psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
-    psql -c 'ALTER ROLE seeduser SUPERUSER;'
+    brew install graphviz uv node@24
+    corepack enable
 
+Windows developers should use Docker Desktop with the WSL 2 backend enabled.
+Run the repository commands from a WSL 2 shell. Do not install native Windows
+PostgreSQL, PostGIS, TimescaleDB, or Redis for SEED development.
 
-
-PostGIS 2.5
------------
-
-MacPorts::
-
-    # Assuming you're still root from installing PostgreSQL,
-    port install postgis2
-
-
-
-Homebrew::
-
-    brew install postgis
-
-
-
-Configure PostGIS::
-
-    psql -d seeddb -c "CREATE EXTENSION postgis;"
-
-    # For testing, give seed user superuser access:
-    # psql -c 'ALTER USER seeduser CREATEDB;'
-
-
-If upgrading from an existing database or existing local_untracked.py file, make sure to add the
-MapQuest API Key and set the database engine to 'ENGINE': 'django.contrib.gis.db.backends.postgis'.
-
-Now exit any root environments, becoming just yourself (even though it's not
-that easy being green), for the remainder of these instructions.
-
-
-TimescaleDB 1.5.0
------------------
-
-Note, as of version 1.5.0, dumping and restoring databases requires that both the source and target
-database have the same version of TimescaleDB.
-
-Downloading From Source::
-
-   # Note: Installing from source should only be done
-   # if you have a Postgres installation not maintained by Homebrew.
-   # This installation requires C compiler (e.g., gcc or clang) and CMake version 3.4 or greater.
-
-   git clone https://github.com/timescale/timescaledb.git
-   cd timescaledb
-   git checkout 1.5.0
-
-   # Bootstrap the build system
-   ./bootstrap
-
-   # If OpenSSL can't be found by cmake - run the following instead
-   # ./bootstrap -DOPENSSL_ROOT_DIR=<location of OpenSSL> # e.g., -DOPENSSL_ROOT_DIR=/usr/local/opt/openssl
-
-   # To build the extension
-   cd build && make
-
-   # To install
-   make install
-
-   # Find postgresql.conf
-   # Then uncomment the shared_preload_libraries line changing it to the following
-   # shared_preload_libraries = 'timescaledb'
-   psql -d postgres -c "SHOW config_file;"
-
-   # Restart PostgreSQL instance
-
-
-
-Python Packages
----------------
-
-Run these commands as your normal user id.
-
-Change to a virtualenv (using virtualenvwrapper) or do the following as a
-superuser. A virtualenv is usually better for development. Set the virtualenv
-to seed.
+Clone the repository and install dependencies:
 
 .. code-block:: bash
 
-    workon seed
+    git clone git@github.com:SEED-platform/seed.git
+    cd seed
+    git submodule update --init ng_seed/seed-angular
 
-Make sure PostgreSQL command line scripts are in your PATH (if using MacPorts)
+    uv sync
+    pnpm install
+
+    cp config/settings/local_untracked.py.dist config/settings/local_untracked.py
+
+Start the Docker database and Redis services:
 
 .. code-block:: bash
 
-    export PATH=$PATH:/opt/local/lib/postgresql94/bin
+    docker volume create --name=seed_pgdata
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db-postgres db-redis
 
-Some packages with native extensions may need to find your C compiler. Make
-sure you have 'gcc' on your system, and then also export this to the `CC`
-environment variable:
+Edit ``config/settings/local_untracked.py`` to point at those services. Then run:
 
 .. code-block:: bash
 
-    export CC=gcc
+    export DJANGO_SETTINGS_MODULE=config.settings.dev
+    uv run manage.py migrate
+    uv run manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
+    uv run manage.py runserver
 
-Install Python dependencies with `uv`
+Run Django management commands through ``uv`` as ``uv run manage.py <command>``.
+
+The AngularJS application runs at http://127.0.0.1:8000/app/.
+
+To see the new Angular application at http://127.0.0.1:8000/ng-app/, build its
+static files and run the Django server. For active Angular development, see
+``ng_seed/README.md``.
+
+Docker Postgres and Redis with Local Django
+-------------------------------------------
+
+When running Django directly on the host, use the repository's Docker services
+for Postgres and Redis:
+
+.. code-block:: bash
+
+    docker volume create --name=seed_pgdata
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db-postgres db-redis
+
+The Compose database service uses the repository's configured
+TimescaleDB/Postgres image, currently
+``timescale/timescaledb-ha:pg18.3-ts2.26.4-oss``. It creates the default
+database from the Compose environment:
+
+* database: ``seed``
+* user: ``seed``
+* password: ``super-secret-password``
+* host from local Django: ``127.0.0.1``
+* port from local Django: ``5432``
+
+The dev Compose override publishes Redis on ``127.0.0.1:6379`` for local
+Django.
+
+If you need to recreate the database from scratch, stop the services and remove
+the development volume:
+
+.. code-block:: bash
+
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml down
+    docker volume rm seed_pgdata
+    docker volume create --name=seed_pgdata
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db-postgres db-redis
+
+Then run the normal local setup commands:
+
+.. code-block:: bash
+
+    export DJANGO_SETTINGS_MODULE=config.settings.dev
+    uv run manage.py migrate
+    uv run manage.py create_default_user
+    uv run manage.py runserver
+
+The default ``create_default_user`` credentials are ``demo@seed-platform.org``
+with password ``demo`` in organization ``demo``. Pass ``--username``,
+``--password``, and ``--organization`` if you want different local credentials.
+
+Configure ``config/settings/local_untracked.py`` to use Docker Redis:
+
+.. code-block:: python
+
+    CELERY_BROKER_URL = "redis://127.0.0.1:6379/1"
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": CELERY_BROKER_URL,
+        }
+    }
+    CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+    CELERY_TASK_ALWAYS_EAGER = True
+    CELERY_TASK_EAGER_PROPAGATES = True
+
+Python Dependencies
+-------------------
+
+Install Python dependencies from the lockfile:
 
 .. code-block:: bash
 
     uv sync
 
-NodeJS/npm
-----------
+``uv sync`` creates or updates the project virtual environment and installs the
+default dependency groups from ``uv.lock``. The repository currently includes
+the ``dev`` dependency group by default.
 
-Install npm_. You can do this by installing from nodejs.org_, MacPorts, or
-Homebrew:
+JavaScript Dependencies
+-----------------------
 
-MacPorts::
-
-    sudo port install npm
-
-Homebrew::
-
-    brew install npm
-
-Configure Django and Databases
-------------------------------
-
-In the `config/settings` directory, there must be a file called
-`local_untracked.py` that sets up databases and a number of other things.
-To create and edit this file, start by copying over the template
+The root project expects Node 24 or newer and pnpm 11 or newer. The Angular UI
+submodule expects Node 22 or newer and pnpm 10 or newer, so Node 24/pnpm 11
+satisfies both.
 
 .. code-block:: bash
 
-    cd config/settings
-    cp local_untracked.py.dist local_untracked.py
+    corepack enable
+    pnpm install
 
-Edit `local_untracked.py`. Open the file you created in your favorite editor. The PostgreSQL config section will look something like this:
+If the Angular submodule is not checked out, initialize it first:
+
+.. code-block:: bash
+
+    git submodule update --init ng_seed/seed-angular
+
+To build the Angular UI for Django to serve at ``/ng-app/``:
+
+.. code-block:: bash
+
+    cd ng_seed/seed-angular
+    pnpm build
+
+For hot reloading during Angular UI development:
+
+.. code-block:: bash
+
+    cd ng_seed/seed-angular
+    pnpm start
+
+Then browse to http://localhost:4200.
+
+Configure Django
+----------------
+
+Create your local settings file:
+
+.. code-block:: bash
+
+    cp config/settings/local_untracked.py.dist config/settings/local_untracked.py
+
+At minimum, update the ``DATABASES``, ``CELERY_BROKER_URL``, ``CACHES``,
+``CELERY_RESULT_BACKEND``, and eager Celery values. A typical local database
+section that points at the Docker database container is:
 
 .. code-block:: python
 
-    # postgres DB config
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.contrib.gis.db.backends.postgis',
-            'NAME': 'seeddb',
-            'USER': 'seeduser',
-            'PASSWORD': 'seedpass',
-            'HOST': 'localhost',
-            'PORT': '5432',
+        "default": {
+            "ENGINE": "django.contrib.gis.db.backends.postgis",
+            "NAME": "seed",
+            "USER": "seed",
+            "PASSWORD": "super-secret-password",
+            "HOST": "127.0.0.1",
+            "PORT": "5432",
         }
     }
 
-You may want to comment out the AWS settings.
+Run Migrations and Create a User
+--------------------------------
 
-For Redis, edit the `CACHES` and `CELERY_BROKER_URL` values to look like this:
+Run Django management commands through ``uv`` as ``uv run manage.py <command>``.
+
+.. code-block:: bash
+
+    export DJANGO_SETTINGS_MODULE=config.settings.dev
+    uv run manage.py migrate
+    uv run manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
+
+Start SEED
+----------
+
+For basic local development only, run Celery tasks eagerly in the Django process
+and start only Django:
+
+.. code-block:: bash
+
+    export DJANGO_SETTINGS_MODULE=config.settings.dev
+    uv run manage.py runserver
+
+Open http://127.0.0.1:8000/app/ and log in with the user created above.
+
+Running an Async Celery Worker
+------------------------------
+
+Testing workflows that need real asynchronous behavior and production-like
+deployments should run Celery as a separate worker/task. For that mode, disable
+eager execution in ``config/settings/local_untracked.py``:
 
 .. code-block:: python
 
-    CELERY_BROKER_URL = 'redis://127.0.0.1:6379/1'
-    CACHES = {
-        'default': {
-            'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': CELERY_BROKER_URL,
-        }
-    }
+    CELERY_TASK_ALWAYS_EAGER = False
+    CELERY_TASK_EAGER_PROPAGATES = False
+
+Then start Celery in another terminal:
+
+.. code-block:: bash
+
+    export DJANGO_SETTINGS_MODULE=config.settings.dev
+    uv run celery -A seed worker -l INFO -c 4 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler
+
+The health endpoint pings live Celery workers:
+
+.. code-block:: bash
+
+    curl -i http://127.0.0.1:8000/api/health_check/
+
+With a worker running, a healthy local stack returns ``200 OK`` with
+``postgres``, ``redis``, and ``celery`` all set to ``success``. In eager mode
+without a worker, ``postgres`` and ``redis`` can still be ``success`` while
+``celery`` is ``error``; that is expected for the basic local setup.
 
 MapQuest API Key
 ----------------
 
-Register for a MapQuest API key:
-`<https://developer.mapquest.com/plan_purchase/steps/business_edition/business_edition_free/register>`_
-
-Visit the Manage Keys page:
-`<https://developer.mapquest.com/user/me/apps>`_
-Either create a new key or use the key initially provided.
-Copy the "Consumer Key" into the target organizations MapQuest API Key field under the organization's settings page or directly within the DB.
-
-Run Django Migrations
----------------------
-
-Change back to the root of the repository. Now run the migration script to set
-up the database tables
-
-.. code-block:: bash
-
-    export DJANGO_SETTINGS_MODULE=config.settings.dev
-    ./manage.py migrate
-
-Django Admin User
------------------
-
-You need a Django admin (super) user.
-
-.. code-block:: bash
-
-    ./manage.py create_default_user --username=admin@my.org --organization=seedorg --password=badpass
-
-Of course, you need to save this user/password somewhere, since this is what
-you will use to login to the SEED website.
-
-If you want to do any API testing (and of course you do!), you will need to
-add an API KEY for this user. You can do this in postgresql directly:
-
-.. code-block:: bash
-
-    psql seeddb seeduser
-    seeddb=> update landing_seeduser set api_key='DEADBEEF' where id=1;
-
-The 'secret' key DEADBEEF is hard-coded into the test scripts.
-
-Install Redis
--------------
-
-You need to manually install Redis for Celery to work.
-
-MacPorts::
-
-    sudo port install redis
-
-Homebrew::
-
-    brew install redis
-    # follow the post install instructions to add to launchagents or
-    # call manually with `redis-server`
-
-Install JavaScript Dependencies
--------------------------------
-
-The JS dependencies are installed using node.js package management (pnpm).
-
-.. code-block:: bash
-
-    pnpm install
-
-Start the Server
-----------------
-
-You should put the following statement in ~/.bashrc or add it to the
-virtualenv post-activation script (e.g., in
-`~/.virtualenvs/seed/bin/postactivate`).
-
-.. code-block:: bash
-
-    export DJANGO_SETTINGS_MODULE=config.settings.dev
-
-The combination of Redis, Celery, and Django have been encapsulated in a
-single shell script, which examines existing processes and does not start
-duplicate instances:
-
-.. code-block:: bash
-
-    ./bin/start-seed.sh
-
-When this script is done, Hypercorn will be running in
-the foreground.
-
-Login
------
-
-Open your browser and navigate to http://127.0.0.1:8000
-
-Login with the user/password you created before, e.g., `admin@my.org` and
-`badpass`.
-
-.. note::
-
-    these steps have been combined into a script called `start-seed.sh`.
-    The script will also not start Celery or Redis if they already seem
-    to be running.
+Geocoding requires a MapQuest API key. Add the key to the target organization
+from the organization's settings page, or set ``MAPQUEST_API_KEY`` in
+``config/settings/local_untracked.py`` for local development.

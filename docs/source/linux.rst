@@ -2,9 +2,9 @@ General Linux Setup
 ===================
 
 While Amazon Web Services (`AWS`_) provides the preferred hosting for SEED,
-running on a bare-bones Linux server follows a similar setup, replacing the
-AWS services with their Linux package counterparts, namely: PostgreSQL and
-Redis.
+running on a bare-bones Linux server follows a similar setup. Use managed
+services or Docker containers for PostgreSQL/PostGIS/TimescaleDB and Redis;
+do not install those services directly on the host for SEED development.
 
 **SEED** is a `Django project`_ and Django's documentation
 is an excellent place to general understanding of this project's layout.
@@ -22,38 +22,34 @@ Install the following base packages to run SEED:
 
 .. code-block:: console
 
-    sudo add-apt-repository ppa:timescale/timescaledb-ppa
     sudo apt update
     sudo apt upgrade
     sudo apt install libpq-dev python3-dev libatlas-base-dev \
     gfortran build-essential nodejs npm libxml2-dev libxslt1-dev git \
     libssl-dev libffi-dev curl nginx mercurial
-    sudo apt install gdal-bin postgis
-    sudo apt install redis-server
-    sudo apt install timescaledb-postgresql-10 postgresql-contrib
 
-.. note:: postgresql ``>=9.3`` is required to support `JSON Type`_
+Install Docker Engine and Docker Compose v2 using Docker's Linux
+instructions, then run PostgreSQL/PostGIS/TimescaleDB and Redis through the
+repository's Compose services.
 
-.. _JSON Type: http://www.postgresql.org/docs/9.3/static/datatype-json.html
+.. note:: PostgreSQL is still required, but it should be provided by a managed
+   service or by the repository's Docker image.
 
-Configure PostgreSQL
-^^^^^^^^^^^^^^^^^^^^
+Configure Docker Services
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Replace 'seeddb', 'seeduser' with desired db/user. By
-default use password `seedpass` when prompted
+The development Compose stack provides the required services:
 
 .. code-block:: console
 
-    $ sudo timescaledb-tune
-    $ sudo service postgresql restart
-    $ sudo su - postgres
-    $ createuser -P "seeduser"
-    $ createdb "seeddb" --owner="seeduser"
-    $ psql
-    postgres=# GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO "seeduser";
-    postgres=# ALTER USER "seeduser" CREATEDB CREATEROLE SUPERUSER;
-    postgres=# \q
-    $ exit
+    $ docker volume create --name=seed_pgdata
+    $ docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d db-postgres db-redis
+
+The database service uses the repository's configured
+``timescale/timescaledb-ha`` image, which includes PostgreSQL with the required
+PostGIS and TimescaleDB support. The Redis service uses the repository's
+configured Redis image. Local Django connects to those services on
+``127.0.0.1:5432`` and ``127.0.0.1:6379``.
 
 
 Python Dependencies
@@ -89,7 +85,7 @@ Django Database Configuration
 Copy the ``local_untracked.py.dist`` file in the ``config/settings`` directory to
 ``config/settings/local_untracked.py``, and add a ``DATABASES`` configuration with your database username, password,
 host, and port. Your database configuration can point to an AWS RDS instance or a PostgreSQL 9.4 database instance
-you have manually installed within your infrastructure.
+provided by Docker or managed infrastructure.
 
 .. code-block:: python
 
@@ -97,10 +93,10 @@ you have manually installed within your infrastructure.
     DATABASES = {
         'default': {
             'ENGINE': 'django.contrib.gis.db.backends.postgis',
-            'NAME': 'seeddb',
-            'USER': 'seeduser',
-            'PASSWORD': '<PASSWORD>',
-            'HOST': 'localhost',
+            'NAME': 'seed',
+            'USER': 'seed',
+            'PASSWORD': 'super-secret-password',
+            'HOST': '127.0.0.1',
             'PORT': '5432',
         }
     }
@@ -109,10 +105,11 @@ you have manually installed within your infrastructure.
 .. note::
 
     Other databases could be used such as MySQL, but are not supported
-    due to the postgres-specific `JSON Type`_
+    because SEED depends on PostgreSQL-specific behavior.
 
-In in the above database configuration, ``seed`` is the database name, this is arbitrary and any valid name can be
-used as long as the database exists. Enter the database name, user, password you set above.
+In in the above database configuration, ``seed`` is the database name created by
+the Docker service. If you use managed infrastructure, enter the database name,
+user, password, host, and port from that service.
 
 The database settings can be tested using the Django management command, ``python3 manage.py dbshell`` to connect to the
 configured database.
@@ -127,8 +124,8 @@ Cache and Message Broker
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 The SEED project relies on `redis`_ for both cache and message brokering, and
-is available as an AWS `ElastiCache`_ service or with the ``redis-server``
-Linux package. (``sudo apt install redis-server``)
+is available as an AWS `ElastiCache`_ service or through the repository's
+Docker Redis service.
 
 ``local_untracked.py`` should be updated with the ``CACHES`` and ``CELERY_BROKER_URL``
 settings.
@@ -302,10 +299,10 @@ local_untracked.py
         'default': {
             'ENGINE': 'django.contrib.gis.db.backends.postgis',
             'NAME': 'seed',
-            'USER': 'your-username',
-            'PASSWORD': 'your-password',
-            'HOST': 'your-host',
-            'PORT': 'your-port',
+            'USER': 'seed',
+            'PASSWORD': 'super-secret-password',
+            'HOST': '127.0.0.1',
+            'PORT': '5432',
         }
     }
 

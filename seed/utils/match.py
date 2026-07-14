@@ -94,7 +94,9 @@ def _merge_matches_across_cycles(matching_views, org_id, given_state_id, StateCl
     count = 0
 
     for state_ids in states_to_merge:
-        ordered_ids = list(StateClass.objects.filter(id__in=state_ids).order_by("updated").values_list("id", flat=True))
+        # Tie-break on id so ordering is deterministic when multiple states share
+        # the same updated timestamp (lower id means earlier-created state).
+        ordered_ids = list(StateClass.objects.filter(id__in=state_ids).order_by("updated", "id").values_list("id", flat=True))
 
         if given_state_id in ordered_ids:
             # If the given -State ID is included, give it precedence and
@@ -383,7 +385,9 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
             )
 
             for state_ids in matched_id_groups:
-                ordered_ids = list(StateClass.objects.filter(id__in=state_ids).order_by("updated").values_list("id", flat=True))
+                # Tie-break on id so ordering is deterministic when multiple
+                # states have identical updated timestamps (lower id first).
+                ordered_ids = list(StateClass.objects.filter(id__in=state_ids).order_by("updated", "id").values_list("id", flat=True))
 
                 merge_states_with_views(ordered_ids, org_id, "System Match", StateClass)
 

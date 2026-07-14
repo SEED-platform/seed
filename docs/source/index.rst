@@ -23,7 +23,7 @@ The SEED web application provides both a browser-based interface for users to
 upload and manage their building data, as well as a full set of APIs that app
 developers can use to access these same data management functions.
 
-Work on SEED Platform is managed by the National Renewable Energy Laboratory,
+Work on SEED Platform is managed by the National Laboratory of the Rockies,
 with funding from the U.S. Department of Energy.
 
 

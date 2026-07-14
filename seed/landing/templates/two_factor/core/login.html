@@ -18,8 +18,6 @@
   {% endif %}
 
   <form action="" method="post" class="signup_form">
-    <input type="hidden" name="username" value="{{username}}">
-
     {% block main_form_content %}
     {% csrf_token %}
     {% include "two_factor/_wizard_forms.html" %}
