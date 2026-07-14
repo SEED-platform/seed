@@ -542,6 +542,7 @@ class PortfolioManagerReportParsingTest(TestCase):
             self.assertEqual(properties[0]["propertyFloorAreaBuildingsAndParking"], "89250.0")
 
 
+@pm_skip_test_check
 class PortfolioManagerCustomDownloadTest(TestCase):
     def setUp(self):
         user_details = {

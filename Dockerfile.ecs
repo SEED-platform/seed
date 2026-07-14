@@ -76,7 +76,7 @@ COPY ./vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
 COPY ./ng_seed/seed-angular /seed/ng_seed/seed-angular
 ### Build SEED Angular then cleanup
 RUN pnpm install --frozen-lockfile --ignore-scripts && \
-    pnpm -C /seed/ng_seed/seed-angular build && \
+    pnpm --config.verify-deps-before-run=false -C /seed/ng_seed/seed-angular build && \
     pnpm install --prod --frozen-lockfile --ignore-scripts && \
     rm -rf /seed/ng_seed/seed-angular/node_modules && \
     pnpm store prune
