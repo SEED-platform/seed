@@ -1,15 +1,14 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import ast
 import copy
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 
 from django.urls import reverse
-from django.utils import timezone as tz
 
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.landing.models import SEEDUser as User
@@ -205,7 +204,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
         self.assertDictContainsSubset(payload, response.json())
 
         new_payload = copy.deepcopy(payload)
-        new_payload["is_virtual"] = True
+        new_payload["alias"] = "my name"
         meter_id = response.json()["id"]
         meter_url = (
             reverse("api:v3:property-meters-detail", kwargs={"property_pk": property_view.id, "pk": meter_id})
@@ -213,7 +212,7 @@ class TestMeterCRUD(AssertDictSubsetMixin, DeleteModelsTestCase):
         )
         response = self.client.put(meter_url, data=json.dumps(new_payload), content_type="application/json")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["is_virtual"], True)
+        self.assertEqual(response.json()["alias"], "my name")
 
 
 class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
@@ -225,8 +224,8 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.meter = Meter.objects.create(property=self.property)
         self.meter_reading = MeterReading.objects.create(
             meter=self.meter,
-            start_time=datetime(2024, 1, 1, 0, 0, tzinfo=tz.utc),
-            end_time=datetime(2024, 1, 2, 0, 0, tzinfo=tz.utc),
+            start_time=datetime(2024, 1, 1, 0, 0, tzinfo=UTC),
+            end_time=datetime(2024, 1, 2, 0, 0, tzinfo=UTC),
             reading=12345,
             source_unit="kWh",
             conversion_factor=1,
@@ -718,7 +717,7 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
                     "end_time": values[1],
                     "reading": values[2],
                     "source_unit": "Wh (Watt-hours)",
-                    # conversion factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
+                    # conversion_factor is required and is the conversion from the source unit to kBTU (1 Wh = 0.00341 kBtu)
                     "conversion_factor": 0.00341,
                 }
             )
@@ -778,6 +777,40 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         self.assertEqual(
             response.json()["non_field_errors"], ["Error: Each reading must have a unique combination of start_time end end_time."]
         )
+
+    def test_bulk_import_rejects_time_aware_values(self):
+        property_view = self.property_view_factory.get_property_view()
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view.id}) + f"?organization_id={self.org.id}"
+
+        payload = {
+            "type": "Electric",
+            "source": "Manual Entry",
+            "source_id": "1234567890",
+            "connection_type": "Imported",
+        }
+
+        response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        meter_pk = response.json()["id"]
+
+        url = (
+            reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": property_view.id, "meter_pk": meter_pk})
+            + f"?organization_id={self.org.id}"
+        )
+
+        payload = [
+            {
+                "start_time": "2023-02-14T22:27:30Z",
+                "end_time": "2023-02-14T22:28:30",
+                "reading": 1000000,
+                "source_unit": "Wh (Watt-hours)",
+                "conversion_factor": 0.00341,
+            }
+        ]
+
+        response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["status"], "error")
+        self.assertEqual(response.json()["message"], "start_time must be non-time zone aware")
 
     def test_delete_meter_readings(self):
         # would be nice to make a factory out of the meter / meter reading requests

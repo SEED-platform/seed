@@ -1,0 +1,34 @@
+version: 2
+updates:
+  - package-ecosystem: 'uv'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    groups:
+      dev-deps:
+        dependency-type: 'development'
+      prod-deps:
+        dependency-type: 'production'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'deps'
+    labels:
+      - 'Maintenance'
+    ignore:
+      - dependency-name: 'buildingid'
+      - dependency-name: 'pandas'
+      - dependency-name: 'xlrd'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+    groups:
+      actions-deps:
+        patterns:
+          - '*'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'ci'
+    labels:
+      - 'Do not publish'

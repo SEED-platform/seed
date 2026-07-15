@@ -1,10 +1,10 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import contextlib
-from typing import Any, Optional
+from typing import Any
 
 from django.db import ProgrammingError
 from rest_framework import serializers
@@ -27,7 +27,7 @@ class UniformatSerializer(serializers.ModelSerializer):
     with contextlib.suppress(ProgrammingError):
         code_lookup: dict[str, str] = {obj["id"]: obj["code"] for obj in Uniformat.objects.values("id", "code")}
 
-    def get_parent(self, uniformat) -> Optional[str]:
+    def get_parent(self, uniformat) -> str | None:
         return self.code_lookup[uniformat.parent_id] if uniformat.parent_id else None
 
 

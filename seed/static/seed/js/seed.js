@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * AngularJS app 'config.seed' for SEED SPA
@@ -40,6 +40,7 @@
     'SEED.controller.analysis_run',
     'SEED.controller.at_submission_import_modal',
     'SEED.controller.bulk_edit_goalnotes_modal',
+    'SEED.controller.bulk_edit_properties_modal',
     'SEED.controller.column_mapping_profile_modal',
     'SEED.controller.column_mappings',
     'SEED.controller.column_settings',
@@ -48,8 +49,13 @@
     'SEED.controller.create_column_modal',
     'SEED.controller.service_modal',
     'SEED.controller.system_modal',
+    'SEED.controller.copy_to_different_cycle_modal',
+    'SEED.controller.create_cycle_goal_modal',
+    'SEED.controller.cycle_goal_edit_modal',
+    'SEED.controller.cycle_goal_deletion_modal',
     'SEED.controller.create_organization_modal',
     'SEED.controller.create_sub_organization_modal',
+    'SEED.controller.create_facilities_plan_run_modal',
     'SEED.controller.cycle_admin',
     'SEED.controller.data_logger_upload_or_update_modal',
     'SEED.controller.data_quality_admin',
@@ -66,6 +72,7 @@
     'SEED.controller.delete_data_logger_upload_or_update_modal',
     'SEED.controller.delete_dataset_modal',
     'SEED.controller.delete_document_modal',
+    'SEED.controller.delete_facilities_plan_run_modal',
     'SEED.controller.delete_file_modal',
     'SEED.controller.delete_modal',
     'SEED.controller.update_derived_data_modal',
@@ -119,8 +126,10 @@
     'SEED.controller.merge_modal',
     'SEED.controller.meter_deletion_modal',
     'SEED.controller.meter_edit_modal',
+    'SEED.controller.salesforce_login',
     'SEED.controller.system_meter_readings_upload_modal',
     'SEED.controller.group_meter_creation_modal',
+    'SEED.controller.service_meter_creation_modal',
     'SEED.controller.modified_modal',
     'SEED.controller.move_inventory_modal',
     'SEED.controller.new_member_modal',
@@ -135,7 +144,9 @@
     'SEED.controller.organization_sharing',
     'SEED.controller.pairing',
     'SEED.controller.pairing_settings',
+    'SEED.controller.service_detail',
     'SEED.controller.portfolio_summary',
+    'SEED.controller.facilities_plan',
     'SEED.controller.postoffice_modal',
     'SEED.controller.profile',
     'SEED.controller.program_setup',
@@ -153,6 +164,7 @@
     'SEED.controller.set_update_to_now_modal',
     'SEED.controller.settings_profile_modal',
     'SEED.controller.show_populated_columns_modal',
+    'SEED.controller.sync_to_salesforce_modal',
     'SEED.controller.two_factor_profile',
     'SEED.controller.ubid_admin',
     'SEED.controller.ubid_admin_modal',
@@ -194,6 +206,8 @@
     'SEED.service.analyses',
     'SEED.service.audit_template',
     'SEED.service.auth',
+    'SEED.service.bb_salesforce',
+    'SEED.service.cache_entry',
     'SEED.service.column_mappings',
     'SEED.service.columns',
     'SEED.service.compliance_metric',
@@ -205,6 +219,8 @@
     'SEED.service.element',
     'SEED.service.espm',
     'SEED.service.event',
+    'SEED.service.facilities_plan',
+    'SEED.service.facilities_plan_run',
     'SEED.service.filter_groups',
     'SEED.service.flippers',
     'SEED.service.geocode',
@@ -981,6 +997,20 @@
           }
         })
         .state({
+          name: 'service_detail',
+          url: '/{inventory_type:properties|taxlots}/groups/{group_id:int}/systems/{system_id:int}/services/{service_id:int}',
+          templateUrl: `${static_url}seed/partials/service_detail.html`,
+          controller: 'service_detail_controller',
+          resolve: {
+            organization_id: ['user_service', (user_service) => user_service.get_organization().id],
+            service: ['service_service', 'user_service', '$stateParams', (service_service, user_service, $stateParams) => {
+              const { group_id, system_id, service_id } = $stateParams;
+              const organization_id = user_service.get_organization().id;
+              return service_service.get_service(organization_id, group_id, system_id, service_id);
+            }]
+          }
+        })
+        .state({
           name: 'pairing_settings',
           url: '/data/pairing/{importfile_id:int}/{inventory_type:properties|taxlots}/settings',
           templateUrl: `${static_url}seed/partials/pairing_settings.html`,
@@ -1036,6 +1066,15 @@
                 );
               }
             ]
+          }
+        })
+        .state({
+          name: 'salesforce_login',
+          url: '/salesforce_login',
+          templateUrl: `${static_url}seed/partials/salesforce_login.html`,
+          controller: 'salesforce_login_controller',
+          resolve: {
+            organization_id: ['user_service', (user_service) => user_service.get_organization().id]
           }
         })
         .state({
@@ -1168,6 +1207,14 @@
                 return salesforce_config_service.get_salesforce_configs(organization_id);
               }
             ],
+            bb_salesforce_configs_payload: [
+              'bb_salesforce_service',
+              '$stateParams',
+              (bb_salesforce_service, $stateParams) => {
+                const { organization_id } = $stateParams;
+                return bb_salesforce_service.get_bb_salesforce_configs(organization_id);
+              }
+            ],
             audit_template_configs_payload: [
               'audit_template_service',
               '$stateParams',
@@ -1193,7 +1240,9 @@
                 );
               }
             ],
-            property_columns: ['inventory_service', 'user_service', (inventory_service) => inventory_service.get_property_columns()]
+            cycles_payload: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            property_columns: ['inventory_service', 'user_service', (inventory_service) => inventory_service.get_property_columns()],
+            facilities_plans: ['facilities_plan_service', (facilities_plan_service) => facilities_plan_service.get_facilities_plans()]
           }
         })
         .state({
@@ -1950,12 +1999,7 @@
               const currentInventoryGroup = _.first(inventory_groups);
               if (currentInventoryGroup) inventory_service.save_last_inventory_group(currentInventoryGroup.id, $stateParams.inventory_type);
               return currentInventoryGroup;
-            }],
-            organization_payload: [
-              'user_service',
-              'organization_service',
-              (user_service, organization_service) => organization_service.get_organization(user_service.get_organization().id)
-            ]
+            }]
           }
         })
         .state({
@@ -2162,6 +2206,14 @@
               'label_service',
               ($stateParams, label_service) => label_service.get_labels($stateParams.inventory_type).then((labels) => _.filter(labels, (label) => !_.isEmpty(label.is_applied)))
             ],
+            footprint_column_name: [
+              '$stateParams',
+              'inventory_service',
+              ($stateParams, inventory_service) => {
+                const get_columns = $stateParams.inventory_type === 'properties' ? inventory_service.get_property_columns : inventory_service.get_taxlot_columns;
+                return get_columns().then((columns) => columns.find((col) => col.column_name === 'property_footprint')?.name);
+              }
+            ],
             group: () => null
           }
         })
@@ -2354,6 +2406,7 @@
           controller: 'inventory_group_detail_dashboard_controller',
           resolve: {
             cycles: ['cycle_service', (cycle_service) => cycle_service.get_cycles()],
+            meter_types: ['meters_service', (meters_service) => meters_service.valid_energy_types_units()],
             group: [
               '$stateParams', 'inventory_group_service', 'user_service',
               ($stateParams, inventory_group_service, user_service) => inventory_group_service.get_group(user_service.get_organization().id, $stateParams.group_id)
@@ -2978,6 +3031,48 @@
               (auth_service, organization_payload) => {
                 const organization_id = organization_payload.organization.id;
                 return auth_service.is_authorized(organization_id, ['requires_owner']);
+              }
+            ],
+            is_logged_into_salesforce: [
+              'bb_salesforce_service',
+              'organization_payload',
+              (bb_salesforce_service, organization_payload) => {
+                const organization_id = organization_payload.organization.id;
+                return bb_salesforce_service.verify_token(organization_id, ['requires_owner']);
+              }
+            ]
+          }
+        })
+        .state({
+          name: 'facilities_plan',
+          url: '/insights/facilities_plan',
+          templateUrl: `${static_url}seed/partials/facilities_plan.html`,
+          controller: 'facilities_plan_controller',
+          resolve: {
+            facilities_plans: ['facilities_plan_service', (facilities_plan_service) => facilities_plan_service.get_facilities_plans()],
+            facilities_plan_runs: ['facilities_plan_run_service', (facilities_plan_run_service) => facilities_plan_run_service.get_facilities_plan_runs()],
+            access_level_tree: [
+              'organization_service',
+              'user_service',
+              (organization_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return organization_service.get_organization_access_level_tree(organization_id);
+              }
+            ],
+            property_columns: [
+              'inventory_service',
+              'user_service',
+              (inventory_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return inventory_service.get_property_columns_for_org(organization_id);
+              }
+            ],
+            auth_payload: [
+              'auth_service',
+              'user_service',
+              (auth_service, user_service) => {
+                const organization_id = user_service.get_organization().id;
+                return auth_service.is_authorized(organization_id, ['requires_member']);
               }
             ]
           }

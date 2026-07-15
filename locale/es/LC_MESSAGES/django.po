@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-01-08 18:08\n"
+"PO-Revision-Date: 2026-04-23 19:06\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -117,6 +117,9 @@ msgstr "Esta página le permite ver la estructura del contenido de su organizaci
 msgid "ACCESS_LEVEL_UPLOAD_PROGRESS_MSG"
 msgstr "Guardando instancias de nivel de acceso en curso... Este proceso depende del tamaño del archivo y puede durar varios minutos."
 
+msgid "ADD_CYCLE_GOAL_DESC"
+msgstr "Agregue un nuevo ciclo al objetivo seleccionado para compararlo con la línea base. El último ciclo agregado se considerará el ciclo actual para fines de comparación. Los ciclos anteriores agregados permanecerán disponibles como referencia histórica."
+
 #, fuzzy
 msgid "ADD_FILES_TO"
 msgstr "Añadir archivos a {dataset_name}."
@@ -175,7 +178,10 @@ msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "El análisis EUI sumará las lecturas de los contadores de la propiedad de los últimos doce meses para calcular el consumo de energía por metro cuadrado al año. Si faltan lecturas de contadores, el análisis devolverá una cobertura inferior al 100% para alertar al usuario de que falta una lectura de contador."
 
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
-msgstr "El análisis de estadísticas de elementos analiza los datos de elementos de una propiedad (si los hay) para contar la cantidad de elementos del tipo \"Panel de control DDC\". También genera los valores de índice de condición agregados (promedio) para los elementos de emisión de alcance 1 y guarda esas cantidades en la propiedad."
+msgstr "El análisis de estadísticas de elementos analiza los datos de elementos de una propiedad (si los hay) para contar la cantidad de elementos del tipo \"Panel de control DDC\". También genera los valores de índice de condición agregados (promedio) para los elementos de EISA 2007-432 y guarda esas cantidades en la propiedad."
+
+msgid "ANALYSIS_DESCRIPTION_HVACMetrics"
+msgstr "El análisis de métricas de HVAC itera a través de los datos de los elementos de una propiedad (si los hay) para calcular 4 métricas: 1) Área de cobertura de tonelaje de CA, 2) Tipo de refrigerante principal, 3) Tamaño total del servicio eléctrico de HVAC y 4) Tasa de flujo de aire por unidad de área."
 
 #, fuzzy
 msgid "AND"
@@ -188,6 +194,12 @@ msgstr "Documentación API"
 #, fuzzy
 msgid "API Key"
 msgstr "Clave API"
+
+msgid "AT_ADVANCED_SETTINGS_TEXT"
+msgstr "Esta sección contiene las configuraciones necesarias si el flujo de trabajo de su organización incluirá enviar datos desde SEED a Audit Template para crear informes de plantilla de auditoría \"stub\" que luego se pueden completar en Audit Template. Si no desea crear informes de Audit Template stub desde SEED, puede ignorar estas configuraciones."
+
+msgid "AT_AGENCY_NAME_DESC"
+msgstr "Este debería ser el acrónimo de la Agencia (ej.: DOE)."
 
 #, fuzzy
 msgid "AT_ALL_DATA"
@@ -209,9 +221,25 @@ msgstr "Cuando esta casilla está marcada, SEED sólo importará los envíos de 
 msgid "AT_EMAIL_TEXT"
 msgstr "Utilice el correo electrónico asociado a su cuenta de <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Sitio web de Building Energy Score</a>."
 
+msgid "AT_FEDERAL_FIELDS_DESC"
+msgstr "Ingrese la agencia principal. Los demás campos de la agencia se determinarán según los niveles de acceso implementados en SEED. Para obtener más información, consulte el elemento BuildingSync FederalBuilding."
+
+#, fuzzy
+msgid "AT_ID_FIELD_TEXT"
+msgstr "Ingrese el NOMBRE DE COLUMNA (no el nombre para mostrar) del campo SEED que contiene el ID de identificación fiscal personalizado de su organización. El valor predeterminado es 'custom_id_1'. Puede encontrar esta información en la página Configuración de columnas de su organización en SEED."
+
+msgid "AT_IMPORT_DEFAULT_CYCLE_DESC"
+msgstr "El proceso de importación recupera cada envío de plantilla de auditoría y compara su fecha de envío con las fechas de inicio y fin de todos los ciclos SEED para determinar a qué ciclo adjuntar los datos. Si no se encuentra ninguna coincidencia, puede optar por agregar un ciclo predeterminado al que adjuntar los datos, independientemente de la comparación de fechas de envío. Si no se especifica ningún ciclo predeterminado, no se importarán los datos que no coincidan."
+
 #, fuzzy
 msgid "AT_MOST_RECENT_ONLY"
 msgstr "Sólo se importarán los envíos de Plantillas de Auditoría que hayan sido enviados más recientemente que la actualización más reciente del inventario de SEED. Puede configurar esta opción en la página de configuración de su organización de SEED."
+
+msgid "AT_OPTIONAL_DEFAULT_CYCLE"
+msgstr "Ciclo predeterminado para la importación (opcional)"
+
+msgid "AT_OPTIONAL_EXPORTS_TEXT"
+msgstr "Utilice las casillas de verificación a continuación si desea incluir datos adicionales en sus exportaciones de BuildingSync que crean informes de plantillas de auditoría de código auxiliar."
 
 #, fuzzy
 msgid "AT_PASS_TEXT"
@@ -228,6 +256,10 @@ msgstr "Si su organización ha configurado un formulario de informe personalizad
 #, fuzzy
 msgid "AT_SUBMISSION_STATUS"
 msgstr "SEED importará datos para envíos con los siguientes estados en Plantilla de Auditoría."
+
+#, fuzzy
+msgid "AT_TAX_ID_NAME"
+msgstr "Ingrese el nombre de identificación fiscal personalizado que se configuró en la plantilla de informe de auditoría configurable de su jurisdicción. El valor predeterminado es \"City Custom Building ID\"."
 
 #. Helper text for the Audit Template token in organization settings.
 #, fuzzy
@@ -334,6 +366,9 @@ msgstr "Añadir instancia de nivel de acceso"
 msgid "Add Column"
 msgstr "Añadir columna"
 
+msgid "Add Cycle to Goal"
+msgstr "Añadir ciclo a la meta"
+
 #, fuzzy
 msgid "Add Data Files"
 msgstr "Añadir archivos de datos"
@@ -364,6 +399,9 @@ msgstr "Añadir propiedades compartidas"
 #, fuzzy
 msgid "Add Shared Tax Lots"
 msgstr "Añadir lotes fiscales compartidos"
+
+msgid "Add a Cycle"
+msgstr "Agregar un ciclo"
 
 msgid "Add a Document"
 msgstr "Añadir un documento"
@@ -458,6 +496,9 @@ msgstr "Admin"
 msgid "Advanced Settings"
 msgstr "Configuración avanzada"
 
+msgid "Agency Name"
+msgstr "Nombre de la agencia"
+
 msgid "Alias"
 msgstr "Alias"
 
@@ -483,6 +524,9 @@ msgstr "Análisis"
 msgid "Analysis"
 msgstr "Análisis"
 
+msgid "Analysis Deleted Successfully"
+msgstr "Análisis eliminado correctamente"
+
 #, fuzzy
 msgid "Analysis Name"
 msgstr "Análisis Nombre"
@@ -490,6 +534,9 @@ msgstr "Análisis Nombre"
 #, fuzzy
 msgid "Analysis Name (User Defined)"
 msgstr "Nombre del análisis (definido por el usuario)"
+
+msgid "Analysis Run"
+msgstr "Ejecución de análisis"
 
 #, fuzzy
 msgid "Analysis State"
@@ -621,6 +668,12 @@ msgstr "Medidas BuildingSync disponibles"
 msgid "Available Templates"
 msgstr "Plantillas disponibles"
 
+msgid "BB_SALESFORCE_LOGIN_FAILURE"
+msgstr "Hubo un error"
+
+msgid "BB_SALESFORCE_LOGIN_SUCCESS"
+msgstr "SEED ahora ha iniciado sesión en Salesforce."
+
 #, fuzzy
 msgid "BEFORE_GEOCODING"
 msgstr "Antes de la geocodificación"
@@ -651,6 +704,9 @@ msgstr "Volver a la lista"
 msgid "Back to Mapping"
 msgstr "Volver a Cartografía"
 
+msgid "Baseline"
+msgstr "Base"
+
 #, fuzzy
 msgid "Baseline Cycle"
 msgstr "Ciclo de referencia"
@@ -658,6 +714,9 @@ msgstr "Ciclo de referencia"
 #, fuzzy
 msgid "Begin Update"
 msgstr "Iniciar actualización"
+
+msgid "Benchmark Configuration "
+msgstr "Configuración de referencia "
 
 #: seed/models/models.py:135
 #, fuzzy
@@ -696,10 +755,6 @@ msgid "Building Filters"
 msgstr "Filtros para edificios"
 
 #, fuzzy
-msgid "Building Performance Standard (BPS) Compliance Pathway Support"
-msgstr "Apoyo para el cumplimiento de las normas de rendimiento de edificios (BPS)"
-
-#, fuzzy
 msgid "Building Square Footage Threshold"
 msgstr "Umbral de metros cuadrados del edificio"
 
@@ -714,9 +769,40 @@ msgstr "BuildingSync Medidas recomendadas"
 msgid "Buildings"
 msgstr "Edificios"
 
+msgid "Bulk Edit"
+msgstr "Edición masiva"
+
+msgid "By Analysis"
+msgstr "Por análisis"
+
+msgid "By Property"
+msgstr "Por propiedad"
+
 #, fuzzy
-msgid "By clicking the Log In button you accept the NREL Data Terms."
-msgstr "Al hacer clic en el botón Iniciar sesión, acepta las Condiciones de datos del NREL."
+msgid "By clicking the Log In button you accept the Data Terms."
+msgstr "Al hacer clic en el botón Iniciar sesión, acepta las Condiciones de datos."
+
+msgid "CALC_ACCESS_LEVEL_DESC"
+msgstr "Seleccione el nivel de acceso y la instancia de los datos que se incluirán en los cálculos."
+
+#, fuzzy
+msgid "CALC_CYCLE_DESC"
+msgstr "Seleccione el ciclo a utilizar para los cálculos."
+
+msgid "CALC_DATA_COLS_DESC"
+msgstr "Seleccione columnas de datos adicionales para incluir en la tabla del Plan de Instalaciones, si lo desea."
+
+msgid "CEWE_ELEMENTS_COMMENT"
+msgstr "(Generado por la biblioteca de base de conocimientos de ESTCP Technologies)"
+
+msgid "CEWE_ELEMENTS_SUBTITLE"
+msgstr "Incluye elementos de construcción aplicables con los valores RSL más bajos"
+
+msgid "CEWE_ELEMENTS_TITLE"
+msgstr "Apoyo a la vía de cumplimiento de la Evaluación Integral de Energía y Agua (CEWE)  "
+
+msgid "CHART_STATUS_MESSAGE"
+msgstr "Demasiados datos para representarlos en el gráfico. Pruebe con un nivel de acceso diferente, agregue un grupo de filtros a su programa o aumente el límite en la página de configuración de su organización."
 
 #, fuzzy
 msgid "CLICK_LEGEND"
@@ -802,6 +888,9 @@ msgstr "Normalmente, cuando un registro importado se combina con otro, el valor 
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Completar y actualizar la página"
 
+msgid "COMPLIANCE_CYCLE_YEAR_DESC"
+msgstr "Identifique la columna SEED que se utiliza para almacenar la información del año del ciclo de cumplimiento. Si aún no existe, créela en la página Configuración de columnas."
+
 #, fuzzy
 msgid "CONDITION_INDEX_THRESHOLD_HELP"
 msgstr "El índice de condición que se utilizará como umbral de comparación en los cálculos."
@@ -862,6 +951,9 @@ msgstr "Crear un registrador de datos"
 #, fuzzy
 msgid "CURRENTLY_GEOCODING"
 msgstr "Geocodificación actual"
+
+msgid "Calculate the Plan"
+msgstr "Calcular el plan"
 
 #, fuzzy
 msgid "Campus"
@@ -953,6 +1045,12 @@ msgstr "Limpiar filtros"
 msgid "Clear Labels"
 msgstr "Etiquetas transparentes"
 
+msgid "Client ID"
+msgstr "ID de cliente"
+
+msgid "Client Secret"
+msgstr "Secreto del cliente"
+
 #, fuzzy
 msgid "Close"
 msgstr "Cerrar"
@@ -1043,6 +1141,9 @@ msgstr "Complete"
 msgid "Compliance"
 msgstr "Conformidad"
 
+msgid "Compliance Cycle Year Column"
+msgstr "Columna del año del ciclo de cumplimiento"
+
 #, fuzzy
 msgid "Compliance Information"
 msgstr "Información sobre el cumplimiento"
@@ -1111,6 +1212,9 @@ msgstr "Confirme"
 msgid "Confirm Audit Template Building Import?"
 msgstr "¿Confirmar la importación de plantillas de auditoría?"
 
+msgid "Confirm New Password"
+msgstr "Confirmar Nueva Contraseña"
+
 #, fuzzy
 msgid "Confirm Save Mappings?"
 msgstr "¿Confirmar guardar asignaciones?"
@@ -1123,9 +1227,18 @@ msgstr "Confirmar eliminación"
 msgid "Confirm new password"
 msgstr "Confirmar nueva contraseña"
 
+msgid "Connected to Salesforce"
+msgstr "Conectado a Salesforce"
+
 #, fuzzy
 msgid "Connection"
 msgstr "Conexión"
+
+msgid "Connection Status"
+msgstr "Estado de la conexión"
+
+msgid "Connection error"
+msgstr "Error de conexión"
 
 #, fuzzy
 msgid "Contact"
@@ -1164,6 +1277,12 @@ msgstr "Copiar edificios"
 #, fuzzy
 msgid "Copy Data File Headers directly to SEED Headers"
 msgstr "Copiar cabeceras de archivos de datos directamente en cabeceras de SEED"
+
+msgid "Copy Inventory"
+msgstr "Inventario de copias"
+
+msgid "Copy Inventory to New Cycle"
+msgstr "Copiar inventario al nuevo ciclo"
 
 #, fuzzy
 msgid "Copy into Data File Headers"
@@ -1204,6 +1323,9 @@ msgstr "Crear grupo"
 
 msgid "Create Meter"
 msgstr "Crear medidor"
+
+msgid "Create New Plan Run"
+msgstr "Crear nueva ejecución de plan"
 
 #, fuzzy
 msgid "Create New Sub-Organization"
@@ -1338,6 +1460,12 @@ msgstr "Método actual"
 msgid "Current Name"
 msgstr "Nombre actual"
 
+msgid "Current Password"
+msgstr "Contraseña Actual"
+
+msgid "Current Year Annual Report"
+msgstr "Informe anuale del año en curso"
+
 #, fuzzy
 msgid "Current password"
 msgstr "Contraseña actual"
@@ -1431,6 +1559,9 @@ msgstr "Mapeo y validación de datos ({filename})"
 #, fuzzy
 msgid "DELETED_LABEL_NAMED"
 msgstr "Etiqueta borrada {label_name}"
+
+msgid "DELETE_ANALYSIS_TEXT"
+msgstr "¿Está seguro de que desea eliminar este análisis? Esta acción no se puede deshacer."
 
 #, fuzzy
 msgid "DELETE_LABEL_AND_REMOVE"
@@ -1595,6 +1726,9 @@ msgstr "Borrar instancia de nivel de acceso"
 msgid "Delete All Mappings"
 msgstr "Borrar todas las asignaciones"
 
+msgid "Delete Analysis"
+msgstr "Eliminar análisis"
+
 msgid "Delete Group"
 msgstr "Eliminar grupo"
 
@@ -1684,6 +1818,9 @@ msgstr "Equipo de desarrollo"
 msgid "Dismiss"
 msgstr "Desestimar"
 
+msgid "Display Columns"
+msgstr "Columnas de visualización"
+
 #, fuzzy
 msgid "Display Name"
 msgstr "Mostrar nombre"
@@ -1707,6 +1844,9 @@ msgstr "Dominio"
 #, fuzzy
 msgid "Done"
 msgstr "Hecho"
+
+msgid "Download Output Files"
+msgstr "Descargar archivos de salida"
 
 #, fuzzy
 msgid "Download Sample Data"
@@ -1744,6 +1884,9 @@ msgstr "Arrastrar hasta aquí"
 msgid "Duplicate"
 msgstr "Duplicar"
 
+msgid "Duplicate Data File Headers are not allowed. Modify the import file and try again."
+msgstr "No se permiten encabezados duplicados en los archivos de datos. Modifique el archivo de importación y vuelva a intentarlo."
+
 #, fuzzy
 msgid "Duplicates"
 msgstr "Duplicados"
@@ -1751,6 +1894,9 @@ msgstr "Duplicados"
 #, fuzzy
 msgid "EDIT_GOAL_NOTES"
 msgstr "Editar campos para las propiedades seleccionadas"
+
+msgid "ELECTRIC_ENERGY_USAGE_DESC"
+msgstr "Identifique la columna SEED utilizada para almacenar el uso de energía eléctrica."
 
 msgid "EMAIL_TEMPLATE_EXAMPLE"
 msgstr "\"¡La latitud y longitud de tu edificio es \\{\\{latitud\\}\\}, \\{\\{longitud\\}\\}!\""
@@ -1824,6 +1970,9 @@ msgstr "Tipo EVSE"
 msgid "EXCLUDE"
 msgstr "EXCLUIR"
 
+msgid "EXCLUDE_FROM_PLAN_DESC"
+msgstr "Identifique la columna SEED (booleana) que indica si una propiedad debe excluirse del plan. Un valor de verdadero (1) indica que la propiedad debe ser despriorizada independientemente del consumo de energía, mientras que un valor de falso (0) indica que la propiedad debe considerarse para su inclusión en el porcentaje de instalaciones configurado anteriormente. Si esta columna aún no existe, créela en la página Configuración de columnas."
+
 #, fuzzy
 msgid "EXTRA_DATA_COL_TYPE_CHANGE"
 msgstr "Para los campos de \"datos adicionales\", esto permite al usuario establecer el tipo, como Texto, Número, Fecha, etc."
@@ -1871,6 +2020,9 @@ msgstr "Transcurrido:"
 msgid "Electric EUI Field"
 msgstr "Campo eléctrico EUI"
 
+msgid "Electric Energy Usage Column"
+msgstr "Columna de consumo de energía eléctrica"
+
 #: seed/landing/forms.py:13
 #, fuzzy
 msgid "Email"
@@ -1912,6 +2064,9 @@ msgstr "Activar la geocodificación"
 msgid "Enable Labels in Public Feed"
 msgstr "Habilitar etiquetas en el feed público"
 
+msgid "Enable Portfolio Salesforce Integration"
+msgstr "Habilitar la integración de Salesforce (cartera de propiedades)"
+
 #, fuzzy
 msgid "Enable Public Endpoints"
 msgstr "Habilitar puntos finales públicos"
@@ -1920,9 +2075,17 @@ msgstr "Habilitar puntos finales públicos"
 msgid "Enable Public GeoJSON"
 msgstr "Activar GeoJSON público"
 
-#, fuzzy
 msgid "Enable Salesforce Integration"
-msgstr "Activar la integración de Salesforce"
+msgstr "Habilitar la integración de Salesforce (propiedades individuales)"
+
+msgid "Enable Salesforce Integration (Individual Properties)"
+msgstr "Habilitar la integración con Salesforce (propiedades individuales)"
+
+msgid "Enable Salesforce Integration (Portfolio of Properties)"
+msgstr "Habilitar la integración con Salesforce (Cartera de propiedades)"
+
+msgid "Enable this functionality to send Federal Building fields to Audit Template."
+msgstr "Habilite esta funcionalidad para enviar los campos de Edificios Federales a la Plantilla de Auditoría."
 
 #, fuzzy
 msgid "Energy"
@@ -1938,6 +2101,12 @@ msgstr "Capacidad energética (kWh)"
 #, fuzzy
 msgid "Energy Metric"
 msgstr "Métrica energética"
+
+msgid "Energy Running Sum Percentage"
+msgstr "Porcentaje de suma acumulada de energía"
+
+msgid "Energy Usage Columns"
+msgstr "Columnas de consumo de energía"
 
 #, fuzzy
 msgid "Energy data file"
@@ -2003,6 +2172,9 @@ msgstr "Ejemplo de uso"
 #, fuzzy
 msgid "Exclude"
 msgstr "Excluir"
+
+msgid "Exclude From Plan Column"
+msgstr "Excluir de la columna del plan"
 
 #, fuzzy
 msgid "Exclude From Uniqueness"
@@ -2099,6 +2271,15 @@ msgstr "Exportación de propiedades a su cuenta de Plantilla de Auditoría"
 msgid "Exporting selected properties..."
 msgstr "Exportar propiedades seleccionadas..."
 
+msgid "FACILITIES_PLAN_EXISTS_DESC"
+msgstr "Seleccione una ejecución de plan de instalaciones del menú desplegable a continuación o cree una nueva ejecución de plan"
+
+msgid "FACILITIES_PLAN_NOT_EXISTS_DESC"
+msgstr "Crear una nueva ejecución del plan de instalaciones"
+
+msgid "FACILITIES_PLAN_SETUP_DESC"
+msgstr "Utilice la configuración a continuación para configurar un Plan de Instalaciones que identifique las instalaciones que representan un porcentaje específico del consumo energético total de la organización. Originalmente desarrollado para identificar las instalaciones cubiertas por la Sección 432 de la Ley de Independencia y Seguridad Energética de 2007 (EISA 432), puede utilizarse para otros fines de planificación. Esta sección contiene la configuración básica requerida. Se pueden realizar configuraciones adicionales por nivel de acceso o ciclo en la pestaña Plan de Instalaciones de la sección Información."
+
 #, fuzzy
 msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
 msgstr "Error de geocodificación - Su clave API de MapQuest no es válida. Actualice su clave API de MapQuest o desactive la geocodificación en los ajustes de la organización."
@@ -2142,6 +2323,12 @@ msgstr "Tipos de archivo admitidos: <strong>.csv</strong>, <strong>.xls</strong>
 msgid "FOSSIL_FUEL_EUI_HELP"
 msgstr "Umbral EUI de combustibles fósiles para el edificio (incluye gas, etc.)"
 
+msgid "Facilities Plan"
+msgstr "Plan de Instalaciones"
+
+msgid "Facilities Plan Run"
+msgstr "Ejecución del plan de instalaciones"
+
 #, fuzzy
 msgid "Failed to delete inventory"
 msgstr "Error al borrar inventario"
@@ -2156,6 +2343,9 @@ msgstr "Medidas prescriptivas federales BPS"
 #, fuzzy
 msgid "Federal BPS Recommended Measures"
 msgstr "Medidas federales recomendadas por el BPS"
+
+msgid "Federal Building Fields"
+msgstr "Campos de edificios federales"
 
 #, fuzzy
 msgid "Fetching your buildings from Audit Template..."
@@ -2307,6 +2497,12 @@ msgstr "En la tabla siguiente, seleccione las reglas que desea: 1) activar/desac
 msgid "Funding from"
 msgstr "Financiación de"
 
+msgid "GAS_ENERGY_USAGE_DESC"
+msgstr "Identifique la columna SEMILLA utilizada para almacenar el consumo de energía del gas."
+
+msgid "GENERIC_FP_DESC"
+msgstr "Seleccione un Plan de Instalaciones Genérico creado en la Configuración de la Organización. Si no tiene acceso, pídale a su administrador que lo cree."
+
 #, fuzzy
 msgid "GEOCODED_MANUALLY"
 msgstr "geocodificado manualmente"
@@ -2411,9 +2607,18 @@ msgstr "Guía SFTool de la GSA"
 msgid "Gas EUI Field"
 msgstr "Gas EUI Campo"
 
+msgid "Gas Energy Usage Column"
+msgstr "Columna de consumo de energía de gas"
+
+msgid "General Configurations"
+msgstr "Configuraciones generales"
+
 #, fuzzy
 msgid "Generate Token"
 msgstr "Generar token"
+
+msgid "Generic Facilities Plan Selection"
+msgstr "Selección de planes de instalaciones genéricas"
 
 #, fuzzy
 msgid "Geocode"
@@ -2470,6 +2675,9 @@ msgstr "Ir a Notas"
 
 msgid "Goal"
 msgstr "Objetivo"
+
+msgid "Goal Details"
+msgstr "Detalles del objetivo"
 
 #, fuzzy
 msgid "Goal Setup"
@@ -2541,6 +2749,9 @@ msgstr "Ocultar todas las etiquetas"
 msgid "Highlights of SEED Platform™"
 msgstr "Aspectos destacados de la Plataforma SEED"
 
+msgid "Historical Annual Reports"
+msgstr "Informes anuales históricos"
+
 #, fuzzy
 msgid "Historical Note"
 msgstr "Nota histórica"
@@ -2564,6 +2775,9 @@ msgstr "<label class=\"label label-danger\">Duplicados</label> -- si los campos 
 #, fuzzy
 msgid "IMPORT_ANOTHER_QUESTION"
 msgstr "¿Desea añadir otro archivo?"
+
+msgid "INCLUDE_IN_DENOMINATOR_DESC"
+msgstr "Identifique la columna SEED (booleana) que indica si una propiedad debe incluirse en el cálculo del consumo energético total. Un valor de verdadero (1) indica que el consumo energético de la propiedad debe utilizarse para calcular el consumo energético total de la organización, mientras que un valor de falso (0) indica que la propiedad no debe incluirse en los cálculos del consumo energético total y no formará parte del plan. Si esta columna aún no existe, créela en la página Configuración de columnas."
 
 #, fuzzy
 msgid "INCLUDE_SHARED_PROPERTIES"
@@ -2620,6 +2834,12 @@ msgstr "Esta operación es irreversible."
 #, fuzzy
 msgid "ITEMS_WILL_NOT_CHANGE"
 msgstr "estos no cambiarán"
+
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Goal record associated with the selected Partner using the dropdown above."
+msgstr "Si desea sincronizar la información de la cartera con su instancia de Salesforce, seleccione el registro de objetivo de Salesforce asociado con el socio seleccionado utilizando el menú desplegable de arriba."
+
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Partner record using the dropdown above."
+msgstr "Si desea sincronizar la información de su cartera con su instancia de Salesforce, seleccione el registro de socio de Salesforce usando el menú desplegable de arriba."
 
 #, fuzzy
 msgid "Ignored duplicates of existing properties"
@@ -2686,12 +2906,12 @@ msgstr "Incluir cualquier"
 msgid "Include CSV Label Header"
 msgstr "Incluir encabezado de etiqueta CSV"
 
+msgid "Include In Total Denominator Column"
+msgstr "Incluir en la columna del denominador total"
+
 #, fuzzy
 msgid "Include Notes"
 msgstr "Incluir notas"
-
-msgid "Includes Elements with Scope 1 Emissions Only"
-msgstr "Incluye sólo elementos con emisiones de Alcance 1"
 
 #, fuzzy
 msgid "Indication Label"
@@ -2773,6 +2993,9 @@ msgstr "Jurisdicción ID de propiedad"
 #, fuzzy
 msgid "Jurisdiction Tax Lot ID"
 msgstr "Jurisdicción Número de identificación fiscal del lote"
+
+msgid "LINK_CYCLE_ERROR_TEXT"
+msgstr "Para vincular este ciclo a un Informe anual en su instancia de Salesforce, primero debe iniciar sesión en Salesforce."
 
 #, fuzzy
 msgid "LINK_OUT_CYCLE_MATCHES"
@@ -2904,9 +3127,15 @@ msgstr "Conectarse"
 msgid "Log in to SEED Platform"
 msgstr "Iniciar sesión en la Plataforma SEED"
 
+msgid "Log in to Salesforce first to be able to configure Salesforce Partner and Goal associations here."
+msgstr "Primero, inicie sesión en Salesforce para poder configurar las asociaciones de socios y objetivos de Salesforce aquí."
+
 #, fuzzy
 msgid "Logging Email"
 msgstr "Correo electrónico de registro"
+
+msgid "Login"
+msgstr "Acceso"
 
 #, fuzzy
 msgid "Logout"
@@ -3383,6 +3612,12 @@ msgstr "Nuevo análisis"
 msgid "New Build or Acquisition"
 msgstr "Nueva construcción o adquisición"
 
+msgid "New Facilities Plan"
+msgstr "Nuevo Plan de Instalaciones"
+
+msgid "New Facilities Run Plan"
+msgstr "Plan de Ejecución de Nuevas Instalaciones"
+
 #, fuzzy
 msgid "New Goal"
 msgstr "Nuevo Objetivo"
@@ -3390,6 +3625,9 @@ msgstr "Nuevo Objetivo"
 #, fuzzy
 msgid "New Note"
 msgstr "Nueva Nota"
+
+msgid "New Password"
+msgstr "Nueva Contraseña"
 
 #, fuzzy
 msgid "New User Email"
@@ -3479,6 +3717,9 @@ msgstr "No nulo"
 msgid "Not all inventory items were successfully deleted"
 msgstr "No se han eliminado correctamente todos los artículos del inventario"
 
+msgid "Not connected to Salesforce"
+msgstr "No está conectado a Salesforce"
+
 #, fuzzy
 msgid "Not seeing your column?"
 msgstr "¿No ves tu columna?"
@@ -3516,6 +3757,9 @@ msgstr "Número Propiedades"
 msgid "Number of Properties"
 msgstr "Número de inmuebles"
 
+msgid "Number of Runs"
+msgstr "Número de Ejecuciones"
+
 #, fuzzy
 msgid "Number of Tax Lots"
 msgstr "Número de parcelas fiscales"
@@ -3540,9 +3784,8 @@ msgstr "Visualización de la unidad de medida del consumo de agua"
 msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
 msgstr "Visualización de la unidad de medida para la intensidad de uso del agua (WUI)"
 
-#, fuzzy
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
-msgstr "ADVERTENCIA: Ha modificado los criterios con los que se compararán y combinarán los datos de su organización. Una vez que se ha añadido una columna a los criterios de correspondencia de una organización, no se puede eliminar mientras la organización tenga inventario."
+msgstr "ADVERTENCIA: Ha modificado los criterios con los que se compararán y fusionarán los datos de su organización. Si la organización utiliza más de un nivel de acceso, una vez que se haya añadido una columna a los criterios de coincidencia de una organización, no se podrá eliminar mientras la organización tenga inventario. Los criterios de coincidencia se pueden eliminar en organizaciones que no utilicen niveles de acceso."
 
 #, fuzzy
 msgid "OVERWRITE_COLUMN_DATA_QUESTION"
@@ -3560,6 +3803,9 @@ msgstr "Mostrar sólo columnas rellenas"
 #, fuzzy
 msgid "Only one terms of service is allowed to be active"
 msgstr "Sólo se permite que esté activa una condición de servicio"
+
+msgid "Optional Data Exports"
+msgstr "Exportaciones de datos opcionales"
 
 #, fuzzy
 msgid "Options"
@@ -3591,6 +3837,9 @@ msgstr "Configuración de la organización"
 
 msgid "Organization Sharing"
 msgstr "Organización Compartida"
+
+msgid "Organization's identifier name"
+msgstr "Nombre Identificador de la Organización"
 
 #, fuzzy
 msgid "Organizations"
@@ -3809,6 +4058,9 @@ msgstr "Porcentaje (%)"
 msgid "Permanently delete extra_data columns and all associated data"
 msgstr "Eliminar permanentemente las columnas extra_data y todos los datos asociados"
 
+msgid "Plan last Run at"
+msgstr "Planificar la última ejecución en"
+
 #: seed/landing/templates/landing/password_set.html:16
 #, fuzzy
 msgid "Please enter your new password twice so we can verify you typed it in correctly."
@@ -3827,6 +4079,9 @@ msgstr "Vaya a la siguiente página y cree su cuenta:"
 #, fuzzy
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Únete al foro de desarrolladores de SEED-Platform, donde podrás ponerte en contacto con otros desarrolladores."
+
+msgid "Please review SEED Headers. Duplicate values are not allowed."
+msgstr "Revise los encabezados SEED. No se permiten valores duplicados."
 
 #, fuzzy
 msgid "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
@@ -4128,6 +4383,9 @@ msgstr "Renombrar columna"
 msgid "RENAME_SYS_LEVEL_COL"
 msgstr "Renombrar permite a los usuarios cambiar el nombre del campo subyacente mostrado en Nombre de columna / Nombre de campo. Cambiar el nombre de un campo significa que ese campo se cambiará en todos los datos de la organización."
 
+msgid "REQUIRE_IN_PLAN_DESC"
+msgstr "Identifique la columna SEED (booleana) que se utiliza para indicar si una propiedad debe ser obligatoria en el plan, independientemente de su consumo energético. Un valor de verdadero (1) indica que la propiedad se priorizará y aparecerá en primer lugar en el porcentaje de instalaciones configurado anteriormente. Un valor de falso (0) indica que la propiedad puede considerarse para su inclusión en el porcentaje de instalaciones, pero es posible que no se incluya en el plan debido a su consumo energético. Si esta columna aún no existe, créela en la página Configuración de columnas."
+
 #, fuzzy
 msgid "REVIEW YOUR DATA MAPPINGS"
 msgstr "REVISE SUS ASIGNACIONES DE DATOS"
@@ -4135,6 +4393,9 @@ msgstr "REVISE SUS ASIGNACIONES DE DATOS"
 #, fuzzy
 msgid "REVIEW_MATCHING_CRITERIA"
 msgstr "Revise sus criterios de correspondencia en la página Configuración de columna antes de importar datos por primera vez. No podrá eliminar campos de los criterios de correspondencia después de añadir los datos a su organización."
+
+msgid "RUNNING_SUM_PERCENTAGE_DESC"
+msgstr "Establezca la fracción porcentual (entre 0 y 1) de instalaciones a incluir en el plan en función del uso total de energía."
 
 #, fuzzy
 msgid "Read more here."
@@ -4266,6 +4527,9 @@ msgstr "Plazo de presentación de informes"
 msgid "Reports"
 msgstr "Informes"
 
+msgid "Require In Plan Column"
+msgstr "Requerir columna en el plan"
+
 msgid "Require two-factor authentication"
 msgstr "Exigir autenticación de dos factores"
 
@@ -4313,6 +4577,9 @@ msgstr "Puesta en servicio a posteriori"
 msgid "Retry"
 msgstr "Reintentar"
 
+msgid "Return to Portfolio Summary Page"
+msgstr "Regresar a la página de resumen de la cartera"
+
 #, fuzzy
 msgid "Review Changes"
 msgstr "Revisar los cambios"
@@ -4320,6 +4587,9 @@ msgstr "Revisar los cambios"
 #, fuzzy
 msgid "Review Mapped Data"
 msgstr "Revisar datos cartográficos"
+
+msgid "Review and Sync to Salesforce"
+msgstr "Revisar y sincronizar con Salesforce"
 
 #, fuzzy
 msgid "Review matches"
@@ -4393,6 +4663,19 @@ msgstr "Ejecutar Id"
 #, fuzzy
 msgid "Run Status"
 msgstr "Estado de ejecución"
+
+msgid "Runs"
+msgstr "Ejecuciones"
+
+msgid "SALESFORCE_BENCHMARK_INTEGRATION_DESC"
+msgstr "Esta integración le permite conectar su organización con una instancia de Salesforce para optimizar la gestión de datos y la automatización del flujo de trabajo. Esta integración presupone que Salesforce está configurado con objetos de propiedad y referencia, que se actualizarán con datos de propiedad individuales de SEED."
+
+msgid "SALESFORCE_PORTFOLIO_INTEGRATION_DESC"
+msgstr "Esta integración también le permite conectar su organización con una instancia de Salesforce, pero supone que Salesforce está configurado con objetos de Objetivo e Informe anual que se actualizarán con datos de nivel de cartera (agregados de múltiples propiedades en SEED)."
+
+#, fuzzy
+msgid "SEED Field Containing Organization's Identifier"
+msgstr "Campo SEED que contiene el identificador de la organización"
 
 #, fuzzy
 msgid "SEED Field Name"
@@ -4474,6 +4757,9 @@ msgstr "Si su registro de referencia de Salesforce almacena una relación de con
 #, fuzzy
 msgid "SF_BENCHMARK_ID_FIELDNAME_TEXT"
 msgstr "Nombre de campo del campo de Salesforce que se utiliza para identificar de forma exclusiva los registros de Benchmark. Ejemplo: 'Salesforce_Benchmark_ID__c'"
+
+msgid "SF_BUILDING_DESC"
+msgstr "Esta integración permite conectar su organización con una instancia de Salesforce para optimizar la gestión de datos y la automatización de flujos de trabajo. Esta integración presupone que Salesforce está configurado con objetos de Propiedad y Referencia, que se actualizarán con los datos individuales de las propiedades desde SEED."
 
 #, fuzzy
 msgid "SF_COMPLIANCE_LABEL_TEXT"
@@ -4566,6 +4852,12 @@ msgstr "Introduzca la dirección de correo electrónico que se utilizará para n
 #, fuzzy
 msgid "SF_MAPPINGS_TEXT"
 msgstr "Asigne los campos de su objeto de referencia de Salesforce a columnas en SEED. Utilice el Administrador de Objetos en Salesforce para recuperar los nombres de campo (no las etiquetas de campo), ej: Cycle__c (no Cycle). Estos campos sólo se enviarán a Salesforce cuando una propiedad tenga aplicada la etiqueta correspondiente."
+
+msgid "SF_PORTFOLIO_CONNECTION_TEXT"
+msgstr "Ingrese los datos de conexión de su instancia de Salesforce. Esto supone que su Salesforce está configurado con una aplicación de cliente externa para SEED."
+
+msgid "SF_PORTFOLIO_DESC"
+msgstr "Esta integración también le permite conectar su organización con una instancia de Salesforce, pero presupone que Salesforce está configurado con objetos de Objetivo e Informe Anual que se actualizarán con datos a nivel de cartera (agregados a partir de múltiples propiedades en SEED)."
 
 #, fuzzy
 msgid "SF_SCHEDULED_UPDATE_TEXT"
@@ -4662,6 +4954,9 @@ msgstr "Haga clic en los botones de edición para editar etiquetas individuales.
 msgid "SQUARE_FOOTAGE_THRESHOLD_HELP"
 msgstr "Los metros cuadrados brutos que se utilizarán como umbral de comparación en los cálculos"
 
+msgid "STEAM_ENERGY_USAGE_DESC"
+msgstr "Identifique la columna SEMILLA utilizada para almacenar el uso de energía de vapor."
+
 #, fuzzy
 msgid "STEP 1: Map Your Data"
 msgstr "PASO 1: Mapee sus datos"
@@ -4682,6 +4977,9 @@ msgstr "Compruébelo antes de continuar."
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Actualice la configuración de la columna de geocodificación en la página de configuración de columnas de su organización."
 
+msgid "SYNC_SALESFORCE_DESC"
+msgstr "Revise los detalles a continuación. Cuando esté satisfecho, haga clic en los botones de sincronización a continuación para enviar los datos de SEED a su instancia de Salesforce. El primer botón sincronizará los datos con el objetivo y los objetos del informe anual actual. El segundo botón sincronizará todos los objetos históricos del informe anual."
+
 #, fuzzy
 msgid "Salesforce"
 msgstr "Salesforce"
@@ -4689,6 +4987,12 @@ msgstr "Salesforce"
 #, fuzzy
 msgid "Salesforce Account Object Record Type"
 msgstr "Tipo de registro de objeto de cuenta de Salesforce"
+
+msgid "Salesforce Annual Report"
+msgstr "Informe anual de Salesforce"
+
+msgid "Salesforce Connection"
+msgstr "Conexión con Salesforce"
 
 #, fuzzy
 msgid "Salesforce Connection Parameters"
@@ -4717,6 +5021,9 @@ msgstr "Integración con Salesforce"
 msgid "Salesforce Unique Benchmark ID Fieldname"
 msgstr "ID único de referencia de Salesforce Nombre de campo"
 
+msgid "Salesforce connection successful"
+msgstr "Conexión con Salesforce exitosa"
+
 #, fuzzy
 msgid "Save"
 msgstr "Guardar"
@@ -4728,6 +5035,9 @@ msgstr "Guardar cambios"
 #, fuzzy
 msgid "Save Concatenation"
 msgstr "Guardar concatenación"
+
+msgid "Save Facilities Plan"
+msgstr "Plan de instalaciones de ahorro"
 
 #, fuzzy
 msgid "Save Mappings"
@@ -4803,6 +5113,12 @@ msgstr "Seleccione las propiedades que desea actualizar"
 msgid "Select a Custom Report to get started!"
 msgstr "Seleccione un informe personalizado para empezar"
 
+msgid "Select a Cycle to compare against the Baseline Cycle"
+msgstr "Seleccione un ciclo para compararlo con el ciclo de referencia"
+
+msgid "Select a Facilities Plan Run from the dropdown below"
+msgstr "Seleccione una ejecución de plan de instalaciones del menú desplegable a continuación"
+
 msgid "Select a Goal Type. A Standard goal will calculate a standard EUI per sqft. A Transaction goal will also calculate an EUI per transaction."
 msgstr "Seleccione un tipo de objetivo. Un objetivo estándar calculará un EUI estándar por pie cuadrado. Un objetivo de transacción también calculará un EUI por transacción."
 
@@ -4810,12 +5126,25 @@ msgstr "Seleccione un tipo de objetivo. Un objetivo estándar calculará un EUI 
 msgid "Select a Program to get started!"
 msgstr "Seleccione un programa para empezar"
 
+msgid "Select a Salesforce Annual Report to associate with this Cycle"
+msgstr "Seleccione un informe anual de Salesforce para asociarlo con este ciclo"
+
 #, fuzzy
 msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
 msgstr "Seleccione una columna para mostrar los datos en este eje.  Sólo se mostrarán las columnas con uno de estos tipos de datos:"
 
 msgid "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
 msgstr "Seleccione una columna para mostrar los datos en este eje. Sólo se mostrarán las columnas con uno de estos tipos de datos:"
+
+#, fuzzy
+msgid "Select a cycle to copy inventory to."
+msgstr "Seleccione un ciclo para copiar el inventario."
+
+msgid "Select a cycle to use as the baseline for comparison."
+msgstr "Seleccione un ciclo para utilizarlo como base para la comparación."
+
+msgid "Select a profile to specify which fields should be copied. If you do not have any column list profiles, dismiss the modal and create one in the Column List Profiles tab first."
+msgstr "Seleccione un perfil para especificar qué campos se deben copiar. Si no tiene ningún perfil de lista de columnas, cierre la ventana modal y cree uno primero en la pestaña Perfiles de lista de columnas."
 
 #, fuzzy
 msgid "Select columns from the list below to make them appear in your Buildings List table."
@@ -4855,6 +5184,9 @@ msgstr "Seleccione el tipo de archivo(s) que desea añadir a"
 #, fuzzy
 msgid "Select which columns to include in the list:"
 msgstr "Seleccione las columnas que desea incluir en la lista:"
+
+msgid "Selected Facilities Plan"
+msgstr "Plan de Instalaciones Seleccionadas"
 
 #, fuzzy
 msgid "Selected Properties"
@@ -5027,6 +5359,9 @@ msgstr "Estado (Propiedad)"
 msgid "State (Tax Lot)"
 msgstr "Estado (Lote fiscal)"
 
+msgid "Steam Energy Usage Column"
+msgstr "Columna de consumo de energía de vapor"
+
 #, fuzzy
 msgid "Step 1: Add Access Levels"
 msgstr "Paso 1: Añadir niveles de acceso"
@@ -5086,6 +5421,12 @@ msgstr "Resumen"
 #, fuzzy
 msgid "Switch Profiles"
 msgstr "Perfiles de los interruptores"
+
+msgid "Sync Baseline and Current Report"
+msgstr "Sincronización de la línea base y el informe actual"
+
+msgid "Sync Historical Reports"
+msgstr "Sincronizar informes históricos"
 
 msgid "System"
 msgstr "Sistema"
@@ -5349,6 +5690,9 @@ msgstr "La página de resumen de la cartera compara 2 ciclos para calcular el pr
 msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 msgstr "También hay un enlace al foro de usuarios de la plataforma SEED, donde puedes ponerte en contacto con otros usuarios."
 
+msgid "There is no cycle selected for comparison yet"
+msgstr "Aún no hay ningún ciclo seleccionado para comparar"
+
 #, fuzzy
 msgid "There was an error loading the page"
 msgstr "Se ha producido un error al cargar la página"
@@ -5377,6 +5721,9 @@ msgstr "Este nombre de etiqueta ya está ocupado."
 #, fuzzy
 msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "Esta contraseña debe contener al menos %(quantity)d %(type)s caracteres."
+
+msgid "This plan has not yet been run"
+msgstr "Este plan aún no se ha ejecutado"
 
 #, fuzzy
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
@@ -5474,6 +5821,9 @@ msgstr "Total Propiedades"
 #, fuzzy
 msgid "Total rows in the import file"
 msgstr "Total de filas del fichero de importación"
+
+msgid "Try Again"
+msgstr "Intentar otra vez"
 
 msgid "Two Factor Profile"
 msgstr "Perfil de dos factores"
@@ -5625,6 +5975,9 @@ msgstr "¿Cálculos de resumen de cartera inesperados?"
 msgid "Uniformat Category"
 msgstr "Categoría Uniformat"
 
+msgid "Unique name which will be displayed in the dropdown selector"
+msgstr "Nombre único que se mostrará en el selector desplegable"
+
 #, fuzzy
 msgid "Units"
 msgstr "Unidades"
@@ -5644,6 +5997,9 @@ msgstr "Exportaciones fallidas"
 msgid "Until last date of"
 msgstr "Hasta la última fecha de"
 
+msgid "Update"
+msgstr "Actualizar"
+
 #, fuzzy
 msgid "Update Charts"
 msgstr "Actualizar gráficos"
@@ -5655,6 +6011,9 @@ msgstr "Actualizar datos derivados"
 #, fuzzy
 msgid "Update Filters"
 msgstr "Actualizar filtros"
+
+msgid "Update Password"
+msgstr "Actualizar Contraseña"
 
 #, fuzzy
 msgid "Update Property Labels"
@@ -5830,6 +6189,9 @@ msgstr "Ver el seguimiento del cumplimiento"
 #, fuzzy
 msgid "View Project"
 msgstr "Ver proyecto"
+
+msgid "View Report"
+msgstr "Ver informe"
 
 #, fuzzy
 msgid "View by Property"

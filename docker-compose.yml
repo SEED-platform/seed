@@ -4,13 +4,13 @@
 services:
   db-postgres:
     container_name: seed_postgres
-    image: timescale/timescaledb-postgis:latest-pg12
+    image: timescale/timescaledb-ha:pg18.3-ts2.26.4-oss
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
     volumes:
-      - seed_pgdata:/var/lib/postgresql/data
+      - seed_pgdata:/home/postgres/pgdata
     ports:
       - "5432:5432"
     logging:
@@ -19,7 +19,7 @@ services:
         max-file: "5"
   db-redis:
     container_name: seed_redis
-    image: redis:5.0.1
+    image: redis:8-alpine
   web:
     container_name: seed_web
     image: seedplatform/seed:latest

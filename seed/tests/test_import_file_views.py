@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -38,6 +38,7 @@ from seed.models import (
 )
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
+from seed.utils.cache import get_cache_raw
 from seed.utils.organizations import create_organization
 from seed.views.v3.import_files import ImportFileViewSet, convert_first_five_rows_to_list
 
@@ -900,7 +901,9 @@ class TestViewsMatching(DataMappingBaseTestCase):
         resp = self.client.post(url, content_type="application/json")
 
         self.assertEqual(200, resp.status_code)
-        mapped_property = json.loads(resp.content)["properties"][0]
+        unique_id = json.loads(resp.content)["unique_id"]
+        mapped_property = get_cache_raw(unique_id)
+
         unitted_column_names = ["gross_floor_area", "site_eui"]
         for column_name, val in mapped_property.items():
             for unitted_column_name in unitted_column_names:
@@ -1056,6 +1059,17 @@ class TestViewsMatching(DataMappingBaseTestCase):
         #
         # # verify that the coparent id is now in the view
         # self.assertTrue(prop.exists())
+
+    def test_verify_data_type_mapping(self):
+        self.assertEqual(self.import_file.mapping_error_messages, None)
+        url = reverse("api:v3:import_files-verify-data-type-mapping", args=[self.import_file.pk])
+        url += f"?organization_id={self.org.pk}"
+        resp = self.client.post(url, content_type="application/json")
+        self.assertEqual(resp.status_code, 200)
+        # request modifies import_file
+        self.import_file.refresh_from_db()
+        exp_errs = "Blank values detected in columns: [ ENERGY STAR Score, Gross Floor Area, Recent Sale Date ]. Review import file for data type mismatches or click Save Mappings to import as displayed below."
+        self.assertEqual(self.import_file.mapping_error_messages, exp_errs)
 
 
 class TestImportFileViewSetPermissions(AccessLevelBaseTestCase, DataMappingBaseTestCase):

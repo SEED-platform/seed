@@ -1,11 +1,9 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 Search methods pertaining to buildings.
 """
-
-from __future__ import annotations
 
 import json
 import logging
@@ -39,10 +37,7 @@ def search_properties(q, fieldnames=None, queryset=None):
     if queryset is None:
         return PropertyState.objects.none()
     if fieldnames is None:
-        fieldnames = [
-            "pm_parent_property_id" "jurisdiction_property_id" "address_line_1",
-            "property_name",
-        ]
+        fieldnames = ["pm_parent_property_id", "jurisdiction_property_id", "address_line_1", "property_name"]
     return _search(q, fieldnames, queryset)
 
 
@@ -50,7 +45,7 @@ def search_taxlots(q, fieldnames=None, queryset=None):
     if queryset is None:
         return TaxLotState.objects.none()
     if fieldnames is None:
-        fieldnames = ["jurisdiction_tax_lot_id", "address" "block_number"]
+        fieldnames = ["jurisdiction_tax_lot_id", "address", "block_number"]
     return _search(q, fieldnames, queryset)
 
 

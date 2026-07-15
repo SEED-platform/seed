@@ -1,12 +1,11 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import copy
-from datetime import datetime
+from datetime import UTC, datetime
 
-import pytz
 from lxml import etree
 
 BUILDINGSYNC_URI = "http://buildingsync.net/schemas/bedes-auc/2019"
@@ -130,7 +129,7 @@ def apply_mapping(element, mapping, messages, namespaces, xpaths_as_keys=False):
         try:
             selection = element.xpath(value_map["xpath"], namespaces=namespaces)
         except Exception as e:
-            raise Exception(f'Error on {value_map["xpath"]}: {e}')
+            raise Exception(f"Error on {value_map['xpath']}: {e}")
 
         if len(selection) == 0:
             if value_map["type"] == "value":
@@ -325,8 +324,7 @@ def to_bool(value):
 
 def to_datetime(value):
     try:
-        res = pytz.utc.localize(datetime.strptime(value, "%Y-%m-%dT%H:%M:%S"))
-        return res
+        return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=UTC)
     except ValueError as e:
         # parsing datetime with a timezone containing a colon is problematic for python < 3.7
         # https://stackoverflow.com/questions/30999230/how-to-parse-timezone-with-colon

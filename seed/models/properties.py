@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -22,6 +22,7 @@ from quantityfield.units import ureg
 from seed.data_importer.models import ImportFile
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
+from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.models import (
     DATA_STATE,
@@ -35,7 +36,7 @@ from seed.models.models import (
 from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
 from seed.utils.generic import compare_orgs_between_label_and_target, obj_to_dict, split_model_fields
-from seed.utils.time import convert_datestr, convert_to_js_timestamp
+from seed.utils.time_utils import convert_datestr, convert_to_js_timestamp
 from seed.utils.ubid import generate_ubidmodels_for_state
 
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
@@ -123,18 +124,18 @@ class Property(models.Model):
 
 @receiver(pre_save, sender=Property)
 def set_default_access_level_instance(sender, instance, **kwargs):
-    """If ALI not set, put this Property as the root."""
+    """If ALI not set, put this Property at the root."""
     if instance.access_level_instance_id is None:
         root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
         instance.access_level_instance_id = root.id
 
     bad_taxlotproperty = (
-        TaxLotProperty.objects.filter(property_view__property=instance)
-        .exclude(taxlot_view__taxlot__access_level_instance=instance.access_level_instance)
+        TaxLotProperty.objects.filter(property_view__property_id=instance.id)
+        .exclude(taxlot_view__taxlot__access_level_instance_id=instance.access_level_instance_id)
         .exists()
     )
     if bad_taxlotproperty:
-        raise ValidationError("cannot change property's ALI to AlI different than related taxlots.")
+        raise ValidationError("cannot change property's ALI to ALI different than related taxlots.")
 
 
 @receiver(post_save, sender=Property)
@@ -148,8 +149,8 @@ def post_save_property(sender, instance, created, **kwargs):
 class PropertyState(models.Model):
     """Store a single property. This contains all the state information about the property
 
-    For property_timezone, use the pytz timezone strings. The US has the following and a full
-    list can be created by calling pytz.all_timezones in Python:
+    For property_timezone, use IANA timezone strings. The US has the following and a full
+    list is available from ``zoneinfo.available_timezones()``:
         * US/Alaska
         * US/Aleutian
         * US/Arizona
@@ -338,11 +339,11 @@ class PropertyState(models.Model):
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        index_together = [
-            ["hash_object"],
-            ["import_file", "data_state"],
-            ["import_file", "data_state", "merge_state"],
-            ["import_file", "data_state", "source_type"],
+        indexes = [
+            models.Index(fields=["hash_object"]),
+            models.Index(fields=["import_file", "data_state"]),
+            models.Index(fields=["import_file", "data_state", "merge_state"]),
+            models.Index(fields=["import_file", "data_state", "source_type"]),
         ]
 
     def promote(self, cycle, property_id=None):
@@ -520,7 +521,7 @@ class PropertyState(models.Model):
                     if (log.parent1_id is None and log.parent2_id is None) or log.name == "Manual Edit":
                         break
 
-                    # initialize the tree to None everytime. If not new tree is found, then we will not iterate
+                    # initialize the tree to None every time. If not new tree is found, then we will not iterate
                     tree = None
 
                     # Check if parent2 has any other parents or is the original import creation. Start with parent2
@@ -847,6 +848,13 @@ class PropertyState(models.Model):
 
         return merged_state
 
+    def default_display_value(self):
+        try:
+            field = self.organization.property_display_field
+            return self.extra_data.get(field) or getattr(self, field)
+        except AttributeError:
+            return None
+
 
 @receiver(pre_delete, sender=PropertyState)
 def pre_delete_state(sender, **kwargs):
@@ -889,7 +897,7 @@ class PropertyView(models.Model):
             "property",
             "cycle",
         )
-        index_together = [["state", "cycle"]]
+        indexes = [models.Index(fields=["state", "cycle"])]
 
     def __init__(self, *args, **kwargs):
         self._import_filename = kwargs.pop("import_filename", None)
@@ -931,9 +939,60 @@ class PropertyView(models.Model):
     def import_filename(self):
         """Get the import file name form the audit logs"""
         if not getattr(self, "_import_filename", None):
-            audit_log = PropertyAuditLog.objects.filter(view_id=self.pk).order_by("created").first()
+            # Tie-break on id for stable results if created timestamps are equal.
+            audit_log = PropertyAuditLog.objects.filter(view_id=self.pk).order_by("created", "id").first()
             self._import_filename = audit_log.import_filename
         return self._import_filename
+
+    def copy_to_cycle(self, cycle: Cycle, columns: list[Column]):
+        """
+        Creates a view in the give cycle with the same property and a state with given column matching
+        this view's state
+
+        columns_ids: copied column, empty array assume all columns. matching criteria will be added.
+        returns: view if created, None if already existed.
+        """
+        from seed.models.auditlog import AUDIT_USER_CREATE
+        from seed.serializers.properties import PropertyStateSerializer, PropertyStateWritableSerializer
+
+        prop = self.property
+        state = PropertyStateSerializer(self.state).data
+
+        # if view already exist, exit
+        if PropertyView.objects.filter(property=prop, cycle=cycle).count() > 0:
+            return None
+
+        # build new state dict
+        new_state_dict = {"organization": prop.organization_id, "extra_data": {}, "derived_data": {}}
+        for column in columns:
+            if column.is_extra_data:
+                new_state_dict["extra_data"][column.column_name] = state["extra_data"].get(column.column_name)
+            else:
+                new_state_dict[column.column_name] = state[column.column_name]
+
+        # create new state with chosen columns copied
+        new_property_state_serializer = PropertyStateWritableSerializer(data=new_state_dict)
+        if new_property_state_serializer.is_valid(raise_exception=True):
+            new_state = new_property_state_serializer.save()
+
+        #  Add the state to a view
+        new_view = PropertyView.objects.create(property=prop, cycle=cycle, state=new_state)
+
+        # Log this appropriately - "Import Creation" ?
+        PropertyAuditLog.objects.create(
+            organization_id=prop.organization_id,
+            parent1=None,
+            parent2=None,
+            parent_state1=None,
+            parent_state2=None,
+            state=new_state,
+            name="Copied from other cycle",
+            description="Copied from other cycle",
+            import_filename=None,
+            record_type=AUDIT_USER_CREATE,
+        )
+
+        return new_view
 
 
 @receiver(post_save, sender=PropertyView)
@@ -981,7 +1040,7 @@ class PropertyAuditLog(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
-        index_together = [["state", "name"], ["parent_state1", "parent_state2"]]
+        indexes = [models.Index(fields=["state", "name"]), models.Index(fields=["parent_state1", "parent_state2"])]
 
 
 @receiver(pre_save, sender=PropertyState)

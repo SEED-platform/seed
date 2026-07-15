@@ -68,6 +68,13 @@ http {
         '' close;
     }
 
+    # Preserve the original scheme from an upstream TLS terminator when
+    # present; otherwise fall back to nginx's local connection scheme.
+    map $http_x_forwarded_proto $seed_forwarded_proto {
+        ~*^https?$ $http_x_forwarded_proto;
+        default    $scheme;
+    }
+
 
     # Specifies the main log format.
     log_format main '$remote_addr - $remote_user [$time_local] "$request" '
@@ -83,7 +90,7 @@ http {
 
     # the upstream component nginx needs to connect to
     upstream seed_upstream {
-        server unix:///tmp/uwsgi-seed.sock;
+        server 127.0.0.1:8000;
     }
 
     # helper to apply CSP only to html responses
@@ -136,7 +143,7 @@ http {
         }
 
         location /api {
-            include seed-uwsgi.conf;
+            include seed-proxy.conf;
             include seed-security-headers.conf;
             # Disable API caching
             add_header Cache-Control "no-cache, no-store";
@@ -159,8 +166,22 @@ http {
             }
         }
 
+        # Redirect Angular requests without trailing slash
+        location = /ng-app {
+            return 301 $uri/;
+        }
+
+        # SEED Angular
+        location /ng-app/ {
+            alias /seed/collected_static/ng-app/;
+            index index.html;
+
+            # try to serve the exact file, otherwise fall back to index.html so the SPA router can handle the URL
+            try_files $uri /ng-app/index.html;
+        }
+
         location / {
-            include seed-uwsgi.conf;
+            include seed-proxy.conf;
         }
     }
 }

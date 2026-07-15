@@ -1,24 +1,30 @@
 from django.db.models import Q
 from django.db.utils import IntegrityError
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import DataLogger, PropertyView, Sensor
 from seed.utils.api import OrgMixin, ProfileIdMixin
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api_schema import EmptySerializer, swagger_auto_schema_org_query_param
 from seed.utils.sensors import PropertySensorReadingsExporter
 
 
 class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     # For the Swagger page, GenericAPIView asserts a value exists for `queryset`
     queryset = Sensor.objects.none()
+    serializer_class = EmptySerializer
 
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(property_view_id_kwarg="property_pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(property_view_id_kwarg="property_pk"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def usage(self, request, property_pk):
         """
@@ -49,9 +55,13 @@ class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profile
         return exporter.readings_and_column_defs(interval, page, per_page)
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(property_view_id_kwarg="property_pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(property_view_id_kwarg="property_pk"),
+        ]
+    )
     def list(self, request, property_pk):
         """
         Retrieves sensors for the property
@@ -70,19 +80,24 @@ class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profile
                         "display_name": sensor.display_name,
                         "location_description": sensor.location_description,
                         "description": sensor.description,
-                        "type": sensor.sensor_type,
+                        "sensor_type": sensor.sensor_type,
                         "units": sensor.units,
                         "column_name": sensor.column_name,
                         "data_logger": data_logger.display_name,
+                        "data_logger_id": data_logger.id,
                     }
                 )
 
         return res
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(property_view_id_kwarg="property_pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(property_view_id_kwarg="property_pk"),
+        ]
+    )
     def destroy(self, request, property_pk, pk):
         """
         Retrieves sensors for the property
@@ -106,9 +121,13 @@ class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profile
         )
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(property_view_id_kwarg="property_pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(property_view_id_kwarg="property_pk"),
+        ]
+    )
     def update(self, request, property_pk, pk):
         org_id = self.get_organization(request)
         data = request.data

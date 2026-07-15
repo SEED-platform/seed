@@ -1,12 +1,14 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import re
 from collections import namedtuple
+from collections.abc import Callable
 from functools import wraps
 from importlib import import_module
+from typing import Any
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
@@ -84,7 +86,7 @@ def get_all_urls(urllist, prefix=""):
 # pylint: disable=global-variable-not-assigned
 # API endpoint decorator
 # simple list of all 'registered' endpoints
-endpoints = []
+endpoints: list[Callable[..., Any]] = []
 
 
 def api_endpoint(fn):
@@ -106,29 +108,6 @@ def api_endpoint(fn):
             request.user = user
 
         return fn(request, *args, **kwargs)
-
-    return _wrapped
-
-
-def api_endpoint_class(fn):
-    """
-    Decorator function to mark a view as allowed to authenticate via API key.
-
-    Decorator must be used before login_required or has_perm to set
-    request.user for those decorators.
-    """
-    # mark this function as an api endpoint for get_api_endpoints to find
-    fn.is_api_endpoint = True
-    endpoints.append(fn)
-
-    @wraps(fn)
-    def _wrapped(self, request, *args, **kwargs):
-        user = get_api_request_user(request)
-        if user:
-            request.is_api_request = True
-            request.user = user
-
-        return fn(self, request, *args, **kwargs)
 
     return _wrapped
 

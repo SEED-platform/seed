@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -7,7 +7,7 @@ from datetime import datetime
 
 from django.urls import reverse_lazy
 
-from seed.models import Column, PropertyViewLabel
+from seed.models import Column, CycleGoal, PropertyViewLabel
 from seed.models.data_quality import StatusLabel
 from seed.test_helpers.fake import (
     FakeColumnFactory,
@@ -59,7 +59,6 @@ class PropertyLabelViewTests(AccessLevelBaseTestCase):
 
         goal_details = {
             "baseline_cycle": self.cycle1,
-            "current_cycle": self.cycle2,
             "access_level_instance": self.root_ali,
             "eui_column1": Column.objects.get(organization=self.org.id, column_name="source_eui"),
             "area_column": Column.objects.get(organization=self.org.id, column_name="gross_floor_area"),
@@ -67,6 +66,7 @@ class PropertyLabelViewTests(AccessLevelBaseTestCase):
             "name": "goal1",
         }
         self.goal1 = self.goal_factory.get_goal(**goal_details)
+        self.cycle_goal = CycleGoal.objects.create(current_cycle=self.cycle2, goal=self.goal1, salesforce_annual_report_id="123")
         goal_details["name"] = "goal2"
         self.goal2 = self.goal_factory.get_goal(**goal_details)
 
@@ -79,13 +79,13 @@ class PropertyLabelViewTests(AccessLevelBaseTestCase):
         self.pvl6 = PropertyViewLabel.objects.create(propertyview=self.view6, statuslabel=labels[4], goal=self.goal2)
 
     def test_property_view_label_viewset(self):
-        url = reverse_lazy("api:v3:property_view_labels-list-by-goal")
-        params = {"organization_id": self.org.id, "goal_id": self.goal1.id, "cycle": "current"}
+        url = reverse_lazy("api:v3:property_view_labels-list-by-cycle-goal")
+        params = {"organization_id": self.org.id, "goal_id": self.goal1.id, "cycle_id": self.cycle_goal.current_cycle.id}
         response = self.client.get(url, params, content_type="application/json")
         labels = response.json()
         assert len(labels) == 0
 
-        params["cycle"] = "baseline"
+        params["cycle_id"] = self.goal1.baseline_cycle.id
         response = self.client.get(url, params, content_type="application/json")
         labels = response.json()
         assert len(labels) == 4
@@ -93,3 +93,16 @@ class PropertyLabelViewTests(AccessLevelBaseTestCase):
         assert labels[1]["goal"] is None
         assert labels[2]["goal"] == self.goal1.id
         assert labels[3]["goal"] == self.goal1.id
+
+    def test_list_by_cycle_goal_returns_goal_and_unattached_labels(self):
+        url = reverse_lazy("api:v3:property_view_labels-list-by-cycle-goal")
+        params = {"organization_id": self.org.id, "goal_id": self.goal1.id, "cycle_id": self.goal1.baseline_cycle.id}
+
+        response = self.client.get(url, params, content_type="application/json")
+        assert response.status_code == 200
+
+        labels = response.json()
+        assert len(labels) == 4
+        goals = [label["goal"] for label in labels]
+        assert goals.count(None) == 2
+        assert goals.count(self.goal1.id) == 2

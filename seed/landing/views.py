@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -19,7 +19,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.csrf import csrf_protect
 from django_otp import devices_for_user
@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 
 def landing_page(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect(reverse("seed:home"))
+        return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
     else:
         return redirect("two_factor:login")
 
@@ -135,7 +135,7 @@ def account_activation_sent(request):
 
 def activate(request, uidb64, token):
     try:
-        uid = force_text(urlsafe_base64_decode(uidb64))
+        uid = force_str(urlsafe_base64_decode(uidb64))
         user = SEEDUser.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, SEEDUser.DoesNotExist):
         user = None
@@ -144,7 +144,7 @@ def activate(request, uidb64, token):
         user.is_active = True
         user.save()
         login(request, user)
-        return HttpResponseRedirect(reverse("seed:home"))
+        return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
     else:
         return render(request, "account_activation_invalid.html", {"debug": settings.DEBUG})
 
@@ -212,17 +212,22 @@ class CustomLoginView(LoginView):
         return self.handle_2fa_prompt(response, user)
 
     def handle_2fa_prompt(self, response, user):
-        # django-two-factor-auth will always try to redirect users to the 2 factor profile.
-        # override and send users home if they have already been prompted.
+        # django-two-factor-auth will always try to redirect users to its default
+        # post-login destination. Keep the redirect aligned with SEED's app home.
         if not getattr(user, "prompt_2fa", False) and isinstance(response, HttpResponseRedirect):
-            # user has already been prompted
-            return HttpResponseRedirect(reverse("seed:home"))
+            return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
         else:
             user.prompt_2fa = False
             user.save()
-        return HttpResponseRedirect("/app/#/profile/two_factor_profile")
+        return HttpResponseRedirect(settings.LOGIN_REDIRECT_URL)
 
-    def get(self, request, *args, **kwargs):
-        # add env var to session for conditional frontend display
-        request.session["include_acct_reg"] = settings.INCLUDE_ACCT_REG
-        return super().get(request, *args, **kwargs)
+    def get_context_data(self, form, **kwargs):
+        context = super().get_context_data(form, **kwargs)
+        context.setdefault("other_devices", [])
+        context.setdefault("backup_tokens", 0)
+        context.setdefault("cancel_url", "")
+
+        # Conditionally show the `Create my Account` button
+        context.setdefault("context", {})["self_registration"] = settings.INCLUDE_ACCT_REG
+
+        return context

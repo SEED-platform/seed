@@ -3,6 +3,7 @@ Developer Resources
 
 .. toctree::
     migrations
+    postgres_upgrade
     translation
 
 General Notes
@@ -23,8 +24,8 @@ Ruff is used to statically verify code syntax. To run ruff locally call:
 
 .. code-block:: bash
 
-    tox -e precommit -- ruff
-    tox -e precommit -- ruff-format
+    uv run tox -e precommit -- ruff-check
+    uv run tox -e precommit -- ruff-format
 
 Python Type Hints
 ^^^^^^^^^^^^^^^^^
@@ -63,7 +64,7 @@ To run the same typechecking applied in CI (i.e., using mypy) you can run the fo
 
 .. code-block:: bash
 
-    tox -e mypy
+    uv run tox -e mypy
 
 
 Django Notes
@@ -292,8 +293,8 @@ user:
     psql -d seed -U seeduser -c 'CREATE EXTENSION IF NOT EXISTS postgis;'
     psql -d seed -U seeduser -c 'CREATE EXTENSION IF NOT EXISTS timescaledb;'
 
-    ./manage.py migrate
-    ./manage.py create_default_user \
+    uv run manage.py migrate
+    uv run manage.py create_default_user \
         --username=demo@seed-platform.org \
         --password=password \
         --organization=testorg
@@ -316,10 +317,10 @@ Restoring a Database Dump
 
     psql -d seed -U seeduser -c 'SELECT timescaledb_post_restore();'
 
-    ./manage.py migrate
+    uv run manage.py migrate
 
     # if needed add a user to the database
-    ./manage.py create_default_user \
+    uv run manage.py create_default_user \
         --username=demo@seed-platform.org \
         --password=password \
         --organization=testorg
@@ -375,19 +376,12 @@ Run coverage using
     coverage run manage.py test --settings=config.settings.test
     coverage report --fail-under=83
 
-Python compliance uses Ruff
-
-.. code-block:: bash
-
-    tox -e precommit -- ruff
-    tox -e precommit -- ruff-format
-
 JavaScript compliance uses ESLint, SCSS compliance uses StyleLint, and HTML compliance uses Prettier
 
 .. code-block:: bash
 
-    npm run lint
-    npm run lint:fix
+    pnpm lint
+    pnpm lint:fix
 
 Building Documentation
 ----------------------
@@ -436,14 +430,14 @@ Release Instructions
 To make a release do the following:
 
 #. Create a branch from develop to prepare the updates (e.g., 2.21.0-release-prep).
-#. Update the root ``package.json`` file with the release version number, and then run ``npm install``. Always use MAJOR.MINOR.RELEASE.
+#. Update the root ``package.json`` and ``pyproject.toml`` files with the release version number. Always use MAJOR.MINOR.RELEASE.
 #. Update the ``docs/sources/migrations.rst`` file with any required actions.
 #. Commit the changes and push the release prep branch to GitHub, then go to the Releases page to draft a new release which will generate the changelog.
 #. Copy the GitHub changelog results into ``CHANGELOG.md``. Cleanup the formatting and items as needed (make sure the spelling is correct, starts with a capital letter, if any PRs were missing the ``Do not publish`` label, etc.) and push the changelog update.
 #. Make sure that any new UI needing localization has been tagged for translation, and that any new translation keys exist in the lokalise.com project. (see :doc:`translation documentation <translation>`).
 #. Create PR for release preparation and merge after tests/reviews pass.
 #. Create a new Release using the develop branch and new release number as the tag (https://github.com/SEED-platform/seed/releases). Include list of changes since previous release (e.g., the additions to ``CHANGELOG.md``).
-#. Locally, merge the ``develop`` branch into the ``main`` branch and push.
+#. Locally, merge the ``develop`` branch into the ``main`` branch and push. :code:`git checkout main; git merge --ff-only origin develop`.
 #. Verify that the Docker versions are built and pushed to Docker Hub (https://hub.docker.com/r/seedplatform/seed/tags/).
 #. Publish the new documentation in the seed-platform website repository (see instructions above under Building Documentation).
 

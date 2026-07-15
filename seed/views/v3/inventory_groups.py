@@ -7,30 +7,49 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.db.models import Count, F, Q, Sum
 from django.http import JsonResponse
+from django.utils import timezone as django_timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import make_aware
+from drf_yasg.utils import swagger_auto_schema
 from pint import Quantity
-from pytz import timezone
 from rest_framework import response, status
 from rest_framework.decorators import action
 
-from config.settings.common import TIME_ZONE
 from seed.filters import ColumnListProfileFilterBackend
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
-from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, PropertyView
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
+from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, Property, PropertyView, System
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api import OrgMixin
+from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.meters import PropertyMeterReadingsExporter, update_meter_connection
-from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+from seed.utils.viewsets import ModelViewSetWithoutPatch, SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 logger = logging.getLogger()
 
 
-@method_decorator(name="list", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_viewer")])
-@method_decorator(name="create", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
-@method_decorator(name="update", decorator=[swagger_auto_schema_org_query_param, has_perm_class("requires_member")])
-class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_viewer"),
+    ],
+    name="list",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+    ],
+    name="create",
+)
+@method_decorator(
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_member"),
+    ],
+    name="update",
+)
+class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = InventoryGroupSerializer
     model = InventoryGroup
     filter_backends = (ColumnListProfileFilterBackend,)
@@ -66,7 +85,21 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
-    @has_perm_class("requires_viewer")
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_string_field("inventory_type", required=True, description="property or tax_lot"),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {"selected": ["integer"]},
+            description="selected: optional list of inventory ids. [] returns all groups.",
+        ),
+    )
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def filter(self, request):
         # Given inventory ids, return group info & inventory ids that are in those groups
@@ -77,7 +110,11 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             return self._get_taxlot_groups(request)
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+        ]
+    )
     def retrieve(self, request, pk):
         org_id = self.get_organization(self.request)
 
@@ -99,9 +136,13 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         )
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
-    @has_hierarchy_access(inventory_group_id_kwarg="pk")
     def dashboard(self, request, pk):
         cycle = Cycle.objects.get(pk=request.query_params.get("cycle_id"))
 
@@ -123,7 +164,7 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         group_meters = Meter.objects.filter(Q(system__group_id=pk) | Q(property__group_mappings__group_id=pk))
 
         # make cycle start/end timezone aware to query MeterReading table
-        the_tz = timezone(TIME_ZONE)
+        the_tz = django_timezone.get_default_timezone()
         start_time = make_aware(datetime.combine(cycle.start, datetime.min.time()), timezone=the_tz)
         end_time = make_aware(datetime.combine(cycle.end, datetime.min.time()), timezone=the_tz)
 
@@ -152,9 +193,136 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         }
         return JsonResponse({"status": "success", "data": readable_data})
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="Cycle ID"),
+            AutoSchemaHelper.query_string_field("meter_type", required=True, description="Meter Type"),
+        ],
+    )
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
+        ]
+    )
+    @action(detail=True, methods=["GET"])
+    def dashboard_sankey(self, request, pk):
+        cycle = Cycle.objects.get(pk=request.query_params.get("cycle_id"))
+
+        # get org property_display_field
+        org_id = self.get_organization(self.request)
+        try:
+            org = Organization.objects.get(pk=org_id)
+        except Organization.DoesNotExist:
+            return JsonResponse(
+                {"status": "error", "message": f"organization with id {org_id} does not exist"}, status=status.HTTP_404_NOT_FOUND
+            )
+        property_display_field = org.property_display_field
+
+        # this is the meter type name passed in here
+        meter_type = request.query_params.get("meter_type")
+        # find the meter type ID (the key in Meter.ENERGY_TYPE_BY_METER_TYPE) that corresponds to the meter type name
+        meter_type_id = [k for k, v in Meter.ENERGY_TYPE_BY_METER_TYPE.items() if v == meter_type]
+        if not meter_type_id:
+            return JsonResponse({"status": "error", "message": f"Invalid meter type {meter_type}"}, status=status.HTTP_400_BAD_REQUEST)
+        meter_type_id = meter_type_id[0]
+
+        # make cycle start/end timezone aware to query MeterReading table
+        the_tz = django_timezone.get_default_timezone()
+        start_time = make_aware(datetime.combine(cycle.start, datetime.min.time()), timezone=the_tz)
+        end_time = make_aware(datetime.combine(cycle.end, datetime.min.time()), timezone=the_tz)
+
+        def _get_sankey_data_for_system(system, meter_type_id, cycle):
+            system_meters = Meter.objects.filter(system=system, type=meter_type_id).annotate(
+                flow=Sum(
+                    "meter_readings__reading",
+                    filter=Q(meter_readings__end_time__lte=end_time, meter_readings__start_time__gte=start_time),
+                )
+            )
+
+            data = []
+            for meter in system_meters:
+                if meter.connection_type == Meter.IMPORTED:
+                    data.append({"from": "outside", "to": f"system {system.name}", "flow": meter.flow})
+                elif meter.connection_type == Meter.EXPORTED:
+                    data.append({"from": f"system {system.name}", "to": "outside", "flow": meter.flow})
+                elif meter.connection_type == Meter.RECEIVING_SERVICE:
+                    data.append({"from": f"system {meter.service.system.name}", "to": f"system {system.name}", "flow": meter.flow})
+                elif meter.connection_type == Meter.RETURNING_TO_SERVICE:
+                    data.append({"from": f"system {system.name}", "to": f"system {meter.service.system.name}", "flow": meter.flow})
+                elif meter.connection_type in {Meter.TOTAL_TO_USERS, Meter.TOTAL_FROM_USERS}:
+                    # ???
+                    pass
+
+            return data
+
+        def _get_sankey_data_for_property(property_, meter_type_id, cycle, property_display_field):
+            property_meters = Meter.objects.filter(property=property_, type=meter_type_id).annotate(
+                flow=Sum(
+                    "meter_readings__reading",
+                    filter=Q(meter_readings__end_time__lte=end_time, meter_readings__start_time__gte=start_time),
+                )
+            )
+
+            data = []
+            for meter in property_meters:
+                # first retrieve the property state of the property for this cycle to get the display name
+                property_display_name = f"property {property_.id}"
+                property_view = PropertyView.objects.filter(property=property_, cycle=cycle).first()
+                if property_view:
+                    state = property_view.state
+                    if state.default_display_value():
+                        property_display_name = state.default_display_value()
+
+                if meter.connection_type == Meter.IMPORTED:
+                    data.append({"from": "outside", "to": property_display_name, "flow": meter.flow})
+                elif meter.connection_type == Meter.EXPORTED:
+                    data.append({"from": property_display_name, "to": "outside", "flow": meter.flow})
+                elif meter.connection_type == Meter.RECEIVING_SERVICE:
+                    data.append({"from": f"system {meter.service.system.name}", "to": property_display_name, "flow": meter.flow})
+                elif meter.connection_type == Meter.RETURNING_TO_SERVICE:
+                    data.append({"from": property_display_name, "to": f"system {meter.service.system.name}", "flow": meter.flow})
+                elif meter.connection_type in {Meter.TOTAL_TO_USERS, Meter.TOTAL_FROM_USERS}:
+                    # ???
+                    pass
+
+            return data
+
+        data = []
+        for system in System.objects.filter(group_id=pk):
+            data.extend(_get_sankey_data_for_system(system, meter_type_id, cycle))
+
+        for property in Property.objects.filter(group_mappings__group_id=pk):
+            data.extend(_get_sankey_data_for_property(property, meter_type_id, cycle, property_display_field))
+
+        return JsonResponse({"status": "success", "data": data})
+
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(inventory_group_id_kwarg="pk")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
+        ]
+    )
+    @action(detail=True, methods=["GET"])
+    def properties(self, request, pk):
+        views = PropertyView.objects.filter(property__group_mappings__group=pk).distinct("property")
+
+        return JsonResponse(
+            {
+                "status": "success",
+                "data": [{"property_id": view.property_id, "property_display_name": view.state.default_display_value()} for view in views],
+            }
+        )
+
+    @swagger_auto_schema_org_query_param
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def meter_usage(self, request, pk):
         """
@@ -169,7 +337,15 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         # Remove duplicate dicts by converting to a set of tuples, then back to dicts
         data["column_defs"] = [dict(t) for t in {tuple(d.items()) for d in data["column_defs"]}]
-
+        # make sure start_time and end_time are the first entries in the column defs
+        start_col = next((col for col in data["column_defs"] if col["field"] == "start_time"), None)
+        end_col = next((col for col in data["column_defs"] if col["field"] == "end_time"), None)
+        if start_col:
+            data["column_defs"].remove(start_col)
+            data["column_defs"].insert(0, start_col)
+        if end_col:
+            data["column_defs"].remove(end_col)
+            data["column_defs"].insert(1, end_col)
         return JsonResponse({"status": "success", "data": data})
 
 
@@ -196,8 +372,12 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         )
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk"),
+        ]
+    )
     def list(self, request, inventory_group_pk):
         """
         Return meters for a group
@@ -207,23 +387,35 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         return JsonResponse({"status": "success", "data": data})
 
-    @action(detail=True, methods=["PUT"])
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
-    def update_connection(self, request, inventory_group_pk, pk):
+    @method_decorator(
+        [
+            has_perm("can_modify_data"),
+            has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk"),
+        ]
+    )
+    def update(self, request, inventory_group_pk, pk):
         meter = self.get_queryset().filter(pk=pk).first()
-        meter_config = request.data.get("meter_config")
+        alias = request.data.get("alias")
+        connection_config = request.data.get("connection_config")
 
         try:
-            update_meter_connection(meter, meter_config)
+            if alias:
+                meter.alias = alias
+                meter.save()
+            if connection_config:
+                update_meter_connection(meter, connection_config)
         except IntegrityError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse({}, status=status.HTTP_200_OK)
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk")
+    @method_decorator(
+        [
+            has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk"),
+        ]
+    )
     def create(self, request, inventory_group_pk):
         meter_serializer = MeterSerializer(
             data={

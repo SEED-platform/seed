@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -72,6 +72,7 @@ class OrganizationUser(models.Model):
     status = models.CharField(max_length=12, default=STATUS_PENDING, choices=STATUS_CHOICES)
     role_level = models.IntegerField(default=ROLE_OWNER, choices=ROLE_LEVEL_CHOICES)
     access_level_instance = models.ForeignKey("AccessLevelInstance", on_delete=models.CASCADE, null=False, related_name="users")
+    settings = models.JSONField(default=dict, blank=True, null=True)
 
     def delete(self, *args, **kwargs):
         """Ensure we preserve at least one Owner for this org."""
@@ -259,6 +260,7 @@ class Organization(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, null=True)
     modified = models.DateTimeField(auto_now=True, null=True)
+    max_data_charted = models.IntegerField(blank=False, null=False, default=3000)
 
     # Default preferred all meter units to kBtu
     display_meter_units = models.JSONField(default=_get_default_meter_units)
@@ -300,9 +302,16 @@ class Organization(models.Model):
     audit_template_city_id = models.IntegerField(blank=True, null=True)
     audit_template_conditional_import = models.BooleanField(default=True)
     audit_template_sync_enabled = models.BooleanField(default=False)
+    audit_template_export_meters = models.BooleanField(default=False)
+    audit_template_export_measures = models.BooleanField(default=False)
+    audit_template_export_federal = models.BooleanField(default=False)
+    audit_template_federal_agency = models.CharField(blank=True, null=True, max_length=128)
+    audit_template_tracking_id_name = models.CharField(blank=True, max_length=128, default="City Custom Building ID")
+    audit_template_tracking_id_field = models.CharField(blank=True, max_length=128, default="custom_id_1")
 
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
+    bb_salesforce_enabled = models.BooleanField(default=False)
 
     access_level_names = models.JSONField(default=list)
 
@@ -330,7 +339,10 @@ class Organization(models.Model):
         Cycle.get_or_create_default(self)
         from seed.models import Measure
 
-        Measure.populate_measures(self.id)
+        # TODO: this could get messy and could be better implemented
+        # TODO: add additional calls to populate measure here when default version is incremented
+        Measure.populate_measures(self.id)  # this populates bsync v1.0.0 (default) measures
+        Measure.populate_measures(self.id, schema_version="2.7.0")  # this populates bsync v2.7.0 measures
 
     def is_member(self, user):
         """Return True if user object has a relation to this organization."""

@@ -1,0 +1,58 @@
+"""
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+"""
+
+from django.urls import reverse_lazy
+
+from seed.models import Column
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakePropertyStateFactory,
+    FakePropertyViewFactory,
+)
+from seed.tests.util import AccessLevelBaseTestCase
+
+
+class TestAnalysisViews(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.property_state_factory = FakePropertyStateFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.cycle_factory = FakeCycleFactory(organization=self.org)
+        self.cycle = self.cycle_factory.get_cycle()
+
+        Column.objects.create(table_name="PropertyState", column_name="extra_field", organization=self.org, is_extra_data=True)
+
+        gfa_values_without_extra_data = [10, 20, 30, 40, 50]
+        for gfa in gfa_values_without_extra_data:
+            state = self.property_state_factory.get_property_state(gross_floor_area=gfa)
+            self.property_view_factory.get_property_view(cycle=self.cycle, state=state)
+        gfa_values_with_extra_data = [1, 2, 3, 4, 5]
+        for i, gfa in enumerate(gfa_values_with_extra_data):
+            details = {"custom_id_1": i, "extra_data": {"extra_field": f"extra {i}"}, "gross_floor_area": gfa}
+            state = self.property_state_factory.get_property_state(**details)
+            self.property_view_factory.get_property_view(cycle=self.cycle, state=state)
+        self.expected_total_sqft = sum(gfa_values_without_extra_data) + sum(gfa_values_with_extra_data)
+
+    def test_stats(self):
+        url = reverse_lazy("api:v4:analyses-stats") + f"?organization_id={self.org.id}&cycle_id={self.cycle.id}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        response = response.json()
+        self.assertEqual(response["status"], "success")
+        self.assertEqual(response["total_sqft"], self.expected_total_sqft)
+        stats = response["stats"]
+
+        address_line_1 = next(stat for stat in stats if stat["column_name"] == "address_line_1")
+        address_line_2 = next(stat for stat in stats if stat["column_name"] == "address_line_2")
+        custom_id_1 = next(stat for stat in stats if stat["column_name"] == "custom_id_1")
+        extra_field = next(stat for stat in stats if stat["column_name"] == "extra_field")
+
+        self.assertEqual(address_line_1["count"], 10)
+        self.assertEqual(address_line_1["display_name"], "Address Line 1")
+        self.assertEqual(address_line_1["is_extra_data"], False)
+        self.assertEqual(address_line_2["count"], 0)
+        self.assertEqual(custom_id_1["count"], 5)
+        self.assertEqual(extra_field["count"], 5)
+        self.assertEqual(extra_field["is_extra_data"], True)

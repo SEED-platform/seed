@@ -1,28 +1,76 @@
 <div class="modal-header">
-  <h4 class="modal-title" ng-if="action === 'create'"><span translate>Create Service for System</span> {$ system.name $}</h4>
-  <h4 class="modal-title" ng-if="action === 'remove'"><span translate>Remove Service for System</span> {$ system.name $}</h4>
-  <h4 class="modal-title" ng-if="action === 'edit'"><span translate>Edit Service for System</span> {$ system.name $}</h4>
+  <h4 class="modal-title" ng-if="action === 'create'">
+    <span translate>Create Service for System</span> {$ system.name $}
+  </h4>
+  <h4 class="modal-title" ng-if="action === 'remove'">
+    <span translate>Remove Service for System</span> {$ system.name $}
+  </h4>
+  <h4 class="modal-title" ng-if="action === 'edit'">
+    <span translate>Edit Service for System</span> {$ system.name $}
+  </h4>
 </div>
 <div class="modal-body">
-  <form id="serviceForm" name="serviceForm" role="form" ng-submit="submitServiceForm(serviceForm)" novalidate>
+  <form
+    id="serviceForm"
+    name="serviceForm"
+    role="form"
+    ng-submit="submitServiceForm(serviceForm)"
+    novalidate
+  >
     <div ng-if="action !== 'remove'">
       <!-- Name input -->
       <div class="form-group">
         <label class="control-label sectionLabel" translate>Name</label>
-        <input id="name" type="text" name="name" class="form-control" ng-minlength="1" ng-maxlength="100" ng-model="service.name" placeholder="{$:: 'Service Name' | translate $}" required />
+        <input
+          id="name"
+          type="text"
+          name="name"
+          class="form-control"
+          ng-minlength="1"
+          ng-maxlength="100"
+          ng-model="service.name"
+          placeholder="{$:: 'Service Name' | translate $}"
+          required
+        />
       </div>
 
       <!-- emission_factor input -->
       <div class="form-group">
-        <label class="control-label sectionLabel" translate>Emission Factor</label>
-        <input ng-model="service.emission_factor" type="number" class="form-control" step=".1" min="0" />
+        <label class="control-label sectionLabel" translate
+          >Emission Factor</label
+        >
+        <input
+          ng-model="service.emission_factor"
+          type="number"
+          class="form-control"
+          step=".1"
+          min="0"
+        />
       </div>
     </div>
 
-    <div style="padding-bottom: 15px" ng-if="action === 'remove'">{$:: 'Are you sure you want to delete the service' | translate $}, <strong>{$:: service.name $}</strong>?</div>
+    <div style="padding-bottom: 15px" ng-if="action === 'remove'">
+      {$:: 'Are you sure you want to delete the service' | translate $},
+      <strong>{$:: service.name $}</strong>?
+    </div>
   </form>
 </div>
 <div class="modal-footer">
-  <button type="button" class="btn btn-default" style="min-width: 90px" ng-click="cancel()" translate>Cancel</button>
-  <button type="submit" class="btn btn-primary" form="serviceForm" ng-disabled="serviceForm.$invalid">{$ capitalize(action) $} Service</button>
+  <button
+    type="button"
+    class="btn btn-default"
+    style="min-width: 90px"
+    ng-click="cancel()"
+    translate
+  >
+    Cancel
+  </button>
+  <button
+    type="submit"
+    class="btn btn-primary"
+    form="serviceForm"
+    ng-disabled="serviceForm.$invalid"
+  >
+    {$ capitalize(action) $} Service
+  </button>
 </div>

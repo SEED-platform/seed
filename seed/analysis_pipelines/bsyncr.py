@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -58,7 +58,7 @@ def _validate_bsyncr_config(analysis):
     if model_type not in BSYNCR_MODEL_TYPE_MAP:
         return [
             f'Analysis configuration.model_type "{model_type}" is invalid. '
-            f'Must be one of the following: {", ".join(BSYNCR_MODEL_TYPE_MAP.keys())}'
+            f"Must be one of the following: {', '.join(BSYNCR_MODEL_TYPE_MAP.keys())}"
         ]
 
     return []
@@ -80,7 +80,7 @@ class BsyncrPipeline(AnalysisPipeline):
 
         validation_errors = _validate_bsyncr_config(Analysis.objects.get(id=self._analysis_id))
         if validation_errors:
-            raise AnalysisPipelineError(f'Unexpected error(s) while validating analysis configuration: {"; ".join(validation_errors)}')
+            raise AnalysisPipelineError(f"Unexpected error(s) while validating analysis configuration: {'; '.join(validation_errors)}")
 
         progress_data = self.get_progress_data()
 
@@ -135,7 +135,13 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
     for analysis_property_view in analysis_property_views:
         meters = Meter.objects.annotate(readings_count=Count("meter_readings")).filter(
             property=analysis_property_view.property,
-            type__in=[Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.ELECTRICITY_UNKNOWN],
+            type__in=[
+                Meter.ELECTRICITY,
+                Meter.ELECTRICITY_GRID,
+                Meter.ELECTRICITY_SOLAR,
+                Meter.ELECTRICITY_WIND,
+                Meter.ELECTRICITY_UNKNOWN,
+            ],
             readings_count__gte=12,
         )
         if meters.count() == 0:
@@ -231,8 +237,8 @@ def _build_bsyncr_input(analysis_property_view, meter):
         {
             etree.QName(
                 XSI_URI, "schemaLocation"
-            ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.2.0/BuildingSync.xsd",
-            "version": "2.2.0",
+            ): "http://buildingsync.net/schemas/bedes-auc/2019 https://raw.github.com/BuildingSync/schema/v2.6.0/BuildingSync.xsd",
+            "version": "2.6.0",
         },
         E.Facilities(
             E.Facility(
@@ -277,11 +283,12 @@ def _build_bsyncr_input(analysis_property_view, meter):
                                         E.TimeSeries(
                                             {"ID": f"TimeSeries-{i}"},
                                             E.StartTimestamp(reading.start_time.isoformat()),
+                                            E.EndTimestamp(reading.end_time.isoformat()),
                                             E.IntervalFrequency("Month"),
                                             E.IntervalReading(str(reading.reading)),
                                             E.ResourceUseID({"IDref": elec_resource_id}),
                                         )
-                                        for i, reading in enumerate(meter.meter_readings.all())
+                                        for i, reading in enumerate(meter.meter_readings.all().order_by("start_time"))
                                     ]
                                 ),
                             )

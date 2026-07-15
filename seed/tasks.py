@@ -1,15 +1,14 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import itertools
 import math
 import sys
-from datetime import datetime
+from datetime import UTC, datetime
 from random import randint
 
-import pytz
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
 from django.conf import settings
@@ -42,7 +41,9 @@ from seed.models import (
     TaxLotState,
     TaxLotView,
 )
+from seed.utils.match import update_sub_progress_total
 from seed.utils.salesforce import auto_sync_salesforce_properties
+from seed.utils.tax_lot_properties import export_data
 
 logger = get_task_logger(__name__)
 
@@ -209,6 +210,8 @@ def _evaluate_delete_organization_and_inventory(prog_key, org_pk, delete_org=Fal
         Organization.objects.get(pk=org_pk).delete()
         # TODO: Delete measures in BRICR branch
 
+    progress_data.finish_with_success()
+
 
 @shared_task
 def _delete_organization_children(chunk_ids, class_name, prog_key):
@@ -225,7 +228,7 @@ def _finish_delete_column(column_id, prog_key):
     column.delete()
 
     progress_data = ProgressData.from_key(prog_key)
-    return progress_data.finish_with_success(f'Removed {column.column_name} from {progress_data.data["total_records"]} records')
+    return progress_data.finish_with_success(f"Removed {column.column_name} from {progress_data.data['total_records']} records")
 
 
 @shared_task
@@ -400,7 +403,7 @@ def _finish_update_multiple_columns(changes, prog_key):
         return progress_data.finish_with_success(f"Updated {len(changes.keys())} columns.")
     else:
         return progress_data.finish_with_success(
-            f'Updated {len(changes.keys())} columns.  Rebuilt {progress_data.data["total_records"]} records'
+            f"Updated {len(changes.keys())} columns.  Rebuilt {progress_data.data['total_records']} records"
         )
 
 
@@ -514,7 +517,7 @@ def sync_audit_template(org_id):
 
 @shared_task
 def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):
-    now = datetime.now(pytz.UTC)
+    now = datetime.now(UTC)
     progress_data = ProgressData.from_key(progress_key)
     progress_data.total = 100
     id_count = len(property_view_ids) + len(taxlot_view_ids)
@@ -540,6 +543,60 @@ def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):
 
     progress_data.finish_with_success()
     return progress_data.result()["progress"]
+
+
+@shared_task
+def copy_properties_to_cycle(property_view_ids, cycle_id, column_ids, org_id):
+    progress_data = ProgressData(func_name="copy_properties_to_cycle", unique_id=randint(10000, 99999))
+    progress_data.data["num_created"] = 0
+    progress_data.save()
+    progress_key = progress_data.key
+
+    chunk_size = 100
+
+    tasks = []
+    for chunk_ids in batch(property_view_ids, chunk_size):
+        tasks.append(_copy_property_to_cycle_chunk.si(progress_key, chunk_ids, cycle_id, column_ids))
+
+    chord(tasks, interval=15)(_finish_copy_property_to_cycle.s(progress_data.key, org_id))
+
+    return progress_data.result()
+
+
+@shared_task
+def _copy_property_to_cycle_chunk(progress_key, property_view_ids, cycle_id, column_ids):
+    progress_data = ProgressData.from_key(progress_key)
+
+    views = PropertyView.objects.filter(id__in=property_view_ids)
+    cycle = Cycle.objects.get(pk=cycle_id)
+    columns = Column.objects.filter(organization=cycle.organization_id, table_name="PropertyState").exclude(derived_column__isnull=False)
+    if column_ids is not None:
+        columns = columns.filter(Q(id__in=column_ids) | Q(is_matching_criteria=True))
+
+    new_view_ids = []
+    for view in views:
+        new_view = view.copy_to_cycle(cycle, columns)
+        if new_view:
+            new_view_ids.append(new_view.id)
+
+        progress_data.step()
+
+    progress_data.data["num_created"] += len(new_view_ids)
+    progress_data.save()
+
+    return new_view_ids
+
+
+@shared_task
+def _finish_copy_property_to_cycle(property_view_ids, progress_key, org_id):
+    derived_columns = DerivedColumn.objects.filter(organization_id=org_id)
+    Column.objects.filter(derived_column__in=derived_columns).update(is_updating=True)
+    derived_column_ids = list(derived_columns.values_list("id", flat=True))
+    views = PropertyView.objects.filter(id__in=[x for xs in property_view_ids for x in xs])
+    update_state_derived_data(property_state_ids=views.values_list("state_id", flat=True), derived_column_ids=derived_column_ids)
+
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data.finish_with_success("Updated Derived Data")
 
 
 @shared_task
@@ -601,3 +658,14 @@ def _finish_update_state_derived_data(progress_key, derived_column_ids):
 
     progress_data = ProgressData.from_key(progress_key)
     progress_data.finish_with_success("Updated Derived Data")
+
+
+@shared_task
+def export_data_task(args):
+    progress_key = args.get("progress_key")
+    progress_data = ProgressData.from_key(progress_key)
+    progress_data = update_sub_progress_total(100, progress_key)
+
+    # save data to redis cache db
+    export_data(args)
+    progress_data.finish_with_success()

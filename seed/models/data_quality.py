@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -10,10 +10,9 @@ from collections import defaultdict
 from datetime import date, datetime
 from random import randint
 
-import pytz
 from django.apps import apps
 from django.db import IntegrityError, models
-from django.utils.timezone import get_current_timezone, make_aware, make_naive
+from django.utils.timezone import get_current_timezone, make_naive
 from pint.errors import DimensionalityError
 from quantityfield.units import ureg
 
@@ -21,10 +20,17 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import Column, DerivedColumn, GoalNote, PropertyView, PropertyViewLabel, StatusLabel, TaxLotView, obj_to_dict
 from seed.serializers.pint import pretty_units
 from seed.utils.cache import get_cache_raw, set_cache_raw
-from seed.utils.goals import get_area_value, get_eui_value, percentage_difference
-from seed.utils.time import convert_datestr
+from seed.utils.goals import percentage_difference
+from seed.utils.time_utils import convert_datestr
 
 _log = logging.getLogger(__name__)
+
+
+def _localize_datetime_for_rule_compare(value):
+    if value.tzinfo is None:
+        return value
+
+    return make_naive(value, get_current_timezone())
 
 
 class ComparisonError(Exception):
@@ -492,8 +498,8 @@ class Rule(models.Model):
             return True
         else:
             if isinstance(value, datetime):
-                value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
-                rule_min = make_aware(datetime.strptime(str(int(rule_min)), "%Y%m%d"), pytz.UTC)
+                value = _localize_datetime_for_rule_compare(value)
+                rule_min = datetime.strptime(str(int(rule_min)), "%Y%m%d")
             elif isinstance(value, date):
                 rule_min = datetime.strptime(str(int(rule_min)), "%Y%m%d").date()
             elif isinstance(value, int):
@@ -531,8 +537,8 @@ class Rule(models.Model):
             return True
         else:
             if isinstance(value, datetime):
-                value = value.astimezone(get_current_timezone()).replace(tzinfo=pytz.UTC)
-                rule_max = make_aware(datetime.strptime(str(int(rule_max)), "%Y%m%d"), pytz.UTC)
+                value = _localize_datetime_for_rule_compare(value)
+                rule_max = datetime.strptime(str(int(rule_max)), "%Y%m%d")
             elif isinstance(value, date):
                 rule_max = datetime.strptime(str(int(rule_max)), "%Y%m%d").date()
             elif isinstance(value, int):
@@ -602,7 +608,7 @@ class Rule(models.Model):
 
         # Get the formatted values for reporting
         if isinstance(value, datetime):
-            f_value = str(make_naive(value, pytz.UTC))
+            f_value = str(_localize_datetime_for_rule_compare(value))
             if f_min is not None:
                 f_min = str(datetime.strptime(str(int(self.min)), "%Y%m%d"))
             if f_max is not None:
@@ -635,6 +641,17 @@ class Rule(models.Model):
             raise Exception(f"Unknown data type ({value}:{value.__class__})")
 
         return [f_min, f_max, f_value]
+
+
+def _get_value_from_state(state, column):
+    if column.is_extra_data:
+        res = state.extra_data.get(column.column_name)
+    elif column.derived_column:
+        res = state.derived_data.get(column.column_name)
+    else:
+        res = getattr(state, column.column_name)
+
+    return None if res is None else res.m
 
 
 class DataQualityCheck(models.Model):
@@ -765,7 +782,7 @@ class DataQualityCheck(models.Model):
         """
         rules = self.rules.filter(enabled=True, table_name="Goal")
         goal_notes = GoalNote.objects.filter(goal=goal_id)
-        goal_notes = {note.property.id: note for note in goal_notes}
+        goal_notes = {note.property_id: note for note in goal_notes}
         goal_notes_to_update = []
         fields = self.get_fieldnames("PropertyState")
         for row in state_pairs:
@@ -950,7 +967,7 @@ class DataQualityCheck(models.Model):
         current_view = row["current"].propertyview_set.first() if row["current"] else None
 
         def check_range():
-            return (rule.min is None or value > rule.min) and (rule.max is None or value < rule.max)
+            return (rule.min is None or value > float(rule.min)) and (rule.max is None or value < float(rule.max))
 
         def append_to_apply_labels():
             if rule.status_label:
@@ -961,7 +978,7 @@ class DataQualityCheck(models.Model):
             data_type = rule.DATA_TYPES[rule.data_type][1]
             baseline = self.get_value(row, data_type, goal, "baseline")
             current = self.get_value(row, data_type, goal, "current")
-            # EUI is inverese as a drop in EUI is an improvement
+            # EUI is inverse as a drop in EUI is an improvement
             cycle_values = [baseline, current] if data_type == "eui" else [current, baseline]
 
             if rule.cross_cycle:
@@ -972,6 +989,7 @@ class DataQualityCheck(models.Model):
                 if rule.condition == Rule.RULE_RANGE:
                     result = check_range()
                     results.append(result)
+
                     append_to_apply_labels()
                     if not result:
                         self.add_result_range_error(row["current"].id, rule, data_type, value)
@@ -1001,29 +1019,44 @@ class DataQualityCheck(models.Model):
                             self.add_result_is_null(state.id, rule, data_type, value)
                             self.update_status_label(PropertyViewLabel, rule, view.id, state.id)
 
+            # _log.error(f"results: {results}")
             goal_note.passed_checks = all(results)
 
         # if there are multiple rules with the same label, determine if they are all passing to add or remove the label
         for cycle_key in ["baseline", "current"]:
             view = baseline_view if cycle_key == "baseline" else current_view
 
-            for id, results in apply_labels[cycle_key].items():
-                label = StatusLabel.objects.get(id=id)
-                property_view_label = PropertyViewLabel.objects.filter(propertyview=view, statuslabel=label, goal=goal)
-                if all(results):
-                    property_view_label.delete()
-                elif not property_view_label:
-                    PropertyViewLabel.objects.create(propertyview=view, statuslabel=label, goal=goal)
+            # delete labels where at least one of the rules doesn't pass
+            label_ids_to_delete = [label_id for (label_id, results) in apply_labels[cycle_key].items() if all(results)]
+            property_view_labels_to_delete = PropertyViewLabel.objects.filter(
+                propertyview=view, statuslabel_id__in=label_ids_to_delete, goal=goal
+            )
+            property_view_labels_to_delete.delete()
+
+            # create labels where all of the rules pass
+            label_ids_to_create = [label_id for (label_id, results) in apply_labels[cycle_key].items() if not all(results)]
+            PropertyViewLabel.objects.bulk_create(
+                [PropertyViewLabel(propertyview=view, statuslabel_id=label_id, goal=goal) for label_id in label_ids_to_create],
+                ignore_conflicts=True,
+            )
 
         return goal_note
 
     def get_value(self, property_obj, data_type, goal, cycle_key):
-        if not property_obj[cycle_key]:
+        state = property_obj[cycle_key]
+        if not state:
             return None
+
         if data_type == "area":
-            return get_area_value(property_obj[cycle_key], goal)
+            return _get_value_from_state(state, goal.area_column)
+
         elif data_type == "eui":
-            return get_eui_value(property_obj[cycle_key], goal)
+            for eui_column in goal.eui_columns():
+                res = _get_value_from_state(state, eui_column)
+                if res is not None:
+                    return res
+
+        return None
 
     def save_to_cache(self, identifier, organization_id):
         """

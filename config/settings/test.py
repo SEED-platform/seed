@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -7,9 +7,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import importlib.util
 import logging
 import os
-from distutils.util import strtobool
-
-from celery.utils import LOG_LEVELS
 
 from config.settings.common import *  # noqa: F403
 
@@ -34,8 +31,8 @@ DATABASES = {
 CELERY_BROKER_BACKEND = "memory"
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
-# this celery log level is currently not overridden.
-CELERY_LOG_LEVEL = LOG_LEVELS["WARNING"]
+
+TESTING_MAPQUEST_API_KEY = os.environ.get("TESTING_MAPQUEST_API_KEY", "<your_key_here>")
 
 REQUIRE_UNIQUE_EMAIL = False
 
@@ -44,7 +41,10 @@ INTERNAL_IPS = ("127.0.0.1",)
 COMPRESS_ENABLED = False
 if "COMPRESS_ENABLED" not in locals() or not COMPRESS_ENABLED:
     COMPRESS_PRECOMPILERS = ()
-    COMPRESS_FILTERS = {"css": ["compressor.filters.css_default.CssAbsoluteFilter"]}
+    COMPRESS_FILTERS = {
+        "css": ["compressor.filters.css_default.CssAbsoluteFilter"],
+        "js": [],
+    }
 
 ALLOWED_HOSTS = ["*"]
 
@@ -59,7 +59,17 @@ LOGGING = {
         "": {
             "level": os.getenv("DJANGO_LOG_LEVEL", "ERROR"),
             "handlers": ["console", "file"],
-        }
+        },
+        "celery": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
+        "celery.app.trace": {
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
+        },
     },
 }
 
@@ -69,6 +79,17 @@ if local_untracked_spec is None:
     raise Exception("Unable to find the local_untracked in config/settings/local_untracked.py")
 else:
     from config.settings.local_untracked import *  # noqa: F403
+
+# Use a test-only PostGIS backend that pauses Timescale background workers
+# while Django clones the template test database for parallel runs.
+DATABASES["default"]["ENGINE"] = "seed.backends.postgis_parallel_tests"
+DATABASES["default"]["CONN_MAX_AGE"] = 0
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "seed-tests",
+    }
+}
 
 
 # suppress some logging on faker -- only show warnings or greater
@@ -85,7 +106,4 @@ if "SF_INSTANCE" not in vars():
     SF_SECURITY_TOKEN = os.environ.get("SF_SECURITY_TOKEN", "")
 
 # load small EEEJ dataset for testing
-try:
-    EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "True")))
-except Exception:
-    EEEJ_LOAD_SMALL_TEST_DATASET = True
+EEEJ_LOAD_SMALL_TEST_DATASET = yn(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "True"))

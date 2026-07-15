@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -10,13 +10,13 @@ from io import BytesIO
 from os import path
 from unittest.mock import patch
 from zipfile import ZipFile
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.db.models import Q
 from django.test import TestCase, override_settings
 from django.utils.timezone import make_aware
 from lxml import etree
-from pytz import timezone as pytztimezone
 from quantityfield.units import ureg
 from requests import Response
 
@@ -476,7 +476,7 @@ class TestBsyncrPipeline(TestCase):
             source_id="Source ID",
             type=Meter.ELECTRICITY_GRID,
         )
-        tz_obj = pytztimezone(TIME_ZONE)
+        tz_obj = ZoneInfo(TIME_ZONE)
         self.meter_reading = MeterReading.objects.create(
             meter=self.meter,
             start_time=make_aware(datetime(2018, 1, 1, 0, 0, 0), timezone=tz_obj),
@@ -518,7 +518,7 @@ class TestBsyncrPipeline(TestCase):
                     type=Meter.ELECTRICITY_GRID,
                 )
             )
-            tz_obj = pytztimezone(TIME_ZONE)
+            tz_obj = ZoneInfo(TIME_ZONE)
             for j in range(1, 13):
                 MeterReading.objects.create(
                     meter=self.good_meters[i],
@@ -587,7 +587,7 @@ class TestBsyncrPipeline(TestCase):
         self.assertEqual(self.meter.meter_readings.count(), len(ts_elems))
 
         # throws exception if document is not valid
-        schema = BuildingSync.get_schema(BuildingSync.BUILDINGSYNC_V2_4_0)
+        schema = BuildingSync.get_schema(BuildingSync.BUILDINGSYNC_V2_6_0)
         schema.validate(tree)
 
     def test_build_bsyncr_input_returns_errors_if_state_missing_info(self):
@@ -836,7 +836,7 @@ class TestBETTERPipeline(TestCase):
             source_id="Source ID",
             type=Meter.ELECTRICITY_GRID,
         )
-        tz_obj = pytztimezone(TIME_ZONE)
+        tz_obj = ZoneInfo(TIME_ZONE)
         for j in range(1, 13):
             MeterReading.objects.create(
                 meter=self.meter_nat,
@@ -893,7 +893,7 @@ class TestBETTERPipeline(TestCase):
 
 class TestEuiPipeline(TestCase):
     def setUp(self):
-        self.timezone_object = pytztimezone(TIME_ZONE)
+        self.timezone_object = ZoneInfo(TIME_ZONE)
         user_details = {
             "username": "test_user@demo.com",
             "password": "test_pass",
@@ -1005,6 +1005,38 @@ class TestEuiPipeline(TestCase):
         self.assertDictEqual(errors_by_property_view_id, {})
         self.assertDictEqual(meter_readings_by_property_view, {self.property_view.id: meter_readings})
 
+    def test_valid_meters_use_custom_range_iso_strings(self):
+        MeterReading.objects.filter(meter=self.meter).delete()
+        meter_readings = []
+        for j in range(1, 12):
+            meter_reading = MeterReading.objects.create(
+                meter=self.meter,
+                start_time=make_aware(datetime(2020, j, 1, 0, 0, 0), timezone=self.timezone_object),
+                end_time=make_aware(datetime(2020, j, 28, 0, 0, 0), timezone=self.timezone_object),
+                reading=12345,
+                source_unit="kWh",
+                conversion_factor=1.00,
+            )
+            meter_readings.append(SimpleMeterReading(meter_reading.start_time, meter_reading.end_time, meter_reading.reading))
+
+        MeterReading.objects.create(
+            meter=self.meter,
+            start_time=make_aware(datetime(2020, 12, 1, 0, 0, 0), timezone=self.timezone_object),
+            end_time=make_aware(datetime(2020, 12, 28, 0, 0, 0), timezone=self.timezone_object),
+            reading=12345,
+            source_unit="kWh",
+            conversion_factor=1.00,
+        )
+
+        self.maxDiff = None
+        config = {
+            "select_meters": "date_range",
+            "meter": {"start_date": "2020-01-01T00:00:00", "end_date": "2020-11-30T00:00:00"},
+        }
+        meter_readings_by_property_view, errors_by_property_view_id = _get_valid_meters([self.property_view.id], config)
+        self.assertDictEqual(errors_by_property_view_id, {})
+        self.assertDictEqual(meter_readings_by_property_view, {self.property_view.id: meter_readings})
+
     def test_valid_meters_use_cycle(self):
         MeterReading.objects.filter(meter=self.meter).delete()
         meter_readings = []
@@ -1051,7 +1083,7 @@ class TestEuiPipeline(TestCase):
 
 class TestEeejPipeline(TestCase):
     def setUp(self):
-        self.timezone_object = pytztimezone(TIME_ZONE)
+        self.timezone_object = ZoneInfo(TIME_ZONE)
         user_details = {
             "username": "test_user@demo.com",
             "password": "test_pass",

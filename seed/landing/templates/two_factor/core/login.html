@@ -18,22 +18,20 @@
   {% endif %}
 
   <form action="" method="post" class="signup_form">
-    <input type="hidden" name="username" value="{{username}}">
-
     {% block main_form_content %}
     {% csrf_token %}
     {% include "two_factor/_wizard_forms.html" %}
     {% if wizard.steps.current == 'auth' %}
     <div class="terms-link">
-      <p>{% trans "By clicking the Log In button you accept the NREL Data Terms." %} <a class="link" onclick="toggleTerms()">{% trans "View/Hide Terms" %}</a></p>
+      <p>{% trans "By clicking the Log In button you accept the Data Terms." %} <a class="link" onclick="toggleTerms()">{% trans "View/Hide Terms" %}</a></p>
     </div>
 
     <div id="terms-and-conditions">
-      <h3>DOE Standard Energy Efficiency Data Platform | NREL Data Terms</h3>
+      <h3>DOE Standard Energy Efficiency Data Platform | Data Terms</h3>
 
       <p>You, and your company or organization (the PROVIDER) have agreed to upload and provide PROPRIETARY DATA, including energy efficiency data, building data, and building energy
-        performance data to the Standard Energy Efficiency Data (SEED™) Platform database that the U.S. Department of Energy (the Government) and Alliance for Sustainable Energy, LLC
-        (“Alliance”) the manager and operator of the National Renewable Energy Laboratory (“NREL”) (the RECIPIENT) have created and provide for use for registered users.</p>
+        performance data to the Standard Energy Efficiency Data (SEED™) Platform database that the U.S. Department of Energy (the Government) and Alliance for Energy Innovation, LLC
+        (“Alliance”) the manager and operator of the National Laboratory of the Rockies (“NLR”) (the RECIPIENT) have created and provide for use for registered users.</p>
 
       <p>PROPRIETARY DATA is defined as follows:</p>
       <p>(a) information that embody trade secrets or commercial or financial information that is confidential and privileged; (b) information that is confidential and privileged and developed
@@ -80,7 +78,7 @@
     {% if wizard.steps.current == 'auth' %}
 
     <a class="forgot_password" href="{% url "landing:password_reset" %}">{% trans "Forgot password?" %}</a>
-      {% if request.session.include_acct_reg%}
+      {% if context.self_registration %}
       <div>
         <a class="create_account btn btn-secondary" href="{% url "landing:create_account" %}">{% trans "Create my Account" %}</a>
       </div>
@@ -107,13 +105,10 @@
 
 {% block js %}
   <script>
-    const toggleTerms = function () {
+    const toggleTerms = () => {
       const terms = document.getElementById('terms-and-conditions');
       const hidden = ['', 'none'].includes(terms.style.display);
       terms.style.display = hidden ? 'block' : 'none';
-    }
-    const resendToken = function () {
-      console.log('yup')
     }
   </script>
 {% endblock %}

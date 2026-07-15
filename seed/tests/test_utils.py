@@ -1,18 +1,17 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 
-import pytz
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.utils.generic import split_model_fields
 from seed.utils.strings import titlecase
-from seed.utils.time import convert_datestr
+from seed.utils.time_utils import convert_datestr
 
 
 class DummyClass:
@@ -61,7 +60,7 @@ class TestTime(TestCase):
         self.assertEqual(convert_datestr(dt.strftime("%Y-%m-%d %H:%M")), dt)
 
         # with TZ info
-        dt = make_aware(datetime(2016, 7, 15, 12, 30), pytz.UTC)
+        dt = make_aware(datetime(2016, 7, 15, 12, 30), UTC)
         self.assertEqual(convert_datestr(dt.strftime("%Y-%m-%d %H:%M"), True), dt)
 
 

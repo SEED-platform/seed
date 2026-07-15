@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -36,13 +36,21 @@ class FilterGroup(models.Model):
             views = ViewClass.objects.select_related(related_model, "state").filter(
                 **{f"{related_model}__organization_id": self.organization_id}
             )
-        if not columns:
-            columns = Column.retrieve_all(org_id=self.organization_id, inventory_type=related_model, only_used=False, include_related=False)
+        # Retrieve all columns for the org so the filter query can reference any column,
+        # regardless of which data columns were passed in for compliance evaluation.
+        filter_columns = Column.retrieve_all(
+            org_id=self.organization_id,
+            inventory_type=related_model,
+            only_used=False,
+            include_related=False,
+        )
         if self.query_dict:
             qd = QueryDict(mutable=True)
             qd.update(self.query_dict)
 
-            filters, annotations, _order_by = build_view_filters_and_sorts(qd, columns, related_model, self.organization.access_level_names)
+            filters, annotations, _order_by = build_view_filters_and_sorts(
+                qd, filter_columns, related_model, self.organization.access_level_names
+            )
 
             filtered_views = views.annotate(**annotations).filter(filters)
         else:

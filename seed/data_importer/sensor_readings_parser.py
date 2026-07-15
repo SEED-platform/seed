@@ -1,11 +1,8 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from pytz import timezone
-
-from config.settings.common import TIME_ZONE
 from seed.lib.mcm import reader
 from seed.models import Sensor
 
@@ -23,8 +20,6 @@ class SensorsReadingsParser:
 
     It's able to create a collection of Sensor Readings object details.
     """
-
-    _tz = timezone(TIME_ZONE)
 
     def __init__(self, org_id, sensor_readings_details, data_logger_id):
         # defaulted to None to show it hasn't been cached yet

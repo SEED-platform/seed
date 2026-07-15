@@ -1,12 +1,13 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework import status
 
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import GoalNote
 from seed.serializers.goal_notes import GoalNoteSerializer
 from seed.utils.api import OrgMixin
@@ -25,8 +26,13 @@ class GoalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
     queryset = GoalNote.objects.all()
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(property_id_kwarg="property_pk")  # should this be nested under the goal or properties router?
+    @method_decorator(
+        [
+            has_perm("requires_member"),
+            # should this be nested under the goal or properties router?
+            has_hierarchy_access(property_id_kwarg="property_pk"),
+        ]
+    )
     def update(self, request, property_pk, pk):
         try:
             goal_note = GoalNote.objects.get(property=property_pk, pk=pk)

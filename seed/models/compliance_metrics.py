@@ -1,13 +1,11 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import numbers
-from typing import Union
 
 from django.db import models
-from django.http import QueryDict
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
@@ -54,10 +52,6 @@ class ComplianceMetric(models.Model):
             "cycles": [],
         }
 
-        query_dict = QueryDict(mutable=True)
-        if self.filter_group and self.filter_group.query_dict:
-            query_dict.update(self.filter_group.query_dict)
-
         # grab cycles
         cycle_ids = self.cycles.values_list("pk", flat=True).order_by("start")
         response["graph_data"]["labels"] = list(self.cycles.values_list("name", flat=True).order_by("start"))
@@ -85,7 +79,7 @@ class ComplianceMetric(models.Model):
         for col in self.x_axis_columns.all():
             columns.append(col)
 
-        property_response = properties_across_cycles_with_filters(self.organization_id, user_ali, cycle_ids, query_dict, columns)
+        property_response = properties_across_cycles_with_filters(self.organization_id, user_ali, cycle_ids, self.filter_group, columns)
 
         datasets = {
             "y": {"data": [], "label": "compliant"},
@@ -223,8 +217,8 @@ class ComplianceMetric(models.Model):
 
         return "y" if differential >= 0 else "n"
 
-    def _get_column_data(self, data: dict, column: Column) -> Union[float, bool]:
-        """Get the column datat from the dictionary version of the property state.
+    def _get_column_data(self, data: dict, column: Column) -> float | bool:
+        """Get the column data from the dictionary version of the property state.
         Also, cast the datatype based on the column data_type as needed.
 
         Args:

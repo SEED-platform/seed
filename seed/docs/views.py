@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -9,7 +9,6 @@ from collections import namedtuple
 
 import markdown
 import yaml
-from django.conf import settings
 from django.shortcuts import render
 
 from seed.views.main import _get_default_org
@@ -69,7 +68,9 @@ def faq_page(request):
             access_level_instance_id,
             is_ali_root,
             is_ali_leaf,
+            org_user_id,
+            settings,
         ) = _get_default_org(request.user)
-    debug = settings.DEBUG
+    debug = settings.get("DEBUG")
 
     return render(request, "docs/faq.html", locals())

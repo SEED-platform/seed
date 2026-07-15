@@ -1,0 +1,68 @@
+<div class="modal-header">
+  <h4 class="modal-title" translate>Copy Inventory to New Cycle</h4>
+</div>
+
+<div class="modal-body container-fluid">
+  <div class="col-sm-12 pad-bottom-10">
+    <label>{$:: 'Cycle' | translate $}:</label>
+    <p style="font-size: 1rem !important" translate>
+      Select a cycle to copy inventory to.
+    </p>
+
+    <select
+      class="form-control input-sm grow"
+      ng-model="selected_cycle"
+      ng-options="cycle as cycle.name for cycle in cycles"
+    ></select>
+  </div>
+
+  <div class="col-sm-12 pad-bottom-10">
+    <label>{$:: 'Column List Profile' | translate $}:</label>
+    <p style="font-size: 1rem !important" translate>
+      Select a profile to specify which fields should be copied. If you do not
+      have any column list profiles, dismiss the modal and create one in the
+      Column List Profiles tab first.
+    </p>
+    <select
+      class="form-control input-sm grow"
+      ng-model="selected_column_list_profile"
+      ng-options="profile.name for profile in profiles"
+    ></select>
+  </div>
+  <!-- <div class="col-sm-12">
+      <label translate>Overwrite existing properties in the cycle</label>
+      <input
+        type="checkbox"
+        class=""
+        ng-model="overwrite_properties"
+      />
+    </div> -->
+
+  <div class="col-sm-12">
+    <div class="progress_bar_container" ng-show="status.in_progress">
+      <div class="progress_bar_copy_top" translate>Progress</div>
+      <uib-progressbar
+        class="progress-striped active"
+        value="status.progress"
+        type="success"
+      ></uib-progressbar>
+      <div class="progress_bar_copy_bottom">
+        {$ status.progress | number:0 $}% {$:: 'Complete' | translate $} {$
+        status.status_message ? ': ' + status.status_message : '' $}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary r-margin-right-5" ng-click="save()" translate>
+    Copy Inventory
+  </button>
+  <button
+    class="btn btn-default r-margin-right-5"
+    ng-click="dismiss()"
+    translate
+  >
+    Dismiss
+  </button>
+</div>

@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -8,14 +8,15 @@ from collections import namedtuple
 from django.db import transaction
 from django.db.models import Subquery
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import (
     AUDIT_USER_EDIT,
@@ -39,7 +40,7 @@ from seed.models import (
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import TaxLotSerializer, TaxLotStateSerializer, TaxLotViewSerializer, UpdateTaxLotPayloadSerializer
 from seed.tasks import update_state_derived_data
-from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory import create_inventory
 from seed.utils.inventory_filter import get_filtered_results
@@ -74,7 +75,13 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             description="IDs for taxlots to be checked for which labels are applied.",
         ),
     )
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def labels(self, request):
         """
@@ -100,9 +107,13 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             ),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     def list(self, request):
         """
         List all the properties
@@ -119,14 +130,17 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             required=["organization_id", "cycle_ids"],
             description="Properties:\n"
             "- organization_id: ID of organization\n"
-            "- profile_id: Either an id of a list settings profile, "
-            "or undefined\n"
+            "- profile_id: Either an id of a list settings profile, or undefined\n"
             "- cycle_ids: The IDs of the cycle to get taxlots",
         )
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def filter_by_cycle(self, request):
         """
@@ -174,9 +188,13 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             "- taxlot_view_ids: List of taxlot view ids",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def filter(self, request):
         """
@@ -196,12 +214,16 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         request_body=AutoSchemaHelper.schema_factory(
             {"taxlot_view_ids": ["integer"]},
             required=["taxlot_view_ids"],
-            description="Properties:\n" "- taxlot_view_ids: Array containing tax lot state ids to merge",
+            description="Properties:\n- taxlot_view_ids: Array containing tax lot state ids to merge",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def merge(self, request):
         """
@@ -252,9 +274,13 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         }
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def unmerge(self, request, pk=None):
         """
@@ -380,10 +406,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         return {"status": "success", "view_id": new_view1.id}
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(taxlot_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def links(self, request, pk=None):
         """
@@ -413,10 +443,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             return JsonResponse(result)
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(taxlot_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def match_merge_link(self, request, pk=None):
         """
@@ -459,10 +493,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             AutoSchemaHelper.query_integer_field("property_id", required=True, description="The property id to pair up with this taxlot"),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(taxlot_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def pair(self, request, pk=None):
         """
@@ -479,10 +517,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             AutoSchemaHelper.query_integer_field("property_id", required=True, description="The property id to unpair from this taxlot"),
         ]
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(taxlot_view_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["PUT"])
     def unpair(self, request, pk=None):
         """
@@ -499,9 +541,13 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             {"taxlot_view_ids": ["integer"]}, required=["taxlot_view_ids"], description="A list of taxlot view ids to delete"
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     @action(detail=False, methods=["DELETE"])
     def batch_delete(self, request):
         """
@@ -565,10 +611,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         return properties
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_view_data")
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_view_data"),
+            has_hierarchy_access(taxlot_view_id_kwarg="pk"),
+        ]
+    )
     def retrieve(self, request, pk):
         """
         Get taxlot details
@@ -592,10 +642,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=UpdateTaxLotPayloadSerializer,
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(taxlot_view_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(taxlot_view_id_kwarg="pk"),
+        ]
+    )
     def update(self, request, pk):
         """
         Update a taxlot and run the updated record through a match and merge
@@ -744,9 +798,13 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             description="state object represpents a TaxLotState's data",
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def form_create(self, request):
         org_id = self.get_organization(request)

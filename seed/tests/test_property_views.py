@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -7,17 +7,19 @@ import ast
 import json
 import os
 import pathlib
+import time
 import unittest
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db.models import Q
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
 from django.urls import reverse
 from django.utils.timezone import (
     get_current_timezone,
     make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 )
-from pytz import timezone
 
 from config.settings.common import BASE_DIR, TIME_ZONE
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -34,6 +36,8 @@ from seed.models import (
     BuildingFile,
     Column,
     ColumnMappingProfile,
+    DerivedColumn,
+    DerivedColumnParameter,
     InventoryDocument,
     Meter,
     MeterReading,
@@ -52,6 +56,7 @@ from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeColumnListProfileFactory,
     FakeCycleFactory,
+    FakeDerivedColumnFactory,
     FakeNoteFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
@@ -65,6 +70,7 @@ from seed.utils.match import match_merge_link
 from seed.utils.merge import merge_properties
 from seed.utils.organizations import create_organization
 from seed.utils.properties import pair_unpair_property_taxlot
+from seed.utils.time_utils import localize_datetime
 
 COLUMNS_TO_SEND = [
     "project_id",
@@ -78,6 +84,15 @@ COLUMNS_TO_SEND = [
 ]
 
 
+def _get_column_model_field(column):
+    if column.is_extra_data:
+        return "state__extra_data__" + column.column_name
+    elif column.derived_column:
+        return "state__derived_data__" + column.column_name
+    else:
+        return "state__" + column.column_name
+
+
 class PropertyViewTests(DataMappingBaseTestCase):
     def setUp(self):
         user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
@@ -88,6 +103,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.derived_col_factory = FakeDerivedColumnFactory(organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE)
         self.cycle = self.cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=get_current_timezone()))
         self.column_list_factory = FakeColumnListProfileFactory(organization=self.org)
         self.client.login(**user_details)
@@ -737,6 +753,228 @@ class PropertyViewTests(DataMappingBaseTestCase):
         assert PropertyView.objects.count() == original_view_count + 4
         assert Property.objects.count() == original_property_count + 4
         assert TaxLotView.objects.count() == original_taxlot_view_count + 1
+
+    def test_property_copy_into_cycle(self):
+        # Set Up
+        state = self.property_state_factory.get_property_state()
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+        new_cycle = self.cycle_factory.get_cycle()
+
+        # Action
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
+
+        # Assertion - returned
+        self.assertEqual(response.json()["num_created"], 1)
+        self.assertEqual(response.status_code, 200)
+
+        # Assertion - now theres 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+
+        # Assertion - states share the same column values
+        columns = [
+            _get_column_model_field(col)
+            for col in Column.objects.filter(organization=self.org, table_name="PropertyState").exclude(
+                column_name__in=["created", "updated"]
+            )
+        ]
+        old_view_tuple, new_view_tuple = views.values_list(*columns)
+        assert old_view_tuple == new_view_tuple
+
+    def test_property_copy_into_cycle_with_extra_data(self):
+        # Set Up
+        self.column1 = self.column_factory.get_column("column1", is_extra_data=True)
+
+        state = self.property_state_factory.get_property_state(extra_data={"column1": 4000})
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+        new_cycle = self.cycle_factory.get_cycle()
+
+        # Action
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
+
+        # Assertion - returned
+        self.assertEqual(response.json()["num_created"], 1)
+        self.assertEqual(response.status_code, 200)
+
+        # Assertion - now theres 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+
+        # Assertion - states share the same column values
+        columns = [
+            _get_column_model_field(col)
+            for col in Column.objects.filter(organization=self.org, table_name="PropertyState").exclude(
+                column_name__in=["created", "updated"]
+            )
+        ]
+        old_view_tuple, new_view_tuple = views.values_list(*columns)
+        assert old_view_tuple == new_view_tuple
+
+    def test_property_copy_into_cycle_with_derived_data(self):
+        # Set Up
+        derived_column = self.derived_col_factory.get_derived_column(expression="$gross_floor_area + 1", name="my_derived_column")
+        DerivedColumnParameter.objects.create(
+            parameter_name="gross_floor_area",
+            derived_column=derived_column,
+            source_column=Column.objects.get(organization=self.org, table_name="PropertyState", column_name="gross_floor_area"),
+        )
+        derived_column = Column.objects.get(derived_column=derived_column)
+
+        state = self.property_state_factory.get_property_state(gross_floor_area=100)
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+        new_cycle = self.cycle_factory.get_cycle()
+
+        # Action
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+
+        time.sleep(4)
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
+
+        # Assertion - returned
+        self.assertEqual(response.json()["num_created"], 1)
+        self.assertEqual(response.status_code, 200)
+
+        # Assertion - now theres 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+
+        # Assertion - new view has derived data
+        assert new_view.state.gross_floor_area.magnitude == 100
+        assert new_view.state.derived_data == {"my_derived_column": 101}
+
+    def test_property_copy_into_cycle_with_derived_data_but_not_param(self):
+        # Set Up
+        derived_column = self.derived_col_factory.get_derived_column(expression="$gross_floor_area + 1", name="my_derived_column")
+        DerivedColumnParameter.objects.create(
+            parameter_name="gross_floor_area",
+            derived_column=derived_column,
+            source_column=Column.objects.get(organization=self.org, table_name="PropertyState", column_name="gross_floor_area"),
+        )
+        derived_column = Column.objects.get(derived_column=derived_column)
+
+        state = self.property_state_factory.get_property_state(gross_floor_area=100)
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+        new_cycle = self.cycle_factory.get_cycle()
+
+        # Action - doesnt include gross_floor_area as a copied column
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id], "column_ids": []})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
+
+        # Assertion - returned
+        self.assertEqual(response.json()["num_created"], 1)
+        self.assertEqual(response.status_code, 200)
+
+        # Assertion - now theres 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+
+        # Assertion - new view has no derived data
+        assert new_view.state.gross_floor_area is None
+        assert new_view.state.derived_data == {"my_derived_column": None}
+
+    def test_property_copy_into_cycle_already_exists(self):
+        # Set Up
+        state = self.property_state_factory.get_property_state()
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+
+        new_cycle = self.cycle_factory.get_cycle()
+        new_state = self.property_state_factory.get_property_state()
+        new_view = PropertyView.objects.create(property=prop, cycle=new_cycle, state=new_state)
+        new_state_updated = new_state.updated
+
+        # Action
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id]})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
+
+        # Assertion - returned
+        self.assertEqual(response.json()["num_created"], 0)
+        self.assertEqual(response.status_code, 200)
+
+        # Assertion - theres still 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+        assert new_view.state_id == new_state.id
+        assert new_view.state.updated == new_state_updated
+
+    def test_property_copy_into_cycle_selected_columns(self):
+        # Set Up
+        state = self.property_state_factory.get_property_state(custom_id_1="hey", pm_property_id="ho")
+        prop = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=prop, cycle=self.cycle, state=state)
+        new_cycle = self.cycle_factory.get_cycle()
+        column_ids = []
+
+        # Action
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [view.id], "column_ids": column_ids})
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, params, content_type="application/json")
+        response = self.client.get(
+            reverse("api:v3:progress-detail", args=[response.json()["progress_key"]]), content_type="application/json"
+        )
+
+        # Assertion - returned
+        self.assertEqual(response.json()["num_created"], 1)
+        self.assertEqual(response.status_code, 200)
+
+        # Assertion - now theres 2 views
+        views = PropertyView.objects.filter(property=prop)
+        assert views.count() == 2
+        new_view = views.last()
+        assert new_view.cycle_id == new_cycle.id
+
+        # Assertion - states share the same column values for select columns and matching criteria
+        columns = Column.objects.filter(organization=self.org, table_name="PropertyState")
+        columns_that_should_match = [
+            _get_column_model_field(col)
+            for col in columns.filter(Q(id__in=column_ids) | Q(is_matching_criteria=True)).exclude(column_name__in=["created", "updated"])
+        ]
+        old_view_tuple, new_view_tuple = views.values(*columns_that_should_match)
+        assert all((a == b) for a, b in zip(old_view_tuple.values(), new_view_tuple.values()))
+
+        # Assertion - states do not share the same column values non-selected, non-matching criteria columns
+        columns_that_should_not_match = [
+            _get_column_model_field(col)
+            for col in columns.exclude(Q(id__in=column_ids) | Q(is_matching_criteria=True) | Q(column_name__in=["created", "updated"]))
+        ]
+        old_view_tuple, new_view_tuple = views.values(*columns_that_should_not_match)
+        assert all((a != b or a is None) for a, b in zip(old_view_tuple.values(), new_view_tuple.values()))
 
 
 class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
@@ -1604,7 +1842,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
         # Check that there are 2 overlapping readings (that are separate for now) out of 4.
         self.assertEqual(MeterReading.objects.count(), 4)
-        tz_obj = timezone(TIME_ZONE)
+        tz_obj = ZoneInfo(TIME_ZONE)
         start_time_match = make_aware(datetime(2011, 3, 5, 21, 15, 0), timezone=tz_obj)
         end_time_match = make_aware(datetime(2011, 3, 5, 21, 30, 0), timezone=tz_obj)
         same_time_windows = MeterReading.objects.filter(start_time=start_time_match, end_time=end_time_match)
@@ -2083,6 +2321,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "service_group": None,
                 "service_id": None,
                 "property_display_field": self.property_view_1.state.address_line_1,
+                "view_id": self.property_view_1.id,
             },
             {
                 "id": gas_meter.id,
@@ -2109,6 +2348,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "service_group": None,
                 "service_id": None,
                 "property_display_field": self.property_view_1.state.address_line_1,
+                "view_id": self.property_view_1.id,
             },
             {
                 "id": gb_gas_meter.id,
@@ -2135,6 +2375,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 "service_group": None,
                 "service_id": None,
                 "property_display_field": self.property_view_1.state.address_line_1,
+                "view_id": self.property_view_1.id,
             },
         ]
 
@@ -2159,7 +2400,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         }
         gb_gas_meter = Meter.objects.create(**meter_details)
 
-        tz_obj = timezone(TIME_ZONE)
+        tz_obj = ZoneInfo(TIME_ZONE)
         gb_gas_reading_details = {
             "start_time": make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
             "end_time": make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
@@ -2326,7 +2567,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         }
         diesel_meter = Meter.objects.create(**meter_details)
 
-        tz_obj = timezone(TIME_ZONE)
+        tz_obj = ZoneInfo(TIME_ZONE)
         diesel_reading_details = {
             "start_time": make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
             "end_time": make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
@@ -2383,7 +2624,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         save_raw_data(self.import_file.id)
 
         # add additional entries for each initial meter
-        tz_obj = timezone(TIME_ZONE)
+        tz_obj = ZoneInfo(TIME_ZONE)
         for meter in Meter.objects.all():
             # March 2016 reading
             reading_details = {
@@ -2466,13 +2707,13 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         property_1_electric_meter = Meter.objects.get(source_id="5766973-0")
         # add additional sub-monthly entries for each initial meter
-        tz_obj = timezone(TIME_ZONE)
+        tz_obj = ZoneInfo(TIME_ZONE)
         for meter in Meter.objects.all():
             # November 2019 reading between DST transition
             reading_details = {
                 "meter_id": meter.id,
-                "start_time": make_aware(datetime(2019, 11, 3, 1, 59, 59), timezone=tz_obj, is_dst=True),
-                "end_time": make_aware(datetime(2019, 11, 3, 1, 59, 59), timezone=tz_obj, is_dst=False),
+                "start_time": localize_datetime(datetime(2019, 11, 3, 1, 59, 59), tz_obj, is_dst=True),
+                "end_time": localize_datetime(datetime(2019, 11, 3, 1, 59, 59), tz_obj, is_dst=False),
                 "reading": 100,
                 "source_unit": "kBtu (thousand Btu)",
                 "conversion_factor": 1,
@@ -2544,7 +2785,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         save_raw_data(self.import_file.id)
 
         # add additional 2018 entries for each initial meter
-        tz_obj = timezone(TIME_ZONE)
+        tz_obj = ZoneInfo(TIME_ZONE)
         for meter in Meter.objects.all():
             # March 2018 reading
             reading_details = {
@@ -2613,7 +2854,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         save_raw_data(self.import_file.id)
 
         # add additional entries for the Electricity meter
-        tz_obj = timezone(TIME_ZONE)
+        tz_obj = ZoneInfo(TIME_ZONE)
         meter = Meter.objects.get(property_id=self.property_view_1.property.id, type=Meter.type_lookup["Electric - Grid"])
 
         # 2020 January-February reading has 1 full day in January 1 full day in February.

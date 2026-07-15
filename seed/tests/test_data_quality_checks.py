@@ -1,16 +1,18 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
 
 import pytest
 from django.forms.models import model_to_dict
 from django.urls import reverse_lazy
+from django.utils import timezone
 from quantityfield.units import ureg
 
-from seed.models import Column, DerivedColumnParameter, Goal, PropertyView, PropertyViewLabel
+from seed.models import Column, CycleGoal, DerivedColumnParameter, Goal, PropertyView, PropertyViewLabel
 from seed.models.data_quality import DataQualityCheck, DataQualityTypeCastError, Rule, StatusLabel, UnitMismatchError
 from seed.models.derived_columns import DerivedColumn
 from seed.models.models import ASSESSED_RAW
@@ -91,7 +93,7 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         with pytest.raises(Exception) as exc:  # noqa: PT011
             dq.add_rule(ex_rule)
         self.assertEqual(
-            str(exc.value), "Rule data is not defined correctly: Rule() got an unexpected keyword argument 'table_name_does_not_exist'"
+            str(exc.value), "Rule data is not defined correctly: Rule() got unexpected keyword arguments: 'table_name_does_not_exist'"
         )
 
     def test_check_property_state_example_data(self):
@@ -369,6 +371,19 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         with pytest.raises(DataQualityTypeCastError):
             self.assertEqual(rule.maximum_valid("not-a-number"), "")
 
+    def test_date_rules_compare_aware_datetimes_in_local_wall_time(self):
+        rule = Rule.objects.create(name="date_rule", data_type=Rule.TYPE_DATE, min=20200101, max=20200101)
+        value = datetime(2020, 1, 1, 0, 30, tzinfo=UTC)
+
+        with timezone.override(ZoneInfo("America/Denver")):
+            self.assertFalse(rule.minimum_valid(value))
+            self.assertTrue(rule.maximum_valid(value))
+
+            f_min, f_max, f_value = rule.format_strings(value)
+            self.assertEqual(f_value, "2019-12-31 17:30:00")
+            self.assertEqual(f_min, "2020-01-01 00:00:00")
+            self.assertEqual(f_max, "2020-01-01 00:00:00")
+
     def test_min_value_quantities(self):
         rule = Rule.objects.create(name="min_str_rule", data_type=Rule.TYPE_EUI, min=10, max=100, units="kBtu/ft**2/year")
         self.assertTrue(rule.minimum_valid(15))
@@ -513,7 +528,6 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
         self.goal = Goal.objects.create(
             organization=self.org,
             baseline_cycle=self.cycle1,
-            current_cycle=self.cycle2,
             access_level_instance=self.root_ali,
             eui_column1=Column.objects.get(organization=self.org.id, column_name="source_eui_weather_normalized"),
             eui_column2=Column.objects.get(organization=self.org.id, column_name="source_eui"),
@@ -522,6 +536,7 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
             target_percentage=20,
             name="goal1",
         )
+        self.cycle_goal = CycleGoal.objects.create(current_cycle=self.cycle2, goal=self.goal, salesforce_annual_report_id="123")
 
         # create default rules
         self.dq = DataQualityCheck.retrieve(self.org.id)

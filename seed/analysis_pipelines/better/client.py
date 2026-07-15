@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -359,7 +359,7 @@ class BETTERClient:
         try:
             response = requests.request("GET", url, headers=headers, timeout=60)
             if response.status_code == 404:
-                return None, [f'BETTER analysis could not be fetched: Status Code: 404 {response.json()["detail"]}']
+                return None, [f"BETTER analysis could not be fetched: Status Code: 404 {response.json()['detail']}"]
             if response.status_code != 200:
                 return None, [f"BETTER analysis could not be fetched: Status Code: {response.status_code}"]
             response_json = response.json()

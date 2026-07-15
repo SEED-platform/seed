@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author 'Piper Merriam <pmerriam@quickleft.com>'
@@ -21,7 +21,7 @@ class TestCaseFactory(type):
 
         for doc, value, expected in cases:
             test = method_maker(value, expected)
-            test_name = f'{prefix}_{doc.lower().replace(" ", "_")}'
+            test_name = f"{prefix}_{doc.lower().replace(' ', '_')}"
             if test_name in attrs:
                 raise KeyError(f"Test name {test_name} duplicated")
             test.__name__ = test_name

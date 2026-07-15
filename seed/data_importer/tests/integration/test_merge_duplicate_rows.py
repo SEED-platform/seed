@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -7,10 +7,9 @@ import datetime
 import logging
 import os.path as osp
 import pathlib
+from zoneinfo import ZoneInfo
 
-import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.utils import timezone as tz
 from quantityfield.units import ureg
 
 from seed.data_importer import match, tasks
@@ -152,7 +151,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
     def test_hash_release_date(self):
         """The hash_state_object method makes the timezones naive, so this should work because
         the date times are equivalent, even though the database objects are not"""
-        ps1_dt = datetime.datetime(2010, 1, 1, 0, 0, tzinfo=tz.utc).astimezone(pytz.timezone("America/Los_Angeles"))
+        ps1_dt = datetime.datetime(2010, 1, 1, 0, 0, tzinfo=datetime.UTC).astimezone(ZoneInfo("America/Los_Angeles"))
         ps1 = PropertyState.objects.create(
             organization=self.org,
             address_line_1="123 fake st",
@@ -165,7 +164,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
             organization=self.org,
             address_line_1="123 fake st",
             extra_data={"a": "result"},
-            release_date=datetime.datetime(2010, 1, 1, 0, 0, tzinfo=tz.utc),
+            release_date=datetime.datetime(2010, 1, 1, 0, 0, tzinfo=datetime.UTC),
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )

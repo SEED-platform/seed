@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -53,10 +53,10 @@ class SalesforceConfig(models.Model):
         constraints = [
             models.CheckConstraint(
                 name="salesforce_update_at_hour_range",
-                check=models.Q(update_at_hour__range=(0, 23)),
+                condition=models.Q(update_at_hour__range=(0, 23)),
             ),
             models.CheckConstraint(
                 name="salesforce_update_at_minute_range",
-                check=models.Q(update_at_minute__range=(0, 59)),
+                condition=models.Q(update_at_minute__range=(0, 59)),
             ),
         ]

@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
         parser.add_argument(
             "--csv_file",
-            help="Mapping profile CSV file, must follow specific format. Relative to location " "of manage.py call.",
+            help="Mapping profile CSV file, must follow specific format. Relative to location of manage.py call.",
             action="store",
             required=True,
         )

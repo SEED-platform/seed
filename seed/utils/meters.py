@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -7,10 +7,9 @@ from calendar import monthrange
 from collections import defaultdict
 from datetime import datetime, time, timedelta
 
+from django.utils import timezone as django_timezone
 from django.utils.timezone import make_aware
-from pytz import timezone
 
-from config.settings.common import TIME_ZONE
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors, usage_point_id
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Meter, Service
@@ -35,7 +34,7 @@ class PropertyMeterReadingsExporter:
         org = Organization.objects.get(pk=org_id)
         self.org_meter_display_settings = org.display_meter_units
         self.org_meter_water_display_settings = org.display_meter_water_units
-        self.tz = timezone(TIME_ZONE)
+        self.tz = django_timezone.get_default_timezone()
 
     @property
     def thermal_factors(self):

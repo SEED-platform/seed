@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -73,3 +73,129 @@ def rehash(apps, properties=True, taxlots=True):
 
                 print(f"  {progress.updated:,} {table} hash{'' if progress.updated == 1 else 'es'} updated")
                 cursor.execute("DEALLOCATE update_hash;")
+
+
+# ---------------------------------------------------------------------------
+# Primary key / constraint "repair" helpers.
+#
+# Some production databases were restored (or historically created) without the
+# primary key / unique constraints that Django's migration history assumes
+# already exist. When a later migration adds a foreign key that references one
+# of those tables, PostgreSQL rejects it because the referenced column is not
+# backed by a primary key or unique constraint -- even though Django believes
+# the historical migrations already ran.
+#
+# The helpers below build guarded SQL so a repair is safe to run repeatedly and
+# on healthy databases that already have the constraints. Every generated
+# statement is wrapped in ``pg_catalog`` existence checks, so it is a no-op
+# unless the constraint is genuinely missing.
+# ---------------------------------------------------------------------------
+
+_SAFE_IDENT_CHARS = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_")
+
+
+def _validate_identifier(name: str) -> str:
+    """Guard the table/constraint names we interpolate into repair SQL.
+
+    These values always come from migration source code (never user input), but
+    validating keeps the generated SQL obviously safe and fails loudly on typos.
+    """
+    if not name or name[0].isdigit() or any(char not in _SAFE_IDENT_CHARS for char in name):
+        raise ValueError(f"Unsafe SQL identifier: {name!r}")
+    return name
+
+
+def add_missing_primary_keys_sql(*tables: str) -> str:
+    """Return idempotent SQL adding an ``id`` PRIMARY KEY to each named table.
+
+    Each table is repaired only when it exists, has an ``id`` column, and does
+    not already have a primary key. Use this when a migration needs a specific
+    set of tables repaired before it can add foreign keys that reference them.
+    """
+    blocks = []
+    for table in tables:
+        _validate_identifier(table)
+        blocks.append(
+            f"""
+    IF to_regclass('public.{table}') IS NOT NULL
+       AND NOT EXISTS (
+           SELECT 1 FROM pg_constraint
+           WHERE conrelid = to_regclass('public.{table}') AND contype = 'p'
+       )
+       AND EXISTS (
+           SELECT 1 FROM pg_attribute
+           WHERE attrelid = to_regclass('public.{table}')
+             AND attname = 'id' AND attnum > 0 AND NOT attisdropped
+       ) THEN
+        ALTER TABLE public.{table} ADD CONSTRAINT {table}_pkey PRIMARY KEY (id);
+        RAISE NOTICE 'Repaired missing primary key on public.{table}';
+    END IF;
+"""  # noqa: S608
+        )
+    return "DO $$\nBEGIN" + "".join(blocks) + "END;\n$$;"
+
+
+def add_missing_unique_constraint_sql(table: str, constraint: str, *columns: str) -> str:
+    """Return idempotent SQL adding a named UNIQUE constraint when it is missing."""
+    _validate_identifier(table)
+    _validate_identifier(constraint)
+    for column in columns:
+        _validate_identifier(column)
+    column_list = ", ".join(columns)
+    return f"""DO $$
+BEGIN
+    IF to_regclass('public.{table}') IS NOT NULL
+       AND NOT EXISTS (
+           SELECT 1 FROM pg_constraint
+           WHERE conrelid = to_regclass('public.{table}') AND conname = '{constraint}'
+       ) THEN
+        ALTER TABLE public.{table} ADD CONSTRAINT {constraint} UNIQUE ({column_list});
+        RAISE NOTICE 'Repaired missing unique constraint {constraint} on public.{table}';
+    END IF;
+END;
+$$;"""  # noqa: S608
+
+
+def repair_all_missing_primary_keys_sql(*table_prefixes: str) -> str:
+    """Return idempotent SQL repairing every table missing its ``id`` primary key.
+
+    Dynamically scans ``public`` for ordinary tables whose name starts with one
+    of ``table_prefixes`` (e.g. ``"seed_"``, ``"orgs_"``) that have an ``id``
+    column but no primary key, and adds ``<table>_pkey PRIMARY KEY (id)``. This
+    guarantees completeness: no table is ever missed as new models are added.
+
+    Tables with a natural / composite primary key (no ``id`` column) are skipped,
+    which is what we want -- their primary key lives on a different column.
+    """
+    if not table_prefixes:
+        raise ValueError("repair_all_missing_primary_keys_sql requires at least one prefix")
+    prefix_conditions = " OR ".join(f"starts_with(c.relname, '{_validate_identifier(prefix)}')" for prefix in table_prefixes)
+    return f"""DO $$
+DECLARE
+    rec record;
+BEGIN
+    FOR rec IN
+        SELECT c.oid, c.relname
+        FROM pg_class c
+        JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public'
+          AND c.relkind = 'r'
+          AND ({prefix_conditions})
+          AND NOT EXISTS (
+              SELECT 1 FROM pg_constraint pc
+              WHERE pc.conrelid = c.oid AND pc.contype = 'p'
+          )
+          AND EXISTS (
+              SELECT 1 FROM pg_attribute a
+              WHERE a.attrelid = c.oid
+                AND a.attname = 'id' AND a.attnum > 0 AND NOT a.attisdropped
+          )
+    LOOP
+        EXECUTE format(
+            'ALTER TABLE public.%I ADD CONSTRAINT %I PRIMARY KEY (id)',
+            rec.relname, rec.relname || '_pkey'
+        );
+        RAISE NOTICE 'Repaired missing primary key on public.%', rec.relname;
+    END LOOP;
+END;
+$$;"""  # noqa: S608

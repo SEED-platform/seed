@@ -1,27 +1,35 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.controller.organization_settings', []).controller('organization_settings_controller', [
   '$scope',
   '$sce',
   '$uibModal',
+  '$window',
+  '$state',
   'urls',
   'organization_payload',
   'audit_template_service',
   'auth_payload',
+  'cycles_payload',
   'property_columns',
   'analyses_service',
+  'modified_service',
   'organization_service',
   'salesforce_mapping_service',
   'salesforce_config_service',
+  'bb_salesforce_service',
   'property_column_names',
   'taxlot_column_names',
   'labels_payload',
   'salesforce_mappings_payload',
   'salesforce_configs_payload',
+  'bb_salesforce_configs_payload',
   'audit_template_configs_payload',
   'meters_service',
+  'facilities_plans',
+  'facilities_plan_service',
   'Notification',
   '$translate',
   // eslint-disable-next-line func-names
@@ -29,22 +37,30 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $scope,
     $sce,
     $uibModal,
+    $window,
+    $state,
     urls,
     organization_payload,
     audit_template_service,
     auth_payload,
+    cycles_payload,
     property_columns,
     analyses_service,
+    modified_service,
     organization_service,
     salesforce_mapping_service,
     salesforce_config_service,
+    bb_salesforce_service,
     property_column_names,
     taxlot_column_names,
     labels_payload,
     salesforce_mappings_payload,
     salesforce_configs_payload,
+    bb_salesforce_configs_payload,
     audit_template_configs_payload,
     meters_service,
+    facilities_plans,
+    facilities_plan_service,
     Notification,
     $translate
   ) {
@@ -54,18 +70,74 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     if (salesforce_configs_payload.length > 0) {
       $scope.conf = salesforce_configs_payload[0];
     }
+    $scope.salesforce_mappings = salesforce_mappings_payload;
+
+    $scope.bb_salesforce_configs = bb_salesforce_configs_payload;
 
     $scope.at_conf = {};
     if (audit_template_configs_payload.length > 0) {
       $scope.at_conf = audit_template_configs_payload[0];
     }
 
+    // watch to detect unsaved modifications
+    $scope.$watch('org', (a, b) => (a !== b ? modified_service.setModified() : null), true);
+    $scope.$watch('salesforce_mappings', (a, b) => (a !== b ? modified_service.setModified() : null), true);
+    $scope.$watch('conf', (a, b) => (a !== b ? modified_service.setModified() : null), true);
+    $scope.$watch('bb_salesforce_configs', (a, b) => (a !== b ? modified_service.setModified() : null), true);
+    $scope.$watch('at_conf', (a, b) => (a !== b ? modified_service.setModified() : null), true);
+
+    // function to verify BB salesforce login status
+    $scope.get_bb_salesforce_login_status = () => {
+      bb_salesforce_service.verify_token($scope.org.id).then((response) => {
+        if (response.status === 200) {
+          $scope.is_logged_into_bb_salesforce = response.data.valid;
+        } else {
+          $scope.is_logged_into_bb_salesforce = false;
+        }
+      });
+    };
+
+    // BB salesforce login status check
+    $scope.is_logged_into_bb_salesforce = false;
+    if ($scope.org.bb_salesforce_enabled) {
+      $scope.get_bb_salesforce_login_status();
+    }
+
+    $scope.bb_login_salesforce = () => {
+      bb_salesforce_service.get_login_url($scope.org.id)
+        .then((data) => {
+          // did we get a URL?
+          if (data.status === 'error') {
+            Notification.error({ message: `Cannot Login to Salesforce: ${data.response}`, delay: false });
+          } else if (data.url) {
+            $window.location.href = data.url;
+          }
+        })
+        .catch(() => {
+          Notification.error({ message: 'Cannot Login to Salesforce. Double check the Salesforce login URL.', delay: false });
+        });
+    };
+
+    $scope.bb_logout_salesforce = () => {
+      bb_salesforce_service.logout_salesforce($scope.org.id)
+        .then((data) => {
+          if (data.status === 'success') {
+            $scope.is_logged_into_bb_salesforce = false;
+            Notification.success('Successfully logged out of Salesforce.');
+          } else {
+            Notification.error({ message: 'Error logging out of Salesforce. Please try again.', delay: 30000 });
+          }
+        })
+        .catch(() => {
+          Notification.error({ message: 'Error logging out of Salesforce. Please try again.', delay: 30000 });
+        });
+    };
+
     $scope.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     $scope.auth = auth_payload.auth;
     $scope.property_column_names = property_column_names;
     $scope.taxlot_column_names = taxlot_column_names;
-    $scope.salesforce_mappings = salesforce_mappings_payload;
     $scope.org_static = angular.copy($scope.org);
     $scope.token_validity = { message: 'Verify Token' };
     $scope.labels = labels_payload;
@@ -314,6 +386,9 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
     // filtered columns should include derived columns
     const filtered_columns = _.filter($scope.columns, (column) => column.derived_column || _.includes(acceptable_column_types, column.data_type));
+    $scope.eui_columns = $scope.columns.filter((column) => column.derived_column || column.data_type === 'eui');
+    $scope.boolean_columns = $scope.columns.filter((column) => column.derived_column || column.data_type === 'boolean');
+    $scope.numeric_columns = $scope.columns.filter((column) => column.derived_column || ['float', 'integer', 'number'].includes(column.data_type));
 
     $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map((c) => c.id);
     $scope.available_x_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
@@ -360,6 +435,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
           default_reports_y_axis_options: $scope.selected_y_columns
         })
         .then(() => {
+          modified_service.resetModified();
           $scope.settings_updated = true;
           $scope.org_static = angular.copy($scope.org);
           $scope.$emit('organization_list_updated');
@@ -371,6 +447,29 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
             $scope.form_errors = 'An unknown error has occurred';
           }
         });
+
+      if (Object.keys($scope.bb_salesforce_configs).length > 0) {
+        bb_salesforce_service
+          .update_bb_salesforce_config($scope.org.id, $scope.bb_salesforce_configs, $scope.conf, $scope.timezone)
+          .then((response) => {
+            if (response.status === 'error') {
+              $scope.config_errors = response.errors;
+              // } else {
+              //   salesforce_config_service.get_salesforce_configs($scope.org.id).then((data) => {
+              //     $scope.conf = data.length > 0 ? data[0] : {};
+              //   });
+            }
+          })
+          .catch((response) => {
+            if (response.data && response.data.status === 'error') {
+              $scope.config_errors = response.data.message;
+            } else {
+              $scope.config_errors = 'An unknown error has occurred';
+            }
+            // console.log("config ERRORS: ", $scope.config_errors);
+            Notification.error({ message: `Error: ${$scope.config_errors}`, delay: 15000, closeOnClick: true });
+          });
+      }
 
       // also save salesforce configs
       if ($scope.org.salesforce_enabled) {
@@ -614,6 +713,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
         backdrop: 'static',
         resolve: {
           org: () => $scope.org,
+          cycles: () => cycles_payload.cycles,
           view_ids: () => []
         }
       });
@@ -654,6 +754,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
       'Denver Energy Audit Report',
       'EE-RLF Template',
       'Energy Trust of Oregon Report',
+      'Federal Energy and Water Audit Report',
       'Los Angeles Report',
       'Minneapolis Energy Evaluation Report',
       'New York City Energy Efficiency Report',
@@ -683,6 +784,32 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     $scope.toggle_at_status_type = (status) => {
       $scope.at_status_types[status] = !$scope.at_status_types[status];
       $scope.org.audit_template_status_types = Object.keys($scope.at_status_types).filter((key) => $scope.at_status_types[key]).sort().join(',');
+    };
+
+    $scope.facilities_plans = facilities_plans.data;
+    $scope.selected_facilities_plan = null;
+
+    $scope.set_facilities_plan = (id) => {
+      $scope.selected_facilities_plan = $scope.facilities_plans.find((fp) => fp.id === id);
+      $scope.dirty_facilities_plan = { ...$scope.selected_facilities_plan };
+    };
+
+    $scope.create_new_facilities_plan = () => {
+      $scope.selected_facilities_plan = null;
+      $scope.dirty_facilities_plan = { name: 'New Facility Plan' };
+    };
+
+    $scope.save_facilities_plan = () => {
+      if ($scope.selected_facilities_plan == null) {
+        facilities_plan_service.create_facilities_plan({ ...$scope.dirty_facilities_plan, organization: $scope.org.id });
+      } else {
+        facilities_plan_service.update_facilities_plan($scope.selected_facilities_plan.id, { ...$scope.dirty_facilities_plan, organization: $scope.org.id });
+      }
+      $state.reload();
+    };
+
+    $scope.delete_facilities_plan = (facilities_plan) => {
+      facilities_plan_service.delete_facilities_plan(facilities_plan.id);
     };
   }
 ]);

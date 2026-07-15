@@ -1,12 +1,11 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 
-import pytz
 from django.test import TransactionTestCase
 from django.urls import reverse
 
@@ -471,7 +470,7 @@ class FilterGroupsViewTests(AccessLevelBaseTestCase, TransactionTestCase):
     def setUp(self):
         super().setUp()
         self.cycle1 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
-            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=UTC)
         )
 
         # generate columns

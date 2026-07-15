@@ -1,0 +1,83 @@
+<div class="modal-header">
+  <h3>Edit Cycle Goal {$ goal.name $} - {$ cycle_goal.current_cycle.name $}</h3>
+</div>
+<div class="modal-body">
+  <p translate>ADD_CYCLE_GOAL_DESC</p>
+  <!-- Current Cycle -->
+  <ul class="r-list">
+    <li class="r-list-header" translate>Cycle</li>
+    <li class="r-row r-row-centered">
+      <label
+        for="select-current-cycle"
+        class="r-pad-right-5 goal-label"
+        translate
+        >Cycle</label
+      >
+      <select
+        disabled
+        id="select-current-cycle"
+        class="form-control goal-form-control"
+        ng-options="cycle.id as cycle.name for cycle in [cycle_goal.current_cycle]"
+        ng-change=""
+        ng-model="current_cycle"
+        required
+      ></select>
+    </li>
+    <li class="r-info">
+      <i class="fa-solid fa-arrow-up r-pad-right-5"></i
+      ><span translate
+        >Select a Cycle to compare against the Baseline Cycle</span
+      >
+    </li>
+    <li ng-if="bb_salesforce_enabled" class="r-list-header" translate>
+      Salesforce Annual Report
+    </li>
+    <li ng-if="bb_salesforce_enabled" class="r-row r-row-centered">
+      <label
+        ng-if="is_logged_into_salesforce"
+        for="select-annual-report"
+        class="r-pad-right-5 goal-label"
+        translate
+        >Salesforce Annual Report</label
+      >
+      <select
+        ng-if="is_logged_into_salesforce"
+        id="select-annual-report"
+        class="form-control goal-form-control"
+        ng-options="ar as ar.name for ar in annual_reports"
+        ng-model="annual_report"
+        ng-change="change_annual_report(annual_report)"
+        required
+      ></select>
+      <i
+        ng-if="!is_logged_into_salesforce"
+        class="fa-solid fa-warning r-pad-right-5 warning-message"
+        style="font-size: 1.5em"
+      ></i
+      ><span
+        ng-if="!is_logged_into_salesforce"
+        class="warning-message"
+        style="padding-left: 10px"
+        translate
+        >LINK_CYCLE_ERROR_TEXT</span
+      >
+    </li>
+    <li
+      ng-if="bb_salesforce_enabled && is_logged_into_salesforce"
+      class="r-info"
+    >
+      <i class="fa-solid fa-arrow-up r-pad-right-5"></i
+      ><span translate
+        >Select a Salesforce Annual Report to associate with this Cycle</span
+      >
+    </li>
+  </ul>
+</div>
+<div class="modal-footer">
+  <button class="btn btn-primary r-margin-right-5" ng-click="save()" translate>
+    Save
+  </button>
+  <button class="btn btn-default r-margin-right-5" ng-click="close()" translate>
+    Dismiss
+  </button>
+</div>

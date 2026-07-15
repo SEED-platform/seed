@@ -1,10 +1,10 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import os
-from distutils.util import strtobool
+from datetime import timedelta
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
@@ -13,12 +13,14 @@ from seed.serializers.celery import CeleryDatetimeSerializer
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+GDAL_LIBRARY_PATH = os.environ.get("GDAL_LIBRARY_PATH")
+GEOS_LIBRARY_PATH = os.environ.get("GEOS_LIBRARY_PATH")
+
 PROTOCOL = os.environ.get("PROTOCOL", "https")
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.seed"
 
 TIME_ZONE = "America/Los_Angeles"
 USE_TZ = True
@@ -26,17 +28,22 @@ SITE_ID = 1
 
 USE_I18N = True
 LANGUAGES = (
-    ("en", _("English")),
+    ("en-us", _("English")),
     ("fr-ca", _("French (Canada)")),
+    ("es", _("Spanish")),
 )
 LOCALE_PATHS = ("locale",)
 LANGUAGE_CODE = "en-us"
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "default-ns=nb-w)#2ue-mtu!s&2krzfee1-t)^z7y8gyrp6mx^d*weifh")
 
+CSRF_COOKIE_SAMESITE = "Strict"
+
 SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 # Default to expiring cookies after 2 weeks
-SESSION_COOKIE_AGE = int(os.environ.get("COOKIE_EXPIRATION", 1_209_600))
+SESSION_COOKIE_AGE = int(os.environ.get("COOKIE_EXPIRATION", 1_209_600))  # noqa: PLW1508
+# This must be `Lax` so that emailed invitation links work as expected
+SESSION_COOKIE_SAMESITE = "Lax"
 
 TEMPLATES = [
     {
@@ -85,11 +92,11 @@ DJANGO_CORE_APPS = (
     "django.contrib.admin",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    "django.contrib.postgres",
     "compressor",
     "django_extensions",
     "django_filters",
     "rest_framework",
-    "crispy_forms",  # needed to squash warnings around collectstatic with rest_framework
     "post_office",
     "django_celery_beat",
     "treebeard",
@@ -101,8 +108,8 @@ DJANGO_CORE_APPS = (
     "two_factor.plugins.phonenumber",  # <- if you want phone number capability.
     "two_factor.plugins.email",  # <- if you want email capability.
     # "two_factor.plugins.yubikey",  # <- for yubikey capability.
+    "rest_framework_simplejwt",
 )
-
 
 SEED_CORE_APPS = (
     "config",
@@ -122,7 +129,6 @@ POST_OFFICE = {
     },
     "CELERY_ENABLED": True,
 }
-
 
 # Apps with tables created by migrations, but which 3rd-party apps depend on.
 # Internal apps can resolve this via South's depends_on.
@@ -202,9 +208,7 @@ LOGGING = {
     },
 }
 
-# LOGIN_URL = "two_factor:login"
-LOGIN_REDIRECT_URL = "two_factor:profile"
-# LOGIN_REDIRECT_URL = "/app/"
+LOGIN_REDIRECT_URL = "/app/"
 
 APPEND_SLASH = True
 
@@ -218,6 +222,7 @@ register(
 )
 CELERY_WORKER_MAX_TASKS_PER_CHILD = 1
 CELERY_ACCEPT_CONTENT = ["seed_json", "pickle"]
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_TASK_SERIALIZER = "seed_json"
 CELERY_RESULT_SERIALIZER = "seed_json"
 CELERY_RESULT_EXPIRES = 86400  # 24 hours
@@ -268,6 +273,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 # Django Rest Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
         "seed.authentication.SEEDAuthentication",
     ),
@@ -277,7 +283,7 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
-    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.openapi.AutoSchema",
     "PAGE_SIZE": 25,
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
     "DATETIME_INPUT_FORMATS": ("%Y:%m:%d", "iso-8601", "%Y-%m-%d"),
@@ -303,14 +309,37 @@ SWAGGER_SETTINGS = {
     "DOC_EXPANSION": "none",
     "LOGOUT_URL": "/accounts/logout",
 }
+SWAGGER_USE_COMPAT_RENDERERS = False
 
-try:
-    EEEJ_LOAD_SMALL_TEST_DATASET = bool(strtobool(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "False")))
-except Exception:
-    EEEJ_LOAD_SMALL_TEST_DATASET = False
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "TOKEN_OBTAIN_SERIALIZER": "seed.landing.serializers.SeedTokenObtainPairSerializer",
+    "ROTATE_REFRESH_TOKENS": True,
+}
+
+
+def env_var(key, default=None):
+    return os.environ.get(key, default)
+
+
+def yn(s: bool | str) -> bool:
+    if isinstance(s, bool):
+        return s
+    if isinstance(s, str):
+        return s.lower() in ["y", "yes", "t", "true", "on", "1"]
+    return False
+
+
+EEEJ_LOAD_SMALL_TEST_DATASET = yn(os.environ.get("EEEJ_LOAD_SMALL_TEST_DATASET", "False"))
 
 BSYNCR_SERVER_HOST = os.environ.get("BSYNCR_SERVER_HOST")
 BSYNCR_SERVER_PORT = os.environ.get("BSYNCR_SERVER_PORT", "80")
+
+# BUILDINGSYNC DEFAULT VERSION in SEED (don't include the v)
+# This will be used as the default version in various places within SEED (BETTER export, BSync File import, etc.)
+# It will also be used by the Audit Template import/export (ensure this is coordinated with AT)
+BUILDINGSYNC_VERSION = os.environ.get("BUILDINGSYNC_VERSION", "2.7.0")
 
 # LBNL's BETTER tool host location
 BETTER_HOST = os.environ.get("BETTER_HOST", "https://better.lbl.gov")

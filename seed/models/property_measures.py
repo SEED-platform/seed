@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -145,9 +145,7 @@ class PropertyMeasure(models.Model):
 
     class Meta:
         unique_together = ("property_measure_name", "property_state", "measure", "application_scale", "implementation_status")
-        index_together = [
-            ["property_measure_name", "property_state"],
-        ]
+        indexes = [models.Index(fields=["property_measure_name", "property_state"])]
 
     @classmethod
     def str_to_impl_status(cls, impl_status):

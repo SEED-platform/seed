@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -14,24 +14,22 @@ import time
 import traceback
 import zipfile
 from _csv import Error
-from bisect import bisect_left
+from bisect import bisect_right
 from collections import defaultdict, namedtuple
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from itertools import chain
 from math import ceil
-from typing import Optional, Union
 
 from celery import chain as celery_chain
 from celery import chord, group, shared_task
 from celery.utils.log import get_task_logger
-from dateutil import parser
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import DataError, IntegrityError, connection, transaction
 from django.db.models import Q
 from django.db.utils import ProgrammingError
-from django.utils import timezone as tz
+from django.utils import timezone as django_tz
 from django.utils.timezone import make_naive
 
 from seed.building_sync import validation_client
@@ -60,6 +58,8 @@ from seed.models import (
     DATA_STATE_MATCHING,
     DATA_STATE_UNKNOWN,
     GREEN_BUTTON,
+    MERGE_STATE_NEW,
+    MERGE_STATE_UNKNOWN,
     PORTFOLIO_BS,
     PORTFOLIO_METER_USAGE,
     SEED_DATA_SOURCES,
@@ -70,8 +70,10 @@ from seed.models import (
     Column,
     ColumnMapping,
     Cycle,
+    CycleGoal,
     DataLogger,
     Goal,
+    GoalNote,
     Meter,
     PropertyAuditLog,
     PropertyState,
@@ -84,9 +86,12 @@ from seed.models import (
 )
 from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
+from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences
 from seed.utils.buildings import get_source_type
+from seed.utils.cache import set_cache_raw
 from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
 from seed.utils.goals import get_state_pairs
+from seed.utils.import_file import get_import_file_table_mappings
 from seed.utils.match import update_sub_progress_total
 from seed.utils.ubid import decode_unique_ids
 
@@ -95,8 +100,31 @@ _log = get_task_logger(__name__)
 STR_TO_CLASS = {"TaxLotState": TaxLotState, "PropertyState": PropertyState}
 
 
+def _as_local_naive_datetime(value):
+    if isinstance(value, str):
+        value = datetime.fromisoformat(value)
+
+    if django_tz.is_aware(value):
+        return make_naive(value, timezone=django_tz.get_default_timezone())
+
+    return value
+
+
+def _is_occupied_at_timestamp(occupied_timestamps, occupied_states, timestamp):
+    if not occupied_timestamps:
+        return False
+
+    normalized_timestamp = _as_local_naive_datetime(timestamp)
+    last_state_index = bisect_right(occupied_timestamps, normalized_timestamp) - 1
+
+    if last_state_index < 0:
+        return False
+
+    return occupied_states[last_state_index]
+
+
 @shared_task(ignore_result=True)
-def check_data_chunk(org_id, model, ids, dq_id, goal_id=None):
+def check_data_chunk(org_id, model, ids, dq_id, cycle_goal_id=None):
     try:
         organization = Organization.objects.get(id=org_id)
         super_organization = organization.get_parent()
@@ -107,15 +135,16 @@ def check_data_chunk(org_id, model, ids, dq_id, goal_id=None):
         qs = PropertyState.objects.filter(id__in=ids)
     elif model == "TaxLotState":
         qs = TaxLotState.objects.filter(id__in=ids)
-    elif model == "Property" and goal_id:
+    elif model == "Property" and cycle_goal_id:
         # return a list of dicts with property, basseline_state, and current_state
-        state_pairs = get_state_pairs(ids, goal_id)
+        state_pairs = get_state_pairs(ids, cycle_goal_id)
 
     d = DataQualityCheck.retrieve(super_organization.id)
-    if not goal_id:
+    if not cycle_goal_id:
         d.check_data(model, qs.iterator())
     else:
-        d.check_data_cross_cycle(goal_id, state_pairs)
+        cycle_goal = CycleGoal.objects.get(pk=cycle_goal_id)
+        d.check_data_cross_cycle(cycle_goal.goal_id, state_pairs)
     d.save_to_cache(dq_id, organization.id)
 
 
@@ -199,7 +228,7 @@ def finish_mapping(import_file_id, mark_as_done, progress_key):
                 value = True
             setattr(import_record, f"{action}_{state}", value)
 
-    import_record.finish_time = tz.now()
+    import_record.finish_time = django_tz.now()
     import_record.status = STATUS_READY_TO_MERGE
     import_record.save()
 
@@ -273,8 +302,10 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
 
     org = Organization.objects.get(pk=import_file.import_record.super_organization.pk)
 
-    # get all the table_mappings that exist for the organization
-    table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
+    # get table mappings specific to the import file to respect 'omitted' mappings
+    # otherwise get all the table_mappings that exist for the organization
+    if not (table_mappings := get_import_file_table_mappings(import_file.id)):
+        table_mappings = ColumnMapping.get_column_mappings_by_table_name(org)
 
     # Remove any of the mappings that are not in the current list of raw columns because this
     # can really mess up the mapping of delimited_fields.
@@ -600,7 +631,7 @@ def _map_data_create_tasks(import_file_id, progress_key):
     return tasks
 
 
-def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_ids, goal_id, dq_id):
+def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_ids, goal, dq_id):
     """
     Entry point into running data quality checks.
 
@@ -630,14 +661,17 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
         for ids in id_chunks_tl:
             tasks.append(check_data_chunk.s(org_id, "TaxLotState", ids, dq_id))
 
-    if goal_id:
-        # If goal_id is passed, treat as a cross cycle data quality check.
+    if goal:
+        # If goal is passed, treat as a cross cycle data quality check.
         try:
-            goal = Goal.objects.get(id=goal_id)
-            property_ids = goal.properties().values_list("id", flat=True)
+            # start by marking everything false
+            GoalNote.objects.filter(goal=goal).update(passed_checks=False)
+            # then, use the most recent cycle to set some true, no matter what the user was looking at
+            most_recent_cycle_goal = CycleGoal.objects.filter(goal=goal).order_by("-current_cycle__end").first()
+            property_ids = most_recent_cycle_goal.properties().values_list("id", flat=True)
             id_chunks = [list(chunk) for chunk in batch(property_ids, 100)]
             for ids in id_chunks:
-                tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, goal.id))
+                tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, most_recent_cycle_goal.id))
         except Goal.DoesNotExist:
             pass
 
@@ -664,7 +698,7 @@ def map_data_synchronous(import_file_id: int) -> dict:
 
     # Check for duplicate column headers
     column_headers = import_file.first_row_columns or []
-    duplicate_tracker: dict = collections.defaultdict(lambda: 0)
+    duplicate_tracker: dict = collections.defaultdict(int)
     for header in column_headers:
         duplicate_tracker[header] += 1
         if duplicate_tracker[header] > 1:
@@ -710,7 +744,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
 
     # Check for duplicate column headers
     column_headers = import_file.first_row_columns or []
-    duplicate_tracker = collections.defaultdict(lambda: 0)
+    duplicate_tracker = collections.defaultdict(int)
     for header in column_headers:
         duplicate_tracker[header] += 1
         if duplicate_tracker[header] > 1:
@@ -1030,19 +1064,19 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
             with transaction.atomic():
                 is_occupied_data = DataLogger.objects.get(id=data_logger_id).is_occupied_data
                 [occupied_timestamps, is_occupied_arr] = list(zip(*is_occupied_data))
-                occupied_timestamps = [datetime.fromisoformat(t) for t in occupied_timestamps]
+                occupied_timestamps = [_as_local_naive_datetime(t) for t in occupied_timestamps]
 
                 reading_strings = []
                 for timestamp, value in readings_tuples:
-                    is_occupied = is_occupied_arr[bisect_left(occupied_timestamps, parser.parse(timestamp)) - 1]
+                    is_occupied = _is_occupied_at_timestamp(occupied_timestamps, is_occupied_arr, timestamp)
                     reading_strings.append(f"({sensor.id}, '{timestamp}', '{value}', '{is_occupied}')")
 
                 sql = (
-                    f'INSERT INTO seed_sensorreading(sensor_id, timestamp, reading, is_occupied)'  # noqa: S608
-                    f' VALUES {", ".join(reading_strings)}'
-                    f' ON CONFLICT (sensor_id, timestamp)'
-                    f' DO UPDATE SET reading = EXCLUDED.reading'
-                    f' RETURNING reading;'
+                    f"INSERT INTO seed_sensorreading(sensor_id, timestamp, reading, is_occupied)"  # noqa: S608
+                    f" VALUES {', '.join(reading_strings)}"
+                    f" ON CONFLICT (sensor_id, timestamp)"
+                    f" DO UPDATE SET reading = EXCLUDED.reading"
+                    f" RETURNING reading;"
                 )
                 with connection.cursor() as cursor:
                     cursor.execute(sql)
@@ -1193,11 +1227,11 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
             ]
 
             sql = (
-                f'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)'  # noqa: S608
-                f' VALUES {", ".join(reading_strings)}'
-                f' ON CONFLICT (meter_id, start_time, end_time)'
-                f' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor'
-                f' RETURNING reading;'
+                f"INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)"  # noqa: S608
+                f" VALUES {', '.join(reading_strings)}"
+                f" ON CONFLICT (meter_id, start_time, end_time)"
+                f" DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor"
+                f" RETURNING reading;"
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
@@ -1250,11 +1284,11 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
             ]
 
             sql = (
-                f'INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)'  # noqa: S608
-                f' VALUES {", ".join(reading_strings)}'
-                f' ON CONFLICT (meter_id, start_time, end_time)'
-                f' DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor'
-                f' RETURNING reading;'
+                f"INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor)"  # noqa: S608
+                f" VALUES {', '.join(reading_strings)}"
+                f" ON CONFLICT (meter_id, start_time, end_time)"
+                f" DO UPDATE SET reading = EXCLUDED.reading, source_unit = EXCLUDED.source_unit, conversion_factor = EXCLUDED.conversion_factor"
+                f" RETURNING reading;"
             )
             with connection.cursor() as cursor:
                 cursor.execute(sql)
@@ -1322,7 +1356,7 @@ def _append_meter_import_results_to_summary(import_results, incoming_summary):
             {'<source_id/usage_point_id> - <type>": {'error': "<error_message>"}},
         ]
     """
-    agg_results_summary = collections.defaultdict(lambda: 0)
+    agg_results_summary = collections.defaultdict(int)
     error_comments = collections.defaultdict(set)
 
     if not isinstance(import_results, list):
@@ -1398,8 +1432,15 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
     import_file = ImportFile.objects.get(pk=file_pk)
     file_extension = os.path.splitext(import_file.file.name)[1]
 
+    # get columns display_names for geojsonparser
+    try:
+        columns = import_file.cycle.organization.column_set.all()
+        display_name_lookup = {col.column_name: col.display_name for col in columns}
+    except Exception:
+        display_name_lookup = {}
+
     if file_extension in {".json", ".geojson"}:
-        parser = reader.GeoJSONParser(import_file.local_file)
+        parser = reader.GeoJSONParser(import_file.local_file, display_name_lookup)
     elif import_file.source_type == SEED_DATA_SOURCES[BUILDINGSYNC_RAW][1]:
         try:
             parser = xml_reader.BuildingSyncParser(import_file.file)
@@ -1719,17 +1760,19 @@ def add_dictionary_repr_to_hash(hash_obj, dict_obj: dict):
     return hash_obj
 
 
-def hash_state_object(obj: Union[PropertyState, TaxLotState], include_extra_data=True, prefetched_columns: Optional[list[str]] = None):
+def hash_state_object(obj: PropertyState | TaxLotState, include_extra_data=True, prefetched_columns: list[str] | None = None):
     m = hashlib.md5()  # noqa: S324
     for field in prefetched_columns or Column.retrieve_db_field_name_for_hash_comparison(type(obj), obj.organization_id):
         # Default to a random value so we can distinguish between this and None.
         obj_val = getattr(obj, field, "FOO")
         m.update(field.encode("utf-8"))
         if isinstance(obj_val, datetime):
-            # if this is a datetime, then make sure to save the string as a naive datetime.
-            # Somehow, somewhere the data are being saved in mapping with a timezone,
-            # then in matching they are removed (but the time is updated correctly)
-            m.update(str(make_naive(obj_val).astimezone(tz.utc).isoformat()).encode("utf-8"))
+            # Normalize aware datetimes to naive UTC so hash comparisons are stable
+            # across platforms and timezone implementations.
+            if django_tz.is_aware(obj_val):
+                obj_val = make_naive(obj_val, timezone=UTC)
+
+            m.update(obj_val.isoformat().encode("utf-8"))
         elif isinstance(obj_val, GEOSGeometry):
             m.update(GEOSGeometry(obj_val, srid=4326).wkt.encode("utf-8"))
         else:
@@ -2020,3 +2063,125 @@ def validate_use_cases(file_pk):
     _validate_use_cases.s(file_pk, progress_data.key).apply_async()
     _log.debug(progress_data.result())
     return progress_data.result()
+
+
+@shared_task
+def mapping_results_task(args):
+    import_file_id = args.get("import_file_id")
+    inventory_type = args.get("inventory_type")
+    org_id = args.get("org_id")
+    progress_key = args.get("progress_key")
+    progress_data = ProgressData.from_key(progress_key)
+    org = Organization.objects.get(pk=org_id)
+    properties = []
+    tax_lots = []
+
+    try:
+        import_file = ImportFile.objects.get(pk=import_file_id, import_record__super_organization_id=org_id)
+    except ImportFile.DoesNotExist:
+        progress_data.return_with_error("Could not find import file with pk=" + str(import_file_id))
+
+    # List of the only fields to show
+    field_names = import_file.get_cached_mapped_columns
+    fields = {"PropertyState": ["id", "extra_data", "lot_number"], "TaxLotState": ["id", "extra_data"]}
+
+    if inventory_type in {"properties", "all"}:
+        properties = (
+            PropertyState.objects.filter(
+                import_file_id=import_file_id,
+                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW],
+            )
+            .only(*fields["PropertyState"])
+            .order_by("id")
+        )
+
+    if inventory_type in {"taxlots", "all"}:
+        tax_lots = (
+            TaxLotState.objects.filter(
+                import_file_id=import_file_id,
+                data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
+                merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW],
+            )
+            .only(*fields["TaxLotState"])
+            .order_by("id")
+        )
+
+    progress_total = len(properties) + len(tax_lots) + len(field_names)  #  + 1 so total is never reached?
+    progress_data = update_sub_progress_total(progress_total, progress_key)
+
+    progress_data.save()
+
+    columns_from_db = Column.retrieve_all(org_id)
+    property_column_name_mapping = {}
+    taxlot_column_name_mapping = {}
+    extra_data_units = {}
+    for field_name in field_names:
+        # find the field from the columns in the database
+        progress_data.step("Fetching column field names")
+        for column in columns_from_db:
+            if column["table_name"] == "PropertyState" and field_name[0] == "PropertyState" and field_name[1] == column["column_name"]:
+                property_column_name_mapping[column["column_name"]] = column["name"]
+                if not column["is_extra_data"]:
+                    fields["PropertyState"].append(field_name[1])  # save to the raw db fields
+                elif DEFAULT_UNITS.get(column["data_type"]):
+                    extra_data_units[column["column_name"]] = DEFAULT_UNITS.get(column["data_type"])
+            elif column["table_name"] == "TaxLotState" and field_name[0] == "TaxLotState" and field_name[1] == column["column_name"]:
+                taxlot_column_name_mapping[column["column_name"]] = column["name"]
+                if not column["is_extra_data"]:
+                    fields["TaxLotState"].append(field_name[1])  # save to the raw db fields
+                elif DEFAULT_UNITS.get(column["data_type"]):
+                    extra_data_units[column["column_name"]] = DEFAULT_UNITS.get(column["data_type"])
+
+    result = {"status": "success"}
+
+    # Map properties
+    if inventory_type in {"properties", "all"}:
+        property_results = []
+        for prop in properties:
+            progress_data.step("Mapping Properties")
+            prop_dict = TaxLotProperty.model_to_dict_with_mapping(
+                prop, property_column_name_mapping, fields=fields["PropertyState"], exclude=["extra_data"]
+            )
+
+            prop_dict.update(
+                TaxLotProperty.extra_data_to_dict_with_mapping(
+                    prop.extra_data, property_column_name_mapping, fields=prop.extra_data.keys(), units=extra_data_units
+                ).items()
+            )
+            if prop.raw_access_level_instance is not None:
+                prop_dict.update(prop.raw_access_level_instance.path)
+            prop_dict["raw_access_level_instance_error"] = prop.raw_access_level_instance_error
+
+            prop_dict = apply_display_unit_preferences(org, prop_dict)
+            property_results.append(prop_dict)
+
+        result["properties"] = property_results
+
+    # Map taxlots
+    if inventory_type in {"taxlots", "all"}:
+        tax_lot_results = []
+        for tax_lot in tax_lots:
+            progress_data.step("Mapping Tax Lots")
+            tax_lot_dict = TaxLotProperty.model_to_dict_with_mapping(
+                tax_lot, taxlot_column_name_mapping, fields=fields["TaxLotState"], exclude=["extra_data"]
+            )
+            tax_lot_dict.update(
+                TaxLotProperty.extra_data_to_dict_with_mapping(
+                    tax_lot.extra_data,
+                    taxlot_column_name_mapping,
+                    fields=tax_lot.extra_data.keys(),
+                ).items()
+            )
+            if tax_lot.raw_access_level_instance is not None:
+                tax_lot_dict.update(tax_lot.raw_access_level_instance.path)
+            tax_lot_dict["raw_access_level_instance_error"] = tax_lot.raw_access_level_instance_error
+
+            tax_lot_dict = apply_display_unit_preferences(org, tax_lot_dict)
+            tax_lot_results.append(tax_lot_dict)
+
+        result["tax_lots"] = tax_lot_results
+
+    set_cache_raw(progress_data.unique_id, result, 1800)  # 30 mins
+
+    progress_data.finish_with_success()

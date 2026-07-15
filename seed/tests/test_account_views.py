@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -18,10 +18,12 @@ from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
-from seed.tests.util import FakeRequest
+from seed.test_helpers.fake import FakePropertyFactory, FakePropertyViewFactory, FakeTaxLotFactory, FakeTaxLotViewFactory
+from seed.tests.util import AccessLevelBaseTestCase, FakeRequest
 from seed.utils.organizations import create_organization
 from seed.utils.users import get_js_role, get_role_from_js
 from seed.views.main import _get_default_org
+from seed.views.main import _get_default_org as get_default_org_for_user
 from seed.views.v3.organizations import _dict_org
 
 
@@ -72,6 +74,7 @@ class AccountsViewTests(TestCase):
             "cycles": [{"name": self.cal_year_name, "cycle_id": self.cycle.pk, "num_properties": 0, "num_taxlots": 0}],
             "created": self.org.created.strftime("%Y-%m-%d"),
             "mapquest_api_key": "",
+            "max_data_charted": 3000,
             "geocoding_enabled": True,
             "better_analysis_api_key": "",
             "property_display_field": "address_line_1",
@@ -90,9 +93,16 @@ class AccountsViewTests(TestCase):
             "audit_template_report_type": "Demo City Report",
             "audit_template_city_id": None,
             "audit_template_conditional_import": True,
+            "audit_template_export_federal": False,
+            "audit_template_export_measures": False,
+            "audit_template_export_meters": False,
+            "audit_template_federal_agency": None,
             "audit_template_status_types": "Complies",
             "audit_template_sync_enabled": False,
+            "audit_template_tracking_id_field": "custom_id_1",
+            "audit_template_tracking_id_name": "City Custom Building ID",
             "salesforce_enabled": False,
+            "bb_salesforce_enabled": False,
             "ubid_threshold": 1.0,
             "inventory_count": 0,
             "access_level_names": [self.org.name],
@@ -177,6 +187,7 @@ class AccountsViewTests(TestCase):
                     "cycles": [{"name": self.cal_year_name, "cycle_id": new_cycle.pk, "num_properties": 0, "num_taxlots": 0}],
                     "created": new_org.created.strftime("%Y-%m-%d"),
                     "mapquest_api_key": "",
+                    "max_data_charted": 3000,
                     "geocoding_enabled": True,
                     "better_analysis_api_key": "",
                     "property_display_field": "address_line_1",
@@ -195,9 +206,16 @@ class AccountsViewTests(TestCase):
                     "audit_template_report_type": "Demo City Report",
                     "audit_template_city_id": None,
                     "audit_template_conditional_import": True,
+                    "audit_template_export_federal": False,
+                    "audit_template_export_measures": False,
+                    "audit_template_export_meters": False,
+                    "audit_template_federal_agency": None,
                     "audit_template_status_types": "Complies",
                     "audit_template_sync_enabled": False,
+                    "audit_template_tracking_id_field": "custom_id_1",
+                    "audit_template_tracking_id_name": "City Custom Building ID",
                     "salesforce_enabled": False,
+                    "bb_salesforce_enabled": False,
                     "ubid_threshold": 1.0,
                     "inventory_count": 0,
                     "public_feed_enabled": False,
@@ -220,6 +238,7 @@ class AccountsViewTests(TestCase):
             "cycles": [{"name": self.cal_year_name, "cycle_id": self.cycle.pk, "num_properties": 0, "num_taxlots": 0}],
             "created": self.org.created.strftime("%Y-%m-%d"),
             "mapquest_api_key": "",
+            "max_data_charted": 3000,
             "geocoding_enabled": True,
             "better_analysis_api_key": "",
             "property_display_field": "address_line_1",
@@ -238,9 +257,16 @@ class AccountsViewTests(TestCase):
             "audit_template_report_type": "Demo City Report",
             "audit_template_city_id": None,
             "audit_template_conditional_import": True,
+            "audit_template_export_federal": False,
+            "audit_template_export_measures": False,
+            "audit_template_export_meters": False,
+            "audit_template_federal_agency": None,
             "audit_template_status_types": "Complies",
             "audit_template_sync_enabled": False,
+            "audit_template_tracking_id_field": "custom_id_1",
+            "audit_template_tracking_id_name": "City Custom Building ID",
             "salesforce_enabled": False,
+            "bb_salesforce_enabled": False,
             "ubid_threshold": 1.0,
             "inventory_count": 0,
             "access_level_names": ["my org"],
@@ -575,9 +601,38 @@ class AccountsViewTests(TestCase):
             json.dumps(user_data),
             content_type="application/json",
         )
-        self.assertEqual(
-            json.loads(resp.content), {"status": "success", "api_key": "", "email": "some@hgg.com", "first_name": "bob", "last_name": "d"}
-        )
+        (
+            initial_org_id,
+            initial_org_name,
+            initial_org_user_role,
+            access_level_instance_name,
+            access_level_instance_id,
+            is_ali_root,
+            is_ali_leaf,
+            org_user_id,
+            settings,
+        ) = get_default_org_for_user(self.user)
+        profile = {
+            "username": "some@hgg.com",
+            "email": "some@hgg.com",
+            "first_name": "bob",
+            "last_name": "d",
+            "ali_id": access_level_instance_id,
+            "ali_name": access_level_instance_name,
+            "api_key": "",
+            "is_ali_root": is_ali_root,
+            "is_ali_leaf": is_ali_leaf,
+            "org_id": initial_org_id,
+            "org_name": initial_org_name,
+            "org_role": initial_org_user_role,
+            "pk": self.user.pk,
+            "id": self.user.pk,
+            "two_factor_method": "disabled",
+            "is_superuser": self.user.is_superuser,
+            "org_user_id": org_user_id,
+            "settings": settings,
+        }
+        self.assertEqual(json.loads(resp.content), profile)
 
     def test_get_user_profile(self):
         """test for get_user_profile"""
@@ -585,17 +640,39 @@ class AccountsViewTests(TestCase):
             reverse_lazy("api:v3:user-detail", args=[self.user.pk]),
             content_type="application/json",
         )
-        self.assertEqual(
-            json.loads(resp.content),
-            {
-                "status": "success",
-                "api_key": "",
-                "email": "test_user@demo.com",
-                "first_name": "Johnny",
-                "last_name": "Energy",
-                "two_factor_method": "disabled",
-            },
-        )
+        (
+            initial_org_id,
+            initial_org_name,
+            initial_org_user_role,
+            access_level_instance_name,
+            access_level_instance_id,
+            is_ali_root,
+            is_ali_leaf,
+            org_user_id,
+            settings,
+        ) = get_default_org_for_user(self.user)
+        profile = {
+            "username": "test_user@demo.com",
+            "email": "test_user@demo.com",
+            "first_name": "Johnny",
+            "last_name": "Energy",
+            "ali_id": access_level_instance_id,
+            "ali_name": access_level_instance_name,
+            "api_key": "",
+            "is_ali_root": is_ali_root,
+            "is_ali_leaf": is_ali_leaf,
+            "org_id": initial_org_id,
+            "org_name": initial_org_name,
+            "org_role": initial_org_user_role,
+            "pk": self.user.pk,
+            "id": self.user.pk,
+            "two_factor_method": "disabled",
+            "is_superuser": self.user.is_superuser,
+            "org_user_id": org_user_id,
+            "settings": settings,
+        }
+
+        self.assertEqual(json.loads(resp.content), profile)
         resp = self.client.post(
             reverse_lazy("api:v3:user-generate-api-key", args=[self.user.pk]),
             content_type="application/json",
@@ -604,17 +681,8 @@ class AccountsViewTests(TestCase):
             reverse_lazy("api:v3:user-detail", args=[self.user.pk]),
             content_type="application/json",
         )
-        self.assertEqual(
-            json.loads(resp.content),
-            {
-                "status": "success",
-                "api_key": User.objects.get(pk=self.user.pk).api_key,
-                "email": "test_user@demo.com",
-                "first_name": "Johnny",
-                "last_name": "Energy",
-                "two_factor_method": "disabled",
-            },
-        )
+        profile["api_key"] = User.objects.get(pk=self.user.pk).api_key
+        self.assertEqual(json.loads(resp.content), profile)
 
     def test_generate_api_key(self):
         """test for generate_api_key
@@ -818,6 +886,69 @@ class AccountsViewTests(TestCase):
         self.assertTrue(Organization.objects.filter(name="test").exists())
 
 
+class AccountsViewAHTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.property_factory = FakePropertyFactory(organization=self.org)
+        self.taxlot_factory = FakeTaxLotFactory(organization=self.org)
+        self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+        self.taxlot_view_factory = FakeTaxLotViewFactory(organization=self.org)
+
+        self.child_viewer_user_details = {"username": "child_viewer@demo.com", "password": "test_pass"}
+        self.child_viewer_user = User.objects.create_user(**self.child_viewer_user_details)
+        self.org.add_member(self.child_viewer_user, self.child_level_instance.pk, ROLE_VIEWER)
+        self.org.save()
+
+        self.cycle = self.org.cycles.first()
+        # create 5 properties and 3 taxlots for both users
+        for i in range(5):
+            self.property_view_factory.get_property_view(organization=self.org, cycle=self.cycle, user=self.root_owner_user)
+            if i < 3:
+                self.taxlot_view_factory.get_taxlot_view(organization=self.org, cycle=self.cycle, user=self.root_owner_user)
+
+        for i in range(5):
+            prprty = self.property_factory.get_property(organization=self.org, access_level_instance=self.child_level_instance)
+            taxlot = self.taxlot_factory.get_taxlot(organization=self.org, access_level_instance=self.child_level_instance)
+            self.property_view_factory.get_property_view(organization=self.org, cycle=self.cycle, prprty=prprty)
+            if i < 3:
+                self.taxlot_view_factory.get_taxlot_view(organization=self.org, cycle=self.cycle, taxlot=taxlot)
+
+    def test_org_data_permissions(self):
+        """
+        Org data for non owners:
+        - does not include organization owners list
+        - number of properties/taxlots include only those the user has ALI access to
+        """
+        self.login_as_root_owner()
+        response = self.client.get(reverse_lazy("api:v3:organizations-list"))
+        data = response.json()["organizations"][0]
+
+        self.assertEqual(len(data["owners"]), 2)
+        cycle_data = data["cycles"][0]
+        self.assertEqual(cycle_data["num_properties"], 10)
+        self.assertEqual(cycle_data["num_taxlots"], 6)
+
+        # member can see owners, child sees limited properties/taxlots
+        self.login_as_child_member()
+        response = self.client.get(reverse_lazy("api:v3:organizations-list"))
+
+        data = response.json()["organizations"][0]
+        self.assertEqual(len(data["owners"]), 2)
+        cycle_data = data["cycles"][0]
+        self.assertEqual(cycle_data["num_properties"], 5)
+        self.assertEqual(cycle_data["num_taxlots"], 3)
+
+        # viewer cannot see owners
+        self.client.login(**self.child_viewer_user_details)
+        response = self.client.get(reverse_lazy("api:v3:organizations-list"))
+
+        data = response.json()["organizations"][0]
+        self.assertEqual(len(data["owners"]), 0)
+        cycle_data = data["cycles"][0]
+        self.assertEqual(cycle_data["num_properties"], 5)
+        self.assertEqual(cycle_data["num_taxlots"], 3)
+
+
 class AuthViewTests(TestCase):
     def setUp(self):
         user_details = {
@@ -932,7 +1063,7 @@ class AuthViewTests(TestCase):
 
     def test__get_default_org(self):
         """test seed.views.main._get_default_org"""
-        org_id, org_name, org_role, ali_name, ali_id, _is_ali_root, _is_ali_leaf = _get_default_org(self.user)
+        org_id, org_name, org_role, ali_name, ali_id, *_ = _get_default_org(self.user)
 
         # check standard case
         self.assertEqual(org_id, self.org.id)
@@ -950,7 +1081,7 @@ class AuthViewTests(TestCase):
             username="tester@be.com",
             email="tester@be.com",
         )
-        org_id, org_name, org_role, ali_name, ali_id, _is_ali_root, _is_ali_leaf = _get_default_org(other_user)
+        org_id, org_name, org_role, ali_name, ali_id, *_ = _get_default_org(other_user)
         self.assertEqual(org_id, "")
         self.assertEqual(org_name, "")
         self.assertEqual(org_role, "")
@@ -962,7 +1093,7 @@ class AuthViewTests(TestCase):
         self.assertEqual(other_user.default_organization, self.org)
         # _get_default_org should remove the user from the org and set the
         # next available org as default or set to ''
-        org_id, org_name, org_role, ali_name, ali_id, _is_ali_root, _is_ali_leaf = _get_default_org(other_user)
+        org_id, org_name, org_role, ali_name, ali_id, *_ = _get_default_org(other_user)
         self.assertEqual(org_id, "")
         self.assertEqual(org_name, "")
         self.assertEqual(org_role, "")

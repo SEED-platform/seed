@@ -1,80 +1,143 @@
-ARG NGINX_LISTEN_OPTS
+# syntax=docker/dockerfile:1.7
 
-# AUTHOR:           Clay Teeter <teeterc@gmail.com>, Nicholas Long <nicholas.long@nrel.gov>
-# DESCRIPTION:      Image with seed platform and dependencies running in development mode
+ARG NGINX_LISTEN_OPTS
+ARG UV_VERSION=0.11.9
+
+# AUTHOR:           Clay Teeter <teeterc@gmail.com>, Nicholas Long <nicholas.long@nlr.gov>
+# DESCRIPTION:      Production image with SEED Platform and runtime dependencies
 # TO_BUILD_AND_RUN: docker compose build && docker compose up
 
-FROM node:20-alpine3.16 AS node
+FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 
-FROM alpine:3.14
+FROM node:24-alpine AS build-base
+COPY --from=uv /uv /uvx /bin/
+
+WORKDIR /seed
+
+COPY ./.python-version /seed/.python-version
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+    apk add --no-cache \
+        g++ \
+        git \
+        make && \
+    corepack enable && \
+    uv python install && \
+    python_path="$(uv python find)" && \
+    ln -sf "${python_path}" /usr/local/bin/python3 && \
+    ln -sf "${python_path}" /usr/local/bin/python
+
+ENV PNPM_STORE_DIR="/pnpm/store" \
+    npm_config_python="/usr/local/bin/python3" \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_INSTALL_DIR="/opt/uv/python" \
+    UV_PROJECT_ENVIRONMENT="/seed/.venv"
+ENV PATH="/seed/.venv/bin:$PATH"
+
+FROM build-base AS python-deps
+RUN apk add --no-cache \
+        alpine-sdk \
+        bzip2-dev \
+        cargo \
+        gdal \
+        gdal-dev \
+        geos-dev \
+        libffi-dev \
+        libxml2-dev \
+        libxslt-dev \
+        linux-headers \
+        musl-dev \
+        ncurses-dev \
+        libpq-dev \
+        openssl-dev \
+        pcre-dev \
+        readline-dev \
+        sqlite-dev \
+        xz-dev \
+        zlib-dev
+
+COPY ./pyproject.toml /seed/pyproject.toml
+COPY ./uv.lock /seed/uv.lock
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --managed-python --no-dev --no-install-project && \
+    uv pip install supervisor==4.3.0
+
+FROM build-base AS frontend-build
+ENV CI=true
+
+COPY ./package.json /seed/package.json
+COPY ./pnpm-lock.yaml /seed/pnpm-lock.yaml
+COPY ./pnpm-workspace.yaml /seed/pnpm-workspace.yaml
+COPY ./vendors/package.json /seed/vendors/package.json
+COPY ./vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
+COPY ./ng_seed/seed-angular /seed/ng_seed/seed-angular
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false && \
+    cd /seed/ng_seed/seed-angular && \
+    ./node_modules/.bin/ng build
+
+FROM build-base AS node-runtime-deps
+ENV CI=true
+
+COPY ./package.json /seed/package.json
+COPY ./pnpm-lock.yaml /seed/pnpm-lock.yaml
+COPY ./pnpm-workspace.yaml /seed/pnpm-workspace.yaml
+COPY ./vendors/package.json /seed/vendors/package.json
+COPY ./vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
+COPY ./ng_seed/seed-angular/package.json /seed/ng_seed/seed-angular/package.json
+COPY ./ng_seed/seed-angular/pnpm-lock.yaml /seed/ng_seed/seed-angular/pnpm-lock.yaml
+COPY ./ng_seed/seed-angular/pnpm-workspace.yaml /seed/ng_seed/seed-angular/pnpm-workspace.yaml
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
+    pnpm install --prod --frozen-lockfile --ignore-scripts --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false && \
+    rm -rf /seed/ng_seed/seed-angular/node_modules
+
+FROM node:24-alpine AS runtime
 
 ARG NGINX_LISTEN_OPTS
 
-COPY --from=node /usr/lib /usr/lib
-COPY --from=node /usr/local/lib /usr/local/lib
-COPY --from=node /usr/local/include /usr/local/include
-COPY --from=node /usr/local/bin /usr/local/bin
+ENV GDAL_LIBRARY_PATH="/usr/lib/libgdal.so" \
+    GEOS_LIBRARY_PATH="/usr/lib/libgeos_c.so" \
+    PATH="/seed/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /seed
 
 RUN apk add --no-cache \
-        python3-dev \
-        postgresql-dev \
-        coreutils \
-        alpine-sdk \
-        pcre \
-        pcre-dev \
-        libxslt-dev \
-        linux-headers \
-        libffi-dev \
         bash \
-        bash-completion \
-        nginx \
         brotli \
-        nginx-mod-http-brotli \
-        openssl-dev \
+        coreutils \
+        gdal-dev \
         geos-dev \
-        gdal \
-        gcc \
-        musl-dev \
-        cargo \
-        tzdata && \
-    ln -sf /usr/bin/python3 /usr/bin/python && \
-    python -m ensurepip && \
-    rm -r /usr/lib/python*/ensurepip && \
-    ln -sf /usr/bin/pip3 /usr/bin/pip && \
-    pip install --upgrade pip setuptools && \
-    pip install supervisor==4.2.5 && \
-    mkdir -p /var/log/supervisord && \
-    rm -r /root/.cache && \
-    addgroup -g 1000 uwsgi && \
-    adduser -G uwsgi -H -u 1000 -S uwsgi && \
-    mkdir -p /run/nginx
+        git \
+        libbz2 \
+        libffi \
+        libxml2 \
+        libxslt \
+        ncurses-libs \
+        nginx \
+        nginx-mod-http-brotli \
+        openssl \
+        libpq \
+        pcre \
+        readline \
+        sqlite-libs \
+        tzdata \
+        xz-libs \
+        zlib && \
+    mkdir -p /run/nginx /var/log/supervisord
 
 ## Note on some of the commands above:
-##   - create the uwsgi user and group to have id of 1000
-##   - copy over python3 as python
-##   - pip install --upgrade pip overwrites the pip so it is no longer a symlink
-##   - coreutils is required due to an issue with our wait-for-it.sch script:
+##   - coreutils is required due to an issue with our wait-for-it.sh script:
 ##     https://github.com/vishnubob/wait-for-it/issues/71
 
-### Install python requirements
-WORKDIR /seed
-COPY ./requirements.txt /seed/requirements.txt
-COPY ./requirements/*.txt /seed/requirements/
-RUN pip uninstall -y enum34
-RUN pip install -r requirements/aws.txt
+COPY --from=python-deps /opt/uv/python /opt/uv/python
+COPY --from=python-deps /seed/.venv /seed/.venv
+COPY --from=node-runtime-deps /seed/node_modules /seed/node_modules
+COPY --from=node-runtime-deps /seed/vendors/node_modules /seed/vendors/node_modules
 
-### Install JavaScript requirements - do this first because they take awhile
-### and the dependencies will probably change slower than python packages.
-### README.md stops the no readme warning
-COPY ./package.json /seed/package.json
-COPY ./vendors/package.json /seed/vendors/package.json
-COPY ./README.md /seed/README.md
-# unsafe-perm allows the package.json postinstall script to run with the elevated permissions
-RUN npm install --unsafe-perm
-
-### Copy over the remaining part of the SEED application and some helpers
-WORKDIR /seed
+### Copy over the SEED application and prebuilt frontend assets
 COPY . /seed/
+COPY --from=frontend-build /seed/collected_static/ng-app /seed/collected_static/ng-app
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 RUN git config --system --add safe.directory /seed
 
@@ -82,19 +145,19 @@ RUN git config --system --add safe.directory /seed
 COPY ./docker/nginx/*.conf /etc/nginx/
 COPY ./docker/nginx/nginx.conf.template /etc/nginx/nginx.conf.template
 
-# Install gettext package for envsubst and then generate nginx.conf from the template
-RUN apk add --no-cache gettext && \
+# Install gettext temporarily for envsubst and then generate nginx.conf from the template.
+RUN apk add --no-cache --virtual .nginx-template-deps gettext && \
     if [ -z "${NGINX_LISTEN_OPTS}" ]; then \
         echo "NGINX_LISTEN_OPTS is unset or empty, defaulting to: HTTP1.1"; \
     else \
         echo "NGINX_LISTEN_OPTS is set to: ${NGINX_LISTEN_OPTS}"; \
     fi && \
-    envsubst '${NGINX_LISTEN_OPTS}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+    envsubst '${NGINX_LISTEN_OPTS}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
+    apk del .nginx-template-deps
 
 # symlink maintenance.html that nginx will serve in the case of a 503
-RUN ln -sf /seed/collected_static/maintenance.html /var/lib/nginx/html/maintenance.html
-# set execute permissions on the maint script to toggle on and off
-RUN chmod +x ./docker/maintenance.sh
+RUN ln -sf /seed/collected_static/maintenance.html /var/lib/nginx/html/maintenance.html && \
+    chmod +x ./docker/maintenance.sh
 
 # Supervisor looks in /etc/supervisor for the configuration file.
 COPY ./docker/supervisor-seed.conf /etc/supervisor/supervisord.conf
@@ -106,4 +169,4 @@ ENTRYPOINT ["seed-entrypoint"]
 
 EXPOSE 80
 
-CMD ["supervisord"]
+CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]

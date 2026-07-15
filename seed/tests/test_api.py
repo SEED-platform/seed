@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -79,7 +79,6 @@ class TestApi(TestCase):
         self.assertEqual(r.status_code, 200)
 
         r = json.loads(r.content)
-        self.assertEqual(r["status"], "success")
         self.assertEqual(r["first_name"], "Jaqen")
         self.assertEqual(r["last_name"], "H'ghar")
         self.client.logout()
@@ -258,10 +257,11 @@ class TestApi(TestCase):
         )
 
         # re-retrieve the user profile
-        r = self.client.get("/api/v3/users/" + str(self.user.pk) + "/", follow=True, **self.headers)
-        r = json.loads(r.content)
+        res = self.client.get("/api/v3/users/" + str(self.user.pk) + "/", follow=True, **self.headers)
+        r = json.loads(res.content)
 
-        self.assertEqual(r["status"], "success")
+        self.assertEqual(res.status_code, 200)
+
         self.assertEqual(r["first_name"], "Arya")
         self.assertEqual(r["last_name"], "Stark")
 

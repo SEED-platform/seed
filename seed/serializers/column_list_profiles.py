@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -28,6 +28,13 @@ class ColumnListProfileColumnSerializer(serializers.ModelSerializer):
             "column_name",
             "table_name",
         )
+
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+        result["display_name"] = instance.column.display_name or instance.column.column_name
+        result["name"] = f"{instance.column.column_name}_{instance.column.id}"
+
+        return result
 
 
 class ColumnListProfileDerivedColumnSerializer(serializers.ModelSerializer):

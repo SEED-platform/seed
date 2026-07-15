@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -70,7 +70,7 @@ class EquivalencePartitioner:
         elif equivalence_type == TaxLotState:
             return cls.make_taxlotstate_equivalence()
         else:
-            err_msg = f"Type '{equivalence_type.__class__.__name__}' does not have a default " "EquivalencePartitioner set."
+            err_msg = f"Type '{equivalence_type.__class__.__name__}' does not have a default EquivalencePartitioner set."
             raise ValueError(err_msg)
 
     @classmethod

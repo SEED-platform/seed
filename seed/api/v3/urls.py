@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -14,7 +14,10 @@ from seed.views.v3.analysis_messages import AnalysisMessageViewSet
 from seed.views.v3.analysis_views import AnalysisPropertyViewViewSet
 from seed.views.v3.audit_template import AuditTemplateViewSet
 from seed.views.v3.audit_template_configs import AuditTemplateConfigViewSet
+from seed.views.v3.bb_salesforce import BBSalesforceViewSet
+from seed.views.v3.bb_salesforce_configs import BBSalesforceConfigsViewSet
 from seed.views.v3.building_files import BuildingFileViewSet
+from seed.views.v3.cache_entries import CacheEntryViewSet
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
 from seed.views.v3.column_mapping_profiles import ColumnMappingProfileViewSet
 from seed.views.v3.columns import ColumnViewSet
@@ -29,11 +32,13 @@ from seed.views.v3.derived_columns import DerivedColumnViewSet
 from seed.views.v3.eeej import EEEJViewSet
 from seed.views.v3.elements import ElementViewSet, OrgElementViewSet
 from seed.views.v3.events import EventViewSet
+from seed.views.v3.facilities_plan import FacilitiesPlanViewSet
+from seed.views.v3.facilities_plan_run import FacilitiesPlanRunViewSet
 from seed.views.v3.filter_group import FilterGroupViewSet
 from seed.views.v3.gbr_properties import GBRPropertyViewSet
 from seed.views.v3.geocode import GeocodeViewSet
 from seed.views.v3.goal_notes import GoalNoteViewSet
-from seed.views.v3.goals import GoalViewSet
+from seed.views.v3.goals import CycleGoalViewSet, GoalViewSet
 from seed.views.v3.green_assessment_properties import GreenAssessmentPropertyViewSet
 from seed.views.v3.green_assessment_urls import GreenAssessmentURLViewSet
 from seed.views.v3.green_assessments import GreenAssessmentViewSet
@@ -79,6 +84,7 @@ api_v3_router.register(r"analyses", AnalysisViewSet, basename="analyses")
 api_v3_router.register(r"audit_template", AuditTemplateViewSet, basename="audit_template")
 api_v3_router.register(r"audit_template_configs", AuditTemplateConfigViewSet, basename="audit_template_configs")
 api_v3_router.register(r"building_files", BuildingFileViewSet, basename="building_files")
+api_v3_router.register(r"cache_entries", CacheEntryViewSet, basename="cache_entries")
 api_v3_router.register(r"column_list_profiles", ColumnListProfileViewSet, basename="column_list_profiles")
 api_v3_router.register(r"column_mapping_profiles", ColumnMappingProfileViewSet, basename="column_mapping_profiles")
 api_v3_router.register(r"columns", ColumnViewSet, basename="columns")
@@ -91,6 +97,8 @@ api_v3_router.register(r"datasets", DatasetViewSet, basename="datasets")
 api_v3_router.register(r"derived_columns", DerivedColumnViewSet, basename="derived_columns")
 api_v3_router.register(r"eeej", EEEJViewSet, basename="eeej")
 api_v3_router.register(r"elements", OrgElementViewSet, basename="elements")
+api_v3_router.register(r"facilities_plans", FacilitiesPlanViewSet, basename="facilities_plans")
+api_v3_router.register(r"facilities_plan_runs", FacilitiesPlanRunViewSet, basename="facilities_plan_runs")
 api_v3_router.register(r"filter_groups", FilterGroupViewSet, basename="filter_groups")
 api_v3_router.register(r"gbr_properties", GBRPropertyViewSet, basename="gbr_properties")
 api_v3_router.register(r"goals", GoalViewSet, basename="goals")
@@ -112,6 +120,7 @@ api_v3_router.register(r"properties", PropertyViewSet, basename="properties")
 api_v3_router.register(r"property_view_labels", PropertyViewLabelViewSet, basename="property_view_labels")
 api_v3_router.register(r"property_views", PropertyViewViewSet, basename="property_views")
 api_v3_router.register(r"report_configurations", ReportConfigurationViewSet, basename="report_configurations")
+api_v3_router.register(r"bb_salesforce", BBSalesforceViewSet, basename="bb_salesforce")
 api_v3_router.register(r"salesforce_configs", SalesforceConfigViewSet, basename="salesforce_configs")
 api_v3_router.register(r"salesforce_mappings", SalesforceMappingViewSet, basename="salesforce_mappings")
 api_v3_router.register(r"tax_lot_properties", TaxLotPropertyViewSet, basename="tax_lot_properties")
@@ -139,6 +148,9 @@ analysis_messages_router.register(r"messages", AnalysisMessageViewSet, basename=
 analysis_view_messages_router = nested_routers.NestedSimpleRouter(analysis_views_router, r"views", lookup="views")
 analysis_view_messages_router.register(r"views_messages", AnalysisMessageViewSet, basename="analysis-messages")
 
+goals_router = nested_routers.NestedSimpleRouter(api_v3_router, r"goals", lookup="goal")
+goals_router.register(r"cycles", CycleGoalViewSet, basename="goal-cycles")
+
 properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r"properties", lookup="property")
 properties_router.register(r"meters", MeterViewSet, basename="property-meters")
 properties_router.register(r"notes", NoteViewSet, basename="property-notes")
@@ -155,6 +167,13 @@ inventory_group_router.register(r"meters", InventoryGroupMetersViewSet, basename
 
 system_router = nested_routers.NestedSimpleRouter(inventory_group_router, r"systems", lookup="system")
 system_router.register(r"services", ServiceViewSet, basename="system-services")
+
+bb_salesforce_configs_router = routers.DefaultRouter()
+bb_salesforce_configs_router.register(
+    r"bb_salesforce/configs",
+    BBSalesforceConfigsViewSet,
+    basename="bb_salesforce-configs",
+)
 
 # This is a third level router, so we need to register it with the second level router
 meters_router = nested_routers.NestedSimpleRouter(properties_router, r"meters", lookup="meter")
@@ -202,6 +221,8 @@ urlpatterns = [
     path("", include(system_router.urls)),
     path("", include(public_organizations_router.urls)),
     path("", include(public_cycles_router.urls)),
+    path("", include(bb_salesforce_configs_router.urls)),
+    path("", include(goals_router.urls)),
     path("celery_queue/", celery_queue, name="celery_queue"),
     path("media/<path:filepath>", MediaViewSet.as_view()),
 ]

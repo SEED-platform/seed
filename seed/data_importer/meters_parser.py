@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -10,14 +10,18 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 
 from django.contrib.postgres.aggregates.general import ArrayAgg
-from django.utils.timezone import make_aware
-from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
+from django.utils import timezone as django_timezone
 
-from config.settings.common import TIME_ZONE
-from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors, usage_point_id
+from seed.data_importer.utils import (
+    fahrenheit_temperature_conversion_factors,
+    kbtu_thermal_conversion_factors,
+    kgal_water_conversion_factors,
+    usage_point_id,
+)
 from seed.lib.mcm import reader
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Meter, Property, PropertyView
+from seed.utils.time_utils import localize_datetime_with_dst_fallbacks
 
 _log = logging.getLogger(__name__)
 
@@ -55,7 +59,7 @@ class MetersParser:
     corresponding MeterReading objects details.
     """
 
-    _tz = timezone(TIME_ZONE)
+    _tz = django_timezone.get_default_timezone()
 
     def __init__(self, org_id, meters_and_readings_details, source_type=Meter.PORTFOLIO_MANAGER, property_id=None, system_id=None):
         # defaulted to None to show it hasn't been cached yet
@@ -63,6 +67,7 @@ class MetersParser:
         self._cache_org_country = None
         self._cache_kbtu_thermal_conversion_factors = None
         self._cache_kgal_water_conversion_factors = None
+        self._cache_fahrenheit_temperature_conversion_factors = None
 
         self._meters_and_readings_details = meters_and_readings_details
         self._org_id = org_id
@@ -119,6 +124,13 @@ class MetersParser:
             self._cache_kgal_water_conversion_factors = kgal_water_conversion_factors(self._org_country)
 
         return self._cache_kgal_water_conversion_factors
+
+    @property
+    def _fahrenheit_temperature_conversion_factors(self):
+        if self._cache_fahrenheit_temperature_conversion_factors is None:
+            self._cache_fahrenheit_temperature_conversion_factors = fahrenheit_temperature_conversion_factors(self._org_country)
+
+        return self._cache_fahrenheit_temperature_conversion_factors
 
     @property
     def _org_country(self):
@@ -194,7 +206,7 @@ class MetersParser:
             all_property_ids = {property_id for property_ids in self._source_to_property_ids.values() for property_id in property_ids}
             cycle_names_by_property_id = dict(
                 Property.objects.filter(id__in=all_property_ids)
-                .annotate(cycle_names=ArrayAgg("views__cycle__name"))
+                .annotate(cycle_names=ArrayAgg("views__cycle__name", default=[]))
                 .values_list("id", "cycle_names")
             )
 
@@ -270,23 +282,8 @@ class MetersParser:
                 unaware_start = datetime.strptime(raw_start, "%Y-%m-%d %H:%M:%S")
                 unaware_end = datetime.strptime(raw_details["End Date"], "%Y-%m-%d %H:%M:%S")
 
-            try:
-                start_time = make_aware(unaware_start, timezone=self._tz)
-            except AmbiguousTimeError:
-                # Handle timestamp that occurs twice due to "falling back" to standard time
-                start_time = make_aware(unaware_start, timezone=self._tz, is_dst=False)
-            except NonExistentTimeError:
-                # Handle timestamp that doesn't exist due to "springing forward" to dst
-                start_time = make_aware(unaware_start, timezone=self._tz, is_dst=True)
-
-            try:
-                end_time = make_aware(unaware_end, timezone=self._tz)
-            except AmbiguousTimeError:
-                # Handle timestamp that occurs twice due to "falling back" to standard time
-                end_time = make_aware(unaware_end, timezone=self._tz, is_dst=False)
-            except NonExistentTimeError:
-                # Handle timestamp that doesn't exist due to "springing forward" to dst
-                end_time = make_aware(unaware_end, timezone=self._tz, is_dst=True)
+            start_time = localize_datetime_with_dst_fallbacks(unaware_start, self._tz)
+            end_time = localize_datetime_with_dst_fallbacks(unaware_end, self._tz)
 
             meter_details = {
                 "source": self._source_type,
@@ -351,9 +348,11 @@ class MetersParser:
         unit = raw_details["Usage Units"]
         thermal_conversion_factor = self._kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
         water_conversion_factor = self._kgal_water_conversion_factors.get(type_name, {}).get(unit, None)
-        if thermal_conversion_factor is None and water_conversion_factor is None:
+        temperature_conversion_factor = self._fahrenheit_temperature_conversion_factors.get(type_name, {}).get(unit, None)
+
+        conversion_factor = thermal_conversion_factor or water_conversion_factor or temperature_conversion_factor
+        if conversion_factor is None:
             return False
-        conversion_factor = thermal_conversion_factor or water_conversion_factor
 
         meter_details["type"] = Meter.type_lookup[type_name]
 

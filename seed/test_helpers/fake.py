@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 This files has faker methods for generating fake data.
@@ -779,7 +779,7 @@ class FakeAnalysisFactory(BaseFake):
             "name": name if name is not None else self.fake.text(),
             "organization": organization if organization is not None else self.organization,
             "access_level_instance": access_level_instance if access_level_instance is not None else self.organization.root,
-            "user": user if user is not None else user,
+            "user": user if user is not None else user,  # noqa: RUF034
             "service": service if service is not None else Analysis.BSYNCR,
             "start_time": datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
             "configuration": configuration if configuration is not None else {},
@@ -803,7 +803,7 @@ class FakeAnalysisPropertyViewFactory(BaseFake):
         self, analysis=None, property_obj=None, cycle=None, property_state=None, organization=None, user=None, **kwargs
     ):
         organization = organization if organization is not None else self.organization
-        user = user if user is not None else user
+        user = user if user is not None else user  # noqa: RUF034
         if analysis is None:
             if self.analysis is None:
                 analysis = FakeAnalysisFactory(organization, user).get_analysis(**kwargs)
@@ -866,7 +866,6 @@ class FakeGoalFactory(BaseFake):
         self,
         organization=None,
         baseline_cycle=None,
-        current_cycle=None,
         access_level_instance=None,
         eui_column1=None,
         area_column=None,
@@ -875,7 +874,6 @@ class FakeGoalFactory(BaseFake):
     ):
         organization = organization if organization is not None else self.organization
         baseline_cycle = baseline_cycle if baseline_cycle is not None else self.baseline_cycle
-        current_cycle = current_cycle if current_cycle is not None else self.current_cycle
         access_level_instance = access_level_instance if access_level_instance is not None else self.access_level_instance
         eui_column1 = eui_column1 if eui_column1 is not None else self.eui_column1
         target_percentage = target_percentage if target_percentage is not None else self.target_percentage
@@ -884,7 +882,6 @@ class FakeGoalFactory(BaseFake):
         config = {
             "organization": organization,
             "baseline_cycle": baseline_cycle,
-            "current_cycle": current_cycle,
             "access_level_instance": access_level_instance,
             "eui_column1": eui_column1,
             "area_column": area_column,

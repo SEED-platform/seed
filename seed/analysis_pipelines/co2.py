@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -40,8 +40,8 @@ TIME_PERIOD = datetime.timedelta(days=365)
 # in a specific year and eGRID Subregion
 #
 # Sources:
-#  https://github.com/NREL/openstudio-common-measures-gem/pull/80/files#diff-9b55886a63bf3970a5d1c55effeb291a3107e00091715e63448ac1983ef89559
-#  https://github.com/NREL/openstudio-common-measures-gem/pull/80/files#diff-fd04e84984194976089ec4d90f103e6d68e641a596e2446447d05626057b38ad
+#  https://github.com/NatLabRockies/openstudio-common-measures-gem/pull/80/files#diff-9b55886a63bf3970a5d1c55effeb291a3107e00091715e63448ac1983ef89559
+#  https://github.com/NatLabRockies/openstudio-common-measures-gem/pull/80/files#diff-fd04e84984194976089ec4d90f103e6d68e641a596e2446447d05626057b38ad
 EARLIEST_CO2_RATE = 2007
 CO2_RATES = {
     EARLIEST_CO2_RATE: {

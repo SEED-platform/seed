@@ -1,42 +1,41 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
 from datetime import datetime
+from random import randint
 
 import xlrd
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
-from django.utils.timezone import make_aware
+from django.utils import timezone as django_timezone
+from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
-from pytz import AmbiguousTimeError, NonExistentTimeError, timezone
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 
-from config.settings.common import TIME_ZONE
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.models import ROW_DELIMITER, ImportRecord
 from seed.data_importer.sensor_readings_parser import SensorsReadingsParser
-from seed.data_importer.tasks import do_checks, geocode_and_match_buildings_task, map_data
+from seed.data_importer.tasks import do_checks, geocode_and_match_buildings_task, map_data, mapping_results_task
 from seed.data_importer.tasks import save_raw_data as task_save_raw
 from seed.data_importer.tasks import validate_use_cases as task_validate_use_cases
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
-from seed.decorators import ajax_request_class
+from seed.decorators import ajax_request
 from seed.lib.mappings import mapper as simple_mapper
 from seed.lib.mcm import mapper, reader
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.lib.progress_data.progress_data import ProgressData
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance, OrganizationUser
 from seed.lib.xml_mapping import mapper as xml_mapper
 from seed.models import (
     ASSESSED_RAW,
     AUDIT_USER_EDIT,
-    DATA_STATE_MAPPING,
     DATA_STATE_MATCHING,
     MERGE_STATE_MERGED,
     MERGE_STATE_NEW,
-    MERGE_STATE_UNKNOWN,
     PORTFOLIO_METER_USAGE,
     SEED_DATA_SOURCES,
     Column,
@@ -50,14 +49,14 @@ from seed.models import (
     PropertyView,
     System,
     TaxLotAuditLog,
-    TaxLotProperty,
     TaxLotState,
     get_column_mapping,
     obj_to_dict,
 )
-from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences
-from seed.utils.api import OrgMixin, api_endpoint_class
+from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.import_file import verify_data_types
+from seed.utils.time_utils import localize_datetime_with_dst_fallbacks
 
 _log = logging.getLogger(__name__)
 
@@ -139,10 +138,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
     queryset = ImportFile.objects.all()
 
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     def retrieve(self, request, pk=None):
         """
         Retrieves details about an ImportFile.
@@ -181,10 +184,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         )
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def check_meters_tab_exists(self, request, pk=None):
         """
@@ -209,10 +216,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         ],
         request_body=AutoSchemaHelper.schema_factory({"import_file_id": "integer"}),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(body_import_file_id="import_file_id")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(body_import_file_id="import_file_id"),
+        ]
+    )
     @action(detail=False, methods=["POST"])
     def reuse_inventory_file_for_meters(self, request):
         org_id = self.get_organization(request)
@@ -238,10 +249,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({"status": "success", "import_file_id": new_file.id})
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def first_five_rows(self, request, pk=None):
         """
@@ -271,10 +286,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({"status": "success", "first_five_rows": convert_first_five_rows_to_list(header, data)})
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def raw_column_names(self, request, pk=None):
         """
@@ -297,10 +316,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         ],
         responses={200: MappingResultsResponseSerializer},
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"], url_path="mapping_results")
     def mapping_results(self, request, pk=None):
         """
@@ -308,109 +331,20 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         """
         import_file_id = pk
         org_id = self.get_organization(request)
-        org = Organization.objects.get(pk=org_id)
-
-        try:
-            # get the field names that were in the mapping
-            import_file = ImportFile.objects.get(pk=import_file_id, import_record__super_organization_id=org_id)
-        except ImportFile.DoesNotExist:
-            return JsonResponse(
-                {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # List of the only fields to show
-        field_names = import_file.get_cached_mapped_columns
-
-        # set of fields
-        fields = {"PropertyState": ["id", "extra_data", "lot_number"], "TaxLotState": ["id", "extra_data"]}
-        columns_from_db = Column.retrieve_all(org_id)
-        property_column_name_mapping = {}
-        taxlot_column_name_mapping = {}
-        extra_data_units = {}
-        for field_name in field_names:
-            # find the field from the columns in the database
-            for column in columns_from_db:
-                if column["table_name"] == "PropertyState" and field_name[0] == "PropertyState" and field_name[1] == column["column_name"]:
-                    property_column_name_mapping[column["column_name"]] = column["name"]
-                    if not column["is_extra_data"]:
-                        fields["PropertyState"].append(field_name[1])  # save to the raw db fields
-                    elif DEFAULT_UNITS.get(column["data_type"]):
-                        extra_data_units[column["column_name"]] = DEFAULT_UNITS.get(column["data_type"])
-                elif column["table_name"] == "TaxLotState" and field_name[0] == "TaxLotState" and field_name[1] == column["column_name"]:
-                    taxlot_column_name_mapping[column["column_name"]] = column["name"]
-                    if not column["is_extra_data"]:
-                        fields["TaxLotState"].append(field_name[1])  # save to the raw db fields
-                    elif DEFAULT_UNITS.get(column["data_type"]):
-                        extra_data_units[column["column_name"]] = DEFAULT_UNITS.get(column["data_type"])
-
         inventory_type = request.data.get("inventory_type", "all")
 
-        result = {"status": "success"}
+        progress_data = ProgressData(func_name="mapping_results", unique_id=f"{org_id}{randint(10000, 99999)}")
+        progress_key = progress_data.key
+        args = {
+            "import_file_id": import_file_id,
+            "inventory_type": inventory_type,
+            "org_id": org_id,
+            "progress_key": progress_key,
+        }
 
-        if inventory_type in {"properties", "all"}:
-            properties = (
-                PropertyState.objects.filter(
-                    import_file_id=import_file_id,
-                    data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
-                    merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW],
-                )
-                .only(*fields["PropertyState"])
-                .order_by("id")
-            )
+        mapping_results_task.s(args).apply_async()
 
-            property_results = []
-            for prop in properties:
-                prop_dict = TaxLotProperty.model_to_dict_with_mapping(
-                    prop, property_column_name_mapping, fields=fields["PropertyState"], exclude=["extra_data"]
-                )
-
-                prop_dict.update(
-                    TaxLotProperty.extra_data_to_dict_with_mapping(
-                        prop.extra_data, property_column_name_mapping, fields=prop.extra_data.keys(), units=extra_data_units
-                    ).items()
-                )
-                if prop.raw_access_level_instance is not None:
-                    prop_dict.update(prop.raw_access_level_instance.path)
-                prop_dict["raw_access_level_instance_error"] = prop.raw_access_level_instance_error
-
-                prop_dict = apply_display_unit_preferences(org, prop_dict)
-                property_results.append(prop_dict)
-
-            result["properties"] = property_results
-
-        if inventory_type in {"taxlots", "all"}:
-            tax_lots = (
-                TaxLotState.objects.filter(
-                    import_file_id=import_file_id,
-                    data_state__in=[DATA_STATE_MAPPING, DATA_STATE_MATCHING],
-                    merge_state__in=[MERGE_STATE_UNKNOWN, MERGE_STATE_NEW],
-                )
-                .only(*fields["TaxLotState"])
-                .order_by("id")
-            )
-
-            tax_lot_results = []
-            for tax_lot in tax_lots:
-                tax_lot_dict = TaxLotProperty.model_to_dict_with_mapping(
-                    tax_lot, taxlot_column_name_mapping, fields=fields["TaxLotState"], exclude=["extra_data"]
-                )
-                tax_lot_dict.update(
-                    TaxLotProperty.extra_data_to_dict_with_mapping(
-                        tax_lot.extra_data,
-                        taxlot_column_name_mapping,
-                        fields=tax_lot.extra_data.keys(),
-                    ).items()
-                )
-                if tax_lot.raw_access_level_instance is not None:
-                    tax_lot_dict.update(tax_lot.raw_access_level_instance.path)
-                tax_lot_dict["raw_access_level_instance_error"] = tax_lot.raw_access_level_instance_error
-
-                tax_lot_dict = apply_display_unit_preferences(org, tax_lot_dict)
-                tax_lot_results.append(tax_lot_dict)
-
-            result["tax_lots"] = tax_lot_results
-
-        return result
+        return progress_data.result()
 
     @staticmethod
     def has_coparent(state_id, inventory_type):
@@ -450,10 +384,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             }
         ),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def map(self, request, pk=None):
         """
@@ -475,10 +413,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse(map_data(pk, remap, mark_as_done))
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def start_system_matching_and_geocoding(self, request, pk=None):
         """
@@ -497,10 +439,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return geocode_and_match_buildings_task(pk)
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def start_data_quality_checks(self, request, pk=None):
         """
@@ -516,7 +462,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        return_value = do_checks(org_id, None, None, import_file.pk)
+        return_value = do_checks(org_id, None, None, None, import_file.pk)
         # step 5: create a new model instance
         return JsonResponse(
             {
@@ -526,10 +472,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         )
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def validate_use_cases(self, request, pk=None):
         """
@@ -553,10 +503,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         ],
         request_body=AutoSchemaHelper.schema_factory({"cycle_id": "string"}),
     )
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def start_save_data(self, request, pk=None):
         """
@@ -599,10 +553,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse(task_save_raw(import_file.id))
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def mapping_done(self, request, pk=None):
         """
@@ -625,10 +583,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse({"status": "success", "message": ""})
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def matching_and_geocoding_results(self, request, pk=None):
         """
@@ -802,10 +764,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         }
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def mapping_suggestions(self, request, pk):
         """
@@ -890,10 +856,14 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse(result)
 
     @swagger_auto_schema_org_query_param
-    @api_endpoint_class
-    @ajax_request_class
-    @has_perm_class("can_modify_data")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     def destroy(self, request, pk):
         """
         Deletes an import file
@@ -928,8 +898,12 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_integer_field("view_id", required=True, description="ID for property view"),
         ]
     )
-    @ajax_request_class
-    @has_perm_class("requires_member")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def greenbutton_meters_preview(self, request, pk):
         """
@@ -991,9 +965,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return result
 
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(param_property_view_id="view_id")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(param_property_view_id="view_id"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def sensors_preview(self, request, pk):
         """
@@ -1025,9 +1003,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return result
 
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def sensor_readings_preview(self, request, pk):
         org_id = self.get_organization(request)
@@ -1053,9 +1035,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return result
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["GET"])
     def pm_meters_preview(self, request, pk):
         """
@@ -1082,9 +1068,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         return result
 
     @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(import_file_id_kwarg="pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def system_meter_upload(self, request, pk):
         org_id = self.get_organization(request)
@@ -1100,6 +1090,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         num_total_readings = 0
         num_readings_created = 0
+        num_readings_updated = 0
         for raw_reading in parser.data:
             conversion_factor = get_conversion_factor(
                 Meter.ENERGY_TYPE_BY_METER_TYPE[meter.type],
@@ -1115,53 +1106,78 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-
             # process dates
-            the_tz = timezone(TIME_ZONE)
+            the_tz = django_timezone.get_default_timezone()
             unaware_start = datetime.strptime(raw_reading["Start Date"], "%Y-%m-%d %H:%M:%S")
             unaware_end = datetime.strptime(raw_reading["End Date"], "%Y-%m-%d %H:%M:%S")
+            start_time = localize_datetime_with_dst_fallbacks(unaware_start, the_tz)
+            end_time = localize_datetime_with_dst_fallbacks(unaware_end, the_tz)
 
-            try:
-                start_time = make_aware(unaware_start, timezone=the_tz)
-            except AmbiguousTimeError:
-                # Handle timestamp that occurs twice due to "falling back" to standard time
-                start_time = make_aware(unaware_start, timezone=the_tz, is_dst=False)
-            except NonExistentTimeError:
-                # Handle timestamp that doesn't exist due to "springing forward" to dst
-                start_time = make_aware(unaware_start, timezone=the_tz, is_dst=True)
+            # if a meter readings file is re-uploaded, it will UPDATE the values in defaults
+            # rather than keeping the values and ignoring incoming new data
+            # this code was really hard to get right due to the methods not respecting the
+            # meter ID constraint and updating multiple records.
 
-            try:
-                end_time = make_aware(unaware_end, timezone=the_tz)
-            except AmbiguousTimeError:
-                # Handle timestamp that occurs twice due to "falling back" to standard time
-                end_time = make_aware(unaware_end, timezone=the_tz, is_dst=False)
-            except NonExistentTimeError:
-                # Handle timestamp that doesn't exist due to "springing forward" to dst
-                end_time = make_aware(unaware_end, timezone=the_tz, is_dst=True)
+            # First, try to get the existing reading for this specific meter
+            # also count how many readings were returned
+            existing_readings = MeterReading.objects.filter(meter_id=meter.id, start_time=start_time, end_time=end_time)
+            existing_reading = existing_readings.first() if existing_readings.count() > 0 else None
 
-            _, created = MeterReading.objects.get_or_create(
-                start_time=start_time,
-                end_time=end_time,
-                meter_id=meter.id,
-                defaults={
-                    "reading": float(raw_reading["Reading"]) * conversion_factor,
-                    "conversion_factor": conversion_factor,
-                },
-            )
+            if existing_reading:
+                # Update using queryset.update() instead of instance.save()
+                MeterReading.objects.filter(meter_id=meter.id, start_time=start_time, end_time=end_time).update(
+                    reading=float(raw_reading["Reading"]) * conversion_factor,
+                    conversion_factor=conversion_factor,
+                    source_unit=raw_reading["Usage Units"],
+                )
+                created = False
+            else:
+                # Create new reading
+                MeterReading.objects.create(
+                    meter_id=meter.id,
+                    start_time=start_time,
+                    end_time=end_time,
+                    reading=float(raw_reading["Reading"]) * conversion_factor,
+                    conversion_factor=conversion_factor,
+                    source_unit=raw_reading["Usage Units"],
+                )
+                created = True
 
             num_total_readings += 1
             if created:
                 num_readings_created += 1
+            else:
+                num_readings_updated += 1
 
         return JsonResponse(
-            {"status": "success", "message": f"{num_readings_created} new readings created from the {num_total_readings} readings found."},
+            {
+                "status": "success",
+                "message": f"{num_readings_created} new readings created and {num_readings_updated} updated from the {num_total_readings} readings found.",
+            },
             status=status.HTTP_200_OK,
         )
 
+    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @action(detail=True, methods=["POST"])
+    def verify_data_type_mapping(self, request, pk):
+        """
+        Verify that non-text columns don't contain null values, indicatative of data type mapping errors.
+        """
+        org_id = self.get_organization(request)
+
+        try:
+            import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
+        except ImportFile.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_400_BAD_REQUEST)
+        verify_data_types(org_id, import_file.id)
+        import_file.refresh_from_db()
+
+        warnings = import_file.mapping_error_messages
+        response_status = "warning" if warnings else "success"
+        return JsonResponse({"status": response_status, "message": warnings})
+
 
 def get_conversion_factor(type_name, unit, _kbtu_thermal_conversion_factors, _kgal_water_conversion_factors):
-    _log.error(type_name + ", " + unit)
-
     thermal_conversion_factor = _kbtu_thermal_conversion_factors.get(type_name, {}).get(unit, None)
     water_conversion_factor = _kgal_water_conversion_factors.get(type_name, {}).get(unit, None)
 

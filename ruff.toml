@@ -51,7 +51,9 @@ ignore = [
     "E501",    # line-too-long
     "ISC001",  # single-line-implicit-string-concatenation
     "N806",    # non-lowercase-variable-in-function
+    "PLC0415", # import-outside-top-level
     "PLC1901", # compare-to-empty-string (preview)
+    "PLC0415", # `import` should be at the top-level of a file
     "PLR0402", # manual-from-import
     "PLR0911", # too-many-return-statements
     "PLR0912", # too-many-branches
@@ -63,7 +65,6 @@ ignore = [
     "RUF012",  # mutable-class-default
     "S106",    # hardcoded-password-func-arg
     "S311",    # suspicious-non-cryptographic-random-usage
-    "S320",    # suspicious-xmle-tree-usage
     "S603",    # subprocess-without-shell-equals-true
     "S607",    # start-process-with-partial-path
     "S701",    # jinja2-autoescape-false
@@ -75,6 +76,9 @@ ignore = [
     "S101", # assert
     "S105", # hardcoded-password-string
     "S307", # suspicious-eval-usage
+]
+"config/settings/*.py" = [
+    "F405", # undefined-local-with-import-star-usage
 ]
 "seed/**/migrations/*" = [
     "ARG001", # unused-function-argument

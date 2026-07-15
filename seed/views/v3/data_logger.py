@@ -1,17 +1,17 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from datetime import datetime, timedelta
 
 from django.http import JsonResponse
-from pytz import timezone as pytztimezone
+from django.utils.decorators import method_decorator
+from django.utils.timezone import get_default_timezone
 from rest_framework import status, viewsets
 
-from config.settings.common import TIME_ZONE
-from seed.decorators import ajax_request_class
-from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm_class
+from seed.decorators import ajax_request
+from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import DataLogger, PropertyView
 from seed.serializers.data_loggers import DataLoggerSerializer
 from seed.utils.api import OrgMixin
@@ -24,9 +24,13 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class("requires_viewer")
-    @has_hierarchy_access()
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_viewer"),
+            has_hierarchy_access(),
+        ]
+    )
     def list(self, request):
         """
         Retrieves data_loggers for the property
@@ -54,9 +58,13 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
         return res
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access()
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(),
+        ]
+    )
     def create(self, request):
         """
         create data_logger
@@ -68,7 +76,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
         property_id = property_view.property.id
 
         # for every weekday from 2020-2023, mark as occupied from 8-5
-        tz_obj = pytztimezone(TIME_ZONE)
+        tz_obj = get_default_timezone()
         start_time = datetime(2020, 1, 1, 0, 0, tzinfo=tz_obj)
         end_time = datetime(2023, 1, 1, 0, 0, tzinfo=tz_obj)
 
@@ -97,9 +105,13 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
         return JsonResponse(serializer.data)
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(data_logger_id_kwarg="pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(data_logger_id_kwarg="pk"),
+        ]
+    )
     def destroy(self, request, pk):
         org_id = self.get_organization(request)
 
@@ -120,9 +132,13 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
         )
 
     @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class("requires_member")
-    @has_hierarchy_access(data_logger_id_kwarg="pk")
+    @method_decorator(
+        [
+            ajax_request,
+            has_perm("requires_member"),
+            has_hierarchy_access(data_logger_id_kwarg="pk"),
+        ]
+    )
     def update(self, request, pk):
         org_id = self.get_organization(request)
 
