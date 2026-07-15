@@ -20,8 +20,8 @@ The contribution process for SEED is composed of three steps:
 
         I agree to contribute to SEED. I agree to the following terms and conditions for my
         contributions: First, I agree that I am licensing the copyright to my contributions under
-        the terms of the current SEED license. Second, I hereby grant to Alliance for Sustainable
-        Energy, LLC, to any successor manager and distributor of SEED appointed by the U.S.
+        the terms of the current SEED license. Second, I hereby grant to Alliance for
+        Energy Innovation, LLC, to any successor manager and distributor of SEED appointed by the U.S.
         Department of Energy, and to all recipients of a version of SEED that includes my
         contributions, a non-exclusive, worldwide, royalty-free, irrevocable patent license under
         any patent claims owned by me, or owned by my employer and known to me, that are or will be,

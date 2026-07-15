@@ -8,10 +8,12 @@
 # database is missing these constraints even though Django thinks the historical
 # migrations already ran.
 #
-# Each ALTER TABLE is guarded by pg_constraint checks so this migration is safe
-# on databases that already have the expected constraints.
+# All repairs are idempotent (guarded by pg_catalog checks), so this migration is
+# safe on databases that already have the expected constraints.
 
 from django.db import migrations
+
+from seed.utils.migrations import add_missing_unique_constraint_sql, repair_all_missing_primary_keys_sql
 
 
 class Migration(migrations.Migration):
@@ -20,45 +22,19 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Restore missing "id" primary keys on every orgs_* table.
         migrations.RunSQL(
-            sql="""
-            DO $$
-            BEGIN
-                -- Required for foreign keys that reference orgs_organization(id).
-                IF NOT EXISTS (
-                    SELECT 1
-                    FROM pg_constraint
-                    WHERE conrelid = 'orgs_organization'::regclass
-                      AND contype = 'p'
-                ) THEN
-                    ALTER TABLE orgs_organization
-                    ADD CONSTRAINT orgs_organization_pkey PRIMARY KEY (id);
-                END IF;
-
-                -- Required for foreign keys that reference orgs_organizationuser(id).
-                IF NOT EXISTS (
-                    SELECT 1
-                    FROM pg_constraint
-                    WHERE conrelid = 'orgs_organizationuser'::regclass
-                      AND contype = 'p'
-                ) THEN
-                    ALTER TABLE orgs_organizationuser
-                    ADD CONSTRAINT orgs_organizationuser_pkey PRIMARY KEY (id);
-                END IF;
-
-                -- Restores the model-level uniqueness guarantee added in orgs 0026.
-                IF NOT EXISTS (
-                    SELECT 1
-                    FROM pg_constraint
-                    WHERE conrelid = 'orgs_organizationuser'::regclass
-                      AND conname = 'unique_user_for_organization'
-                ) THEN
-                    ALTER TABLE orgs_organizationuser
-                    ADD CONSTRAINT unique_user_for_organization UNIQUE (user_id, organization_id);
-                END IF;
-            END;
-            $$;
-            """,
+            sql=repair_all_missing_primary_keys_sql("orgs_"),
+            reverse_sql=migrations.RunSQL.noop,
+        ),
+        # Restore the model-level uniqueness guarantee added in orgs 0026.
+        migrations.RunSQL(
+            sql=add_missing_unique_constraint_sql(
+                "orgs_organizationuser",
+                "unique_user_for_organization",
+                "user_id",
+                "organization_id",
+            ),
             reverse_sql=migrations.RunSQL.noop,
         ),
     ]
