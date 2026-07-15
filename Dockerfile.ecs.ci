@@ -46,7 +46,7 @@ RUN apk add --no-cache \
     mkdir -p /run/nginx
 
 ## Note on some of the commands above:
-##   - coreutils is required due to an issue with our wait-for-it.sch script:
+##   - coreutils is required due to an issue with our wait-for-it.sh script:
 ##     https://github.com/vishnubob/wait-for-it/issues/71
 
 ENV UV_LINK_MODE=copy
