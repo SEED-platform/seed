@@ -138,12 +138,45 @@ jobs:
       - name: Set up Docker Buildx
         if: steps.changes.outputs.docker == 'true' || github.event_name == 'push'
         uses: docker/setup-buildx-action@v4
-      - name: Build Dockerfile.ecs.ci
+      - name: Build Dockerfile.ecs.ci (x86_64)
         if: steps.changes.outputs.docker == 'true' || github.event_name == 'push'
         run: |
           docker buildx build \
             --file Dockerfile.ecs.ci \
             --tag seedplatform/seed:ecs-ci \
+            --load \
+            .
+
+  ecs-docker-build-arm:
+    runs-on: ubuntu-24.04-arm
+    # Only run on PRs that touch Docker/ECS build files, always run on push to develop/main
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - name: Check changed files
+        id: changes
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            docker:
+              - 'Dockerfile.ecs'
+              - 'Dockerfile.ecs.ci'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'ng_seed/seed-angular/**'
+              - 'vendors/**'
+      - name: Set up Docker Buildx
+        if: steps.changes.outputs.docker == 'true' || github.event_name == 'push'
+        uses: docker/setup-buildx-action@v4
+      - name: Build Dockerfile.ecs.ci (aarch64/ARM)
+        if: steps.changes.outputs.docker == 'true' || github.event_name == 'push'
+        run: |
+          docker buildx build \
+            --file Dockerfile.ecs.ci \
+            --tag seedplatform/seed:ecs-ci-arm \
             --load \
             .
 
