@@ -63,10 +63,12 @@ ENV PATH="/seed/.venv/bin:$PATH"
 
 ### Install python dependencies
 WORKDIR /seed
-COPY ./.python-version /seed/.python-version
 COPY ./pyproject.toml /seed/pyproject.toml
 COPY ./uv.lock /seed/uv.lock
-RUN uv sync --frozen --managed-python --no-dev --no-install-project && \
+# Pin Python 3.13: uv's managed Python 3.14 embeds --rtlib=compiler-rt (clang flag)
+# which Alpine's g++ doesn't support, breaking C extension builds from source.
+# doublemetaphone only has pre-built musllinux wheels for cp312/cp313.
+RUN uv sync --frozen --managed-python --python 3.13 --no-dev --no-install-project && \
     uv pip install supervisor==4.3.0
 
 ### Install JavaScript requirements - do this first because they take awhile
