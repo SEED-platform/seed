@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.inventory_detail_notes_modal', []).controller('inventory_detail_notes_modal_controller', [
+angular.module('SEED.controller.inventory_detail_notes_modal', []).controller('inventory_detail_notes_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'action',
@@ -46,7 +46,7 @@ angular.module('BE.seed.controller.inventory_detail_notes_modal', []).controller
     };
 
     $scope.delete = () => {
-      note_service.delete_note($scope.inventoryType, $scope.viewId, $scope.note.id).then(() => {
+      note_service.delete_note($scope.orgId, $scope.inventoryType, $scope.viewId, $scope.note.id).then(() => {
         $uibModalInstance.close();
       });
     };

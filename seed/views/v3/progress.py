@@ -1,14 +1,16 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from django.http import JsonResponse
+from django.utils.decorators import method_decorator
 from rest_framework import viewsets
 
-from seed.decorators import ajax_request_class
-from seed.utils.api import api_endpoint_class
+from seed.decorators import ajax_request
+from seed.utils.api import api_endpoint
 from seed.utils.cache import get_cache
 
 _log = logging.getLogger(__name__)
@@ -17,8 +19,12 @@ _log = logging.getLogger(__name__)
 class ProgressViewSet(viewsets.ViewSet):
     raise_exception = True
 
-    @api_endpoint_class
-    @ajax_request_class
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+        ]
+    )
     def retrieve(self, request, pk):
         """
         Get the progress (percent complete) for a task.
@@ -33,8 +39,4 @@ class ProgressViewSet(viewsets.ViewSet):
         if get_cache(progress_key):
             return JsonResponse(get_cache(progress_key))
         else:
-            return JsonResponse({
-                'progress_key': progress_key,
-                'progress': 0,
-                'status': 'waiting'
-            })
+            return JsonResponse({"progress_key": progress_key, "progress": 0, "status": "waiting"})

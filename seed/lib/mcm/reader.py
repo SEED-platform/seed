@@ -1,23 +1,20 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 The Reader module is intended to contain only code which reads data
 out of CSV files. Fuzzy matches, application to data models happens
 elsewhere.
 """
+
 import json
 import logging
 import mmap
 import operator
 import re
-from builtins import str
 from csv import DictReader, Sniffer
 
 import xmltodict
-from past.builtins import basestring
 from xlrd import XLRDError, empty_cell, open_workbook, xldate
 from xlrd.xldate import XLDateAmbiguous
 
@@ -39,7 +36,6 @@ from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 ROW_DELIMITER = "|#*#|"
 SEED_GENERATED_HEADER_PREFIX = "SEED Generated Header"
 
-
 _log = logging.getLogger(__name__)
 
 
@@ -57,19 +53,19 @@ def clean_fieldnames(fieldnames):
     new_fieldnames = []
     for fieldname in fieldnames:
         new_fieldname = normalize_unicode_and_characters(fieldname)
-        if fieldname == '':
+        if fieldname == "":
             num_generated_headers += 1
-            new_fieldname = f'{SEED_GENERATED_HEADER_PREFIX} {num_generated_headers}'
+            new_fieldname = f"{SEED_GENERATED_HEADER_PREFIX} {num_generated_headers}"
 
         new_fieldnames.append(new_fieldname)
     return new_fieldnames, num_generated_headers > 0
 
 
-class SheetDoesNotExist(Exception):
+class SheetDoesNotExistError(Exception):
     """Exception when parsing an Excel workbook and the specified sheet does not exist"""
 
 
-class GreenButtonParser(object):
+class GreenButtonParser:
     """
     This class accepts GreenButton data in XML format.
 
@@ -79,6 +75,10 @@ class GreenButtonParser(object):
         2) Not used but typically contains property information
         3) Should contain Unit and order of 10 information
         4) Should contain readings with start epoch times and second duration
+
+    UPDATE 9/19/2024: The XML file sometimes contains additional 'feed' tags and
+    information. Parsing no longer assumes the location of each particular entry type
+    and instead searches for the correct ones
     """
 
     def __init__(self, xml_file):
@@ -87,30 +87,30 @@ class GreenButtonParser(object):
 
         # Codes taken from https://bedes.lbl.gov/sites/default/files/Green%20Button%20V0.7.2%20to%20BEDES%20V2.1%20Mapping%2020170927.pdf
         self.kind_codes = {
-            0: 'Electric - Grid',  # listed as 'electricity'
-            1: 'Natural Gas',  # listed as 'gas'
+            0: "Electric - Grid",  # listed as 'electricity'
+            1: "Natural Gas",  # listed as 'gas'
         }
         self.uom_codes = {
-            31: 'J',
-            42: 'cubic meters',  # listed as 'm3'
-            72: 'Wh',
-            119: 'cf',  # listed as 'ft3'
-            132: 'Btu',  # listed as 'btu'
-            169: 'therms',  # listed as 'therm'
+            31: "J",
+            42: "cubic meters",  # listed as 'm3'
+            72: "Wh",
+            119: "cf",  # listed as 'ft3'
+            132: "Btu",  # listed as 'btu'
+            169: "therms",  # listed as 'therm'
         }
         self.power_of_ten_codes = {
-            -12: 'p',      # Pico: 10^-12
-            -9: 'n',      # Nano: 10^-9
-            -6: 'micro',  # Micro: 10^-6
-            -3: 'm',      # Milli: 10^-3
-            -1: 'd',      # Deci: 10^-1
-            0: '',       # N/A
-            1: 'da',     # Deca: 10^1
-            2: 'h',      # Hecto: 10^2
-            3: 'k',      # Kilo: 10^3
-            6: 'M',      # Mega: 10^6
-            9: 'G',      # Giga: 10^9
-            12: 'T',      # Tera: 10^12
+            -12: "p",  # Pico: 10^-12
+            -9: "n",  # Nano: 10^-9
+            -6: "micro",  # Micro: 10^-6
+            -3: "m",  # Milli: 10^-3
+            -1: "d",  # Deci: 10^-1
+            0: "",  # N/A
+            1: "da",  # Deca: 10^1
+            2: "h",  # Hecto: 10^2
+            3: "k",  # Kilo: 10^3
+            6: "M",  # Mega: 10^6
+            9: "G",  # Giga: 10^9
+            12: "T",  # Tera: 10^12
         }
 
         # US factors work for CAN factors as this is only used to find valid unit types for a given energy type
@@ -118,10 +118,10 @@ class GreenButtonParser(object):
 
         # These are the valid unit prefixes found in thermal conversions
         self.thermal_factor_prefixes = {
-            'k': 3,
-            'M': 6,
-            'G': 9,
-            'c': 2,
+            "k": 3,
+            "M": 6,
+            "G": 9,
+            "c": 2,
         }
 
     @property
@@ -133,67 +133,132 @@ class GreenButtonParser(object):
         If a valid type and unit could not be found, an empty list is returned.
         """
         if self._cache_data is None:
+            self._cache_data = []
             xml_string = self._xml_file.read()
             raw_data = xmltodict.parse(xml_string)
 
-            readings_entry = raw_data['feed']['entry'][3]
+            # we don't know which "entry" the interval data is in
+            r_entries = raw_data["feed"]["entry"]
+            # find the interval reading entry
+            for readings_entry in r_entries:
+                try:
+                    readings = readings_entry["content"]["IntervalBlock"]["IntervalReading"]
+                    if len(readings) > 0:
+                        # this is the right one
+                        # grab the first <link>, which should be the "self"
+                        links = readings_entry["link"]
+                        # this is either an OrderedDict or a List
+                        if not isinstance(links, list):
+                            links = [links]
 
-            href = readings_entry['link']['@href']
-            source_id = re.sub(r'/v./', '', href)
+                        href = links[0]["@href"]
+                        source_id = re.sub(r"/v./", "", href)
 
-            readings = readings_entry['content']['IntervalBlock']['IntervalReading']
+                        # pass in the reading ID to determining meter_type etc.
+                        res = re.findall(r"MeterReading/\d*", href)
+                        meter_reading = None
+                        if res:
+                            meter_reading = res[0]
 
-            type, unit, multiplier = self._parse_type_and_unit(raw_data)
+                        meter_type, unit, multiplier = self._parse_type_and_unit(raw_data, meter_reading)
 
-            if type and unit:
-                self._cache_data = [
-                    {
-                        'start_time': int(reading['timePeriod']['start']),
-                        'source_id': source_id,
-                        'duration': int(reading['timePeriod']['duration']),
-                        'Meter Type': type,
-                        'Usage Units': unit,
-                        'Usage/Quantity': float(reading['value']) * multiplier,
-                    }
-                    for reading
-                    in readings
-                ]
-            else:
-                self._cache_data = []
+                        if meter_type and unit:
+                            self._cache_data = [
+                                {
+                                    "start_time": int(reading["timePeriod"]["start"]),
+                                    "source_id": source_id,
+                                    "duration": int(reading["timePeriod"]["duration"]),
+                                    "Meter Type": meter_type,
+                                    "Usage Units": unit,
+                                    "Usage/Quantity": float(reading["value"]) * multiplier,
+                                }
+                                for reading in readings
+                            ]
+                        break
+                except Exception:  # noqa: S110
+                    pass
 
         return self._cache_data
 
-    def _parse_type_and_unit(self, raw_data):
+    def _parse_type_and_unit(self, raw_data, meter_reading):
         """
         Parses raw XML to read the kind and uom/powerOfTenMultiplier. Using
         those, an attempt is made to validate the type and unit as a combination
         that the application accepts.
 
-        The if the type and unit are parsable and valid, they are returned,
+        Then, if the type and unit are parsable and valid, they are returned,
         otherwise, None is returned as applicable.
         """
-        kind_entry = raw_data['feed']['entry'][0]
-        kind = kind_entry['content']['UsagePoint']['ServiceCategory']['kind']
-        type = self.kind_codes.get(int(kind), None)
+        r_entries = raw_data["feed"]["entry"]
+        # kind entry is not necessarily the first one. Find the right now
+        meter_type = None
+        for reading_entry in r_entries:
+            try:
+                kind = reading_entry["content"]["UsagePoint"]["ServiceCategory"]["kind"]
+                meter_type = self.kind_codes.get(int(kind), None)
+            except Exception:  # noqa: S110
+                pass
 
-        if type is None:
+        if meter_type is None:
             return None, None, 1
 
-        uom_entry = raw_data['feed']['entry'][2]['content']['ReadingType']
-        uom = uom_entry['uom']
-        raw_base_unit = self.uom_codes.get(int(uom), '')
+        # UOM entry determined from MeterReading type (there could be more than 1)
+        # first find the 'feed' entry with "MeterReading" matching the meter_reading passed in
+        reading_type = None
+        for reading_entry in r_entries:
+            try:
+                reading_entry["content"]["MeterReading"]
+                links = reading_entry["link"]
+                # this is either an OrderedDict or a List
+                if not isinstance(links, list):
+                    links = [links]
 
-        power_of_ten_multiplier = int(uom_entry['powerOfTenMultiplier'])
+                # grab the first (self) href
+                href = links[0]["@href"]
 
-        resulting_unit, multiplier = self._parse_valid_unit_and_multiplier(
-            type,
-            power_of_ten_multiplier,
-            raw_base_unit
-        )
+                # check the first element to make sure that it matches
+                if href.endswith(meter_reading):
+                    # we're in the right section. Now look for the reading type
+                    for link in links:
+                        if "ReadingType" in link["@href"]:
+                            reading_type = link["@href"]
 
-        return type, resulting_unit, multiplier
+            except Exception:  # noqa: S110
+                pass
 
-    def _parse_valid_unit_and_multiplier(self, type, power_of_ten_multiplier, raw_base_unit):
+        # if no reading_type, return
+        if reading_type is None:
+            return meter_type, None, 1
+
+        # now find the right uom based on reading type
+        uom = None
+        resulting_unit = None
+        multiplier = None
+        raw_base_unit = None
+        power_of_ten_multiplier = None
+
+        for reading_entry in r_entries:
+            try:
+                uom_entry = reading_entry["content"]["ReadingType"]
+                links = reading_entry["link"]
+                # this is either an OrderedDict or a List
+                if not isinstance(links, list):
+                    links = [links]
+                for link in links:
+                    if reading_type in link["@href"]:
+                        # got the right one
+                        uom = uom_entry["uom"]
+                        raw_base_unit = self.uom_codes.get(int(uom), "")
+                        power_of_ten_multiplier = int(uom_entry["powerOfTenMultiplier"])
+                        resulting_unit, multiplier = self._parse_valid_unit_and_multiplier(
+                            meter_type, power_of_ten_multiplier, raw_base_unit
+                        )
+            except Exception:  # noqa: S110
+                pass
+
+        return meter_type, resulting_unit, multiplier
+
+    def _parse_valid_unit_and_multiplier(self, meter_type, power_of_ten_multiplier, raw_base_unit):
         """
         Parses valid/accepted unit and multiplier using the given type and raw
         base unit. The powerOfTenMultiplier is used to find the raw unit prefix
@@ -216,84 +281,106 @@ class GreenButtonParser(object):
 
         If none of these scenarios return a validated unit, None, 1 is returned.
         """
-        valid_units_for_type = self._thermal_factors[type].keys()
+        valid_units_for_type = self._thermal_factors[meter_type].keys()
 
         raw_prefix_unit = self.power_of_ten_codes.get(power_of_ten_multiplier, None)
-        raw_full_unit = "{}{}".format(raw_prefix_unit, raw_base_unit)
+        raw_full_unit = f"{raw_prefix_unit}{raw_base_unit}"
 
         # Check if the raw full unit is an exact match (or left match) with a known valid unit
-        exact_match_full_unit = next(
-            (key for key in valid_units_for_type if key.startswith(raw_full_unit)),
-            None
-        )
+        exact_match_full_unit = next((key for key in valid_units_for_type if key.startswith(raw_full_unit)), None)
         if exact_match_full_unit is not None:
             return exact_match_full_unit, 1
 
         # Check if just the base unit is an exact match with a known valid unit
-        base_unit_only_match = next(
-            (key for key in valid_units_for_type if raw_base_unit == key),
-            None
-        )
+        base_unit_only_match = next((key for key in valid_units_for_type if raw_base_unit == key), None)
         if base_unit_only_match is not None:
-            multiplier = 10**(power_of_ten_multiplier)
+            multiplier = 10 ** (power_of_ten_multiplier)
             return base_unit_only_match, multiplier
 
         # Check if just the base unit is similar to a known valid unit
-        approx_match_base_unit = next(
-            (key for key in valid_units_for_type if raw_base_unit in key),
-            None
-        )
+        approx_match_base_unit = next((key for key in valid_units_for_type if raw_base_unit in key), None)
         if approx_match_base_unit is not None:
             # this assumes the prefix is one character long
             factor_prefix = approx_match_base_unit[0]
 
             # an exact match is expected for factor_prefix - if not, this should error
-            multiplier = 10**(power_of_ten_multiplier - self.thermal_factor_prefixes[factor_prefix])
+            multiplier = 10 ** (power_of_ten_multiplier - self.thermal_factor_prefixes[factor_prefix])
 
             return approx_match_base_unit, multiplier
 
         return None, 1
 
 
-class GeoJSONParser(object):
-    def __init__(self, json_file):
+class GeoJSONParser:
+    def __init__(self, json_file, display_name_lookup):
         raw_data = json.load(json_file)
         features = raw_data.get("features")
         raw_column_names = features[0].get("properties").keys()
+        self.display_name_lookup = display_name_lookup
 
-        # add in the property footprint to the headers/columns
-        self.headers = [self._display_name(col) for col in raw_column_names] + ["property_footprint"]
+        # add in the property footprint to the headers/columns, avoiding duplicates
+        self.headers = [self._display_name(col) for col in raw_column_names]
+        if not (footprint_key := self._footprint_key(raw_column_names)):
+            self.headers.append("Property Footprint")
+            footprint_key = "Property Footprint"
+
         self.column_translations = {col: self._display_name(col) for col in raw_column_names}
         self.first_five_rows = [self._capture_row(feature) for feature in features[:5]]
 
         self.data = []
         for feature in features:
-            properties = feature.get('properties')
+            properties = feature.get("properties")
 
             entry = {self.column_translations.get(k, k): v for k, v in properties.items()}
-            entry["property_footprint"] = self._get_bounding_box(feature)
+            entry[footprint_key] = self._get_bounding_box(feature)
 
             self.data.append(entry)
 
     def _display_name(self, col):
-        # Returns string with capitalized words and underscores removed
-        return re.sub(r'[_]', ' ', col.title())
+        # Returns found display name or a string with capitalized words and underscores removed
+        snake_case_col = re.sub(r"\s+", "_", col.lower())
+        return self.display_name_lookup.get(snake_case_col) or snake_case_col.replace("_", " ").title()
 
     def _get_bounding_box(self, feature):
-        raw_coordinates = feature.get('geometry').get('coordinates')[0]
-        coords_strings = [f"{coords[0]} {coords[1]}" for coords in raw_coordinates]
+        if existing_footprint := self._existing_footprint(feature):
+            return existing_footprint
 
-        return f"POLYGON (({', '.join(coords_strings)}))"
+        geometry = feature.get("geometry")
+        raw_coordinates = []
+        if "coordinates" in geometry:
+            raw_coordinates = feature.get("geometry").get("coordinates")
+        elif "geometries" in geometry:
+            geometries = feature.get("geometry").get("geometries", [[]])
+            raw_coordinates = geometries[0].get("coordinates")
+
+        raw_coordinates = raw_coordinates[0] if len(raw_coordinates) else raw_coordinates
+
+        coords_strings = [f"{coords[0]} {coords[1]}" for coords in raw_coordinates]
+        coords = ", ".join(coords_strings)
+        bounding_box = f"POLYGON (({coords}))" if coords else "POLYGON EMPTY"
+        return bounding_box
+
+    def _footprint_key(self, keys):
+        return "property_footprint" if "property_footprint" in keys else "Property Footprint" if "Property Footprint" in keys else None
+
+    def _existing_footprint(self, feature):
+        properties = feature.get("properties", {})
+        footprint_key = self._footprint_key(properties.keys())
+        existing_footprint = properties.get(footprint_key, "")
+        if isinstance(existing_footprint, str) and existing_footprint.startswith("POLYGON"):
+            return existing_footprint
 
     def _capture_row(self, feature):
-        stringified_values = [str(value) for value in feature.get('properties').values()] + ['Property Footprint - Not Displayed']
+        stringified_values = [str(value) for value in feature.get("properties").values()]
+        if not self._existing_footprint(feature):
+            stringified_values += ["Property Footprint - Not Displayed"]
         return "|#*#|".join(stringified_values)
 
     def num_columns(self):
         return len(self.headers)
 
 
-class ExcelParser(object):
+class ExcelParser:
     """MS Excel (.xls, .xlsx) file parser for MCMParser
 
     usage:
@@ -312,7 +399,7 @@ class ExcelParser(object):
         self.excel_file = excel_file
         self.sheet = self._get_sheet(excel_file, sheet_name)
         self.header_row = self._get_header_row(self.sheet)
-        self.excelreader = self.XLSDictReader(self.sheet, self.header_row)
+        self.excelreader = self.excel_dict_reader(self.sheet, self.header_row)
 
     def _get_sheet(self, f, sheet_name=None, sheet_index=0):
         """returns a xlrd sheet
@@ -362,8 +449,9 @@ class ExcelParser(object):
                 date = xldate.xldate_as_datetime(item.value, self._workbook.datemode)
                 return date.strftime("%Y-%m-%d %H:%M:%S")
             except XLDateAmbiguous:
-                raise Exception('Date fields are not in a format that SEED can interpret. '
-                                'A possible solution is to save as a CSV file and reimport.')
+                raise Exception(
+                    "Date fields are not in a format that SEED can interpret. A possible solution is to save as a CSV file and reimport."
+                )
 
         if item.ctype == XL_CELL_NUMBER:
             if item.value % 1 == 0:  # integers
@@ -373,16 +461,16 @@ class ExcelParser(object):
 
         # If Excel reports an ERROR (typically the #VALUE! or #NAME! in the cell), then return None,
         # otherwise the item.value will be the error code and saved in SEED incorrectly.
-        if item.ctype in [XL_CELL_ERROR]:
+        if item.ctype in {XL_CELL_ERROR}:
             return None
 
         # If it is blank or empty, then return empty string
-        if item.ctype in [XL_CELL_EMPTY, XL_CELL_BLANK]:
-            return ''
+        if item.ctype in {XL_CELL_EMPTY, XL_CELL_BLANK}:
+            return ""
 
         # XL_CELL_TEXT
-        if isinstance(item.value, basestring):
-            if kwargs.get('trim_and_clean_strings', False):
+        if isinstance(item.value, str):
+            if kwargs.get("trim_and_clean_strings", False):
                 # remove leading and trailing whitespace
                 value = item.value.strip()
                 # remove any double spaces within the string
@@ -394,16 +482,16 @@ class ExcelParser(object):
         # only remaining items should be booleans
         return item.value
 
-    def XLSDictReader(self, sheet, header_row=0):
+    def excel_dict_reader(self, sheet, header_row=0):
         """returns a generator yielding a dict per row from the XLS/XLSX file
         https://gist.github.com/mdellavo/639082
 
         :param sheet: xlrd Sheet
         :param header_row: the row index to start with
-        :returns: Generator yeilding a row as Dict
+        :returns: Generator yielding a row as Dict
         """
 
-        # save off the headers into a member variable. Only do this once. If XLSDictReader is
+        # save off the headers into a member variable. Only do this once. If excel_dict_reader is
         # called later (which it is in `seek_to_beginning` then don't reparse the headers
         if not self.cache_headers:
             for j in range(sheet.ncols):
@@ -412,27 +500,21 @@ class ExcelParser(object):
         def item(i, j):
             """returns a tuple (column header, cell value)"""
             # self.cache_headers[j],
-            return (
-                self.get_value(sheet.cell(header_row, j), trim_and_clean_strings=True),
-                self.get_value(sheet.cell(i, j))
-            )
+            return (self.get_value(sheet.cell(header_row, j), trim_and_clean_strings=True), self.get_value(sheet.cell(i, j)))
 
         # return a generator, using yield here wouldn't run until the first
         # usage causing the try/except in MCMParser _get_reader to return
         # ExcelReader for csv files
-        return (
-            dict(item(i, j) for j in range(sheet.ncols))
-            for i in range(header_row + 1, sheet.nrows)
-        )
+        return (dict(item(i, j) for j in range(sheet.ncols)) for i in range(header_row + 1, sheet.nrows))
 
     def seek_to_beginning(self):
         """seeks to the beginning of the file
 
-        Since ``XLSDictReader`` is in memory, a new one is created. Note: the headers will not be
-        parsed again when the XLSDictReader is loaded
+        Since ``excel_dict_reader`` is in memory, a new one is created. Note: the headers will not be
+        parsed again when the excel_dict_reader is loaded
         """
         self.excel_file.seek(0)
-        self.excelreader = self.XLSDictReader(self.sheet, self.header_row)
+        self.excelreader = self.excel_dict_reader(self.sheet, self.header_row)
 
     def num_columns(self):
         """gets the number of columns for the file"""
@@ -444,7 +526,7 @@ class ExcelParser(object):
         return self.cache_headers
 
 
-class CSVParser(object):
+class CSVParser:
     """CSV (.csv) file parser for MCMParser
 
     usage:
@@ -468,17 +550,15 @@ class CSVParser(object):
         # determining the dialect.  MCM is often run on very wide csv files.
         try:
             dialect = Sniffer().sniff(self.csvfile.read(16384))
-            if dialect.delimiter != ',':
-                _log.warn('CSV file has a non-standard delimiter, converting to \'comma\'')
-                dialect.delimiter = ','
+            if dialect.delimiter != ",":
+                _log.warn("CSV file has a non-standard delimiter, converting to 'comma'")
+                dialect.delimiter = ","
         except SyntaxError:
             raise Exception("CSV file is not in a format that SEED can interpret. Try converting to XLSX.")
 
         self.csvfile.seek(0)
 
-        fieldnames, generated_headers = clean_fieldnames(
-            DictReader(self.csvfile, dialect=dialect).fieldnames
-        )
+        fieldnames, generated_headers = clean_fieldnames(DictReader(self.csvfile, dialect=dialect).fieldnames)
         self.has_generated_headers = generated_headers
         self.csvfile.seek(0)  # not positive this is required, but adding it just in case
         self.csvreader = DictReader(self.csvfile, dialect=dialect, fieldnames=fieldnames)
@@ -488,7 +568,7 @@ class CSVParser(object):
         self.csvfile.seek(0)
 
         # skip header row
-        self.csvfile.__next__()
+        next(self.csvfile)
 
     def num_columns(self):
         """gets the number of columns for the file"""
@@ -500,7 +580,7 @@ class CSVParser(object):
         return [entry.strip() for entry in self.csvreader.fieldnames]
 
 
-class MCMParser(object):
+class MCMParser:
     """
     This Parser is a wrapper around CSVReader and ExcelParser which matches
     columnar data against a set of known ontologies and separates data
@@ -527,25 +607,25 @@ class MCMParser(object):
         self.seek_to_beginning()
 
         self.import_file = import_file
-        if 'matching_func' not in kwargs:
+        if "matching_func" not in kwargs:
             # Special note, contains expects arguments like the following
             # contains(a, b); tests outcome of ``b in a``
             self.matching_func = operator.contains
 
         else:
-            self.matching_func = kwargs.get('matching_func')
+            self.matching_func = kwargs.get("matching_func")
 
     def _get_reader(self, import_file, sheet_name=None):
         """returns a CSV or XLS/XLSX reader or raises an exception"""
         try:
             return ExcelParser(import_file, sheet_name)
         except XLRDError as e:
-            if 'Unsupported format' in str(e):
+            if "Unsupported format" in str(e):
                 return CSVParser(import_file)
-            elif 'No sheet named' in str(e):
-                raise SheetDoesNotExist(str(e))
+            elif "No sheet named" in str(e):
+                raise SheetDoesNotExistError(str(e))
             else:
-                raise Exception('Cannot parse file')
+                raise Exception("Cannot parse file")
 
     def __next__(self):
         """calls the reader's next"""
@@ -559,7 +639,7 @@ class MCMParser(object):
         elif isinstance(self.reader, ExcelParser):
             self.data = self.reader.excelreader
         else:
-            raise Exception('Unknown type of parser in MCMParser')
+            raise Exception("Unknown type of parser in MCMParser")
 
         return self.reader.seek_to_beginning()
 
@@ -585,7 +665,7 @@ class MCMParser(object):
         validation_rows = []
         for i in range(5):
             try:
-                row = self.__next__()
+                row = next(self)
                 if row:
                     # Trim out the spaces around the keys
                     new_row = {}
@@ -604,7 +684,7 @@ class MCMParser(object):
             row_arr = []
             for x in first_row:
                 row_field = r[x]
-                if isinstance(row_field, basestring):
+                if isinstance(row_field, str):
                     row_field = normalize_unicode_and_characters(r[x])
                 else:
                     row_field = str(r[x])
@@ -618,6 +698,6 @@ class MCMParser(object):
 
     @property
     def has_generated_headers(self):
-        if hasattr(self.reader, 'has_generated_headers'):
+        if hasattr(self.reader, "has_generated_headers"):
             return self.reader.has_generated_headers
         return False

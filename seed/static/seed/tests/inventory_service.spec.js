@@ -1,12 +1,12 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('service: inventory_service', () => {
   let mock_inventory_service;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((inventory_service) => {
       mock_inventory_service = inventory_service;
     });

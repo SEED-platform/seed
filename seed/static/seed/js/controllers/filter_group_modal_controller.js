@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_group_modal_controller', [
+angular.module('SEED.controller.filter_group_modal', []).controller('filter_group_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'filter_groups_service',
@@ -49,7 +49,7 @@ angular.module('BE.seed.controller.filter_group_modal', []).controller('filter_g
             inventory_type: $scope.data.inventory_type,
             and_labels: $scope.data.and_labels,
             or_labels: $scope.data.or_labels,
-            exclude_labels: $scope.data.exclude_labels,
+            exclude_labels: $scope.data.exclude_labels
           })
           .then((result) => {
             $uibModalInstance.close(result);

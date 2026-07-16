@@ -1,6 +1,6 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * StartFrom
  * For when you want to paginate client side, and start ng-repeat from a specific number.

@@ -1,3 +1,4 @@
+---
 # Docker-compose setup for local development
 #
 # Configurable Values:
@@ -6,19 +7,23 @@
 #
 # Usage:
 #   docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
-version: "3.4"
 services:
   db-postgres:
     container_name: seed_postgres
     volumes:
-      - ref_seed_pgdata:/var/lib/postgresql/data
+      - ref_seed_pgdata:/home/postgres/pgdata
+      - ./share:/share
+  db-redis:
+    container_name: seed_redis
+    ports:
+      - "6379:6379"
   web:
     container_name: seed_web
     image: seedplatform/seed:develop
     build:
       context: .
       dockerfile: Dockerfile-dev
-    command: python3 manage.py runserver --settings=config.settings.docker_dev 0.0.0.0:80
+    command: uv run hypercorn config.asgi:seed --bind 0.0.0.0:80 --reload
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.docker_dev
       - DJANGO_LOG_LEVEL

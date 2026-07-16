@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import migrations
 
 # some of the project buildings point at building snapshot records that are not canonical buildings
@@ -19,10 +16,10 @@ def save_non_canonical_project_buildings(app, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0004_noncanonicalprojectbuildings'),
+        ("seed", "0004_noncanonicalprojectbuildings"),
     ]
 
-    operations = [migrations.RunPython(save_non_canonical_project_buildings),
-                  ]
+    operations = [
+        migrations.RunPython(save_non_canonical_project_buildings),
+    ]

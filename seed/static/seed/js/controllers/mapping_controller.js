@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.mapping', []).controller('mapping_controller', [
+angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
   '$scope',
   '$state',
   '$log',
@@ -19,6 +19,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
   'spinner_utility',
   'urls',
   '$uibModal',
+  'cache_entry_service',
   'user_service',
   'uploader_service',
   'column_mappings_service',
@@ -55,6 +56,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     spinner_utility,
     urls,
     $uibModal,
+    cache_entry_service,
     user_service,
     uploader_service,
     column_mappings_service,
@@ -74,6 +76,20 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM,
     derived_columns_payload
   ) {
+    $scope.data_types = [
+      { id: 'None', label: 'None' },
+      { id: 'number', label: $translate.instant('Number') },
+      { id: 'integer', label: $translate.instant('Integer') },
+      { id: 'string', label: $translate.instant('Text') },
+      { id: 'datetime', label: $translate.instant('Datetime') },
+      { id: 'date', label: $translate.instant('Date') },
+      { id: 'boolean', label: $translate.instant('Boolean') },
+      { id: 'area', label: $translate.instant('Area') },
+      { id: 'eui', label: $translate.instant('EUI') },
+      { id: 'geometry', label: $translate.instant('Geometry') },
+      { id: 'ghg', label: $translate.instant('GHG') },
+      { id: 'ghg_intensity', label: $translate.instant('GHG Intensity') }
+    ];
     $scope.profiles = [{ id: 0, mappings: [], name: '<None selected>' }].concat(column_mapping_profiles_payload);
 
     $scope.current_profile = $scope.profiles[0] ?? {};
@@ -114,6 +130,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
             $scope.initialize_mappings();
             $scope.updateInventoryTypeDropdown();
             $scope.updateColDuplicateStatus();
+            $scope.updateColIsDisallowedCreation();
             $scope.updateDerivedColumnMatchStatus();
           })
           .catch(() => {
@@ -125,34 +142,35 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         $scope.initialize_mappings();
         $scope.updateInventoryTypeDropdown();
         $scope.updateColDuplicateStatus();
+        $scope.updateColIsDisallowedCreation();
         $scope.updateDerivedColumnMatchStatus();
       }
     };
 
     // Profile-level create and update modal-rending actions
-    const profile_mappings_from_working_mappings = () =>
+    const profile_mappings_from_working_mappings = () => _.reduce(
       // for to_field, try DB col name, if not use col display name
-      _.reduce(
-        $scope.mappings,
-        (profile_mapping_data, mapping) => {
-          const this_mapping = {
-            from_field: mapping.name,
-            from_units: mapping.from_units,
-            to_field: mapping.suggestion_column_name || mapping.suggestion || '',
-            to_table_name: mapping.suggestion_table_name
-          };
-          const isBuildingSyncProfile =
+      $scope.mappings,
+      (profile_mapping_data, mapping) => {
+        const this_mapping = {
+          from_field: mapping.name,
+          from_units: mapping.from_units,
+          to_field: mapping.suggestion_column_name || mapping.suggestion || '',
+          to_table_name: mapping.suggestion_table_name,
+          is_omitted: mapping.is_omitted
+        };
+        const isBuildingSyncProfile =
             $scope.current_profile.profile_type !== undefined &&
             [COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT, COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM].includes($scope.current_profile.profile_type);
 
-          if (isBuildingSyncProfile) {
-            this_mapping.from_field_value = mapping.from_field_value;
-          }
-          profile_mapping_data.push(this_mapping);
-          return profile_mapping_data;
-        },
-        []
-      );
+        if (isBuildingSyncProfile) {
+          this_mapping.from_field_value = mapping.from_field_value;
+        }
+        profile_mapping_data.push(this_mapping);
+        return profile_mapping_data;
+      },
+      []
+    );
 
     $scope.new_profile = () => {
       let profile_mapping_data = profile_mappings_from_working_mappings();
@@ -193,7 +211,8 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
 
       modalInstance.result.then((new_profile) => {
         $scope.profiles.push(new_profile);
-        $scope.dropdown_selected_profile = $scope.current_profile = _.last($scope.profiles);
+        $scope.current_profile = _.last($scope.profiles);
+        $scope.dropdown_selected_profile = $scope.current_profile;
 
         $scope.profile_change_possible = false;
         $scope.mappings_change_possible = false;
@@ -231,6 +250,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     $scope.import_file = import_file_payload.import_file;
     $scope.import_file.matching_finished = false;
     $scope.suggested_mappings = suggested_mappings_payload.suggested_column_mappings;
+    $scope.mapping_error_messages = null;
 
     $scope.raw_columns = raw_columns_payload.raw_columns;
     $scope.mappable_property_columns = suggested_mappings_payload.property_columns;
@@ -239,6 +259,8 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
 
     $scope.review_mappings = false;
     $scope.show_mapped_buildings = false;
+    $scope.duplicate_suggestions_present = false;
+    $scope.duplicate_headers_present = false;
 
     const validCycle = _.find(cycles.cycles, { id: $scope.import_file.cycle });
     $scope.isValidCycle = Boolean(validCycle);
@@ -278,35 +300,41 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       });
     }
 
-    const eui_columns = _.filter($scope.mappable_property_columns, { data_type: 'eui' });
-    $scope.is_eui_column = (
-      col // All of these are on the PropertyState table
-    ) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(eui_columns, { column_name: col.suggestion_column_name }));
+    // Handle units
+    $scope.is_data_type_column = (data_type, col) => {
+      const unit_columns = _.filter($scope.mappable_property_columns, { data_type });
+      return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(unit_columns, { column_name: col.suggestion_column_name }));
+    };
 
-    const area_columns = _.filter($scope.mappable_property_columns, { data_type: 'area' });
-    $scope.is_area_column = (
-      col // All of these are on the PropertyState table
-    ) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(area_columns, { column_name: col.suggestion_column_name }));
+    $scope.is_pint_column = (col) => {
+      const data_types = ['area', 'eui', 'ghg', 'ghg_intensity', 'water_use', 'wui'];
+      const data_type_columns = _.filter($scope.mappable_property_columns, (column) => _.includes(data_types, column.data_type));
+      return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(data_type_columns, { column_name: col.suggestion_column_name }));
+    };
 
-    const ghg_columns = _.filter($scope.mappable_property_columns, { data_type: 'ghg' });
-    $scope.is_ghg_column = (col) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(ghg_columns, { column_name: col.suggestion_column_name }));
-
-    const ghg_intensity_columns = _.filter($scope.mappable_property_columns, { data_type: 'ghg_intensity' });
-    $scope.is_ghg_intensity_column = (col) => col.suggestion_table_name === 'PropertyState' && Boolean(_.find(ghg_intensity_columns, { column_name: col.suggestion_column_name }));
-
+    $scope.is_eui_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'eui';
+    $scope.is_area_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'area';
+    $scope.is_ghg_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'ghg';
+    $scope.is_ghg_intensity_column = (col) => col.suggestion_table_name === 'PropertyState' && col.data_type === 'ghg_intensity';
     const get_default_quantity_units = (col) => {
       // TODO - hook up to org preferences / last mapping in DB
-      if ($scope.is_eui_column(col)) {
+      if ($scope.is_data_type_column('eui', col)) {
         return 'kBtu/ft**2/year';
       }
-      if ($scope.is_area_column(col)) {
+      if ($scope.is_data_type_column('area', col)) {
         return 'ft**2';
       }
-      if ($scope.is_ghg_column(col)) {
+      if ($scope.is_data_type_column('ghg', col)) {
         return 'MtCO2e/year';
       }
-      if ($scope.is_ghg_intensity_column(col)) {
+      if ($scope.is_data_type_column('ghg_intensity', col)) {
         return 'kgCO2e/ft**2/year';
+      }
+      if ($scope.is_data_type_column('water_use', col)) {
+        return 'kgal/year';
+      }
+      if ($scope.is_data_type_column('wui', col)) {
+        return 'gal/ft**2/year';
       }
       return null;
     };
@@ -319,6 +347,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         }
       });
       $scope.updateColDuplicateStatus();
+      $scope.updateColIsDisallowedCreation();
       $scope.updateDerivedColumnMatchStatus();
     };
     $scope.updateInventoryTypeDropdown = () => {
@@ -335,7 +364,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      * `change` should indicate to the user if a table column is already mapped
      * to another csv raw column header
      *
-     * @param col: table column mapping object. Represents the database fields <-> raw
+     * @param col - table column mapping object. Represents the database fields <-> raw
      *  relationship.
      */
     $scope.change = (col, checkingMultiple) => {
@@ -355,6 +384,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         }
         if (match) {
           col.suggestion_column_name = match.column_name;
+          col.data_type = match.data_type;
         } else {
           col.suggestion_column_name = null;
         }
@@ -368,6 +398,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
 
       if (!checkingMultiple) {
         $scope.updateColDuplicateStatus();
+        $scope.updateColIsDisallowedCreation();
         $scope.updateDerivedColumnMatchStatus();
       }
     };
@@ -383,19 +414,35 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         }
       });
 
+      $scope.duplicate_suggestions_present = false;
+      $scope.duplicate_headers_present = false;
       // Verify that we don't have any duplicate mappings.
-      let duplicates_present = false;
       _.forEach($scope.mappings, (col) => {
         const potential = `${col.suggestion}.${col.suggestion_table_name}`;
         const dup_suggestion = _.get(suggestions, potential, 0) > 1;
 
-        const dup_header = _.filter($scope.raw_columns, (filter_col) => filter_col === col.name).length > 1;
+        const dup_header = $scope.raw_columns.filter((c) => c === col.name).length > 1;
 
         col.is_duplicate = dup_header || dup_suggestion;
-        duplicates_present = duplicates_present || col.is_duplicate;
+        $scope.duplicate_suggestions_present ||= dup_suggestion;
+        $scope.duplicate_headers_present ||= dup_header;
+      });
+    };
+
+    $scope.updateColIsDisallowedCreation = () => {
+      if (window.SEED.is_ali_root) {
+        return;
+      }
+
+      const existing_columns = [
+        ...$scope.mappable_property_columns.map((col) => col.display_name),
+        ...$scope.organization.access_level_names
+      ];
+      $scope.mappings.forEach((col) => {
+        col.is_disallowed_creation = !!col.suggestion && !existing_columns.some((existing_col) => existing_col === col.suggestion);
       });
 
-      $scope.duplicates_present = duplicates_present;
+      $scope.disallowed_creation_present = $scope.mappings.some((col) => col.is_disallowed_creation);
     };
 
     // Verify there are not any suggested Column names that match an existing Derived Column name
@@ -416,7 +463,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         suggestion: suggestion.to_field,
         suggestion_column_name: suggestion.to_field,
         suggestion_table_name: suggestion.to_table_name,
-        isOmitted: false
+        is_omitted: suggestion.is_omitted
       };
     };
 
@@ -442,6 +489,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         }
         if (match) {
           col.suggestion = match.display_name;
+          $scope.change(col, true);
         } else if ($scope.mappingBuildingSync) {
           col.suggestion = $filter('titleCase')(col.suggestion_column_name);
         }
@@ -468,6 +516,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         if (changed) $scope.change(col, true);
       });
       $scope.updateColDuplicateStatus();
+      $scope.updateColIsDisallowedCreation();
       $scope.updateDerivedColumnMatchStatus();
     };
 
@@ -497,14 +546,15 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     $scope.get_mappings = () => {
       const mappings = [];
       _.forEach(
-        $scope.mappings.filter((m) => !m.isOmitted),
+        $scope.mappings.filter((m) => !m.is_omitted),
         (col) => {
           mappings.push({
             from_field: col.name,
             from_units: col.from_units || null,
             to_field: col.suggestion_column_name || col.suggestion,
             to_field_display_name: col.suggestion,
-            to_table_name: col.suggestion_table_name
+            to_table_name: col.suggestion_table_name,
+            to_data_type: col.data_type
           });
         }
       );
@@ -555,7 +605,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
 
       const intersections = _.intersectionWith(
         required_property_fields,
-        $scope.mappings.filter((m) => !m.isOmitted),
+        $scope.mappings.filter((m) => !m.is_omitted),
         (required_field, raw_col) => _.isMatch(required_field, {
           column_name: raw_col.suggestion_column_name,
           inventory_type: raw_col.suggestion_table_name
@@ -590,7 +640,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      */
     $scope.empty_fields_present = () => Boolean(
       _.find(
-        $scope.mappings.filter((m) => !m.isOmitted),
+        $scope.mappings.filter((m) => !m.is_omitted),
         { suggestion: '' }
       )
     );
@@ -598,21 +648,19 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     /**
      * empty_units_present: used to disable or enable the 'Map Your Data' button if any units are empty
      */
-    $scope.empty_units_present = () => {
-      return $scope.mappings.some((field) => (
-          !field.isOmitted &&
+    $scope.empty_units_present = () => $scope.mappings.some((field) => (
+      !field.is_omitted &&
           field.suggestion_table_name === 'PropertyState' &&
           field.from_units === null &&
-          ($scope.is_area_column(field) || $scope.is_eui_column(field))
-      ))
-    };
+          $scope.is_pint_column(field)
+    ));
 
     /**
      * empty_fields_present: used to disable or enable the 'show & review
      *   mappings' button. No warning associated as users "aren't done" listing their mapping settings.
      */
     const suggestions_not_provided_yet = () => {
-      const non_omitted_mappings = $scope.mappings.filter(m => !m.isOmitted)
+      const non_omitted_mappings = $scope.mappings.filter((m) => !m.is_omitted);
       const no_suggestion_value = Boolean(_.find(non_omitted_mappings, { suggestion: undefined }));
       const no_suggestion_table_name = Boolean(_.find(non_omitted_mappings, { suggestion_table_name: undefined }));
 
@@ -622,11 +670,13 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     /**
      * check_fields: called by ng-disabled for "Map Your Data" button.  Checks for duplicates and for required fields.
      */
-    $scope.check_fields = () => $scope.duplicates_present ||
+    $scope.check_fields = () => $scope.duplicate_suggestions_present ||
+      $scope.duplicate_headers_present ||
       $scope.empty_fields_present() ||
       $scope.empty_units_present() ||
       !$scope.required_property_fields_present() ||
       !$scope.required_taxlot_fields_present() ||
+      $scope.disallowed_creation_present ||
       suggestions_not_provided_yet() ||
       $scope.derived_column_match;
 
@@ -639,7 +689,7 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         0, // starting prog bar percentage
         1.0, // progress multiplier
         () => {
-          $scope.get_mapped_buildings();
+          $scope.start_mapped_buildings();
         },
         () => {
           // Do nothing
@@ -653,15 +703,21 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
      *   after saving column mappings, deletes unmatched buildings
      */
     $scope.remap_buildings = () => {
-      $scope.import_file.progress = 0;
-      $scope.save_mappings = true;
-      $scope.review_mappings = true;
-      mapping_service.save_mappings($scope.import_file.id, $scope.get_mappings()).then(() => {
+      $scope.mapping_error_messages = null;
+      mapping_service.save_mappings($scope.import_file.id, $scope.get_mappings()).then((mapping_result) => {
+        if (mapping_result.status === 'error' || mapping_result.status === 'warning') {
+          return;
+        }
+
+        $scope.import_file.progress = 0;
+        $scope.save_mappings = true;
+        $scope.review_mappings = true;
+
         // start re-mapping
         mapping_service.remap_buildings($scope.import_file.id).then((data) => {
           if (data.status === 'error' || data.status === 'warning') {
             $scope.$emit('app_error', data);
-            $scope.get_mapped_buildings();
+            $scope.start_mapped_buildings();
           } else {
             // save maps start mapping data
             check_mapping(data.progress_key);
@@ -671,9 +727,9 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     };
 
     /**
-     * get_mapped_buildings: gets mapped buildings for the preview table
+     * start_mapped_buildings: kicks off backend process to format mapped buildings for the preview table
      */
-    $scope.get_mapped_buildings = () => {
+    $scope.start_mapped_buildings = () => {
       $scope.import_file.progress = 0;
       $scope.save_mappings = true;
       $scope.review_mappings = true;
@@ -681,6 +737,8 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
       $scope.tabs.two_active = true;
 
       $scope.save_mappings = false;
+      $scope.process_mappings = true;
+      $scope.import_file.progress = 0;
 
       // Request the columns again because they may (most likely)
       // have changed from the initial import
@@ -688,89 +746,143 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
         .then((results) => {
           $scope.property_columns = results[0];
           $scope.taxlot_columns = results[1];
-          $scope.mappedData = results[2];
+          const progress_key = results[2].progress_key;
 
-          const data = $scope.mappedData;
-
-          const gridOptions = {
-            enableFiltering: true,
-            enableGridMenu: false,
-            enableSorting: true,
-            fastWatch: true,
-            flatEntityAccess: true
-          };
-
-          const defaults = {
-            enableHiding: false,
-            headerCellFilter: 'translate',
-            minWidth: 75,
-            width: 150
-          };
-          const existing_property_keys = _.keys(data.properties[0]);
-          const existing_extra_property_keys = existing_property_keys.length ? _.keys(data.properties[0].extra_data) : [];
-          const existing_taxlot_keys = _.keys(data.tax_lots[0]);
-          const existing_extra_taxlot_keys = existing_taxlot_keys.length ? _.keys(data.tax_lots[0].extra_data) : [];
-          _.map($scope.property_columns, (col) => {
-            const options = {};
-            if (!_.includes(existing_property_keys, col.name) && !_.includes(existing_extra_property_keys, col.name)) {
-              col.visible = false;
-            } else if (col.data_type === 'datetime') {
-              options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
-              options.filter = inventory_service.dateFilter();
-            } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
-              options.cellFilter = `number: ${$scope.organization.display_decimal_places}`;
-              options.sortingAlgorithm = naturalSort;
-            } else {
-              options.filter = inventory_service.combinedFilter();
-            }
-            return _.defaults(col, options, defaults);
-          });
-          _.map($scope.taxlot_columns, (col) => {
-            const options = {};
-            if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) {
-              col.visible = false;
-            } else if (col.data_type === 'datetime') {
-              options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
-              options.filter = inventory_service.dateFilter();
-            } else {
-              options.filter = inventory_service.combinedFilter();
-            }
-            return _.defaults(col, options, defaults);
-          });
-
-          $scope.propertiesGridOptions = angular.copy(gridOptions);
-          $scope.propertiesGridOptions.data = _.map(data.properties, (prop) => _.defaults(prop, prop.extra_data));
-          $scope.propertiesGridOptions.columnDefs = $scope.property_columns;
-          $scope.taxlotsGridOptions = angular.copy(gridOptions);
-          $scope.taxlotsGridOptions.data = _.map(data.tax_lots, (taxlot) => _.defaults(taxlot, taxlot.extra_data));
-          $scope.taxlotsGridOptions.columnDefs = $scope.taxlot_columns;
-
-          $scope.show_mapped_buildings = true;
+          uploader_service.check_progress_loop(
+            progress_key,
+            0,
+            1,
+            (response) => {
+              $scope.check_mapping_for_nulls();
+              $scope.get_cached_mapped_buildings(response);
+            },
+            () => {},
+            $scope.import_file
+          );
         })
         .catch((response) => {
           $log.error(response);
+        });
+    };
+
+    $scope.check_mapping_for_nulls = () => {
+      $scope.checking_for_nulls = true;
+      data_quality_service.check_mapping_for_nulls($scope.organization.id, $scope.import_file.id)
+        .then((response) => {
+          $scope.mapping_error_messages = response.status === 'warning' ? response.message : null;
         })
         .finally(() => {
-          // Submit the data quality checks and wait for the results
-          data_quality_service.start_data_quality_checks_for_import_file($scope.organization.id, $scope.import_file.id).then((response) => {
-            data_quality_service.data_quality_checks_status(response.progress_key).then((check_result) => {
-              // Fetch data quality check results
-              $scope.data_quality_results_ready = false;
-              $scope.data_quality_results = data_quality_service.get_data_quality_results($scope.organization.id, check_result.unique_id);
-              $scope.data_quality_results.then((data) => {
-                $scope.data_quality_results_ready = true;
-                $scope.data_quality_errors = 0;
-                $scope.data_quality_warnings = 0;
-                _.forEach(data, (datum) => {
-                  _.forEach(datum.data_quality_results, (result) => {
-                    if (result.severity === 'error') $scope.data_quality_errors++;
-                    else if (result.severity === 'warning') $scope.data_quality_warnings++;
-                  });
-                });
+          $scope.checking_for_nulls = false;
+        });
+    };
+
+    $scope.get_cached_mapped_buildings = ({ unique_id }) => {
+      cache_entry_service.get_cache_entry(unique_id)
+        .then($scope.set_mapped_buildings)
+        .catch($log.error);
+    };
+
+    $scope.set_mapped_buildings = (mapped_data) => {
+      $scope.mappedData = mapped_data;
+
+      const data = $scope.mappedData;
+
+      const gridOptions = {
+        enableFiltering: true,
+        enableGridMenu: false,
+        enableSorting: true,
+        fastWatch: true,
+        flatEntityAccess: true
+      };
+
+      const defaults = {
+        enableHiding: false,
+        headerCellFilter: 'translate',
+        minWidth: 75,
+        width: 150
+      };
+      const existing_property_keys = _.keys(data.properties[0]);
+      const existing_extra_property_keys = existing_property_keys.length ? _.keys(data.properties[0].extra_data) : [];
+      const existing_taxlot_keys = _.keys(data.tax_lots[0]);
+      const existing_extra_taxlot_keys = existing_taxlot_keys.length ? _.keys(data.tax_lots[0].extra_data) : [];
+      _.map($scope.property_columns, (col) => {
+        const options = {};
+        if (!_.includes(existing_property_keys, col.name) && !_.includes(existing_extra_property_keys, col.name)) {
+          col.visible = false;
+        } else if (col.data_type === 'datetime') {
+          options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
+          options.filter = inventory_service.dateFilter();
+        } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
+          options.cellFilter = `number: ${$scope.organization.display_decimal_places}`;
+          options.sortingAlgorithm = naturalSort;
+        } else {
+          options.filter = inventory_service.combinedFilter();
+        }
+        return _.defaults(col, options, defaults);
+      });
+      _.map($scope.taxlot_columns, (col) => {
+        const options = {};
+        if (!_.includes(existing_taxlot_keys, col.name) && !_.includes(existing_extra_taxlot_keys, col.name)) {
+          col.visible = false;
+        } else if (col.data_type === 'datetime') {
+          options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
+          options.filter = inventory_service.dateFilter();
+        } else {
+          options.filter = inventory_service.combinedFilter();
+        }
+        return _.defaults(col, options, defaults);
+      });
+
+      $scope.propertiesGridOptions = angular.copy(gridOptions);
+      $scope.propertiesGridOptions.data = _.map(data.properties, (prop) => _.defaults(prop, prop.extra_data));
+      $scope.propertiesGridOptions.columnDefs = $scope.property_columns;
+      // Add access level instances to grid
+      ['raw_access_level_instance_error', ...$scope.organization.access_level_names].reverse().forEach((level) => {
+        $scope.propertiesGridOptions.columnDefs.unshift({
+          name: level,
+          displayName: level,
+          group: 'access_level_instance',
+          enableColumnMenu: true,
+          enableColumnMoving: false,
+          enableColumnResizing: true,
+          enableFiltering: true,
+          enableHiding: true,
+          enableSorting: true,
+          enablePinning: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 100,
+          cellClass: 'ali-cell',
+          headerCellClass: 'ali-header'
+        });
+      });
+
+      $scope.taxlotsGridOptions = angular.copy(gridOptions);
+      $scope.taxlotsGridOptions.data = _.map(data.tax_lots, (taxlot) => _.defaults(taxlot, taxlot.extra_data));
+      $scope.taxlotsGridOptions.columnDefs = $scope.taxlot_columns;
+
+      $scope.process_mappings = false;
+      $scope.show_mapped_buildings = true;
+      // Submit the data quality checks and wait for the results
+      data_quality_service.start_data_quality_checks_for_import_file($scope.organization.id, $scope.import_file.id).then((response) => {
+        data_quality_service.data_quality_checks_status(response.progress_key).then((check_result) => {
+          // Fetch data quality check results
+          $scope.data_quality_results_ready = false;
+          $scope.data_quality_results = data_quality_service.get_data_quality_results($scope.organization.id, check_result.unique_id);
+          $scope.data_quality_results.then((data) => {
+            $scope.data_quality_results_ready = true;
+            $scope.data_quality_errors = 0;
+            $scope.data_quality_warnings = 0;
+            _.forEach(data, (datum) => {
+              _.forEach(datum.data_quality_results, (result) => {
+                if (result.severity === 'error') $scope.data_quality_errors++;
+                else if (result.severity === 'warning') $scope.data_quality_warnings++;
               });
             });
           });
         });
+      });
     };
 
     $scope.backToMapping = () => {
@@ -799,10 +911,11 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
     const display_cached_column_mappings = () => {
       const cached_mappings = JSON.parse($scope.import_file.cached_mapped_columns);
       _.forEach($scope.mappings, (col) => {
-        const cached_col = _.find(cached_mappings, { from_field: col.name });
+        const cached_col = cached_mappings.find((mapping) => mapping.from_field === col.name) ?? {};
         col.suggestion_column_name = cached_col.to_field;
         col.suggestion_table_name = cached_col.to_table_name;
         col.from_units = cached_col.from_units;
+        col.data_type = cached_col.to_data_type;
 
         // If available, use display_name, else use raw field name.
         const mappable_column = _.find($scope.mappable_property_columns.concat($scope.mappable_taxlot_columns), { column_name: cached_col.to_field, table_name: cached_col.to_table_name });
@@ -847,12 +960,11 @@ angular.module('BE.seed.controller.mapping', []).controller('mapping_controller'
 
     const init = () => {
       $scope.initialize_mappings();
-
-      if ($scope.import_file.matching_done) {
+      if ($scope.import_file.cached_mapped_columns) {
         display_cached_column_mappings();
       }
-
       $scope.updateColDuplicateStatus();
+      $scope.updateColIsDisallowedCreation();
       $scope.updateDerivedColumnMatchStatus();
       $scope.updateInventoryTypeDropdown();
     };

@@ -1,12 +1,12 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
  * Controller for the postoffice modal window.
  * The selected Property IDs or Tax Lot IDs are passed into 'inventory_id', identified by
  * inventory_type="properties" or inventory_type="taxlots"
  */
-angular.module('BE.seed.controller.postoffice_modal', []).controller('postoffice_modal_controller', [
+angular.module('SEED.controller.postoffice_modal', []).controller('postoffice_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'postoffice_service',

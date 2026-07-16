@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.data_view', []).factory('data_view_service', [
+angular.module('SEED.service.data_view', []).factory('data_view_service', [
   '$http',
   '$log',
   'user_service',
@@ -83,7 +83,7 @@ angular.module('BE.seed.service.data_view', []).factory('data_view_service', [
     };
 
     const evaluate_data_view = (data_view_id, columns) => $http
-      .put(
+      .post(
         `/api/v3/data_views/${data_view_id}/evaluate/`,
         {
           columns

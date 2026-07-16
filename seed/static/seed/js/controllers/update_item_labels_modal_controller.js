@@ -1,6 +1,6 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * Controller for the Update Labels modal window.
  * Manages applying labels to a single Property or Tax Lot, as
@@ -8,21 +8,23 @@
  * The Property or Tax Lot ID is passed in as 'inventory_id', identified by
  * inventory_type="properties" or inventory_type="taxlots"
  */
-angular.module('BE.seed.controller.update_item_labels_modal', []).controller('update_item_labels_modal_controller', [
+angular.module('SEED.controller.update_item_labels_modal', []).controller('update_item_labels_modal_controller', [
   '$scope',
   '$log',
   '$uibModalInstance',
   'label_service',
   'inventory_ids',
   'inventory_type',
+  'is_ali_root',
   'Notification',
   'spinner_utility',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $uibModalInstance, label_service, inventory_ids, inventory_type, notification, spinner_utility) {
+  function ($scope, $log, $uibModalInstance, label_service, inventory_ids, inventory_type, is_ali_root, Notification, spinner_utility) {
     $scope.inventory_ids = inventory_ids;
     $scope.inventory_type = inventory_type;
     // keep track of status of service call
     $scope.loading = false;
+    $scope.is_ali_root = is_ali_root;
 
     // An array of all available labels in the system.
     // These label objects should have the is_applied property set so
@@ -37,7 +39,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
     $scope.available_colors = label_service.get_available_colors();
 
     /* Initialize the label props for a 'new' label */
-    $scope.initialize_new_label = function () {
+    $scope.initialize_new_label = () => {
       $scope.new_label = {
         color: 'gray',
         label: 'default',
@@ -47,7 +49,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
     };
 
     /* Create a new label based on user input */
-    $scope.submitNewLabelForm = function (form) {
+    $scope.submitNewLabelForm = (form) => {
       $scope.createdLabel = null;
       if (form.$invalid) return;
       label_service.create_label($scope.new_label).then(
@@ -59,7 +61,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
           // in this modal...
           createdLabel.is_checked_add = true;
 
-          $scope.newLabelForm.$setPristine();
+          form.$setPristine();
           $scope.labels.unshift(createdLabel);
           $scope.initialize_new_label();
         },
@@ -76,14 +78,14 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
     };
 
     /* Toggle the add button for a label */
-    $scope.toggle_add = function (label) {
+    $scope.toggle_add = (label) => {
       if (label.is_checked_remove && label.is_checked_add) {
         label.is_checked_remove = false;
       }
     };
 
     /* Toggle the remove button for a label */
-    $scope.toggle_remove = function (label) {
+    $scope.toggle_remove = (label) => {
       if (label.is_checked_remove && label.is_checked_add) {
         label.is_checked_add = false;
       }
@@ -92,7 +94,7 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
     $scope.modified = () => Boolean(_.filter($scope.labels, 'is_checked_add').length || _.filter($scope.labels, 'is_checked_remove').length);
 
     /* User has indicated 'Done' so perform selected label operations */
-    $scope.done = function () {
+    $scope.done = () => {
       $scope.waiting = true;
       spinner_utility.show();
       const addLabelIDs = _.chain($scope.labels).filter('is_checked_add').map('id').value()
@@ -104,9 +106,9 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
         label_service.update_property_labels(addLabelIDs, removeLabelIDs, inventory_ids).then(
           (data) => {
             if (data.num_updated === 1) {
-              notification.primary(`${data.num_updated} property updated.`);
+              Notification.primary(`${data.num_updated} property updated.`);
             } else {
-              notification.primary(`${data.num_updated} properties updated.`);
+              Notification.primary(`${data.num_updated} properties updated.`);
             }
             $uibModalInstance.close();
           },
@@ -114,14 +116,13 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
             $log.error('error:', data, status);
           }
         ).finally(() => spinner_utility.hide());
-
       } else if (inventory_type === 'taxlots') {
         label_service.update_taxlot_labels(addLabelIDs, removeLabelIDs, inventory_ids).then(
           (data) => {
             if (data.num_updated === 1) {
-              notification.primary(`${data.num_updated} tax lot updated.`);
+              Notification.primary(`${data.num_updated} tax lot updated.`);
             } else {
-              notification.primary(`${data.num_updated} tax lots updated.`);
+              Notification.primary(`${data.num_updated} tax lots updated.`);
             }
             $uibModalInstance.close();
           },
@@ -133,13 +134,13 @@ angular.module('BE.seed.controller.update_item_labels_modal', []).controller('up
     };
 
     /* User has cancelled dialog */
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       // don't do anything, just close modal.
       $uibModalInstance.dismiss('cancel');
     };
 
     /* init: Gets the list of labels. Sets up new label object. */
-    const init = function () {
+    const init = () => {
       $scope.initialize_new_label();
       // get labels with 'is_applied' property by passing in current search state
       $scope.loading = true;

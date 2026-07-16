@@ -1,16 +1,41 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
+from django.utils.decorators import method_decorator
+
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import GreenAssessmentURL
 from seed.serializers.certification import GreenAssessmentURLSerializer
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
+@method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
+    name="update",
+)
+@method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
+    name="destroy",
+)
+@method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
+    name="retrieve",
+)
+@method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
+    name="list",
+)
 class GreenAssessmentURLViewSet(SEEDOrgModelViewSet):
-
     """API endpoint for viewing and creating green assessment urls.
 
         Returns::
@@ -106,7 +131,8 @@ class GreenAssessmentURLViewSet(SEEDOrgModelViewSet):
             :required: false
 
     """
+
     serializer_class = GreenAssessmentURLSerializer
     model = GreenAssessmentURL
-    orgfilter = 'property_assessment__assessment__organization_id'
-    filter_fields = ('property_assessment__id',)
+    orgfilter = "property_assessment__assessment__organization_id"
+    filterset_fields = ("property_assessment__id",)

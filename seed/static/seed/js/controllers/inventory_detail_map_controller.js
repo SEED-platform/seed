@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.inventory_detail_map', []).controller('inventory_detail_map_controller', [
+angular.module('SEED.controller.inventory_detail_map', []).controller('inventory_detail_map_controller', [
   '$scope',
   '$stateParams',
   '$state',
@@ -32,13 +32,15 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
     }
 
     $scope.$watch('reload', () => {
-      $scope.reload && $state.reload();
+      if ($scope.reload) $state.reload();
     });
 
     // Controller Init Function
     const init = () => {
       $scope.bounding_box = $scope.item_state.bounding_box.replace(/^SRID=\d+;/, '');
       $scope.centroid = $scope.item_state.centroid.replace(/^SRID=\d+;/, '');
+      const footprint = $scope.item_state.property_footprint || $scope.item_state.taxlot_footprint;
+      $scope.footprint = footprint?.replace(/^SRID=\d+;/, '');
 
       // store a mapping of layers z-index and visibility
       $scope.layers = {};
@@ -49,6 +51,7 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
         $scope.layers.building_centroid_layer = { zIndex: 4, visible: 1 };
         $scope.layers.taxlot_bb_layer = { zIndex: 5, visible: 0 };
         $scope.layers.taxlot_centroid_layer = { zIndex: 6, visible: 0 };
+        $scope.layers.footprint = { zIndex: 7, visible: 1 };
       } else {
         // taxlots
         $scope.layers.points_layer = { zIndex: 2, visible: 1 };
@@ -56,6 +59,7 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
         $scope.layers.building_centroid_layer = { zIndex: 4, visible: 0 };
         $scope.layers.taxlot_bb_layer = { zIndex: 5, visible: 1 };
         $scope.layers.taxlot_centroid_layer = { zIndex: 6, visible: 1 };
+        $scope.layers.footprint = { zIndex: 7, visible: 1 };
       }
 
       // Map
@@ -64,29 +68,9 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
         zIndex: $scope.layers.base_layer.zIndex // Note: This is used for layer toggling.
       });
 
-      // This uses the bounding box instead of the lat/long. See var BuildingPoint function in inventory_map_controller for reference
-      const buildingBoundingBox = () => {
+      const getFeature = (field) => {
         const format = new ol.format.WKT();
-
-        const feature = format.readFeature($scope.bounding_box, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: 'EPSG:3857'
-        });
-
-        feature.setProperties($scope.item_state);
-        return feature;
-      };
-
-      const buildingSources = () => {
-        const features = [buildingBoundingBox()];
-        return new ol.source.Vector({ features });
-      };
-
-      // Define building UBID bounding box
-      const buildingBB = () => {
-        const format = new ol.format.WKT();
-
-        const feature = format.readFeature($scope.bounding_box, {
+        const feature = format.readFeature(field, {
           dataProjection: 'EPSG:4326',
           featureProjection: 'EPSG:3857'
         });
@@ -94,61 +78,25 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
         return feature;
       };
 
-      // Define building UBID centroid box
-      const buildingCentroid = () => {
-        const format = new ol.format.WKT();
+      const getSources = (field) => {
+        if (!field) return null;
 
-        const feature = format.readFeature($scope.centroid, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: 'EPSG:3857'
-        });
-        feature.setProperties($scope.item_state);
-        return feature;
-      };
-
-      const buildingBBSources = () => {
-        const features = [buildingBB()];
+        const features = [getFeature(field)];
         return new ol.source.Vector({ features });
       };
 
-      const buildingCentroidSources = () => {
-        const features = [buildingCentroid()];
-        return new ol.source.Vector({ features });
-      };
-
-      // Define taxlot UBID bounding box
-      const taxlotBB = () => {
-        const format = new ol.format.WKT();
-
-        const feature = format.readFeature($scope.bounding_box, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: 'EPSG:3857'
-        });
-        feature.setProperties($scope.item_state);
-        return feature;
-      };
-
-      // Define taxlot UBID centroid box
-      const taxlotCentroid = () => {
-        const format = new ol.format.WKT();
-
-        const feature = format.readFeature($scope.centroid, {
-          dataProjection: 'EPSG:4326',
-          featureProjection: 'EPSG:3857'
-        });
-        feature.setProperties($scope.item_state);
-        return feature;
-      };
-
-      const taxlotBBSources = () => {
-        const features = [taxlotBB()];
-        return new ol.source.Vector({ features });
-      };
-
-      const taxlotCentroidSources = () => {
-        const features = [taxlotCentroid()];
-        return new ol.source.Vector({ features });
-      };
+      // This uses the bounding box instead of the lat/long. See BuildingPoint function in inventory_map_controller for reference
+      const buildingSources = () => getSources($scope.bounding_box);
+      // Property UBID bounding box
+      const buildingBBSources = () => getSources($scope.bounding_box);
+      // Property UBID Centroid
+      const buildingCentroidSources = () => getSources($scope.centroid);
+      // Building footprint polygon
+      const buildingFootprintSources = () => getSources($scope.footprint);
+      // Taxlot UBID bounding box
+      const taxlotBBSources = () => getSources($scope.bounding_box);
+      // Taxlot UBID Centroid
+      const taxlotCentroidSources = () => getSources($scope.centroid);
 
       const clusterSource = () => new ol.source.Cluster({
         source: buildingSources(),
@@ -183,6 +131,12 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
         style: buildingStyle
       });
 
+      $scope.footprint_layer = new ol.layer.Vector({
+        source: buildingFootprintSources(),
+        zIndex: $scope.layers.footprint.zIndex,
+        style: buildingStyle
+      });
+
       $scope.taxlot_bb_layer = new ol.layer.Vector({
         source: taxlotBBSources(),
         zIndex: $scope.layers.taxlot_bb_layer.zIndex,
@@ -202,6 +156,11 @@ angular.module('BE.seed.controller.inventory_detail_map', []).controller('invent
       } else {
         layers = [base_layer, $scope.taxlot_bb_layer, $scope.taxlot_centroid_layer];
       }
+
+      if ($scope.footprint) {
+        layers.push($scope.footprint_layer);
+      }
+
       $scope.map = new ol.Map({
         target: 'map',
         layers

@@ -1,7 +1,8 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import datetime
 from calendar import monthrange
 from collections import defaultdict, namedtuple
@@ -18,11 +19,21 @@ def get_json_path(json_path, data):
     :param data: dict
     :return: value, None if path not valid for dict
     """
-    json_path = json_path.split('.')
+    json_path = json_path.split(".")
     result = data
     for key in json_path:
-        result = result.get(key, {})
-
+        if isinstance(result, dict):
+            result = result.get(key, {})
+        elif isinstance(result, list):
+            # check if it's just a list of strings or a list of objects
+            if any(isinstance(val, dict) for val in result):
+                # it's a list of dicts, keep as before
+                result = result.get(key, {})
+            # it's a list of values, modify (mostly for new ee_measures syntax)
+            elif key in result:
+                result = 1
+            else:
+                result = 0
     if isinstance(result, dict) and not result:
         # path was probably not valid in the data...
         return None
@@ -31,7 +42,7 @@ def get_json_path(json_path, data):
 
 
 # simplified representation of a reading
-SimpleMeterReading = namedtuple('SimpleMeterReading', ['start_time', 'end_time', 'reading'])
+SimpleMeterReading = namedtuple("SimpleMeterReading", ["start_time", "end_time", "reading"])
 
 
 def _split_reading(meter_reading, snap_intervals=True):
@@ -119,7 +130,8 @@ def _split_reading(meter_reading, snap_intervals=True):
             # there can be no overlap if we are given a reading which ends
             # on the first of a month and we're creating a reading for that month
             # it ends on.
-            assert idx == len(months_affected) - 1, 'This should not occur, our assumptions were invalid. Please revisit this.'
+            if idx != len(months_affected) - 1:
+                raise ValueError("This should not occur, our assumptions were invalid. Please revisit this.")
             continue
 
         fraction_of_reading_time = overlap_delta.total_seconds() / meter_reading_delta.total_seconds()
@@ -150,7 +162,7 @@ def calendarize_meter_readings(meter_readings):
     :return: List[SimpleMeterReading]
     """
     all_meter_readings = sorted(meter_readings, key=lambda reading: reading.start_time)
-    aggregated_readings_by_start_time = defaultdict(lambda: 0)
+    aggregated_readings_by_start_time = defaultdict(int)
     for meter_reading in all_meter_readings:
         sr = _split_reading(meter_reading)
         for monthly_reading in sr:
@@ -158,13 +170,7 @@ def calendarize_meter_readings(meter_readings):
 
     aggregated_readings_list = []
     for start_time, reading in aggregated_readings_by_start_time.items():
-        aggregated_readings_list.append(
-            SimpleMeterReading(
-                start_time,
-                start_time + relativedelta.relativedelta(months=1),
-                reading
-            )
-        )
+        aggregated_readings_list.append(SimpleMeterReading(start_time, start_time + relativedelta.relativedelta(months=1), reading))
 
     return aggregated_readings_list
 
@@ -195,14 +201,12 @@ def calendarize_and_extrapolate_meter_readings(meter_readings, coverage_threshol
         for split_reading in _split_reading(meter_reading, snap_intervals=False):
             split_meter_readings.append(split_reading)
 
-    totals_by_month = defaultdict(lambda: {'total_usage': 0, 'total_seconds': 0})
+    totals_by_month = defaultdict(lambda: {"total_usage": 0, "total_seconds": 0})
     for meter_reading in split_meter_readings:
         start = meter_reading.start_time
         month_start = datetime.datetime(start.year, start.month, 1)
-        totals_by_month[month_start]['total_usage'] += meter_reading.reading
-        totals_by_month[month_start]['total_seconds'] += (
-            meter_reading.end_time - meter_reading.start_time
-        ).total_seconds()
+        totals_by_month[month_start]["total_usage"] += meter_reading.reading
+        totals_by_month[month_start]["total_seconds"] += (meter_reading.end_time - meter_reading.start_time).total_seconds()
 
     # calculate estimated total usage for each month
     estimated_monthly_readings = []
@@ -213,20 +217,16 @@ def calendarize_and_extrapolate_meter_readings(meter_readings, coverage_threshol
         # WARNING: this bit assumes we have non-overlapping readings! Otherwise
         # the fraction of month cannot be determined by "total seconds" of readings
         # in the month!
-        fraction_of_month_covered = totals['total_seconds'] / seconds_in_month
+        fraction_of_month_covered = totals["total_seconds"] / seconds_in_month
         if fraction_of_month_covered < coverage_threshold:
             # we don't have enough data, skip this month
             continue
 
-        average_usage_per_second = totals['total_usage'] / totals['total_seconds']
+        average_usage_per_second = totals["total_usage"] / totals["total_seconds"]
 
         estimated_monthly_reading = average_usage_per_second * seconds_in_month
         estimated_monthly_readings.append(
-            SimpleMeterReading(
-                month_start,
-                month_start + relativedelta.relativedelta(months=1),
-                estimated_monthly_reading
-            )
+            SimpleMeterReading(month_start, month_start + relativedelta.relativedelta(months=1), estimated_monthly_reading)
         )
 
     estimated_monthly_readings.sort(key=lambda reading: reading.start_time)
@@ -277,7 +277,10 @@ def interpolate_monthly_readings(meter_readings):
     current_time = meter_readings[current_reading_index].start_time
     while current_reading_index < len(meter_readings):
         current_reading = meter_readings[current_reading_index]
-        assert current_reading.start_time.day == 1, f'Meter readings should start on the first day of the month; found one starting on {current_reading.start_time.day}'
+        if current_reading.start_time.day != 1:
+            raise ValueError(
+                f"Meter readings should start on the first day of the month; found one starting on {current_reading.start_time.day}"
+            )
 
         if current_time == current_reading.start_time:
             interpolated_readings.append(current_reading)
@@ -286,11 +289,7 @@ def interpolate_monthly_readings(meter_readings):
             # interpolate reading
             prev_reading = interpolated_readings[-1]
             interpolated_readings.append(
-                SimpleMeterReading(
-                    current_time,
-                    current_time + relativedelta.relativedelta(months=1),
-                    prev_reading.reading
-                )
+                SimpleMeterReading(current_time, current_time + relativedelta.relativedelta(months=1), prev_reading.reading)
             )
         current_time += relativedelta.relativedelta(months=1)
 

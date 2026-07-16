@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0144_merge_20210615_1322'),
+        ("seed", "0144_merge_20210615_1322"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='rule',
-            name='for_derived_column',
+            model_name="rule",
+            name="for_derived_column",
             field=models.BooleanField(default=False),
         ),
     ]

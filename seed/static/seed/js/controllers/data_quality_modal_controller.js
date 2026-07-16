@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.data_quality_modal', []).controller('data_quality_modal_controller', [
+angular.module('SEED.controller.data_quality_modal', []).controller('data_quality_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'search_service',
@@ -38,6 +38,11 @@ angular.module('BE.seed.controller.data_quality_modal', []).controller('data_qua
         sort_column: 'table_name',
         sortable: false,
         title: 'Table'
+      },
+      {
+        sort_column: 'cycle',
+        sortable: true,
+        title: 'Cycle'
       },
       {
         sort_column: 'address_line_1',

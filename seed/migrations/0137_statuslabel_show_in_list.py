@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0136_merge_20210120_0944'),
+        ("seed", "0136_merge_20210120_0944"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='statuslabel',
-            name='show_in_list',
+            model_name="statuslabel",
+            name="show_in_list",
             field=models.BooleanField(default=False),
         ),
     ]

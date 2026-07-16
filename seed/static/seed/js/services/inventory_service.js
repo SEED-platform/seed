@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
+angular.module('SEED.service.inventory', []).factory('inventory_service', [
   '$http',
   '$log',
   '$q',
@@ -62,9 +62,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       column_filters = null,
       column_sorts = null,
       ids_only = null,
-      shown_column_ids = null
+      shown_column_ids = null,
+      access_level_instance_id = null,
+      include_property_ids = null
     ) => {
-      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      organization_id = organization_id ?? user_service.get_organization().id;
 
       const params = {
         organization_id,
@@ -82,43 +84,36 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         params.per_page = per_page || 999999999;
       }
 
-      return cycle_service
-        .get_cycles()
-        .then((cycles) => {
-          const validCycleIds = _.map(cycles.cycles, 'id');
+      if (_.has(cycle, 'id')) {
+        params.cycle = cycle.id;
+        if (save_last_cycle === true) {
+          inventory_service.save_last_cycle(cycle.id);
+        }
+      } else {
+        params.cycle = inventory_service.get_last_cycle();
+      }
 
-          const lastCycleId = inventory_service.get_last_cycle();
-          if (_.has(cycle, 'id')) {
-            params.cycle = cycle.id;
-            if (save_last_cycle === true) {
-              inventory_service.save_last_cycle(cycle.id);
-            }
-          } else if (_.includes(validCycleIds, lastCycleId)) {
-            params.cycle = lastCycleId;
-          }
+      const data = {
+        // Pass the specific ids if they exist
+        include_view_ids,
+        exclude_view_ids,
+        include_property_ids,
+        // Pass the current profile (if one exists) to limit the column data that is returned
+        profile_id,
+        // conditionally add optional params
+        ...(access_level_instance_id && { access_level_instance_id })
+      };
+      // add access_level_instance if it exists
 
-          return $http
-            .post(
-              '/api/v3/properties/filter/',
-              {
-                // Pass the specific ids if they exist
-                include_view_ids,
-                exclude_view_ids,
-                // Pass the current profile (if one exists) to limit the column data that is returned
-                profile_id
-              },
-              {
-                params
-              }
-            )
-            .then((response) => response.data);
-        })
-        .catch((response) => {
-          if (response.data.message) {
-            return response.data;
+      return $http
+        .post(
+          '/api/v3/properties/filter/',
+          data,
+          {
+            params
           }
-          throw response;
-        });
+        )
+        .then((response) => response.data);
     };
 
     inventory_service.properties_cycle = (profile_id, cycle_ids) => $http
@@ -374,6 +369,27 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         });
     };
 
+    inventory_service.move_properties = (access_level_instance_id, property_view_ids) => {
+      spinner_utility.show();
+      return $http
+        .post(
+          '/api/v3/properties/move_properties_to/',
+          {
+            property_view_ids,
+            access_level_instance_id
+          },
+          {
+            params: {
+              organization_id: user_service.get_organization().id
+            }
+          }
+        )
+        .then((response) => response.data)
+        .finally(() => {
+          spinner_utility.hide();
+        });
+    };
+
     inventory_service.delete_property_states = (property_view_ids) => $http.delete('/api/v3/properties/batch_delete/', {
       headers: {
         'Content-Type': 'application/json;charset=utf-8'
@@ -381,6 +397,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       data: { property_view_ids },
       params: { organization_id: user_service.get_organization().id }
     });
+
+    inventory_service.update_property_states = (property_view_ids, values_by_column_id) => $http.put(
+      '/api/v3/properties/batch_update/',
+      { property_view_ids, values_by_column_id },
+      { params: { organization_id: user_service.get_organization().id } }
+    );
 
     inventory_service.delete_taxlot_states = (taxlot_view_ids) => $http.delete('/api/v3/taxlots/batch_delete/', {
       headers: {
@@ -405,7 +427,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       ids_only = null,
       shown_column_ids = null
     ) => {
-      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      organization_id = organization_id ?? user_service.get_organization().id;
 
       const params = {
         organization_id,
@@ -647,7 +669,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.save_last_cycle = (pk, organization_id = null) => {
-      organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
+      organization_id = organization_id ?? user_service.get_organization().id;
       const cycles = JSON.parse(localStorage.getItem('cycles')) || {};
       cycles[organization_id] = _.toInteger(pk);
       localStorage.setItem('cycles', JSON.stringify(cycles));
@@ -687,6 +709,18 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       const profiles = JSON.parse(localStorage.getItem(`detailProfiles.${key}`)) || {};
       profiles[organization_id] = _.toInteger(pk);
       localStorage.setItem(`detailProfiles.${key}`, JSON.stringify(profiles));
+    };
+
+    inventory_service.get_last_inventory_group = () => {
+      const organization_id = user_service.get_organization().id;
+      return (JSON.parse(localStorage.getItem('inventoryGroup')) || {})[organization_id];
+    };
+
+    inventory_service.save_last_inventory_group = (pk) => {
+      const organization_id = user_service.get_organization().id;
+      const inventory_group = JSON.parse(localStorage.getItem('inventoryGroup')) || {};
+      inventory_group[organization_id] = _.toInteger(pk);
+      localStorage.setItem('inventoryGroup', JSON.stringify(inventory_group));
     };
 
     inventory_service.get_property_column_names_for_org = (org_id) => $http
@@ -860,10 +894,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
               value = Number(filterData[2].replace('\\.', '.'));
               if (operator === '!') {
                 // Not equal
-                match = cellValue != value;
+                match = String(cellValue) !== String(value);
               } else {
                 // Equal
-                match = cellValue == value;
+                match = String(cellValue) === String(value);
               }
               return match;
             }
@@ -1046,12 +1080,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
     });
 
-    inventory_service.saveSelectedLabels = (key, ids, action='') => {
+    inventory_service.saveSelectedLabels = (key, ids, action = '') => {
       key += `.${action}.${user_service.get_organization().id}`;
       localStorage.setItem(key, JSON.stringify(ids));
     };
 
-    inventory_service.loadSelectedLabels = (key, action='') => {
+    inventory_service.loadSelectedLabels = (key, action = '') => {
       key += `.${action}.${user_service.get_organization().id}`;
       return JSON.parse(localStorage.getItem(key)) || [];
     };
@@ -1136,6 +1170,21 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       })
       .then((response) => response.data.data);
 
+    inventory_service.copy_to_cycle = (cycle_id, view_ids, column_ids) => $http
+      .post(
+        '/api/v3/properties/copy_to_cycle/',
+        {
+          cycle_id,
+          view_ids,
+          column_ids
+        },
+        {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        }
+      ).then((response) => response.data);
+
     inventory_service.get_column_list_profiles = (profile_location, inventory_type, brief = false) => $http
       .get('/api/v3/column_list_profiles/', {
         params: {
@@ -1180,6 +1229,26 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         .then((response) => response.data.data);
     };
 
+    inventory_service.update_column_list_profile_to_show_populated = (id, cycle_id, inventory_type) => {
+      if (id === null) {
+        Notification.error('This settings profile is protected from modifications');
+        return $q.reject();
+      }
+      return $http
+        .put(
+          `/api/v3/column_list_profiles/${id}/show_populated/`,
+          {
+            cycle_id,
+            inventory_type
+          },
+          {
+            params: {
+              organization_id: user_service.get_organization().id
+            }
+          }
+        ).then((response) => response.data.data);
+    };
+
     inventory_service.remove_column_list_profile = (id) => {
       if (id === null) {
         Notification.error('This settings profile is protected from modifications');
@@ -1204,6 +1273,65 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
         organization_id: user_service.get_organization().id
       }
     });
+
+    inventory_service.set_update_to_now = (property_views, taxlot_views, progress_key) => $http.post('/api/v3/tax_lot_properties/set_update_to_now/', {
+      property_views,
+      taxlot_views,
+      progress_key,
+      organization_id: user_service.get_organization().id
+    });
+
+    // this is the CTS Comprehensive Evaluation Upload Template
+    // which uses the BAE/BuildingSync workflow
+    inventory_service.evaluation_export_to_cts = (property_view_ids, filename = 'test.xlsx') => $http.post(
+      `/api/v3/properties/evaluation_export_to_cts/?organization_id=${user_service.get_organization().id}`,
+      {
+        filename,
+        property_view_ids
+      },
+      {
+        responseType: 'arraybuffer'
+      }
+    );
+
+    // this is the CTS Facility Upload Template for Federal BPS
+    // which uses the SEED-based workflow (not buildingsync)
+    inventory_service.facility_bps_export_to_cts = (org_id, property_view_ids) => $http
+      .post(
+        `/api/v3/properties/facility_bps_export_to_cts/?organization_id=${org_id}`,
+        property_view_ids,
+        { responseType: 'arraybuffer' }
+      );
+
+    inventory_service.filter_by_property = (cycle_id, property_ids) => $http.post('/api/v3/properties/filter_by_property/', {
+      organization_id: user_service.get_organization().id,
+      cycle: cycle_id,
+      property_ids
+    }).then((response) => response.data);
+
+    inventory_service.update_derived_data = (property_view_ids, taxlot_view_ids) => $http.post('/api/v3/tax_lot_properties/update_derived_data/', {
+      organization_id: user_service.get_organization().id,
+      property_view_ids,
+      taxlot_view_ids
+    }).then((response) => response.data);
+
+    inventory_service.start_export = (ids, filename, profile_id, export_type, inventory_type, include_notes = false, include_meter_readings = false) => $http.post(
+      '/api/v3/tax_lot_properties/start_export/',
+      {
+        ids,
+        filename,
+        profile_id,
+        export_type,
+        include_notes,
+        include_meter_readings
+      },
+      {
+        params: {
+          organization_id: user_service.get_organization().id,
+          inventory_type
+        }
+      }
+    );
 
     return inventory_service;
   }

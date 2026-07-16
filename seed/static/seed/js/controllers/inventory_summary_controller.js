@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.inventory_summary', []).controller('inventory_summary_controller', [
+angular.module('SEED.controller.inventory_summary', []).controller('inventory_summary_controller', [
   '$scope',
   '$stateParams',
   '$uibModal',
@@ -11,9 +11,8 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
   'analyses_service',
   'inventory_service',
   'cycles',
-  'uiGridConstants',
   // eslint-disable-next-line func-names
-  function ($scope, $stateParams, $uibModal, $window, urls, analyses_service, inventory_service, cycles_payload, uiGridConstants) {
+  function ($scope, $stateParams, $uibModal, $window, urls, analyses_service, inventory_service, cycles_payload) {
     $scope.inventory_type = $stateParams.inventory_type;
 
     const lastCycleId = inventory_service.get_last_cycle();
@@ -25,13 +24,13 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
     $scope.summaryGridOptions = {
       data: [],
       columnDefs: [
-        { field: 'Summary'},
-        { field: 'Count'},
+        { field: 'Summary' },
+        { field: 'Value', cellFilter: 'number' }
       ],
-      onRegisterApi: function( gridApi ) {
+      onRegisterApi: (gridApi) => {
         $scope.summaryGridOptions = gridApi;
       },
-      minRowsToShow: 2,
+      minRowsToShow: 3
     };
 
     $scope.countGridOptions = {
@@ -39,11 +38,11 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       enableSorting: true,
       enableFiltering: true,
       columnDefs: [
-        { field: 'Field'},
-        { field: 'Count'},
+        { field: 'Field' },
+        { field: 'Count', cellFilter: 'number' }
       ],
 
-      onRegisterApi: function( gridApi ) {
+      onRegisterApi: (gridApi) => {
         $scope.countGridOptions = gridApi;
       }
     };
@@ -76,15 +75,18 @@ angular.module('BE.seed.controller.inventory_summary', []).controller('inventory
       });
 
       analyses_service.get_summary($scope.cycle.selected_cycle.id).then((data) => {
-        $scope.summary_data = data;
         $scope.table_data = [
           {
             Summary: 'Total Records',
-            Count: data.total_records
+            Value: data.total_records
           },
           {
             Summary: 'Number of Extra Data Fields',
-            Count: data.number_extra_data_fields
+            Value: data.number_extra_data_fields
+          },
+          {
+            Summary: 'Total Square Feet',
+            Value: data.total_sqft
           }
         ];
         $scope.summaryGridOptions.data = $scope.table_data;

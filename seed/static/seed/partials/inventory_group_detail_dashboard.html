@@ -1,0 +1,116 @@
+<div class="page_header_container">
+  <div class="page_header">
+    <div class="left page_action_container">
+      <a
+        ui-sref="inventory_groups(::{inventory_type: inventory_type})"
+        class="page_action"
+      >
+        <i class="fa-solid fa-chevron-left"></i>
+        {$:: 'Groups' | translate $}
+      </a>
+    </div>
+    <div class="page_title">
+      <h1>{$:: 'Group - Dashboard' | translate $}</h1>
+    </div>
+    <div class="right page_action_container"></div>
+  </div>
+</div>
+<div class="section_nav_container">
+  <div
+    class="section_nav"
+    ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"
+  ></div>
+</div>
+<div class="section_header_container">
+  <div class="section_header fixed_height_short has_no_padding">
+    <div
+      ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"
+    ></div>
+  </div>
+</div>
+<div class="section" style="margin: 10px">
+  <div class="ellipsis">
+    <span style="display: flex; align-items: baseline; gap: 1rem">
+      <strong>{$:: 'Cycle' | translate $}:</strong>
+      <select
+        class="form-control"
+        style="width: auto"
+        ng-model="selectedCycle"
+        ng-change="changeCycle()"
+      >
+        <option ng-repeat="cycle in cycles" ng-value="cycle">
+          {$ cycle.name $}
+        </option>
+      </select>
+    </span>
+  </div>
+
+  <div class="group-dashboard">
+    <div id="group-dashboard-table-container">
+      <table class="table table-striped table_highlight_first system-table">
+        <thead></thead>
+        <tbody>
+          <tr ng-repeat="(key, value) in data">
+            <td>{$ key $}</td>
+            <td>{$ value $}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="section_header_container">
+    <h4>{$:: 'Energy Sankey Diagram' | translate $}</h4>
+  </div>
+  <div class="section">
+    <div
+      class="section-content with_padding"
+      style="margin-top: 20px; margin-bottom: 20px"
+    >
+      <span style="display: flex; align-items: baseline; gap: 1rem">
+        <strong>{$:: 'Meter Type' | translate $}:</strong>
+        <select
+          class="form-control"
+          style="width: auto"
+          ng-model="selectedMeterType"
+          ng-change="changeMeterType()"
+        >
+          <option ng-repeat="(key, value) in meter_types" ng-value="key">
+            {$ key $}
+          </option>
+        </select>
+        <span>All data displayed in kBtu</span>
+      </span>
+    </div>
+    <div
+      class="chart"
+      style="
+        margin-top: 20px !important;
+        margin-left: 50px !important;
+        margin-right: 50px !important;
+      "
+    >
+      <canvas id="chart"></canvas>
+    </div>
+    <div style="margin-top: 20px !important">
+      <strong>Troubleshooting table</strong>
+      <div style="max-width: 600px">
+        <table class="table table-striped table_highlight_first system-table">
+          <thead>
+            <tr>
+              <th>{$:: 'From' | translate $}</th>
+              <th>{$:: 'To' | translate $}</th>
+              <th>{$:: 'Flow' | translate $}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="item in sankey_data">
+              <td>{$ item.from $}</td>
+              <td>{$ item.to $}</td>
+              <td>{$ item.flow | number:2 $}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

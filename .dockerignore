@@ -4,6 +4,7 @@
 .dockerignore
 .idea
 .tox
+.venv
 ./docker-compose*.yml
 ./deploy.sh
 **/*.pyc
@@ -12,6 +13,6 @@ deploy.sh
 docs
 media
 node_modules
-vendors/node_modules
+**/node_modules
 config/settings/local_untracked.py
 config/settings/local_untracked.py.dist

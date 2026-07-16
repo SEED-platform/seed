@@ -1,14 +1,9 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from seed.lib.superperms.orgs.models import (
-    ROLE_MEMBER,
-    ROLE_OWNER,
-    ROLE_VIEWER
-)
+
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER
 
 
 def get_js_role(role):
@@ -17,11 +12,11 @@ def get_js_role(role):
     :returns: (string) JS role name
     """
     roles = {
-        ROLE_OWNER: 'owner',
-        ROLE_VIEWER: 'viewer',
-        ROLE_MEMBER: 'member',
+        ROLE_OWNER: "owner",
+        ROLE_VIEWER: "viewer",
+        ROLE_MEMBER: "member",
     }
-    return roles.get(role, 'viewer')
+    return roles.get(role, "viewer")
 
 
 def get_role_from_js(role):
@@ -31,8 +26,8 @@ def get_role_from_js(role):
     :returns: int role as defined in superperms.models
     """
     roles = {
-        'owner': ROLE_OWNER,
-        'viewer': ROLE_VIEWER,
-        'member': ROLE_MEMBER,
+        "owner": ROLE_OWNER,
+        "viewer": ROLE_VIEWER,
+        "member": ROLE_MEMBER,
     }
     return roles[role]

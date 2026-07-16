@@ -21,23 +21,22 @@ def forwards(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0164_auto_20220510_2008'),
+        ("seed", "0164_auto_20220510_2008"),
     ]
 
     operations = [
         # don't enforce null at the beginning because the data haven't migrated yet
         migrations.AddField(
-            model_name='column',
-            name='column_description',
+            model_name="column",
+            name="column_description",
             field=models.TextField(blank=True, null=True, default=None, max_length=1000),
         ),
         migrations.RunPython(forwards),
         # Now enforce null
         migrations.AlterField(
-            model_name='column',
-            name='column_description',
+            model_name="column",
+            name="column_description",
             field=models.TextField(blank=True, default=None, max_length=1000),
         ),
     ]

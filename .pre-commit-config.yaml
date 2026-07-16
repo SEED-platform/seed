@@ -1,53 +1,47 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v6.0.0
     hooks:
-      - id: trailing-whitespace
       - id: check-added-large-files
         args: ["--maxkb=2000"]
       - id: check-ast
+      - id: check-builtin-literals
+      - id: check-case-conflict
       - id: check-json
       - id: check-merge-conflict
+      - id: check-toml
       - id: check-xml
       - id: check-yaml
-        exclude: .*/templates
+        exclude: pnpm-lock\.yaml|pnpm-workspace\.yaml
       - id: debug-statements
       - id: end-of-file-fixer
         exclude: seed/static/seed/locales/
+      - id: fix-byte-order-marker
       - id: mixed-line-ending
-        exclude: seed/static/seed/locales/
       - id: pretty-format-json
         args: ["--autofix", "--no-sort-keys", "--no-ensure-ascii"]
         exclude: seed/static/seed/locales/
-  - repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.10.1
+      - id: trailing-whitespace
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.21.2
     hooks:
-      - id: isort
-        args:
-          [
-            -m=VERTICAL_HANGING_INDENT,
-            --skip=seed/models/__init__.py,
-            --filter-files,
-          ]
-  - repo: https://github.com/PyCQA/autoflake
-    rev: v2.0.0
-    hooks:
-      - id: autoflake
-        args:
-          [
-            "--in-place",
-            "--recursive",
-            "--remove-all-unused-imports",
-            "--remove-unused-variable",
-          ]
-  - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
-    hooks:
-      - id: flake8
-        args: ["--ignore=F401,E402,E501,E731,W503,W504"]
+      - id: pyupgrade
+        args: [--py312-plus]
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0-alpha.4
+    rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
-        # for now ignoring html, javascript
+        args: [--no-cache]
+        exclude: pnpm-lock\.yaml|pnpm-workspace\.yaml
         types_or: [yaml, markdown, css, scss]
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.1.0
+    hooks:
+      - id: mypy
+        args: [--install-types, --non-interactive, --show-error-codes]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.13
+    hooks:
+      - id: ruff-check
+        args: [--fix, --exit-non-zero-on-fix, --output-format=full]
+      - id: ruff-format

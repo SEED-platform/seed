@@ -1,16 +1,14 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.user', []).factory('user_service', [
+angular.module('SEED.service.user', []).factory('user_service', [
   '$http',
-  '$q',
-  'generated_urls',
-  ($http, $q, generated_urls) => {
+  ($http) => {
     const user_factory = {};
-    const urls = generated_urls;
 
     let organization;
+    let access_level_instance;
     let user_id;
 
     /**
@@ -23,9 +21,16 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      * @return {obj} organization
      */
     user_factory.get_organization = () => organization ?? {
-      id: window.BE.initial_org_id,
-      name: window.BE.initial_org_name,
-      user_role: window.BE.initial_org_user_role
+      id: window.SEED.initial_org_id,
+      name: window.SEED.initial_org_name,
+      user_role: window.SEED.initial_org_user_role
+    };
+
+    user_factory.get_access_level_instance = () => access_level_instance ?? {
+      id: window.SEED.access_level_instance_id,
+      name: window.SEED.access_level_instance_name,
+      is_ali_root: window.SEED.is_ali_root,
+      is_ali_leaf: window.SEED.is_ali_leaf
     };
 
     /**
@@ -43,7 +48,10 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
             params: { organization_id: org.id }
           }
         )
-        .then((response) => response.data));
+        .then(({ data }) => {
+          access_level_instance = data.user.access_level_instance;
+          return data;
+        }));
     };
 
     user_factory.get_users = () => $http.get('/api/v3/users/').then((response) => response.data);
@@ -54,7 +62,8 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
         last_name: user.last_name,
         email: user.email,
         org_name: user.org_name,
-        role: user.role
+        role: user.role,
+        access_level_instance_id: user.access_level_instance_id
       };
 
       const params = {};
@@ -64,11 +73,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
 
       return $http.post('/api/v3/users/', new_user_details, { params }).then((response) => response.data);
     };
-
-    /* Is this still needed? */
-    user_factory.get_default_columns = () => $http.get(urls.seed.get_default_columns).then((response) => response.data);
-
-    user_factory.get_default_building_detail_columns = () => $http.get(urls.seed.get_default_building_detail_columns).then((response) => response.data);
 
     user_factory.get_shared_buildings = () => user_factory.get_user_id().then((this_user_id) => $http.get(`/api/v3/users/${this_user_id}/shared_buildings/`).then((response) => response.data));
 
@@ -83,19 +87,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
      * @return {obj} object with api_key
      */
     user_factory.generate_api_key = () => user_factory.get_user_id().then((this_user_id) => $http.post(`/api/v3/users/${this_user_id}/generate_api_key/`).then((response) => response.data));
-
-    user_factory.set_default_columns = (columns, show_shared_buildings) => $http
-      .post(urls.seed.set_default_columns, {
-        columns,
-        show_shared_buildings
-      })
-      .then((response) => response.data);
-
-    user_factory.set_default_building_detail_columns = (columns) => $http
-      .post(urls.seed.set_default_building_detail_columns, {
-        columns
-      })
-      .then((response) => response.data);
 
     /**
      * updates the user's PR

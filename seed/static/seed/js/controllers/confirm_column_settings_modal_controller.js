@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.confirm_column_settings_modal', []).controller('confirm_column_settings_modal_controller', [
+angular.module('SEED.controller.confirm_column_settings_modal', []).controller('confirm_column_settings_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'all_columns',
@@ -13,6 +13,16 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
   'org_id',
   'organization_service',
   'proposed_changes',
+  'columns_service',
+  'spinner_utility',
+  'uiGridGroupingConstants',
+  '$q',
+  'complete_column_update',
+  '$interval',
+  'uploader_service',
+  'table_name',
+  '$window',
+  '$log',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -24,14 +34,29 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
     inventory_type,
     org_id,
     organization_service,
-    proposed_changes
+    proposed_changes,
+    columns_service,
+    spinner_utility,
+    uiGridGroupingConstants,
+    $q,
+    complete_column_update,
+    $interval,
+    uploader_service,
+    table_name,
+    $window,
+    $log
   ) {
     $scope.inventory_type = inventory_type;
     $scope.org_id = org_id;
     $scope.columns = columns;
+    $scope.table_name = table_name;
 
     $scope.step = {
       number: 1
+    };
+
+    $scope.progressBar = {
+      progress: 0
     };
 
     $scope.goto_step = (step) => {
@@ -41,6 +66,9 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
     cycle_service.get_cycles_for_org($scope.org_id).then((cycles) => {
       $scope.cycles = cycles.cycles;
     });
+    const rehash = _.find(proposed_changes, { is_excluded_from_hash: true }) !== undefined ||
+                   _.find(proposed_changes, { is_excluded_from_hash: false }) !== undefined;
+    $scope.rehash_required = rehash;
 
     // parse proposed changes to create change summary to be presented to user
     let all_changed_settings = ['column_name']; // add column_name to describe each row
@@ -80,6 +108,10 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
       {
         field: 'displayName',
         displayName: 'Display Name Change'
+      },
+      {
+        field: 'column_description',
+        displayName: 'Column Description Change'
       },
       {
         field: 'geocoding_order',
@@ -127,6 +159,14 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
         displayName: 'ComStock Mapping Change',
         cellTemplate:
           '<div class="ui-grid-cell-contents">{$ row.entity.comstock_mapping === undefined ? "" : row.entity.comstock_mapping === null ? "(removed)" : "comstock." + row.entity.comstock_mapping | translate $}</div>'
+      },
+      {
+        field: 'is_excluded_from_hash',
+        displayName: 'Exclude From Uniqueness',
+        cellTemplate:
+          '<div class="ui-grid-cell-contents text-center">' +
+          '<input type="checkbox" class="no-click" ng-hide="{$ row.entity.is_excluded_from_hash === undefined $}" ng-checked="{$ row.entity.is_excluded_from_hash === true $}" style="margin: 0;">' +
+          '</div>'
       }
     ];
 
@@ -158,12 +198,306 @@ angular.module('BE.seed.controller.confirm_column_settings_modal', []).controlle
       organization_service.matching_criteria_columns($scope.org_id);
     }
 
-    $scope.confirm = () => {
-      $uibModalInstance.close();
+    $scope.confirm_changes_and_rehash = () => {
+      const api_ready_proposed_changes = Object.keys(proposed_changes).reduce((acc, col_id) => {
+        const col = proposed_changes[col_id];
+        col.display_name = col.displayName; // Add display_name for backend
+        delete col.displayName;
+        return { ...acc, [col_id]: col };
+      }, {});
+
+      $scope.state = 'pending';
+      columns_service
+        .update_and_rehash_columns_for_org($scope.org_id, $scope.table_name, api_ready_proposed_changes)
+        .then((result) => {
+          $scope.state = 'evaluating';
+          $scope.interval = $interval(() => {
+            if ($scope.state === 'running') {
+              $scope.updateTime();
+            } else {
+              $scope.setRunningState();
+            }
+          }, 1000);
+          $scope.updateTime();
+          uploader_service.check_progress_loop(
+            result.data.progress_key,
+            0,
+            1,
+            (response) => {
+              complete_column_update();
+              $scope.result = `${response.message} in ${$scope.elapsed}`;
+              $scope.state = 'done';
+              $interval.cancel($scope.interval);
+            },
+            () => {
+              // Do nothing
+            },
+            $scope.progressBar
+          );
+        })
+        .catch((err) => {
+          $log.error(err);
+          $scope.result = 'Failed to update column(s)';
+          $scope.state = 'done';
+          $interval.cancel($scope.interval);
+        });
     };
 
     $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
+
+    $scope.elapsedFn = () => {
+      const diff = moment().diff($scope.startTime);
+      return $scope.formatTime(moment.duration(diff));
+    };
+
+    $scope.etaFn = () => {
+      if ($scope.progressBar.completed_records) {
+        if (!$scope.initialCompleted) {
+          $scope.initialCompleted = $scope.progressBar.completed_records;
+        }
+        const diff = moment().diff($scope.startTime);
+        const progress = ($scope.progressBar.completed_records - $scope.initialCompleted) / ($scope.progressBar.total_records - $scope.initialCompleted);
+        if (progress) {
+          return $scope.formatTime(moment.duration(diff / progress - diff));
+        }
+      }
+    };
+
+    // Preview
+    // Agg function returning last value of matching criteria field (all should be the same if they match)
+    $scope.matching_field_value = function matching_field_value(aggregation, fieldValue) {
+      aggregation.value = fieldValue;
+    };
+
+    function prioritize_sort(grid, sortColumns) {
+      // To maintain grouping while giving users the ability to have some sorting,
+      // matching columns are given top priority followed by the hidden linking ID column.
+      // Lastly, non-matching columns are given next priority so that users can sort within a grouped set.
+      if (sortColumns.length > 1) {
+        const matching_cols = _.filter(sortColumns, (col) => col.colDef.is_matching_criteria);
+        const linking_id_col = _.find(sortColumns, ['name', 'id']);
+        const remaining_cols = _.filter(sortColumns, (col) => !col.colDef.is_matching_criteria && !(col.name === 'id'));
+        sortColumns = matching_cols.concat(linking_id_col).concat(remaining_cols);
+        _.forEach(sortColumns, (col, index) => {
+          col.sort.priority = index;
+        });
+      }
+    }
+
+    // Takes raw cycle-partitioned records and returns array of cycle-aware records
+    const format_preview_records = (raw_inventory) => _.reduce(raw_inventory, (all_records, records, cycle_id) => {
+      const cycle = _.find($scope.cycles, { id: parseInt(cycle_id, 10) });
+      _.forEach(records, (record) => {
+        record.cycle_name = cycle.name;
+        record.cycle_start = cycle.start;
+        all_records.push(record);
+      });
+      return all_records;
+    }, []);
+
+    // Builds preview columns using non-extra_data columns
+    function build_preview_columns() {
+      // create copy in order to not change original column objects.
+      const preview_column_defs = _.reject(_.cloneDeep($scope.columns), 'is_extra_data');
+      const default_min_width = 50;
+      const autopin_width = 100;
+      const column_def_defaults = {
+        headerCellFilter: 'translate',
+        minWidth: default_min_width,
+        width: 125,
+        groupingShowAggregationMenu: false
+      };
+
+      _.map(preview_column_defs, (col) => {
+        const options = {};
+        if (col.data_type === 'datetime') {
+          options.cellFilter = 'date:\'yyyy-MM-dd h:mm a\'';
+          options.filter = inventory_service.dateFilter();
+        } else {
+          options.filter = inventory_service.combinedFilter();
+        }
+
+        // For matching criteria values, always pin left and show values in aggregate rows.
+        if ($scope.proposed_matching_criteria_columns.includes(col.column_name)) {
+          col.pinnedLeft = true;
+
+          // Help indicate matching columns are given preferred sort priority
+          col.displayName += '*';
+          options.headerCellClass = 'matching-column-header';
+
+          options.customTreeAggregationFn = $scope.matching_field_value;
+          options.width = autopin_width;
+        }
+        return _.defaults(col, options, column_def_defaults);
+      });
+
+      // Grouping Settings
+      preview_column_defs.unshift(
+        {
+          displayName: 'Linking ID',
+          grouping: { groupPriority: 0 },
+          name: 'id',
+          sort: { priority: 0, direction: 'desc' },
+          pinnedLeft: true,
+          visible: false,
+          suppressRemoveSort: true, // since grouping relies on sorting
+          minWidth: default_min_width,
+          width: autopin_width
+        },
+        {
+          name: 'cycle_name',
+          displayName: 'Cycle',
+          pinnedLeft: true,
+          treeAggregationType: uiGridGroupingConstants.aggregation.COUNT,
+          customTreeAggregationFinalizerFn: function customTreeAggregationFinalizerFn(aggregation) {
+            aggregation.rendered = `total cycles: ${aggregation.value}`;
+          },
+          minWidth: default_min_width,
+          width: autopin_width,
+          groupingShowAggregationMenu: false
+        },
+        {
+          name: 'cycle_start',
+          displayName: 'Cycle Start',
+          cellFilter: 'date:\'yyyy-MM-dd\'',
+          filter: inventory_service.dateFilter(),
+          type: 'date',
+          sort: { priority: 1, direction: 'asc' },
+          pinnedLeft: true,
+          minWidth: default_min_width,
+          width: autopin_width,
+          groupingShowAggregationMenu: false
+        }
+      );
+
+      return preview_column_defs;
+    }
+
+    // Initialize preview table as empty for now.
+    $scope.match_merge_link_preview = {
+      data: 'data',
+      enableColumnResizing: true,
+      enableFiltering: true,
+      onRegisterApi: function onRegisterApi(gridApi) {
+        $scope.gridApi = gridApi;
+
+        // used to allow filtering for child branches of grouping tree
+        $scope.gridApi.table_category = 'year-over-year';
+
+        $scope.gridApi.core.on.filterChanged($scope, () => {
+        // This is a workaround for losing the state of expanded rows during filtering.
+          _.delay($scope.gridApi.treeBase.expandAllRows, 500);
+        });
+
+        // Prioritized to maintain grouping.
+        $scope.gridApi.core.on.sortChanged($scope, prioritize_sort);
+      }
+    };
+
+    // Preview Loading Helpers
+    function build_proposed_matching_columns(result) {
+      // Summarize proposed matching_criteria_columns for pinning and to create preview
+      const criteria_additions = _.filter($scope.change_summary_data, (change) => change.is_matching_criteria);
+      const criteria_removals = _.filter($scope.change_summary_data, (change) => change.is_matching_criteria === false);
+
+      $scope.criteria_changes = {
+        add: _.map(criteria_additions, 'column_name'),
+        remove: _.map(criteria_removals, 'column_name')
+      };
+
+      let base_and_add;
+      if ($scope.inventory_type === 'properties') {
+        base_and_add = _.union(result.PropertyState, $scope.criteria_changes.add);
+      } else {
+        base_and_add = _.union(result.TaxLotState, $scope.criteria_changes.add);
+      }
+      $scope.proposed_matching_criteria_columns = _.difference(base_and_add, $scope.criteria_changes.remove);
+    }
+
+    function build_preview(summary) {
+      $scope.data = format_preview_records(summary);
+      $scope.preview_columns = build_preview_columns();
+      $scope.match_merge_link_preview.columnDefs = $scope.preview_columns;
+    }
+
+    function preview_loading_complete() {
+      $scope.preview_loading = false;
+      spinner_utility.hide();
+    }
+
+    function get_preview() {
+      // Use new proposed matching_criteria_columns to request a preview then render this preview.
+      const spinner_options = {
+        scale: 0.40,
+        position: 'relative',
+        left: '100%'
+      };
+      spinner_utility.show(spinner_options, $('#spinner_placeholder')[0]);
+
+      organization_service.match_merge_link_preview($scope.org_id, $scope.inventory_type, $scope.criteria_changes)
+        .then((response) => {
+          uploader_service.check_progress_loop(
+            response.progress_key,
+            0,
+            1,
+            (completion_notice) => {
+              organization_service.get_match_merge_link_result($scope.org_id, completion_notice.unique_id)
+                .then(build_preview)
+                .then(preview_loading_complete);
+            },
+            () => { /* Do nothing */ },
+            { progress: 0 }
+          );
+        });
+    }
+
+    // Get and Show Preview (If matching criteria changes exist.)
+    $scope.matching_criteria_exists = _.find(_.values($scope.change_summary_data), (delta) => _.has(delta, 'is_matching_criteria'));
+
+    if ($scope.matching_criteria_exists) {
+      $scope.preview_loading = true;
+
+      organization_service.matching_criteria_columns($scope.org_id)
+        .then(build_proposed_matching_columns)
+        .then(get_preview);
+    }
+
+    $scope.setRunningState = () => {
+      $scope.eta = $scope.etaFn();
+      if ($scope.eta) {
+        $scope.state = 'running';
+        $scope.startTime = moment();
+      }
+    };
+
+    $scope.updateTime = () => {
+      $scope.elapsed = $scope.elapsedFn();
+      $scope.eta = $scope.etaFn();
+    };
+
+    $scope.formatTime = (duration) => {
+      const h = Math.floor(duration.asHours());
+      const m = duration.minutes();
+      const s = duration.seconds();
+
+      if (h > 0) {
+        const mPadded = m.toString().padStart(2, '0');
+        const sPadded = s.toString().padStart(2, '0');
+        return `${h}:${mPadded}:${sPadded}`;
+      }
+      if (m > 0) {
+        const sPadded = s.toString().padStart(2, '0');
+        return `${m}:${sPadded}`;
+      }
+      return `${s}s`;
+    };
+
+    $scope.refresh = () => {
+      $window.onbeforeunload = null;
+      $window.location.reload();
+    };
   }
+
 ]);

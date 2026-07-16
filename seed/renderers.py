@@ -1,8 +1,6 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
 
@@ -18,6 +16,7 @@ Use of the custom class(es) will generate the correct format, setting 'status'
 based on the HTTP status code from the response, obviating the need to
 override View(Set) methods unnecessarily, if e.g., ModelViewSet is used.
 """
+
 from rest_framework import status
 from rest_framework.renderers import JSONRenderer
 
@@ -51,26 +50,22 @@ class SEEDJSONRenderer(JSONRenderer):
         """
         pagination = None
         results = data
-        data_name = 'data'
-        view = renderer_context.get('view')
-        data_name = getattr(view, 'data_name', data_name)
-        response = renderer_context.get('response')
+        data_name = "data"
+        view = renderer_context.get("view")
+        data_name = getattr(view, "data_name", data_name)
+        response = renderer_context.get("response")
         if status.is_success(response.status_code):
-            status_type = 'success'
-            if hasattr(data, 'keys') and 'results' in data.keys():
-                results = data.pop('results', None)
+            status_type = "success"
+            if hasattr(data, "keys") and "results" in data:
+                results = data.pop("results", None)
                 pagination = data
         else:
-            status_type = 'error'
-            data_name = 'message'
-            results = data.get('detail', data)
+            status_type = "error"
+            data_name = "message"
+            results = data.get("detail", data)
 
-        data = {'status': status_type, data_name: results}
+        data = {"status": status_type, data_name: results}
         if pagination:
-            data['pagination'] = pagination
+            data["pagination"] = pagination
 
-        return super().render(
-            data,
-            accepted_media_type=accepted_media_type,
-            renderer_context=renderer_context
-        )
+        return super().render(data, accepted_media_type=accepted_media_type, renderer_context=renderer_context)

@@ -1,9 +1,8 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from itertools import chain, islice
 
 
@@ -19,6 +18,6 @@ def batch(iterable, size):
     while True:
         batchiter = islice(sourceiter, size)
         try:
-            yield list(chain([batchiter.__next__()], batchiter))
+            yield list(chain([next(batchiter)], batchiter))
         except StopIteration:
             return

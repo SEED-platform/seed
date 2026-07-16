@@ -15,28 +15,19 @@ Docker then you will not need to do this.
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 If you are using a password, then in your local_untracked.py configuration, add the password to
-the CACHES configuration option. Your final configuration should look like the following in your
+the CELERY_BROKER_URL. Your final configuration should look like the following in your
 local_untracked.py file
 
 .. code-block:: python
 
+    CELERY_BROKER_URL = 'redis://:password@127.0.0.1:6379/1'
     CACHES = {
         'default': {
-            'BACKEND': 'redis_cache.cache.RedisCache',
-            'LOCATION': "127.0.0.1:6379",
-            'OPTIONS': {
-                'DB': 1,
-                'PASSWORD': 'password',
-            },
-            'TIMEOUT': 300
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': CELERY_BROKER_URL,
         }
     }
 
-    CELERY_BROKER_URL = 'redis://:%s@%s/%s' % (
-        CACHES['default']['OPTIONS']['PASSWORD'],
-        CACHES['default']['LOCATION'],
-        CACHES['default']['OPTIONS']['DB']
-    )
     CELERY_RESULT_BACKEND = CELERY_BROKER_URL
     CELERY_TASK_DEFAULT_QUEUE = 'seed-local'
     CELERY_TASK_QUEUES = (
@@ -47,17 +38,76 @@ local_untracked.py file
         ),
     )
 
+Version 3.3.2
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.3.1
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.3.0
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.2.5
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.2.4
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.2.3
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.2.2
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.2.1
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.2.0
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.1.0
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.0.0
+-------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 3.0.0-beta.0
+--------------------
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
+
+Version 2.22.0
+--------------
+- Run ``./manage.py migrate``.
+- There is a Redis dependency update in this release that requires users and deployments to modify their settings' ``CACHES`` config.
+   #. Update your dependencies with ``uv sync --frozen --no-dev``
+   #. Update the CACHES BACKEND property to ``django_redis.cache.RedisCache``
+   #. Update the CACHES LOCATION property to match the redis-py native URL notation for connection strings, including the redis protocol and database number. e.g. ``redis://localhost:6379/1``
+
+   Since the CELERY_BROKER_URL setting must also be in the same format, it may be helpful to configure that setting first and then reference it in the caches LOCATION parameter.
+- See the `PR for an example migration <https://github.com/SEED-platform/seed/pull/4376#issue-1972716522>`_.
+
 Version 2.21.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.20.1
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.20.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 - There is a single long running migration related to importing census tract disadvantaged community data. This migration should take around 7 minutes to complete.
 
 Version 2.19.0
@@ -78,35 +128,35 @@ Version 2.19.0
 
 Version 2.18.1
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.18.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.17.4
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.17.3
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.17.2
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.17.1
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.17.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.16.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.15.2
 --------------
@@ -118,41 +168,41 @@ Version 2.15.1
 
 Version 2.15.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.14.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.13.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.12.0 - 2.12.4
 -----------------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.11.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.10.0
 --------------
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 Version 2.7.3 to 2.9.0
 ----------------------
-- The migrations should work without additional support. Simply run `./manage.py migrate`.
+- The migrations should work without additional support. Simply run ``./manage.py migrate``.
 
 Version 2.7.2
 -------------
-- The migrations should work without additional support. Simply run `./manage.py migrate`. There are no manual migrations needed.
+- The migrations should work without additional support. Simply run ``./manage.py migrate``. There are no manual migrations needed.
 - Note the **Important Note** in Version 2.7.1 migration below which may require the need to run a "fake" migration
 
 Version 2.7.1
 -------------
 
-- There are no special migrations needed for this version. Simply run `./manage.py migrate`.
+- There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
 
 **Important Note:**
 
@@ -178,19 +228,19 @@ Version 2.7.0
 
 - This migration will run a match/merge/pair/link method upon migration. Make sure to run the migration manually and not inside of the docker container using the ./deploy.sh script.
 - Make sure to backup the database before performing the migration.
-- Run `./manage.py migrate`.
+- Run ``./manage.py migrate``.
 
 Version 2.6.1
 -------------
 
-- The migrations should work without additional support. Simply run `./manage.py migrate`. There are no manual migrations needed for the 2.6.1 release.
+- The migrations should work without additional support. Simply run ``./manage.py migrate``. There are no manual migrations needed for the 2.6.1 release.
 
 
 Version 2.6.0
 -------------
 
 Version 2.6.0 includes support for meters and time series data storage. In order to use this release
-you must first install `TimescaleDB`_.
+you must use a PostgreSQL service that provides TimescaleDB.
 
 Docker-based Deployment
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -198,37 +248,22 @@ Docker-based deployments shouldn't require running any additional commands for i
 timescaledb installation will happen automatically when updating the postgres container. Also,
 the installation of the extension occurs in a Django migration.
 
-Ubuntu
-^^^^^^
+Non-Docker Deployment
+^^^^^^^^^^^^^^^^^^^^^
 
-.. code-block:: console
-
-    sudo add-apt-repository ppa:timescale/timescaledb-ppa
-    sudo apt update
-    sudo apt install timescaledb-postgresql-10
-    sudo timescaledb-tune
-    sudo service postgresql restart
-
-Max OSX
-^^^^^^^
-
-.. code-block:: console
-
-   brew tap timescale/tap
-   brew install timescaledb
-   /usr/local/bin/timescaledb_move.sh
-   timescaledb-tune
-   brew services restart postgresql
+For new deployments, use a managed PostgreSQL service with TimescaleDB support
+or the repository's configured Docker PostgreSQL/PostGIS/TimescaleDB image
+instead of installing TimescaleDB directly on the application host.
 
 Version 2.5.2
 -------------
 
-- There are no manual migrations that are needed. The `./manage.py migrate` command may take awhile to run since the migration requires the recalculation of all the normalized addresses to parse bldg correct and to cast the result as a string and not a bytestring.
+- There are no manual migrations that are needed. The ``./manage.py migrate`` command may take awhile to run since the migration requires the recalculation of all the normalized addresses to parse bldg correct and to cast the result as a string and not a bytestring.
 
 Version 2.5.1
 -------------
 
-- The migrations should work by simply running `./manage.py migrate`. There are no manual migrations needed for the 2.5.1 release.
+- The migrations should work by simply running ``./manage.py migrate``. There are no manual migrations needed for the 2.5.1 release.
 
 Version 2.5.0
 -------------
@@ -255,8 +290,8 @@ Development
     DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
     STATICFILES_STORAGE = DEFAULT_FILE_STORAGE
 
-- Run `pip3 install -r requirements/local.txt`.
-- Run `npm install` from root checkout of SEED.
+- Run ``uv sync --frozen``.
+- Run ``pnpm install`` from root checkout of SEED.
 
 - If testing geocoding, then sign up for as a `MapQuest Developer`_ and create a new `MapQuest Key`_.
 - Add the key to the organization that you are using in development.

@@ -1,38 +1,36 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from datetime import datetime
 
-import pytz
+from datetime import UTC, datetime
+
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.utils.generic import split_model_fields
 from seed.utils.strings import titlecase
-from seed.utils.time import convert_datestr
+from seed.utils.time_utils import convert_datestr
 
 
-class DummyClass(object):
+class DummyClass:
     "A simple class that has two fields"
+
     field_one = "field_one"
     field_two = "field_two"
 
 
 class TestGenericUtils(TestCase):
-
     def test_split_model_fields(self):
         """
         Tests splitting a list of field names based on what fields an
         object has.
         """
-        f1 = 'field_one'
-        f2 = 'field_two'
-        f3 = 'no_field_three'
-        f4 = 'no_field_four'
+        f1 = "field_one"
+        f2 = "field_two"
+        f3 = "no_field_three"
+        f4 = "no_field_four"
 
         obj = DummyClass()
 
@@ -53,7 +51,6 @@ class TestGenericUtils(TestCase):
 
 
 class TestTime(TestCase):
-
     def test_date_conversion(self):
         date = datetime(2016, 7, 15).date()
         self.assertEqual(date_cleaner(date.strftime("%Y-%m-%d")), date)
@@ -63,7 +60,7 @@ class TestTime(TestCase):
         self.assertEqual(convert_datestr(dt.strftime("%Y-%m-%d %H:%M")), dt)
 
         # with TZ info
-        dt = make_aware(datetime(2016, 7, 15, 12, 30), pytz.UTC)
+        dt = make_aware(datetime(2016, 7, 15, 12, 30), UTC)
         self.assertEqual(convert_datestr(dt.strftime("%Y-%m-%d %H:%M"), True), dt)
 
 

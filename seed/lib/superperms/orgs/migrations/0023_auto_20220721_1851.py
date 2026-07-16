@@ -4,20 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0022_auto_20220711_1928'),
+        ("orgs", "0022_auto_20220711_1928"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='display_units_ghg',
-            field=models.CharField(choices=[('MtCO2e/year', 'MtCO2e/year')], default='MtCO2e/year', max_length=32),
+            model_name="organization",
+            name="display_units_ghg",
+            field=models.CharField(choices=[("MtCO2e/year", "MtCO2e/year")], default="MtCO2e/year", max_length=32),
         ),
         migrations.AddField(
-            model_name='organization',
-            name='display_units_ghg_intensity',
-            field=models.CharField(choices=[('kgCO2e/ft**2/year', 'kgCO2e/ft²/year')], default='kgCO2e/ft**2/year', max_length=32),
+            model_name="organization",
+            name="display_units_ghg_intensity",
+            field=models.CharField(choices=[("kgCO2e/ft**2/year", "kgCO2e/ft²/year")], default="kgCO2e/ft**2/year", max_length=32),
         ),
     ]

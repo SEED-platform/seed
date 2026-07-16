@@ -1,26 +1,33 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * Controller for the analysis modal.
  * The Property or Tax Lot ID is passed in as 'inventory_id', identified by
  * inventory_type="properties" or inventory_type="taxlots"
  */
-angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).controller('inventory_detail_analyses_modal_controller', [
+angular.module('SEED.controller.inventory_detail_analyses_modal', []).controller('inventory_detail_analyses_modal_controller', [
   '$scope',
+  '$sce',
   '$log',
   '$uibModalInstance',
   'Notification',
   'analyses_service',
   'inventory_ids',
+  'property_columns',
   'current_cycle',
   'cycles',
+  'user',
   // eslint-disable-next-line func-names
-  function ($scope, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, current_cycle, cycles) {
+  function ($scope, $sce, $log, $uibModalInstance, Notification, analyses_service, inventory_ids, property_columns, current_cycle, cycles, user) {
     $scope.inventory_count = inventory_ids.length;
     // used to disable buttons on submit
     $scope.waiting_for_server = false;
     $scope.cycles = cycles;
+    $scope.user = user;
+    $scope.property_columns = property_columns;
+    $scope.eui_columns = $scope.property_columns.filter((o) => o.data_type === 'eui');
+    $scope.area_columns = $scope.property_columns.filter((o) => o.data_type === 'area');
 
     $scope.new_analysis = {
       name: null,
@@ -76,8 +83,12 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
 
         case 'CO2':
           $scope.new_analysis.configuration = {
-            save_co2_results: true
+            save_co2_results: false
           };
+          // only root users can create columns
+          if (user.is_ali_root && ['member', 'owner'].includes(user.organization.user_role)) {
+            $scope.new_analysis.configuration.save_co2_results = true;
+          }
           break;
 
         case 'BETTER':
@@ -104,6 +115,35 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
         case 'EEEJ':
           $scope.new_analysis.configuration = {};
           break;
+        case 'Element Statistics':
+          $scope.new_analysis.configuration = {};
+          break;
+        case 'Building Upgrade Recommendation':
+          $scope.new_analysis.configuration = {
+            column_params: {
+              total_eui: null,
+              gas_eui: null,
+              electric_eui: null,
+              target_gas_eui: null,
+              target_electric_eui: null,
+              condition_index: null,
+              has_bas: null
+            },
+            total_eui_goal: null,
+            ff_eui_goal: null,
+            year_built_threshold: null,
+            fair_actual_to_benchmark_eui_ratio: null,
+            poor_actual_to_benchmark_eui_ratio: null,
+            building_sqft_threshold: null,
+            condition_index_threshold: null,
+            ff_fired_equipment_rsl_threshold: null
+          };
+          break;
+        case 'HVAC Metrics':
+          $scope.new_analysis.configuration = {
+            floor_area_column: null
+          };
+          break;
         default:
           $log.error('Unknown analysis type.', $scope.new_analysis.service);
           Notification.error(`Unknown analysis type: ${$scope.new_analysis.service}`);
@@ -117,7 +157,7 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
       }
       $scope.waiting_for_server = true;
 
-      analyses_service.create_analysis($scope.new_analysis.name, $scope.new_analysis.service, $scope.new_analysis.configuration, inventory_ids).then(
+      analyses_service.create_analysis($scope.new_analysis.name, $scope.new_analysis.service, $scope.new_analysis.configuration, inventory_ids, window.SEED.access_level_instance_id).then(
         (data) => {
           $scope.waiting_for_server = false;
           Notification.primary('Created Analysis');
@@ -126,11 +166,20 @@ angular.module('BE.seed.controller.inventory_detail_analyses_modal', []).control
         },
         (response) => {
           $scope.waiting_for_server = false;
+          $scope.error = linkify(response.data.message);
           $log.error('Error creating new analysis:', response);
-          Notification.error(`Failed to create Analysis: ${response.data.message}`);
-          $uibModalInstance.dismiss('cancel');
+          Notification.error(`Failed to create Analysis: ${$scope.error}`);
         }
       );
+    };
+
+    const linkify = (text) => {
+      // Regular expression matching any URL starting with http:// or https://
+      const urlPattern = /(\b(https?):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
+
+      // Add link html
+      const linkedText = text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
+      return $sce.trustAsHtml(linkedText);
     };
 
     /* User has cancelled dialog */

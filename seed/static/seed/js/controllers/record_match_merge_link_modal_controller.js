@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.record_match_merge_link_modal', []).controller('record_match_merge_link_modal_controller', [
+angular.module('SEED.controller.record_match_merge_link_modal', []).controller('record_match_merge_link_modal_controller', [
   '$scope',
   '$q',
   '$uibModalInstance',
@@ -50,11 +50,11 @@ angular.module('BE.seed.controller.record_match_merge_link_modal', []).controlle
       $scope.matching_criteria_columns = _.map(raw_column_names, (col_name) => _.find(inventory_columns, { column_name: col_name }).displayName);
     });
 
-    $scope.close = function () {
+    $scope.close = () => {
       $uibModalInstance.close();
     };
 
-    $scope.cancel = function () {
+    $scope.cancel = () => {
       $uibModalInstance.dismiss();
     };
   }

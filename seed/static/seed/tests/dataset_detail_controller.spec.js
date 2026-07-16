@@ -1,21 +1,20 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: dataset_detail_controller', () => {
   // globals set up and used in each test scenario
-  let controller; let
-    delete_called;
-  let mock_dataset_service; let
-    dataset_detail_controller_scope;
+  let controller;
+  let delete_called;
+  let mock_dataset_service;
+  let dataset_detail_controller_scope;
 
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $uibModal, urls, $q, dataset_service) => {
       controller = $controller;
@@ -25,8 +24,7 @@ describe('controller: dataset_detail_controller', () => {
       // mock the dataset_service factory methods used in the controller
       // and return their promises
       mock_dataset_service = dataset_service;
-      spyOn(mock_dataset_service, 'get_dataset').andCallFake(() => {
-        // return $q.reject for error scenario
+      spyOn(mock_dataset_service, 'get_dataset').and.callFake(() => {
         const fake_importfiles = [
           {
             name: 'DC_CoveredBuildings_50k.csv',
@@ -62,7 +60,7 @@ describe('controller: dataset_detail_controller', () => {
         return $q.resolve(fake_payload);
       });
 
-      spyOn(mock_dataset_service, 'delete_file').andCallFake(() => {
+      spyOn(mock_dataset_service, 'delete_file').and.callFake(() => {
         delete_called = true;
         // console.log({d: 'delete_called'});
         return $q.resolve({

@@ -1,20 +1,11 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.contrib import admin
 
-from seed.models import (
-    Column,
-    Cycle,
-    Property,
-    PropertyState,
-    PropertyView,
-    TaxLot,
-    TaxLotProperty,
-    TaxLotState,
-    TaxLotView
-)
+from seed.models import Column, Cycle, Property, PropertyState, PropertyView, TaxLot, TaxLotProperty, TaxLotState, TaxLotView
 
 admin.site.register(Column)
 admin.site.register(Property)

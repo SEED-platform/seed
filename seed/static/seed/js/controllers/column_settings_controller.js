@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.column_settings', []).controller('column_settings_controller', [
+angular.module('SEED.controller.column_settings', []).controller('column_settings_controller', [
   '$scope',
   '$q',
   '$state',
@@ -15,6 +15,8 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
   'auth_payload',
   'columns_service',
   'modified_service',
+  'organization_service',
+  'uploader_service',
   'spinner_utility',
   'urls',
   'naturalSort',
@@ -33,6 +35,8 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
     auth_payload,
     columns_service,
     modified_service,
+    organization_service,
+    uploader_service,
     spinner_utility,
     urls,
     naturalSort,
@@ -46,8 +50,9 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
 
     const originalColumns = angular.copy(columns);
     $scope.columns = columns;
+    $scope.all_recognize_empty = $scope.columns.every((col) => col.recognize_empty);
     const initial_matching_ids = columns.reduce((acc, cur) => {
-      cur.is_matching_criteria && acc.push(cur.id);
+      if (cur.is_matching_criteria) acc.push(cur.id);
       return acc;
     }, []);
     let diff = {};
@@ -68,7 +73,9 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       { id: 'eui', label: $translate.instant('EUI') },
       { id: 'geometry', label: $translate.instant('Geometry') },
       { id: 'ghg', label: $translate.instant('GHG') },
-      { id: 'ghg_intensity', label: $translate.instant('GHG Intensity') }
+      { id: 'ghg_intensity', label: $translate.instant('GHG Intensity') },
+      { id: 'wui', label: $translate.instant('WUI') },
+      { id: 'water_use', label: $translate.instant('Water Use') }
     ];
 
     $scope.comstock_types = [
@@ -122,12 +129,32 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
 
     $scope.matching_status = (column) => {
       if (column.is_extra_data) return 'ineligible';
-      if ($scope.org.inventory_count && initial_matching_ids.includes(column.id)) return 'locked';
+      if ($scope.org.access_level_names.length > 1 && $scope.org.inventory_count && initial_matching_ids.includes(column.id)) return 'locked';
       return 'eligible';
+    };
+
+    $scope.column_can_be_excluded = (column) => {
+      if ($scope.matching_status(column) === 'locked') {
+        return false;
+      }
+      if (($scope.matching_status(column) === 'eligible') && (!column.is_matching_criteria)) {
+        return true;
+      }
+      if ($scope.matching_status(column) === 'ineligible' && column.is_extra_data) {
+        return true;
+      }
+      return false;
     };
 
     $scope.change_recognize_empty = (column) => {
       column.recognize_empty = !column.recognize_empty;
+      $scope.all_recognize_empty = $scope.columns.every((col) => col.recognize_empty);
+      $scope.setModified();
+    };
+
+    $scope.change_is_excluded_state = (column) => {
+      if (!$scope.column_can_be_excluded(column)) return false;
+      column.is_excluded_from_hash = !column.is_excluded_from_hash;
       $scope.setModified();
     };
 
@@ -150,6 +177,14 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
 
     const remove_geocoding_col_by_name = (column) => {
       _.remove($scope.geocoding_columns, (included_col) => included_col.name === column.name);
+    };
+
+    const geocoding_order_sort = () => {
+      $scope.columns = _.sortBy(
+        $scope.columns,
+        // infinity at 0, increasing after
+        (col) => 1 / col.geocoding_order + col.geocoding_order
+      );
     };
 
     const set_modified_and_check_sort = () => {
@@ -186,13 +221,24 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       // Remove any potential duplicates
       if (column.comstock_mapping !== null) {
         _.forEach($scope.columns, (col) => {
-          // eslint-disable-next-line lodash/prefer-matches
           if (col.id !== column.id && col.comstock_mapping === column.comstock_mapping) {
             col.comstock_mapping = null;
           }
         });
       }
       $scope.setModified();
+    };
+
+    const updateDiff = () => {
+      diff = {};
+
+      const cleanColumns = angular.copy(columns);
+      _.forEach(originalColumns, (originalCol, index) => {
+        if (!_.isEqual(originalCol, cleanColumns[index])) {
+          const modifiedKeys = _.reduce(originalCol, (result, value, key) => (_.isEqual(value, cleanColumns[index][key]) ? result : result.concat(key)), []);
+          diff[originalCol.id] = _.pick(cleanColumns[index], modifiedKeys);
+        }
+      });
     };
 
     $scope.setModified = () => {
@@ -207,16 +253,28 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
 
     $scope.isModified = () => modified_service.isModified();
 
-    var updateDiff = () => {
-      diff = {};
+    $scope.complete_column_update = function complete_column_update() {
+      const matching_criteria_changed = _.find(_.values(diff), (delta) => _.has(delta, 'is_matching_criteria'));
 
-      const cleanColumns = angular.copy(columns);
-      _.forEach(originalColumns, (originalCol, index) => {
-        if (!_.isEqual(originalCol, cleanColumns[index])) {
-          const modifiedKeys = _.reduce(originalCol, (result, value, key) => (_.isEqual(value, cleanColumns[index][key]) ? result : result.concat(key)), []);
-          diff[originalCol.id] = _.pick(cleanColumns[index], modifiedKeys);
-        }
-      });
+      if (matching_criteria_changed) {
+        // reset the spinner and run whole org match merge link
+        spinner_utility.show(undefined, $('.display')[0]);
+
+        organization_service.match_merge_link($scope.org.id, $scope.inventory_type).then((response) => {
+          uploader_service.check_progress_loop(
+            response.progress_key,
+            0,
+            1,
+            (response) => {
+              organization_service.get_match_merge_link_result($scope.org.id, response.unique_id).then(() => column_update_complete());
+            },
+            () => {},
+            { progress: 0 }
+          );
+        });
+      } else {
+        column_update_complete();
+      }
     };
 
     // Table Sorting
@@ -251,15 +309,6 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       } else {
         default_sort_toggle();
       }
-    };
-
-    var geocoding_order_sort = () => {
-      $scope.columns = _.sortBy(
-        $scope.columns,
-        (col) =>
-          // infinity at 0, increasing after
-          1 / col.geocoding_order + col.geocoding_order
-      );
     };
 
     $scope.toggle_geocoding_order_sort = () => {
@@ -298,6 +347,14 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       }
     };
 
+    $scope.toggle_all_recognize_empty = () => {
+      $scope.all_recognize_empty = !$scope.all_recognize_empty;
+      $scope.columns.forEach((col) => {
+        col.recognize_empty = $scope.all_recognize_empty;
+      });
+      $scope.setModified();
+    };
+
     const column_update_complete = (match_link_summary) => {
       $scope.columns_updated = true;
       const diff_count = _.keys(diff).length;
@@ -331,6 +388,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       }
 
       modified_service.resetModified();
+      $scope.modal_instance.dismiss();
       $state.reload();
     };
 
@@ -349,27 +407,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
         return;
       }
 
-      const modal_instance = $scope.open_confirm_column_settings_modal();
-      modal_instance.result
-        .then(() => {
-          // User confirmed
-          const promises = [];
-          _.forOwn(diff, (delta, column_id) => {
-            column_id = Number(column_id);
-            const col = angular.copy(_.find($scope.columns, { id: column_id }));
-            col.display_name = col.displayName; // Add display_name for backend
-            delete col.displayName;
-            promises.push(columns_service.update_column_for_org($scope.org.id, column_id, col));
-          });
-
-          spinner_utility.show();
-          $q.all(promises).then(column_update_complete, (data) => {
-            $scope.$emit('app_error', data);
-          });
-        })
-        .catch(() => {
-          // User cancelled
-        });
+      $scope.modal_instance = $scope.open_confirm_column_settings_modal();
     };
 
     $scope.open_create_column_modal = () => $uibModal.open({
@@ -378,7 +416,7 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
       // size: 'lg',
       resolve: {
         org_id: $scope.org.id,
-        table_name: () => ($scope.inventory_type === 'properties' ? 'PropertyState' : 'TaxlotState'),
+        table_name: () => ($scope.inventory_type === 'properties' ? 'PropertyState' : 'TaxLotState'),
         black_listed_names: () => ['', ...$scope.columns.map((c) => c.column_name)]
       }
     });
@@ -392,7 +430,12 @@ angular.module('BE.seed.controller.column_settings', []).controller('column_sett
         all_columns: () => all_columns,
         columns: () => $scope.columns,
         inventory_type: () => $scope.inventory_type,
-        org_id: () => $scope.org.id
+        org_id: () => $scope.org.id,
+        columns_service: () => columns_service,
+        spinner_utility: () => spinner_utility,
+        table_name: () => ($scope.inventory_type === 'properties' ? 'PropertyState' : 'TaxLotState'),
+        $q: () => $q,
+        complete_column_update: () => $scope.complete_column_update
       }
     });
 

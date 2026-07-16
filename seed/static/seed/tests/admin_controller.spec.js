@@ -1,18 +1,17 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: admin_controller', () => {
   let mock_organization_service;
   let mock_uploader_service;
-  let controller; let
-    admin_controller_scope;
+  let controller;
+  let admin_controller_scope;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, user_service, organization_service, uploader_service, $q) => {
       admin_controller_scope = $rootScope.$new();
@@ -20,33 +19,12 @@ describe('controller: admin_controller', () => {
       mock_organization_service = organization_service;
       mock_uploader_service = uploader_service;
 
-      spyOn(mock_organization_service, 'get_organization_users').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.reject({
-          status: 'fail'
-        }));
-      spyOn(mock_organization_service, 'add_user_to_org').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.reject({
-          status: 'fail'
-        }));
-      spyOn(mock_organization_service, 'remove_user').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.reject({
-          status: 'fail'
-        }));
-      spyOn(mock_organization_service, 'get_organizations').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.reject({
-          status: 'fail'
-        }));
-      spyOn(mock_organization_service, 'delete_organization_inventory').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve({
-          status: 'success'
-        }));
-      spyOn(mock_uploader_service, 'check_progress_loop').andCallFake((progress, num, num2, cb) => {
-        // return $q.reject for error scenario
+      spyOn(mock_organization_service, 'get_organization_users').and.callFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'add_user_to_org').and.callFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'remove_user').and.callFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'get_organizations').and.callFake(() => $q.reject({ status: 'fail' }));
+      spyOn(mock_organization_service, 'delete_organization_inventory').and.callFake(() => $q.resolve({ status: 'success' }));
+      spyOn(mock_uploader_service, 'check_progress_loop').and.callFake((progress, num, num2, cb) => {
         cb();
         return $q.resolve({
           status: 'success',

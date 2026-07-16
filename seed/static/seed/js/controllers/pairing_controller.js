@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.pairing', []).controller('pairing_controller', [
+angular.module('SEED.controller.pairing', []).controller('pairing_controller', [
   '$scope',
   '$log',
   '$q',
@@ -76,8 +76,8 @@ angular.module('BE.seed.controller.pairing', []).controller('pairing_controller'
     };
 
     const refreshObjects = () => {
-      // var propertyColumnNames = _.map($scope.propertyColumns, 'name');
-      // var taxlotColumnNames = _.map($scope.taxlotColumns, 'name');
+      // const propertyColumnNames = _.map($scope.propertyColumns, 'name');
+      // const taxlotColumnNames = _.map($scope.taxlotColumns, 'name');
 
       const promises = [];
       promises.push(inventory_service.get_properties(1, undefined, $scope.cycle.selected_cycle, undefined));

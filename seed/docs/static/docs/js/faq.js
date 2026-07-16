@@ -1,4 +1,4 @@
-angular.module('BE.docs.controller.faq', []).controller('faq_controller', [
+angular.module('SEED.controller.faq', []).controller('faq_controller', [
   '$scope',
   '$timeout',
   // eslint-disable-next-line func-names

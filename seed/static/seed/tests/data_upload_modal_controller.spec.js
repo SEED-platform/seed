@@ -1,14 +1,17 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 describe('controller: data_upload_modal_controller', () => {
   // globals set up and used in each test scenario
-  let mock_uploader_service; let controller; let
-    modal_state;
+  let mock_uploader_service;
+  let controller;
+  let modal_state;
   let data_upload_controller_scope;
-  let mock_mapping_service; let
-    mock_matching_service;
+  let mock_mapping_service;
+  let mock_matching_service;
+  let mock_organization_service;
+  let mock_auth_service;
   let global_step = 1;
   let global_dataset = {};
 
@@ -32,37 +35,36 @@ describe('controller: data_upload_modal_controller', () => {
   // make the seed app available for each test
   // 'config.seed' is created in TestFilters.html
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
-    inject(($controller, $rootScope, $uibModal, urls, $q, uploader_service, mapping_service, matching_service) => {
+    inject(($controller, $rootScope, $uibModal, urls, $q, uploader_service, mapping_service, matching_service, organization_service, auth_service) => {
       controller = $controller;
       data_upload_controller_scope = $rootScope.$new();
       modal_state = '';
+      global_step = 1;
+      global_dataset = {};
 
       // mock the uploader_service factory methods used in the controller
       // and return their promises
       mock_uploader_service = uploader_service;
       mock_mapping_service = mapping_service;
       mock_matching_service = matching_service;
-      spyOn(mock_uploader_service, 'check_progress').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve({
-          status: 'success',
-          progress: '25.0'
-        }));
-      spyOn(mock_uploader_service, 'check_progress_loop').andCallFake((progress, num, num2, cb) => {
-        // return $q.reject for error scenario
+      mock_organization_service = organization_service;
+      mock_auth_service = auth_service;
+      spyOn(mock_uploader_service, 'check_progress').and.callFake(() => $q.resolve({
+        status: 'success',
+        progress: '25.0'
+      }));
+      spyOn(mock_uploader_service, 'check_progress_loop').and.callFake((progress, num, num2, cb) => {
         cb();
         return $q.resolve({
           status: 'success',
           progress: '100.0'
         });
       });
-      spyOn(mock_uploader_service, 'create_dataset').andCallFake((dataset_name) => {
-        // return $q.reject for error scenario
+      spyOn(mock_uploader_service, 'create_dataset').and.callFake((dataset_name) => {
         if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
@@ -75,8 +77,7 @@ describe('controller: data_upload_modal_controller', () => {
           message: 'name already in use'
         });
       });
-      spyOn(mock_uploader_service, 'save_raw_data').andCallFake((dataset_name) => {
-        // return $q.reject for error scenario
+      spyOn(mock_uploader_service, 'save_raw_data').and.callFake((dataset_name) => {
         if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
@@ -88,8 +89,7 @@ describe('controller: data_upload_modal_controller', () => {
           status: 'error'
         });
       });
-      spyOn(mock_mapping_service, 'start_mapping').andCallFake((dataset_name) => {
-        // return $q.reject for error scenario
+      spyOn(mock_mapping_service, 'start_mapping').and.callFake((dataset_name) => {
         if (dataset_name !== 'fail') {
           return $q.resolve({
             status: 'success',
@@ -100,12 +100,12 @@ describe('controller: data_upload_modal_controller', () => {
           status: 'error'
         });
       });
-      spyOn(mock_matching_service, 'start_system_matching').andCallFake(() =>
-        // return $q.reject for error scenario
-        $q.resolve({
-          status: 'warning',
-          file_id: 3
-        }));
+      spyOn(mock_matching_service, 'start_system_matching').and.callFake(() => $q.resolve({
+        status: 'warning',
+        file_id: 3
+      }));
+      spyOn(mock_organization_service, 'get_organization').and.callFake(() => $q.resolve({ organization: {} }));
+      spyOn(mock_auth_service, 'is_authorized').and.callFake(() => $q.resolve({ auth: {} }));
     });
   });
 
@@ -114,10 +114,10 @@ describe('controller: data_upload_modal_controller', () => {
     controller('data_upload_modal_controller', {
       $scope: data_upload_controller_scope,
       $uibModalInstance: {
-        close: function () {
+        close: () => {
           modal_state = 'close';
         },
-        dismiss: function () {
+        dismiss: () => {
           modal_state = 'dismiss';
         }
       },
@@ -182,8 +182,7 @@ describe('controller: data_upload_modal_controller', () => {
     create_data_upload_modal_controller();
 
     // act
-    let step;
-    step = 2;
+    const step = 2;
     data_upload_controller_scope.goto_step(step);
     data_upload_controller_scope.$digest();
 

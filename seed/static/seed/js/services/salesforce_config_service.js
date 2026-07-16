@@ -1,4 +1,4 @@
-angular.module('BE.seed.service.salesforce_config', []).factory('salesforce_config_service', [
+angular.module('SEED.service.salesforce_config', []).factory('salesforce_config_service', [
   '$http',
   '$log',
   ($http, $log) => {

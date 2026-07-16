@@ -1,6 +1,6 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * Controller for the Update Labels modal window.
  * Manages applying labels to a single Property or Tax Lot, as
@@ -8,7 +8,7 @@
  * The Property or Tax Lot ID is passed in as 'inventory_id', identified by
  * inventory_type="properties" or inventory_type="taxlots"
  */
-angular.module('BE.seed.controller.data_quality_labels_modal', []).controller('data_quality_labels_modal_controller', [
+angular.module('SEED.controller.data_quality_labels_modal', []).controller('data_quality_labels_modal_controller', [
   '$scope',
   '$uibModalInstance',
   'label_service',

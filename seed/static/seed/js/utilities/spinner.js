@@ -1,12 +1,12 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  * :author - Nicholas Serra <nickserra@gmail.com>
  *
  * Eventually this may need to be refactored into a singleton factory that
  * instantiates new objects (spinners). - nicholasserra
  */
-angular.module('BE.seed.utility.spinner', []).factory('spinner_utility', [
+angular.module('SEED.utility.spinner', []).factory('spinner_utility', [
   () => {
     const spinner_utility = {};
     let _spinner;

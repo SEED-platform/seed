@@ -1,9 +1,9 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 
-angular.module('BE.seed.controller.analysis_run', []).controller('analysis_run_controller', [
+angular.module('SEED.controller.analysis_run', []).controller('analysis_run_controller', [
   '$scope',
   '$stateParams',
   '$state',
@@ -32,7 +32,5 @@ angular.module('BE.seed.controller.analysis_run', []).controller('analysis_run_c
     $scope.original_view = view_payload.original_view;
     $scope.original_views = {};
     $scope.original_views[view_payload.view.id] = view_payload.original_view;
-
-    $scope.has_children = (value) => typeof value === 'object';
   }
 ]);

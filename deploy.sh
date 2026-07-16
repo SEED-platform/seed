@@ -22,9 +22,10 @@ SEED_ADMIN_PASSWORD (required), admin password for SEED
 SEED_ADMIN_ORG (required), default organization for admin user in SEED
 SECRET_KEY (required), unique key for SEED web application
 AWS_ACCESS_KEY_ID (optional), Access key for AWS
-AWS_SECRET_ACCESS_KEY, Secret key for AWS
+AWS_SECRET_ACCESS_KEY (optional), Secret key for AWS
 AWS_SES_REGION_NAME (optional), AWS Region for SES
 AWS_SES_REGION_ENDPOINT (optional), AWS endpoint for SES
+COOKIE_EXPIRATION (optional), Time in seconds that a session should be valid
 SERVER_EMAIL (optional), Email that is used by the server to send messages
 SENTRY_JS_DSN (optional), Sentry JavaScript DSN
 SENTRY_RAVEN_DSN (optional), Sentry Django DSN (Raven-based)
@@ -42,6 +43,7 @@ export AWS_ACCESS_KEY_ID=key
 export AWS_SECRET_ACCESS_KEY=secret_key
 export AWS_SES_REGION_NAME=us-west-2
 export AWS_SES_REGION_ENDPOINT=email.us-west-2.amazonaws.com
+export COOKIE_EXPIRATION=1209600
 export SERVER_EMAIL=info@seed-platform.org
 export SENTRY_JS_DSN=https://bcde@sentry.io/123456789
 export SENTRY_RAVEN_DSN=https://abcd:1234@sentry.io/123456789
@@ -114,17 +116,22 @@ fi
 echo "Building latest version of SEED "
 # explicitly pull images from docker-compose's build yml file. Note that you will need to keep the
 # versions consistent between the compose file and what is below.
-docker-compose -f docker-compose.build.yml pull
-docker-compose -f docker-compose.build.yml build --pull
+docker compose -f docker-compose.build.yml pull
+docker compose -f docker-compose.build.yml build --pull
 
 # Get the versions out of the docker-compose.build file
-DOCKER_PG_VERSION=$( sed -n 's/.*image\: timescale\/timescaledb-postgis\:latest-pg\(.*\)/\1/p' docker-compose.build.yml )
+DOCKER_PG_VERSION=$( sed -n 's/.*image\: timescale\/timescaledb-ha\:\(.*\)/\1/p' docker-compose.build.yml )
 DOCKER_REDIS_VERSION=$( sed -n 's/.*image\: redis\:\(.*\)/\1/p' docker-compose.build.yml )
+
+if [ -z "$DOCKER_PG_VERSION" ]; then
+    echo "Could not determine Timescale/Postgres tag from docker-compose.build.yml"
+    exit 1
+fi
 
 echo "Tagging local containers"
 docker tag seedplatform/seed:latest 127.0.0.1:5000/seed
-docker tag timescale/timescaledb-postgis:latest-pg$DOCKER_PG_VERSION 127.0.0.1:5000/postgres-seed
-docker tag redis:5.0.1 127.0.0.1:5000/redis
+docker tag timescale/timescaledb-ha:$DOCKER_PG_VERSION 127.0.0.1:5000/postgres-seed
+docker tag redis:8-alpine 127.0.0.1:5000/redis
 
 sleep 3
 echo "Pushing tagged versions to local registry"
@@ -133,7 +140,7 @@ docker push 127.0.0.1:5000/postgres-seed
 docker push 127.0.0.1:5000/redis
 
 echo "Deploying (or updating)"
-docker-compose -f ${DOCKER_COMPOSE_FILE} -p seed up -d
+docker compose -f ${DOCKER_COMPOSE_FILE} -p seed up -d
 wait $!
 while ( nc -zv 127.0.0.1 80 3>&1 1>&2- 2>&3- ) | awk -F ":" '$3 != " Connection refused" {exit 1}'; do echo -n "."; sleep 5; done
 echo "SEED stack redeployed"

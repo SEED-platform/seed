@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.label', []).factory('label_service', [
+angular.module('SEED.service.label', []).factory('label_service', [
   '$http',
   '$log',
   'user_service',
@@ -281,9 +281,23 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
       }
     ];
 
+    const get_property_view_labels_by_cycle_goal = (org_id, goal_id, cycle_id) => $http.get(
+      '/api/v3/property_view_labels/list_by_cycle_goal/',
+      { params: { organization_id: org_id, goal_id, cycle_id } }
+    )
+      .then(map_labels);
+
+    const bulk_update_labels = (org_id, label_ids, data) => $http
+      .put(
+        '/api/v3/labels/bulk_update/',
+        { label_ids, data },
+        { params: { organization_id: org_id } }
+      ).then((response) => response);
+
     return {
       get_labels,
       get_labels_for_org,
+      bulk_update_labels,
       create_label,
       create_label_for_org,
       update_label,
@@ -293,6 +307,7 @@ angular.module('BE.seed.service.label', []).factory('label_service', [
       update_property_labels,
       update_taxlot_labels,
       get_available_colors,
+      get_property_view_labels_by_cycle_goal,
       lookup_label
     };
   }

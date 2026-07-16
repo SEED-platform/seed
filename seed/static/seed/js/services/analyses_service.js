@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
+angular.module('SEED.service.analyses', []).factory('analyses_service', [
   '$http',
   '$log',
   '$timeout',
@@ -26,7 +26,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
 
     const get_analysis_view_for_org = (analysis_id, view_id, org_id) => $http.get(`/api/v3/analyses/${analysis_id}/views/${view_id}/?organization_id=${org_id}`).then((response) => response.data);
 
-    const create_analysis = (name, service, configuration, property_view_ids) => {
+    const create_analysis = (name, service, configuration, property_view_ids, access_level_instance_id) => {
       const organization_id = user_service.get_organization().id;
       return $http({
         url: '/api/v3/analyses/',
@@ -36,7 +36,8 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
           name,
           service,
           configuration,
-          property_view_ids
+          property_view_ids,
+          access_level_instance_id
         }
       }).then((response) => response.data);
     };
@@ -85,10 +86,21 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
         .catch((response) => response.data);
     };
 
-    const verify_token = (organization_id) => $http({
+    const get_used_columns = () => {
+      const organization_id = user_service.get_organization().id;
+      return $http({
+        url: '/api/v3/analyses/used_columns',
+        method: 'GET',
+        params: { organization_id }
+      })
+        .then((response) => response.data)
+        .catch((response) => response.data);
+    };
+
+    const verify_token = (better_token) => $http({
       url: '/api/v3/analyses/verify_better_token/',
       method: 'GET',
-      params: { organization_id }
+      params: { better_token }
     })
       .then((response) => response.data)
       .catch((response) => response.data);
@@ -107,7 +119,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
     /**
      * check_progress_loop: polls progress data of an analysis
      *
-     * @param {obj} {id, status}: object containing id and status of the analysis to poll
+     * @param {obj} {id, status} object containing id and status of the analysis to poll
      * @param {async fn} status_update_callback: called every time a progress data is completed. Provided one parameter, analysis id
      * @param {fn} no_current_task_callback: called when there are no more progress data for the analysis. Provided one parameter, analysis id
      * @returns {fn}: a function which when called stops the polling
@@ -193,6 +205,7 @@ angular.module('BE.seed.service.analyses', []).factory('analyses_service', [
       stop_analysis,
       delete_analysis,
       get_summary,
+      get_used_columns,
       get_progress_key,
       check_progress_loop,
       verify_token

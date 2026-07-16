@@ -89,6 +89,9 @@ Ubuntu server 18.04 or newer with a m5ad.xlarge (if using in Production instance
     export AWS_SES_REGION_ENDPOINT=email.us-west-2.amazonaws.com
     export SERVER_EMAIL=user@seed-platform.org
 
+    # For custom cookie validity duration
+    export COOKIE_EXPIRATION=1209600
+
 
 * Before launching the first time, make sure the persistent volumes and the backup directory exist.
 

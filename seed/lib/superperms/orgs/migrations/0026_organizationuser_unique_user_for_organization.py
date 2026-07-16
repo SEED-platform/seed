@@ -4,14 +4,13 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0025_remove_duplicate_users_for_org'),
+        ("orgs", "0025_remove_duplicate_users_for_org"),
     ]
 
     operations = [
         migrations.AddConstraint(
-            model_name='organizationuser',
-            constraint=models.UniqueConstraint(fields=('user', 'organization'), name='unique_user_for_organization'),
+            model_name="organizationuser",
+            constraint=models.UniqueConstraint(fields=("user", "organization"), name="unique_user_for_organization"),
         ),
     ]

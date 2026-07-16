@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.column_mappings', []).controller('column_mappings_controller', [
+angular.module('SEED.controller.column_mappings', []).controller('column_mappings_controller', [
   '$scope',
   '$state',
   '$log',
@@ -14,6 +14,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
   'inventory_service',
   'mappable_property_columns_payload',
   'mappable_taxlot_columns_payload',
+  'modified_service',
   'organization_payload',
   'urls',
   'COLUMN_MAPPING_PROFILE_TYPE_NORMAL',
@@ -32,6 +33,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     inventory_service,
     mappable_property_columns_payload,
     mappable_taxlot_columns_payload,
+    modified_service,
     organization_payload,
     urls,
     COLUMN_MAPPING_PROFILE_TYPE_NORMAL,
@@ -63,7 +65,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
 
     const mapping_display_to_db = (mapping) => {
       // Also, clear from_units if mapping is not for units col
-      if (!$scope.is_area_column(mapping) && !$scope.is_eui_column(mapping) && !$scope.is_ghg_column(mapping) && !$scope.is_ghg_intensity_column(mapping)) {
+      if (!$scope.is_pint_column(mapping)) {
         mapping.from_units = null;
       }
 
@@ -88,6 +90,9 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
 
     $scope.current_profile = $scope.profiles[0] ?? {};
     $scope.dropdown_selected_profile = $scope.current_profile;
+    $scope.$watch('dropdown_selected_profile.mappings', (a, b) => {
+      if (a !== b && !$scope.saved) modified_service.setModified();
+    }, true);
 
     // Inventory Types
     $scope.setAllFields = '';
@@ -257,6 +262,8 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
 
         $scope.changes_possible = false;
         Notification.primary(`Saved ${$scope.current_profile.name}`);
+        modified_service.resetModified();
+        $scope.saved = true;
       });
     };
 
@@ -273,17 +280,23 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
 
     const get_default_quantity_units = (col) => {
       // TODO - hook up to org preferences / last mapping in DB
-      if ($scope.is_eui_column(col)) {
+      if ($scope.is_data_type_column('eui', col)) {
         return 'kBtu/ft**2/year';
       }
-      if ($scope.is_area_column(col)) {
+      if ($scope.is_data_type_column('area', col)) {
         return 'ft**2';
       }
-      if ($scope.is_ghg_column(col)) {
+      if ($scope.is_data_type_column('ghg', col)) {
         return 'MtCO2e/year';
       }
-      if ($scope.is_ghg_intensity_column(col)) {
+      if ($scope.is_data_type_column('ghg_intensity', col)) {
         return 'MtCO2e/ft**2/year';
+      }
+      if ($scope.is_data_type_column('water_use', col)) {
+        return 'kgal/year';
+      }
+      if ($scope.is_data_type_column('wui', col)) {
+        return 'gal/ft**2/year';
       }
       return null;
     };
@@ -317,25 +330,16 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
     };
 
     // Handle units
-    const eui_columns = _.filter($scope.mappable_property_columns, { data_type: 'eui' });
-    $scope.is_eui_column = (
-      mapping // All of these are on the PropertyState table
-    ) => mapping.to_table_name === 'PropertyState' && Boolean(_.find(eui_columns, { displayName: mapping.to_field }));
+    $scope.is_data_type_column = (data_type, mapping) => {
+      const data_type_columns = _.filter($scope.mappable_property_columns, { data_type });
+      return mapping.to_table_name === 'PropertyState' && Boolean(_.find(data_type_columns, { displayName: mapping.to_field }));
+    };
 
-    const area_columns = _.filter($scope.mappable_property_columns, { data_type: 'area' });
-    $scope.is_area_column = (
-      mapping // All of these are on the PropertyState table
-    ) => mapping.to_table_name === 'PropertyState' && Boolean(_.find(area_columns, { displayName: mapping.to_field }));
-
-    const ghg_columns = _.filter($scope.mappable_property_columns, { data_type: 'ghg' });
-    $scope.is_ghg_column = (
-      mapping // All of these are on the PropertyState table
-    ) => mapping.to_table_name === 'PropertyState' && Boolean(_.find(ghg_columns, { displayName: mapping.to_field }));
-
-    const ghg_intensity_columns = _.filter($scope.mappable_property_columns, { data_type: 'ghg_intensity' });
-    $scope.is_ghg_intensity_column = (
-      mapping // All of these are on the PropertyState table
-    ) => mapping.to_table_name === 'PropertyState' && Boolean(_.find(ghg_intensity_columns, { displayName: mapping.to_field }));
+    $scope.is_pint_column = (mapping) => {
+      const data_types = ['area', 'eui', 'ghg', 'ghg_intenity', 'water_use', 'wui'];
+      const data_type_columns = _.filter($scope.mappable_property_columns, (column) => _.includes(data_types, column.data_type));
+      return mapping.to_table_name === 'PropertyState' && Boolean(_.find(data_type_columns, { displayName: mapping.to_field }));
+    };
 
     // Add and remove column methods
     $scope.add_new_column = () => {
@@ -374,7 +378,7 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
             '<div class="modal-header">' +
             '<h3 class="modal-title" translate>Replacing Existing Columns</h3>' +
             '</div>' +
-            '<div class="modal-body" translate>This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?</div>' +
+            '<div class="modal-body" translate>This action replaces any of your current columns with the comma-delimited columns you provided. Would you like to continue?</div>' +
             '<div class="modal-footer">' +
             '<button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button>' +
             '<button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Yes</button>' +
@@ -426,11 +430,21 @@ angular.module('BE.seed.controller.column_mappings', []).controller('column_mapp
       return Boolean(_.find(_.values(grouped_by_from_field), (group) => group.length > 1));
     };
 
+    $scope.save_button_tooltip = () => {
+      if (!$scope.changes_possible) return 'No changes';
+      if ($scope.header_duplicates_present()) return 'Duplicate headers present';
+      if ($scope.empty_units_present()) return 'Empty units present';
+      if ($scope.current_profile.profile_type === COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT) return 'This profile cannot be changed';
+      if (!$scope.profile_action_ok('update')) return 'Unknown profile type';
+      return 'Save';
+    };
+
     $scope.empty_units_present = () => Boolean(
       _.find($scope.current_profile.mappings, (field) => {
-        const has_units = $scope.is_area_column(field) || $scope.is_eui_column(field) || $scope.is_ghg_column(field) || $scope.is_ghg_intensity_column(field);
+        const has_units = $scope.is_pint_column(field);
         return field.to_table_name === 'PropertyState' && field.from_units === null && has_units;
       })
+
     );
 
     $scope.profile_action_ok = (action) => {

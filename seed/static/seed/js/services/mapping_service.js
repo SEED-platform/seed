@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
+angular.module('SEED.service.mapping', []).factory('mapping_service', [
   '$http',
   'user_service',
   ($http, user_service) => {
@@ -11,7 +11,7 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
     /**
      * Get the data we need to build mapping views.
      *
-     * @param import_file_id: integer, number db id for this imported file.
+     * @param import_file_id - integer, number db id for this imported file.
      *
      * @returns object:
      *  {
@@ -67,7 +67,7 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
     /**
      * Start mapping.
      * kick off task to begin mapping on the backend.
-     * @param import_file_id: int, represents file import id.
+     * @param {int} import_file_id - represents file import id.
      */
     mapping_factory.start_mapping = (import_file_id) => $http
       .post(
@@ -85,7 +85,7 @@ angular.module('BE.seed.service.mapping', []).factory('mapping_service', [
     /**
      * remap_buildings
      * kick off task to begin re-mapping on the backend.
-     * @param import_file_id: int, represents file import id.
+     * @param {int} import_file_id - represents file import id.
      */
     mapping_factory.remap_buildings = (import_file_id) => $http
       .post(

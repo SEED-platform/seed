@@ -1,23 +1,24 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-describe('controller: inventory_detail_controller', () => {
+describe('controller: property_detail_controller', () => {
   // globals set up and used in each test scenario
-  let ngFilter; let ngLog; let
-    ngUrls;
-  let controller; let
-    inventory_detail_controller_scope;
-  let mock_inventory_service; let
-    state;
-  let mock_uib_modal; let mock_label_service; let
-    mock_label_payload;
+  let ngFilter;
+  let ngLog;
+  let ngUrls;
+  let controller;
+  let inventory_detail_controller_scope;
+  let mock_inventory_service;
+  let state;
+  let mock_uib_modal;
+  let mock_label_service;
+  let mock_label_payload;
 
   beforeEach(() => {
-    module('BE.seed');
+    module('SEED');
     inject((_$httpBackend_) => {
-      $httpBackend = _$httpBackend_;
-      $httpBackend.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
     });
     inject(($controller, $rootScope, $state, $uibModal, $log, $filter, $stateParams, $q, urls, label_service, inventory_service) => {
       controller = $controller;
@@ -34,7 +35,7 @@ describe('controller: inventory_detail_controller', () => {
       // and return their promises
       mock_inventory_service = inventory_service;
 
-      spyOn(mock_inventory_service, 'update_property').andCallFake((view_id, property_state) => {
+      spyOn(mock_inventory_service, 'update_property').and.callFake((view_id, property_state) => {
         inventory_detail_controller_scope.item_state = property_state;
         return $q.resolve({
           status: 'success'
@@ -276,9 +277,9 @@ describe('controller: inventory_detail_controller', () => {
       analyses_payload: {
         analyses: []
       },
-      users_payload: {
-        users: []
-      },
+      elements_payload: [],
+      tkbl_payload: [],
+      uniformat_payload: {},
       views_payload: {
         status: 'success',
         property_views: []

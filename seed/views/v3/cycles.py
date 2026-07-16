@@ -1,18 +1,17 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday<paul@paulmunday.net>
 :author Fable Turas <fable@raintechpdx.com>
 """
+
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 from seed import tasks
-from seed.lib.superperms.orgs.decorators import has_perm_class
+from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Cycle, PropertyView, TaxLotView
 from seed.serializers.cycles import CycleSerializer
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
@@ -20,17 +19,31 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 
 @method_decorator(
-    name='list',
-    decorator=swagger_auto_schema_org_query_param)
+    [
+        swagger_auto_schema_org_query_param,
+    ],
+    name="list",
+)
 @method_decorator(
-    name='create',
-    decorator=swagger_auto_schema_org_query_param)
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_root_member_access"),
+    ],
+    name="create",
+)
 @method_decorator(
-    name='retrieve',
-    decorator=swagger_auto_schema_org_query_param)
+    [
+        swagger_auto_schema_org_query_param,
+    ],
+    name="retrieve",
+)
 @method_decorator(
-    name='update',
-    decorator=swagger_auto_schema_org_query_param)
+    [
+        swagger_auto_schema_org_query_param,
+        has_perm("requires_root_member_access"),
+    ],
+    name="update",
+)
 class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
 
@@ -70,15 +83,16 @@ class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         Update a cycle record.
 
     """
+
     serializer_class = CycleSerializer
     pagination_class = None
     model = Cycle
-    data_name = 'cycles'
+    data_name = "cycles"
 
     def get_queryset(self):
         org_id = self.get_organization(self.request)
         # Order cycles by name because if the user hasn't specified then the front end WILL default to the first
-        return Cycle.objects.filter(organization_id=org_id).order_by('name')
+        return Cycle.objects.filter(organization_id=org_id).order_by("name")
 
     def perform_create(self, serializer):
         org_id = self.get_organization(self.request)
@@ -86,23 +100,24 @@ class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         serializer.save(organization_id=org_id, user=user)
 
     @swagger_auto_schema_org_query_param
-    @has_perm_class('requires_owner')
+    @method_decorator(
+        [
+            has_perm("requires_owner"),
+        ]
+    )
     def destroy(self, request, pk):
         organization_id = self.get_organization(request)
         try:
             cycle = Cycle.objects.get(pk=pk, organization_id=organization_id)
         except Cycle.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Cycle not found'
-            }, status=HTTP_404_NOT_FOUND)
+            return JsonResponse({"status": "error", "message": "Cycle not found"}, status=HTTP_404_NOT_FOUND)
 
         has_inventory = PropertyView.objects.filter(cycle=cycle).exists() or TaxLotView.objects.filter(cycle=cycle).exists()
         if has_inventory:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'Cycle has properties or taxlots that must must be removed before it can be deleted.'
-            }, status=HTTP_409_CONFLICT)
+            return JsonResponse(
+                {"status": "error", "message": "Cycle has properties or taxlots that must must be removed before it can be deleted."},
+                status=HTTP_409_CONFLICT,
+            )
 
         result = tasks.delete_organization_cycle(pk, organization_id)
         return JsonResponse(result)

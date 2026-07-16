@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.program_setup', []).controller('program_setup_controller', [
+angular.module('SEED.controller.program_setup', []).controller('program_setup_controller', [
   '$scope',
   '$state',
   '$uibModalInstance',
@@ -44,8 +44,12 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     $scope.valid_column_data_types = ['number', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean'];
     $scope.valid_x_axis_data_types = ['number', 'string', 'float', 'integer', 'ghg', 'ghg_intensity', 'area', 'eui', 'boolean'];
 
-    $scope.property_columns = _.reject(property_columns, (item) => item.related || !$scope.valid_column_data_types.includes(item.data_type)).sort((a, b) => naturalSort(a.displayName, b.displayName));
-    $scope.x_axis_columns = _.reject(property_columns, (item) => item.related || !$scope.valid_x_axis_data_types.includes(item.data_type)).sort((a, b) => naturalSort(a.displayName, b.displayName));
+    $scope.property_columns = property_columns
+      .filter((col) => !((col.related || !$scope.valid_column_data_types.includes(col.data_type)) && col.derived_column == null))
+      .sort((a, b) => naturalSort(a.displayName, b.displayName));
+    $scope.x_axis_columns = property_columns
+      .filter((col) => !((col.related || !$scope.valid_x_axis_data_types.includes(col.data_type)) && col.derived_column == null))
+      .sort((a, b) => naturalSort(a.displayName, b.displayName));
     $scope.x_axis_selection = '';
     $scope.cycle_selection = '';
     $scope.compliance_metrics_error = [];
@@ -141,7 +145,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
 
     $scope.click_remove_x_axis = (id) => {
       $scope.program_settings_changed();
-      $scope.selected_compliance_metric.x_axis_columns = $scope.selected_compliance_metric.x_axis_columns.filter((item) => item != id);
+      $scope.selected_compliance_metric.x_axis_columns = $scope.selected_compliance_metric.x_axis_columns.filter((item) => item !== id);
     };
 
     // Filter Groups
@@ -220,7 +224,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
               $scope.compliance_metrics_error.push(`${key}: ${error}`);
             }
           } else {
-            // success. the ID would already be saved so this block seems unnecesary
+            // success. the ID would already be saved so this block seems unnecessary
             if (!$scope.selected_compliance_metric.id) {
               $scope.selected_compliance_metric.id = data.id;
             }
@@ -251,7 +255,7 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
     };
 
     $scope.click_new_compliance_metric = () => {
-      //spinner_utility.show();
+      // spinner_utility.show();
 
       // create a new metric using api and then assign it to selected_compliance_metric that
       // way it will have an id
@@ -267,8 +271,8 @@ angular.module('BE.seed.controller.program_setup', []).controller('program_setup
         filter_group: null,
         x_axis_columns: []
       };
-      //spinner_utility.hide();
-    }
+      // spinner_utility.hide();
+    };
 
     $scope.click_delete = (compliance_metric = null) => {
       // spinner_utility.show();

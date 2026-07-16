@@ -1,15 +1,13 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-// create dummy angularJS app to attach filter(s)
-const myDistrictApp = angular.module('myDistrictApp', ['district']);
 
 describe('The district filter', () => {
   let districtFilter;
 
   beforeEach(() => {
-    module('myDistrictApp');
+    module('SEED');
     inject((_districtFilter_) => {
       districtFilter = _districtFilter_;
     });

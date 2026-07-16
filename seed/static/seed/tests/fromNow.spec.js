@@ -1,19 +1,15 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * tests fromNow angularjs filter wrapper of moment.js
  * uses epoch milliseconds as that is what the back-end returns
  */
-
-// create dummy angularJS app to attach filter(s)
-const myfromNowFilterApp = angular.module('myfromNowFilterApp', ['fromNow']);
-
 describe('The fromNow filter', () => {
   let fromNowFilter;
 
   beforeEach(() => {
-    module('myfromNowFilterApp');
+    module('SEED');
     inject((_fromNowFilter_) => {
       fromNowFilter = _fromNowFilter_;
     });

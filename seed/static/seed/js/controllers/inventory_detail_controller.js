@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_detail_controller', [
+angular.module('SEED.controller.inventory_detail', []).controller('inventory_detail_controller', [
   '$http',
   '$state',
   '$scope',
@@ -17,20 +17,20 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
   'uiGridConstants',
   'Notification',
   'urls',
+  'naturalSort',
   'spinner_utility',
   'label_service',
   'inventory_service',
   'matching_service',
   'pairing_service',
-  'derived_columns_service',
   'organization_service',
   'dataset_service',
+  'cache_entry_service',
+  'uploader_service',
   'inventory_payload',
   'views_payload',
   'analyses_payload',
-  'users_payload',
   'columns',
-  'derived_columns_payload',
   'profiles',
   'current_profile',
   'labels_payload',
@@ -39,6 +39,9 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
   'simple_modal_service',
   'property_measure_service',
   'scenario_service',
+  'uniformat_payload',
+  'elements_payload',
+  'tkbl_payload',
   // eslint-disable-next-line func-names
   function (
     $http,
@@ -55,20 +58,20 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     uiGridConstants,
     Notification,
     urls,
+    naturalSort,
     spinner_utility,
     label_service,
     inventory_service,
     matching_service,
     pairing_service,
-    derived_columns_service,
     organization_service,
     dataset_service,
+    cache_entry_service,
+    uploader_service,
     inventory_payload,
     views_payload,
     analyses_payload,
-    users_payload,
     columns,
-    derived_columns_payload,
     profiles,
     current_profile,
     labels_payload,
@@ -76,10 +79,17 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     cycle_service,
     simple_modal_service,
     property_measure_service,
-    scenario_service
+    scenario_service,
+    uniformat_payload,
+    elements_payload,
+    tkbl_payload
   ) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.organization = organization_payload.organization;
+    $scope.exporter_progress = {
+      progress: 0,
+      status_message: ''
+    };
 
     // WARNING: $scope.org is used by "child" controller - analysis_details_controller
     $scope.org = { id: organization_payload.organization.id };
@@ -97,6 +107,26 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     $scope.cycle = inventory_payload.cycle;
     $scope.cycles = [$scope.cycle];
 
+    $scope.uniformat = uniformat_payload;
+    $scope.elements = elements_payload;
+    $scope.tkbl = tkbl_payload;
+
+    $scope.element_extra_data_columns = [...elements_payload.reduce((set, element) => {
+      for (const key of Object.keys(element.extra_data)) {
+        set.add(key);
+      }
+      return set;
+    }, new Set())].sort(naturalSort);
+    {
+      // Custom ordering for `CAPACITY_UNITS`
+      const targetIndex = $scope.element_extra_data_columns.indexOf('CAPACITY');
+      const removeIndex = $scope.element_extra_data_columns.indexOf('CAPACITY_UNITS');
+      if (targetIndex !== -1 && removeIndex !== -1) {
+        $scope.element_extra_data_columns.splice(removeIndex, 1);
+        $scope.element_extra_data_columns.splice(targetIndex + 1, 0, 'CAPACITY_UNITS');
+      }
+    }
+
     let ignoreNextChange = true;
 
     views_payload = $scope.inventory_type === 'properties' ? views_payload.property_views : views_payload.taxlot_views;
@@ -113,13 +143,22 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
 
     $scope.labels = _.filter(labels_payload, (label) => !_.isEmpty(label.is_applied));
-    $scope.audit_template_building_id = inventory_payload.state.audit_template_building_id;
+    $scope.custom_id_1 = inventory_payload.state.custom_id_1;
     $scope.pm_property_id = inventory_payload.state.pm_property_id;
 
     /** See service for structure of returned payload */
     $scope.historical_items = inventory_payload.history;
     $scope.item_state = inventory_payload.state;
     $scope.inventory_docs = $scope.inventory_type === 'properties' ? inventory_payload.property.inventory_documents : null;
+    $scope.group_mappings = $scope.inventory_type === 'properties' ? inventory_payload.property.group_mappings : inventory_payload.taxlot.group_mappings;
+    const ali = $scope.inventory_type === 'properties' ?
+      inventory_payload.property.access_level_instance :
+      inventory_payload.taxlot.access_level_instance;
+
+    $scope.ali_path = {};
+    if (typeof ali === 'object') {
+      $scope.ali_path = ali.path;
+    }
 
     $scope.order_historical_items_with_scenarios = () => {
       $scope.historical_items_with_scenarios = $scope.historical_items ? $scope.historical_items.filter((item) => !_.isEmpty(item.state.scenarios)) : [];
@@ -131,9 +170,6 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
     $scope.order_historical_items_with_scenarios();
     $scope.format_epoch = (epoch) => moment(epoch).format('YYYY-MM-DD');
-
-    // stores derived column values -- updated later once we fetch the data
-    $scope.item_derived_values = {};
 
     $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
 
@@ -154,7 +190,6 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         return 0;
       })[0];
     }
-    $scope.users = users_payload.users;
 
     // handle popovers cleared on scrolling
     [document.getElementsByClassName('ui-view-container')[0], document.getElementById('pin')].forEach((el) => {
@@ -233,7 +268,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         resolve: {
           columns: () => columns,
           currentProfile: () => $scope.currentProfile,
-          cycle: () => null,
+          cycle: () => $scope.cycle,
           inventory_type: () => $stateParams.inventory_type,
           provided_inventory() {
             const provided_inventory = [];
@@ -467,7 +502,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
      * save_item: saves the user's changes to the Property/TaxLot State object.
      */
     const save_item_resolve = (data) => {
-      $scope.$emit('finished_saving');
+      $scope.edit_form_showing = false;
       notify_merges_and_links(data);
       if (data.view_id) {
         reload_with_view_id(data.view_id);
@@ -480,7 +515,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
 
     const save_item_reject = () => {
-      $scope.$emit('finished_saving');
+      $scope.edit_form_showing = false;
     };
 
     const save_item_catch = (data) => {
@@ -503,7 +538,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         controller: 'update_item_labels_modal_controller',
         resolve: {
           inventory_ids: () => [$scope.inventory.view_id],
-          inventory_type: () => $scope.inventory_type
+          inventory_type: () => $scope.inventory_type,
+          is_ali_root: () => $scope.menu.user.is_ali_root
         }
       });
       modalInstance.result.then(
@@ -535,14 +571,33 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       });
     };
 
+    $scope.open_update_inventory_groups_modal = () => {
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/update_inventory_groups_modal.html`,
+        controller: 'update_inventory_groups_modal_controller',
+        size: 'lg',
+        resolve: {
+          view_ids: () => [$scope.inventory.view_id],
+          inventory_type: () => $scope.inventory_type,
+          org_id: () => $scope.organization.id,
+          cycle: () => $scope.cycle.id
+        }
+      });
+      modalInstance.result.then(() => {
+        $state.reload();
+      });
+    };
+
     $scope.open_analyses_modal = () => {
       $uibModal.open({
         templateUrl: `${urls.static_url}seed/partials/inventory_detail_analyses_modal.html`,
         controller: 'inventory_detail_analyses_modal_controller',
         resolve: {
           inventory_ids: () => [$scope.inventory.view_id],
+          property_columns: () => columns.filter((x) => x.table_name === 'PropertyState'),
           current_cycle: () => $scope.cycle,
-          cycles: () => cycle_service.get_cycles().then((result) => result.cycles)
+          cycles: () => cycle_service.get_cycles().then((result) => result.cycles),
+          user: () => $scope.menu.user
         }
       });
     };
@@ -552,7 +607,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         templateUrl: `${urls.static_url}seed/partials/unmerge_modal.html`,
         controller: 'unmerge_modal_controller',
         resolve: {
-          inventory_type: () => $scope.inventory_type
+          inventory_type: () => $scope.inventory_type,
+          has_elements: () => $scope.elements.length > 0
         }
       });
 
@@ -576,7 +632,7 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         templateUrl: `${urls.static_url}seed/partials/data_upload_audit_template_modal.html`,
         controller: 'data_upload_audit_template_modal_controller',
         resolve: {
-          audit_template_building_id: () => $scope.audit_template_building_id,
+          custom_id_1: () => $scope.custom_id_1,
           organization: () => $scope.organization,
           cycle_id: () => $scope.cycle.id,
           upload_from_file: () => $scope.uploaderfunc,
@@ -638,34 +694,69 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
 
     $scope.export_building_sync_xlsx = () => {
       const filename = `buildingsync_property_${$stateParams.view_id}.xlsx`;
-      // var profileId = null;
-      // if ($scope.currentProfile) {
-      //   profileId = $scope.currentProfile.id;
-      // }
 
-      $http
-        .post(
-          '/api/v3/tax_lot_properties/export/',
-          {
-            ids: [$stateParams.view_id],
-            filename,
-            profile_id: null, // TODO: reconfigure backend to handle detail settings profiles
-            export_type: 'xlsx'
-          },
-          {
-            params: {
-              organization_id: $scope.organization.id,
-              inventory_type: $scope.inventory_type
-            },
-            responseType: 'arraybuffer'
-          }
-        )
-        .then((response) => {
-          const blob_type = response.headers()['content-type'];
+      inventory_service.start_export(
+        [$stateParams.view_id],
+        filename,
+        $scope.currentProfile?.id,
+        'xlsx',
+        $scope.inventory_type
+      ).then((data) => {
+        uploader_service.check_progress_loop(
+          data.data.progress_key,
+          0,
+          1,
+          $scope.get_export,
+          () => {},
+          $scope.exporter_progress
+        );
+      });
+    };
 
-          const blob = new Blob([response.data], { type: blob_type });
+    $scope.get_export = ({ unique_id }) => {
+      const filename = `buildingsync_property_${$stateParams.view_id}.xlsx`;
+
+      cache_entry_service.get_cache_entry(unique_id)
+        .then(({ data }) => {
+          const blob = base64_to_blob(data);
           saveAs(blob, filename);
         });
+    };
+
+    const base64_to_blob = (base64) => {
+      const byteCharacters = atob(base64);
+      const byteArrays = [];
+
+      for (let i = 0; i < byteCharacters.length; i += 512) {
+        const slice = byteCharacters.slice(i, i + 512);
+        const byteNumbers = Array.from(slice).map((c) => c.charCodeAt(0));
+        byteArrays.push(new Uint8Array(byteNumbers));
+      }
+
+      return new Blob(byteArrays, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    };
+
+    $scope.export_building_sync_at_file = () => {
+      $http
+        .get(
+          '/api/v3/audit_template/export_buildingsync_at_file/',
+          {
+            params: {
+              view_id: $stateParams.view_id,
+              organization_id: $scope.organization.id
+            }
+          }
+        )
+        .then(
+          (response) => {
+            const blob2 = new Blob([response.data], { type: 'application/xml;charset=utf-8;' });
+            const filename = `buildingsync_at_property_${$stateParams.view_id}.xml`;
+            saveAs(blob2, filename);
+          },
+          (err) => {
+            $scope.download_error_message = err.data ? err.data : err.toString();
+          }
+        );
     };
 
     $scope.unpair_property_from_taxlot = (property_id) => {
@@ -698,20 +789,25 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
     };
 
     $scope.match_merge_link_record = () => {
-      let new_view_id;
+      let match_merge_link_fn;
       if ($scope.inventory_type === 'properties') {
-        inventory_service.property_match_merge_link($scope.inventory.view_id).then((result) => {
-          new_view_id = result.view_id;
-          notify_merges_and_links(result);
-          if (new_view_id) reload_with_view_id(new_view_id);
-        });
+        match_merge_link_fn = inventory_service.property_match_merge_link;
       } else if ($scope.inventory_type === 'taxlots') {
-        inventory_service.taxlot_match_merge_link($scope.inventory.view_id).then((result) => {
-          new_view_id = result.view_id;
-          notify_merges_and_links(result);
-          if (new_view_id) reload_with_view_id(new_view_id);
-        });
+        match_merge_link_fn = inventory_service.taxlot_match_merge_link;
       }
+
+      match_merge_link_fn($scope.inventory.view_id)
+        .then((result) => {
+          notify_merges_and_links(result);
+          const new_view_id = result.view_id;
+          if (new_view_id) reload_with_view_id(new_view_id);
+        })
+        .catch((result) => {
+          Notification.error({
+            message: result.data.message,
+            delay: 10000
+          });
+        });
     };
 
     $scope.open_match_merge_link_warning_modal = (accept_action, trigger) => {
@@ -804,37 +900,17 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       $('.table-xscroll-fixed-header-container > .table-body-x-scroll').width(table_container.width() + table_container.scrollLeft());
     });
 
-    $scope.displayValue = (dataType, value) => {
-      if (dataType === 'datetime') {
+    $scope.displayValue = ({ column_name, data_type }, value) => {
+      if (data_type === 'datetime') {
         return $filter('date')(value, 'yyyy-MM-dd h:mm a');
       }
-      if (['area', 'eui', 'float', 'number'].includes(dataType)) {
+      if (['longitude', 'latitude'].includes(column_name)) {
+        return $filter('floatingPoint')(value);
+      }
+      if (['area', 'eui', 'float', 'number'].includes(data_type)) {
         return $filter('number')(value, $scope.organization.display_decimal_places);
       }
       return value;
-    };
-
-    // evaluate all derived columns and store the results
-    const evaluate_derived_columns = () => {
-      const visible_columns_with_derived_columns = $scope.columns.filter((col) => col.derived_column);
-      const derived_column_ids = visible_columns_with_derived_columns.map((col) => col.derived_column);
-      const attached_derived_columns = derived_columns_payload.derived_columns.filter((col) => derived_column_ids.includes(col.id));
-      const column_name_lookup = {};
-      visible_columns_with_derived_columns.forEach((col) => {
-        column_name_lookup[col.column_name] = col.name;
-      });
-
-      const all_evaluation_results = attached_derived_columns.map((col) => derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.id, [$scope.item_parent.id]).then((res) => ({
-        derived_column_id: col.id,
-        value: _.round(res.results[0].value, $scope.organization.display_decimal_places)
-      })));
-
-      $q.all(all_evaluation_results).then((results) => {
-        results.forEach((result) => {
-          const col_id = $scope.columns.find((col) => col.derived_column === result.derived_column_id).id;
-          $scope.item_derived_values[col_id] = result.value;
-        });
-      });
     };
 
     $scope.delete_scenario = (scenario_id, scenario_name) => {
@@ -891,10 +967,12 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
 
       $scope.measureGridOptionsByScenarioId = {};
       $scope.gridApiByScenarioId = {};
+      $scope.show_uigrid = {};
 
       const at_scenarios = $scope.historical_items.filter((item) => !_.isEmpty(item.state.scenarios)).map((item) => item.state.scenarios);
       const scenarios = [].concat(...at_scenarios);
       scenarios.forEach((scenario) => {
+        $scope.show_uigrid[scenario.id] = false;
         const scenario_id = scenario.id;
         const measureGridOptions = {
           data: scenario.measures.map((measure) => ({
@@ -934,6 +1012,8 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
           enableVerticalScrollbar: scenario.measures.length <= 10 ? uiGridConstants.scrollbars.NEVER : uiGridConstants.scrollbars.WHEN_NEEDED,
           minRowsToShow: Math.min(scenario.measures.length, 10),
           rowHeight: 40,
+          flatEntityAccess: true,
+          fastWatch: true,
           onRegisterApi(gridApi) {
             $scope.gridApiByScenarioId[scenario.id] = gridApi;
           }
@@ -942,9 +1022,17 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       });
     };
     $scope.resizeGridByScenarioId = (scenarioId) => {
-      const gridApi = $scope.gridApiByScenarioId[scenarioId];
-      setTimeout(gridApi.core.handleWindowResize, 50);
+      $scope.scenarioId = scenarioId;
+      $scope.show_uigrid[scenarioId] = !$scope.show_uigrid[scenarioId];
     };
+
+    // Only render scenario uigrids when user expands a scenario.
+    $scope.$watch('gridApiByScenarioId[scenarioId]', (gridApi) => {
+      if (gridApi) {
+        const gridApi = $scope.gridApiByScenarioId[$scope.scenarioId];
+        setTimeout(gridApi.core.handleWindowResize, 50);
+      }
+    });
 
     $scope.formatMeasureStatuses = (scenario) => {
       const statuses = scenario.measures.reduce((acc, measure) => {
@@ -986,7 +1074,6 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
         $scope.format_date_values($scope.item_state, inventory_service.taxlot_state_date_columns);
       }
 
-      evaluate_derived_columns();
       setMeasureGridOptions();
     };
 
@@ -1003,6 +1090,20 @@ angular.module('BE.seed.controller.inventory_detail', []).controller('inventory_
       modalInstance.result.finally(() => {
         init();
       });
+    };
+
+    /**
+     * @param {string} code - Code representing the Uniformat category.
+     * @return {string} Formatted category hierarchy or the original code if the category is not found.
+     */
+    $scope.uniformat_hierarchy = (code) => {
+      const element = uniformat_payload[code];
+      if (element) {
+        const { category, parent } = element;
+        const formattedCategory = $filter('startCase')(category);
+        return parent ? `${$scope.uniformat_hierarchy(parent)} → ${formattedCategory}` : formattedCategory;
+      }
+      return code;
     };
 
     init();

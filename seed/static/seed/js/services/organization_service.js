@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.organization', []).factory('organization_service', [
+angular.module('SEED.service.organization', []).factory('organization_service', [
   '$http',
   '$q',
   '$timeout',
@@ -51,18 +51,65 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       })
       .then((response) => response.data);
 
+    organization_factory.get_organization_access_level_tree = (org_id) => $http.get(`/api/v3/organizations/${org_id}/access_levels/tree`).then((response) => response.data);
+
+    organization_factory.get_descendant_access_level_tree = (org_id) => $http.get(`/api/v3/organizations/${org_id}/access_levels/descendant_tree`).then((response) => response.data);
+
+    organization_factory.update_organization_access_level_names = (org_id, new_access_level_names) => $http.post(
+      `/api/v3/organizations/${org_id}/access_levels/access_level_names/`,
+      { access_level_names: new_access_level_names }
+    ).then((response) => response.data);
+
+    organization_factory.can_delete_access_level_instance = (org_id, instance_id) => $http.get(`/api/v3/organizations/${org_id}/access_levels/${instance_id}/can_delete_instance/`).then((response) => response.data);
+
+    organization_factory.delete_access_level_instance = (org_id, instance_id) => $http.delete(`/api/v3/organizations/${org_id}/access_levels/${instance_id}/delete_instance/`).then((response) => response.data);
+
+    organization_factory.create_organization_access_level_instance = (org_id, parent_id, name) => $http.post(
+      `/api/v3/organizations/${org_id}/access_levels/add_instance/`,
+      { parent_id, name }
+    ).then((response) => response.data);
+
+    organization_factory.edit_organization_access_level_instance = (org_id, instance_id, name) => $http.put(
+      `/api/v3/organizations/${org_id}/access_levels/${instance_id}/edit_instance/`,
+      { name }
+    ).then((response) => response.data);
+
+    organization_factory.get_lowest_common_ancestor = (org_id, inventory_type, inventory_ids) => $http.post(
+      `/api/v3/organizations/${org_id}/access_levels/lowest_common_ancestor/`,
+      { inventory_type, inventory_ids }
+    ).then((response) => response.data);
+
+    organization_factory.filter_access_levels_by_views = (org_id, inventory_type, view_ids) => $http.post(
+      `/api/v3/organizations/${org_id}/access_levels/filter_by_views/`,
+      { inventory_type, view_ids }
+    ).then((response) => response.data).catch((data) => {
+      console.log(data);
+    });
+
     /**
      * updates the role for a user within an org
      * @param  {int} user_id id of user
      * @param  {int} org_id  id of organization
      * @param  {str} role    role
-     * @return {promise obj}         promise object
+     * @return {promise obj} promise object
      */
     organization_factory.update_role = (user_id, org_id, role) => $http
       .put(
         `/api/v3/users/${user_id}/role/`,
         {
           role
+        },
+        {
+          params: { organization_id: org_id }
+        }
+      )
+      .then((response) => response.data);
+
+    organization_factory.update_ali = (user_id, org_id, ali_id) => $http
+      .put(
+        `/api/v3/users/${user_id}/access_level_instance/`,
+        {
+          access_level_instance_id: ali_id
         },
         {
           params: { organization_id: org_id }
@@ -114,6 +161,22 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
     organization_factory.matching_criteria_columns = (org_id) => $http.get(`/api/v3/organizations/${org_id}/matching_criteria_columns/`).then((response) => response.data);
 
     organization_factory.geocoding_columns = (org_id) => $http.get(`/api/v3/organizations/${org_id}/geocoding_columns/`).then((response) => response.data);
+
+    organization_factory.reset_all_passwords = (org_id) => $http.post(`/api/v3/organizations/${org_id}/reset_all_passwords/`).then((response) => response.data);
+
+    organization_factory.match_merge_link = (org_id, inventory_type) => $http.post(`/api/v3/organizations/${org_id}/match_merge_link/`, {
+      inventory_type
+    }).then((response) => response.data);
+
+    organization_factory.geocoding_columns = (org_id) => $http.get(`/api/v3/organizations/${org_id}/geocoding_columns/`).then((response) => response.data);
+
+    organization_factory.match_merge_link_preview = (org_id, inventory_type, criteria_change_columns) => $http.post(`/api/v3/organizations/${org_id}/match_merge_link_preview/`, {
+      inventory_type,
+      add: criteria_change_columns.add,
+      remove: criteria_change_columns.remove
+    }).then((response) => response.data);
+
+    organization_factory.get_match_merge_link_result = (org_id, match_merge_link_id) => $http.get(`/api/v3/organizations/${org_id}/match_merge_link_result/?match_merge_link_id=${match_merge_link_id}`).then((response) => response.data);
 
     organization_factory.reset_all_passwords = (org_id) => $http.post(`/api/v3/organizations/${org_id}/reset_all_passwords/`).then((response) => response.data);
 

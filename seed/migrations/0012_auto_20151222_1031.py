@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 from django.db import migrations
 
 
@@ -14,19 +11,16 @@ def merge_extra_data(b1, b2, default=None):
         non_default = b1
 
     extra_data_sources = {}
-    default_extra_data = getattr(default, 'extra_data', {})
-    non_default_extra_data = getattr(non_default, 'extra_data', {})
+    default_extra_data = getattr(default, "extra_data", {})
+    non_default_extra_data = getattr(non_default, "extra_data", {})
 
     all_keys = set(list(default_extra_data.keys()) + list(non_default_extra_data.keys()))
-    extra_data = {
-        k: default_extra_data.get(k) or non_default_extra_data.get(k)
-        for k in all_keys
-    }
+    extra_data = {k: default_extra_data.get(k) or non_default_extra_data.get(k) for k in all_keys}
 
     for item in extra_data:
-        if item in default_extra_data and default_extra_data[item]:
+        if default_extra_data.get(item):
             extra_data_sources[item] = default.pk
-        elif item in non_default_extra_data and non_default_extra_data[item]:
+        elif non_default_extra_data.get(item):
             extra_data_sources[item] = non_default.pk
         else:
             extra_data_sources[item] = default.pk
@@ -41,7 +35,7 @@ def recover_extra_data(app, schema_editor, **kwargs):
 
 
 def merge_extra_data_from_parents(bs):
-    for parent in bs.parents.order_by('created').all():
+    for parent in bs.parents.order_by("created").all():
         # First do a recursive call to do a recursive merge of all extra_data
         # fields deeper down the tree.
         merge_extra_data_from_parents(parent)
@@ -61,7 +55,7 @@ def stub(*args, **kwargs):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ('seed', '0011_auto_20151209_0821'),
+        ("seed", "0011_auto_20151209_0821"),
     ]
 
     operations = [

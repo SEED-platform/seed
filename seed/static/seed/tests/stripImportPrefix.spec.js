@@ -1,15 +1,12 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-// create dummy angularJS app to attach filter(s)
-const myStripFilterApp = angular.module('myStripFilterApp', ['stripImportPrefix']);
-
 describe('The stripImportPrefix filter', () => {
   let stripImportPrefixFilter;
 
   beforeEach(() => {
-    module('myStripFilterApp');
+    module('SEED');
     inject((_stripImportPrefixFilter_) => {
       stripImportPrefixFilter = _stripImportPrefixFilter_;
     });

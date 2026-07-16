@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.service.geocode', []).factory('geocode_service', [
+angular.module('SEED.service.geocode', []).factory('geocode_service', [
   '$http',
   'user_service',
   ($http, user_service) => {
@@ -23,7 +23,7 @@ angular.module('BE.seed.service.geocode', []).factory('geocode_service', [
       )
       .then((response) => response)
       .catch((e) => {
-        if (_.includes(e.data, 'MapQuestAPIKeyError')) throw { status: 403, message: 'MapQuestAPIKeyError' };
+        if (_.includes(e.data, 'MapQuestAPIKeyError')) throw new Error({ status: 403, message: 'MapQuestAPIKeyError' });
         else throw e;
       });
 

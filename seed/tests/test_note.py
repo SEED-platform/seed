@@ -1,11 +1,10 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
-:author nicholas.long@nrel.gov
+:author nicholas.long@nlr.gov
 """
+
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
@@ -15,7 +14,7 @@ from seed.utils.organizations import create_organization
 
 class TestNotes(TestCase):
     def setUp(self):
-        self.user = User.objects.create_superuser('test_user@demo.com', 'test_user@demo.com', 'test_pass')
+        self.user = User.objects.create_superuser("test_user@demo.com", "test_user@demo.com", "test_pass")
         self.org, _, _ = create_organization(self.user)
 
         # Fake Factories

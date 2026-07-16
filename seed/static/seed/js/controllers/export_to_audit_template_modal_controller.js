@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.export_to_audit_template_modal', []).controller('export_to_audit_template_modal_controller', [
+angular.module('SEED.controller.export_to_audit_template_modal', []).controller('export_to_audit_template_modal_controller', [
   '$scope',
   '$state',
   '$uibModalInstance',
@@ -30,11 +30,11 @@ angular.module('BE.seed.controller.export_to_audit_template_modal', []).controll
 
     $scope.export = () => {
       const property_view_ids = { property_view_ids: ids };
-      audit_template_service.batch_export_to_audit_template($scope.org_id, property_view_ids).then(data => {
+      audit_template_service.batch_export_to_audit_template($scope.org_id, property_view_ids).then((data) => {
         if (!data.progress_key) {
-            $scope.upload_summary = data.message;
-            $scope.step.number = 3;
-            return
+          $scope.upload_summary = data.message;
+          $scope.step.number = 3;
+          return;
         }
 
         $scope.step.number = 1;

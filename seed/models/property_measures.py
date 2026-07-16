@@ -1,10 +1,7 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import unicode_literals
 
 import logging
 
@@ -19,6 +16,7 @@ class PropertyMeasure(models.Model):
     to fully define a unique measure instance. Scenarios reference these PropertyMeasures to define
     list of measures for the PropertyState.
     """
+
     MEASURE_PROPOSED = 1
     MEASURE_EVALUATED = 2
     MEASURE_SELECTED = 3
@@ -31,16 +29,16 @@ class PropertyMeasure(models.Model):
     MEASURE_UNSATISFACTORY = 10
 
     IMPLEMENTATION_TYPES = (
-        (MEASURE_PROPOSED, 'Proposed'),
-        (MEASURE_EVALUATED, 'Evaluated'),
-        (MEASURE_SELECTED, 'Selected'),
-        (MEASURE_INITIATED, 'Initiated'),
-        (MEASURE_DISCARDED, 'Discarded'),
-        (MEASURE_IN_PROGRESS, 'In Progress'),
-        (MEASURE_COMPLETED, 'Completed'),
-        (MEASURE_MV, 'MV'),
-        (MEASURE_VERIFIED, 'Verified'),
-        (MEASURE_UNSATISFACTORY, 'Unsatisfactory'),
+        (MEASURE_PROPOSED, "Proposed"),
+        (MEASURE_EVALUATED, "Evaluated"),
+        (MEASURE_SELECTED, "Selected"),
+        (MEASURE_INITIATED, "Initiated"),
+        (MEASURE_DISCARDED, "Discarded"),
+        (MEASURE_IN_PROGRESS, "In Progress"),
+        (MEASURE_COMPLETED, "Completed"),
+        (MEASURE_MV, "MV"),
+        (MEASURE_VERIFIED, "Verified"),
+        (MEASURE_UNSATISFACTORY, "Unsatisfactory"),
     )
 
     SCALE_INDIVIDUAL_SYSTEM = 1
@@ -54,15 +52,15 @@ class PropertyMeasure(models.Model):
     SCALE_TENANT_AREAS = 9
 
     APPLICATION_SCALE_TYPES = (
-        (SCALE_INDIVIDUAL_SYSTEM, 'Individual system'),
-        (SCALE_MULTIPLE_SYSTEM, 'Multiple systems'),
-        (SCALE_INDIVIDUAL_PREMISE, 'Individual premise'),
-        (SCALE_MULTIPLE_PREMISES, 'Multiple premises'),
-        (SCALE_ENTIRE_FACILITY, 'Entire facility'),
-        (SCALE_ENTIRE_SITE, 'Entire site'),
-        (SCALE_ENTIRE_BUILDING, 'Entire building'),
-        (SCALE_COMMON_AREAS, 'Common areas'),
-        (SCALE_TENANT_AREAS, 'Tenant areas'),
+        (SCALE_INDIVIDUAL_SYSTEM, "Individual system"),
+        (SCALE_MULTIPLE_SYSTEM, "Multiple systems"),
+        (SCALE_INDIVIDUAL_PREMISE, "Individual premise"),
+        (SCALE_MULTIPLE_PREMISES, "Multiple premises"),
+        (SCALE_ENTIRE_FACILITY, "Entire facility"),
+        (SCALE_ENTIRE_SITE, "Entire site"),
+        (SCALE_ENTIRE_BUILDING, "Entire building"),
+        (SCALE_COMMON_AREAS, "Common areas"),
+        (SCALE_TENANT_AREAS, "Tenant areas"),
     )
 
     CATEGORY_AIR_DISTRIBUTION = 0
@@ -95,43 +93,43 @@ class PropertyMeasure(models.Model):
     CATEGORY_OTHER = 27
 
     CATEGORY_AFFECTED_TYPE = (
-        (CATEGORY_AIR_DISTRIBUTION, 'Air Distribution'),
-        (CATEGORY_HEATING_SYSTEM, 'Heating System'),
-        (CATEGORY_COOLING_SYSTEM, 'Cooling System'),
-        (CATEGORY_OTHER_HVAC, 'Other HVAC'),
-        (CATEGORY_LIGHTING, 'Lighting'),
-        (CATEGORY_DOMESTIC_HOT_WATER, 'Domestic Hot Water'),
-        (CATEGORY_COOKING, 'Cooking'),
-        (CATEGORY_REFRIGERATION, 'Refrigeration'),
-        (CATEGORY_DISHWASHER, 'Dishwasher'),
-        (CATEGORY_LAUNDRY, 'Laundry'),
-        (CATEGORY_PUMP, 'Pump'),
-        (CATEGORY_FAN, 'Fan'),
-        (CATEGORY_MOTOR, 'Motor'),
-        (CATEGORY_HEAT_RECOVERY, 'Heat Recovery'),
-        (CATEGORY_WALL, 'Wall'),
-        (CATEGORY_ROOF, 'Roof'),
-        (CATEGORY_CEILING, 'Ceiling'),
-        (CATEGORY_FENESTRATION, 'Fenestration'),
-        (CATEGORY_FOUNDATION, 'Foundation'),
-        (CATEGORY_CONTROLS, 'General Controls and Operations'),
-        (CATEGORY_CRITICAL_IT_SYSTEM, 'Critical IT System'),
-        (CATEGORY_PLUG_LOAD, 'Plug Load'),
-        (CATEGORY_PROCESS_LOAD, 'Process Load'),
-        (CATEGORY_CONVEYANCE, 'Conveyance'),
-        (CATEGORY_ONSITE_STORAGE_GENERATION, 'On-Site Storage, Transmission, Generation'),
-        (CATEGORY_POOL, 'Pool'),
-        (CATEGORY_WATER_USE, 'Water Use'),
-        (CATEGORY_OTHER, 'Other'),
+        (CATEGORY_AIR_DISTRIBUTION, "Air Distribution"),
+        (CATEGORY_HEATING_SYSTEM, "Heating System"),
+        (CATEGORY_COOLING_SYSTEM, "Cooling System"),
+        (CATEGORY_OTHER_HVAC, "Other HVAC"),
+        (CATEGORY_LIGHTING, "Lighting"),
+        (CATEGORY_DOMESTIC_HOT_WATER, "Domestic Hot Water"),
+        (CATEGORY_COOKING, "Cooking"),
+        (CATEGORY_REFRIGERATION, "Refrigeration"),
+        (CATEGORY_DISHWASHER, "Dishwasher"),
+        (CATEGORY_LAUNDRY, "Laundry"),
+        (CATEGORY_PUMP, "Pump"),
+        (CATEGORY_FAN, "Fan"),
+        (CATEGORY_MOTOR, "Motor"),
+        (CATEGORY_HEAT_RECOVERY, "Heat Recovery"),
+        (CATEGORY_WALL, "Wall"),
+        (CATEGORY_ROOF, "Roof"),
+        (CATEGORY_CEILING, "Ceiling"),
+        (CATEGORY_FENESTRATION, "Fenestration"),
+        (CATEGORY_FOUNDATION, "Foundation"),
+        (CATEGORY_CONTROLS, "General Controls and Operations"),
+        (CATEGORY_CRITICAL_IT_SYSTEM, "Critical IT System"),
+        (CATEGORY_PLUG_LOAD, "Plug Load"),
+        (CATEGORY_PROCESS_LOAD, "Process Load"),
+        (CATEGORY_CONVEYANCE, "Conveyance"),
+        (CATEGORY_ONSITE_STORAGE_GENERATION, "On-Site Storage, Transmission, Generation"),
+        (CATEGORY_POOL, "Pool"),
+        (CATEGORY_WATER_USE, "Water Use"),
+        (CATEGORY_OTHER, "Other"),
     )
 
     # pointer to the actual measure as defined by the list of BuildingSync measures
-    measure = models.ForeignKey('Measure', on_delete=models.DO_NOTHING)
+    measure = models.ForeignKey("Measure", on_delete=models.DO_NOTHING)
 
     # User defined name of the measure that is in the BuildingSync file, used for tracking measures
     # within properties. This is typically the IDref.
     property_measure_name = models.CharField(max_length=255, null=False)
-    property_state = models.ForeignKey('PropertyState', on_delete=models.DO_NOTHING)
+    property_state = models.ForeignKey("PropertyState", on_delete=models.DO_NOTHING)
     description = models.TextField(null=True)
     implementation_status = models.IntegerField(choices=IMPLEMENTATION_TYPES, default=MEASURE_PROPOSED)
     application_scale = models.IntegerField(choices=APPLICATION_SCALE_TYPES, default=SCALE_ENTIRE_FACILITY)
@@ -146,55 +144,47 @@ class PropertyMeasure(models.Model):
     useful_life = models.FloatField(null=True)
 
     class Meta:
-        unique_together = ('property_measure_name', 'property_state', 'measure', 'application_scale', 'implementation_status')
-        index_together = [
-            ['property_measure_name', 'property_state'],
-        ]
+        unique_together = ("property_measure_name", "property_state", "measure", "application_scale", "implementation_status")
+        indexes = [models.Index(fields=["property_measure_name", "property_state"])]
 
     @classmethod
     def str_to_impl_status(cls, impl_status):
+        default = cls._meta.get_field("implementation_status").default
         if not impl_status:
-            return None
+            return default
 
         if isinstance(impl_status, int):
             if impl_status in [(t[0]) for t in cls.IMPLEMENTATION_TYPES]:
                 return impl_status
-            return None
+            return default
 
-        value = [y[0] for x, y in enumerate(cls.IMPLEMENTATION_TYPES) if y[1] == impl_status]
-        if len(value) == 1:
-            return value[0]
-        else:
-            return None
+        value = next((y[0] for x, y in enumerate(cls.IMPLEMENTATION_TYPES) if y[1] == impl_status), default)
+        return value
 
     @classmethod
     def str_to_category_affected(cls, category):
+        default = cls._meta.get_field("category_affected").default
         if not category:
-            return None
+            return default
 
         if isinstance(category, int):
             if category in [(t[0]) for t in cls.CATEGORY_AFFECTED_TYPE]:
                 return category
-            return None
+            return default
 
-        value = [y[0] for x, y in enumerate(cls.CATEGORY_AFFECTED_TYPE) if y[1] == category]
-        if len(value) == 1:
-            return value[0]
-        else:
-            return None
+        value = next((y[0] for x, y in enumerate(cls.CATEGORY_AFFECTED_TYPE) if y[1] == category), default)
+        return value
 
     @classmethod
     def str_to_application_scale(cls, app_scale):
+        default = cls._meta.get_field("application_scale").default
         if not app_scale:
-            return None
+            return default
 
         if isinstance(app_scale, int):
             if app_scale in [(t[0]) for t in cls.APPLICATION_SCALE_TYPES]:
                 return app_scale
-            return None
+            return default
 
-        value = [y[0] for x, y in enumerate(cls.APPLICATION_SCALE_TYPES) if y[1] == app_scale]
-        if len(value) == 1:
-            return value[0]
-        else:
-            return None
+        value = next((y[0] for x, y in enumerate(cls.APPLICATION_SCALE_TYPES) if y[1] == app_scale), default)
+        return value

@@ -34,4 +34,4 @@ changelog:
         - Bug
     - title: Other Changes
       labels:
-        - "*"
+        - '*'

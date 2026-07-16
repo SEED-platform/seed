@@ -1,0 +1,50 @@
+#!/bin/bash
+
+set -e
+
+cd /seed
+
+# Check if 'DISABLE_SERVICE_CHECKS_ON_START' is not set or if its value is 'TRUE'
+if [[ "${DISABLE_SERVICE_CHECKS_ON_START}" == "on" ]]; then
+    echo "'DISABLE_SERVICE_CHECKS_ON_START' is set and equal to 'on'. Skipping wait-for-it.sh execution."
+else
+    cd /seed
+
+    echo "Waiting for postgres to start"
+    if [ -v POSTGRES_HOST ]; then
+        POSTGRES_ACTUAL_HOST=$POSTGRES_HOST
+    else
+        POSTGRES_ACTUAL_HOST=db-postgres
+    fi
+    /usr/local/wait-for-it.sh --strict $POSTGRES_ACTUAL_HOST:$POSTGRES_PORT
+
+    echo "Waiting for redis to start"
+    if [ -v REDIS_HOST ]; then
+        REDIS_ACTUAL_HOST=$REDIS_HOST
+    else
+        REDIS_ACTUAL_HOST=db-redis
+    fi
+
+    /usr/local/wait-for-it.sh --strict $REDIS_ACTUAL_HOST:6379
+fi
+
+# collect static resources before starting
+./manage.py collectstatic --no-input -i package.json -i package-lock.json -i node_modules/ol-ext/index.html
+
+# clean up previously-generated assets and re-compress
+rm -rf /seed/collected_static/CACHE
+./manage.py compress --force
+
+# set the permissions in the /seed/collected_static folder
+chown -R 1000 /seed/collected_static
+
+# Run any migrations before starting -- always for now
+./manage.py migrate
+
+echo "Creating default user"
+./manage.py create_default_user --username=$SEED_ADMIN_USER --password=$SEED_ADMIN_PASSWORD --organization=$SEED_ADMIN_ORG
+
+WORKERS="${HYPERCORN_WORKERS:-$(($(nproc) / 2))}"
+WORKERS=$(($WORKERS > 1 ? $WORKERS : 1))
+
+exec hypercorn config.asgi:seed --bind 127.0.0.1:8000 --workers "$WORKERS"

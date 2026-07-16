@@ -1,23 +1,24 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inventory_detail_meters_controller', [
+angular.module('SEED.controller.inventory_detail_meters', []).controller('inventory_detail_meters_controller', [
   '$state',
   '$scope',
   '$stateParams',
   '$uibModal',
   '$window',
   'meter_service',
+  'organization_service',
   'cycles',
   'dataset_service',
   'inventory_service',
+  'inventory_group_service',
   'inventory_payload',
   'meters',
   'property_meter_usage',
   'spinner_utility',
   'urls',
-  'user_service',
   'organization_payload',
   // eslint-disable-next-line func-names
   function (
@@ -27,20 +28,26 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
     $uibModal,
     $window,
     meter_service,
+    organization_service,
     cycles,
     dataset_service,
     inventory_service,
+    inventory_group_service,
     inventory_payload,
     meters,
     property_meter_usage,
     spinner_utility,
     urls,
-    user_service,
     organization_payload
   ) {
     spinner_utility.show();
-    $scope.item_state = inventory_payload.state;
     $scope.inventory_type = $stateParams.inventory_type;
+    $scope.item_state = inventory_payload.state;
+
+    inventory_group_service.get_groups_for_inventory('properties', [inventory_payload.property.id]).then((groups) => {
+      $scope.groups = groups;
+    });
+
     $scope.organization = organization_payload.organization;
     $scope.filler_cycle = cycles.cycles[0].id;
 
@@ -48,7 +55,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
       view_id: $stateParams.view_id
     };
 
-    const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source} - ${source_id ?? 'None'}`;
+    const getMeterLabel = ({ source, source_id, type }) => `${type} - ${source ?? 'None'} - ${source_id ?? 'None'}`;
 
     const resetSelections = () => {
       $scope.sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
@@ -61,7 +68,19 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
     resetSelections();
 
-    const deleteButton = '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>';
+    // dont show edit if disabled?
+    const buttons = (
+      '<div class="meters-table-actions" style="display: flex; flex-direction=column">' +
+      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && grid.appScope.groups.length" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="Edit Meter Connection"><i class="fa-solid fa-pencil"></i></button>' +
+      // ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\' && !grid.appScope.groups.length" class="btn-gray" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_connection_edit_modal(row.entity)" title="To Edit Connection, a meter must be part of an inventory group" ng-disabled="true"><i class="fa-solid fa-pencil"></i></button>' +
+      ' <button type="button" ng-show="grid.appScope.menu.user.organization.user_role !== \'viewer\'" class="btn-danger" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" title="Delete Meter"><i class="fa-solid fa-xmark"></i></button>' +
+      '</div>'
+    );
+
+    $scope.serviceLink = (entity) => {
+      if (entity.service_name === null) return;
+      return `<a id="inventory-summary" ui-sref="inventory_list(::{inventory_type: inventory_type})" ui-sref-active="active">${entity.service_name}</a>`;
+    };
 
     $scope.meterGridOptions = {
       data: 'sorted_meters',
@@ -72,15 +91,17 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
         { field: 'source' },
         { field: 'source_id' },
         { field: 'scenario_id' },
+        { field: 'connection_type' },
+        { field: 'service_name', displayName: 'Connection', cellTemplate: '<a id="inventory-summary" ui-sref="inventory_group_detail_systems(::{inventory_type: grid.appScope.inventory_type, group_id: row.entity.service_group})" ui-sref-active="active">{$ row.entity.service_name $}</a>' },
         { field: 'is_virtual' },
         { field: 'scenario_name' },
-        { field: 'actions', cellTemplate: deleteButton }
+        { field: 'actions', cellTemplate: buttons }
       ],
       enableGridMenu: true,
       enableSelectAll: true,
       exporterMenuPdf: false,
       exporterMenuExcel: false,
-      exporterCsvFilename: () => `${$scope.inventory_name ? $scope.inventory_name : $stateParams.view_id} meter.csv`,
+      exporterCsvFilename: () => `${$scope.inventory_display_name ? $scope.inventory_display_name : $stateParams.view_id}_meters.csv`,
       enableColumnResizing: true,
       flatEntityAccess: true,
       fastWatch: true,
@@ -112,6 +133,75 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
       }
     };
 
+    const canvas = document.getElementById('program-overview-chart');
+    const ctx = canvas.getContext('2d');
+
+    $scope.meterReadingsChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: []
+      },
+      options: {
+        scales: {},
+        plugins: {
+          legend: {
+            onClick: () => {}
+          }
+        }
+      }
+    });
+    $scope.meterReadingsChart.update();
+
+    const colors = [
+      '#a6cee3',
+      '#1f78b4',
+      '#b2df8a',
+      '#33a02c',
+      '#fb9a99',
+      '#e31a1c',
+      '#fdbf6f',
+      '#ff7f00',
+      '#cab2d6',
+      '#6a3d9a'
+    ];
+
+    $scope.reloadChart = () => {
+      if ($scope.interval.selected === 'Exact') return;
+
+      // init empty data obj
+      const dataForChart = {
+        labels: $scope.data.map((d) => d[$scope.interval.selected.toLowerCase()]),
+        datasets: $scope.meterReadGridOptions.columnDefs.slice(1).map((c, i) => ({
+          id: c.field,
+          label: c.displayName,
+          data: [],
+          yAxisID: c.displayName.slice(c.field.length + 2, -1),
+          backgroundColor: colors[i % colors.length],
+          borderColor: colors[i % colors.length]
+        }))
+      };
+
+      // fill data object
+      $scope.data.forEach((readingsForTime) => {
+        dataForChart.datasets.forEach((dataset) => {
+          dataset.data.push(readingsForTime[dataset.id]);
+        });
+      });
+      $scope.meterReadingsChart.data = dataForChart;
+      $scope.meterReadingsChart.update();
+
+      // set scale
+      const yAxisIDs = new Set(dataForChart.datasets.map((d) => d.yAxisID));
+      yAxisIDs.forEach((axis) => {
+        $scope.meterReadingsChart.options.scales[axis].title.text = axis;
+        $scope.meterReadingsChart.options.scales[axis].title.display = true;
+      });
+      Object.keys($scope.meterReadingsChart.options.scales).forEach((k) => {
+        if (!yAxisIDs.has(k)) { delete $scope.meterReadingsChart.options.scales[k]; }
+      });
+      $scope.meterReadingsChart.update();
+    };
+
     $scope.meterReadGridOptions = {
       data: 'data',
       columnDefs: property_meter_usage.column_defs,
@@ -119,7 +209,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
       enableSelectAll: true,
       exporterMenuPdf: false,
       exporterMenuExcel: false,
-      exporterCsvFilename: () => `${$scope.inventory_name ? $scope.inventory_name : $stateParams.view_id} meter_readings.csv`,
+      exporterCsvFilename: () => `${$scope.inventory_dispaly_name ? $scope.inventory_dispaly_name : $stateParams.view_id}_meter_readings.csv`,
       enableColumnResizing: true,
       enableFiltering: true,
       flatEntityAccess: true,
@@ -144,7 +234,24 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
         templateUrl: `${urls.static_url}seed/partials/meter_deletion_modal.html`,
         controller: 'meter_deletion_modal_controller',
         resolve: {
+          organization_id: () => $scope.organization.id,
+          group_id: () => null,
           meter: () => meter,
+          view_id: () => $scope.inventory.view_id,
+          refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
+        }
+      });
+    };
+
+    $scope.open_meter_connection_edit_modal = (meter) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/meter_edit_modal.html`,
+        controller: 'meter_edit_modal_controller',
+        resolve: {
+          organization_id: () => $scope.organization.id,
+          meter: () => meter,
+          property_id: () => inventory_payload.property.id,
+          system_id: () => null,
           view_id: () => $scope.inventory.view_id,
           refresh_meters_and_readings: () => $scope.refresh_meters_and_readings
         }
@@ -207,27 +314,14 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
       $scope.has_meters = meters.length > 0;
       $scope.has_readings = $scope.data.length > 0;
       $scope.apply_column_settings();
+      $scope.reloadChart();
     };
 
     // refresh_readings make an API call to refresh the base readings data
     // according to the selected interval
     $scope.refresh_meters_and_readings = () => {
-      spinner_utility.show();
-      const get_meters_Promise = meter_service.get_meters($scope.inventory.view_id, $scope.organization.id);
-      const get_readings_Promise = meter_service.property_meter_usage(
-        $scope.inventory.view_id,
-        $scope.organization.id,
-        $scope.interval.selected,
-        [] // Not excluding any meters from the query
-      );
-      Promise.all([get_meters_Promise, get_readings_Promise]).then((data) => {
-        // update the base data and reset filters
-        [meters, property_meter_usage] = data;
-
-        resetSelections();
-        $scope.applyFilters();
-        spinner_utility.hide();
-      });
+      // Any reason we can't just reload? Solves issues with null group_ids
+      $state.reload();
     };
 
     // refresh_readings make an API call to refresh the base readings data
@@ -247,6 +341,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
 
           resetSelections();
           $scope.applyFilters();
+          $scope.reloadChart();
           spinner_utility.hide();
         });
     };
@@ -259,24 +354,13 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
           filler_cycle: () => $scope.filler_cycle,
           organization_id: () => $scope.organization.id,
           view_id: () => $scope.inventory.view_id,
+          system_id: () => null,
           datasets: () => dataset_service.get_datasets().then((result) => result.datasets)
         }
       });
     };
 
-    const get_inventory_display_name = (property_type) => {
-      let error = '';
-      let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
-      if (!(field in $scope.item_state)) {
-        error = `${field} does not exist`;
-        field = 'address_line_1';
-      }
-      if (!$scope.item_state[field]) {
-        error += `${error === '' ? '' : ' and default '}${field} is blank`;
-      }
-      $scope.inventory_name_error = error;
-      $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '';
-    };
+    $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
 
     $scope.updateHeight = () => {
       let height = 0;
@@ -289,7 +373,5 @@ angular.module('BE.seed.controller.inventory_detail_meters', []).controller('inv
       $scope.readingGridApi.core.handleWindowResize();
       $scope.meterGridApi.core.handleWindowResize();
     };
-
-    get_inventory_display_name($scope.inventory_type === 'properties' ? 'property' : 'taxlot');
   }
 ]);

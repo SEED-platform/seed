@@ -5,15 +5,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('seed', '0132_auto_20201211_1949_squashed_0134_auto_20201211_2053'),
+        ("seed", "0132_auto_20201211_1949_squashed_0134_auto_20201211_2053"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='analysisinputfile',
-            name='analysis',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='input_files', to='seed.Analysis'),
+            model_name="analysisinputfile",
+            name="analysis",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="input_files", to="seed.Analysis"),
         ),
     ]

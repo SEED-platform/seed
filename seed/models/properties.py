@@ -1,10 +1,7 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
-from __future__ import absolute_import, unicode_literals
 
 import copy
 import logging
@@ -13,24 +10,19 @@ from os import path
 
 from django.conf import settings
 from django.contrib.gis.db import models as geomodels
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, models, transaction
-from django.db.models import Case, Value, When
-from django.db.models.signals import (
-    m2m_changed,
-    post_save,
-    pre_delete,
-    pre_save
-)
+from django.db.models import UniqueConstraint
+from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
 from django.forms.models import model_to_dict
-from past.builtins import basestring
 from quantityfield.fields import QuantityField
 from quantityfield.units import ureg
 
 from seed.data_importer.models import ImportFile
-# from seed.utils.cprofile import cprofile
 from seed.lib.mcm.cleaners import date_cleaner
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
+from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.models import (
     DATA_STATE,
@@ -39,18 +31,14 @@ from seed.models.models import (
     MERGE_STATE,
     MERGE_STATE_UNKNOWN,
     SEED_DATA_SOURCES,
-    StatusLabel
+    StatusLabel,
 )
 from seed.models.tax_lot_properties import TaxLotProperty
 from seed.utils.address import normalize_address_str
-from seed.utils.generic import (
-    compare_orgs_between_label_and_target,
-    obj_to_dict,
-    split_model_fields
-)
-from seed.utils.time import convert_datestr, convert_to_js_timestamp
+from seed.utils.generic import compare_orgs_between_label_and_target, obj_to_dict, split_model_fields
+from seed.utils.time_utils import convert_datestr, convert_to_js_timestamp
+from seed.utils.ubid import generate_ubidmodels_for_state
 
-from ..utils.ubid import decode_unique_ids
 from .auditlog import AUDIT_IMPORT, DATA_UPDATE_TYPE
 
 _log = logging.getLogger(__name__)
@@ -59,8 +47,8 @@ _log = logging.getLogger(__name__)
 property_decorator = property
 
 # new units used by properties
-ureg.define('@alias metric_ton = MtCO2e')
-ureg.define('@alias kilogram = kgCO2e')
+ureg.define("@alias metric_ton = MtCO2e")
+ureg.define("@alias kilogram = kgCO2e")
 
 
 class Property(models.Model):
@@ -72,20 +60,22 @@ class Property(models.Model):
 
     The property can also reference a parent property.
     """
+
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE, null=False, related_name="properties")
 
     # Handle properties that may have multiple properties (e.g., buildings)
-    parent_property = models.ForeignKey('Property', on_delete=models.CASCADE, blank=True, null=True)
+    parent_property = models.ForeignKey("Property", on_delete=models.CASCADE, blank=True, null=True)
 
     # Track when the entry was created and when it was updated
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name_plural = 'properties'
+        verbose_name_plural = "properties"
 
     def __str__(self):
-        return 'Property - %s' % (self.pk)
+        return f"Property - {self.pk}"
 
     def copy_meters(self, source_property_id, source_persists=True):
         """
@@ -116,7 +106,7 @@ class Property(models.Model):
                         is_virtual=source_meter.is_virtual,
                         source=source_meter.source,
                         source_id=source_meter.source_id,
-                        type=source_meter.type
+                        type=source_meter.type,
                     )
 
                     if created:
@@ -132,11 +122,35 @@ class Property(models.Model):
                         target_meter.copy_readings(source_meter, overlaps_possible=True)
 
 
+@receiver(pre_save, sender=Property)
+def set_default_access_level_instance(sender, instance, **kwargs):
+    """If ALI not set, put this Property at the root."""
+    if instance.access_level_instance_id is None:
+        root = AccessLevelInstance.objects.get(organization_id=instance.organization_id, depth=1)
+        instance.access_level_instance_id = root.id
+
+    bad_taxlotproperty = (
+        TaxLotProperty.objects.filter(property_view__property_id=instance.id)
+        .exclude(taxlot_view__taxlot__access_level_instance_id=instance.access_level_instance_id)
+        .exists()
+    )
+    if bad_taxlotproperty:
+        raise ValidationError("cannot change property's ALI to ALI different than related taxlots.")
+
+
+@receiver(post_save, sender=Property)
+def post_save_property(sender, instance, created, **kwargs):
+    if created:
+        from seed.models import HistoricalNote
+
+        HistoricalNote.objects.get_or_create(property=instance)
+
+
 class PropertyState(models.Model):
     """Store a single property. This contains all the state information about the property
 
-    For property_timezone, use the pytz timezone strings. The US has the following and a full
-    list can be created by calling pytz.all_timezones in Python:
+    For property_timezone, use IANA timezone strings. The US has the following and a full
+    list is available from ``zoneinfo.available_timezones()``:
         * US/Alaska
         * US/Aleutian
         * US/Arizona
@@ -159,38 +173,40 @@ class PropertyState(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     data_state = models.IntegerField(choices=DATA_STATE, default=DATA_STATE_UNKNOWN)
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
+    raw_access_level_instance = models.ForeignKey(AccessLevelInstance, null=True, on_delete=models.SET_NULL)
+    raw_access_level_instance_error = models.TextField(null=True)
 
-    jurisdiction_property_id = models.TextField(null=True, blank=True, db_collation='natural_sort')
+    jurisdiction_property_id = models.TextField(null=True, blank=True, db_collation="natural_sort")
 
-    custom_id_1 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    custom_id_1 = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
     # Audit Template has their own building id
-    audit_template_building_id = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    audit_template_building_id = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
     # A unique building identifier as defined by DOE's UBID project (https://buildingid.pnnl.gov/)
-    ubid = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    ubid = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
     # If the property is a campus then the pm_parent_property_id is the same
     # for all the properties. The main campus record will have the pm_property_id
     # set to be the same as the pm_parent_property_id
-    pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    pm_property_id = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    pm_property_id = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
-    home_energy_score_id = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    home_energy_score_id = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
     # Tax Lot Number of the property - this field can be an unparsed list or just one string.
-    lot_number = models.TextField(null=True, blank=True, db_collation='natural_sort')
-    property_name = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    lot_number = models.TextField(null=True, blank=True, db_collation="natural_sort")
+    property_name = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
     # Leave this as is for now, normalize into its own table soon
     # use properties to assess from instances
-    address_line_1 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    address_line_2 = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    address_line_1 = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    address_line_2 = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
     normalized_address = models.CharField(max_length=255, null=True, blank=True, editable=False)
 
-    city = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    state = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    postal_code = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    city = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    state = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    postal_code = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
     # New fields for latitude and longitude as native database objects
     latitude = models.FloatField(null=True, blank=True)
@@ -202,9 +218,9 @@ class PropertyState(models.Model):
     property_footprint = geomodels.PolygonField(geography=True, null=True, blank=True)
 
     # Store the timezone of the property
-    property_timezone = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    property_timezone = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
-    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True, db_collation='natural_sort')
+    geocoding_confidence = models.CharField(max_length=32, null=True, blank=True, db_collation="natural_sort")
 
     # EPA's eGRID Subregion Code
     #   https://www.epa.gov/egrid, https://bedes.lbl.gov/bedes-online/egrid-subregion-code
@@ -237,37 +253,37 @@ class PropertyState(models.Model):
     # SRSO
     # SRTV
     # SRVC
-    egrid_subregion_code = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    egrid_subregion_code = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
     # Only spot where it's 'building' in the app, b/c this is a PM field.
     building_count = models.IntegerField(null=True, blank=True)
 
-    property_notes = models.TextField(null=True, blank=True, db_collation='natural_sort')
-    property_type = models.TextField(null=True, blank=True, db_collation='natural_sort')
+    property_notes = models.TextField(null=True, blank=True, db_collation="natural_sort")
+    property_type = models.TextField(null=True, blank=True, db_collation="natural_sort")
     year_ending = models.DateField(null=True, blank=True)
 
     # Tax IDs are often stuck here.
-    use_description = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    use_description = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
     year_built = models.IntegerField(null=True, blank=True)
     recent_sale_date = models.DateTimeField(null=True, blank=True)
 
     # Normalize eventually on owner/address table
-    owner = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    owner_email = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    owner_telephone = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    owner_address = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    owner_city_state = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
-    owner_postal_code = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    owner = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    owner_email = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    owner_telephone = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    owner_address = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    owner_city_state = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
+    owner_postal_code = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
     generation_date = models.DateTimeField(null=True, blank=True)
     release_date = models.DateTimeField(null=True, blank=True)
 
     energy_score = models.IntegerField(null=True, blank=True)
 
-    energy_alerts = models.TextField(null=True, blank=True, db_collation='natural_sort')
-    space_alerts = models.TextField(null=True, blank=True, db_collation='natural_sort')
-    building_certification = models.CharField(max_length=255, null=True, blank=True, db_collation='natural_sort')
+    energy_alerts = models.TextField(null=True, blank=True, db_collation="natural_sort")
+    space_alerts = models.TextField(null=True, blank=True, db_collation="natural_sort")
+    building_certification = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
     # Need to add another field eventually to define the source of the EUIs and other
     # reported fields. Ideally would have the ability to provide the same field from
@@ -295,33 +311,39 @@ class PropertyState(models.Model):
 
     # new Quantity columns
 
-    gross_floor_area = QuantityField('ft**2', null=True, blank=True)
-    conditioned_floor_area = QuantityField('ft**2', null=True, blank=True)
-    occupied_floor_area = QuantityField('ft**2', null=True, blank=True)
-    site_eui = QuantityField('kBtu/ft**2/year', null=True, blank=True)
-    site_eui_weather_normalized = QuantityField('kBtu/ft**2/year', null=True, blank=True)
-    site_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
-    source_eui = QuantityField('kBtu/ft**2/year', null=True, blank=True)
-    source_eui_weather_normalized = QuantityField('kBtu/ft**2/year', null=True, blank=True)
-    source_eui_modeled = QuantityField('kBtu/ft**2/year', null=True, blank=True)
-    total_ghg_emissions = QuantityField('MtCO2e/year', null=True, blank=True)
-    total_marginal_ghg_emissions = QuantityField('MtCO2e/year', null=True, blank=True)
-    total_ghg_emissions_intensity = QuantityField('kgCO2e/ft**2/year', null=True, blank=True)
-    total_marginal_ghg_emissions_intensity = QuantityField('kgCO2e/ft**2/year', null=True, blank=True)
+    gross_floor_area = QuantityField("ft**2", null=True, blank=True)
+    conditioned_floor_area = QuantityField("ft**2", null=True, blank=True)
+    occupied_floor_area = QuantityField("ft**2", null=True, blank=True)
+    site_eui = QuantityField("kBtu/ft**2/year", null=True, blank=True)
+    site_eui_weather_normalized = QuantityField("kBtu/ft**2/year", null=True, blank=True)
+    site_eui_modeled = QuantityField("kBtu/ft**2/year", null=True, blank=True)
+    source_eui = QuantityField("kBtu/ft**2/year", null=True, blank=True)
+    source_eui_weather_normalized = QuantityField("kBtu/ft**2/year", null=True, blank=True)
+    source_eui_modeled = QuantityField("kBtu/ft**2/year", null=True, blank=True)
+    total_ghg_emissions = QuantityField("MtCO2e/year", null=True, blank=True)
+    total_marginal_ghg_emissions = QuantityField("MtCO2e/year", null=True, blank=True)
+    total_ghg_emissions_intensity = QuantityField("kgCO2e/ft**2/year", null=True, blank=True)
+    total_marginal_ghg_emissions_intensity = QuantityField("kgCO2e/ft**2/year", null=True, blank=True)
+    water_use = QuantityField("kgal/year", null=True, blank=True)
+    indoor_water_use = QuantityField("kgal/year", null=True, blank=True)
+    outdoor_water_use = QuantityField("kgal/year", null=True, blank=True)
+    wui = QuantityField("gal/ft**2/year", null=True, blank=True)
+    indoor_wui = QuantityField("gal/ft**2/year", null=True, blank=True)
 
     extra_data = models.JSONField(default=dict, blank=True)
+    derived_data = models.JSONField(default=dict, blank=True)
     hash_object = models.CharField(max_length=32, null=True, blank=True, default=None)
-    measures = models.ManyToManyField('Measure', through='PropertyMeasure')
+    measures = models.ManyToManyField("Measure", through="PropertyMeasure")
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        index_together = [
-            ['hash_object'],
-            ['import_file', 'data_state'],
-            ['import_file', 'data_state', 'merge_state'],
-            ['import_file', 'data_state', 'source_type'],
+        indexes = [
+            models.Index(fields=["hash_object"]),
+            models.Index(fields=["import_file", "data_state"]),
+            models.Index(fields=["import_file", "data_state", "merge_state"]),
+            models.Index(fields=["import_file", "data_state", "source_type"]),
         ]
 
     def promote(self, cycle, property_id=None):
@@ -360,7 +382,13 @@ class PropertyState(models.Model):
                     _log.error("Could not promote this property")
                     return None
             else:
-                prop = Property.objects.create(organization=self.organization)
+                if self.raw_access_level_instance is None:
+                    _log.error("Could not promote this property: no raw_access_level_instance")
+                    return None
+
+                prop = Property.objects.create(organization=self.organization, access_level_instance=self.raw_access_level_instance)
+                self.raw_access_level_instance = None
+                self.raw_access_level_instance_error = None
 
             pv = PropertyView.objects.create(property=prop, cycle=cycle, state=self)
 
@@ -375,25 +403,20 @@ class PropertyState(models.Model):
 
             return pvs[0]
         else:
-            _log.error("Found %s PropertyView" % len(pvs))
+            _log.error(f"Found {len(pvs)} PropertyView")
             _log.error("This should never occur, famous last words?")
 
             return None
 
     def __str__(self):
-        return 'Property State - %s' % self.pk
+        return f"Property State - {self.pk}"
 
     def clean(self):
-        date_field_names = (
-            'year_ending',
-            'generation_date',
-            'release_date',
-            'recent_sale_date'
-        )
+        date_field_names = ("year_ending", "generation_date", "release_date", "recent_sale_date")
         for field in date_field_names:
             value = getattr(self, field)
-            if value and isinstance(value, basestring):
-                _log.info("Saving %s which is a date time" % field)
+            if value and isinstance(value, str):
+                _log.info(f"Saving {field} which is a date time")
                 _log.info(convert_datestr(value))
                 _log.info(date_cleaner(value))
 
@@ -407,15 +430,11 @@ class PropertyState(models.Model):
             extra_data = self.extra_data
             ed_fields = list(filter(lambda f: f in extra_data, ed_fields))
 
-            result = {
-                field: getattr(self, field) for field in model_fields
-            }
-            result['extra_data'] = {
-                field: extra_data[field] for field in ed_fields
-            }
+            result = {field: getattr(self, field) for field in model_fields}
+            result["extra_data"] = {field: extra_data[field] for field in ed_fields}
 
             # always return id's
-            result['id'] = result['pk'] = self.pk
+            result["id"] = result["pk"] = self.pk
 
             return result
 
@@ -432,6 +451,7 @@ class PropertyState(models.Model):
 
         # save a hash of the object to the database for quick lookup
         from seed.data_importer.tasks import hash_state_object
+
         self.hash_object = hash_state_object(self)
 
         return super().save(*args, **kwargs)
@@ -455,65 +475,66 @@ class PropertyState(models.Model):
         """Return history in reverse order."""
         history = []
         main = {
-            'state_id': self.id,
-            'state_data': self,
-            'date_edited': None,
+            "state_id": self.id,
+            "state_data": self,
+            "date_edited": None,
         }
 
         def record_dict(log):
             filename = file = None
             if log.import_filename:
                 filename = path.basename(log.import_filename)
-                file = settings.MEDIA_URL + '/'.join(log.import_filename.split('/')[-2:])
+                file = settings.MEDIA_URL + "/".join(log.import_filename.split("/")[-2:])
 
             if filename:
                 # Attempt to remove NamedTemporaryFile suffix
                 name, ext = path.splitext(filename)
-                pattern = re.compile('(.*?)(_[a-zA-Z0-9]{7})$')
+                pattern = re.compile("(.*?)(_[a-zA-Z0-9]{7})$")
                 match = pattern.match(name)
                 if match:
                     filename = match.groups()[0] + ext
             return {
-                'state_id': log.state.id,
-                'state_data': log.state,
-                'date_edited': convert_to_js_timestamp(log.created),
-                'source': log.get_record_type_display(),
-                'filename': filename,
-                'file': file
+                "state_id": log.state.id,
+                "state_data": log.state,
+                "date_edited": convert_to_js_timestamp(log.created),
+                "source": log.get_record_type_display(),
+                "filename": filename,
+                "file": file,
                 # 'changed_fields': json.loads(log.description) if log.record_type == AUDIT_USER_EDIT else None
             }
 
-        log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
-            state_id=self.id
-        ).order_by('-id').first()
+        log = PropertyAuditLog.objects.select_related("state", "parent1", "parent2").filter(state_id=self.id).order_by("-id").first()
 
         if log:
             main = {
-                'state_id': log.state.id,
-                'state_data': log.state,
-                'date_edited': convert_to_js_timestamp(log.created),
+                "state_id": log.state.id,
+                "state_data": log.state,
+                "date_edited": convert_to_js_timestamp(log.created),
             }
 
             # Traverse parents and add to history
-            if log.name in ['Manual Match', 'System Match', 'Merge current state in migration']:
+            if log.name in {"Manual Match", "System Match", "Merge current state in migration"}:
                 done_searching = False
 
                 while not done_searching:
                     # if there is no parents, then break out immediately
-                    if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
+                    if (log.parent1_id is None and log.parent2_id is None) or log.name == "Manual Edit":
                         break
 
-                    # initialize the tree to None everytime. If not new tree is found, then we will not iterate
+                    # initialize the tree to None every time. If not new tree is found, then we will not iterate
                     tree = None
 
                     # Check if parent2 has any other parents or is the original import creation. Start with parent2
                     # because parent2 will be the most recent import file.
                     if log.parent2:
-                        if log.parent2.name in ['Import Creation', 'Manual Edit']:
+                        if log.parent2.name in {"Import Creation", "Manual Edit"}:
                             record = record_dict(log.parent2)
                             history.append(record)
-                        elif log.parent2.name == 'System Match' and log.parent2.parent1.name == 'Import Creation' and \
-                                log.parent2.parent2.name == 'Import Creation':
+                        elif (
+                            log.parent2.name == "System Match"
+                            and log.parent2.parent1.name == "Import Creation"
+                            and log.parent2.parent2.name == "Import Creation"
+                        ):
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent2.parent2)
@@ -524,11 +545,16 @@ class PropertyState(models.Model):
                             tree = log.parent2
 
                     if log.parent1:
-                        if log.parent1.name in ['Import Creation', 'Manual Edit']:
+                        if log.parent1.name in {"Import Creation", "Manual Edit"}:
                             record = record_dict(log.parent1)
                             history.append(record)
-                        elif log.parent1.name == 'System Match' and log.parent1.parent1 and log.parent1.parent1.name == 'Import Creation' and \
-                                log.parent1.parent2 and log.parent1.parent2.name == 'Import Creation':
+                        elif (
+                            log.parent1.name == "System Match"
+                            and log.parent1.parent1
+                            and log.parent1.parent1.name == "Import Creation"
+                            and log.parent1.parent2
+                            and log.parent1.parent2.name == "Import Creation"
+                        ):
                             # Handle case where an import file matches within itself, and proceeds to match with
                             # existing records
                             record = record_dict(log.parent1.parent2)
@@ -548,10 +574,10 @@ class PropertyState(models.Model):
                         history = history[:10]
                         break
 
-            elif log.name == 'Manual Edit':
+            elif log.name == "Manual Edit":
                 record = record_dict(log.parent1)
                 history.append(record)
-            elif log.name == 'Import Creation':
+            elif log.name == "Import Creation":
                 record = record_dict(log)
                 history.append(record)
 
@@ -569,7 +595,8 @@ class PropertyState(models.Model):
         """
 
         coparents = list(
-            PropertyState.objects.raw("""
+            PropertyState.objects.raw(
+                """
                 WITH creation_id AS (
                     SELECT
                       pal.id,
@@ -639,32 +666,79 @@ class PropertyState(models.Model):
                     ps.space_alerts,
                     ps.building_certification,
                     ps.egrid_subregion_code,
+                    ps.water_use,
+                    ps.indoor_water_use,
+                    ps.outdoor_water_use,
+                    ps.wui,
+                    ps.indoor_wui,
                     ps.extra_data,
                     NULL
                 FROM seed_propertystate ps, audit_id aid
                 WHERE (ps.id = aid.parent_state1_id AND
                        aid.parent_state1_id <> aid.original_state_id) OR
                       (ps.id = aid.parent_state2_id AND
-                       aid.parent_state2_id <> aid.original_state_id);""", [int(state_id)])
+                       aid.parent_state2_id <> aid.original_state_id);""",
+                [int(state_id)],
+            )
         )
 
         # reduce this down to just the fields that were returned and convert to dict. This is
         # important because the fields that were not queried will be deferred and require a new
         # query to retrieve.
-        keep_fields = ['id', 'pm_property_id', 'pm_parent_property_id', 'custom_id_1',
-                       'audit_template_building_id', 'ubid', 'address_line_1', 'address_line_2',
-                       'city', 'state', 'postal_code', 'longitude', 'latitude',
-                       'lot_number', 'gross_floor_area', 'use_description', 'energy_score',
-                       'site_eui', 'site_eui_modeled', 'total_ghg_emissions', 'total_marginal_ghg_emissions',
-                       'total_ghg_emissions_intensity', 'total_marginal_ghg_emissions_intensity',
-                       'property_notes', 'property_type', 'year_ending', 'owner',
-                       'owner_email', 'owner_telephone', 'building_count',
-                       'year_built', 'recent_sale_date', 'conditioned_floor_area',
-                       'occupied_floor_area', 'owner_address', 'owner_postal_code',
-                       'home_energy_score_id', 'generation_date', 'release_date',
-                       'source_eui_weather_normalized', 'site_eui_weather_normalized',
-                       'source_eui', 'source_eui_modeled', 'energy_alerts', 'space_alerts',
-                       'building_certification', 'extra_data', ]
+        keep_fields = [
+            "id",
+            "pm_property_id",
+            "pm_parent_property_id",
+            "custom_id_1",
+            "audit_template_building_id",
+            "ubid",
+            "address_line_1",
+            "address_line_2",
+            "city",
+            "state",
+            "postal_code",
+            "longitude",
+            "latitude",
+            "lot_number",
+            "gross_floor_area",
+            "use_description",
+            "energy_score",
+            "site_eui",
+            "site_eui_modeled",
+            "total_ghg_emissions",
+            "total_marginal_ghg_emissions",
+            "total_ghg_emissions_intensity",
+            "total_marginal_ghg_emissions_intensity",
+            "property_notes",
+            "property_type",
+            "year_ending",
+            "owner",
+            "owner_email",
+            "owner_telephone",
+            "building_count",
+            "year_built",
+            "recent_sale_date",
+            "conditioned_floor_area",
+            "occupied_floor_area",
+            "owner_address",
+            "owner_postal_code",
+            "home_energy_score_id",
+            "generation_date",
+            "release_date",
+            "source_eui_weather_normalized",
+            "site_eui_weather_normalized",
+            "source_eui",
+            "source_eui_modeled",
+            "energy_alerts",
+            "space_alerts",
+            "building_certification",
+            "water_use",
+            "indoor_water_use",
+            "outdoor_water_use",
+            "wui",
+            "indoor_wui",
+            "extra_data",
+        ]
         coparents = [{key: getattr(c, key) for key in keep_fields} for c in coparents]
 
         return coparents, len(coparents)
@@ -684,10 +758,10 @@ class PropertyState(models.Model):
 
         # TODO: get some items off of this property view - labels and eventually notes
         # collect the relationships
-        no_measure_scenarios = [x for x in state2.scenarios.filter(measures__isnull=True)]
-        building_files = [x for x in state2.building_files.all()]
-        simulations = [x for x in Simulation.objects.filter(property_state=state2)]
-        measures = [x for x in PropertyMeasure.objects.filter(property_state=state2)]
+        no_measure_scenarios = list(state2.scenarios.filter(measures__isnull=True))
+        building_files = list(state2.building_files.all())
+        simulations = list(Simulation.objects.filter(property_state=state2))
+        measures = list(PropertyMeasure.objects.filter(property_state=state2))
 
         # copy in the no measure scenarios
         for new_s in no_measure_scenarios:
@@ -718,8 +792,8 @@ class PropertyState(models.Model):
 
         if len(measures) > 0:
             measure_fields = [f.name for f in measures[0]._meta.fields]
-            measure_fields.remove('id')
-            measure_fields.remove('property_state')
+            measure_fields.remove("id")
+            measure_fields.remove("property_state")
 
             new_items = []
 
@@ -750,13 +824,13 @@ class PropertyState(models.Model):
 
                     except IntegrityError:
                         _log.error(
-                            "Measure state_id, measure_id, application_scale, and implementation_status already exists -- skipping for now")
+                            "Measure state_id, measure_id, application_scale, and implementation_status already exists -- skipping for now"
+                        )
 
                 new_items.append(test_dict)
 
             # connect back up the scenario measures
             for scenario_id, measure_list in scenario_measure_map.items():
-
                 # create a new scenario from the old one
                 scenario = Scenario.objects.get(pk=scenario_id)
 
@@ -774,12 +848,19 @@ class PropertyState(models.Model):
 
         return merged_state
 
+    def default_display_value(self):
+        try:
+            field = self.organization.property_display_field
+            return self.extra_data.get(field) or getattr(self, field)
+        except AttributeError:
+            return None
+
 
 @receiver(pre_delete, sender=PropertyState)
 def pre_delete_state(sender, **kwargs):
     # remove all the property measures. Not sure why the cascading delete
     # isn't working here.
-    kwargs['instance'].propertymeasure_set.all().delete()
+    kwargs["instance"].propertymeasure_set.all().delete()
 
 
 @receiver(post_save, sender=PropertyState)
@@ -787,32 +868,8 @@ def post_save_property_state(sender, **kwargs):
     """
     Generate UbidModels for a PropertyState if the ubid field is present
     """
-    state: PropertyState = kwargs.get('instance')
-
-    ubid = getattr(state, 'ubid')
-    if not ubid:
-        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
-        return
-
-    ubid_model = state.ubidmodel_set.filter(ubid=ubid)
-    if not ubid_model.exists():
-        # First set all others to non-preferred without calling save
-        state.ubidmodel_set.filter(preferred=True).update(preferred=False)
-        # Add UBID and set as preferred
-        ubid_model = state.ubidmodel_set.create(
-            preferred=True,
-            ubid=ubid,
-        )
-        # Update lat/long/centroid
-        decode_unique_ids(state)
-        logging.info(f"Created ubid_model id: {ubid_model.id}, ubid: {ubid_model.ubid}")
-    elif ubid_model.filter(preferred=False).exists():
-        state.ubidmodel_set.update(
-            preferred=Case(
-                When(ubid=ubid, then=Value(True)),
-                default=Value(False),
-            )
-        )
+    state: PropertyState = kwargs.get("instance")
+    generate_ubidmodels_for_state(state)
 
 
 class PropertyView(models.Model):
@@ -821,35 +878,33 @@ class PropertyView(models.Model):
 
     A PropertyView contains a reference to a property (which should not change) and to a
     cycle (time period), and a state (characteristics).
-
     """
+
     # different property views can be associated with each other (2012, 2013)
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='views')
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="views")
     cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
     state = models.ForeignKey(PropertyState, on_delete=models.CASCADE)
 
-    labels = models.ManyToManyField(StatusLabel)
+    labels = models.ManyToManyField(StatusLabel, through="PropertyViewLabel", through_fields=("propertyview", "statuslabel"))
 
     # notes has a relationship here -- PropertyViews have notes, not the state, and not the property.
 
     def __str__(self):
-        return 'Property View - %s' % self.pk
+        return f"Property View - {self.pk}"
 
     class Meta:
-        unique_together = ('property', 'cycle',)
-        index_together = [['state', 'cycle']]
+        unique_together = (
+            "property",
+            "cycle",
+        )
+        indexes = [models.Index(fields=["state", "cycle"])]
 
     def __init__(self, *args, **kwargs):
-        self._import_filename = kwargs.pop('import_filename', None)
+        self._import_filename = kwargs.pop("import_filename", None)
         super().__init__(*args, **kwargs)
 
     def initialize_audit_logs(self, **kwargs):
-        kwargs.update({
-            'organization': self.property.organization,
-            'state': self.state,
-            'view': self,
-            'record_type': AUDIT_IMPORT
-        })
+        kwargs.update({"organization": self.property.organization, "state": self.state, "view": self, "record_type": AUDIT_IMPORT})
         return PropertyAuditLog.objects.create(**kwargs)
 
     def tax_lot_views(self):
@@ -861,9 +916,7 @@ class PropertyView(models.Model):
         # forwent the use of list comprehension to make the code more readable.
         # get the related taxlot_view.state as well to save time if needed.
         result = []
-        for tlp in TaxLotProperty.objects.filter(
-                cycle=self.cycle,
-                property_view=self).select_related('taxlot_view', 'taxlot_view__state'):
+        for tlp in TaxLotProperty.objects.filter(cycle=self.cycle, property_view=self).select_related("taxlot_view", "taxlot_view__state"):
             result.append(tlp.taxlot_view)
 
         return result
@@ -885,11 +938,61 @@ class PropertyView(models.Model):
     @property_decorator
     def import_filename(self):
         """Get the import file name form the audit logs"""
-        if not getattr(self, '_import_filename', None):
-            audit_log = PropertyAuditLog.objects.filter(
-                view_id=self.pk).order_by('created').first()
+        if not getattr(self, "_import_filename", None):
+            # Tie-break on id for stable results if created timestamps are equal.
+            audit_log = PropertyAuditLog.objects.filter(view_id=self.pk).order_by("created", "id").first()
             self._import_filename = audit_log.import_filename
         return self._import_filename
+
+    def copy_to_cycle(self, cycle: Cycle, columns: list[Column]):
+        """
+        Creates a view in the give cycle with the same property and a state with given column matching
+        this view's state
+
+        columns_ids: copied column, empty array assume all columns. matching criteria will be added.
+        returns: view if created, None if already existed.
+        """
+        from seed.models.auditlog import AUDIT_USER_CREATE
+        from seed.serializers.properties import PropertyStateSerializer, PropertyStateWritableSerializer
+
+        prop = self.property
+        state = PropertyStateSerializer(self.state).data
+
+        # if view already exist, exit
+        if PropertyView.objects.filter(property=prop, cycle=cycle).count() > 0:
+            return None
+
+        # build new state dict
+        new_state_dict = {"organization": prop.organization_id, "extra_data": {}, "derived_data": {}}
+        for column in columns:
+            if column.is_extra_data:
+                new_state_dict["extra_data"][column.column_name] = state["extra_data"].get(column.column_name)
+            else:
+                new_state_dict[column.column_name] = state[column.column_name]
+
+        # create new state with chosen columns copied
+        new_property_state_serializer = PropertyStateWritableSerializer(data=new_state_dict)
+        if new_property_state_serializer.is_valid(raise_exception=True):
+            new_state = new_property_state_serializer.save()
+
+        #  Add the state to a view
+        new_view = PropertyView.objects.create(property=prop, cycle=cycle, state=new_state)
+
+        # Log this appropriately - "Import Creation" ?
+        PropertyAuditLog.objects.create(
+            organization_id=prop.organization_id,
+            parent1=None,
+            parent2=None,
+            parent_state1=None,
+            parent_state2=None,
+            state=new_state,
+            name="Copied from other cycle",
+            description="Copied from other cycle",
+            import_filename=None,
+            record_type=AUDIT_USER_CREATE,
+        )
+
+        return new_view
 
 
 @receiver(post_save, sender=PropertyView)
@@ -898,27 +1001,36 @@ def post_save_property_view(sender, **kwargs):
     When changing/saving the PropertyView, go ahead and touch the Property (if linked) so that the
     record receives an updated datetime
     """
-    if kwargs['instance'].property:
-        kwargs['instance'].property.save()
+    if kwargs["instance"].property:
+        kwargs["instance"].property.save()
+
+
+class PropertyViewLabel(models.Model):
+    propertyview = models.ForeignKey(PropertyView, on_delete=models.CASCADE)
+    statuslabel = models.ForeignKey(StatusLabel, on_delete=models.CASCADE)
+    goal = models.ForeignKey("seed.Goal", on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        constraints = [UniqueConstraint(fields=["propertyview", "statuslabel", "goal"], name="unique_propertyview_statuslabel_goal")]
 
 
 class PropertyAuditLog(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    parent1 = models.ForeignKey('PropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True,
-                                related_name='propertyauditlog_parent1')
-    parent2 = models.ForeignKey('PropertyAuditLog', on_delete=models.CASCADE, blank=True, null=True,
-                                related_name='propertyauditlog_parent2')
+    parent1 = models.ForeignKey(
+        "PropertyAuditLog", on_delete=models.CASCADE, blank=True, null=True, related_name="propertyauditlog_parent1"
+    )
+    parent2 = models.ForeignKey(
+        "PropertyAuditLog", on_delete=models.CASCADE, blank=True, null=True, related_name="propertyauditlog_parent2"
+    )
 
     # store the parent states as well so that we can quickly return which state is associated
     # with the parents of the audit log without having to query the parent audit log to grab
     # the state
-    parent_state1 = models.ForeignKey(PropertyState, on_delete=models.CASCADE, blank=True, null=True,
-                                      related_name='parent_state1')
-    parent_state2 = models.ForeignKey(PropertyState, on_delete=models.CASCADE, blank=True, null=True,
-                                      related_name='parent_state2')
+    parent_state1 = models.ForeignKey(PropertyState, on_delete=models.CASCADE, blank=True, null=True, related_name="parent_state1")
+    parent_state2 = models.ForeignKey(PropertyState, on_delete=models.CASCADE, blank=True, null=True, related_name="parent_state2")
 
-    state = models.ForeignKey('PropertyState', on_delete=models.CASCADE, related_name='propertyauditlog_state')
-    view = models.ForeignKey('PropertyView', on_delete=models.CASCADE, related_name='propertyauditlog_view', null=True)
+    state = models.ForeignKey("PropertyState", on_delete=models.CASCADE, related_name="propertyauditlog_state")
+    view = models.ForeignKey("PropertyView", on_delete=models.CASCADE, related_name="propertyauditlog_view", null=True)
 
     name = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -928,7 +1040,7 @@ class PropertyAuditLog(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True)
 
     class Meta:
-        index_together = [['state', 'name'], ['parent_state1', 'parent_state2']]
+        indexes = [models.Index(fields=["state", "name"]), models.Index(fields=["parent_state1", "parent_state2"])]
 
 
 @receiver(pre_save, sender=PropertyState)
@@ -950,7 +1062,7 @@ def sync_latitude_longitude_and_long_lat(sender, instance, **kwargs):
             instance.long_lat = f"POINT ({instance.longitude} {instance.latitude})"
             # keep Census Geocoder confidence if newly present in the string
             if instance is not None and instance.geocoding_confidence is not None:
-                if 'Census Geocoder' in instance.geocoding_confidence and 'Census Geocoder' not in original_obj.geocoding_confidence:
+                if "Census Geocoder" in instance.geocoding_confidence and "Census Geocoder" not in original_obj.geocoding_confidence:
                     instance.geocoding_confidence = instance.geocoding_confidence
                 else:
                     instance.geocoding_confidence = "Manually geocoded (N/A)"

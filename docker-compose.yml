@@ -1,16 +1,16 @@
+---
 # Docker Compose creates multiple containers on a single machine.
-# run `docker-compose up` to create and run/link the containers
-version: "3.4"
+# run `docker compose up` to create and run/link the containers
 services:
   db-postgres:
     container_name: seed_postgres
-    image: timescale/timescaledb-postgis:latest-pg12
+    image: timescale/timescaledb-ha:pg18.3-ts2.26.4-oss
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
       - POSTGRES_PASSWORD=super-secret-password
     volumes:
-      - seed_pgdata:/var/lib/postgresql/data
+      - seed_pgdata:/home/postgres/pgdata
     ports:
       - "5432:5432"
     logging:
@@ -19,7 +19,7 @@ services:
         max-file: "5"
   db-redis:
     container_name: seed_redis
-    image: redis:5.0.1
+    image: redis:8-alpine
   web:
     container_name: seed_web
     image: seedplatform/seed:latest
@@ -43,7 +43,9 @@ services:
       - SEED_ADMIN_PASSWORD=super-secret-password
       - SEED_ADMIN_ORG=default
       - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
+      - COOKIE_EXPIRATION
       - DJANGO_SETTINGS_MODULE=config.settings.docker
+      - NGINX_LISTEN_OPTS="http2"
       # Sentry configuration if you want to use it (make sure to enable on web-celery container too)
       # - SENTRY_RAVEN_DSN=https://<userid>@<ordid>.ingest.sentry.io/<jobid>
       # - SENTRY_JS_DSN=https://<userid>@<ordid>.ingest.sentry.io/<jobid>

@@ -1,12 +1,12 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  * :author 'Nicholas Serra <nickserra@gmail.com>, nicholasserra'
  *
  * Custom $http params serializer that url encodes semicolons.
  * Temporary until a fix is landed in angular.
  */
-angular.module('BE.seed.service.httpParamSerializerSeed', []).factory('httpParamSerializerSeed', [
+angular.module('SEED.service.httpParamSerializerSeed', []).factory('httpParamSerializerSeed', [
   () => {
     function serializeValue(v) {
       if (angular.isObject(v)) {

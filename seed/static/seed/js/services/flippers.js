@@ -1,12 +1,12 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * see seed/ogbs/flippers.py ... usage and philosophy pretty much the same
  * bit minimum-usable right now .. just want this to squawk after it goes stale so as not to
  * forget about it.
  */
-angular.module('BE.seed.service.flippers', []).factory('flippers', [
+angular.module('SEED.service.flippers', []).factory('flippers', [
   '$log',
   ($log) => {
     const registry = {};

@@ -1,9 +1,8 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from rest_framework import serializers
 
 
@@ -13,15 +12,15 @@ class CustomChoicesField(serializers.ChoiceField):
     """
 
     def to_representation(self, obj):
-        if obj == '' and self.allow_blank:
+        if obj == "" and self.allow_blank:
             return obj
         return self._choices[obj]
 
     def to_internal_value(self, data):
-        if data == '' and self.allow_blank:
-            return ''
+        if data == "" and self.allow_blank:
+            return ""
 
         for key, val in self._choices.items():
             if val == data:
                 return key
-        self.fail('invalid_choice', input=data)
+        self.fail("invalid_choice", input=data)

@@ -1,8 +1,8 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.derived_columns_editor', []).controller('derived_columns_editor_controller', [
+angular.module('SEED.controller.derived_columns_editor', []).controller('derived_columns_editor_controller', [
   '$scope',
   '$log',
   '$state',
@@ -207,7 +207,7 @@ angular.module('BE.seed.controller.derived_columns_editor', []).controller('deri
 
       if (undeclared_parameters.length > 0) {
         $scope.expression_error_message =
-          'Expression includes references to undeclared parameters: ' + `${undeclared_parameters.map((p) => `"${p}"`).join(', ')}. ` + 'Please remove them before continuing';
+          `Expression includes references to undeclared parameters: ${undeclared_parameters.map((p) => `"${p}"`).join(', ')}. Please remove them before continuing`;
       } else {
         $scope.expression_error_message = null;
       }

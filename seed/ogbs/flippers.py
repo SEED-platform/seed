@@ -1,6 +1,6 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 Basic flipper library for hiding OGBS features for dark-launch
 
@@ -24,12 +24,13 @@ no point in following any particular API since:
   - flippers shouldn't stick around long so we don't want to encourage
     sticking around by future-proofing the API.
 """
-import datetime
 
-import pytz
+import datetime
+from typing import Any
+
 from django.utils.dateparse import parse_datetime
 
-REGISTRY = {}
+REGISTRY: dict[str, dict[str, Any]] = {}
 
 
 def make_flipper(owner, expires, label, kind, initial_value):
@@ -37,18 +38,13 @@ def make_flipper(owner, expires, label, kind, initial_value):
     Adds a flipper to the module's registry
     all values string, returns dict
     """
-    flipper = {
-        'label': label,
-        kind: initial_value,
-        'expires': expires,
-        'owner': owner
-    }
+    flipper = {"label": label, kind: initial_value, "expires": expires, "owner": owner}
     REGISTRY[label] = flipper
     return flipper
 
 
 def _is_stale(flipper, date):
-    expires_str = flipper.get('expires', '')
+    expires_str = flipper.get("expires", "")
     expires = parse_datetime(expires_str)
     if expires:
         return date > expires
@@ -56,20 +52,23 @@ def _is_stale(flipper, date):
 
 
 def _log_stale_flipper(flipper):
-    owner = flipper.get('owner', 'unknown owner')
-    label = flipper.get('label', 'unknown label')
-    print("Flipper '{}' is stale; tell {} to tidy up".format(label, owner))
+    owner = flipper.get("owner", "unknown owner")
+    label = flipper.get("label", "unknown label")
+    print(f"Flipper '{label}' is stale; tell {owner} to tidy up")
 
 
-def is_active(s, now=datetime.datetime.now(pytz.UTC)):
+def is_active(s, now=None):
     """
     Checks if the flipper is active, use for hiding feature eg:
     ```
-    if flipper.is_active('my_awesome_feature'):
+    if flipper.is_active("my_awesome_feature"):
         do_feature()
     ```
     """
-    flipper = REGISTRY.get(s, {'boolean': False})
+    if now is None:
+        now = datetime.datetime.now(datetime.UTC)
+
+    flipper = REGISTRY.get(s, {"boolean": False})
     if _is_stale(flipper, now):
         _log_stale_flipper(flipper)
-    return flipper['boolean']
+    return flipper["boolean"]

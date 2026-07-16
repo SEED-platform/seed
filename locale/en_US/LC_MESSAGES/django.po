@@ -1,18 +1,14 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-10-06 12:15-0700\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-
-msgid "\"Your building's latitude and longitude is {{latitude}}, {{longitude}}!\""
-msgstr "\"Your building's latitude and longitude is {{latitude}}, {{longitude}}!\""
+"X-Generator: lokalise.com\n"
+"Project-Id-Version: SEED Platform\n"
+"PO-Revision-Date: 2026-04-23 19:06\n"
+"Last-Translator: lokalise.com\n"
+"Language-Team: lokalise.com\n\n"
+"Language: en_US\n"
 
 msgid "# Of Files"
 msgstr "# Of Files"
@@ -56,11 +52,56 @@ msgstr "A list of your imported headers."
 msgid "A preview of your concatenated data will appear in the box below."
 msgstr "A preview of your concatenated data will appear in the box below."
 
+msgid "ABOUT_SEED"
+msgstr "The Standard Energy Efficiency Data (SEED)™ Platform is a software application that helps organizations easily manage data on the energy performance of large groups of buildings. Users can combine data from multiple sources, clean and validate it, and share the information with others. The software application provides an easy, flexible, and cost-effective method to improve the quality and availability of data to help demonstrate the economic and environmental benefits of energy efficiency, to implement programs, and to target investment activity."
+
+msgid "ACCESS_LEVEL_DELETE_AREYOUSURE"
+msgstr "Are you sure you want to delete this Access Level Instance? The operation will also delete all Access Level Instances below this one."
+
+msgid "ACCESS_LEVEL_DESCRIPTION"
+msgstr " Define access levels to structure your organization's content. An organization can have one or more access levels. All organizations have at least one level (level 1), which is named with the organization name by default. All access level names are customizable."
+
 msgid "ACCESS_LEVEL_FILENAME_UPLOADED"
 msgstr "Access Level Instances File has been uploaded"
 
+msgid "ACCESS_LEVEL_INSTANCE_DESCRIPTION"
+msgstr "Access level instances are custom subgroups that can be defined within each access level. These ALIs are used to associate content together and restrict user access to data. There is a single ALI in level 1 of the hierarchy, the root of the tree. This is named 'root' by default, but can be customized. All other levels can contain one or more ALIs."
+
+msgid "ACCESS_LEVEL_ORG_OWNER"
+msgstr "As an organization owner, you can set the structure of your access level tree using the buttons below. This process should be performed prior to importing data and adding users to your organization."
+
+msgid "ACCESS_LEVEL_OWNER_END"
+msgstr "Once you have configured your organization's access level tree, you are ready to add users and properties to different levels of the tree."
+
+msgid "ACCESS_LEVEL_OWNER_STEP1"
+msgstr "Configure the number and name of your access levels using the Edit/Add Access Levels button."
+
+msgid "ACCESS_LEVEL_OWNER_STEP2"
+msgstr "Upload a spreadsheet of access level instances. The spreadsheet should have a column for each access level, with the header matching your customized level name. Access level instances make up the rows of the spreadsheet. Make sure to fully define the path of each access level instance. You can also select the level, parent access level instance, and configure the name of a single new access level instance using the Add Access Level Instance button."
+
+msgid "ACCESS_LEVEL_ROOT_TEXT"
+msgstr "There is only one access level instance allowed at the root of the tree (level 1). Click on the pencil icon if you wish to rename it."
+
+msgid "ACCESS_LEVEL_STRUCTURE_UPLOAD_TEXT"
+msgstr "Upload your Organizational Structure in spreadsheet form. The file should include a column for each access level with its column header equal to the custom access level name. Each row should contain an access level instance, with its ancestry fully defined (parent node name, grand-parent node name, etc.)"
+
+msgid "ACCESS_LEVEL_TREE_HELP_1"
+msgstr "This page allows you to view the structure of your organization's content. The structure is made up of hierarchical levels that define a tree; these are called access levels. Each level contains one or more nodes, called access level instances. Permissions are managed by associating content and users with a particular access level instance, thereby grouping and restricting access to the content. The number of access levels in your structure, the names of the levels, and the names of the access level instances are customizable."
+
+msgid "ACCESS_LEVEL_UPLOAD_PROGRESS_MSG"
+msgstr "Saving access level instances in progress... This process depends on the size of your file and may take several minutes."
+
+msgid "ADD_CYCLE_GOAL_DESC"
+msgstr "Add a new cycle to the selected goal to compare against the baseline. The latest cycle added will be considered the \"current\" cycle for comparison purposes. Older cycles added will remain available for historical reference."
+
 msgid "ADD_FILES_TO"
 msgstr "Add files to {dataset_name}."
+
+msgid "ADD_REMOVE_GROUPS_FROM_PROPERTIES"
+msgstr "Add or remove {num,plural,one{1 selected property} other{# selected properties}} to/from groups"
+
+msgid "ADD_REMOVE_GROUPS_FROM_TAXLOTS"
+msgstr "Add or remove {num,plural,one{1 selected tax lot} other{# selected tax lots}} to/from groups"
 
 msgid "ADD_REMOVE_LABELS_FROM_PROPERTIES"
 msgstr "Add or remove labels from {num, plural, one{1 selected property} other{# selected properties}}"
@@ -71,6 +112,9 @@ msgstr "Add or remove labels from {num, plural, one{1 selected tax lot} other{# 
 msgid "AH_FILE_TYPES_SUPPORTED"
 msgstr "File types supported: .csv, .xls, and .xlsx."
 
+msgid "ALL DATA"
+msgstr "ALL DATA"
+
 msgid "ALSO_DELETE_ANALYSES"
 msgstr "Also delete {num,plural, one{1 analysis} other{# analyses}}."
 
@@ -80,8 +124,11 @@ msgstr "Also delete {num,plural, one{1 associated batch analysis} other{# associ
 msgid "ANALYSIS_DESCRIPTION_BETTER"
 msgstr "The BETTER analysis leverages better.lbl.gov to calculate energy, cost, and GHG emission savings by comparing the property's change point model with a benchmarked model. The results include saving potential and a list of recommended high-level energy conservation measures."
 
-msgid "ANALYSIS_DESCRIPTION_BSYNCR"
+msgid "ANALYSIS_DESCRIPTION_BSyncr"
 msgstr "The BSyncr analysis leverages the Normalized Metered Energy Consumption (NMEC) analysis to calculate a change point model. The data are passed to the analysis using BuildingSync. The result of the analysis are the coefficients of the change point model."
+
+msgid "ANALYSIS_DESCRIPTION_BuildingUpgradeRecommendation"
+msgstr "The Building Upgrade Recommendation analysis implements a workflow to identify buildings that may need a deep energy retrofit, equipment replaced or re-tuning based on building attributes such as energy use, year built, and square footage. If your organization contains elements, the Element Statistics Analysis should be run prior to running this analysis."
 
 msgid "ANALYSIS_DESCRIPTION_CO2"
 msgstr "This analysis calculates the average annual CO2 emissions for the property's meter data. The analysis requires an eGRID Subregion to be defined in order to accurately determine the emission rates."
@@ -92,6 +139,12 @@ msgstr "The EEEJ Analysis uses each property's address to identify the 2010 cens
 msgid "ANALYSIS_DESCRIPTION_EUI"
 msgstr "The EUI analysis will sum the property's meter readings for the last twelve months to calculate the energy use per square footage per year. If there are missing meter readings, then the analysis will return a less that 100% coverage to alert the user that there is a missing meter reading."
 
+msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
+msgstr "The Element Statistics analysis looks through a property's element data (if any) to count the number of elements of type 'D.D.C. Control Panel'. It also generates the aggregated (average) condition index values for EISA 2007-432 elements and saves those quantities to the property."
+
+msgid "ANALYSIS_DESCRIPTION_HVACMetrics"
+msgstr "The HVAC Metrics analysis iterates through a property's element data (if any) to calculate 4 metrics: 1) AC Tonnage Coverage Area, 2) Main Refrigerant Type, 3) Total HVAC Electric Service Size, and 4) Airflow Rate per Unit Area"
+
 msgid "AND"
 msgstr "AND"
 
@@ -101,15 +154,63 @@ msgstr "API Documentation"
 msgid "API Key"
 msgstr "API Key"
 
+msgid "AT_ADVANCED_SETTINGS_TEXT"
+msgstr "This section contains configurations necessary if your organization's workflow will include pushing data from SEED to Audit Template to create \"stub\" Audit Template reports that can then be completed in Audit Template. If you do not wish to make stub Audit Template reports from SEED, you can ignore these settings."
+
+msgid "AT_AGENCY_NAME_DESC"
+msgstr "This should be the Agency acronym (ex: DOE)"
+
+msgid "AT_ALL_DATA"
+msgstr "Audit Template submissions will be imported regardless of submission date. You can configure this setting in your SEED organization's settings page."
+
+msgid "AT_AUTO_SYNC"
+msgstr "If you would like to automatically update your SEED organization with Audit Template submission data for the selected Audit Template City ID, configure the fields below to schedule your weekly update."
+
+msgid "AT_CITY_ID"
+msgstr "Specify your Audit Template City ID. This number is visible in the Audit Template URL when browsing to the 'CITIES' tab. SEED will import submission data for the specified City only."
+
+msgid "AT_CONDITION_INDEX"
+msgstr "When this checkbox is checked, SEED will only import Audit Template submissions that have been submitted more recently than the SEED records' most recent update. If unchecked, all Audit Template submissions will be imported regardless of the submission date."
+
 msgid "AT_EMAIL_TEXT"
 msgstr "Use the email associated with your account from <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Building Energy Score website</a>."
+
+msgid "AT_FEDERAL_FIELDS_DESC"
+msgstr "Input the top-level Agency. The rest of the Agency fields will be determined by the access levels implemented in SEED. For additional guidance, refer to the BuildingSync FederalBuilding element."
+
+msgid "AT_ID_FIELD_TEXT"
+msgstr "Enter the COLUMN NAME (not display name) of the SEED Field that contains your organization's custom Tax Identifier. The default is 'custom_id_1'. You can find this information on your organization's Column Settings page in SEED."
+
+msgid "AT_IMPORT_DEFAULT_CYCLE_DESC"
+msgstr "The import process retrieves each audit template submission and compares its submission date to all SEED cycle start and end dates to determine which cycle to attach the data to. If no match is found, you can opt to add a default cycle here to attach the data to, regardless of submission date comparison. If no default cycle is specified, non-matching data will not be imported."
+
+msgid "AT_MOST_RECENT_ONLY"
+msgstr "Only Audit Template submissions that have been submitted more recently than the SEED inventory's most recent update will be imported. You can configure this setting in your SEED organization's settings page."
+
+msgid "AT_OPTIONAL_DEFAULT_CYCLE"
+msgstr "Default Cycle for Import (Optional)"
+
+msgid "AT_OPTIONAL_EXPORTS_TEXT"
+msgstr "Use the checkboxes below if you want to include additional data in your BuildingSync exports that create stub Audit Template reports."
 
 msgid "AT_PASS_TEXT"
 msgstr "Use the password associated with your account from <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\">Building Energy Score website</a>."
 
+msgid "AT_REPORT_TYPE"
+msgstr "If you wish to generate stub Audit Template reports from SEED data, select which Audit Template Report Type SEED should generate."
+
+msgid "AT_SETTINGS_TEXT"
+msgstr "If your organization has configured a customized report form in Audit Template, fill out the settings below to enable importing Audit Template submissions into your SEED organization."
+
+msgid "AT_SUBMISSION_STATUS"
+msgstr "SEED will import data for submissions with the following statuses in Audit Template."
+
+msgid "AT_TAX_ID_NAME"
+msgstr "Enter the custom Tax Identifier Name that was configured in your jurisdiction's configurable Audit Report Template. The default is \"City Custom Building ID\"."
+
 #. Helper text for the Audit Template token in organization settings.
 msgid "AT_TOKEN_TEXT"
-msgstr "Please refer to the <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\">Audit Template documentation</a> to learn how to get an API key. Note, do not prefix the token with \"Token \", only include the token itself."
+msgstr "Your Organization API Token should be visible on your Account page in Audit Template. Please refer to the <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\">Audit Template documentation</a> to learn how to get an API key. Note, do not prefix the token with \"Token \", only include the token itself."
 
 msgid "About"
 msgstr "About"
@@ -124,6 +225,39 @@ msgstr "Accept"
 #: src/django-tos-master/tos/templates/tos/tos_check.html:11
 msgid "Accept Terms of Service?"
 msgstr "Accept Terms of Service?"
+
+msgid "Access Level"
+msgstr "Access Level"
+
+msgid "Access Level Instance"
+msgstr "Access Level Instance"
+
+msgid "Access Level Instance Information"
+msgstr "Access Level Instance Information"
+
+msgid "Access Level Instance Tree"
+msgstr "Access Level Instance Tree"
+
+msgid "Access Level Instance:"
+msgstr "Access Level Instance:"
+
+msgid "Access Level Instances Errors"
+msgstr "Access Level Instances Errors"
+
+msgid "Access Level Tree"
+msgstr "Access Level Tree"
+
+msgid "Access Level:"
+msgstr "Access Level:"
+
+msgid "Access Levels"
+msgstr "Access Levels"
+
+msgid "Access Levels (AL)"
+msgstr "Access Levels (AL)"
+
+msgid "Access Levels Instances (ALI)"
+msgstr "Access Levels Instances (ALI)"
 
 msgid "Acknowledge"
 msgstr "Acknowledge"
@@ -147,8 +281,17 @@ msgstr "Actual Field"
 msgid "Add"
 msgstr "Add"
 
+msgid "Add Access Level"
+msgstr "Add Access Level"
+
+msgid "Add Access Level Instance"
+msgstr "Add Access Level Instance"
+
 msgid "Add Column"
 msgstr "Add Column"
+
+msgid "Add Cycle to Goal"
+msgstr "Add Cycle to Goal"
 
 msgid "Add Data Files"
 msgstr "Add Data Files"
@@ -156,14 +299,29 @@ msgstr "Add Data Files"
 msgid "Add Label"
 msgstr "Add Label"
 
+msgid "Add Level Instance (Node) to the Organizational Structure"
+msgstr "Add Level Instance (Node) to the Organizational Structure"
+
+msgid "Add Levels to the Organizational Structure Tree"
+msgstr "Add Levels to the Organizational Structure Tree"
+
 msgid "Add Mapping"
 msgstr "Add Mapping"
+
+msgid "Add Meter Readings to"
+msgstr "Add Meter Readings to"
 
 msgid "Add Shared Properties"
 msgstr "Add Shared Properties"
 
 msgid "Add Shared Tax Lots"
 msgstr "Add Shared Tax Lots"
+
+msgid "Add a Cycle"
+msgstr "Add a Cycle"
+
+msgid "Add a Document"
+msgstr "Add a Document"
 
 msgid "Add a label"
 msgstr "Add a label"
@@ -183,6 +341,9 @@ msgstr "Add more data files"
 msgid "Add program information."
 msgstr "Add program information."
 
+msgid "Add to/Remove from Groups"
+msgstr "Add to/Remove from Groups"
+
 msgid "Add user"
 msgstr "Add user"
 
@@ -191,6 +352,9 @@ msgstr "Add user to organization"
 
 msgid "Add user to organization:"
 msgstr "Add user to organization:"
+
+msgid "Add/Remove Groups"
+msgstr "Add/Remove Groups"
 
 msgid "Add/Remove Labels"
 msgstr "Add/Remove Labels"
@@ -225,6 +389,21 @@ msgstr "Address Line 2 (Tax Lot)"
 msgid "Admin"
 msgstr "Admin"
 
+msgid "Advanced Settings"
+msgstr "Advanced Settings"
+
+msgid "Agency Name"
+msgstr "Agency Name"
+
+msgid "Alias"
+msgstr "Alias"
+
+msgid "All Canonical Fields"
+msgstr "All Canonical Fields"
+
+msgid "All Extra Data Fields"
+msgstr "All Extra Data Fields"
+
 msgid "An Audit Template organization token, user email and password are required"
 msgstr "An Audit Template organization token, user email and password are required"
 
@@ -237,11 +416,17 @@ msgstr "Analyses"
 msgid "Analysis"
 msgstr "Analysis"
 
+msgid "Analysis Deleted Successfully"
+msgstr "Analysis Deleted Successfully"
+
 msgid "Analysis Name"
 msgstr "Analysis Name"
 
 msgid "Analysis Name (User Defined)"
 msgstr "Analysis Name (User Defined)"
+
+msgid "Analysis Run"
+msgstr "Analysis Run"
 
 msgid "Analysis State"
 msgstr "Analysis State"
@@ -267,14 +452,32 @@ msgstr "Are you sure you want to delete the data set"
 msgid "Are you sure you want to delete the filter group"
 msgstr "Are you sure you want to delete the filter group"
 
+msgid "Are you sure you want to delete the group"
+msgstr "Are you sure you want to delete the group"
+
+msgid "Are you sure you want to delete the service"
+msgstr "Are you sure you want to delete the service"
+
+msgid "Are you sure you want to delete the system"
+msgstr "Are you sure you want to delete the system"
+
 msgid "Are you sure you want to unmerge these properties and then merge with the selected properties?"
 msgstr "Are you sure you want to unmerge these properties and then merge with the selected properties?"
 
 msgid "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 msgstr "Are you sure you want to unmerge these tax lots and then merge with the selected tax lots?"
 
+msgid "Are you sure you want to unmerge these tax lots?"
+msgstr "Are you sure you want to unmerge these tax lots?"
+
 msgid "Area"
 msgstr "Area"
+
+msgid "Area Column"
+msgstr "Area Column"
+
+msgid "Area Target Column"
+msgstr "Area Target Column"
 
 msgid "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations."
 msgstr "As the admin of your SEED instance you can control what data is shared throughout your organization and between your sub-organizations as well as what data is shared externally with the public-at-large. The subset of data you choose to share with the public can be different than the subset shared between your sub-organizations."
@@ -303,6 +506,9 @@ msgstr "Audit Template Password"
 msgid "Audit Template Report Type"
 msgstr "Audit Template Report Type"
 
+msgid "Audit Template Submission Status"
+msgstr "Audit Template Submission Status"
+
 msgid "Audit Template Upload Results"
 msgstr "Audit Template Upload Results"
 
@@ -310,8 +516,26 @@ msgstr "Audit Template Upload Results"
 msgid "Auditing"
 msgstr "Auditing"
 
+msgid "Auditor Recommended Measures"
+msgstr "Auditor Recommended Measures"
+
 msgid "Auto Matching"
 msgstr "Auto Matching"
+
+msgid "Auto-Populate Sample Data"
+msgstr "Auto-Populate Sample Data"
+
+msgid "Available BuildingSync Measures"
+msgstr "Available BuildingSync Measures"
+
+msgid "Available Templates"
+msgstr "Available Templates"
+
+msgid "BB_SALESFORCE_LOGIN_FAILURE"
+msgstr "There was an error"
+
+msgid "BB_SALESFORCE_LOGIN_SUCCESS"
+msgstr "SEED is now logged in to Salesforce."
 
 msgid "BEFORE_GEOCODING"
 msgstr "Before geocoding"
@@ -336,6 +560,18 @@ msgstr "Back to List"
 msgid "Back to Mapping"
 msgstr "Back to Mapping"
 
+msgid "Baseline"
+msgstr "Baseline"
+
+msgid "Baseline Cycle"
+msgstr "Baseline Cycle"
+
+msgid "Begin Update"
+msgstr "Begin Update"
+
+msgid "Benchmark Configuration "
+msgstr "Benchmark Configuration "
+
 #: seed/models/models.py:135
 msgid "Benchmarking"
 msgstr "Benchmarking"
@@ -358,14 +594,56 @@ msgstr "Building Certification"
 msgid "Building Count"
 msgstr "Building Count"
 
+msgid "Building Files (Main State Only)"
+msgstr "Building Files (Main State Only)"
+
 msgid "Building Filters"
 msgstr "Building Filters"
+
+msgid "Building Square Footage Threshold"
+msgstr "Building Square Footage Threshold"
+
+msgid "Building has BAS field"
+msgstr "Building has BAS field"
+
+msgid "BuildingSync Recommended Measures"
+msgstr "BuildingSync Recommended Measures"
 
 msgid "Buildings"
 msgstr "Buildings"
 
-msgid "By clicking the Log In button you accept the NREL Data Terms."
-msgstr "By clicking the Log In button you accept the NREL Data Terms."
+msgid "Bulk Edit"
+msgstr "Bulk Edit"
+
+msgid "By Analysis"
+msgstr "By Analysis"
+
+msgid "By Property"
+msgstr "By Property"
+
+msgid "By clicking the Log In button you accept the Data Terms."
+msgstr "By clicking the Log In button you accept the Data Terms."
+
+msgid "CALC_ACCESS_LEVEL_DESC"
+msgstr "Select the Access Level and Instance of the data to include in the calculations."
+
+msgid "CALC_CYCLE_DESC"
+msgstr "Select the cycle to use for the calculations."
+
+msgid "CALC_DATA_COLS_DESC"
+msgstr "Select additional data columns to include in the  Facilities Plan table, if desired."
+
+msgid "CEWE_ELEMENTS_COMMENT"
+msgstr "(Generated by the ESTCP Technologies Knowledge Base Library)"
+
+msgid "CEWE_ELEMENTS_SUBTITLE"
+msgstr "Includes Applicable Building Elements with Lowest RSL Values"
+
+msgid "CEWE_ELEMENTS_TITLE"
+msgstr "Comprehensive Energy and Water Evaluation (CEWE) Compliance Pathway Support  "
+
+msgid "CHART_STATUS_MESSAGE"
+msgstr "Too much data to chart. Try a different Access Level, add a Filter Group to your program, or increase the limit in your Organization Settings page."
 
 msgid "CLICK_LEGEND"
 msgstr "Click a label below to show/hide it on the chart"
@@ -387,6 +665,9 @@ msgstr "Specifies the underlying field name represented by the Display Name. The
 
 msgid "COL_CHANGE_NAME_EXT"
 msgstr "If a name has an “extra data” tag after it, these are fields that have been imported into SEED by the user from imported files. These fields cannot be used as matching fields under the Match Criteria section."
+
+msgid "COL_EXCLUDE_FROM_HASH"
+msgstr "Checking this box for a field will remove the field from the hash that uniquely represents each record. Incoming data will not be imported into SEED if the only fields changed are marked as excluded from the uniqueness calculations. The incoming data will instead be calculated to be a duplicate of the existing data and will therefore be ignored."
 
 msgid "COL_GEOCODING_TOGGLE"
 msgstr "Check the appropriate fields, as well as their order for the program to concatenate a full address, which SEED will use to generate latitude and longitude values for each record"
@@ -427,14 +708,38 @@ msgstr "Normally when an imported record is merged into another record the newes
 msgid "COMPLETE_AND_REFRESH"
 msgstr "Complete and Refresh Page"
 
+msgid "COMPLIANCE_CYCLE_YEAR_DESC"
+msgstr "Identify the SEED column used to store the compliance cycle year information. If it does not yet exist, create it in the Column Settings page."
+
+msgid "CONDITION_INDEX_THRESHOLD_HELP"
+msgstr "The condition index to use as a comparison threshold in the calculations."
+
+msgid "CONFIGURE_CYCLES"
+msgstr "Select one or more cycles from the dropdown above to visualize in the charts below."
+
 msgid "CONFIGURE_PROGRAM"
 msgstr "Need to configure your Program?"
+
+msgid "CONFIGURE_XY_AXES"
+msgstr "to configure the set of columns selectable as X and Y axes. These can be set on the Default Display Fields tab."
 
 msgid "CONFIRMING_DELETE_PROFILE"
 msgstr "Are you sure you want to delete the profile"
 
+msgid "CONFIRM_ACCESS_LEVEL_DELETE"
+msgstr "Are you sure you want to delete this access level? This action will also delete {num_access_levels} access level instances."
+
 msgid "CONFIRM_AND_START_MATCHING"
 msgstr "Confirm mappings &amp; start matching"
+
+msgid "CONFIRM_DELETE_TEXT_1"
+msgstr "Deleting this organization will also remove all Properties and Tax Lots affiliated with the organization."
+
+msgid "CONFIRM_DELETE_TEXT_2"
+msgstr "Depending on how much inventory this organization has, the delete process may take some time."
+
+msgid "CONTACT_GITHUB"
+msgstr "The open-source code is available on the GitHub organization of seed-platform and contains various repositories for the different components of the platform such as the main SEED application, a Python client to communicate to SEED's API and various example datasets."
 
 msgid "CONTINUE"
 msgstr "Continue"
@@ -454,6 +759,9 @@ msgstr "Create a Data Logger"
 msgid "CURRENTLY_GEOCODING"
 msgstr "Currently geocoding"
 
+msgid "Calculate the Plan"
+msgstr "Calculate the Plan"
+
 msgid "Campus"
 msgstr "Campus"
 
@@ -466,6 +774,12 @@ msgstr "Cancel"
 #: seed/exception_handler.py:45
 msgid "Cannot delete protected objects while related objects still exist"
 msgstr "Cannot delete protected objects while related objects still exist"
+
+msgid "Cannot delete this access level instance."
+msgstr "Cannot delete this access level instance."
+
+msgid "Change Inventory Access Level"
+msgstr "Change Inventory Access Level"
 
 msgid "Change Merged Property"
 msgstr "Change Merged Property"
@@ -517,6 +831,12 @@ msgstr "Clear Filters"
 msgid "Clear Labels"
 msgstr "Clear Labels"
 
+msgid "Client ID"
+msgstr "Client ID"
+
+msgid "Client Secret"
+msgstr "Client Secret"
+
 msgid "Close"
 msgstr "Close"
 
@@ -553,11 +873,26 @@ msgstr "Column Order/Visibility"
 msgid "Column Settings"
 msgstr "Column Settings"
 
+msgid "Columns to Include in Reports x axis options"
+msgstr "Columns to Include in Reports x axis options"
+
+msgid "Columns to Include in Reports y axis options"
+msgstr "Columns to Include in Reports y axis options"
+
 msgid "ComStock Mapping"
 msgstr "ComStock Mapping"
 
 msgid "Commercial"
 msgstr "Commercial"
+
+msgid "Commitment"
+msgstr "Commitment"
+
+msgid "Commitment (Sq Ft)"
+msgstr "Commitment (Sq Ft)"
+
+msgid "Committed Area"
+msgstr "Committed Area"
 
 msgid "Compare UBIDs"
 msgstr "Compare UBIDs"
@@ -570,6 +905,9 @@ msgstr "Complete"
 
 msgid "Compliance"
 msgstr "Compliance"
+
+msgid "Compliance Cycle Year Column"
+msgstr "Compliance Cycle Year Column"
 
 msgid "Compliance Information"
 msgstr "Compliance Information"
@@ -592,11 +930,29 @@ msgstr "Concatenate Headers (Columns of Data)"
 msgid "Condition Check"
 msgstr "Condition Check"
 
+msgid "Condition Index"
+msgstr "Condition Index"
+
+msgid "Condition Index Field"
+msgstr "Condition Index Field"
+
+msgid "Condition Index Threshold"
+msgstr "Condition Index Threshold"
+
+msgid "Conditional Import"
+msgstr "Conditional Import"
+
 msgid "Conditioned Floor Area"
 msgstr "Conditioned Floor Area"
 
 msgid "Configuration"
 msgstr "Configuration"
+
+msgid "Configure Goals"
+msgstr "Configure Goals"
+
+msgid "Configure Meter Details"
+msgstr "Configure Meter Details"
 
 #: seed/landing/templates/landing/password_reset_confirm.html:64
 #: seed/landing/templates/landing/signup.html:63
@@ -605,6 +961,9 @@ msgstr "Confirm"
 
 msgid "Confirm Audit Template Building Import?"
 msgstr "Confirm Audit Template Building Import?"
+
+msgid "Confirm New Password"
+msgstr "Confirm New Password"
 
 msgid "Confirm Save Mappings?"
 msgstr "Confirm Save Mappings?"
@@ -615,8 +974,17 @@ msgstr "Confirm delete"
 msgid "Confirm new password"
 msgstr "Confirm new password"
 
+msgid "Connected to Salesforce"
+msgstr "Connected to Salesforce"
+
 msgid "Connection"
 msgstr "Connection"
+
+msgid "Connection Status"
+msgstr "Connection Status"
+
+msgid "Connection error"
+msgstr "Connection error"
 
 msgid "Contact"
 msgstr "Contact"
@@ -630,11 +998,17 @@ msgstr "Contact Benchmark Field"
 msgid "Contacts and Accounts"
 msgstr "Contacts and Accounts"
 
+msgid "Content"
+msgstr "Content"
+
 msgid "Continue to data mapping"
 msgstr "Continue to data mapping"
 
 msgid "Continue to data matching"
 msgstr "Continue to data matching"
+
+msgid "Cooling Capacity (Ton)"
+msgstr "Cooling Capacity (Ton)"
 
 msgid "Copy Buildings"
 msgstr "Copy Buildings"
@@ -642,8 +1016,17 @@ msgstr "Copy Buildings"
 msgid "Copy Data File Headers directly to SEED Headers"
 msgstr "Copy Data File Headers directly to SEED Headers"
 
+msgid "Copy Inventory"
+msgstr "Copy Inventory"
+
+msgid "Copy Inventory to New Cycle"
+msgstr "Copy Inventory to New Cycle"
+
 msgid "Copy into Data File Headers"
 msgstr "Copy into Data File Headers"
+
+msgid "Could not delete the group"
+msgstr "Could not delete the group"
 
 msgid "Count #"
 msgstr "Count #"
@@ -654,6 +1037,9 @@ msgstr "Create"
 msgid "Create Analysis"
 msgstr "Create Analysis"
 
+msgid "Create Column"
+msgstr "Create Column"
+
 msgid "Create Cycle"
 msgstr "Create Cycle"
 
@@ -662,6 +1048,15 @@ msgstr "Create Data Set"
 
 msgid "Create Filter Group"
 msgstr "Create Filter Group"
+
+msgid "Create Group"
+msgstr "Create Group"
+
+msgid "Create Meter"
+msgstr "Create Meter"
+
+msgid "Create New Plan Run"
+msgstr "Create New Plan Run"
 
 msgid "Create New Sub-Organization"
 msgstr "Create New Sub-Organization"
@@ -672,12 +1067,21 @@ msgstr "Create Profile"
 msgid "Create Project"
 msgstr "Create Project"
 
+msgid "Create Service for System"
+msgstr "Create Service for System"
+
+msgid "Create System"
+msgstr "Create System"
+
 msgid "Create UBID"
 msgstr "Create UBID"
 
 #: seed/landing/templates/landing/signup.html:29
 msgid "Create Your Account"
 msgstr "Create Your Account"
+
+msgid "Create a Custom Report to get started!"
+msgstr "Create a Custom Report to get started!"
 
 msgid "Create a New Data Set."
 msgstr "Create a New Data Set."
@@ -690,6 +1094,12 @@ msgstr "Create a New Sub-Organization"
 
 msgid "Create a Program to get started!"
 msgstr "Create a Program to get started!"
+
+msgid "Create a Property"
+msgstr "Create a Property"
+
+msgid "Create a Tax Lot"
+msgstr "Create a Tax Lot"
 
 msgid "Create a new rule"
 msgstr "Create a new rule"
@@ -737,11 +1147,26 @@ msgstr "Cross-Cycles"
 msgid "Current Column Mapping Profile"
 msgstr "Current Column Mapping Profile"
 
+msgid "Current Cycle"
+msgstr "Current Cycle"
+
+msgid "Current Cycle will be measured against Baseline Cycle"
+msgstr "Current Cycle will be measured against Baseline Cycle"
+
 msgid "Current Filters"
 msgstr "Current Filters"
 
+msgid "Current Method"
+msgstr "Current Method"
+
 msgid "Current Name"
 msgstr "Current Name"
+
+msgid "Current Password"
+msgstr "Current Password"
+
+msgid "Current Year Annual Report"
+msgstr "Current Year Annual Report"
 
 msgid "Current password"
 msgstr "Current password"
@@ -755,8 +1180,14 @@ msgstr "Custom ID 1 (Property)"
 msgid "Custom ID 1 (Tax Lot)"
 msgstr "Custom ID 1 (Tax Lot)"
 
+msgid "Custom Name for Level"
+msgstr "Custom Name for Level"
+
 msgid "Custom Reports"
 msgstr "Custom Reports"
+
+msgid "Custom Reports require filter groups. Filter groups are created and configured on the"
+msgstr "Custom Reports require filter groups. Filter groups are created and configured on the"
 
 msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 msgstr "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
@@ -767,6 +1198,12 @@ msgstr "Cycle"
 msgid "Cycle Name"
 msgstr "Cycle Name"
 
+msgid "Cycle Selection"
+msgstr "Cycle Selection"
+
+msgid "Cycle selection and goal details can be customized by clicking the Configure Goals button below."
+msgstr "Cycle selection and goal details can be customized by clicking the Configure Goals button below."
+
 msgid "Cycle updated."
 msgstr "Cycle updated."
 
@@ -775,6 +1212,9 @@ msgstr "Cycle:"
 
 msgid "Cycles"
 msgstr "Cycles"
+
+msgid "Cycles to Include"
+msgstr "Cycles to Include"
 
 msgid "Cycles to Include in Compliance Period"
 msgstr "Cycles to Include in Compliance Period"
@@ -800,6 +1240,9 @@ msgstr "Data Mapping and Validation ({filename})"
 msgid "DELETED_LABEL_NAMED"
 msgstr "Deleted label {label_name}"
 
+msgid "DELETE_ANALYSIS_TEXT"
+msgstr "Are you sure you want to delete this Analysis? This action cannot be undone."
+
 msgid "DELETE_LABEL_AND_REMOVE"
 msgstr "Delete label '{label_name}' and remove it from all buildings it's been applied to?"
 
@@ -808,6 +1251,12 @@ msgstr "This action cannot be undone. This will permanently delete this organiza
 
 msgid "DELETE_SUB_ORG_WARNING"
 msgstr "This action cannot be undone. This will permanently delete this organization and all associated uploads, properties, taxlots, cycles, data quality rules, sub-organizations, and remove all member associations."
+
+msgid "DES Type"
+msgstr "DES Type"
+
+msgid "DEVELOPERS_FORUM"
+msgstr "The SEED Developers Forum contains various topics and joining enables you to connect with other developers. It is recommended to join this forum to submit developer questions, feature requests, and report issues as needed. Also, submitting issues on GitHub is encouraged."
 
 msgid "DID_YOU_REVIEW_YOUR_MAPPINGS"
 msgstr "Did you review your mappings? It's a good idea to double check your mappings. Once SEED matches your properties and tax lots you cannot undo or edit these mappings."
@@ -854,8 +1303,14 @@ msgstr "Data Quality"
 msgid "Data Quality Check"
 msgstr "Data Quality Check"
 
+msgid "Data Quality Checks can be configured in"
+msgstr "Data Quality Checks can be configured in"
+
 msgid "Data Quality Results"
 msgstr "Data Quality Results"
+
+msgid "Data Quality Settings"
+msgstr "Data Quality Settings"
 
 msgid "Data Set"
 msgstr "Data Set"
@@ -902,11 +1357,23 @@ msgstr "Default Data Administrator Account Name"
 msgid "Default Display Fields"
 msgstr "Default Display Fields"
 
+msgid "Default Reports"
+msgstr "Default Reports"
+
 msgid "Delete"
 msgstr "Delete"
 
+msgid "Delete Access Level Instance"
+msgstr "Delete Access Level Instance"
+
 msgid "Delete All Mappings"
 msgstr "Delete All Mappings"
+
+msgid "Delete Analysis"
+msgstr "Delete Analysis"
+
+msgid "Delete Group"
+msgstr "Delete Group"
 
 msgid "Delete Indication Label After Successful Salesforce Update"
 msgstr "Delete Indication Label After Successful Salesforce Update"
@@ -944,6 +1411,9 @@ msgstr "Deleting in progress..."
 msgid "Derived Columns"
 msgstr "Derived Columns"
 
+msgid "Description"
+msgstr "Description"
+
 #: seed/landing/models.py:48
 msgid "Designates whether the user can log into this admin site."
 msgstr "Designates whether the user can log into this admin site."
@@ -970,6 +1440,9 @@ msgstr "Development Team"
 msgid "Dismiss"
 msgstr "Dismiss"
 
+msgid "Display Columns"
+msgstr "Display Columns"
+
 msgid "Display Name"
 msgstr "Display Name"
 
@@ -987,6 +1460,9 @@ msgstr "Domain"
 
 msgid "Done"
 msgstr "Done"
+
+msgid "Download Output Files"
+msgstr "Download Output Files"
 
 msgid "Download Sample Data"
 msgstr "Download Sample Data"
@@ -1015,8 +1491,32 @@ msgstr "Drag to here"
 msgid "Duplicate"
 msgstr "Duplicate"
 
+msgid "Duplicate Data File Headers are not allowed. Modify the import file and try again."
+msgstr "Duplicate Data File Headers are not allowed. Modify the import file and try again."
+
 msgid "Duplicates"
 msgstr "Duplicates"
+
+msgid "EDIT_GOAL_NOTES"
+msgstr "Edit Fields for the Selected Properties"
+
+msgid "ELECTRIC_ENERGY_USAGE_DESC"
+msgstr "Identify the SEED column used to store the Electric Energy Usage."
+
+msgid "EMAIL_TEMPLATE_EXAMPLE"
+msgstr "\"Your building's latitude and longitude is \\{\\{latitude\\}\\}, \\{\\{longitude\\}\\}!\""
+
+msgid "EMAIL_TEMPLATE_INSTRUCTIONS_1"
+msgstr "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
+
+msgid "EMAIL_TEMPLATE_INSTRUCTIONS_2"
+msgstr "The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name."
+
+msgid "ENABLED"
+msgstr "ENABLED"
+
+msgid "ENABLE_PUBLIC_FEED"
+msgstr "to enable or disable Public Feed functionality"
 
 msgid "ENERGY STAR Score"
 msgstr "ENERGY STAR Score"
@@ -1042,11 +1542,26 @@ msgstr "ESPM Spreadsheet Upload (xlsx). The spreadsheet should contain a single 
 msgid "ESPM_IMPORT_TEXT"
 msgstr "Choose an EnergyStar Portfolio Manager (ESPM) data importing method below: you can either upload a property spreadsheet previously downloaded from ESPM, or you can connect to ESPM directly to access the data."
 
+msgid "ESTCP Report"
+msgstr "ESTCP Report"
+
+msgid "ETA:"
+msgstr "Estimated Completion:"
+
 msgid "EUI"
 msgstr "EUI"
 
+msgid "EUI Target Columns"
+msgstr "EUI Target Columns"
+
+msgid "EVSE Type"
+msgstr "EVSE Type"
+
 msgid "EXCLUDE"
 msgstr "EXCLUDE"
+
+msgid "EXCLUDE_FROM_PLAN_DESC"
+msgstr "Identify the (boolean) SEED column used to indicate whether a property should be excluded from the plan. A value of true (1) indicates that the property should be de-prioritized regardless of energy usage, while a value of false (0) indicates that the property should be considered for inclusion in the percentage of facilities configured above. If this column does not yet exist, create it in the Column Settings page."
 
 msgid "EXTRA_DATA_COL_TYPE_CHANGE"
 msgstr "For “extra data” fields, this allows the user to set the type, such as Text, Number, Date, etc."
@@ -1054,11 +1569,41 @@ msgstr "For “extra data” fields, this allows the user to set the type, such 
 msgid "Edit"
 msgstr "Edit"
 
+msgid "Edit Access Level Instance Name"
+msgstr "Edit Access Level Instance Name"
+
+msgid "Edit Fields for Selected"
+msgstr "Edit Fields for Selected"
+
+msgid "Edit Group"
+msgstr "Edit Group"
+
 msgid "Edit Name"
 msgstr "Edit Name"
 
+msgid "Edit Service for System"
+msgstr "Edit Service for System"
+
+msgid "Edit System"
+msgstr "Edit System"
+
 msgid "Edit UBIDs"
 msgstr "Edit UBIDs"
+
+msgid "Edit/Add Access Levels"
+msgstr "Edit/Add Access Levels"
+
+msgid "Efficiency (%)"
+msgstr "Efficiency (%)"
+
+msgid "Elapsed:"
+msgstr "Elapsed:"
+
+msgid "Electric EUI Field"
+msgstr "Electric EUI Field"
+
+msgid "Electric Energy Usage Column"
+msgstr "Electric Energy Usage Column"
 
 #: seed/landing/forms.py:13
 msgid "Email"
@@ -1074,8 +1619,14 @@ msgstr "Email Address:"
 msgid "Email Templates"
 msgstr "Email Templates"
 
+msgid "Emission Factor"
+msgstr "Emission Factor"
+
 msgid "Emission Metric"
 msgstr "Emission Metric"
+
+msgid "Enable Audit Template Auto Sync"
+msgstr "Enable Audit Template Auto Sync"
 
 msgid "Enable ComStock Functionality"
 msgstr "Enable ComStock Functionality"
@@ -1083,8 +1634,29 @@ msgstr "Enable ComStock Functionality"
 msgid "Enable Geocoding"
 msgstr "Enable Geocoding"
 
+msgid "Enable Labels in Public Feed"
+msgstr "Enable Labels in Public Feed"
+
+msgid "Enable Portfolio Salesforce Integration"
+msgstr "Enable Salesforce Integration (Portfolio of Properties)"
+
+msgid "Enable Public Endpoints"
+msgstr "Enable Public Endpoints"
+
+msgid "Enable Public GeoJSON"
+msgstr "Enable Public GeoJSON"
+
 msgid "Enable Salesforce Integration"
-msgstr "Enable Salesforce Integration"
+msgstr "Enable Salesforce Integration (Individual Properties)"
+
+msgid "Enable Salesforce Integration (Individual Properties)"
+msgstr "Enable Salesforce Integration (Individual Properties)"
+
+msgid "Enable Salesforce Integration (Portfolio of Properties)"
+msgstr "Enable Salesforce Integration (Portfolio of Properties)"
+
+msgid "Enable this functionality to send Federal Building fields to Audit Template."
+msgstr "Enable this functionality to send Federal Building fields to Audit Template."
 
 msgid "Energy"
 msgstr "Energy"
@@ -1092,8 +1664,17 @@ msgstr "Energy"
 msgid "Energy Alerts"
 msgstr "Energy Alerts"
 
+msgid "Energy Capacity (kWh)"
+msgstr "Energy Capacity (kWh)"
+
 msgid "Energy Metric"
 msgstr "Energy Metric"
+
+msgid "Energy Running Sum Percentage"
+msgstr "Energy Running Sum Percentage"
+
+msgid "Energy Usage Columns"
+msgstr "Energy Usage Columns"
 
 msgid "Energy data file"
 msgstr "Energy data file"
@@ -1104,6 +1685,9 @@ msgstr "English"
 
 msgid "Enter Email Address"
 msgstr "Enter Email Address"
+
+msgid "Enter a Name for the new Access Level Instance"
+msgstr "Enter a Name for the new Access Level Instance"
 
 msgid "Enter a valid email address."
 msgstr "Enter a valid email address."
@@ -1132,8 +1716,23 @@ msgstr "Error"
 msgid "Error Processing Data"
 msgstr "Error Processing Data"
 
+msgid "Example Access Level Tree"
+msgstr "Example Access Level Tree"
+
 msgid "Example Usage"
 msgstr "Example Usage"
+
+msgid "Exclude"
+msgstr "Exclude"
+
+msgid "Exclude From Plan Column"
+msgstr "Exclude From Plan Column"
+
+msgid "Exclude From Uniqueness"
+msgstr "Exclude From Uniqueness"
+
+msgid "Exclude all selected labels"
+msgstr "Exclude all selected labels"
 
 msgid "Existing Audit Template Properties (skipped)"
 msgstr "Existing Audit Template Properties (skipped)"
@@ -1165,6 +1764,12 @@ msgstr "Export Buildings"
 msgid "Export CSV"
 msgstr "Export CSV"
 
+msgid "Export Data"
+msgstr "Export Data"
+
+msgid "Export File Name"
+msgstr "Export File Name"
+
 msgid "Export GeoJSON"
 msgstr "Export GeoJSON"
 
@@ -1195,6 +1800,30 @@ msgstr "Exporting properties to your Audit Template account"
 msgid "Exporting selected properties..."
 msgstr "Exporting selected properties..."
 
+msgid "FACILITIES_PLAN_EXISTS_DESC"
+msgstr "Select a Facilities Plan Run from the dropdown below or create a new Plan Run"
+
+msgid "FACILITIES_PLAN_NOT_EXISTS_DESC"
+msgstr "Create a new Facilities Plan Run"
+
+msgid "FACILITIES_PLAN_SETUP_DESC"
+msgstr "Use the settings below to configure a Facilities Plan to identify facilities that account for a specified percentage of the organization's overall energy use. Originally developed to help identify covered facilities for Section 432 of the Energy Independence and Security Act of 2007 (EISA 432), but can be used for other planning purposes. This section contains the core required settings. Additional configurations can be made per access level or cycle in the Facilities Plan tab of the Insights section."
+
+msgid "FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"
+msgstr "Geocoding failed - Your MapQuest API Key is invalid. Update your MapQuest API Key or disable geocoding in Organization Settings."
+
+msgid "FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"
+msgstr "Geocoding failed - Your MapQuest API Key is either invalid or at its limit. Update your MapQuest API Key or disable geocoding in Organization Settings."
+
+msgid "FAIR_BENCHMARK_RATIO_HELP"
+msgstr "The fair ratio of Total EUI to Benchmark Total EUI value to use. Ratio = Total EUI/Benchmark EUI"
+
+msgid "FEMP CTS Reporting Export"
+msgstr "FEMP CTS Reporting Export"
+
+msgid "FF_RSL_THRESHOLD_HELP"
+msgstr "The remaining service life value to use for your fossil fuel-fired equipment as a comparison threshold in the calculations. For instance, perhaps your remaining service life threshold is 0 years and your gas boiler has a remaining service life of -1 year, therefore not meeting the threshold."
+
 msgid "FIELDS NEEDED TO MAKE MATCHES:"
 msgstr "FIELDS NEEDED TO MAKE MATCHES:"
 
@@ -1210,8 +1839,29 @@ msgstr "Field names for matching"
 msgid "FILE_TYPES_SUPPORTED"
 msgstr "File types supported: <strong>.csv</strong>, <strong>.xls</strong>, <strong>.xlsx</strong>, <strong>.xml</strong>, <strong>.zip</strong>, <strong>.geojson</strong>, and <strong>.json</strong>."
 
+msgid "FOSSIL_FUEL_EUI_HELP"
+msgstr "Fossil Fuel EUI Threshold for the building (includes Gas, Etc.)"
+
+msgid "Facilities Plan"
+msgstr "Facilities Plan"
+
+msgid "Facilities Plan Run"
+msgstr "Facilities Plan Run"
+
 msgid "Failed to delete inventory"
 msgstr "Failed to delete inventory"
+
+msgid "Fair Actual to Benchmark EUI Ratio"
+msgstr "Fair Actual to Benchmark EUI Ratio"
+
+msgid "Federal BPS Prescriptive Measures"
+msgstr "Federal BPS Prescriptive Measures"
+
+msgid "Federal BPS Recommended Measures"
+msgstr "Federal BPS Recommended Measures"
+
+msgid "Federal Building Fields"
+msgstr "Federal Building Fields"
 
 msgid "Fetching your buildings from Audit Template..."
 msgstr "Fetching your buildings from Audit Template..."
@@ -1270,8 +1920,17 @@ msgstr "First name is required."
 msgid "Float"
 msgstr "Float"
 
+msgid "Flow Direction"
+msgstr "Flow Direction"
+
 msgid "For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired."
 msgstr "For Portfolio Manager files, SEED has a default set of field names which can be used without extra user editing unless desired."
+
+msgid "For SEED Platform™ Developers"
+msgstr "For SEED Platform™ Developers"
+
+msgid "For SEED Platform™ Users"
+msgstr "For SEED Platform™ Users"
 
 msgid "For SEED-Platform Developers"
 msgstr "For SEED-Platform Developers"
@@ -1282,10 +1941,19 @@ msgstr "For SEED-Platform Users"
 msgid "For direct help on a specific problem, please email:"
 msgstr "For direct help on a specific problem, please email:"
 
+msgid "For direct help on a specific problem, please fill out a request on the building data tools website help desk:"
+msgstr "For direct help on a specific problem, please fill out a request on the building data tools website help desk:"
+
 #: seed/landing/templates/landing/home.html:29
 #: seed/landing/templates/landing/login.html:31
 msgid "Forgot password?"
 msgstr "Forgot password?"
+
+msgid "Fossil Fuel EUI Threshold"
+msgstr "Fossil Fuel EUI Threshold"
+
+msgid "Fossil Fuel-Fired Equipment RSL Threshold"
+msgstr "Fossil Fuel-Fired Equipment RSL Threshold"
 
 #: config/settings/common.py:215
 msgid "French (Canadian)"
@@ -1311,6 +1979,12 @@ msgstr "From the table below, select the rules that you want to: 1) enable/disab
 
 msgid "Funding from"
 msgstr "Funding from"
+
+msgid "GAS_ENERGY_USAGE_DESC"
+msgstr "Identify the SEED column used to store the Gas Energy Usage."
+
+msgid "GENERIC_FP_DESC"
+msgstr "Select a Generic Facilities Plan created in Organization Settings. If you do not have access, ask your admin to create one."
 
 msgid "GEOCODED_MANUALLY"
 msgstr "geocoded manually"
@@ -1348,14 +2022,62 @@ msgstr "Note, geocoding requires at least 1 column is used and populated to cons
 msgid "GEOCODING_NOW"
 msgstr "Geocoding now..."
 
+msgid "GHG"
+msgstr "GHG"
+
+msgid "GHG Intensity"
+msgstr "GHG Intensity"
+
 msgid "GJ/m²/year"
 msgstr "GJ/m²/year"
+
+msgid "GOAL"
+msgstr "GOAL"
+
+msgid "GOAL_CONFIG_TEXT"
+msgstr "Configure one or more portfolio Energy Use Intensity (EUI) reduction goals below."
+
+msgid "GOAL_SELECT_ALI"
+msgstr "Indicate the level in your access level tree that this goal applies to"
+
+msgid "GOAL_SELECT_CYCLES"
+msgstr "Select a baseline cycle and a current cycle for comparison"
+
+msgid "GOAL_SELECT_EUI_FIELDS"
+msgstr "Indicate which fields in your data should be used for EUI and floor area information"
+
+msgid "GOAL_SELECT_PERCENTAGE"
+msgstr "Specify a percentage EUI improvement target"
+
+msgid "GOAL_SETUP_TEXT"
+msgstr "Configure one or more portfolio Energy Use Intensity (EUI) reduction goals below. Select a baseline cycle and a current cycle for comparison, indicate the level in your access level tree that this goal applies to, specify a percentage EUI improvement target, and indicate which fields in your data should be used for EUI and square footage information."
 
 msgid "GREENBUTTON_CONTENTS_TITLE"
 msgstr "Confirm GreenButton File Contents"
 
+msgid "GROUPS_DESC_TEXT"
+msgstr "SEED supports the creation of groups. Groups can include one or more buildings as well as systems such as Batteries, District Energy Systems (DES) or Electric Vehicle Supply Equipment (EVSE). Services can be associated with the systems and meters associated with those services."
+
+msgid "GROUP_METERS_DESC"
+msgstr "The table below shows all property and system meters related to the group. However, only system meters can be created from this page. To create a property meter, go to the property's meter page (for GreenButton format) or go to the data page, add a data file, and click the Meter Data tab in the modal that will open (for Portfolio Manager format)."
+
+msgid "GSA SFTool Guidance"
+msgstr "GSA SFTool Guidance"
+
+msgid "Gas EUI Field"
+msgstr "Gas EUI Field"
+
+msgid "Gas Energy Usage Column"
+msgstr "Gas Energy Usage Column"
+
+msgid "General Configurations"
+msgstr "General Configurations"
+
 msgid "Generate Token"
 msgstr "Generate Token"
+
+msgid "Generic Facilities Plan Selection"
+msgstr "Generic Facilities Plan Selection"
 
 msgid "Geocode"
 msgstr "Geocode"
@@ -1397,8 +2119,32 @@ msgstr "Go to Meters"
 msgid "Go to Notes"
 msgstr "Go to Notes"
 
+msgid "Goal"
+msgstr "Goal"
+
+msgid "Goal Details"
+msgstr "Goal Details"
+
+msgid "Goal Setup"
+msgstr "Goal Setup"
+
 msgid "Gross Floor Area"
 msgstr "Gross Floor Area"
+
+msgid "Group"
+msgstr "Group"
+
+msgid "Group - Systems & Services"
+msgstr "Group - Systems & Services"
+
+msgid "Group Name"
+msgstr "Group Name"
+
+msgid "Groups"
+msgstr "Groups"
+
+msgid "HAS_BAS_HELP"
+msgstr "Select the field that indicates whether or not the building has a Building Automation System (BAS). This analysis expects a boolean field."
 
 msgid "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
 msgstr "HOW THE SYSTEM AUTO-MATCHES YOUR PROPERTIES AND TAX LOTS:"
@@ -1415,6 +2161,15 @@ msgstr "HTTP Error! Status Code: 404. The requested URL was not found."
 msgid "HTTP Error! Status Code: 500. Internal Server Error."
 msgstr "HTTP Error! Status Code: 500. Internal Server Error."
 
+msgid "Have your organization owner update the column's data type to \"Area\""
+msgstr "Have your organization owner update the column's data type to \"Area\""
+
+msgid "Have your organization owner update the data type of the column to \"EUI\""
+msgstr "Have your organization owner update the data type of the column to \"EUI\""
+
+msgid "Heating Capacity (MMBtu)"
+msgstr "Heating Capacity (MMBtu)"
+
 #: seed/templates/seed/account_create_email.html:2
 msgid "Hello %(first_name)s, "
 msgstr "Hello %(first_name)s, "
@@ -1422,8 +2177,17 @@ msgstr "Hello %(first_name)s, "
 msgid "Hexagonal Bins"
 msgstr "Hexagonal Bins"
 
+msgid "Hide All Labels"
+msgstr "Hide All Labels"
+
 msgid "Highlights of SEED Platform™"
 msgstr "Highlights of SEED Platform™"
+
+msgid "Historical Annual Reports"
+msgstr "Historical Annual Reports"
+
+msgid "Historical Note"
+msgstr "Historical Note"
 
 msgid "Home Energy Score ID"
 msgstr "Home Energy Score ID"
@@ -1439,6 +2203,9 @@ msgstr "<label class=\"label label-danger\">Duplicate</label> -- if fields are m
 
 msgid "IMPORT_ANOTHER_QUESTION"
 msgstr "Would you like to add another file?"
+
+msgid "INCLUDE_IN_DENOMINATOR_DESC"
+msgstr "Identify the (boolean) SEED column used to indicate whether a property should be included in the total energy usage calculation. A value of true (1) indicates that the property's energy usage should be used to calculate the organization's total energy usage, while a value of false (0) indicates that the property should not be included in the total energy usage calculations and will not be part of the plan. If this column does not yet exist, create it in the Column Settings page."
 
 msgid "INCLUDE_SHARED_PROPERTIES"
 msgstr "Include in your Properties List all properties shared with you."
@@ -1482,6 +2249,12 @@ msgstr "This operation is irreversible."
 msgid "ITEMS_WILL_NOT_CHANGE"
 msgstr "these will not change"
 
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Goal record associated with the selected Partner using the dropdown above."
+msgstr "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Goal record associated with the selected Partner using the dropdown above."
+
+msgid "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Partner record using the dropdown above."
+msgstr "If you wish to sync portfolio information with your Salesforce instance, select the Salesforce Partner record using the dropdown above."
+
 msgid "Ignored duplicates of existing properties"
 msgstr "Ignored duplicates of existing properties"
 
@@ -1494,6 +2267,9 @@ msgstr "Ignored property duplicates within the import file"
 msgid "Ignored tax lot duplicates within the import file"
 msgstr "Ignored tax lot duplicates within the import file"
 
+msgid "Import"
+msgstr "Import"
+
 msgid "Import Access Level Instances"
 msgstr "Import Access Level Instances"
 
@@ -1503,11 +2279,17 @@ msgstr "Import Audit Template Buildings"
 msgid "Import Portfolio Manager Data"
 msgstr "Import Portfolio Manager Data"
 
+msgid "Import Submissions"
+msgstr "Import Submissions"
+
 msgid "Import directly from ESPM"
 msgstr "Import directly from ESPM"
 
 msgid "Import from Audit Template"
 msgstr "Import from Audit Template"
+
+msgid "Import setting:"
+msgstr "Import setting:"
 
 msgid "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
 msgstr "In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the data is matched and merged, as well as how it is displayed in the Inventory view."
@@ -1516,8 +2298,14 @@ msgstr "In addition, you need to specify where the field should be associated wi
 msgid "Inactive"
 msgstr "Inactive"
 
+msgid "Include Any"
+msgstr "Include Any"
+
 msgid "Include CSV Label Header"
 msgstr "Include CSV Label Header"
+
+msgid "Include In Total Denominator Column"
+msgstr "Include In Total Denominator Column"
 
 msgid "Include Notes"
 msgstr "Include Notes"
@@ -1531,6 +2319,9 @@ msgstr "Ineligible"
 msgid "Insights"
 msgstr "Insights"
 
+msgid "Installation Date"
+msgstr "Installation Date"
+
 msgid "Integer"
 msgstr "Integer"
 
@@ -1542,6 +2333,12 @@ msgstr "Invalid UBID"
 
 msgid "Inventory"
 msgstr "Inventory"
+
+msgid "Inventory Documents"
+msgstr "Inventory Documents"
+
+msgid "Inventory List"
+msgstr "Inventory List"
 
 msgid "Inventory Reports"
 msgstr "Inventory Reports"
@@ -1561,6 +2358,9 @@ msgstr "Invite a new member"
 msgid "Invite an Owner"
 msgstr "Invite an Owner"
 
+msgid "Is Omitted"
+msgstr "Is Omitted"
+
 msgid "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 msgstr "It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field name from the original datafile."
 
@@ -1572,6 +2372,9 @@ msgstr "Jurisdiction Property ID"
 
 msgid "Jurisdiction Tax Lot ID"
 msgstr "Jurisdiction Tax Lot ID"
+
+msgid "LINK_CYCLE_ERROR_TEXT"
+msgstr "To link this cycle to an Annual Report in your Salesforce instance, you must first login to Salesforce."
 
 msgid "LINK_OUT_CYCLE_MATCHES"
 msgstr "Matches outside of this cycle will be linked."
@@ -1593,6 +2396,9 @@ msgstr "Select columns from the list below to make them appear in your Tax Lots 
 
 msgid "LONG_OPERATION_WARNING"
 msgstr "This operation may take a while."
+
+msgid "LONG_OP_CONFIRM_TEXT"
+msgstr "This operation may take a long time to complete. Are you sure you want to continue?"
 
 msgid "Label"
 msgstr "Label"
@@ -1624,14 +2430,29 @@ msgstr "Last Salesforce Update"
 msgid "Last name is required."
 msgstr "Last name is required."
 
+msgid "Latest Messages"
+msgstr "Latest Messages"
+
 msgid "Latitude"
 msgstr "Latitude"
+
+msgid "Lawrence Berkeley National Laboratory"
+msgstr "Lawrence Berkeley National Laboratory"
 
 msgid "Left Axis"
 msgstr "Left Axis"
 
 msgid "Left Half"
 msgstr "Left Half"
+
+msgid "Level"
+msgstr "Level"
+
+msgid "Level Instance"
+msgstr "Level Instance"
+
+msgid "Loading Summary Data..."
+msgstr "Loading Summary Data..."
 
 msgid "Loading data..."
 msgstr "Loading data..."
@@ -1655,8 +2476,14 @@ msgstr "Log in"
 msgid "Log in to SEED Platform"
 msgstr "Log in to SEED Platform"
 
+msgid "Log in to Salesforce first to be able to configure Salesforce Partner and Goal associations here."
+msgstr "Log in to Salesforce first to be able to configure Salesforce Partner and Goal associations here."
+
 msgid "Logging Email"
 msgstr "Logging Email"
+
+msgid "Login"
+msgstr "Login"
 
 msgid "Logout"
 msgstr "Logout"
@@ -1713,11 +2540,20 @@ msgstr "Meter energy display units (change one at a time)"
 msgid "METER_READING_COUNTS_TITLE"
 msgstr "Meter Reading Counts"
 
+msgid "METER_WATER_DISPLAY_SETTINGS_TITLE"
+msgstr "Meter water display units (change one at a time)"
+
 msgid "MJ/m²/year"
 msgstr "MJ/m²/year"
 
 msgid "MODIFYING_COLUMN_SETTINGS"
 msgstr "Modifying Column Settings"
+
+msgid "MORE RECENT DATA"
+msgstr "MORE RECENT DATA"
+
+msgid "MOVE_INVENTORY_ALI_TXT"
+msgstr "Please select an Access Level and Access Level Instance to move {num} {label} to"
 
 msgid "MULTIPLE_COL_MOD_OPTIONS"
 msgstr "From the table below, you may modify the columns in the following ways: "
@@ -1752,8 +2588,14 @@ msgstr "Manage compliance"
 msgid "Managed by"
 msgstr "Managed by"
 
+msgid "Managing the Access Level Tree"
+msgstr "Managing the Access Level Tree"
+
 msgid "Manual Matching"
 msgstr "Manual Matching"
+
+msgid "Manufacturing Date"
+msgstr "Manufacturing Date"
 
 msgid "Map"
 msgstr "Map"
@@ -1837,6 +2679,12 @@ msgstr "Measurement unit display for energy use intensities (EUI)"
 msgid "Member"
 msgstr "Member"
 
+msgid "Member Access Level"
+msgstr "Member Access Level"
+
+msgid "Member Access Level Instance"
+msgstr "Member Access Level Instance"
+
 msgid "Member Email"
 msgstr "Member Email"
 
@@ -1885,6 +2733,9 @@ msgstr "Merged tax lots within import file"
 msgid "Meter Data"
 msgstr "Meter Data"
 
+msgid "Meter Usage"
+msgstr "Meter Usage"
+
 msgid "Meters"
 msgstr "Meters"
 
@@ -1930,8 +2781,23 @@ msgstr "More details"
 msgid "Move Buildings"
 msgstr "Move Buildings"
 
+msgid "Move Inventory to a Different Access Level Instance"
+msgstr "Move Inventory to a Different Access Level Instance"
+
+msgid "Move Properties"
+msgstr "Move Properties"
+
 msgid "Move/copy buildings to another project"
 msgstr "Move/copy buildings to another project"
+
+msgid "Must Include"
+msgstr "Must Include"
+
+msgid "Must include all selected labels (AND)"
+msgstr "Must include all selected labels (AND)"
+
+msgid "Must include at least one selected label (OR)"
+msgstr "Must include at least one selected label (OR)"
 
 msgid "NEW_COLUMN_REPLACE_DATA_WARNING"
 msgstr "A new column will be created, and/or existing data can be replaced."
@@ -1975,8 +2841,23 @@ msgstr "National Renewable Energy Laboratory"
 msgid "New Analysis"
 msgstr "New Analysis"
 
+msgid "New Build or Acquisition"
+msgstr "New Build or Acquisition"
+
+msgid "New Facilities Plan"
+msgstr "New Facilities Plan"
+
+msgid "New Facilities Run Plan"
+msgstr "New Facilities Run Plan"
+
+msgid "New Goal"
+msgstr "New Goal"
+
 msgid "New Note"
 msgstr "New Note"
+
+msgid "New Password"
+msgstr "New Password"
 
 msgid "New User Email"
 msgstr "New User Email"
@@ -1997,6 +2878,12 @@ msgstr "Next"
 
 msgid "No"
 msgstr "No"
+
+msgid "No Axis"
+msgstr "No Axis"
+
+msgid "No Custom Reports Created"
+msgstr "No Custom Reports Created"
 
 msgid "No Custom Reports Selected"
 msgstr "No Custom Reports Selected"
@@ -2040,6 +2927,12 @@ msgstr "Not Null"
 msgid "Not all inventory items were successfully deleted"
 msgstr "Not all inventory items were successfully deleted"
 
+msgid "Not connected to Salesforce"
+msgstr "Not connected to Salesforce"
+
+msgid "Not seeing your column?"
+msgstr "Not seeing your column?"
+
 msgid "Note:"
 msgstr "Note:"
 
@@ -2065,6 +2958,9 @@ msgstr "Number Properties"
 msgid "Number of Properties"
 msgstr "Number of Properties"
 
+msgid "Number of Runs"
+msgstr "Number of Runs"
+
 msgid "Number of Tax Lots"
 msgstr "Number of Tax Lots"
 
@@ -2077,8 +2973,14 @@ msgstr "Are you sure you want to delete {num_properties,plural, one{<strong>1</s
 msgid "OR"
 msgstr "OR"
 
+msgid "ORGANIZATION_WATER_USE_DISPLAY_UNITS"
+msgstr "Measurement unit display for Water Use"
+
+msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
+msgstr "Measurement unit display for Water Use Intensity (WUI)"
+
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
-msgstr "WARNING: You have modified the criteria that your organization's data will be matched and merged against. Once a column has been added to an organization's matching criteria it cannot be removed while the organization has inventory."
+msgstr "WARNING: You have modified the criteria that your organization's data will be matched and merged against. If the organization is using more than one access levels: once a column has been added to an organization's matching criteria it cannot be removed while the organization has inventory. Matching criteria can be removed in organizations not using access levels."
 
 msgid "OVERWRITE_COLUMN_DATA_QUESTION"
 msgstr "Overwrite data?"
@@ -2092,6 +2994,9 @@ msgstr "Only Show Populated Columns"
 #: src/django-tos-master/tos/models.py:34
 msgid "Only one terms of service is allowed to be active"
 msgstr "Only one terms of service is allowed to be active"
+
+msgid "Optional Data Exports"
+msgstr "Optional Data Exports"
 
 msgid "Options"
 msgstr "Options"
@@ -2114,6 +3019,12 @@ msgstr "Organization Owner(s)"
 msgid "Organization Settings"
 msgstr "Organization Settings"
 
+msgid "Organization Sharing"
+msgstr "Organization Sharing"
+
+msgid "Organization's identifier name"
+msgstr "Organization's Identifier Name"
+
 msgid "Organizations"
 msgstr "Organizations"
 
@@ -2128,6 +3039,9 @@ msgstr "Organizations:"
 
 msgid "Other fields can be manually updated on Audit Template following the export. Properties with Audit Template Building IDs will be skipped"
 msgstr "Other fields can be manually updated on Audit Template following the export. Properties with Audit Template Building IDs will be skipped"
+
+msgid "Output Files"
+msgstr "Output Files"
 
 msgid "Owner"
 msgstr "Owner"
@@ -2180,14 +3094,47 @@ msgstr "Portfolio Manager Meter Import Results"
 msgid "PM_PROPERTY_ID_MATCHING_CRITERIA_WARNING"
 msgstr "Removing PM Property ID from matching criteria can cause unexpected issues for Portfolio Manager Meter imports."
 
+msgid "POOR_BENCHMARK_RATIO_HELP"
+msgstr "The poor ratio of Total EUI to Benchmark Total EUI value to use. Ratio = Total EUI/Benchmark EUI"
+
+msgid "PORTFOLIO_SUMMARY_HEADER_TEXT"
+msgstr "The portfolio summary page compares 2 cycles to calculate progress toward an Energy Use Intensity reduction goal. Cycle selection and goal details can be customized by clicking the Configure Goals button below."
+
 msgid "POST_GEOCODING_COUNTS"
 msgstr "Updated counts after geocoding"
+
+msgid "PROGRAM_SETUP_METRICS"
+msgstr "The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if two are defined, then both metrics must be met for compliance."
 
 msgid "PROPERTY_MATCHING_FIELDS_REQUIREMENT"
 msgstr "At least one of the following Property fields is required"
 
 msgid "PUBLIC"
 msgstr "PUBLIC"
+
+msgid "PUBLIC_FEED_HELP"
+msgstr "Check the box below to enable the Public Feed functionality. Data fields can be individually enabled for the Public Feed from"
+
+msgid "PUBLIC_FEED_LABELS"
+msgstr "Check the box below to allow labels to be returned in the Public Feed and to be able to filter the Public Feed by a specific label."
+
+msgid "PUBLIC_GEOJSON"
+msgstr "Returns a GeoJSON with the fields defined in the Organization Sharing selections"
+
+msgid "PUBLIC_GEOJSON_TEXT_1"
+msgstr "Your public HTML URL"
+
+msgid "PUBLIC_GEOJSON_TEXT_2"
+msgstr "You will need to replace 'CYCLE_ID' in the URL with the ID of the cycle you want to retrieve. You can access cycle IDs on the Cycles page."
+
+msgid "PUBLIC_HTML"
+msgstr "Your public HTML URL is"
+
+msgid "PUBLIC_JSON"
+msgstr "Your public JSON feed URL is"
+
+msgid "PUBLIC_SHARE"
+msgstr "If the Public Feed functionality is enabled, this page can be used to configure what data is shared externally with the public-at-large."
 
 msgid "Pair Properties to Tax Lots"
 msgstr "Pair Properties to Tax Lots"
@@ -2209,6 +3156,9 @@ msgstr "Pairing Settings"
 
 msgid "Parent ID"
 msgstr "Parent ID"
+
+msgid "Passed Checks"
+msgstr "Passed Checks"
 
 #: seed/landing/forms.py:20
 msgid "Password"
@@ -2235,8 +3185,14 @@ msgstr "Password set"
 msgid "Password set unsuccessful"
 msgstr "Password set unsuccessful"
 
+msgid "Percentage (%)"
+msgstr "Percentage (%)"
+
 msgid "Permanently delete extra_data columns and all associated data"
 msgstr "Permanently delete extra_data columns and all associated data"
+
+msgid "Plan last Run at"
+msgstr "Plan last Run at"
 
 #: seed/landing/templates/landing/password_set.html:16
 msgid "Please enter your new password twice so we can verify you typed it in correctly."
@@ -2253,6 +3209,9 @@ msgstr "Please go to the following page and setup your account:"
 msgid "Please join the SEED-Platform Dev forum where you can connect with other developers."
 msgstr "Please join the SEED-Platform Dev forum where you can connect with other developers."
 
+msgid "Please review SEED Headers. Duplicate values are not allowed."
+msgstr "Please review SEED Headers. Duplicate values are not allowed."
+
 msgid "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
 msgstr "Please review SEED column names or the column names of the file being imported. Column names that match an existing Derived Column name are not allowed."
 
@@ -2265,11 +3224,29 @@ msgstr "Please review SEED headers.  Empty values are not allowed."
 msgid "Please visit our User Support website for tutorials and documentation to help you learn how to use SEED-Platform."
 msgstr "Please visit our User Support website for tutorials and documentation to help you learn how to use SEED-Platform."
 
+msgid "Please visit our website for information, tutorials, and documentation to help you learn how to use SEED."
+msgstr "Please visit our website for information, tutorials, and documentation to help you learn how to use SEED."
+
 msgid "Please wait while your data is loaded..."
 msgstr "Please wait while your data is loaded..."
 
+msgid "Poor Actual to Benchmark EUI Ratio"
+msgstr "Poor Actual to Benchmark EUI Ratio"
+
 msgid "Populate SEED Headers with best known matches"
 msgstr "Populate SEED Headers with best known matches"
+
+msgid "Portfolio Summary"
+msgstr "Portfolio Summary"
+
+msgid "Portfolio Summary calculations only include properties that have \"Passed Checks\" and are not \"New Build or Acquired\" (see far right columns below)."
+msgstr "Portfolio Summary calculations only include properties that have \"Passed Checks\" and are not \"New Build or Acquired\" (see far right columns below)."
+
+msgid "Portfolio Summary will only include properties belonging to this Access Level Instance."
+msgstr "Portfolio Summary will only include properties belonging to this Access Level Instance."
+
+msgid "Portfolio Target"
+msgstr "Portfolio Target"
 
 msgid "Postal Code"
 msgstr "Postal Code"
@@ -2282,6 +3259,12 @@ msgstr "Postal Code (Tax Lot)"
 
 msgid "Potential Matches from Source"
 msgstr "Potential Matches from Source"
+
+msgid "Power (kW)"
+msgstr "Power (kW)"
+
+msgid "Power Capacity (kW)"
+msgstr "Power Capacity (kW)"
 
 msgid "Preferred"
 msgstr "Preferred"
@@ -2297,6 +3280,9 @@ msgstr "Preview Loading"
 
 msgid "Previous"
 msgstr "Previous"
+
+msgid "Primary Column"
+msgstr "Primary Column"
 
 msgid "Primary Tax Lot ID"
 msgstr "Primary Tax Lot ID"
@@ -2365,8 +3351,17 @@ msgstr "Properties List"
 msgid "Properties List (legacy)"
 msgstr "Properties List (legacy)"
 
+msgid "Properties failed to update:"
+msgstr "Properties failed to update:"
+
+msgid "Properties updated:"
+msgstr "Properties updated:"
+
 msgid "Properties with Data"
 msgstr "Properties with Data"
+
+msgid "Properties with elements cannot be unmerged."
+msgstr "Properties with elements cannot be unmerged."
 
 msgid "Property"
 msgstr "Property"
@@ -2388,6 +3383,9 @@ msgstr "Property Detail Settings"
 
 msgid "Property Display Field"
 msgstr "Property Display Field"
+
+msgid "Property Elements"
+msgstr "Property Elements"
 
 msgid "Property Footprint"
 msgstr "Property Footprint"
@@ -2422,11 +3420,20 @@ msgstr "Property Visibility"
 msgid "Property and Tax Lot Data"
 msgstr "Property and Tax Lot Data"
 
+msgid "Public Disclosure - Sharing Your Data"
+msgstr "Public Disclosure - Sharing Your Data"
+
+msgid "Question"
+msgstr "Question"
+
 msgid "RECOGNIZE_EMPTY_EXPLANATION"
 msgstr "Checking this box for a field will affect how empty or blank values are treated during merges. Specifically, empty values will be able to replace non-empty values per the \"Merge Protection\" setting."
 
 msgid "RECOGNIZE_EMPTY_IMPORT_WARNING"
 msgstr "Warning: When this is checked for a field and that field is not mapped during import, the incoming records will be read as having an empty values for that field. Any resulting merges will have empty values for this field."
+
+msgid "REHASH_TEXT"
+msgstr "Changing the Uniqueness Exclusions will trigger the recalculation of the hashes that uniquely represent each record. "
 
 msgid "RENAME_COLUMN_TITLE"
 msgstr "Rename Column"
@@ -2434,8 +3441,17 @@ msgstr "Rename Column"
 msgid "RENAME_SYS_LEVEL_COL"
 msgstr "Rename allows users to change the name of the underlying field shown in Column Name / Field Name. Renaming a field means that field will be changed in all the data for the organization."
 
+msgid "REQUIRE_IN_PLAN_DESC"
+msgstr "Identify the (boolean) SEED column used to indicate whether a property should be required in the plan regardless of energy usage. A value of true (1) indicates that the property will be prioritized and listed first in the percentage of facilities configured above. A value of false (0) indicates that the property can be considered for inclusion in the percentage of facilities, but may not make it into the plan based on its energy usage. If this column does not yet exist, create it in the Column Settings page."
+
 msgid "REVIEW YOUR DATA MAPPINGS"
 msgstr "REVIEW YOUR DATA MAPPINGS"
+
+msgid "REVIEW_MATCHING_CRITERIA"
+msgstr "Review your matching criteria on the Column Settings page before importing data for the first time. You will not be able to remove fields from the matching criteria after data is added to your organization."
+
+msgid "RUNNING_SUM_PERCENTAGE_DESC"
+msgstr "Set the percentage fraction (between 0 and 1) of facilities to include in the plan based on total energy usage."
 
 msgid "Read more here."
 msgstr "Read more here."
@@ -2468,8 +3484,14 @@ msgstr "Related Properties"
 msgid "Related Tax Lots"
 msgstr "Related Tax Lots"
 
+msgid "Remaining Service Life"
+msgstr "Remaining Service Life"
+
 msgid "Remove"
 msgstr "Remove"
+
+msgid "Remove Access Level"
+msgstr "Remove Access Level"
 
 msgid "Remove Column Mappings"
 msgstr "Remove Column Mappings"
@@ -2479,6 +3501,12 @@ msgstr "Remove From Project"
 
 msgid "Remove Inventory"
 msgstr "Remove Inventory"
+
+msgid "Remove Service for System"
+msgstr "Remove Service for System"
+
+msgid "Remove System"
+msgstr "Remove System"
 
 msgid "Remove User"
 msgstr "Remove User"
@@ -2498,6 +3526,9 @@ msgstr "Rename"
 msgid "Rename Filter Group"
 msgstr "Rename Filter Group"
 
+msgid "Rename Group"
+msgstr "Rename Group"
+
 msgid "Rename Profile"
 msgstr "Rename Profile"
 
@@ -2510,6 +3541,9 @@ msgstr "Rename your Profile"
 msgid "Reorder Columns"
 msgstr "Reorder Columns"
 
+msgid "Replacement Cost"
+msgstr "Replacement Cost"
+
 msgid "Replacing Existing Columns"
 msgstr "Replacing Existing Columns"
 
@@ -2518,6 +3552,12 @@ msgstr "Reporting Deadline"
 
 msgid "Reports"
 msgstr "Reports"
+
+msgid "Require In Plan Column"
+msgstr "Require In Plan Column"
+
+msgid "Require two-factor authentication"
+msgstr "Require two-factor authentication"
 
 msgid "Required"
 msgstr "Required"
@@ -2531,11 +3571,20 @@ msgstr "Reset All Rules"
 msgid "Reset Defaults"
 msgstr "Reset Defaults"
 
+msgid "Reset all passwords"
+msgstr "Reset all passwords"
+
 msgid "Residential"
 msgstr "Residential"
 
+msgid "Resolution"
+msgstr "Resolution"
+
 msgid "Restore Default Rules"
 msgstr "Restore Default Rules"
+
+msgid "Results"
+msgstr "Results"
 
 #: seed/models/models.py:137
 msgid "Retro Commissioning"
@@ -2544,11 +3593,17 @@ msgstr "Retro Commissioning"
 msgid "Retry"
 msgstr "Retry"
 
+msgid "Return to Portfolio Summary Page"
+msgstr "Return to Portfolio Summary Page"
+
 msgid "Review Changes"
 msgstr "Review Changes"
 
 msgid "Review Mapped Data"
 msgstr "Review Mapped Data"
+
+msgid "Review and Sync to Salesforce"
+msgstr "Review and Sync to Salesforce"
 
 msgid "Review matches"
 msgstr "Review matches"
@@ -2586,11 +3641,20 @@ msgstr "Run Analysis"
 msgid "Run Author"
 msgstr "Run Author"
 
+msgid "Run Cycle"
+msgstr "Run Cycle"
+
+msgid "Run Data Quality Check, available in the Actions dropdown, to auto-populate the \"Passed Checks\" column."
+msgstr "Run Data Quality Check, available in the Actions dropdown, to auto-populate the \"Passed Checks\" column."
+
 msgid "Run Date"
 msgstr "Run Date"
 
 msgid "Run Duration"
 msgstr "Run Duration"
+
+msgid "Run ID"
+msgstr "Run ID"
 
 msgid "Run Id"
 msgstr "Run Id"
@@ -2598,11 +3662,26 @@ msgstr "Run Id"
 msgid "Run Status"
 msgstr "Run Status"
 
+msgid "Runs"
+msgstr "Runs"
+
+msgid "SALESFORCE_BENCHMARK_INTEGRATION_DESC"
+msgstr "This integration allows you to connect your organization with a Salesforce instance for enhanced data management and workflow automation. This integration assumes Salesforce is configured with Property and Benchmark objects, which will be updated with individual property data from SEED."
+
+msgid "SALESFORCE_PORTFOLIO_INTEGRATION_DESC"
+msgstr "This integration also allows you to connect your organization with a Salesforce instance, but assumes Salesforce is configured with Goal and Annual Report objects which will be updated with portfolio-level data (aggregated from multiple properties in SEED)."
+
+msgid "SEED Field Containing Organization's Identifier"
+msgstr "SEED Column Containing Organization's Identifier"
+
 msgid "SEED Field Name"
 msgstr "SEED Field Name"
 
 msgid "SEED Header"
 msgstr "SEED Header"
+
+msgid "SEED Home"
+msgstr "SEED Home"
 
 #: seed/landing/templates/landing/base.html:9
 msgid "SEED Platform"
@@ -2611,9 +3690,6 @@ msgstr "SEED Platform"
 #: seed/templates/seed/base.html:7
 msgid "SEED Platform™"
 msgstr "SEED Platform™"
-
-msgid "SEED Properties will be exported to Audit Template with the Organization Report Type"
-msgstr "SEED Properties will be exported to Audit Template with the Organization Report Type"
 
 msgid "SEED Unique Benchmark ID Fieldname"
 msgstr "SEED Unique Benchmark ID Fieldname"
@@ -2624,6 +3700,9 @@ msgstr "SEED doesn't currently support that file format"
 #: seed/templates/seed/account_create_email.html:6
 msgid "SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies."
 msgstr "SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies."
+
+msgid "SEED_SUMMARY"
+msgstr "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios."
 
 msgid "SELECT_DATA_SET_TITLE"
 msgstr "Select Data Set"
@@ -2657,6 +3736,9 @@ msgstr "If your Salesforce Benchmark Record stores a Salesforce Contact relation
 
 msgid "SF_BENCHMARK_ID_FIELDNAME_TEXT"
 msgstr "Fieldname of the Salesforce field that is used to uniquely identify Benchmark records. Example: 'Salesforce_Benchmark_ID__c'"
+
+msgid "SF_BUILDING_DESC"
+msgstr "This integration allows you to connect your organization with a Salesforce instance for enhanced data management and workflow automation. This integration assumes Salesforce is configured with Property and Benchmark objects, which will be updated with individual property data from SEED."
 
 msgid "SF_COMPLIANCE_LABEL_TEXT"
 msgstr "Label used to designate that a SEED property is in compliance. Example: 'Complied'"
@@ -2727,6 +3809,12 @@ msgstr "Enter the e-mail address to use when reporting errors during the Salesfo
 msgid "SF_MAPPINGS_TEXT"
 msgstr "Map your Salesforce Benchmark Object's fields to columns in SEED. Use the Object Manager in Salesforce to retrieve the field names (not the field labels), ex: Cycle__c (not Cycle). These fields will only be sent to Salesforce when a property has the compliant label applied."
 
+msgid "SF_PORTFOLIO_CONNECTION_TEXT"
+msgstr "Enter your Salesforce instance connection details. This assumes your Salesforce has been configured with an External Client App for SEED."
+
+msgid "SF_PORTFOLIO_DESC"
+msgstr "This integration also allows you to connect your organization with a Salesforce instance, but assumes Salesforce is configured with Goal and Annual Report objects which will be updated  with portfolio-level data (aggregated from multiple properties in SEED)."
+
 msgid "SF_SCHEDULED_UPDATE_TEXT"
 msgstr "If you would like to automatically update Salesforce on a daily basis, configure the fields below"
 
@@ -2751,6 +3839,27 @@ msgstr "Label used to designate that a SEED property has a violation.  Example: 
 msgid "SHARE DATA WITH"
 msgstr "SHARE DATA WITH"
 
+msgid "SHARING_CYCLES"
+msgstr "Comma-separated list of cycle ids. Results include inventory from the listed cycles. Default is all cycles."
+
+msgid "SHARING_LABELS"
+msgstr "Comma-separated list of case-sensitive label names. Results will include inventory that has any of the listed labels. Default is all inventory."
+
+msgid "SHARING_PAGE"
+msgstr "Number of the page of results to return. Default is 1."
+
+msgid "SHARING_PER_PAGE"
+msgstr "Number of results per page. Default is 100."
+
+msgid "SHARING_PROPERTIES"
+msgstr "Boolean True/False to return inventory of type 'Property'. Default is True."
+
+msgid "SHARING_QUERY_PARAMS"
+msgstr "Query parameters can be added to the URL to filter the returned data"
+
+msgid "SHARING_TAXLOTS"
+msgstr "Boolean True/False to return inventory of type 'Tax Lot'. Default is True."
+
 msgid "SHOWING_AVAILABLE_MATCHES"
 msgstr "Showing {start} to {end} of {total} available matches"
 
@@ -2772,11 +3881,23 @@ msgstr "Showing {start} to {end} of {total} properties"
 msgid "SHOWING_UNFILTERED_TAXLOTS"
 msgstr "Showing {start} to {end} of {total} tax lots"
 
+msgid "SHOW_ALL_LABELS_TEXT"
+msgstr "Click the edit buttons to edit individual labels. Use the shortcut button on the right to set all labels to be displayed on the inventory list page or to set them all to be hidden."
+
+msgid "SQUARE_FOOTAGE_THRESHOLD_HELP"
+msgstr "The gross square footage to use as a comparison threshold in the calculations"
+
+msgid "STEAM_ENERGY_USAGE_DESC"
+msgstr "Identify the SEED column used to store the Steam Energy Usage."
+
 msgid "STEP 1: Map Your Data"
 msgstr "STEP 1: Map Your Data"
 
 msgid "STEP 2: Review Your Data Mappings"
 msgstr "STEP 2: Review Your Data Mappings"
+
+msgid "SUB_ORG_DEPRECATION"
+msgstr "The Sub-Organization functionality is no longer recommended and will be deprecated soon. Visit the Access Level Tree page to define access levels to structure your organization's content."
 
 msgid "SUGGEST_TO_VERIFY"
 msgstr "Please verify before continuing."
@@ -2784,11 +3905,20 @@ msgstr "Please verify before continuing."
 msgid "SUGGEST_UPDATE_GEOCODE_COLS"
 msgstr "Update the geocoding column settings in your organization's column settings page."
 
+msgid "SYNC_SALESFORCE_DESC"
+msgstr "Review the details below. When you are satisfied, click the Sync buttons below to push the SEED data to your Salesforce instance. The first button will sync data with the goal and the current annual report objects. The second sync button will sync all historical annual report objects."
+
 msgid "Salesforce"
 msgstr "Salesforce"
 
 msgid "Salesforce Account Object Record Type"
 msgstr "Salesforce Account Object Record Type"
+
+msgid "Salesforce Annual Report"
+msgstr "Salesforce Annual Report"
+
+msgid "Salesforce Connection"
+msgstr "Salesforce Connection"
 
 msgid "Salesforce Connection Parameters"
 msgstr "Salesforce Connection Parameters"
@@ -2805,8 +3935,14 @@ msgstr "Salesforce Field Name"
 msgid "Salesforce Instance URL"
 msgstr "Salesforce URL"
 
+msgid "Salesforce Integration"
+msgstr "Salesforce Integration"
+
 msgid "Salesforce Unique Benchmark ID Fieldname"
 msgstr "Salesforce Unique Benchmark ID Fieldname"
+
+msgid "Salesforce connection successful"
+msgstr "Salesforce connection successful"
 
 msgid "Save"
 msgstr "Save"
@@ -2817,11 +3953,17 @@ msgstr "Save Changes"
 msgid "Save Concatenation"
 msgstr "Save Concatenation"
 
+msgid "Save Facilities Plan"
+msgstr "Save Facilities Plan"
+
 msgid "Save Mappings"
 msgstr "Save Mappings"
 
 msgid "Save Settings"
 msgstr "Save Settings"
+
+msgid "Schedule Weekly Update"
+msgstr "Schedule Weekly Update"
 
 msgid "Scheduled Daily Update"
 msgstr "Scheduled Daily Update"
@@ -2838,11 +3980,17 @@ msgstr "Search field name"
 msgid "Search table name"
 msgstr "Search table name"
 
+msgid "Secondary (optional)"
+msgstr "Secondary (optional)"
+
 msgid "Security"
 msgstr "Security"
 
 msgid "Security Token"
 msgstr "Security Token"
+
+msgid "See API Documentation for more information about the /v3/public endpoints"
+msgstr "for more information about the"
 
 #: seed/models/columns.py:688 seed/models/models.py:195
 #: seed/models/models.py:256 seed/models/projects.py:42
@@ -2864,11 +4012,35 @@ msgstr "Select Properties to Update"
 msgid "Select a Custom Report to get started!"
 msgstr "Select a Custom Report to get started!"
 
+msgid "Select a Cycle to compare against the Baseline Cycle"
+msgstr "Select a Cycle to compare against the Baseline Cycle"
+
+msgid "Select a Facilities Plan Run from the dropdown below"
+msgstr "Select a Facilities Plan Run from the dropdown below"
+
+msgid "Select a Goal Type. A Standard goal will calculate a standard EUI per sqft. A Transaction goal will also calculate an EUI per transaction."
+msgstr "Select a Goal Type. A Standard goal will calculate a standard EUI per sqft. A Transaction goal will also calculate an EUI per transaction."
+
 msgid "Select a Program to get started!"
 msgstr "Select a Program to get started!"
 
+msgid "Select a Salesforce Annual Report to associate with this Cycle"
+msgstr "Select a Salesforce Annual Report to associate with this Cycle"
+
 msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
 msgstr "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
+
+msgid "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
+msgstr "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
+
+msgid "Select a cycle to copy inventory to."
+msgstr "Select a cycle to copy inventory to."
+
+msgid "Select a cycle to use as the baseline for comparison."
+msgstr "Select a cycle to use as the baseline for comparison."
+
+msgid "Select a profile to specify which fields should be copied. If you do not have any column list profiles, dismiss the modal and create one in the Column List Profiles tab first."
+msgstr "Select a profile to specify which fields should be copied. If you do not have any column list profiles, dismiss the modal and create one in the Column List Profiles tab first."
 
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Select columns from the list below to make them appear in your Buildings List table."
@@ -2882,14 +4054,26 @@ msgstr "Select columns from the list below to make them appear in your Tax Lots 
 msgid "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
 msgstr "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
 
+msgid "Select one or more cycles to populate the horizontal axis."
+msgstr "Select one or more cycles to populate the horizontal axis."
+
 msgid "Select one or more filter groups to load your inventory."
 msgstr "Select one or more filter groups to load your inventory."
+
+msgid "Select the Level at which you want to add the new Instance"
+msgstr "Select the Level at which you want to add the new Instance"
+
+msgid "Select the new Instance's Parent Access Level Instance"
+msgstr "Select the new Instance's Parent Access Level Instance"
 
 msgid "Select the type of file(s) you would like to add to"
 msgstr "Select the type of file(s) you would like to add to"
 
 msgid "Select which columns to include in the list:"
 msgstr "Select which columns to include in the list:"
+
+msgid "Selected Facilities Plan"
+msgstr "Selected Facilities Plan"
 
 msgid "Selected Properties"
 msgstr "Selected Properties"
@@ -2912,8 +4096,14 @@ msgstr "Sends the reset password email to all users"
 msgid "Sensors"
 msgstr "Sensors"
 
+msgid "Service"
+msgstr "Service"
+
 msgid "Set UBID Threshold"
 msgstr "Set UBID Threshold"
+
+msgid "Set Update Time to Now"
+msgstr "Set Update Time to Now"
 
 msgid "Set a Query Threshold"
 msgstr "Set a Query Threshold"
@@ -2946,6 +4136,9 @@ msgstr "Sharing Your Data"
 
 msgid "Show All"
 msgstr "Show All"
+
+msgid "Show All Labels"
+msgstr "Show All Labels"
 
 msgid "Show Matched"
 msgstr "Show Matched"
@@ -3013,6 +4206,15 @@ msgstr "State (Property)"
 msgid "State (Tax Lot)"
 msgstr "State (Tax Lot)"
 
+msgid "Steam Energy Usage Column"
+msgstr "Steam Energy Usage Column"
+
+msgid "Step 1: Add Access Levels"
+msgstr "Step 1: Add Access Levels"
+
+msgid "Step 2: Upload Access Level Instances"
+msgstr "Step 2: Upload Access Level Instances"
+
 msgid "Sub-Org Name"
 msgstr "Sub-Org Name"
 
@@ -3046,17 +4248,50 @@ msgstr "Successful upload!"
 msgid "Successfully Uploaded"
 msgstr "Successfully Uploaded"
 
-msgid "Summary (Beta)"
-msgstr "Summary (Beta)"
+msgid "Summary"
+msgstr "Summary"
 
 msgid "Switch Profiles"
 msgstr "Switch Profiles"
+
+msgid "Sync Baseline and Current Report"
+msgstr "Sync Baseline and Current Report"
+
+msgid "Sync Historical Reports"
+msgstr "Sync Historical Reports"
+
+msgid "System"
+msgstr "System"
+
+msgid "System Type"
+msgstr "System Type"
 
 msgid "TAXLOT_MATCHING_FIELDS_REQUIREMENT"
 msgstr "At least one of the following Tax Lot fields is required"
 
 msgid "THERMAL_CONV_ASSUMPTION_TITLE"
 msgstr "Thermal Conversion Assumption"
+
+msgid "TOTAL_EUI_HELP"
+msgstr "Total EUI Threshold for the building (includes Electricity, Gas, etc.)"
+
+msgid "TWO_FACTOR_DISABLED_TEXT"
+msgstr "Choosing this option will disable two-factor authentication for your account, making it less secure."
+
+msgid "TWO_FACTOR_EMAIL_SELECTED_TEXT"
+msgstr "Selecting this option will enable two-factor authentication via email ({email}). You will receive a verification code through your registered email address each time you log in."
+
+msgid "TWO_FACTOR_ENABLE"
+msgstr "Enable Two-Factor Authentication for your account"
+
+msgid "TWO_FACTOR_REQUIRED"
+msgstr "Two-Factor Authentication has been required by an organization admin on:"
+
+msgid "TWO_FACTOR_SELECT"
+msgstr "Choose one of the following methods to apply two-factor authentication to your SEED account"
+
+msgid "TWO_FACTOR_TOKEN_SELECTED_TEXT"
+msgstr "Selecting this option will enable two-factor authentication using the token generator app of your choice, such as Google Authenticator, Microsoft Authenticator, or Authy. You will need to scan a QR code to set up the app."
 
 msgid "TYPE_TO_CONFIRM"
 msgstr "Please type <strong>{org}</strong> to confirm."
@@ -3076,8 +4311,17 @@ msgstr "Target >= Actual for Compliance"
 msgid "Target Column"
 msgstr "Target Column"
 
+msgid "Target Electric EUI Field"
+msgstr "Target Electric EUI Field"
+
 msgid "Target Field"
 msgstr "Target Field"
+
+msgid "Target Gas EUI Field"
+msgstr "Target Gas EUI Field"
+
+msgid "Target to quantify Portfolio EUI improvement. Must be between 0 and 100."
+msgstr "Target to quantify Portfolio EUI improvement. Must be between 0 and 100."
 
 msgid "Tax Lot"
 msgstr "Tax Lot"
@@ -3128,6 +4372,9 @@ msgstr "Terms of Service"
 msgid "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
 msgstr "Terms of Service as of %(tos.created|date:\"SHORT_DATE_FORMAT\")s"
 
+msgid "Tertiary (optional)"
+msgstr "Tertiary (optional)"
+
 msgid "Test Connection"
 msgstr "Test Connection"
 
@@ -3153,15 +4400,24 @@ msgstr "Thank you!"
 msgid "The Building Energy Data Exchange Specification (BEDES, pronounced \"beads\" or /bi:ds/) is designed to support analysis of the measured energy performance of commercial, multifamily, and residential buildings, by providing a common data format, definitions, and an exchange protocol for building characteristics, efficiency measures, and energy use."
 msgstr "The Building Energy Data Exchange Specification (BEDES, pronounced \"beads\" or /bi:ds/) is designed to support analysis of the measured energy performance of commercial, multifamily, and residential buildings, by providing a common data format, definitions, and an exchange protocol for building characteristics, efficiency measures, and energy use."
 
-msgid "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
-msgstr "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
+msgid "The GeoJSON will expose all populated property and taxlot columns"
+msgstr "The GeoJSON will expose all populated property and taxlot columns"
 
 msgid "The Open Source code is available on the Github organization SEED-Platform:"
 msgstr "The Open Source code is available on the Github organization SEED-Platform:"
 
+msgid "The Public Feed functionality is currently"
+msgstr "The Public Feed functionality is currently"
+
+msgid "The SEED Platform™"
+msgstr "The SEED Platform™"
+
 #: seed/templates/seed/account_create_email.html:13
 msgid "The SEED Team"
 msgstr "The SEED Team"
+
+msgid "The SEED Users Forum is where you can review user announcements, workflow questions, and join to connect with other users."
+msgstr "The SEED Users Forum is where you can review user announcements, workflow questions, and join to connect with other users."
 
 #: seed/landing/templates/landing/password_reset_email.html:11
 msgid "The SEED team"
@@ -3203,14 +4459,20 @@ msgstr "The overall metric can be made up of an energy metric, an emission metri
 msgid "The password link was invalid, possibly because it has already been used.  Please request a new password reset."
 msgstr "The password link was invalid, possibly because it has already been used.  Please request a new password reset."
 
+msgid "The portfolio summary page compares 2 cycles to calculate progress toward an Energy Use Intensity reduction goal."
+msgstr "The portfolio summary page compares 2 cycles to calculate progress toward an Energy Use Intensity reduction goal."
+
 msgid "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
 msgstr "There is also a link to the SEED-Platform Users forum, where you can connect with other users."
+
+msgid "There is no cycle selected for comparison yet"
+msgstr "There is no cycle selected for comparison yet"
 
 msgid "There was an error loading the page"
 msgstr "There was an error loading the page"
 
-msgid "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
-msgstr "This action replaces any of your current columns with the comma-delmited columns you provided. Would you like to continue?"
+msgid "This action replaces any of your current columns with the comma-delimited columns you provided. Would you like to continue?"
+msgstr "This action replaces any of your current columns with the comma-delimited columns you provided. Would you like to continue?"
 
 msgid "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated."
 msgstr "This action updates properties within the selected cycle with data from the Audit Template account associated with this organization. Only Properties with Audit Template Building IDs corresponding to those saved in Audit Template will be updated."
@@ -3228,8 +4490,11 @@ msgstr "This label name is already taken."
 msgid "This password must contain at least %(quantity)d %(type)s characters."
 msgstr "This password must contain at least %(quantity)d %(type)s characters."
 
+msgid "This plan has not yet been run"
+msgstr "This plan has not yet been run"
+
 msgid "This will reset your visible columns and column order to only columns that contain data. Are you sure you want to continue?"
-msgstr "This will reset your visible columns and column order to only non-derived columns that contain data. Are you sure you want to continue?"
+msgstr "This will reset your visible columns and column order to show only columns that contain data. Are you sure you want to continue?"
 
 msgid "Time Period"
 msgstr "Time Period"
@@ -3287,14 +4552,32 @@ msgstr "Toggle Taxlot UBID Bounding Boxes"
 msgid "Toggle Taxlot UBID Centroids"
 msgstr "Toggle Taxlot UBID Centroids"
 
+msgid "Token Generator"
+msgstr "Token Generator"
+
+msgid "Total EUI Field"
+msgstr "Total EUI Field"
+
+msgid "Total EUI Threshold"
+msgstr "Total EUI Threshold"
+
 msgid "Total Properties"
 msgstr "Total Properties"
 
 msgid "Total rows in the import file"
 msgstr "Total rows in the import file"
 
+msgid "Try Again"
+msgstr "Try Again"
+
+msgid "Two Factor Profile"
+msgstr "Two Factor Profile"
+
 msgid "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
 msgstr "Two UBIDs are required for comparison. Click Custom UBIDs to continue."
+
+msgid "Two-Factor Authentication"
+msgstr "Two-Factor Authentication"
 
 msgid "Type"
 msgstr "Type"
@@ -3321,6 +4604,9 @@ msgstr "UBID Threshold"
 msgid "UBID Threshold must be between 0.0 and 1.0"
 msgstr "UBID Threshold must be between 0.0 and 1.0"
 
+msgid "UBID Threshold must be between 0.0001 and 1.0"
+msgstr "UBID Threshold must be between 0.0001 and 1.0"
+
 msgid "UBID already exists"
 msgstr "UBID already exists"
 
@@ -3329,6 +4615,15 @@ msgstr "UBID comparison result:"
 
 msgid "UBID thresholds are between 0.0 and 1.0"
 msgstr "UBID thresholds are between 0.0 and 1.0"
+
+msgid "UNMERGE_PROPERTIES_MODAL"
+msgstr "Are you sure you want to unmerge these properties? The unmerge action will keep meter data on both properties. Review meter data on both properties once they are unmerged."
+
+msgid "UPDATE_DERIVED_DATA_TEXT_1"
+msgstr "Press the 'Begin Update' button below to begin the process of recalculating the data stored in derived columns for the selected properties and tax lots. The derived columns will appear yellow to indicate that the update is in progress."
+
+msgid "UPDATE_DERIVED_DATA_TEXT_2"
+msgstr "Note that while the columns are yellow, the data may not be up to date. Refresh the page to refresh the columns status."
 
 msgid "UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS"
 msgstr "If the properties have been manually geocoded, then they will not be updated. To update geocoding, remove the lat/long."
@@ -3379,8 +4674,20 @@ msgstr "Upload Sensor"
 msgid "UPLOAD_SENSOR_READINGS_BUTTON"
 msgstr "Upload Sensor Readings"
 
+msgid "URL_OPTIONS"
+msgstr "URL Options"
+
 msgid "USING_DEFAULT_UNITS_WARNING"
 msgstr "For columns with unit settings, default units will be used for conversions."
+
+msgid "Unexpected Portfolio Summary Calculations?"
+msgstr "Unexpected Portfolio Summary Calculations?"
+
+msgid "Uniformat Category"
+msgstr "Uniformat Category"
+
+msgid "Unique name which will be displayed in the dropdown selector"
+msgstr "Unique name which will be displayed in the dropdown selector"
 
 msgid "Units"
 msgstr "Units"
@@ -3388,17 +4695,29 @@ msgstr "Units"
 msgid "Unknown"
 msgstr "Unknown"
 
+msgid "Unmerge Last"
+msgstr "Unmerge Last"
+
 msgid "Unsuccessful Exports"
 msgstr "Unsuccessful Exports"
 
 msgid "Until last date of"
 msgstr "Until last date of"
 
+msgid "Update"
+msgstr "Update"
+
 msgid "Update Charts"
 msgstr "Update Charts"
 
+msgid "Update Derived Data"
+msgstr "Update Derived Data"
+
 msgid "Update Filters"
 msgstr "Update Filters"
+
+msgid "Update Password"
+msgstr "Update Password"
 
 msgid "Update Property Labels"
 msgstr "Update Property Labels"
@@ -3408,6 +4727,18 @@ msgstr "Update Salesforce"
 
 msgid "Update UBID"
 msgstr "Update UBID"
+
+msgid "Update from Audit Template"
+msgstr "Update from Audit Template"
+
+msgid "Update inventory with Audit Template Submissions"
+msgstr "Update inventory with Audit Template Submissions"
+
+msgid "Update the data type of the column to \"Area\" in"
+msgstr "Update the column's data type to \"Area\" in"
+
+msgid "Update the data type of the column to \"EUI\" in"
+msgstr "Update the data type of the column to \"EUI\" in"
 
 msgid "Update with Audit Template"
 msgstr "Update with Audit Template"
@@ -3447,6 +4778,9 @@ msgstr "Upload a Spreadsheet"
 
 msgid "Upload another energy data file"
 msgstr "Upload another energy data file"
+
+msgid "Upload your Buildings List"
+msgstr "Upload your Buildings List"
 
 msgid "Upload your buildings list"
 msgstr "Upload your buildings list"
@@ -3518,6 +4852,9 @@ msgstr "View Compliance Tracking"
 msgid "View Project"
 msgstr "View Project"
 
+msgid "View Report"
+msgstr "View Report"
+
 msgid "View by Property"
 msgstr "View by Property"
 
@@ -3536,17 +4873,38 @@ msgstr "Viewer"
 msgid "Violation Label"
 msgstr "Violation Label"
 
+msgid "Visit"
+msgstr "Visit"
+
 msgid "Visit the BETTER website to run a portfolio analysis"
 msgstr "Visit the BETTER website to run a portfolio analysis"
 
 msgid "Visualization Settings"
 msgstr "Visualization Settings"
 
+msgid "Voltage (V)"
+msgstr "Voltage (V)"
+
+msgid "WAIT_TEXT_1"
+msgstr "Please wait, scanning for affected records..."
+
+msgid "WAIT_TEXT_2"
+msgstr "Please wait, evaluating affected records. This may take several minutes..."
+
+msgid "WATER_TYPE_DISPLAY_CHOICE_PLACEHOLDER"
+msgstr "----Choose water type----"
+
 msgid "WHEN_YOU_CLICK_MAP_YOUR_DATA"
 msgstr "When you click the <span class=\"label label-primary\">Map Your Data</span> button, the program will show a grid with the new field names as the column headings and your data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping."
 
+msgid "WUI"
+msgstr "WUI"
+
 msgid "Warning"
 msgstr "Warning"
+
+msgid "Water Use"
+msgstr "Water Use"
 
 #: seed/landing/templates/landing/_browser_supported.html:4
 msgid "We've detected an outdated browser."
@@ -3582,6 +4940,9 @@ msgstr "Welcome to SEED!"
 msgid "What is a Custom Report?"
 msgstr "What is a Custom Report?"
 
+msgid "What system is this meter associated with?"
+msgstr "What system is this meter associated with?"
+
 msgid "What type of file would you like to upload?"
 msgstr "What type of file would you like to upload?"
 
@@ -3614,16 +4975,22 @@ msgid "X_VERSUS_Y"
 msgstr "{x_axis_label} vs. {y_axis_label}"
 
 msgid "X_VERSUS_Y_AGGREGATED"
-msgstr "{x_axis_label} vs. {y_axis_label} (Aggregated)"
+msgstr "{x_axis_label} vs. {y_axis_label} (Averaged)"
 
 msgid "Y Axis"
 msgstr "Y Axis"
+
+msgid "YEAR_BUILT_THRESHOLD_HELP"
+msgstr "The year built to use as a comparison threshold in the calculations"
 
 msgid "Year"
 msgstr "Year"
 
 msgid "Year Built"
 msgstr "Year Built"
+
+msgid "Year Built Threshold"
+msgstr "Year Built Threshold"
 
 msgid "Year Ending"
 msgstr "Year Ending"
@@ -3657,6 +5024,9 @@ msgstr "Yes, Delete User"
 
 msgid "Yes, Remove Filter Group"
 msgstr "Yes, Remove Filter Group"
+
+msgid "Yes, Remove Group"
+msgstr "Yes, Remove Group"
 
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 msgstr "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
@@ -3712,6 +5082,12 @@ msgstr "Your password must contain at least %(quantity)d %(type)s characters."
 #: seed/landing/templates/landing/password_reset_email.html:9
 msgid "Your username, in case you've forgotten:"
 msgstr "Your username, in case you've forgotten:"
+
+msgid "access level"
+msgstr "access level"
+
+msgid "access level instance name"
+msgstr "access level instance name"
 
 #: seed/landing/models.py:51 seed/landing/models.py:59
 #: src/django-tos-master/tos/models.py:32
@@ -3837,6 +5213,9 @@ msgstr "email address"
 msgid "end_date"
 msgstr "end_date"
 
+msgid "endpoints see the"
+msgstr "endpoints see the"
+
 #: seed/landing/forms.py:14
 msgid "ex: joe@company.com"
 msgstr "ex: joe@company.com"
@@ -3848,6 +5227,9 @@ msgstr "first name"
 #: seed/landing/templates/landing/password_reset_email.html:3
 msgid "for your SEED Platform user account"
 msgstr "for your SEED Platform user account"
+
+msgid "goal"
+msgstr "Goal"
 
 #: seed/models/models.py:183
 msgid "gray"
@@ -3909,6 +5291,9 @@ msgstr "orange"
 msgid "owner"
 msgstr "owner"
 
+msgid "program overview"
+msgstr "program overview"
+
 #: seed/models/projects.py:115
 msgid "project building"
 msgstr "project building"
@@ -3935,6 +5320,9 @@ msgstr "project taxlot views"
 
 msgid "property"
 msgstr "property"
+
+msgid "property insights"
+msgstr "property insights"
 
 #: seed/models/models.py:177
 msgid "red"
@@ -3986,6 +5374,9 @@ msgstr "status"
 
 msgid "tax lot"
 msgstr "tax lot"
+
+msgid "to enable or disable Public Feed functionality"
+msgstr "to enable or disable Public Feed functionality"
 
 msgid "true"
 msgstr "true"

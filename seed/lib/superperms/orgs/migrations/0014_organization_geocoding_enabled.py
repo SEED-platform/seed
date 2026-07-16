@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('orgs', '0013_organization_comstock_enabled'),
+        ("orgs", "0013_organization_comstock_enabled"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='organization',
-            name='geocoding_enabled',
+            model_name="organization",
+            name="geocoding_enabled",
             field=models.BooleanField(default=True),
         ),
     ]

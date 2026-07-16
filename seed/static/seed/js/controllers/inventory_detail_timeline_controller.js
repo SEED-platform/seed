@@ -1,12 +1,12 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
- * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+ * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
-angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('inventory_detail_timeline_controller', [
+angular.module('SEED.controller.inventory_detail_timeline', []).controller('inventory_detail_timeline_controller', [
   '$scope',
   '$stateParams',
-  '$timeout',
   'uiGridConstants',
+  'organization_service',
   'cycles',
   'events',
   'inventory_payload',
@@ -14,7 +14,18 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
   'users_payload',
   'organization_payload',
   // eslint-disable-next-line func-names
-  function ($scope, $stateParams, $timeout, uiGridConstants, cycles, events, inventory_payload, urls, users_payload, organization_payload) {
+  function (
+    $scope,
+    $stateParams,
+    uiGridConstants,
+    organization_service,
+    cycles,
+    events,
+    inventory_payload,
+    urls,
+    users_payload,
+    organization_payload
+  ) {
     $scope.organization = organization_payload.organization;
     $scope.static_url = urls.static_url;
     $scope.cycleNameById = cycles.cycles.reduce((acc, curr) => ({ ...acc, [curr.id]: curr.name }), {});
@@ -94,6 +105,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
         return;
       }
       const user = $scope.orgUsers.find((u) => u.user_id === user_id);
+      if (user === undefined) return;
       let userName = '';
       if (user.first_name && user.last_name) {
         userName = `${user.first_name} ${user.last_name}`;
@@ -284,19 +296,7 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
       }
     };
 
-    const getInventoryDisplayName = (property_type) => {
-      let error = '';
-      let field = property_type === 'property' ? $scope.organization.property_display_field : $scope.organization.taxlot_display_field;
-      if (!(field in $scope.item_state)) {
-        error = `${field} does not exist`;
-        field = 'address_line_1';
-      }
-      if (!$scope.item_state[field]) {
-        error += `${error === '' ? '' : ' and default '}${field} is blank`;
-      }
-      $scope.inventory_name_error = error;
-      $scope.inventory_name = $scope.item_state[field] ? $scope.item_state[field] : '';
-    };
+    $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
 
     $scope.accordionsCollapsed = true;
     $scope.collapseAccordions = (collapseAll) => {
@@ -327,7 +327,6 @@ angular.module('BE.seed.controller.inventory_detail_timeline', []).controller('i
     };
 
     // Initiate data population
-    getInventoryDisplayName($scope.inventory_type === 'properties' ? 'property' : 'taxlot');
     setMeasureGridOptions();
     setNoteGridOptions();
     setAnalysisGridOptions();

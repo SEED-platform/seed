@@ -1,9 +1,8 @@
-# !/usr/bin/env python
-# encoding: utf-8
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 import logging
 
 from django.contrib.gis.db import models as geomodels
@@ -13,8 +12,8 @@ logger = logging.getLogger(__name__)
 
 
 class HousingType(models.TextChoices):
-    PUBLIC_HOUSING = 'public housing development'
-    MULTIFAMILY = 'multi-family assisted property'
+    PUBLIC_HOUSING = "public housing development"
+    MULTIFAMILY = "multi-family assisted property"
 
 
 class EeejCejst(models.Model):
@@ -33,7 +32,7 @@ class EeejCejst(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['census_tract_geoid', 'dac']),
+            models.Index(fields=["census_tract_geoid", "dac"]),
         ]
 
 
@@ -47,5 +46,5 @@ class EeejHud(models.Model):
 
     class Meta:
         indexes = [
-            models.Index(fields=['census_tract_geoid']),
+            models.Index(fields=["census_tract_geoid"]),
         ]

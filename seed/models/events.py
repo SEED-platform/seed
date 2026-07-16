@@ -1,7 +1,8 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
-See also https://github.com/seed-platform/seed/main/LICENSE.md
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
 from django.db import models
 from django_extensions.db.models import TimeStampedModel
 from model_utils.managers import InheritanceManager
@@ -10,8 +11,8 @@ from seed.models import Cycle, Property
 
 
 class Event(TimeStampedModel):
-    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name='events')
-    cycle = models.ForeignKey(Cycle, on_delete=models.PROTECT)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="events")
+    cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE)
 
     objects = InheritanceManager()
 
