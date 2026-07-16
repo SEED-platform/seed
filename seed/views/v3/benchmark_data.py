@@ -106,10 +106,11 @@ class BenchmarkDataViewSet(viewsets.ViewSet):
 
         file_path = _SITE_EUI_DATASETS[dataset]
         if not file_path.exists():
-            return {
-                "status": "error",
-                "message": f"Benchmark dataset file not found for '{dataset}'",
-            }
+            return HttpResponse(
+                json.dumps({"status": "error", "message": f"Benchmark dataset file not found for '{dataset}'"}),
+                content_type="application/json",
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         dataset_version = _dataset_version(file_path)
 

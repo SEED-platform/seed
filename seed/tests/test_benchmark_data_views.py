@@ -32,7 +32,22 @@ class TestBenchmarkDataViews(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type="application/json")
 
         assert response.status_code == 200
-        row_with_blanks = response.json()["data"][1]
+        rows = response.json()["data"]
+        row_with_blanks = next(
+            row
+            for row in rows
+            if all(
+                row[field] is None
+                for field in (
+                    "fifth_percentile",
+                    "twenty_fifth_percentile",
+                    "median",
+                    "mean",
+                    "seventy_fifth_percentile",
+                    "ninety_fifth_percentile",
+                )
+            )
+        )
         assert row_with_blanks["fifth_percentile"] is None
         assert row_with_blanks["twenty_fifth_percentile"] is None
         assert row_with_blanks["median"] is None

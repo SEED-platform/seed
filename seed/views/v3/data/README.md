@@ -1,8 +1,8 @@
 # Benchmark CSV Sources
 
-This directory contains file-backed benchmark datasets served by the SEED v3 benchmark data API.
+This directory contains various file-backed datasets used by SEED, including benchmark datasets served by the SEED v3 benchmark data API.
 
-Current files:
+Benchmark API files:
 
 - `energystar_site_eui_by_category.csv`
 - `energystar_site_eui_by_subcategory.csv`
