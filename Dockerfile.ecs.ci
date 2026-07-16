@@ -7,7 +7,10 @@ ARG NGINX_LISTEN_OPTS
 FROM node:24-alpine
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
-RUN corepack enable
+# Install pnpm directly instead of via corepack — corepack + pnpm's own version
+# enforcement creates an unresolvable conflict when packageManager in package.json
+# doesn't match the latest pnpm that corepack downloads.
+RUN npm install -g pnpm@11.0.8
 
 RUN apk add --no-cache curl ca-certificates
 
@@ -73,11 +76,8 @@ COPY ./ng_seed/seed-angular /seed/ng_seed/seed-angular
 ### Build SEED Angular then cleanup
 # verify-deps-before-run=false: required because --ignore-scripts skips the
 # preinstall hook that normally satisfies pnpm's dependency verification check.
-# COREPACK_ENABLE_STRICT=0 + COREPACK_ENABLE_PROJECT_SPEC=0: allows pnpm 11
-# (root) to build in the seed-angular submodule which pins packageManager to
-# pnpm 10.33.0.
-RUN COREPACK_ENABLE_STRICT=0 COREPACK_ENABLE_PROJECT_SPEC=0 pnpm install --frozen-lockfile --ignore-scripts && \
-    COREPACK_ENABLE_STRICT=0 COREPACK_ENABLE_PROJECT_SPEC=0 pnpm --config.verify-deps-before-run=false -C /seed/ng_seed/seed-angular build && \
+RUN pnpm install --frozen-lockfile --ignore-scripts && \
+    pnpm --config.verify-deps-before-run=false -C /seed/ng_seed/seed-angular build && \
     pnpm install --prod --frozen-lockfile --ignore-scripts && \
     rm -rf /seed/ng_seed/seed-angular/node_modules && \
     pnpm store prune
