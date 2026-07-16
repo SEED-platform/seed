@@ -12,9 +12,9 @@ import os
 from copy import deepcopy
 from io import BytesIO
 
-import probablepeople as pp
 import usaddress
 from lxml import etree, objectify
+from nameparser import HumanName
 from quantityfield.units import ureg
 
 _log = logging.getLogger(__name__)
@@ -142,35 +142,16 @@ class HPXML:
 
         # Owner Name
         if property_state.owner is not None:
-            try:
-                owner_name, name_type = pp.tag(property_state.owner, type="person")
-            except pp.RepeatedLabelError:
-                pass
-            else:
-                if name_type.lower() == "person":
-                    owner.Name.clear()
-                    if "PrefixMarital" in owner_name or "PrefixOther" in owner_name:
-                        owner.Name.append(E.PrefixName(" ".join([owner_name.get("Prefix" + x, "") for x in ("Marital", "Other")]).strip()))
-                    if "GivenName" in owner_name:
-                        owner.Name.append(E.FirstName(owner_name["GivenName"]))
-                    elif "FirstInitial" in owner_name:
-                        owner.Name.append(E.FirstName(owner_name["FirstInitial"]))
-                    else:
-                        owner.Name.append(E.FirstName())
-                    if "MiddleName" in owner_name:
-                        owner.Name.append(E.MiddleName(owner_name["MiddleName"]))
-                    elif "MiddleInitial" in owner_name:
-                        owner.Name.append(E.MiddleName(owner_name["MiddleInitial"]))
-                    if "Surname" in owner_name:
-                        owner.Name.append(E.LastName(owner_name["Surname"]))
-                    elif "LastInitial" in owner_name:
-                        owner.Name.append(E.LastName(owner_name["LastInitial"]))
-                    else:
-                        owner.Name.append(E.LastName())
-                    if "SuffixGenerational" in owner_name or "SuffixOther" in owner_name:
-                        owner.Name.append(
-                            E.SuffixName(" ".join([owner_name.get("Suffix" + x, "") for x in ("Generational", "Other")]).strip())
-                        )
+            owner_name = HumanName(property_state.owner)
+            owner.Name.clear()
+            if owner_name.title:
+                owner.Name.append(E.PrefixName(owner_name.title))
+            owner.Name.append(E.FirstName(owner_name.first))
+            if owner_name.middle:
+                owner.Name.append(E.MiddleName(owner_name.middle))
+            owner.Name.append(E.LastName(owner_name.last))
+            if owner_name.suffix:
+                owner.Name.append(E.SuffixName(owner_name.suffix))
 
         # Owner Email
         if property_state.owner_email is not None:
