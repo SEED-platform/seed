@@ -110,6 +110,40 @@ jobs:
         if: ${{ always() }}
         run: docker logs seed_web
 
+  # Validates that the Dockerfile builds from scratch on Alpine (musl libc).
+  # This replicates the CodeBuild environment for doeseed-seedweb where:
+  #   - CodeBuild uses aws/codebuild/standard:7.0 (Ubuntu) as the HOST
+  #   - But the Dockerfile itself uses FROM node:24-alpine (musl libc)
+  #   - Python deps are compiled INSIDE the Alpine container, not on the host
+  #   - uv downloads cpython-3.14-linux-musl which embeds --rtlib=compiler-rt
+  #   - Alpine's g++ doesn't support this clang flag
+  #   - doublemetaphone has no cp314 musllinux wheels on PyPI
+  #
+  # This also fails on Docker Desktop (macOS/Windows) for the same reason:
+  # Docker Desktop runs containers in a Linux VM using the Alpine image.
+  #
+  # Why it appears to work on bare Linux hosts (Alex's Ubuntu machines):
+  # `docker buildx build` still builds INSIDE the Alpine container, so it
+  # should also fail. If it didn't fail, the only explanation is Docker layer
+  # cache from a previous build where doublemetaphone was compiled with an
+  # older Python version. `docker builder prune -af` removes build cache but
+  # NOT image layer cache. A full `docker system prune -af` is required.
+  docker-build-no-cache:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Build Dockerfile (no cache, Alpine/musl)
+        run: |
+          docker buildx build \
+            --no-cache \
+            --tag seed:test \
+            --load \
+            .
+
   formatting:
     runs-on: ubuntu-24.04
     strategy:
