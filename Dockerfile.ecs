@@ -77,10 +77,11 @@ COPY ./ng_seed/seed-angular /seed/ng_seed/seed-angular
 ### Build SEED Angular then cleanup
 # verify-deps-before-run=false: required because --ignore-scripts skips the
 # preinstall hook that normally satisfies pnpm's dependency verification check.
-# COREPACK_ENABLE_STRICT=0: allows pnpm 11 (root) to build in the seed-angular
-# submodule which pins packageManager to pnpm 10.33.0.
-RUN COREPACK_ENABLE_STRICT=0 pnpm install --frozen-lockfile --ignore-scripts && \
-    COREPACK_ENABLE_STRICT=0 pnpm --config.verify-deps-before-run=false -C /seed/ng_seed/seed-angular build && \
+# COREPACK_ENABLE_STRICT=0 + COREPACK_ENABLE_PROJECT_SPEC=0: allows pnpm 11
+# (root) to build in the seed-angular submodule which pins packageManager to
+# pnpm 10.33.0.
+RUN COREPACK_ENABLE_STRICT=0 COREPACK_ENABLE_PROJECT_SPEC=0 pnpm install --frozen-lockfile --ignore-scripts && \
+    COREPACK_ENABLE_STRICT=0 COREPACK_ENABLE_PROJECT_SPEC=0 pnpm --config.verify-deps-before-run=false -C /seed/ng_seed/seed-angular build && \
     pnpm install --prod --frozen-lockfile --ignore-scripts && \
     rm -rf /seed/ng_seed/seed-angular/node_modules && \
     pnpm store prune
