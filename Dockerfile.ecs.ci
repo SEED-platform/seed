@@ -1,19 +1,15 @@
 ARG NGINX_LISTEN_OPTS
 
-# AUTHOR:           Clay Teeter <teeterc@gmail.com>, Nicholas Long <nicholas.long@nlr.gov>
-# DESCRIPTION:      Image with seed platform and dependencies running in development mode
-# TO_BUILD_AND_RUN: docker compose build && docker compose up
+# CI variant of Dockerfile.ecs — identical except NREL internal cert fetch is omitted
+# since raw.github.nrel.gov is not reachable from public GitHub Actions runners.
+# See Dockerfile.ecs for the production build used at NREL.
 
 FROM node:24-alpine
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 RUN corepack enable
 
-# Install necessary dependencies (curl and ca-certificates)
-RUN apk add --no-cache curl ca-certificates && \
-curl -fsSLk -o /usr/local/share/ca-certificates/nrel_root.crt https://raw.github.nrel.gov/TADA/nrel-certs/v20180329/certs/nrel_root.pem && \
-curl -fsSLk -o /usr/local/share/ca-certificates/nrel_xca1.crt https://raw.github.nrel.gov/TADA/nrel-certs/v20180329/certs/nrel_xca1.pem && \
-update-ca-certificates
+RUN apk add --no-cache curl ca-certificates
 
 ARG NGINX_LISTEN_OPTS
 
@@ -50,7 +46,7 @@ RUN apk add --no-cache \
     mkdir -p /run/nginx
 
 ## Note on some of the commands above:
-##   - coreutils is required due to an issue with our wait-for-it.sch script:
+##   - coreutils is required due to an issue with our wait-for-it.sh script:
 ##     https://github.com/vishnubob/wait-for-it/issues/71
 
 ENV UV_LINK_MODE=copy
