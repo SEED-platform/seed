@@ -41,9 +41,7 @@ class SeedTimescaleSchemaEditor(TimescaleSchemaEditor):
         if should_migrate and getattr(settings, "TIMESCALE_MIGRATE_HYPERTABLE_WITH_FRESH_TABLE", False):
             raise NotImplementedError()
 
-        sql = self.sql_add_hypertable.format(
-            table=table, partition_column=partition_column, interval=interval, migrate=migrate
-        )
+        sql = self.sql_add_hypertable.format(table=table, partition_column=partition_column, interval=interval, migrate=migrate)
         self.execute(sql)
 
 
