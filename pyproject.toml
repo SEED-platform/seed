@@ -8,7 +8,7 @@ license-files = ["LICENSE.md"]
 requires-python = ">=3.12"
 dependencies = [
     # Django core
-    "django~=6.0.6",
+    "django~=6.0.7",
     # Persistence (database)
     "psycopg[binary]~=3.3.4",
     # Background jobs / scheduling / caching
@@ -28,7 +28,7 @@ dependencies = [
     # Units
     "django-pint==1.0.4",
     # Forms / filtering
-    "django-filter==25.2",
+    "django-filter==26.1",
     # API / auth / docs
     "djangorestframework==3.17.1",
     "djangorestframework-simplejwt==5.5.1",
@@ -37,7 +37,7 @@ dependencies = [
     # Email / messaging
     "django-post-office==3.11.2",
     # Observability / monitoring
-    "sentry-sdk==2.64.0",
+    "sentry-sdk==2.66.0",
     # Security / 2FA
     "django-two-factor-auth[phonenumbers]==1.18.1",
     "qrcode[pil]==8.2",
@@ -66,9 +66,9 @@ dependencies = [
     "buildingsync-asset-extractor==0.3.0", # BuildingSync Asset Extractor (includes lxml dependency required by SEED)
     "tkbl==0.7",
     "seed-salesforce==0.2.0",
-    "simple-salesforce==1.12.9",
+    "simple-salesforce==1.12.10",
     # AWS / SES
-    "boto3~=1.43.40",
+    "boto3~=1.43.50",
     "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",
