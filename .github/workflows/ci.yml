@@ -78,7 +78,7 @@ jobs:
           docker exec --env DJANGO_LOG_LEVEL seed_web uv run python manage.py migrate
           docker exec --env DJANGO_LOG_LEVEL seed_web uv run python manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -lc 'echo "y" | uv run python manage.py make_superuser --user demo@example.com'
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - name: Setup pnpm
@@ -149,7 +149,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - name: Setup pnpm
