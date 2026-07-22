@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
@@ -184,8 +184,8 @@ class SEEDOrgPermissionsTests(TestCase):
 
     def tearDown(self):
         self.user.delete()
-        self.org.delete()
         self.org_user.delete()
+        self.org.delete()
 
     @mock.patch("seed.lib.superperms.orgs.permissions.get_org_id")
     def test_has_perm(self, mock_get_org_id):
@@ -265,7 +265,8 @@ class SEEDOrgPermissionsTests(TestCase):
         mock_value_error = mock.PropertyMock(side_effect=ValueError)
         type(mock_view).get_queryset = mock_value_error
         mock_view.queryset = None
-        pytest.raises(AssertionError, permissions.has_permission, mock_request, mock_view)
+        with pytest.raises(AssertionError):
+            permissions.has_permission(mock_request, mock_view)
 
 
 class SEEDPublicPermissionsTests(TestCase):
@@ -279,8 +280,8 @@ class SEEDPublicPermissionsTests(TestCase):
 
     def tearDown(self):
         self.user.delete()
-        self.org.delete()
         self.org_user.delete()
+        self.org.delete()
 
     @mock.patch("seed.lib.superperms.orgs.permissions.is_authenticated")
     @mock.patch("seed.lib.superperms.orgs.permissions.get_org_id")

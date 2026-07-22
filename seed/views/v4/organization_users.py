@@ -1,3 +1,8 @@
+"""
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+"""
+
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import generics, viewsets
@@ -10,6 +15,7 @@ from seed.utils.api import OrgMixin, api_endpoint
 
 
 class OrganizationUserViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin):
+    queryset = OrganizationUser.objects.none()
     serializer_class = OrganizationUserSerializer
 
     @method_decorator(

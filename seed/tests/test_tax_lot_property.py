@@ -1,16 +1,15 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import base64
 import json
 import time
-from datetime import datetime
+from datetime import UTC, datetime
 from random import randint
 
 import pytest
-import pytz
 from django.core.exceptions import ValidationError
 from django.urls import reverse_lazy
 from xlrd import open_workbook
@@ -315,7 +314,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
     def test_set_update_to_now(self):
         property_view_ids = [self.property_view_factory.get_property_view().id for _ in range(50)]
         taxlot_view_ids = [self.taxlot_view_factory.get_taxlot_view().id for _ in range(50)]
-        before_refresh = datetime.now(pytz.UTC)
+        before_refresh = datetime.now(UTC)
 
         time.sleep(1)
 
@@ -447,7 +446,7 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
         assert len(data) == 2
 
     def test_set_update_to_now(self):
-        start_of_test = datetime.now(pytz.UTC)
+        start_of_test = datetime.now(UTC)
         time.sleep(1)
 
         progress_data = ProgressData(func_name="set_update_to_now", unique_id=f"metadata{randint(10000, 99999)}")

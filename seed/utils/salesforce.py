@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -216,7 +216,6 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     elif benchmark_id_colname.column_name in flat_state:
         benchmark_id = flat_state[benchmark_id_colname.column_name]
 
-    # print(f"benchmark ID is: {benchmark_id}")
     if not benchmark_id:
         message = f"SEED Unique Benchmark ID Column data on property {property_view.id} is undefined. Update your property record with this information."
         return status, message
@@ -299,7 +298,6 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                     a_details["RecordTypeId"] = config.account_rec_type
                 try:
                     account_record = salesforce_client.create_account(account_name, **a_details)
-                    # print(f"created account record: {account_record}")
                 except Exception as e:
                     message = f"Error creating Salesforce Account for SEED property {property_view.id}: {e!s}"
                     return status, message
@@ -395,7 +393,6 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
                     a_details["RecordTypeId"] = config.account_rec_type
                 try:
                     account_record = salesforce_client.create_account(contact_info["account_name"], **a_details)
-                    # print(f"created account record: {account_record}")
                 except Exception as e:
                     message = f"Error creating Salesforce Account for property {property_view.id}: {e!s}"
                     return status, message
@@ -461,7 +458,26 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
 
     """ PERFORM UPDATE """
     try:
-        salesforce_client.update_benchmark(benchmark_id, **params)
+        # determine the correct Salesforce benchmark record ID to update
+        sf_benchmark_id = None
+        if getattr(config, "unique_benchmark_id_fieldname", None):
+            # first retrieve the correct benchmark record using the custom ID name/value:
+            benchmark = salesforce_client.get_benchmark_by_custom_id(config.unique_benchmark_id_fieldname, benchmark_id)
+            if not isinstance(benchmark, dict) or "Id" not in benchmark:
+                # Explicit message when benchmark cannot be found/used
+                message = (
+                    f"Property View {property_id} / Benchmark ID {benchmark_id} : "
+                    f"benchmark not found in Salesforce using "
+                    f"{config.unique_benchmark_id_fieldname}={benchmark_id}. Benchmark not updated."
+                )
+                return status, message
+            sf_benchmark_id = benchmark["Id"]
+        else:
+            # fallback: assume benchmark_id is already the Salesforce benchmark ID
+            sf_benchmark_id = benchmark_id
+            # print(f" no unique benchmark id fieldname configured; using provided benchmark ID directly: {sf_benchmark_id}")
+        salesforce_client.update_benchmark(sf_benchmark_id, **params)
+
         status = True
 
         # check whether label should be removed flag

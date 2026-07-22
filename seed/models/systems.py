@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -45,7 +45,8 @@ class DESSystem(System):
     class Meta:
         constraints = [
             models.CheckConstraint(
-                check=Q(heating_capacity__isnull=False) | Q(cooling_capacity__isnull=False), name="heating_or_cooling_capacity_required"
+                condition=Q(heating_capacity__isnull=False) | Q(cooling_capacity__isnull=False),
+                name="heating_or_cooling_capacity_required",
             )
         ]
 

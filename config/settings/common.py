@@ -1,11 +1,10 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import os
 from datetime import timedelta
-from typing import Union
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
@@ -14,12 +13,14 @@ from seed.serializers.celery import CeleryDatetimeSerializer
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+GDAL_LIBRARY_PATH = os.environ.get("GDAL_LIBRARY_PATH")
+GEOS_LIBRARY_PATH = os.environ.get("GEOS_LIBRARY_PATH")
+
 PROTOCOL = os.environ.get("PROTOCOL", "https")
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
-# See: https://docs.djangoproject.com/en/dev/ref/settings/#wsgi-application
-WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.seed"
 
 TIME_ZONE = "America/Los_Angeles"
 USE_TZ = True
@@ -91,6 +92,7 @@ DJANGO_CORE_APPS = (
     "django.contrib.admin",
     "django.contrib.staticfiles",
     "django.contrib.gis",
+    "django.contrib.postgres",
     "compressor",
     "django_extensions",
     "django_filters",
@@ -206,7 +208,7 @@ LOGGING = {
     },
 }
 
-LOGIN_REDIRECT_URL = "/app/#/profile/two_factor_profile"
+LOGIN_REDIRECT_URL = "/app/"
 
 APPEND_SLASH = True
 
@@ -281,7 +283,7 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
-    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.openapi.AutoSchema",
     "PAGE_SIZE": 25,
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
     "DATETIME_INPUT_FORMATS": ("%Y:%m:%d", "iso-8601", "%Y-%m-%d"),
@@ -307,6 +309,7 @@ SWAGGER_SETTINGS = {
     "DOC_EXPANSION": "none",
     "LOGOUT_URL": "/accounts/logout",
 }
+SWAGGER_USE_COMPAT_RENDERERS = False
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),
@@ -316,7 +319,11 @@ SIMPLE_JWT = {
 }
 
 
-def yn(s: Union[bool, str]) -> bool:
+def env_var(key, default=None):
+    return os.environ.get(key, default)
+
+
+def yn(s: bool | str) -> bool:
     if isinstance(s, bool):
         return s
     if isinstance(s, str):

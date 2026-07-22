@@ -1,8 +1,8 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
-:author nicholas.long@nrel.gov
+:author nicholas.long@nlr.gov
 """
 
 import logging
@@ -338,7 +338,7 @@ class BuildingFile(models.Model):
                 linked_meters.append(meter)
 
                 # meterreadings
-                meter_type = energy_types.get(meter.type, None)
+                meter_type = energy_types.get(meter.type)
                 meter_conversions = self._kbtu_thermal_conversion_factors().get(meter_type, {})
 
                 valid_reading_models = {

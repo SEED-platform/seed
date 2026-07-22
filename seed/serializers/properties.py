@@ -1,15 +1,15 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author Paul Munday <paul@paulmunday.net>
-:author Nicholas Long  <nicholas.long@nrel.gov>
+:author Nicholas Long  <nicholas.long@nlr.gov>
 """
 
 import json
 from collections import OrderedDict
+from datetime import UTC
 
-import pytz
 from django.db import models
 from rest_framework import serializers
 from rest_framework.fields import empty
@@ -100,8 +100,8 @@ class PropertyListSerializer(serializers.ListSerializer):
 
 class PropertySerializer(serializers.ModelSerializer):
     # The created and updated fields are in UTC time and need to be casted accordingly in this format
-    created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
-    updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
+    created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=UTC, read_only=True)
+    updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=UTC, read_only=True)
 
     inventory_documents = InventoryDocumentSerializer(many=True, read_only=True)
     access_level_instance = AccessLevelInstanceSerializer(many=False, read_only=True)
@@ -120,8 +120,8 @@ class PropertySerializer(serializers.ModelSerializer):
 
 class CreatePropertySerializer(serializers.ModelSerializer):
     # The created and updated fields are in UTC time and need to be casted accordingly in this format
-    created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
-    updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=pytz.utc, read_only=True)
+    created = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=UTC, read_only=True)
+    updated = serializers.DateTimeField("%Y-%m-%dT%H:%M:%S.%fZ", default_timezone=UTC, read_only=True)
 
     inventory_documents = InventoryDocumentSerializer(many=True, read_only=True)
     access_level_instance_id = serializers.IntegerField(required=True)
@@ -419,7 +419,7 @@ class PropertyViewListSerializer(serializers.ListSerializer, OrgMixin, ProfileId
             record = certset.setdefault(certification.view_id, [])
             record.append(GreenAssessmentPropertyReadOnlySerializer(certification).data)
         for row in results:
-            row["certifications"] = certset.get(row["id"], None)
+            row["certifications"] = certset.get(row["id"])
         return results
 
 

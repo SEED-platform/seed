@@ -1,10 +1,10 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import os.path
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 
 import pytest
 from django.core.exceptions import ValidationError
@@ -161,7 +161,7 @@ class TestColumns(TestCase):
 
     def test_save_column_mapping_by_file_exception(self):
         self.mapping_import_file = os.path.abspath("./no-file.csv")
-        with pytest.raises(Exception, match="Mapping file does not exist: .*/no-file.csv"):
+        with pytest.raises(Exception, match=r"Mapping file does not exist: .*[/\\]no-file\.csv"):
             Column.create_mappings_from_file(self.mapping_import_file, self.fake_org, self.fake_user)
 
     def test_save_column_mapping_by_file(self):
@@ -1274,6 +1274,10 @@ class TestColumnCasting(TestCase):
             self.assertEqual(date(2010, 1, 1), r)
             r = Column.cast_column_value("datetime", date_str)
             self.assertEqual(timezone.make_aware(datetime(2010, 1, 1)), r)
+
+    def test_cast_offset_aware_iso_datetime(self):
+        result = Column.cast_column_value("datetime", "2010-01-01T00:00:00+00:00")
+        self.assertEqual(datetime(2010, 1, 1, tzinfo=UTC), result)
 
     def test_cast_values_with_errors(self):
         with pytest.raises(ColumnCastError) as exc:

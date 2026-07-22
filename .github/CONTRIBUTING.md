@@ -20,8 +20,8 @@ The contribution process for SEED is composed of three steps:
 
         I agree to contribute to SEED. I agree to the following terms and conditions for my
         contributions: First, I agree that I am licensing the copyright to my contributions under
-        the terms of the current SEED license. Second, I hereby grant to Alliance for Sustainable
-        Energy, LLC, to any successor manager and distributor of SEED appointed by the U.S.
+        the terms of the current SEED license. Second, I hereby grant to Alliance for
+        Energy Innovation, LLC, to any successor manager and distributor of SEED appointed by the U.S.
         Department of Energy, and to all recipients of a version of SEED that includes my
         contributions, a non-exclusive, worldwide, royalty-free, irrevocable patent license under
         any patent claims owned by me, or owned by my employer and known to me, that are or will be,
@@ -113,15 +113,15 @@ how to use your new functionality.
 
 For further questions or information:
 
-&nbsp;&nbsp;&nbsp;&nbsp;Nicholas Long<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;SEED Principal Investigator<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;nicholas.long@nrel.gov<br/>
-&nbsp;&nbsp;&nbsp;&nbsp;303.384.6183<br/>
+    Nicholas Long
+    SEED Principal Investigator
+    nicholas.long@nlr.gov
+    303.384.6183
 
 SEED is funded by the U.S. Department of Energy’s (DOE) Building Technologies Office (BTO), and
-managed by the National Renewable Energy Laboratory (NREL).
+managed by the National Laboratory of the Rockies (NLR).
 
-SEED is developed in collaboration with NREL, LBNL, and private firms.
+SEED is developed in collaboration with NLR, LBNL, and private firms.
 
 **Documents**
 

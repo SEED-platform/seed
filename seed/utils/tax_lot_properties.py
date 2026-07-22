@@ -141,7 +141,8 @@ def export_data(args):
             notes_key = "taxlot_notes"
 
         if include_notes:
-            for note in list(record.notes.all().order_by("created")):
+            # Tie-break on id for stable note ordering when created timestamps match.
+            for note in list(record.notes.all().order_by("created", "id")):
                 note_string.append(note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p") + "\n" + note.text)
             data[i][notes_key] = "\n----------\n".join(note_string)
 
@@ -477,9 +478,8 @@ def _spreadsheet_response(data, column_name_mappings):
                 add_s_headers = False
             row3 += 1
             col3 = 0
-            for key in scenario_keys:
+            for col3, key in enumerate(scenario_keys):
                 ws3.write(row3, col3, getattr(s, key))
-                col3 += 1
 
             for sm in s.measures.all():
                 row4 += 1

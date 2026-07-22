@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -86,7 +86,7 @@ from seed.serializers.properties import (
     UpdatePropertyPayloadSerializer,
 )
 from seed.serializers.taxlots import TaxLotViewSerializer
-from seed.tasks import update_state_derived_data
+from seed.tasks import copy_properties_to_cycle, update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.inventory_filter import get_filtered_results
@@ -990,6 +990,48 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             has_perm("can_modify_data"),
         ]
     )
+    @action(detail=False, methods=["POST"])
+    def copy_to_cycle(self, request):
+        org_id = self.get_organization(self.request)
+        data = request.data
+        cycle_pk = data.get("cycle_id", None)
+        view_ids = data.get("view_ids", None)
+        column_ids = data.get("column_ids", None)
+
+        #  get cycle
+        try:
+            Cycle.objects.get(pk=cycle_pk, organization_id=org_id)
+        except Cycle.DoesNotExist:
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "message": "Invalid cycle_id",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        result = copy_properties_to_cycle(view_ids, cycle_pk, column_ids, org_id)
+        return JsonResponse(result)
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                "cycle_id": "integer",
+                "state": "object",
+            },
+            required=["cycle_id", "state"],
+        ),
+    )
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+        ]
+    )
     def create(self, request):
         """
         Create a propertyState and propertyView via promote for given cycle
@@ -1386,7 +1428,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         bs = BuildingSync()
         # Check if there is an existing BuildingSync XML file to merge
-        bs_file = property_view.state.building_files.order_by("created").last()
+        # Tie-break on id so "latest" selection is deterministic on created ties.
+        bs_file = property_view.state.building_files.order_by("-created", "-id").first()
         if bs_file is not None and os.path.exists(bs_file.file.path):
             bs.import_file(bs_file.file.path)
 
@@ -1416,7 +1459,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         hpxml = HPXML()
         # Check if there is an existing BuildingSync XML file to merge
-        hpxml_file = property_view.state.building_files.filter(file_type=BuildingFile.HPXML).order_by("-created").first()
+        # Tie-break on id so "latest" selection is deterministic on created ties.
+        hpxml_file = property_view.state.building_files.filter(file_type=BuildingFile.HPXML).order_by("-created", "-id").first()
         if hpxml_file is not None and os.path.exists(hpxml_file.file.path):
             hpxml.import_file(hpxml_file.file.path)
             xml = hpxml.export(property_view.state)
@@ -2087,12 +2131,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             property__access_level_instance__rgt__lte=ali.rgt,
             cycle__organization_id=org_id,
         )
-
-        logger.error("+++++++")
-        logger.error(request.data)
-        logger.error(request.data.get("values_by_column_id"))
-        logger.error(values_by_column_id)
-        logger.error("+++++++")
 
         for property_view in property_views:
             state = property_view.state

@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.controller.inventory_list', []).controller('inventory_list_controller', [
@@ -1148,16 +1148,8 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       );
     }
 
-    // disable sorting (but not filtering) on related data until the backend can filter/sort over two models
     for (const i in $scope.columns) {
       const column = $scope.columns[i];
-      if (column.related) {
-        column.enableSorting = false;
-        // let title = 'Filtering disabled for property columns on the taxlot list.';
-        // if ($scope.inventory_type === 'properties') {
-        //   title = 'Filtering disabled for taxlot columns on the property list.';
-        // }
-      }
       if (column.derived_column != null) {
         column.enableSorting = false;
         const title = 'Sorting and filtering disabled for derived columns.';
@@ -1592,6 +1584,20 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
       });
     };
 
+    $scope.open_copy_to_different_cycle_modal = (selectedViewIds) => {
+      $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/copy_to_different_cycle_modal.html`,
+        controller: 'copy_to_different_cycle_modal_controller',
+        backdrop: 'static',
+        resolve: {
+          org: () => $scope.organization,
+          cycles: () => $scope.cycle.cycles,
+          view_ids: () => selectedViewIds,
+          profiles: () => inventory_service.get_column_list_profiles('List View Profile', $scope.inventory_type, false)
+        }
+      });
+    };
+
     $scope.model_actions = 'none';
     const elSelectActions = document.getElementById('select-actions');
     $scope.run_action = (viewIds = [], action = null) => {
@@ -1694,6 +1700,9 @@ angular.module('SEED.controller.inventory_list', []).controller('inventory_list_
           break;
         case 'update_derived_columns':
           $scope.open_update_derived_data_modal(selectedViewIds);
+          break;
+        case 'open_copy_to_different_cycle_modal':
+          $scope.open_copy_to_different_cycle_modal(selectedViewIds);
           break;
         default:
           console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');

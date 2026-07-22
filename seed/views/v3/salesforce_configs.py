@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -121,7 +121,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         # assume salesforce is enabled if you can get to this view
         # get values from form (they may not be saved yet)
         params = {}
-        params["instance_url"] = data.get("url", None)
+        params["instance"] = data.get("url") or data.get("instance")
         params["username"] = data.get("username", None)
         params["password"] = data.get("password", None)
         params["security_token"] = data.get("security_token", None)

@@ -7,23 +7,23 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.db.models import Count, F, Q, Sum
 from django.http import JsonResponse
+from django.utils import timezone as django_timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import make_aware
 from drf_yasg.utils import swagger_auto_schema
 from pint import Quantity
-from pytz import timezone
 from rest_framework import response, status
 from rest_framework.decorators import action
 
-from config.settings.common import TIME_ZONE
 from seed.filters import ColumnListProfileFilterBackend
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, Property, PropertyView, System
 from seed.serializers.inventory_groups import InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
+from seed.utils.api import OrgMixin
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.meters import PropertyMeterReadingsExporter, update_meter_connection
-from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+from seed.utils.viewsets import ModelViewSetWithoutPatch, SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 logger = logging.getLogger()
 
@@ -49,7 +49,7 @@ logger = logging.getLogger()
     ],
     name="update",
 )
-class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
+class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = InventoryGroupSerializer
     model = InventoryGroup
     filter_backends = (ColumnListProfileFilterBackend,)
@@ -85,6 +85,16 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_string_field("inventory_type", required=True, description="property or tax_lot"),
+        ],
+        request_body=AutoSchemaHelper.schema_factory(
+            {"selected": ["integer"]},
+            description="selected: optional list of inventory ids. [] returns all groups.",
+        ),
+    )
     @method_decorator(
         [
             has_perm("requires_viewer"),
@@ -154,7 +164,7 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         group_meters = Meter.objects.filter(Q(system__group_id=pk) | Q(property__group_mappings__group_id=pk))
 
         # make cycle start/end timezone aware to query MeterReading table
-        the_tz = timezone(TIME_ZONE)
+        the_tz = django_timezone.get_default_timezone()
         start_time = make_aware(datetime.combine(cycle.start, datetime.min.time()), timezone=the_tz)
         end_time = make_aware(datetime.combine(cycle.end, datetime.min.time()), timezone=the_tz)
 
@@ -219,7 +229,7 @@ class InventoryGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         meter_type_id = meter_type_id[0]
 
         # make cycle start/end timezone aware to query MeterReading table
-        the_tz = timezone(TIME_ZONE)
+        the_tz = django_timezone.get_default_timezone()
         start_time = make_aware(datetime.combine(cycle.start, datetime.min.time()), timezone=the_tz)
         end_time = make_aware(datetime.combine(cycle.end, datetime.min.time()), timezone=the_tz)
 

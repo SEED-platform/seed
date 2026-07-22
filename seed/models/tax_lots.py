@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -474,7 +474,8 @@ class TaxLotView(models.Model):
     def import_filename(self):
         """Get the import file name form the audit logs"""
         if not getattr(self, "_import_filename", None):
-            audit_log = TaxLotAuditLog.objects.filter(view_id=self.pk).order_by("created").first()
+            # Tie-break on id for stable results if created timestamps are equal.
+            audit_log = TaxLotAuditLog.objects.filter(view_id=self.pk).order_by("created", "id").first()
             self._import_filename = audit_log.import_filename
         return self._import_filename
 

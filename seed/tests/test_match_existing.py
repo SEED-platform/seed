@@ -1,17 +1,17 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models import Subquery
 from django.db.models.aggregates import Count
 from django.urls import reverse
 from django.utils.timezone import make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
-from pytz import timezone
 
 from config.settings.common import TIME_ZONE
 from seed.data_importer.tasks import geocode_and_match_buildings_task
@@ -1272,7 +1272,7 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
             - The 2 overlapping readings should have the 3rd Set's reading
         """
         # Apply the same meter and an overlapping meter reading to each Property
-        tz_obj = timezone(TIME_ZONE)
+        tz_obj = ZoneInfo(TIME_ZONE)
         for i, property in enumerate(Property.objects.order_by("id").all()):
             meter = Meter.objects.create(
                 property=property,

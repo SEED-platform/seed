@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 Basic flipper library for hiding OGBS features for dark-launch
@@ -26,11 +26,11 @@ no point in following any particular API since:
 """
 
 import datetime
+from typing import Any
 
-import pytz
 from django.utils.dateparse import parse_datetime
 
-REGISTRY = {}
+REGISTRY: dict[str, dict[str, Any]] = {}
 
 
 def make_flipper(owner, expires, label, kind, initial_value):
@@ -57,7 +57,7 @@ def _log_stale_flipper(flipper):
     print(f"Flipper '{label}' is stale; tell {owner} to tidy up")
 
 
-def is_active(s, now=datetime.datetime.now(pytz.UTC)):
+def is_active(s, now=None):
     """
     Checks if the flipper is active, use for hiding feature eg:
     ```
@@ -65,6 +65,9 @@ def is_active(s, now=datetime.datetime.now(pytz.UTC)):
         do_feature()
     ```
     """
+    if now is None:
+        now = datetime.datetime.now(datetime.UTC)
+
     flipper = REGISTRY.get(s, {"boolean": False})
     if _is_stale(flipper, now):
         _log_stale_flipper(flipper)

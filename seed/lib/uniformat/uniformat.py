@@ -1,10 +1,12 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from typing import NotRequired
+
 from django.db import transaction
-from typing_extensions import NotRequired, TypedDict
+from typing_extensions import TypedDict
 
 from seed.models import Uniformat
 

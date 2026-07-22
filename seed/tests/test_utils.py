@@ -1,11 +1,10 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from datetime import datetime
+from datetime import UTC, datetime
 
-import pytz
 from django.test import TestCase
 from django.utils.timezone import make_aware
 
@@ -61,7 +60,7 @@ class TestTime(TestCase):
         self.assertEqual(convert_datestr(dt.strftime("%Y-%m-%d %H:%M")), dt)
 
         # with TZ info
-        dt = make_aware(datetime(2016, 7, 15, 12, 30), pytz.UTC)
+        dt = make_aware(datetime(2016, 7, 15, 12, 30), UTC)
         self.assertEqual(convert_datestr(dt.strftime("%Y-%m-%d %H:%M"), True), dt)
 
 

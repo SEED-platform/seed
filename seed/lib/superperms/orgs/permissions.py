@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :authors Paul Munday<paul@paulmunday.net> Fable Turas<fable@raintechpdx.com>
@@ -7,8 +7,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 Provides permissions classes for use in DRF views and viewsets to control
 access based on Organization and OrganizationUser.role_level.
 """
-
-from typing import Union
 
 from django import VERSION as DJANGO_VERSION
 from django.conf import settings
@@ -31,7 +29,7 @@ def is_authenticated(user):
     return user.is_authenticated
 
 
-def get_org_or_id(dictlike: dict) -> Union[int, None]:
+def get_org_or_id(dictlike: dict) -> int | None:
     """Get value of organization or organization_id"""
     # while documentation should encourage the use of one consistent key choice
     # for supplying an organization to query_params, we check all reasonable
@@ -196,6 +194,9 @@ class SEEDOrgPermissions(BasePermission):
 
     def has_permission(self, request, view):
         """Determines if user has correct permissions, called by DRF."""
+        if getattr(view, "swagger_fake_view", False) is True:
+            return True
+
         # Workaround to ensure this is not applied to the root view when using DefaultRouter.
         value_error = False
         try:

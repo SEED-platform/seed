@@ -1,18 +1,18 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import locale
 from datetime import datetime
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from django.test import TestCase
 from django.utils.timezone import (
     get_current_timezone,
     make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 )
-from pytz import timezone
 
 from config.settings.common import TIME_ZONE
 from seed.data_importer.meters_parser import MetersParser
@@ -23,6 +23,7 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models import Meter, PropertyState, PropertyView
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory
 from seed.utils.organizations import create_organization
+from seed.utils.time_utils import localize_datetime
 
 
 class ThermalConversionTests(TestCase):
@@ -68,7 +69,7 @@ class MeterUtilTests(TestCase):
 
         self.property_view = PropertyView.objects.create(property=self.property, cycle=self.cycle, state=self.state)
 
-        self.tz_obj = timezone(TIME_ZONE)
+        self.tz_obj = ZoneInfo(TIME_ZONE)
 
     def test_parse_meter_preprocess_raw_pm_data_request(self):
         with open(
@@ -767,8 +768,8 @@ class MeterUtilTests(TestCase):
                 "type": Meter.ELECTRICITY_GRID,
                 "readings": [
                     {
-                        "start_time": make_aware(datetime(2022, 11, 6, 1, 0, 0), timezone=self.tz_obj, is_dst=False),
-                        "end_time": make_aware(datetime(2022, 11, 6, 1, 15, 0), timezone=self.tz_obj, is_dst=False),
+                        "start_time": localize_datetime(datetime(2022, 11, 6, 1, 0, 0), self.tz_obj, is_dst=False),
+                        "end_time": localize_datetime(datetime(2022, 11, 6, 1, 15, 0), self.tz_obj, is_dst=False),
                         "reading": 100,
                         "source_unit": "kBtu (thousand Btu)",
                         "conversion_factor": 1,
@@ -803,8 +804,8 @@ class MeterUtilTests(TestCase):
                 "type": Meter.ELECTRICITY_GRID,
                 "readings": [
                     {
-                        "start_time": make_aware(datetime(2023, 3, 12, 2, 0, 0), timezone=self.tz_obj, is_dst=True),
-                        "end_time": make_aware(datetime(2023, 3, 12, 2, 15, 0), timezone=self.tz_obj, is_dst=True),
+                        "start_time": localize_datetime(datetime(2023, 3, 12, 2, 0, 0), self.tz_obj, is_dst=True),
+                        "end_time": localize_datetime(datetime(2023, 3, 12, 2, 15, 0), self.tz_obj, is_dst=True),
                         "reading": 100,
                         "source_unit": "kBtu (thousand Btu)",
                         "conversion_factor": 1,

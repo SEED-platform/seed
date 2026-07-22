@@ -5,7 +5,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: lokalise.com\n"
 "Project-Id-Version: SEED Platform\n"
-"PO-Revision-Date: 2025-11-04 22:12\n"
+"PO-Revision-Date: 2026-04-23 19:06\n"
 "Last-Translator: lokalise.com\n"
 "Language-Team: lokalise.com\n\n"
 "Language: es\n"
@@ -179,6 +179,9 @@ msgstr "El análisis EUI sumará las lecturas de los contadores de la propiedad 
 
 msgid "ANALYSIS_DESCRIPTION_ElementStatistics"
 msgstr "El análisis de estadísticas de elementos analiza los datos de elementos de una propiedad (si los hay) para contar la cantidad de elementos del tipo \"Panel de control DDC\". También genera los valores de índice de condición agregados (promedio) para los elementos de EISA 2007-432 y guarda esas cantidades en la propiedad."
+
+msgid "ANALYSIS_DESCRIPTION_HVACMetrics"
+msgstr "El análisis de métricas de HVAC itera a través de los datos de los elementos de una propiedad (si los hay) para calcular 4 métricas: 1) Área de cobertura de tonelaje de CA, 2) Tipo de refrigerante principal, 3) Tamaño total del servicio eléctrico de HVAC y 4) Tasa de flujo de aire por unidad de área."
 
 #, fuzzy
 msgid "AND"
@@ -712,6 +715,9 @@ msgstr "Ciclo de referencia"
 msgid "Begin Update"
 msgstr "Iniciar actualización"
 
+msgid "Benchmark Configuration "
+msgstr "Configuración de referencia "
+
 #: seed/models/models.py:135
 #, fuzzy
 msgid "Benchmarking"
@@ -773,8 +779,8 @@ msgid "By Property"
 msgstr "Por propiedad"
 
 #, fuzzy
-msgid "By clicking the Log In button you accept the NREL Data Terms."
-msgstr "Al hacer clic en el botón Iniciar sesión, acepta las Condiciones de datos del NREL."
+msgid "By clicking the Log In button you accept the Data Terms."
+msgstr "Al hacer clic en el botón Iniciar sesión, acepta las Condiciones de datos."
 
 msgid "CALC_ACCESS_LEVEL_DESC"
 msgstr "Seleccione el nivel de acceso y la instancia de los datos que se incluirán en los cálculos."
@@ -794,6 +800,9 @@ msgstr "Incluye elementos de construcción aplicables con los valores RSL más b
 
 msgid "CEWE_ELEMENTS_TITLE"
 msgstr "Apoyo a la vía de cumplimiento de la Evaluación Integral de Energía y Agua (CEWE)  "
+
+msgid "CHART_STATUS_MESSAGE"
+msgstr "Demasiados datos para representarlos en el gráfico. Pruebe con un nivel de acceso diferente, agregue un grupo de filtros a su programa o aumente el límite en la página de configuración de su organización."
 
 #, fuzzy
 msgid "CLICK_LEGEND"
@@ -1218,9 +1227,18 @@ msgstr "Confirmar eliminación"
 msgid "Confirm new password"
 msgstr "Confirmar nueva contraseña"
 
+msgid "Connected to Salesforce"
+msgstr "Conectado a Salesforce"
+
 #, fuzzy
 msgid "Connection"
 msgstr "Conexión"
+
+msgid "Connection Status"
+msgstr "Estado de la conexión"
+
+msgid "Connection error"
+msgstr "Error de conexión"
 
 #, fuzzy
 msgid "Contact"
@@ -1259,6 +1277,12 @@ msgstr "Copiar edificios"
 #, fuzzy
 msgid "Copy Data File Headers directly to SEED Headers"
 msgstr "Copiar cabeceras de archivos de datos directamente en cabeceras de SEED"
+
+msgid "Copy Inventory"
+msgstr "Inventario de copias"
+
+msgid "Copy Inventory to New Cycle"
+msgstr "Copiar inventario al nuevo ciclo"
 
 #, fuzzy
 msgid "Copy into Data File Headers"
@@ -2053,6 +2077,12 @@ msgstr "Activar GeoJSON público"
 
 msgid "Enable Salesforce Integration"
 msgstr "Habilitar la integración de Salesforce (propiedades individuales)"
+
+msgid "Enable Salesforce Integration (Individual Properties)"
+msgstr "Habilitar la integración con Salesforce (propiedades individuales)"
+
+msgid "Enable Salesforce Integration (Portfolio of Properties)"
+msgstr "Habilitar la integración con Salesforce (Cartera de propiedades)"
 
 msgid "Enable this functionality to send Federal Building fields to Audit Template."
 msgstr "Habilite esta funcionalidad para enviar los campos de Edificios Federales a la Plantilla de Auditoría."
@@ -3104,6 +3134,9 @@ msgstr "Primero, inicie sesión en Salesforce para poder configurar las asociaci
 msgid "Logging Email"
 msgstr "Correo electrónico de registro"
 
+msgid "Login"
+msgstr "Acceso"
+
 #, fuzzy
 msgid "Logout"
 msgstr "Cierre de sesión"
@@ -3684,6 +3717,9 @@ msgstr "No nulo"
 msgid "Not all inventory items were successfully deleted"
 msgstr "No se han eliminado correctamente todos los artículos del inventario"
 
+msgid "Not connected to Salesforce"
+msgstr "No está conectado a Salesforce"
+
 #, fuzzy
 msgid "Not seeing your column?"
 msgstr "¿No ves tu columna?"
@@ -3748,9 +3784,8 @@ msgstr "Visualización de la unidad de medida del consumo de agua"
 msgid "ORGANIZATION_WUI_DISPLAY_UNITS"
 msgstr "Visualización de la unidad de medida para la intensidad de uso del agua (WUI)"
 
-#, fuzzy
 msgid "ORG_MATCH_MERGE_LINK_WARNING"
-msgstr "ADVERTENCIA: Ha modificado los criterios con los que se compararán y combinarán los datos de su organización. Una vez que se ha añadido una columna a los criterios de correspondencia de una organización, no se puede eliminar mientras la organización tenga inventario."
+msgstr "ADVERTENCIA: Ha modificado los criterios con los que se compararán y fusionarán los datos de su organización. Si la organización utiliza más de un nivel de acceso, una vez que se haya añadido una columna a los criterios de coincidencia de una organización, no se podrá eliminar mientras la organización tenga inventario. Los criterios de coincidencia se pueden eliminar en organizaciones que no utilicen niveles de acceso."
 
 #, fuzzy
 msgid "OVERWRITE_COLUMN_DATA_QUESTION"
@@ -4723,6 +4758,9 @@ msgstr "Si su registro de referencia de Salesforce almacena una relación de con
 msgid "SF_BENCHMARK_ID_FIELDNAME_TEXT"
 msgstr "Nombre de campo del campo de Salesforce que se utiliza para identificar de forma exclusiva los registros de Benchmark. Ejemplo: 'Salesforce_Benchmark_ID__c'"
 
+msgid "SF_BUILDING_DESC"
+msgstr "Esta integración permite conectar su organización con una instancia de Salesforce para optimizar la gestión de datos y la automatización de flujos de trabajo. Esta integración presupone que Salesforce está configurado con objetos de Propiedad y Referencia, que se actualizarán con los datos individuales de las propiedades desde SEED."
+
 #, fuzzy
 msgid "SF_COMPLIANCE_LABEL_TEXT"
 msgstr "Etiqueta utilizada para designar que una propiedad SEED es conforme. Ejemplo: \"Cumple\""
@@ -4817,6 +4855,9 @@ msgstr "Asigne los campos de su objeto de referencia de Salesforce a columnas en
 
 msgid "SF_PORTFOLIO_CONNECTION_TEXT"
 msgstr "Ingrese los datos de conexión de su instancia de Salesforce. Esto supone que su Salesforce está configurado con una aplicación de cliente externa para SEED."
+
+msgid "SF_PORTFOLIO_DESC"
+msgstr "Esta integración también le permite conectar su organización con una instancia de Salesforce, pero presupone que Salesforce está configurado con objetos de Objetivo e Informe Anual que se actualizarán con datos a nivel de cartera (agregados a partir de múltiples propiedades en SEED)."
 
 #, fuzzy
 msgid "SF_SCHEDULED_UPDATE_TEXT"
@@ -4950,6 +4991,9 @@ msgstr "Tipo de registro de objeto de cuenta de Salesforce"
 msgid "Salesforce Annual Report"
 msgstr "Informe anual de Salesforce"
 
+msgid "Salesforce Connection"
+msgstr "Conexión con Salesforce"
+
 #, fuzzy
 msgid "Salesforce Connection Parameters"
 msgstr "Parámetros de conexión de Salesforce"
@@ -4976,6 +5020,9 @@ msgstr "Integración con Salesforce"
 #, fuzzy
 msgid "Salesforce Unique Benchmark ID Fieldname"
 msgstr "ID único de referencia de Salesforce Nombre de campo"
+
+msgid "Salesforce connection successful"
+msgstr "Conexión con Salesforce exitosa"
 
 #, fuzzy
 msgid "Save"
@@ -5089,8 +5136,15 @@ msgstr "Seleccione una columna para mostrar los datos en este eje.  Sólo se mos
 msgid "Select a column to show data on this axis. Only columns with one of these data types will be listed:"
 msgstr "Seleccione una columna para mostrar los datos en este eje. Sólo se mostrarán las columnas con uno de estos tipos de datos:"
 
+#, fuzzy
+msgid "Select a cycle to copy inventory to."
+msgstr "Seleccione un ciclo para copiar el inventario."
+
 msgid "Select a cycle to use as the baseline for comparison."
 msgstr "Seleccione un ciclo para utilizarlo como base para la comparación."
+
+msgid "Select a profile to specify which fields should be copied. If you do not have any column list profiles, dismiss the modal and create one in the Column List Profiles tab first."
+msgstr "Seleccione un perfil para especificar qué campos se deben copiar. Si no tiene ningún perfil de lista de columnas, cierre la ventana modal y cree uno primero en la pestaña Perfiles de lista de columnas."
 
 #, fuzzy
 msgid "Select columns from the list below to make them appear in your Buildings List table."

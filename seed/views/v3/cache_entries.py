@@ -5,7 +5,7 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import AutoSchemaHelper, EmptySerializer
 from seed.utils.cache import get_cache_raw
 
 
@@ -13,6 +13,9 @@ class CacheEntryViewSet(GenericViewSet, OrgMixin):
     """
     ViewSet for managing redis cache entries.
     """
+
+    queryset = ()
+    serializer_class = EmptySerializer
 
     manual_parameters = (
         [

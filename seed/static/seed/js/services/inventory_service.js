@@ -1,5 +1,5 @@
 /**
- * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  */
 angular.module('SEED.service.inventory', []).factory('inventory_service', [
@@ -1169,6 +1169,21 @@ angular.module('SEED.service.inventory', []).factory('inventory_service', [
         }
       })
       .then((response) => response.data.data);
+
+    inventory_service.copy_to_cycle = (cycle_id, view_ids, column_ids) => $http
+      .post(
+        '/api/v3/properties/copy_to_cycle/',
+        {
+          cycle_id,
+          view_ids,
+          column_ids
+        },
+        {
+          params: {
+            organization_id: user_service.get_organization().id
+          }
+        }
+      ).then((response) => response.data);
 
     inventory_service.get_column_list_profiles = (profile_location, inventory_type, brief = false) => $http
       .get('/api/v3/column_list_profiles/', {

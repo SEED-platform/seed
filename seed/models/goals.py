@@ -1,7 +1,9 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
+
+import logging
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -9,7 +11,9 @@ from django.db.models import Q
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from seed.models import AccessLevelInstance, Column, Cycle, Organization, Property
+from seed.models import AccessLevelInstance, Column, Cycle, Organization, OrganizationUser, Property
+
+logger = logging.getLogger()
 
 GOAL_TYPE_CHOICES = (
     ("standard", "standard"),
@@ -19,9 +23,13 @@ GOAL_TYPE_CHOICES = (
 
 class Goal(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-    baseline_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name="goal_baseline_cycles")
-    current_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name="goal_current_cycles")
     access_level_instance = models.ForeignKey(AccessLevelInstance, on_delete=models.CASCADE)
+    salesforce_partner_id = models.CharField(max_length=255, null=True)
+    salesforce_partner_name = models.CharField(max_length=255, null=True)
+    salesforce_goal_id = models.CharField(max_length=255, null=True)
+    salesforce_goal_name = models.CharField(max_length=255, null=True)
+
+    baseline_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name="goal_baseline_cycles")
     eui_column1 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_eui_column1s")
     # eui column 2 and 3 optional
     eui_column2 = models.ForeignKey(Column, on_delete=models.CASCADE, related_name="goal_eui_column2s", blank=True, null=True)
@@ -34,6 +42,18 @@ class Goal(models.Model):
     transactions_column = models.ForeignKey(
         Column, on_delete=models.CASCADE, related_name="goal_transactions_columns", blank=True, null=True
     )
+    partner_note = models.TextField(default="", null=True, blank=True)
+    partner_note_approval = models.BooleanField(default=False)
+    partner_note_approval_time = models.DateTimeField(null=True, blank=True)
+    partner_note_approval_user = models.ForeignKey(OrganizationUser, on_delete=models.SET_NULL, null=True, blank=True)
+
+    def properties(self):
+        properties = Property.objects.filter(
+            access_level_instance__lft__gte=self.access_level_instance.lft,
+            access_level_instance__rgt__lte=self.access_level_instance.rgt,
+        ).distinct()
+
+        return properties
 
     class Meta:
         ordering = ["name"]
@@ -54,15 +74,6 @@ class Goal(models.Model):
         eui_columns = [self.eui_column1, self.eui_column2, self.eui_column3]
         return [column for column in eui_columns if column]
 
-    def properties(self):
-        properties = Property.objects.filter(
-            Q(views__cycle=self.baseline_cycle) | Q(views__cycle=self.current_cycle),
-            access_level_instance__lft__gte=self.access_level_instance.lft,
-            access_level_instance__rgt__lte=self.access_level_instance.rgt,
-        ).distinct()
-
-        return properties
-
 
 @receiver(post_save, sender=Goal)
 def post_save_goal(sender, instance, **kwargs):
@@ -74,9 +85,9 @@ def post_save_goal(sender, instance, **kwargs):
     # retrieve a flat set of all property ids from the previous goal (through goal note which has not been created/updated yet)
     previous_property_ids = set(instance.goalnote_set.values_list("property_id", flat=True))
 
-    # create, or update has added more properties to the goal
+    # create, or update has added more properties to the cycle goal
     new_property_ids = goal_property_ids - previous_property_ids
-    # update has removed properties from the goal
+    # update has removed properties from the cycle goal
     removed_property_ids = previous_property_ids - goal_property_ids
 
     if new_property_ids:
@@ -85,3 +96,19 @@ def post_save_goal(sender, instance, **kwargs):
 
     if removed_property_ids:
         GoalNote.objects.filter(goal=instance, property_id__in=removed_property_ids).delete()
+
+
+class CycleGoal(models.Model):
+    goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name="current_cycles")
+    current_cycle = models.ForeignKey(Cycle, on_delete=models.CASCADE, related_name="goals")
+    salesforce_annual_report_id = models.CharField(max_length=255, null=True)
+    salesforce_annual_report_name = models.CharField(max_length=255, null=True)
+
+    def properties(self):
+        properties = Property.objects.filter(
+            Q(views__cycle=self.goal.baseline_cycle) | Q(views__cycle=self.current_cycle),
+            access_level_instance__lft__gte=self.goal.access_level_instance.lft,
+            access_level_instance__rgt__lte=self.goal.access_level_instance.rgt,
+        ).distinct()
+
+        return properties

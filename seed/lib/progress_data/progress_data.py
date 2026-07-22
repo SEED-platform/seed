@@ -1,10 +1,9 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
-from typing import Union
 
 from seed.decorators import get_prog_key
 from seed.utils.cache import delete_cache, get_cache, set_cache
@@ -13,11 +12,11 @@ _log = logging.getLogger(__name__)
 
 
 class ProgressData:
-    def __init__(self, func_name, unique_id: Union[str, int], init_data=None):
+    def __init__(self, func_name, unique_id: str | int, init_data=None):
         self.func_name = func_name
         self.unique_id = unique_id
         self.key = get_prog_key(func_name, unique_id)
-        self.total: Union[int, None] = None
+        self.total: int | None = None
         self.increment_by = None
 
         # Load in the initialized data, some of this may be overloaded based

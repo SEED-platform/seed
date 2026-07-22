@@ -1,17 +1,27 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import csv
 import lzma
 import os
+from contextlib import suppress
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
-from django.db.utils import IntegrityError
 
 from seed.models.eeej import EeejCejst, EeejHud, HousingType
+
+BATCH_SIZE = 5000
+
+
+def _bool(value):
+    return value == "True"
+
+
+def _int_or_none(value):
+    return int(value) if value != "" else None
 
 
 def add_eeej_data():
@@ -44,7 +54,6 @@ def import_hud():
         {"type": HousingType.PUBLIC_HOUSING, "path": HUD_DATA_PATH_HOUSING},
         {"type": HousingType.MULTIFAMILY, "path": HUD_DATA_PATH_MULTIFAMILY},
     ]
-    errors = []
     for file in files:
         with lzma.open(file["path"], mode="rt", encoding="utf-8") as fd:
             reader = csv.reader(fd)
@@ -52,7 +61,8 @@ def import_hud():
             for col_index, header in enumerate(next(reader, None)):
                 col[header] = col_index
 
-            for row_index, row in enumerate(reader, start=1):
+            hud_rows = []
+            for row in reader:
                 if file["type"] == HousingType.PUBLIC_HOUSING:
                     hud_object_id = f"PH_{row[col['OBJECTID']]}"
                     name = row[col["PROJECT_NAME"]]
@@ -60,22 +70,35 @@ def import_hud():
                     hud_object_id = f"MF_{row[col['OBJECTID']]}"
                     name = row[col["PROPERTY_NAME_TEXT"]]
 
-                try:
-                    EeejHud.objects.update_or_create(
-                        census_tract_geoid=(row[col["TRACT_LEVEL"]] or None).zfill(11),
-                        hud_object_id=hud_object_id,
-                        name=name,
-                        housing_type=file["type"],
-                        defaults={"long_lat": Point(float(row[col["LON"]]), float(row[col["LAT"]]))},
-                    )
-                except IntegrityError as e:
-                    errors.append(f"EEEJ HUD Row already exists: {row_index}. error: {e!s}")
-                    # print(str(e))
-                except Exception as e:
-                    errors.append(f"EEEJ HUD - could not add row: {row_index}. error: {e!s}")
-                    # print(str(e))
+                tract = row[col["TRACT_LEVEL"]]
+                lon = row[col["LON"]]
+                lat = row[col["LAT"]]
+                if not tract or not lon or not lat:
+                    continue
 
-    # print(f"{len(errors)} errors encountered when loading HUD data")
+                with suppress(ValueError):
+                    hud_rows.append(
+                        EeejHud(
+                            hud_object_id=hud_object_id,
+                            census_tract_geoid=tract.zfill(11),
+                            name=name,
+                            housing_type=file["type"],
+                            long_lat=Point(float(lon), float(lat)),
+                        )
+                    )
+
+            EeejHud.objects.bulk_create(
+                hud_rows,
+                batch_size=BATCH_SIZE,
+                update_conflicts=True,
+                unique_fields=["hud_object_id"],
+                update_fields=[
+                    "census_tract_geoid",
+                    "long_lat",
+                    "housing_type",
+                    "name",
+                ],
+            )
 
 
 def import_cejst():
@@ -97,20 +120,31 @@ def import_cejst():
         for col_index, header in enumerate(next(reader, None)):
             col[header] = col_index
 
-        errors = []
-        for row_index, row in enumerate(reader, start=1):
-            try:
-                EeejCejst.objects.update_or_create(
+        cejst_rows = []
+        for row in reader:
+            cejst_rows.append(
+                EeejCejst(
                     census_tract_geoid=row[col["Census tract 2010 ID"]],
-                    dac=row[col["Identified as disadvantaged"]],
-                    energy_burden_low_income=row[col["Greater than or equal to the 90th percentile for energy burden and is low income?"]],
-                    energy_burden_percent=row[col["Energy burden (percentile)"]] or None,
-                    low_income=row[col["Is low income?"]],
-                    share_neighbors_disadvantaged=row[col["Share of neighbors that are identified as disadvantaged"]] or None,
+                    dac=_bool(row[col["Identified as disadvantaged"]]),
+                    energy_burden_low_income=_bool(
+                        row[col["Greater than or equal to the 90th percentile for energy burden and is low income?"]]
+                    ),
+                    energy_burden_percent=_int_or_none(row[col["Energy burden (percentile)"]]),
+                    low_income=_bool(row[col["Is low income?"]]),
+                    share_neighbors_disadvantaged=_int_or_none(row[col["Share of neighbors that are identified as disadvantaged"]]),
                 )
-            except IntegrityError as e:
-                errors.append(f"EEEJ CEJST Row already exists: {row_index}. error: {e!s}")
-            except Exception as e:
-                errors.append(f"EEEJ CEJST - could not add row: {row_index}. error: {e!s}")
+            )
 
-        # print(f"{len(errors)} errors encountered when loading CEJST data")
+        EeejCejst.objects.bulk_create(
+            cejst_rows,
+            batch_size=BATCH_SIZE,
+            update_conflicts=True,
+            unique_fields=["census_tract_geoid"],
+            update_fields=[
+                "dac",
+                "energy_burden_low_income",
+                "energy_burden_percent",
+                "low_income",
+                "share_neighbors_disadvantaged",
+            ],
+        )

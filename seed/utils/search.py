@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 :author 'Piper Merriam <pmerriam@quickleft.com'
@@ -10,10 +10,10 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from functools import reduce
-from typing import Any, Union
+from typing import Any
 
 from django.db import models
-from django.db.models import Case, IntegerField, Q, Value, When
+from django.db.models import Case, IntegerField, Min, Q, Value, When
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast, Coalesce, Collate, Replace
 from django.http.request import QueryDict
@@ -205,7 +205,7 @@ class QueryFilterOperator(Enum):
 @dataclass
 class QueryFilter:
     field_name: str
-    operator: Union[QueryFilterOperator, None]
+    operator: QueryFilterOperator | None
     is_negated: bool
 
     @classmethod
@@ -311,9 +311,39 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     return final_field_name, annotations
 
 
+def _build_related_extra_data_expression(column_name: str, data_type: str, state_prefix: str):
+    """
+    Build a casted expression for a related column's extra_data field.
+
+    This mirrors the conversions in `_build_extra_data_annotations`, but allows
+    specifying which state relationship to traverse (property vs taxlot).
+    """
+    json_path = f"{state_prefix}__extra_data"
+    expression = KeyTextTransform(column_name, json_path)
+
+    if data_type == "integer":
+        expression = Cast(
+            Replace(expression, models.Value(","), models.Value("")),
+            output_field=models.IntegerField(),
+        )
+    elif data_type in {"number", "float", "area", "eui", "ghg", "ghg_intensity"}:
+        expression = Cast(
+            Replace(expression, models.Value(","), models.Value("")),
+            output_field=models.FloatField(),
+        )
+    elif data_type in {"date", "datetime"}:
+        expression = Cast(expression, output_field=models.DateField())
+    elif data_type == "boolean":
+        expression = Cast(expression, output_field=models.BooleanField())
+    else:
+        expression = Coalesce(expression, models.Value(""), output_field=models.TextField())
+
+    return expression
+
+
 def _parse_view_filter(
     filter_expression: str,
-    filter_value: Union[str, bool],
+    filter_value: str | bool,
     columns_by_name: dict[str, dict],
     inventory_type: str,
     access_level_names: list[str],
@@ -338,7 +368,7 @@ def _parse_view_filter(
         filter.is_negated = filter_expression.endswith("__exact")
 
         if filter_expression.endswith("__icontains"):
-            level = filter_expression.split("__")[0]
+            level = filter_expression.split("__", maxsplit=1)[0]
             updated_expression += f"__{level}"
 
         updated_filter = QueryFilter(updated_expression, filter.operator, filter.is_negated)
@@ -370,9 +400,18 @@ def _parse_view_filter(
     return updated_filter.to_q(new_filter_value), annotations
 
 
+def _clean_annotation_alias(name: str) -> str:
+    """Replace any characters that are invalid in Django annotation aliases (e.g. spaces) with underscores."""
+    return re.sub(r"[^a-zA-Z0-9_]", "_", name)
+
+
 def _parse_view_sort(
-    sort_expression: str, columns_by_name: dict[str, dict], inventory_type: str, access_level_names: list[str]
-) -> tuple[Union[None, str, Collate], AnnotationDict]:
+    sort_expression: str,
+    columns_by_name: dict[str, dict],
+    related_columns_by_name: dict[str, dict],
+    inventory_type: str,
+    access_level_names: list[str],
+) -> tuple[None | str | Collate, AnnotationDict]:
     """Parse a sort expression
 
     :param sort_expression: should be a valid Column.column_name. Optionally prefixed
@@ -401,6 +440,26 @@ def _parse_view_sort(
             return f"{direction}{new_field_name}", annotations
         else:
             return f"{direction}state__{column_name}", {}
+    elif column_name in related_columns_by_name:
+        column = related_columns_by_name[column_name]
+        related_prefix = "taxlotproperty__taxlot_view__" if inventory_type == "property" else "taxlotproperty__property_view__"
+        state_prefix = f"{related_prefix}state"
+        annotation_name = _clean_annotation_alias(f"related_{column['name']}_sort")
+
+        if column["is_extra_data"]:
+            expression = _build_related_extra_data_expression(column["column_name"], column["data_type"], state_prefix)
+        else:
+            expression = models.F(f"{state_prefix}__{column['column_name']}")
+
+        annotations = {annotation_name: Min(expression)}
+        if column["data_type"] in {"None", "string"}:
+            order_expression = Collate(annotation_name, "natural_sort")
+            if direction:
+                order_expression = order_expression.desc()
+        else:
+            order_expression = f"{direction}{annotation_name}"
+
+        return order_expression, annotations
     elif column_name in access_level_names:
         return f"{direction}{inventory_type}__access_level_instance__path__{column_name}", {}
     else:
@@ -408,7 +467,7 @@ def _parse_view_sort(
 
 
 def build_view_filters_and_sorts(
-    filters: QueryDict, columns: list[dict], inventory_type: str, access_level_names: list[str] = []
+    filters: QueryDict, columns: list[dict], inventory_type: str, access_level_names: list[str] = [], include_sorts: bool = True
 ) -> tuple[Q, AnnotationDict, list[str]]:
     """Build a query object usable for `*View.filter(...)` as well as a list of
     column names for usable for `*View.order_by(...)`.
@@ -447,10 +506,12 @@ def build_view_filters_and_sorts(
     :return: filters, annotations and sorts
     """
     columns_by_name = {}
+    related_columns_by_name = {}
     for column in columns:
         if column["related"]:
-            continue
-        columns_by_name[column["name"]] = column
+            related_columns_by_name[column["name"]] = column
+        else:
+            columns_by_name[column["name"]] = column
 
     new_filters = Q()
     annotations = {}
@@ -506,11 +567,14 @@ def build_view_filters_and_sorts(
 
     order_by = []
 
-    for sort_expression in filters.getlist("order_by", ["id"]):
-        parsed_sort, parsed_annotations = _parse_view_sort(sort_expression, columns_by_name, inventory_type, access_level_names)
-        if parsed_sort is not None:
-            order_by.append(parsed_sort)
-            annotations.update(parsed_annotations)
+    if include_sorts:
+        for sort_expression in filters.getlist("order_by", ["id"]):
+            parsed_sort, parsed_annotations = _parse_view_sort(
+                sort_expression, columns_by_name, related_columns_by_name, inventory_type, access_level_names
+            )
+            if parsed_sort is not None:
+                order_by.append(parsed_sort)
+                annotations.update(parsed_annotations)
 
     return new_filters, annotations, order_by
 

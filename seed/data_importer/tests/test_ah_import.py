@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -777,9 +777,8 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
 
         # city changed in the correct view
         assert PropertyView.objects.count() == 2
-        view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
-
-        assert list(view_info) == [
+        actual_view_info = list(PropertyView.objects.values("property_id", "cycle_id", "state__city"))
+        expected_view_info = [
             {
                 "property_id": self.existing_property.id,
                 "cycle_id": self.other_cycle.id,
@@ -791,6 +790,15 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
                 "state__city": "Denver",
             },
         ]
+
+        try:
+            self.assertCountEqual(actual_view_info, expected_view_info)
+        except AssertionError:
+            print("Expected PropertyView info:")
+            print(expected_view_info)
+            print("Actual PropertyView info:")
+            print(actual_view_info)
+            raise
 
     def test_has_ali_links(self):
         # Set Up - update new state info

@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -260,6 +260,7 @@ class Organization(models.Model):
 
     created = models.DateTimeField(auto_now_add=True, null=True)
     modified = models.DateTimeField(auto_now=True, null=True)
+    max_data_charted = models.IntegerField(blank=False, null=False, default=3000)
 
     # Default preferred all meter units to kBtu
     display_meter_units = models.JSONField(default=_get_default_meter_units)
@@ -310,6 +311,7 @@ class Organization(models.Model):
 
     # Salesforce Functionality
     salesforce_enabled = models.BooleanField(default=False)
+    bb_salesforce_enabled = models.BooleanField(default=False)
 
     access_level_names = models.JSONField(default=list)
 

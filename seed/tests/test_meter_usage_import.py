@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -7,6 +7,7 @@ import json
 import os
 import pathlib
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
@@ -15,7 +16,6 @@ from django.utils.timezone import (
     get_current_timezone,
     make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 )
-from pytz import timezone
 
 from config.settings.common import TIME_ZONE
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -92,7 +92,7 @@ class MeterUsageImportTest(TestCase):
             cycle=self.cycle,
         )
 
-        self.tz_obj = timezone(TIME_ZONE)
+        self.tz_obj = ZoneInfo(TIME_ZONE)
 
     def test_import_meter_usage_file_base_case(self):
         """

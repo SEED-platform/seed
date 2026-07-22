@@ -1,15 +1,18 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from django.db import IntegrityError, connection, models
+from django.db import IntegrityError, models
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
-from psycopg2.extras import execute_values
 
 from seed.models import Property, Scenario
 from seed.models.inventory_groups import InventoryGroupMapping
+
+METER_READING_FIELDS = ["meter_id", "start_time", "end_time", "reading", "source_unit", "conversion_factor"]
+METER_READING_UPDATE_FIELDS = ["reading", "source_unit", "conversion_factor"]
+METER_READING_UNIQUE_FIELDS = ["meter", "start_time", "end_time"]
 
 
 class Meter(models.Model):
@@ -181,21 +184,18 @@ class Meter(models.Model):
         bulk_create is used.
         """
         if overlaps_possible:
-            sql = (
-                "INSERT INTO seed_meterreading(meter_id, start_time, end_time, reading, source_unit, conversion_factor) "
-                "VALUES %s "
-                "ON CONFLICT (meter_id, start_time, end_time) "
-                "DO UPDATE SET reading=excluded.reading, source_unit=excluded.source_unit, conversion_factor=excluded.conversion_factor "
-                "RETURNING reading"
-            )
-
-            with connection.cursor() as cursor:
-                execute_values(
-                    cursor,
-                    sql,
-                    source_meter.meter_readings.values(),
-                    template=f"({self.id}, %(start_time)s, %(end_time)s, %(reading)s, %(source_unit)s, %(conversion_factor)s)",
+            readings = [
+                MeterReading(
+                    meter_id=self.id,
+                    start_time=reading.start_time,
+                    end_time=reading.end_time,
+                    reading=reading.reading,
+                    source_unit=reading.source_unit,
+                    conversion_factor=reading.conversion_factor,
                 )
+                for reading in source_meter.meter_readings.all()
+            ]
+            bulk_upsert_meter_readings(readings)
         else:
             readings = {
                 MeterReading(
@@ -287,3 +287,16 @@ class MeterReading(models.Model):
 
     class Meta:
         unique_together = ("meter", "start_time", "end_time")
+
+
+def bulk_upsert_meter_readings(meter_readings):
+    meter_readings = list(meter_readings)
+    if not meter_readings:
+        return []
+
+    return MeterReading.objects.bulk_create(
+        meter_readings,
+        update_conflicts=True,
+        update_fields=METER_READING_UPDATE_FIELDS,
+        unique_fields=METER_READING_UNIQUE_FIELDS,
+    )

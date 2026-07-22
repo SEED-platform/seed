@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -22,6 +22,7 @@ from quantityfield.units import ureg
 from seed.data_importer.models import ImportFile
 from seed.lib.mcm.cleaners import date_cleaner
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
+from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.models import (
     DATA_STATE,
@@ -148,8 +149,8 @@ def post_save_property(sender, instance, created, **kwargs):
 class PropertyState(models.Model):
     """Store a single property. This contains all the state information about the property
 
-    For property_timezone, use the pytz timezone strings. The US has the following and a full
-    list can be created by calling pytz.all_timezones in Python:
+    For property_timezone, use IANA timezone strings. The US has the following and a full
+    list is available from ``zoneinfo.available_timezones()``:
         * US/Alaska
         * US/Aleutian
         * US/Arizona
@@ -938,9 +939,60 @@ class PropertyView(models.Model):
     def import_filename(self):
         """Get the import file name form the audit logs"""
         if not getattr(self, "_import_filename", None):
-            audit_log = PropertyAuditLog.objects.filter(view_id=self.pk).order_by("created").first()
+            # Tie-break on id for stable results if created timestamps are equal.
+            audit_log = PropertyAuditLog.objects.filter(view_id=self.pk).order_by("created", "id").first()
             self._import_filename = audit_log.import_filename
         return self._import_filename
+
+    def copy_to_cycle(self, cycle: Cycle, columns: list[Column]):
+        """
+        Creates a view in the give cycle with the same property and a state with given column matching
+        this view's state
+
+        columns_ids: copied column, empty array assume all columns. matching criteria will be added.
+        returns: view if created, None if already existed.
+        """
+        from seed.models.auditlog import AUDIT_USER_CREATE
+        from seed.serializers.properties import PropertyStateSerializer, PropertyStateWritableSerializer
+
+        prop = self.property
+        state = PropertyStateSerializer(self.state).data
+
+        # if view already exist, exit
+        if PropertyView.objects.filter(property=prop, cycle=cycle).count() > 0:
+            return None
+
+        # build new state dict
+        new_state_dict = {"organization": prop.organization_id, "extra_data": {}, "derived_data": {}}
+        for column in columns:
+            if column.is_extra_data:
+                new_state_dict["extra_data"][column.column_name] = state["extra_data"].get(column.column_name)
+            else:
+                new_state_dict[column.column_name] = state[column.column_name]
+
+        # create new state with chosen columns copied
+        new_property_state_serializer = PropertyStateWritableSerializer(data=new_state_dict)
+        if new_property_state_serializer.is_valid(raise_exception=True):
+            new_state = new_property_state_serializer.save()
+
+        #  Add the state to a view
+        new_view = PropertyView.objects.create(property=prop, cycle=cycle, state=new_state)
+
+        # Log this appropriately - "Import Creation" ?
+        PropertyAuditLog.objects.create(
+            organization_id=prop.organization_id,
+            parent1=None,
+            parent2=None,
+            parent_state1=None,
+            parent_state2=None,
+            state=new_state,
+            name="Copied from other cycle",
+            description="Copied from other cycle",
+            import_filename=None,
+            record_type=AUDIT_USER_CREATE,
+        )
+
+        return new_view
 
 
 @receiver(post_save, sender=PropertyView)

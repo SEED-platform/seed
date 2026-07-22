@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -22,3 +22,10 @@ class UserLoginTest(TestCase):
         response = self.client.post(self.login_url, self.user_details, secure=True)
         self.assertTrue(response.status_code == 302)
         self.assertTrue(response.url == "/account/login/")
+
+    def test_two_factor_login_template_has_expected_username_field(self):
+        response = self.client.get(reverse("login"), secure=True)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="id_auth-username"')
+        self.assertNotContains(response, 'name="username"')

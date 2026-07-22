@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 The Reader module is intended to contain only code which reads data
@@ -35,7 +35,6 @@ from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 
 ROW_DELIMITER = "|#*#|"
 SEED_GENERATED_HEADER_PREFIX = "SEED Generated Header"
-
 
 _log = logging.getLogger(__name__)
 
@@ -156,7 +155,7 @@ class GreenButtonParser:
                         source_id = re.sub(r"/v./", "", href)
 
                         # pass in the reading ID to determining meter_type etc.
-                        res = re.findall("MeterReading/\d*", href)
+                        res = re.findall(r"MeterReading/\d*", href)
                         meter_reading = None
                         if res:
                             meter_reading = res[0]

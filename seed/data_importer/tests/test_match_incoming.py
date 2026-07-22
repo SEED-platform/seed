@@ -1,14 +1,13 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
 import os.path as osp
-from datetime import date, datetime
+from datetime import UTC, date, datetime
 from unittest.mock import patch
 
-import pytz
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from config.settings.common import BASE_DIR
@@ -1198,8 +1197,8 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
             source_id="My Original Meter",
         )
         MeterReading.objects.create(
-            start_time=datetime.now(tz=pytz.UTC),
-            end_time=datetime.now(tz=pytz.UTC),
+            start_time=datetime.now(tz=UTC),
+            end_time=datetime.now(tz=UTC),
             reading=123,
             meter_id=meter.id,
             conversion_factor=1,

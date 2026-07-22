@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -27,7 +27,8 @@ class EventViewSet(viewsets.ViewSet, OrgMixin):
         page = request.query_params.get("page", 1)
         per_page = request.query_params.get("per_page", 100000)
 
-        events = Event.objects.filter(property_id=property_pk).order_by("-created").select_subclasses()
+        # Tie-break on id so event ordering is deterministic on created ties.
+        events = Event.objects.filter(property_id=property_pk).order_by("-created", "-id").select_subclasses()
 
         paginator = Paginator(events, per_page)
         try:

@@ -1,12 +1,11 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-from datetime import datetime
+from datetime import UTC, datetime
 
-import pytz
 from django.test import TestCase
 from django.urls import reverse
 from pint import UnitRegistry
@@ -283,19 +282,19 @@ class DataViewEvaluationTests(AccessLevelBaseTestCase, TestCase):
         super().setUp()
 
         self.cycle1 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
-            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=UTC)
         )
         self.cycle2 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
-            name="Cycle B", end=datetime(2021, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle B", end=datetime(2021, 1, 1, tzinfo=UTC)
         )
         self.cycle3 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
-            name="Cycle C", end=datetime(2020, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle C", end=datetime(2020, 1, 1, tzinfo=UTC)
         )
         self.cycle4 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
-            name="Cycle D", end=datetime(2019, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle D", end=datetime(2019, 1, 1, tzinfo=UTC)
         )
         self.cycle5 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
-            name="Cycle F", end=datetime(2018, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle F", end=datetime(2018, 1, 1, tzinfo=UTC)
         )
 
         # generate columns
@@ -896,13 +895,13 @@ class DataViewInventoryTests(TestCase):
         self.org, _, _ = create_organization(self.superuser, "test-organization-a")
         self.client.login(**user_details)
         self.cycle1 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
-            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=UTC)
         )
         self.cycle2 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
-            name="Cycle B", end=datetime(2021, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle B", end=datetime(2021, 1, 1, tzinfo=UTC)
         )
         self.cycle3 = FakeCycleFactory(organization=self.org, user=self.superuser).get_cycle(
-            name="Cycle C", end=datetime(2020, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle C", end=datetime(2020, 1, 1, tzinfo=UTC)
         )
 
         self.label1 = Label.objects.create(name="label1", super_organization=self.org, color="red")
@@ -1148,7 +1147,7 @@ class DataViewViewSetPermissionsTests(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
         self.cycle = FakeCycleFactory(organization=self.org, user=self.root_owner_user).get_cycle(
-            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=pytz.UTC)
+            name="Cycle A", end=datetime(2022, 1, 1, tzinfo=UTC)
         )
         self.office_filter_group = FilterGroup.objects.create(
             name="office",

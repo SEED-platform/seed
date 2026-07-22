@@ -1,17 +1,16 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import copy
 import logging
-from datetime import timedelta
+from datetime import date, datetime, time, timedelta
 
-import dateutil.parser
 from celery import chain, shared_task
 from django.core.files.base import ContentFile
 from django.db.models import Count
-from django.utils.timezone import make_aware
+from django.utils.timezone import is_naive, make_aware
 
 from seed.analysis_pipelines.better.buildingsync import SEED_TO_BSYNC_RESOURCE_TYPE, _build_better_input
 from seed.analysis_pipelines.better.client import BETTERClient
@@ -37,6 +36,19 @@ from seed.analysis_pipelines.utils import calendarize_and_extrapolate_meter_read
 from seed.models import Analysis, AnalysisInputFile, AnalysisMessage, AnalysisPropertyView, Column, Cycle, Meter
 
 logger = logging.getLogger(__name__)
+
+
+def _as_aware_datetime(value):
+    if isinstance(value, str):
+        value = datetime.fromisoformat(value)
+
+    if isinstance(value, date) and not isinstance(value, datetime):
+        value = datetime.combine(value, time.min)
+
+    if is_naive(value):
+        return make_aware(value)
+
+    return value
 
 
 def _validate_better_config(analysis):
@@ -153,14 +165,14 @@ def get_meter_readings(property_id, preprocess_meters, config):
 
     try:
         if config.get("select_meters") == "date_range":
-            value1 = dateutil.parser.parse(config["meter"]["start_date"])
-            value2 = dateutil.parser.parse(config["meter"]["end_date"])
+            value1 = _as_aware_datetime(config["meter"]["start_date"])
+            value2 = _as_aware_datetime(config["meter"]["end_date"])
             # add a day to get the timestamps to include the last day otherwise timestamp is 00:00:00
             value2 = value2 + timedelta(days=1)
         elif config.get("select_meters") == "select_cycle":
             cycle = Cycle.objects.get(pk=config["cycle_id"])
-            value1 = make_aware(dateutil.parser.parse(cycle.start.isoformat()))
-            value2 = make_aware(dateutil.parser.parse(cycle.end.isoformat())) + timedelta(days=1)
+            value1 = _as_aware_datetime(cycle.start)
+            value2 = _as_aware_datetime(cycle.end) + timedelta(days=1)
 
     except Exception as err:
         raise AnalysisPipelineError(f"Analysis configuration error: invalid dates selected for meter readings: {err}")

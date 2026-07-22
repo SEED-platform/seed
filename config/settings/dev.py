@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -13,6 +13,10 @@ DEBUG = True
 compress = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:4200",
+    "http://127.0.0.1:4200",
+]
 
 COMPRESS_ENABLED = compress
 COMPRESS_OFFLINE = compress
@@ -32,7 +36,7 @@ DATABASES = {
     },
 }
 
-MIDDLEWARE = ("seed.utils.nocache.DisableClientSideCachingMiddleware", *MIDDLEWARE)  # noqa: F405
+MIDDLEWARE = ("seed.utils.nocache.DisableClientSideCachingMiddleware", *MIDDLEWARE)
 
 LOGGING = {
     "version": 1,

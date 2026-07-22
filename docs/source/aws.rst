@@ -22,22 +22,18 @@ Ubuntu server 18.04 LTS
 
     sudo apt-get update
     sudo apt-get upgrade
-    sudo apt-get install -y libpq-dev python-dev python-pip libatlas-base-dev \
+    sudo apt-get install -y libpq-dev python-dev libatlas-base-dev \
     gfortran build-essential g++ npm libxml2-dev libxslt1-dev git mercurial \
-    libssl-dev libffi-dev curl uwsgi-core uwsgi-plugin-python
+    libssl-dev libffi-dev curl nginx
 
 
-PostgreSQL and Redis are not included in the above commands. For a quick installation on AWS it
-is okay to install PostgreSQL and Redis locally on the AWS instance. If a more permanent and
-scalable solution, it is recommended to use AWS's hosted Redis (ElastiCache) and PostgreSQL service.
+PostgreSQL and Redis are not included in the above commands. Use AWS hosted
+services, such as RDS for PostgreSQL and ElastiCache for Redis, or run the
+repository's Docker Compose services with the configured PostgreSQL/PostGIS/
+TimescaleDB and Redis images. Do not install PostgreSQL, PostGIS, TimescaleDB,
+or Redis directly on the host for a new SEED deployment.
 
 .. note:: postgresql ``>=9.4`` is required to support `JSON Type`_
-
-.. code-block:: console
-
-    # To install PostgreSQL and Redis locally
-    sudo apt-get install redis-server
-    sudo apt-get install postgresql postgresql-contrib
 
 .. _`JSON Type`: https://www.postgresql.org/docs/9.4/datatype-json.html
 
@@ -60,14 +56,14 @@ Clone the **SEED** repository from **github**
 
     $ git clone git@github.com:SEED-platform/seed.git
 
-enter the repo and install the python dependencies from `requirements`_
+enter the repo and sync the Python environment with `uv`_
 
-.. _requirements: https://github.com/SEED-platform/seed/blob/main/requirements/aws.txt
+.. _uv: https://docs.astral.sh/uv/
 
 .. code-block:: console
 
     $ cd seed
-    $ sudo pip install -r requirements/aws.txt
+    $ uv sync --frozen --no-dev
 
 
 JavaScript Dependencies
@@ -99,7 +95,7 @@ instance you have manually installed within your infrastructure.
     # Database
     DATABASES = {
         'default': {
-            'ENGINE':'django.db.backends.postgresql_psycopg2',
+            'ENGINE':'django.contrib.gis.db.backends.postgis',
             'NAME': 'seed',
             'USER': '',
             'PASSWORD': '',

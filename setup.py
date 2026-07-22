@@ -1,5 +1,5 @@
 """
-SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
@@ -22,7 +22,7 @@ setup(
     packages=find_packages(),
     url="seed-platform.org",
     license="4-Clause BSD",
-    author="NREL/LBNL",
+    author="NLR/LBNL",
     author_email="info@seed-platform.org",
     description="The SEED Platform is a web-based application that helps organizations easily manage data on the energy performance of large groups of buildings.",
 )

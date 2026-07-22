@@ -13,29 +13,11 @@ on:
         required: true
 
 jobs:
-  publish:
-    runs-on: ubuntu-22.04
+  prepare:
+    runs-on: ubuntu-24.04
+    outputs:
+      seed_tags: ${{ steps.parse_tag.outputs.seed_tags }}
     steps:
-      - uses: actions/checkout@v5
-        with:
-          fetch-depth: 0
-          submodules: true
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          # using `v2` in key to clear old cache due to errors
-          # See: https://stackoverflow.com/questions/63521430/clear-cache-in-github-actions
-          key: ${{ runner.os }}-buildx-v2-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-v2-
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Parse tag
         id: parse_tag
         run: |
@@ -58,11 +40,89 @@ jobs:
             exit 1
           fi
           echo "seed_tags=${SEED_TAG}" >> $GITHUB_OUTPUT
-      - name: Build and push
+
+  build:
+    needs: prepare
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    outputs:
+      # Each matrix leg writes only its own key; the empty value from the
+      # other leg does not overwrite it.
+      digest-amd64: ${{ steps.export.outputs.digest-amd64 }}
+      digest-arm64: ${{ steps.export.outputs.digest-arm64 }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Cache Docker ${{ matrix.arch }} layers
+        uses: actions/cache@v6
+        with:
+          path: /tmp/.buildx-cache-${{ matrix.arch }}
+          # using `v2` in key to clear old cache due to errors
+          # See: https://stackoverflow.com/questions/63521430/clear-cache-in-github-actions
+          key: ${{ runner.os }}-buildx-${{ matrix.arch }}-v2-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.arch }}-v2-
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push ${{ matrix.arch }} image by digest
         id: docker_build
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
-          push: true
-          tags: ${{ steps.parse_tag.outputs.seed_tags }}
+          platforms: linux/${{ matrix.arch }}
+          cache-from: type=local,src=/tmp/.buildx-cache-${{ matrix.arch }}
+          cache-to: type=local,dest=/tmp/.buildx-cache-${{ matrix.arch }},mode=max
+          outputs: type=image,name=seedplatform/seed,push-by-digest=true,name-canonical=true,push=true
+
+      - name: Export digest
+        id: export
+        run: echo "digest-${{ matrix.arch }}=${{ steps.docker_build.outputs.digest }}" >> "$GITHUB_OUTPUT"
+
+  publish:
+    needs: [prepare, build]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Create and push multi-arch manifests
+        env:
+          SEED_TAGS: ${{ needs.prepare.outputs.seed_tags }}
+          AMD64_DIGEST: ${{ needs.build.outputs.digest-amd64 }}
+          ARM64_DIGEST: ${{ needs.build.outputs.digest-arm64 }}
+        run: |
+          image_refs=(
+            "seedplatform/seed@${AMD64_DIGEST}"
+            "seedplatform/seed@${ARM64_DIGEST}"
+          )
+
+          IFS=',' read -ra tags <<< "${SEED_TAGS}"
+          for tag in "${tags[@]}"; do
+            docker buildx imagetools create \
+              --tag "${tag}" \
+              "${image_refs[@]}"
+          done

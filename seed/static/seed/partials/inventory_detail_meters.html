@@ -90,10 +90,15 @@
           Source ID".</span
         >
       </div>
+      <div class="text-info row pull-right">
+        <span translate
+          >Meters Chart available for Month and Year Interval Data</span
+        >
+      </div>
     </div>
   </div>
 
-  <div class="section_content">
+  <div class="section_content" style="margin-left: 20px; margin-right: 20px">
     <h4>Meters</h4>
     <div id="meters-grid-container" ng-show="has_meters">
       <div
@@ -105,6 +110,17 @@
     </div>
     <div ng-hide="has_meters">
       <div class="jumbotron text-center" translate>No Data</div>
+    </div>
+
+    <div class="section_content" ng-hide="interval.selected == 'Exact'">
+      <h4>Meters Chart</h4>
+      <div
+        class="graph"
+        style="margin-left: 5vw; margin-right: 5vw"
+        ng-hide="interval.selected == 'Exact'"
+      >
+        <canvas id="program-overview-chart"></canvas>
+      </div>
     </div>
 
     <h4>Readings</h4>
