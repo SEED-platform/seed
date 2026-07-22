@@ -8,6 +8,30 @@ on:
       - 'main'
 
 jobs:
+  docker-arm-build:
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Cache Docker ARM layers
+        uses: actions/cache@v6
+        with:
+          path: /tmp/.buildx-cache-arm64
+          key: ${{ runner.os }}-buildx-arm64-v1-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-arm64-v1-
+      - name: Build Docker production image for ARM
+        run: |
+          /usr/bin/docker buildx build \
+            --progress=plain \
+            --cache-from type=local,src=/tmp/.buildx-cache-arm64 \
+            --cache-to type=local,dest=/tmp/.buildx-cache-arm64,mode=max \
+            --file Dockerfile \
+            .
+
   # Currently GH Actions provides no simple method for "sharing"
   # our setup steps. Ideally this would be in an action, but we would need to use
   # actions inside of our actions which you cannot currently do (see https://github.com/actions/runner/issues/438)
