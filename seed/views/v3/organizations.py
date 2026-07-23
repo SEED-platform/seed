@@ -195,10 +195,12 @@ def _dict_org(request, organizations):
             "public_feed_labels": o.public_feed_labels,
             "public_geojson_enabled": o.public_geojson_enabled,
             "default_reports_x_axis_options": ColumnSerializer(
-                Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_x_axis=True), many=True
+                Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_x_axis=True).order_by("id"),
+                many=True,
             ).data,
             "default_reports_y_axis_options": ColumnSerializer(
-                Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_y_axis=True), many=True
+                Column.objects.filter(organization=o, table_name="PropertyState", is_option_for_reports_y_axis=True).order_by("id"),
+                many=True,
             ).data,
             "require_2fa": o.require_2fa,
             "max_data_charted": o.max_data_charted,

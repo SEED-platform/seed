@@ -52,12 +52,12 @@ class TestApi(TestCase):
         self.auth_string = f"Basic {auth_string.decode('utf-8')}"
         self.headers = {"Authorization": self.auth_string}
 
-        self.default_reports_x_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState")[0:3]
+        self.default_reports_x_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState").order_by("id")[0:3]
         for c in self.default_reports_x_axis_options:
             c.is_option_for_reports_x_axis = True
             c.save()
 
-        self.default_reports_y_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState")[3:6]
+        self.default_reports_y_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState").order_by("id")[3:6]
         for c in self.default_reports_y_axis_options:
             c.is_option_for_reports_y_axis = True
             c.save()
@@ -206,8 +206,8 @@ class TestApi(TestCase):
         )
 
         # change axis
-        new_default_reports_x_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState")[10:13]
-        new_default_reports_y_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState")[13:16]
+        new_default_reports_x_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState").order_by("id")[10:13]
+        new_default_reports_y_axis_options = Column.objects.filter(organization=self.org, table_name="PropertyState").order_by("id")[13:16]
 
         url = reverse_lazy("api:v3:organizations-save-settings", args=[self.org.id]) + f"?organization_id={self.org.id}"
         res = self.client.put(
