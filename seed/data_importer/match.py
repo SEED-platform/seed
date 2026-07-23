@@ -725,7 +725,12 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             errored_new_states = []
             if len(promote_state_ids) > 0:
                 batch_size = math.ceil(len(promote_state_ids) / 100)
-                promote_states = StateClass.objects.filter(pk__in=promote_state_ids)
+                # Order by id so states are promoted (and re-saved by promote(),
+                # bumping their auto_now `updated` field) in a deterministic order.
+                # Downstream match/merge logic breaks priority ties on `updated`,
+                # so a non-deterministic promotion order otherwise makes the
+                # surviving merged state non-deterministic (flaky).
+                promote_states = StateClass.objects.filter(pk__in=promote_state_ids).order_by("id")
                 for idx, state in enumerate(promote_states):
                     created_view = state.promote(cycle)
                     if created_view is None:
