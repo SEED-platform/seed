@@ -9,7 +9,7 @@ name: Dump SF secrets (manual)
 # Delete this workflow (and consider rotating the secrets) once you have them.
 
 on:
-  workflow_dispatch:
+  push:
 
 jobs:
   dump:
