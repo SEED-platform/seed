@@ -134,6 +134,40 @@ jobs:
         if: ${{ always() }}
         run: docker logs seed_web
 
+  # Lightweight, standalone Salesforce connectivity check. Runs only the
+  # SimpleTestCase in seed/tests/test_salesforce_connection.py, which needs no
+  # database/migrations/docker -- just the Python deps + GDAL for app loading.
+  # This isolates the "can we talk to Salesforce?" signal from the full suite so
+  # it is easy to see whether connectivity works on a given branch. When the
+  # SF_* credentials are unavailable (e.g. Dependabot PRs, forks) the test skips
+  # and the job passes, making that no-op state obvious in the checks list.
+  salesforce-connection:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version-file: '.python-version'
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+      - name: Install deps
+        run: |
+          uv sync --frozen
+          sudo apt-get update
+          sudo apt-get install -y gdal-bin
+      - name: Setup config
+        run: cp config/settings/local_untracked.py.dist config/settings/local_untracked.py
+      - name: Salesforce connection test
+        env:
+          SF_INSTANCE: ${{ secrets.SF_INSTANCE }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+          SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
+          SF_DOMAIN: ${{ vars.SF_DOMAIN }}
+          SF_SECURITY_TOKEN: ${{ secrets.SF_SECURITY_TOKEN }}
+          DJANGO_LOG_LEVEL: ERROR
+        run: uv run pytest seed/tests/test_salesforce_connection.py -v
+
   formatting:
     runs-on: ubuntu-24.04
     strategy:
