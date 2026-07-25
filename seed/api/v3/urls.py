@@ -16,6 +16,7 @@ from seed.views.v3.audit_template import AuditTemplateViewSet
 from seed.views.v3.audit_template_configs import AuditTemplateConfigViewSet
 from seed.views.v3.bb_salesforce import BBSalesforceViewSet
 from seed.views.v3.bb_salesforce_configs import BBSalesforceConfigsViewSet
+from seed.views.v3.benchmark_data import BenchmarkDataViewSet
 from seed.views.v3.building_files import BuildingFileViewSet
 from seed.views.v3.cache_entries import CacheEntryViewSet
 from seed.views.v3.column_list_profiles import ColumnListProfileViewSet
@@ -121,6 +122,7 @@ api_v3_router.register(r"property_view_labels", PropertyViewLabelViewSet, basena
 api_v3_router.register(r"property_views", PropertyViewViewSet, basename="property_views")
 api_v3_router.register(r"report_configurations", ReportConfigurationViewSet, basename="report_configurations")
 api_v3_router.register(r"bb_salesforce", BBSalesforceViewSet, basename="bb_salesforce")
+api_v3_router.register(r"benchmark_data", BenchmarkDataViewSet, basename="benchmark_data")
 api_v3_router.register(r"salesforce_configs", SalesforceConfigViewSet, basename="salesforce_configs")
 api_v3_router.register(r"salesforce_mappings", SalesforceMappingViewSet, basename="salesforce_mappings")
 api_v3_router.register(r"tax_lot_properties", TaxLotPropertyViewSet, basename="tax_lot_properties")
