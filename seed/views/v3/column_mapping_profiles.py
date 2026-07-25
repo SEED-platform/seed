@@ -189,7 +189,9 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         # sort the mappings by the to_field
         sorted_mappings = sorted(profile.mappings, key=lambda m: m["to_field"].casefold())
         for map in sorted_mappings:
-            writer.writerow([map["from_field"], map["from_units"], map["to_table_name"], map["to_field"], map.get("is_omitted", False)])
+            writer.writerow(
+                [map["from_field"], map.get("from_units", ""), map["to_table_name"], map["to_field"], map.get("is_omitted", False)]
+            )
 
         return response
 
