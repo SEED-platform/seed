@@ -187,7 +187,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
         writer.writerow(["Raw Columns", "units", "SEED Table", "SEED Columns", "isOmitted"])
 
         # sort the mappings by the to_field
-sorted_mappings = sorted(profile.mappings, key=lambda m: (m.get("to_field") or "").casefold())
+        sorted_mappings = sorted(profile.mappings, key=lambda m: (m.get("to_field") or "").casefold())
         for map in sorted_mappings:
             writer.writerow(
                 [
