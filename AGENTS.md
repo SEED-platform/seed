@@ -33,13 +33,13 @@ Django v6, and Postgres 18 upgrades) and is not a safe base for new work despite
   `main`: `gh repo view SEED-platform/seed --json defaultBranchRef` (or check
   `git remote show origin` under "HEAD branch"). As of this writing it is `develop`.
 - Always branch from an up-to-date `origin/develop` (`git fetch origin develop && git checkout -b
-  <branch> origin/develop`), not from a possibly-stale local `main`. A local `main` that hasn't
+<branch> origin/develop`), not from a possibly-stale local `main`. A local `main` that hasn't
   been pulled recently can be far behind without any error or warning — branching from it silently
   drags a huge, unrelated diff into your PR (e.g. files that look "deleted" simply because your
   stale base never had them).
 - After pushing, verify the PR actually landed with the base you expect and a minimal diff:
   `gh pr view <number> --json baseRefName,additions,deletions,changedFiles`. `gh pr create` targets
-  the repo's *default* branch automatically, which may silently differ from whatever local branch
+  the repo's _default_ branch automatically, which may silently differ from whatever local branch
   you happened to branch from.
 - This guidance is specific to **this** repo (`SEED-platform/seed`). The `ng_seed/seed-angular`
   submodule's default branch is `main` — verify independently there rather than assuming the same
