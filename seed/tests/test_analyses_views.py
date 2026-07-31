@@ -11,8 +11,14 @@ from django.urls import reverse_lazy
 from django.utils import timezone as tz
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Analysis, AnalysisOutputFile, AnalysisPropertyView, Meter, MeterReading
-from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory
+from seed.models import Analysis, AnalysisOutputFile, AnalysisPropertyView, Meter, MeterReading, PropertyView, TaxLotView
+from seed.test_helpers.fake import (
+    FakeCycleFactory,
+    FakePropertyFactory,
+    FakePropertyStateFactory,
+    FakeTaxLotFactory,
+    FakeTaxLotStateFactory,
+)
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -263,6 +269,40 @@ class TestAnalysesView(TestCase):
         self.assertEqual(result["status"], "success")
         self.assertEqual(result["view"]["id"], self.analysis_property_view_d.id)
         self.assertEqual(len(result["view"]["output_files"]), 0)
+
+    def test_used_columns_includes_property_fields_alongside_taxlot_fields(self):
+        """Regression test for a bug where taxlot non-null counts completely overwrote (instead
+        of merging with) property non-null counts, so used_columns effectively never returned any
+        property fields for an org that also had tax lot data. Also covers a related bug where
+        merging the two tables' counts into a single dict keyed only by column_name let one
+        table's count clobber the other's for identically named columns (e.g. address_line_1,
+        which exists on both PropertyState and TaxLotState)."""
+        property_state = self.property_state_factory.get_property_state(site_eui=100, address_line_1="123 Main St")
+        PropertyView.objects.create(property=self.property_a, cycle=self.cycle_a, state=property_state)
+
+        taxlot_factory = FakeTaxLotFactory(organization=self.org)
+        taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
+        taxlot = taxlot_factory.get_taxlot()
+        # left null on purpose -- the property's address_line_1 (above) is populated, so this
+        # checks that the two tables' non-null counts for the same column name stay independent
+        taxlot_state = taxlot_state_factory.get_taxlot_state(jurisdiction_tax_lot_id="123", address_line_1=None)
+        TaxLotView.objects.create(taxlot=taxlot, cycle=self.cycle_a, state=taxlot_state)
+
+        response = self.client.get(f"/api/v3/analyses/used_columns/?organization_id={self.org.pk}")
+        self.assertEqual(response.status_code, 200)
+        result = json.loads(response.content)
+        columns = result["columns"]
+
+        property_columns = {c["column_name"] for c in columns if c["table_name"] == "PropertyState"}
+        taxlot_columns = {c["column_name"] for c in columns if c["table_name"] == "TaxLotState"}
+
+        # property fields must survive even though tax lot views also exist for the org
+        self.assertIn("site_eui", property_columns)
+        self.assertIn("address_line_1", property_columns)
+        # the tax lot's own address_line_1 is null, so it must not appear as a tax lot column
+        # even though the identically named property column does have data
+        self.assertNotIn("address_line_1", taxlot_columns)
+        self.assertIn("jurisdiction_tax_lot_id", taxlot_columns)
 
 
 class TestAnalysesViewPermissions(AccessLevelBaseTestCase):

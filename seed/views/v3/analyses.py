@@ -384,10 +384,14 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=False, methods=["get"])
     def used_columns(self, request):
         org_id = self.get_organization(request)
-        access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+        # Use the org's root AL instance (not the requester's own, possibly narrower, AL instance)
+        # -- this endpoint reports which columns have data anywhere "for an org" (see docstring),
+        # and its two callers (Organization Sharing, Data Quality Rules admin) are both org-wide
+        # settings screens, not scoped to a branch of the org's access level hierarchy.
+        access_level_instance = Organization.objects.get(pk=org_id).root
 
-        num_of_nonnulls_by_column_name = {}
-        tnum_of_nonnulls_by_column_name = {}
+        property_nonnulls_by_column_name = {}
+        taxlot_nonnulls_by_column_name = {}
 
         columns = Column.objects.none()
         tcolumns = Column.objects.none()
@@ -404,7 +408,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 column_name__in=EXCLUDED_API_FIELDS
             )
 
-            num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, PropertyState, columns)
+            property_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, PropertyState, columns)
 
         # Taxlots
         tstate_ids = TaxLotView.objects.filter(
@@ -418,16 +422,22 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             tcolumns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="TaxLotState").exclude(
                 column_name__in=EXCLUDED_API_FIELDS
             )
-            num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(tstate_ids, TaxLotState, tcolumns)
+            taxlot_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(tstate_ids, TaxLotState, tcolumns)
 
-        # properties and taxlots together
-        num_of_nonnulls_by_column_name.update(tnum_of_nonnulls_by_column_name)
+        # Properties and taxlots together. Non-null counts are kept in separate per-table dicts
+        # (rather than merged into one dict keyed only by column_name) because PropertyState and
+        # TaxLotState share several identically named columns (e.g. "address_line_1", "city",
+        # "ubid") -- merging them into a single dict would let one table's count silently clobber
+        # the other's for those shared names.
         columns = columns | tcolumns
-
-        # keep only non-zero columns (return full columns)
-        nonzero_cols = [k for k, v in num_of_nonnulls_by_column_name.items() if v != 0]
-
-        columns_to_return = [c for c in columns if c.column_name in nonzero_cols]
+        columns_to_return = [
+            c
+            for c in columns
+            if (property_nonnulls_by_column_name if c.table_name == "PropertyState" else taxlot_nonnulls_by_column_name).get(
+                c.column_name, 0
+            )
+            != 0
+        ]
         # remove "excluded columns that shouldn't be returned":
         columns_to_return = [c for c in columns_to_return if c.column_name not in Column.COLUMN_EXCLUDE_FIELDS]
 
