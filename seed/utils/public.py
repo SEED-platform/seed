@@ -122,8 +122,8 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
             if isinstance(value, pint.Quantity):
                 # keep the value unit-less (a plain number); put the units in a sibling
                 # "<name>_units" field instead of embedding them in the value itself
-                units = str(value.u)
-                value = value.m
+                units = str(value.units)
+                value = value.magnitude
             if isinstance(value, datetime.datetime):
                 # convert datetime to readable format
                 value = value.strftime("%Y/%m/%d, %H:%M:%S")
