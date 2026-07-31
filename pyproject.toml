@@ -94,15 +94,15 @@ dev = [
     "vcrpy==8.3.0",
     "Faker~=40.15.0",
     "mock==5.2.0",
-    "hypothesis~=6.156.6",
+    "hypothesis~=6.161.1",
     # Coverage / reporting
     "coverage==7.15.2",
     "coveralls==4.1.0",
     # Local/CI orchestration
-    "tox-uv-bare==1.35.2",
+    "tox-uv-bare==1.36.0",
     "psutil==7.2.2",
     # Static code analysis / hooks
-    "pre-commit>=4.6.0",
+    "pre-commit>=4.6.1",
     # Documentation & spelling
     "Sphinx==9.1.0",
     "sphinxcontrib-spelling==8.0.2",
