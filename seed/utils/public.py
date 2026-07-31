@@ -118,14 +118,19 @@ def _add_states_to_data(base_url, state_class, view_string, page, per_page, labe
                 value = getattr(state, name, None)
             else:
                 value = state.extra_data.get(name, None)
+            units = None
             if isinstance(value, pint.Quantity):
-                # convert pint to string with units (json cannot display exponents)
-                value = f"{value.m} {value.u}"
+                # keep the value unit-less (a plain number); put the units in a sibling
+                # "<name>_units" field instead of embedding them in the value itself
+                units = str(value.u)
+                value = value.m
             if isinstance(value, datetime.datetime):
                 # convert datetime to readable format
                 value = value.strftime("%Y/%m/%d, %H:%M:%S")
 
             state_data[name] = value
+            if units is not None:
+                state_data[f"{name}_units"] = units
 
         json_link = f"{base_url}api/v3/{'properties' if isinstance(state, PropertyState) else 'taxlots'}/{view.id}/?organization_id={view.cycle.organization.id}"
         html_link = f"{base_url}app/#/{'properties' if isinstance(state, PropertyState) else 'taxlots'}/{view.id}"
