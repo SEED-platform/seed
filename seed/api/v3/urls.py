@@ -188,7 +188,10 @@ property_measures_router.register(r"measures", PropertyMeasureViewSet, basename=
 taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r"taxlots", lookup="taxlot")
 taxlots_router.register(r"notes", NoteViewSet, basename="taxlot-notes")
 
-public_organizations_router = routers.DefaultRouter()
+# Disable the trailing slash so the documented/shared public feed URLs (e.g.
+# "feed.json", "feed.html", "geo.json") resolve directly instead of 404ing and
+# relying on a 301 redirect to "feed.json/" etc.
+public_organizations_router = routers.DefaultRouter(trailing_slash=False)
 public_organizations_router.register(
     r"public/organizations",
     PublicOrganizationViewSet,
