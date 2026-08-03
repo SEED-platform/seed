@@ -65,6 +65,12 @@ class GoalSerializer(serializers.ModelSerializer):
         if len(unique_columns) < len([column for column in eui_columns if column is not None]):
             raise ValidationError("Columns must be unique.")
 
+        # partner approval must always record the approving user
+        approval = data.get("partner_note_approval", getattr(self.instance, "partner_note_approval", False))
+        approval_user = data.get("partner_note_approval_user", getattr(self.instance, "partner_note_approval_user", None))
+        if approval and approval_user is None:
+            raise ValidationError({"partner_note_approval_user": "An approving user is required when partner_note_approval is True."})
+
         return data
 
     def get_column_name(self, column):

@@ -364,6 +364,46 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert errors["eui_column1"] == ['Invalid pk "-1" - object does not exist.']
         assert errors["baseline_cycle"] == ['Invalid pk "-1" - object does not exist.']
 
+    def test_partner_approval_always_stores_user(self):
+        """Partner approval must always record the approving user — never null."""
+        from seed.lib.superperms.orgs.models import OrganizationUser
+
+        self.login_as_root_member()
+        url = reverse_lazy("api:v3:goals-detail", args=[self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        org_user = OrganizationUser.objects.get(user=self.root_member_user, organization=self.org)
+
+        # Approve with the org user ID
+        goal_data = {
+            "partner_note_approval": True,
+            "partner_note_approval_user": org_user.id,
+        }
+        response = self.client.put(url, data=json.dumps(goal_data), content_type="application/json")
+        assert response.status_code == 200
+        goal = response.json()
+        assert goal["partner_note_approval"] is True
+        assert goal["partner_note_approval_user"] == org_user.id, "Approval user must be recorded when approving"
+        assert "partner_note_approval_user_name" in goal, "Serializer must include partner_note_approval_user_name"
+        assert goal["partner_note_approval_user_name"], "partner_note_approval_user_name must be non-empty"
+
+        # Clear approval — user reference should be nulled out
+        goal_data = {
+            "partner_note_approval": False,
+            "partner_note_approval_user": None,
+        }
+        response = self.client.put(url, data=json.dumps(goal_data), content_type="application/json")
+        assert response.status_code == 200
+        goal = response.json()
+        assert goal["partner_note_approval"] is False
+        assert goal["partner_note_approval_user"] is None
+
+        # Approving without a user should be rejected
+        goal_data = {
+            "partner_note_approval": True,
+            "partner_note_approval_user": None,
+        }
+        response = self.client.put(url, data=json.dumps(goal_data), content_type="application/json")
+        assert response.status_code == 400, "Approving without a user should be rejected"
+
     def test_goal_note_update(self):
         goal_note = GoalNote.objects.get(goal_id=self.root_cycle_goal.goal.id, property_id=self.property4)
         assert goal_note.question is None
