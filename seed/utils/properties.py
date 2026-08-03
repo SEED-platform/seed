@@ -147,26 +147,37 @@ def properties_across_cycles(org_id, ali, profile_id, cycle_ids=[]):
         except ColumnListProfile.DoesNotExist:
             show_columns = None
 
-    results = {}
-    for cycle_id in cycle_ids:
-        # get -Views for this Cycle
-        property_views = (
-            PropertyView.objects.select_related("property", "state", "cycle")
-            .filter(
-                property__organization_id=org_id,
-                cycle_id=cycle_id,
-                property__access_level_instance__lft__gte=ali.lft,
-                property__access_level_instance__rgt__lte=ali.rgt,
-            )
-            .order_by("id")
+    # Normalize to ints up front so pre-initialized keys below always match the cycle_id
+    # values looked up from the database later, regardless of what type the caller passed.
+    cycle_ids = [int(cycle_id) for cycle_id in cycle_ids]
+    results = {cycle_id: [] for cycle_id in cycle_ids}
+    if not cycle_ids:
+        return results
+
+    # Fetch every PropertyView across all requested cycles in a single query and run
+    # TaxLotProperty.serialize() once for the whole batch, instead of once per cycle. The
+    # previous per-cycle loop re-ran serialize()'s internal `__in` sub-queries (meters,
+    # notes, merged-state audit log, access level paths, related tax lot views, etc.) and
+    # re-fetched the (unchanging) organization row once per selected cycle - the more
+    # cycles requested, the more redundant work was done for no benefit.
+    property_views = list(
+        PropertyView.objects.select_related("property", "state", "cycle")
+        .filter(
+            property__organization_id=org_id,
+            cycle_id__in=cycle_ids,
+            property__access_level_instance__lft__gte=ali.lft,
+            property__access_level_instance__rgt__lte=ali.rgt,
         )
+        .order_by("id")
+    )
+    cycle_id_by_view_id = {view.id: view.cycle_id for view in property_views}
 
-        related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)
+    related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)
 
-        org = Organization.objects.get(pk=org_id)
-        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
-
-        results[cycle_id] = unit_collapsed_results
+    org = Organization.objects.get(pk=org_id)
+    for result in related_results:
+        cycle_id = cycle_id_by_view_id[result["property_view_id"]]
+        results[cycle_id].append(apply_display_unit_preferences(org, result))
 
     return results
 
