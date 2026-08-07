@@ -22,7 +22,7 @@ dependencies = [
     "django-compressor==4.6.0",
     "django-extensions==4.1",
     "django-model-utils==5.0.0",
-    "django-treebeard==5.3.0",
+    "django-treebeard==7.0.0",
     # Date / time
     "python-dateutil==2.9.0.post0",
     # Units
@@ -33,11 +33,11 @@ dependencies = [
     "djangorestframework==3.17.1",
     "djangorestframework-simplejwt==5.5.1",
     "drf-yasg==1.21.15",
-    "drf-nested-routers==0.95.0",
+    "drf-nested-routers==0.95.3",
     # Email / messaging
     "django-post-office==3.11.2",
     # Observability / monitoring
-    "sentry-sdk==2.66.0",
+    "sentry-sdk==2.66.1",
     # Security / 2FA
     "django-two-factor-auth[phonenumbers]==1.18.1",
     "qrcode[pil]==8.2",
@@ -57,7 +57,7 @@ dependencies = [
     # Matching / address parsing
     "jellyfish==1.2.1",
     "street-address==0.4.0",
-    "nameparser==1.4.0",
+    "nameparser==2.0.0",
     "usaddress==0.5.16",
     # Geo / Building data
     "shapely==2.1.2",
@@ -68,7 +68,7 @@ dependencies = [
     "seed-salesforce==0.2.0",
     "simple-salesforce==1.12.10",
     # AWS / SES
-    "boto3~=1.43.50",
+    "boto3~=1.43.63",
     "django-ses==4.7.2",
     # Server
     "hypercorn==0.18.0",
