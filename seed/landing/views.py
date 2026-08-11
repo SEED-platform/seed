@@ -25,6 +25,9 @@ from django.views.decorators.csrf import csrf_protect
 from django_otp import devices_for_user
 from django_otp.plugins.otp_email.models import EmailDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 from two_factor.views.core import LoginView
 
 from seed.landing.models import SEEDUser
@@ -231,3 +234,49 @@ class CustomLoginView(LoginView):
         context.setdefault("context", {})["self_registration"] = settings.INCLUDE_ACCT_REG
 
         return context
+
+
+class TwoFactorTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Extends SimpleJWT's TokenObtainPairSerializer to enforce two-factor authentication.
+
+    Flow:
+      1. POST {username, password}            -- credentials correct, user has 2FA:
+         returns {two_factor_required: true, two_factor_method: 'email'|'token'} (HTTP 200).
+         Email devices are triggered automatically so the code is sent immediately.
+      2. POST {username, password, otp_token} -- OTP verified:
+         returns {access, refresh} (normal JWT response, HTTP 200).
+
+    Users who authenticate via API key never hit this endpoint, so they are unaffected.
+    """
+
+    otp_token = serializers.CharField(required=False, default="", allow_blank=True)
+
+    def validate(self, attrs):
+        otp_token = attrs.pop("otp_token", "") or ""
+
+        # Validate username/password via parent; raises AuthenticationFailed (401) on failure.
+        data = super().validate(attrs)
+
+        devices = list(devices_for_user(self.user))
+        if not devices:
+            return data  # no 2FA configured -- issue tokens normally
+
+        device = devices[0]
+        two_factor_method = "email" if isinstance(device, EmailDevice) else "token"
+
+        if not otp_token:
+            if isinstance(device, EmailDevice):
+                device.generate_challenge()  # generates token and emails it to the user
+            # Return a signal dict instead of tokens; the view returns this with HTTP 200.
+            return {"two_factor_required": True, "two_factor_method": two_factor_method}
+
+        if not device.verify_token(otp_token):
+            raise serializers.ValidationError({"otp_token": ["Invalid verification code."]})
+
+        return data
+
+
+class TwoFactorTokenObtainPairView(TokenObtainPairView):
+    serializer_class = TwoFactorTokenObtainPairSerializer
+
