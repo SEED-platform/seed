@@ -1222,7 +1222,7 @@ class TestBuildingSyncImportXml(DataMappingBaseTestCase):
         scenario = Scenario.objects.filter(property_state=ps)
         self.assertEqual(scenario.count(), num_bsync_scenarios)
 
-        num_bsync_measures = 71
+        num_bsync_measures = 72
         pms = PropertyMeasure.objects.filter(property_state=ps)
         self.assertEqual(pms.count(), num_bsync_measures)
 

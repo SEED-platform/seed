@@ -15,7 +15,6 @@ from django.db import IntegrityError, models, transaction
 from django.db.models import UniqueConstraint
 from django.db.models.signals import m2m_changed, post_save, pre_delete, pre_save
 from django.dispatch import receiver
-from django.forms.models import model_to_dict
 from quantityfield.fields import QuantityField
 from quantityfield.units import ureg
 
@@ -761,7 +760,11 @@ class PropertyState(models.Model):
         no_measure_scenarios = list(state2.scenarios.filter(measures__isnull=True))
         building_files = list(state2.building_files.all())
         simulations = list(Simulation.objects.filter(property_state=state2))
-        measures = list(PropertyMeasure.objects.filter(property_state=state2))
+        # Process state2 first so its version takes priority when both states contain the same measure
+        measures = [
+            *PropertyMeasure.objects.filter(property_state=state2),
+            *PropertyMeasure.objects.filter(property_state=state1),
+        ]
 
         # copy in the no measure scenarios
         for new_s in no_measure_scenarios:
@@ -791,11 +794,7 @@ class PropertyState(models.Model):
             new_sim.save()
 
         if len(measures) > 0:
-            measure_fields = [f.name for f in measures[0]._meta.fields]
-            measure_fields.remove("id")
-            measure_fields.remove("property_state")
-
-            new_items = []
+            measure_keys = set()
 
             # Create a list of scenarios and measures to reconstruct
             # {
@@ -804,12 +803,18 @@ class PropertyState(models.Model):
             # }
             scenario_measure_map = {}
             for measure in measures:
-                test_dict = model_to_dict(measure, fields=measure_fields)
-
-                if test_dict in new_items:
+                measure_key = (
+                    measure.property_measure_name,
+                    measure.measure_id,
+                    measure.application_scale,
+                    measure.implementation_status,
+                )
+                if measure_key in measure_keys:
                     continue
-                else:
-                    try:
+                measure_keys.add(measure_key)
+
+                try:
+                    with transaction.atomic():
                         new_measure = copy.deepcopy(measure)
                         # copy the created and modified time
                         new_measure.pk = None
@@ -821,13 +826,10 @@ class PropertyState(models.Model):
                             if scenario.pk not in scenario_measure_map:
                                 scenario_measure_map[scenario.pk] = []
                             scenario_measure_map[scenario.pk].append(new_measure.pk)
-
-                    except IntegrityError:
-                        _log.error(
-                            "Measure state_id, measure_id, application_scale, and implementation_status already exists -- skipping for now"
-                        )
-
-                new_items.append(test_dict)
+                except IntegrityError:
+                    _log.error(
+                        "Measure state_id, measure_id, application_scale, and implementation_status already exists -- skipping for now"
+                    )
 
             # connect back up the scenario measures
             for scenario_id, measure_list in scenario_measure_map.items():
