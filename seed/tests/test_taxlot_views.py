@@ -395,6 +395,29 @@ class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
         assert resp.status_code == 200
         assert len(resp.json()[str(self.cycle.id)]) == 0
 
+    def test_taxlot_filter_by_cycle_multiple_cycles(self):
+        # a second cycle with a view for the *same* underlying tax lot (i.e. the same
+        # linking id) plus an unrelated tax lot that only exists in the second cycle
+        cycle_2 = self.cycle_factory.get_cycle(start=datetime(2019, 1, 1, tzinfo=get_current_timezone()))
+        self.taxlot_view_factory.get_taxlot_view(taxlot=self.taxlot, cycle=cycle_2)
+        self.taxlot_view_factory.get_taxlot_view(cycle=cycle_2)
+
+        url = reverse("api:v3:taxlots-filter-by-cycle") + f"?organization_id={self.org.pk}"
+        params = json.dumps({"cycle_ids": [self.cycle.id, cycle_2.id], "organization_id": self.org.pk})
+
+        self.login_as_root_member()
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 200
+        data = resp.json()
+
+        assert len(data[str(self.cycle.id)]) == 1
+        assert len(data[str(cycle_2.id)]) == 2
+        # the shared tax lot should resolve to the same linking id in both cycles
+        assert data[str(self.cycle.id)][0]["id"] == self.taxlot.id
+        linking_ids_in_cycle_2 = {row["id"] for row in data[str(cycle_2.id)]}
+        assert self.taxlot.id in linking_ids_in_cycle_2
+        assert len(linking_ids_in_cycle_2) == 2
+
     def test_taxlot_filter(self):
         url = reverse("api:v3:taxlots-filter") + f"?cycle_id={self.cycle.pk}&organization_id={self.org.pk}"
 
