@@ -279,4 +279,3 @@ class TwoFactorTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class TwoFactorTokenObtainPairView(TokenObtainPairView):
     serializer_class = TwoFactorTokenObtainPairSerializer
-

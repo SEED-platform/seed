@@ -16,7 +16,13 @@ from two_factor.urls import urlpatterns as two_factor_urls
 from config.views import debug_media_serve, debug_static_serve, robots_txt
 from ng_seed.views import seed_angular
 from seed.api.base.urls import urlpatterns as api
-from seed.landing.views import CustomLoginView, TwoFactorTokenObtainPairView, password_reset_complete, password_reset_confirm, password_reset_done
+from seed.landing.views import (
+    CustomLoginView,
+    TwoFactorTokenObtainPairView,
+    password_reset_complete,
+    password_reset_confirm,
+    password_reset_done,
+)
 from seed.views.main import angular_js_tests, config, health_check, version
 
 schema_view = get_schema_view(
