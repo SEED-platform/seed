@@ -32,6 +32,82 @@ jobs:
             --file Dockerfile \
             .
 
+  # Builds the actual production image (Dockerfile) -- the one that gets deployed --
+  # and verifies nginx serves the SPA entry points correctly. This is a regression
+  # test for https://github.com/SEED-platform/seed/commit/d4f9dcc49 where the
+  # Angular build's browser-layout output landed at collected_static/ng-app/browser/
+  # but nginx.conf.template still aliased /ng-app/ straight to collected_static/ng-app/,
+  # so /ng-app/ 404'd in production even though the dev stack (which bypasses nginx
+  # entirely via hypercorn) looked fine.
+  smoke-test:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+      - name: Cache Docker layers
+        uses: actions/cache@v6
+        with:
+          path: /tmp/.buildx-cache-smoke
+          key: ${{ runner.os }}-buildx-smoke-v1-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-smoke-v1-
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/ghc
+      - name: Build production image
+        run: |
+          docker buildx build \
+            --tag seedplatform/seed:latest \
+            --cache-from type=local,src=/tmp/.buildx-cache-smoke \
+            --cache-to type=local,dest=/tmp/.buildx-cache-smoke,mode=max \
+            --load \
+            --file Dockerfile .
+      - name: Start the stack
+        run: |
+          docker volume create --name=seed_pgdata
+          docker volume create --name=seed_media
+          docker compose -f docker-compose.yml up -d
+      - name: Wait for web container to respond
+        run: |
+          # Poll the endpoint directly rather than relying on the container's own
+          # `Health.Status`: that healthcheck has retries=1, so one slow/transient
+          # check during startup (postgres/celery/redis warming up) can latch it
+          # into "unhealthy" for good, well before nginx itself is actually broken.
+          timeout 180 bash -c 'until curl -sf -o /dev/null http://localhost/api/health_check/; do sleep 5; done'
+      - name: Smoke test - Angular UI (ng-app)
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/ng-app/)
+          echo "/ng-app/ returned $status"
+          [ "$status" = "200" ] || exit 1
+          # Verify actual Angular index.html is served, not a fallback/error page
+          curl -sf http://localhost/ng-app/ | grep -q '<app-root>' || \
+            (echo "ERROR: /ng-app/ did not return the Angular app HTML"; exit 1)
+      - name: Smoke test - legacy AngularJS UI (app)
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/app/)
+          echo "/app/ returned $status"
+          [ "$status" = "200" ] || exit 1
+      - name: Smoke test - API health check
+        run: |
+          status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/health_check/)
+          echo "/api/health_check/ returned $status"
+          [ "$status" = "200" ] || exit 1
+      - name: Container logs and static file listing on failure
+        if: failure()
+        run: |
+          echo "=== web container logs ==="
+          docker logs seed_web
+          echo "=== nginx error log ==="
+          docker exec seed_web cat /var/log/nginx/error.log 2>/dev/null || true
+          echo "=== collected_static/ng-app/ listing ==="
+          docker exec seed_web ls -la /seed/collected_static/ng-app/ 2>/dev/null || true
+          docker exec seed_web ls -la /seed/collected_static/ng-app/browser/ 2>/dev/null || true
+
   # Currently GH Actions provides no simple method for "sharing"
   # our setup steps. Ideally this would be in an action, but we would need to use
   # actions inside of our actions which you cannot currently do (see https://github.com/actions/runner/issues/438)
