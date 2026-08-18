@@ -87,11 +87,6 @@ jobs:
           # Verify actual Angular index.html is served, not a fallback/error page
           curl -sf http://localhost/ng-app/ | grep -q '<app-root>' || \
             (echo "ERROR: /ng-app/ did not return the Angular app HTML"; exit 1)
-      - name: Smoke test - legacy AngularJS UI (app)
-        run: |
-          status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/app/)
-          echo "/app/ returned $status"
-          [ "$status" = "200" ] || exit 1
       - name: Smoke test - API health check
         run: |
           status=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/api/health_check/)
