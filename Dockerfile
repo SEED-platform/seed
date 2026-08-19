@@ -108,6 +108,7 @@ RUN apk add --no-cache \
         coreutils \
         gdal-dev \
         geos-dev \
+        gettext \
         git \
         libbz2 \
         libffi \
@@ -145,15 +146,13 @@ RUN git config --system --add safe.directory /seed
 COPY ./docker/nginx/*.conf /etc/nginx/
 COPY ./docker/nginx/nginx.conf.template /etc/nginx/nginx.conf.template
 
-# Install gettext temporarily for envsubst and then generate nginx.conf from the template.
-RUN apk add --no-cache --virtual .nginx-template-deps gettext && \
-    if [ -z "${NGINX_LISTEN_OPTS}" ]; then \
+# Generate nginx.conf from the template (gettext/envsubst installed above).
+RUN if [ -z "${NGINX_LISTEN_OPTS}" ]; then \
         echo "NGINX_LISTEN_OPTS is unset or empty, defaulting to: HTTP1.1"; \
     else \
         echo "NGINX_LISTEN_OPTS is set to: ${NGINX_LISTEN_OPTS}"; \
     fi && \
-    envsubst '${NGINX_LISTEN_OPTS}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && \
-    apk del .nginx-template-deps
+    envsubst '${NGINX_LISTEN_OPTS}' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
 
 # symlink maintenance.html that nginx will serve in the case of a 503
 RUN ln -sf /seed/collected_static/maintenance.html /var/lib/nginx/html/maintenance.html && \
