@@ -176,14 +176,8 @@ http {
             alias /seed/collected_static/ng-app/browser/;
             index index.html;
 
-            # Primary path for browser-layout Angular builds. If unavailable,
-            # fall back to legacy flat-layout index in a named location.
-            try_files $uri $uri/ /index.html @ng_app_flat_layout;
-        }
-
-        location @ng_app_flat_layout {
-            root /seed/collected_static;
-            try_files /ng-app/index.html =404;
+            # try to serve the exact file, otherwise fall back to index.html so the SPA router can handle the URL
+            try_files $uri /ng-app/browser/index.html;
         }
 
         location / {
