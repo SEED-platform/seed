@@ -811,7 +811,6 @@ class PropertyState(models.Model):
                 )
                 if measure_key in measure_keys:
                     continue
-                measure_keys.add(measure_key)
 
                 try:
                     with transaction.atomic():
@@ -826,6 +825,7 @@ class PropertyState(models.Model):
                             if scenario.pk not in scenario_measure_map:
                                 scenario_measure_map[scenario.pk] = []
                             scenario_measure_map[scenario.pk].append(new_measure.pk)
+                    measure_keys.add(measure_key)
                 except IntegrityError:
                     _log.error(
                         "Measure state_id, measure_id, application_scale, and implementation_status already exists -- skipping for now"
