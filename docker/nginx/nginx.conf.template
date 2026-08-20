@@ -173,7 +173,7 @@ http {
 
         # SEED Angular
         location /ng-app/ {
-            alias /seed/collected_static/ng-app/;
+            alias /seed/collected_static/ng-app/browser/;
             index index.html;
 
             # try to serve the exact file, otherwise fall back to index.html so the SPA router can handle the URL
