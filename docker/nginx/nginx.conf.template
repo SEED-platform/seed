@@ -177,7 +177,7 @@ http {
             index index.html;
 
             # try to serve the exact file, otherwise fall back to index.html so the SPA router can handle the URL
-            try_files $uri /ng-app/index.html;
+            try_files $uri /ng-app/browser/index.html;
         }
 
         location / {
