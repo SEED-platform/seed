@@ -257,18 +257,19 @@ class InventoryFilter:
         filter_type = filter_dict.get("type", "contains")
 
         type_map = {
-            "contains": lambda: Q(**{f"{prefixed}__icontains": filter_value}),
-            "notContains": lambda: ~Q(**{f"{prefixed}__icontains": filter_value}),
-            "equals": lambda: Q(**{f"{prefixed}__iexact": filter_value}),
-            "notEqual": lambda: ~Q(**{f"{prefixed}__iexact": filter_value}),
-            "startsWith": lambda: Q(**{f"{prefixed}__istartswith": filter_value}),
-            "endsWith": lambda: Q(**{f"{prefixed}__iendswith": filter_value}),
-            "blank": lambda: ~Q(**{f"{path_field}__has_key": level_name}),
-            "notBlank": lambda: Q(**{f"{path_field}__has_key": level_name}),
-            "isNull": lambda: ~Q(**{f"{path_field}__has_key": level_name}),
-            "notNull": lambda: Q(**{f"{path_field}__has_key": level_name}),
+            "contains": Q(**{f"{prefixed}__icontains": filter_value}),
+            "notContains": ~Q(**{f"{prefixed}__icontains": filter_value}),
+            "equals": Q(**{f"{prefixed}__iexact": filter_value}),
+            "notEqual": ~Q(**{f"{prefixed}__iexact": filter_value}),
+            "startsWith": Q(**{f"{prefixed}__istartswith": filter_value}),
+            "endsWith": Q(**{f"{prefixed}__iendswith": filter_value}),
+            "blank": ~Q(**{f"{path_field}__has_key": level_name}),
+            "notBlank": Q(**{f"{path_field}__has_key": level_name}),
+            "isNull": ~Q(**{f"{path_field}__has_key": level_name}),
+            "notNull": Q(**{f"{path_field}__has_key": level_name}),
         }
-        return type_map.get(filter_type, lambda: Q())()
+
+        return type_map.get(filter_type, Q())
 
     def parse_filter(self, prefixed_name, filter_type, filter_from, filter_to=None):
         """convert a single filter to a Q object"""
