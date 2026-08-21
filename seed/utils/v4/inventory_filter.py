@@ -163,6 +163,8 @@ class InventoryFilter:
         self.include_related = include_related
         self.db_columns = db_columns
         self.shown_column_ids = shown_column_ids
+        # Level names (skip root at index 0) used as column IDs in the Angular grid
+        self.ali_level_names = set(org.access_level_names[1:] if org.access_level_names else [])
 
     def get_views_list(self):
         """Initial view filter, returns as queryset"""
@@ -219,6 +221,10 @@ class InventoryFilter:
 
     def generate_q(self, name_with_id, filter_dict):
         """generate a Q object from a filter dict"""
+        # Access level instance columns use the level name directly (not colname_id format)
+        if name_with_id in self.ali_level_names:
+            return self.generate_ali_q(name_with_id, filter_dict)
+
         conditions = filter_dict.get("conditions")
         operator = filter_dict.get("operator")
         filter = filter_dict.get("filter")
@@ -241,6 +247,29 @@ class InventoryFilter:
         else:
             raise InventoryFilterError(JsonResponse({"status": "error", "message": "Invalid filter"}, status=status.HTTP_400_BAD_REQUEST))
         return q
+
+    def generate_ali_q(self, level_name, filter_dict):
+        """Generate a Q for filtering by an access level instance path column."""
+        inventory_prefix = "property" if self.inventory_type == "property" else "taxlot"
+        path_field = f"{inventory_prefix}__access_level_instance__path"
+        prefixed = f"{path_field}__{level_name}"
+        filter_value = filter_dict.get("filter")
+        filter_type = filter_dict.get("type", "contains")
+
+        type_map = {
+            "contains": Q(**{f"{prefixed}__icontains": filter_value}),
+            "notContains": ~Q(**{f"{prefixed}__icontains": filter_value}),
+            "equals": Q(**{f"{prefixed}__iexact": filter_value}),
+            "notEqual": ~Q(**{f"{prefixed}__iexact": filter_value}),
+            "startsWith": Q(**{f"{prefixed}__istartswith": filter_value}),
+            "endsWith": Q(**{f"{prefixed}__iendswith": filter_value}),
+            "blank": ~Q(**{f"{path_field}__has_key": level_name}),
+            "notBlank": Q(**{f"{path_field}__has_key": level_name}),
+            "isNull": ~Q(**{f"{path_field}__has_key": level_name}),
+            "notNull": Q(**{f"{path_field}__has_key": level_name}),
+        }
+
+        return type_map.get(filter_type, Q())
 
     def parse_filter(self, prefixed_name, filter_type, filter_from, filter_to=None):
         """convert a single filter to a Q object"""
