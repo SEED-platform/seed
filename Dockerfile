@@ -39,6 +39,7 @@ RUN apk add --no-cache \
         alpine-sdk \
         bzip2-dev \
         cargo \
+        curl \
         gdal \
         gdal-dev \
         geos-dev \
