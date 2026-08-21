@@ -1134,7 +1134,7 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
         current_level = None
         children = [org.root]
         if not has_root:
-            children = org.root.get_children()
+            children = AccessLevelInstance.objects.get_children(org.root)
             current_level = org.root
         # lowercase keys just in case
         updated_row = {k.lower(): v for k, v in row.items()}
@@ -1157,7 +1157,7 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
                 if child.name == looking_for:
                     found = True
                     current_level = child
-                    children = current_level.get_children()
+                    children = AccessLevelInstance.objects.get_children(current_level)
                     break
 
             if not found:
@@ -1170,7 +1170,7 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
                     current_level = org.add_new_access_level_instance(current_level.id, looking_for)
                     current_level.refresh_from_db()
                     # get its children (should be empty)
-                    children = current_level.get_children()
+                    children = AccessLevelInstance.objects.get_children(current_level)
                 except Exception as e:
                     message = f"Error has occurred when adding element '{val}' for entry: {updated_row}: {e}"
                     break

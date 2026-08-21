@@ -22,7 +22,7 @@ dependencies = [
     "django-compressor==4.6.0",
     "django-extensions==4.1",
     "django-model-utils==5.0.0",
-    "django-treebeard==5.3.0",
+    "django-treebeard==7.0.1",
     # Date / time
     "python-dateutil==2.9.0.post0",
     # Units
