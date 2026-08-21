@@ -84,7 +84,7 @@ See the information in the [LICENSE.md](LICENSE.md) file.
 [code-documentation-links]: https://seed-platform.org/developer_resources/
 [development-docker]: https://github.com/SEED-platform/seed/blob/develop/docs/source/setup_docker.rst
 [development-local]: https://github.com/SEED-platform/seed/blob/develop/docs/source/setup_osx.rst
-[production-aws-url]: http://www.github.com/seed-platform/seed/wiki/Installation
+[production-aws-url]: https://github.com/seed-platform/seed/wiki/Installation
 [developer-resources]: https://github.com/SEED-platform/seed/blob/develop/docs/source/developer_resources.rst
 [developer-testing-notes]: https://github.com/SEED-platform/seed/blob/develop/docs/source/developer_resources.rst#testing
 [build-img]: https://github.com/SEED-platform/seed/workflows/CI/badge.svg?branch=develop

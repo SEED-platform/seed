@@ -83,15 +83,6 @@ jobs:
           node-version: 24
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
-      - name: Free up disk space
-        run: |
-          echo "Disk space before cleanup:"
-          df -h
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf /usr/local/lib/android
-          sudo rm -rf /opt/ghc
-          echo "Disk space after cleanup:"
-          df -h
       - name: Install dependencies
         run: |
           pnpm install

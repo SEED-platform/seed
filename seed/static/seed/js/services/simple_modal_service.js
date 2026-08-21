@@ -5,7 +5,7 @@
 /**
     This service provides a simple, standardized way to show a basic modal dialog.
     Code based on example by Dan Wahlin:
-    http://weblogs.asp.net/dwahlin/building-an-angularjs-modal-service
+    https://weblogs.asp.net/dwahlin/building-an-angularjs-modal-service/
 
     You can call this service's main method "showModal()" and pass in a modalOptions
     object with the title and message you want to show. You don't have to provide

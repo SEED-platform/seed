@@ -2,7 +2,7 @@
  * SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
- * infinite-scrolling: http://jsfiddle.net/vojtajina/U7Bz9/
+ * infinite-scrolling: https://jsfiddle.net/vojtajina/U7Bz9/
  */
 angular.module('sdWhenScrolled', []).directive(
   'sdWhenScrolled',

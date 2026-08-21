@@ -15,10 +15,10 @@ const browser = await puppeteer.launch({
 const page = await browser.newPage();
 
 // Navigate to the Jasmine SpecRunner
-if (await isPortReachable(80, { host: '127.0.0.1' })) {
-  await page.goto('http://localhost:80/angular_js_tests/');
-} else if (await isPortReachable(8000, { host: '127.0.0.1' })) {
+if (await isPortReachable(8000, { host: '127.0.0.1' })) {
   await page.goto('http://localhost:8000/angular_js_tests/');
+} else if (await isPortReachable(80, { host: '127.0.0.1' })) {
+  await page.goto('http://localhost:80/angular_js_tests/');
 } else {
   console.error('SEED is not running - unable to run Jasmine tests');
   process.exit(1);
