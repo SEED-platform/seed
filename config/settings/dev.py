@@ -27,7 +27,7 @@ MEDIA_URL = "/media/"
 # override this in local_untracked.py
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "ENGINE": "seed.backends.timescale_postgis",
         "NAME": "seed",
         "USER": "postgres",
         "PASSWORD": "postgres",

@@ -23,7 +23,7 @@ DEBUG = True
 # postgres DB config
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "ENGINE": "seed.backends.timescale_postgis",
         "NAME": "seeddb",
         "USER": "postgres",
         "PASSWORD": "postgres",

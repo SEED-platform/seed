@@ -11,6 +11,7 @@ dependencies = [
     "django~=6.0.7",
     # Persistence (database)
     "psycopg[binary]~=3.3.4",
+    "django-timescaledb==0.2.13",
     # Background jobs / scheduling / caching
     "celery==5.6.3",
     "django-celery-beat==2.9.0",

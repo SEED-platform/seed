@@ -896,6 +896,12 @@ wheels = [
 ]
 
 [[package]]
+name = "django-timescaledb"
+version = "0.2.13"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/85/9f/88107d46771b0236a80db0ab4324650b73973187141f214b24f46b7c4cf2/django-timescaledb-0.2.13.tar.gz", hash = "sha256:3a2dcdf224af318c6c813c7fbf323fa73ae9bd12d33cdf7540e34344ae62f739", size = 13264, upload-time = "2023-02-07T13:15:57.529Z" }
+
+[[package]]
 name = "django-timezone-field"
 version = "7.2.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2610,6 +2616,7 @@ dependencies = [
     { name = "django-post-office" },
     { name = "django-redis" },
     { name = "django-ses" },
+    { name = "django-timescaledb" },
     { name = "django-treebeard" },
     { name = "django-two-factor-auth", extra = ["phonenumbers"] },
     { name = "djangorestframework" },
@@ -2690,6 +2697,7 @@ requires-dist = [
     { name = "django-post-office", specifier = "==3.11.2" },
     { name = "django-redis", specifier = "==7.0.0" },
     { name = "django-ses", specifier = "==4.7.2" },
+    { name = "django-timescaledb", specifier = "==0.2.13" },
     { name = "django-treebeard", specifier = "==5.3.0" },
     { name = "django-two-factor-auth", extras = ["phonenumbers"], specifier = "==1.18.1" },
     { name = "djangorestframework", specifier = "==3.17.1" },

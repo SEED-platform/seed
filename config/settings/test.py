@@ -81,8 +81,11 @@ else:
     from config.settings.local_untracked import *  # noqa: F403
 
 # Use a test-only PostGIS backend that pauses Timescale background workers
-# while Django clones the template test database for parallel runs.
-DATABASES["default"]["ENGINE"] = "seed.backends.postgis_parallel_tests"
+# while Django clones the template test database for parallel runs. The
+# Timescale schema editor layers on top of it via TIMESCALE_DB_BACKEND_BASE so
+# hypertables are still created during test database setup.
+TIMESCALE_DB_BACKEND_BASE = "seed.backends.postgis_parallel_tests"
+DATABASES["default"]["ENGINE"] = "seed.backends.timescale_postgis"
 DATABASES["default"]["CONN_MAX_AGE"] = 0
 CACHES = {
     "default": {

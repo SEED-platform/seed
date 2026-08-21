@@ -93,7 +93,7 @@ POST_OFFICE = {
 # PostgreSQL DB config
 DATABASES = {
     "default": {
-        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "ENGINE": "seed.backends.timescale_postgis",
         "NAME": env_var("POSTGRES_DB"),
         "USER": env_var("POSTGRES_USER"),
         "PASSWORD": env_var("POSTGRES_PASSWORD"),

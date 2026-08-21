@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.db import models
+from timescale.db.models.fields import TimescaleDateTimeField
 
 from seed.models import Property
 
@@ -49,7 +50,7 @@ class Sensor(models.Model):
 
 class SensorReading(models.Model):
     reading = models.FloatField(null=True)
-    timestamp = models.DateTimeField()
+    timestamp = TimescaleDateTimeField(interval="7 days")
     sensor = models.ForeignKey(
         Sensor,
         on_delete=models.CASCADE,
