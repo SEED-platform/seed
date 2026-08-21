@@ -9,7 +9,7 @@ worker_processes auto;
 pcre_jit on;
 
 # Configures default error logger.
-error_log /var/log/nginx/error.log warn;
+error_log /dev/stderr warn;
 
 # Includes files with directives to load dynamic modules.
 include /etc/nginx/modules/*.conf;
@@ -82,7 +82,7 @@ http {
                     '"$http_user_agent" "$http_x_forwarded_for"';
 
     # Sets the path, format, and configuration for a buffered log write.
-    access_log /var/log/nginx/access.log main;
+    access_log /dev/stdout main;
 
 
     # Includes virtual hosts configs.
@@ -113,7 +113,7 @@ http {
         send_timeout                600s;
 
         # add error logs
-        error_log logs/error.log warn;
+        error_log /dev/stderr warn;
 
         # max upload size
         client_max_body_size 75M;   # adjust to taste
