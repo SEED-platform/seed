@@ -73,7 +73,7 @@ class SignupTokenGenerator:
         login_timestamp = user.last_login.replace(microsecond=0, tzinfo=None)
 
         value = str(user.pk) + user.password + str(login_timestamp) + str(timestamp)
-        hmac = salted_hmac(key_salt, value).hexdigest()[::2]
+        hmac = salted_hmac(key_salt, value, algorithm="sha1").hexdigest()[::2]
         return f"{ts_b36}-{hmac}"
 
     def _num_days(self, dt):
