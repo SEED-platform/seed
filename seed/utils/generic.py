@@ -65,7 +65,7 @@ def obj_to_dict(obj, include_m2m=True):
     """
     serializes obj for a JSON friendly version tries to serialize JSONField
     """
-    # http://www.django-rest-framework.org/api-guide/fields/#jsonfield
+    # https://www.django-rest-framework.org/api-guide/fields/#jsonfield
     if include_m2m:
         data = serializers.serialize(
             "json",

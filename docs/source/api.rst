@@ -20,7 +20,7 @@ Using Python, use the requests library::
 
 Using curl, pass the username and API key as follows::
 
-  curl -u user_email:api_key http://seed-platform.org/api/version/
+  curl -u user_email:api_key https://seed-platform.org/api/version/
 
 If authentication fails, the response's status code will be 302, redirecting the user to ``/app/login``.
 

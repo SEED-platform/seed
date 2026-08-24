@@ -72,14 +72,6 @@ Tasks
     :undoc-members:
     :show-inheritance:
 
-Token Generator
----------------
-
-.. automodule:: seed.token_generators
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 Utils
 -----
 

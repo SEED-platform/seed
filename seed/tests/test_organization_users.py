@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import OrganizationUser
+from seed.lib.superperms.orgs.models import AccessLevelInstance, OrganizationUser
 from seed.tests.util import AccessLevelBaseTestCase
 
 
@@ -14,7 +14,7 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
     def setUp(self):
         super().setUp()
         self.root_ali = self.org.root
-        self.child_ali = self.org.root.get_children().first()
+        self.child_ali = AccessLevelInstance.objects.get_children(self.org.root).first()
 
         self.root_user = User.objects.get(username="test_user@demo.com")
         self.child_user1 = User.objects.get(username="child_member@demo.com")

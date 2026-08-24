@@ -11,7 +11,7 @@ is an excellent place to general understanding of this project's layout.
 
 .. _Django project: https://www.djangoproject.com/
 
-.. _AWS: http://aws.amazon.com/
+.. _AWS: https://aws.amazon.com/
 
 Prerequisites
 ^^^^^^^^^^^^^^
@@ -132,7 +132,7 @@ settings.
 
 .. _ElastiCache: https://aws.amazon.com/elasticache/
 
-.. _redis: http://redis.io/
+.. _redis: https://redis.io/
 
 
 .. code-block:: python
@@ -177,7 +177,7 @@ can be started:
 
     DJANGO_SETTINGS_MODULE=config.settings.dev celery -A seed worker -l INFO -c 2 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler
 
-.. _Celery: http://www.celeryproject.org/
+.. _Celery: https://docs.celeryq.dev/en/stable/
 
 
 Running the development web server
@@ -283,7 +283,7 @@ Many options for setting up your own `SMTP`_ service/server or using other SMTP
 third party services are available and compatible including `gmail`_. SMTP is not configured for working within Docker at the moment.
 
 .. _SMTP: https://docs.djangoproject.com/en/2.0/ref/settings/#email-backend
-.. _gmail: http://stackoverflow.com/questions/19264907/python-django-gmail-smtp-setup
+.. _gmail: https://stackoverflow.com/questions/19264907/python-django-gmail-smtp-setup
 
 .. code-block:: python
 

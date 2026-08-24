@@ -9,7 +9,7 @@ understanding of this project's layout.
 
 .. _Django Project: https://www.djangoproject.com/
 
-.. _AWS: http://aws.amazon.com/
+.. _AWS: https://aws.amazon.com/
 
 Prerequisites
 ^^^^^^^^^^^^^
@@ -153,7 +153,7 @@ settings.
 
 .. _ElastiCache: https://aws.amazon.com/elasticache/
 
-.. _redis: http://redis.io/
+.. _redis: https://redis.io/
 
 .. code-block:: python
 
@@ -176,4 +176,4 @@ can be started:
 
     celery -A seed worker -l INFO -c 2 --max-tasks-per-child 1000 -EBS django_celery_beat.schedulers:DatabaseScheduler
 
-.. _Celery: http://www.celeryproject.org/
+.. _Celery: https://docs.celeryq.dev/en/stable/
