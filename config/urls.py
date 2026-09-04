@@ -10,13 +10,19 @@ from django.urls import include, path, re_path
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenRefreshView
 from two_factor.urls import urlpatterns as two_factor_urls
 
 from config.views import debug_media_serve, debug_static_serve, robots_txt
 from ng_seed.views import seed_angular
 from seed.api.base.urls import urlpatterns as api
-from seed.landing.views import CustomLoginView, password_reset_complete, password_reset_confirm, password_reset_done
+from seed.landing.views import (
+    CustomLoginView,
+    TwoFactorTokenObtainPairView,
+    password_reset_complete,
+    password_reset_confirm,
+    password_reset_done,
+)
 from seed.views.main import angular_js_tests, config, health_check, version
 
 schema_view = get_schema_view(
@@ -59,7 +65,7 @@ urlpatterns = [
     path("api/health_check/", health_check, name="health_check"),
     # API
     path("api/swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
-    path("api/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("api/token/", TwoFactorTokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("api/version/", version, name="version"),
     path("api/", include((api, "seed"), namespace="api")),
