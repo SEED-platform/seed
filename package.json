@@ -17,7 +17,7 @@
     "node": ">=24",
     "pnpm": ">=11"
   },
-  "packageManager": "pnpm@11.22.0",
+  "packageManager": "pnpm@11.25.0",
   "dependencies": {
     "sass": "1.103.0"
   },
