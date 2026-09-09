@@ -233,6 +233,8 @@ CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 # hmm, we are logging outside the context of the app?
 LOG_FILE = os.path.join(BASE_DIR, "../logs/py.log/")
 
+# Keep the legacy email settings until django-post-office and django-ses
+# support Django's MAILERS configuration.
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 SERVER_EMAIL = "info@seed-platform.org"
 PASSWORD_RESET_EMAIL = SERVER_EMAIL

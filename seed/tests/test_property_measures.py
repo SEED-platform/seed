@@ -9,7 +9,7 @@ import json
 from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Measure, PropertyMeasure, Scenario
+from seed.models import Measure, PropertyMeasure, PropertyState, Scenario
 from seed.test_helpers.fake import FakePropertyStateFactory, FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
@@ -221,6 +221,72 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()["status"], "error")
         self.assertEqual(response.json()["message"], "No Property Measure found with given pks")
+
+    def test_merge_relationships_copies_property_measures_from_old_state(self):
+        old_state = self.property_state_factory.get_property_state()
+        new_state = self.property_state_factory.get_property_state()
+        merged_state = self.property_state_factory.get_property_state()
+        measure = Measure.objects.first()
+
+        source_property_measure = PropertyMeasure.objects.create(
+            measure=measure,
+            property_measure_name="old-state-measure",
+            property_state=old_state,
+            description="Old state property measure",
+            implementation_status=PropertyMeasure.MEASURE_SELECTED,
+            application_scale=PropertyMeasure.SCALE_ENTIRE_BUILDING,
+            category_affected=PropertyMeasure.CATEGORY_LIGHTING,
+            recommended=False,
+            cost_total_first=123.45,
+        )
+
+        PropertyState.merge_relationships(merged_state, old_state, new_state)
+
+        copied_property_measure = PropertyMeasure.objects.filter(
+            property_state=merged_state,
+            property_measure_name=source_property_measure.property_measure_name,
+        ).first()
+        self.assertIsNotNone(copied_property_measure)
+        self.assertNotEqual(copied_property_measure.pk, source_property_measure.pk)
+        self.assertEqual(copied_property_measure.measure, source_property_measure.measure)
+        self.assertEqual(copied_property_measure.description, source_property_measure.description)
+        self.assertEqual(copied_property_measure.implementation_status, source_property_measure.implementation_status)
+        self.assertEqual(copied_property_measure.application_scale, source_property_measure.application_scale)
+        self.assertEqual(copied_property_measure.category_affected, source_property_measure.category_affected)
+        self.assertEqual(copied_property_measure.recommended, source_property_measure.recommended)
+        self.assertEqual(copied_property_measure.cost_total_first, source_property_measure.cost_total_first)
+
+    def test_merge_relationships_prefers_new_state_property_measure(self):
+        old_state = self.property_state_factory.get_property_state()
+        new_state = self.property_state_factory.get_property_state()
+        merged_state = self.property_state_factory.get_property_state()
+        measure = Measure.objects.first()
+        measure_fields = {
+            "measure": measure,
+            "property_measure_name": "shared-measure",
+            "implementation_status": PropertyMeasure.MEASURE_SELECTED,
+            "application_scale": PropertyMeasure.SCALE_ENTIRE_BUILDING,
+        }
+
+        PropertyMeasure.objects.create(
+            property_state=old_state,
+            description="Old state property measure",
+            **measure_fields,
+        )
+        PropertyMeasure.objects.create(
+            property_state=new_state,
+            description="New state property measure",
+            **measure_fields,
+        )
+
+        PropertyState.merge_relationships(merged_state, old_state, new_state)
+
+        copied_property_measures = PropertyMeasure.objects.filter(
+            property_state=merged_state,
+            property_measure_name="shared-measure",
+        )
+        self.assertEqual(copied_property_measures.count(), 1)
+        self.assertEqual(copied_property_measures.get().description, "New state property measure")
 
 
 class TestPropertyMeasuresPermissions(AccessLevelBaseTestCase):

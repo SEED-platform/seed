@@ -4,6 +4,8 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
+    allow:
+      - dependency-type: 'direct'
     groups:
       dev-deps:
         dependency-type: 'development'
@@ -23,6 +25,8 @@ updates:
     directory: '/'
     schedule:
       interval: 'weekly'
+    allow:
+      - dependency-type: 'direct'
     groups:
       actions-deps:
         patterns:

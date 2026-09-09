@@ -9,9 +9,9 @@ from django.core.mail.utils import DNS_NAME
 
 
 class EmailBackend(BaseBackend):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.verify_tls = kwargs.get("verify_tls") or settings.EMAIL_VERIFY_TLS
+    def __init__(self, *, verify_tls=None, **kwargs):
+        super().__init__(**kwargs)
+        self.verify_tls = settings.EMAIL_VERIFY_TLS if verify_tls is None else verify_tls
 
     def open(self):
         if self.connection:

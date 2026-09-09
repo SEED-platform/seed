@@ -4,7 +4,7 @@
  *
  * Search as a Service (saas)
  *
- * initial work: http://plnkr.co/edit/Vm5MR9KYYXl3pkIKyWsd?p=preview
+ * initial work: https://plnkr.co/edit/Vm5MR9KYYXl3pkIKyWsd?preview
  *
  * search_service: include the module 'config.seed.service.search' in your app
  *                 to have access to ``search_service``. ``search_service``

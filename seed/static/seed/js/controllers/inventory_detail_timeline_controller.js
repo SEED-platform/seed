@@ -272,9 +272,9 @@ angular.module('SEED.controller.inventory_detail_timeline', []).controller('inve
     };
 
     $scope.eventIconLookup = {
-      Analyses: 'fa fa-bar-chart',
-      'Audit Template Files': 'fa fa-bolt',
-      Notes: 'fa fa-sticky-note-o'
+      Analyses: 'fa-solid fa-chart-bar',
+      'Audit Template Files': 'fa-solid fa-bolt',
+      Notes: 'fa-regular fa-note-sticky'
     };
 
     $scope.resizeGridByScenarioId = (scenarioId) => {

@@ -118,7 +118,9 @@ class AccessLevelInstance(NS_Node):
     def get_path(self):
         """get a dictionary detailing the ancestors of this Access Level Instance"""
         level_names = self.organization.access_level_names
-        ancestors = {level_names[depth - 1]: name for depth, name in self.get_ancestors().values_list("depth", "name")}
+        ancestors = {
+            level_names[depth - 1]: name for depth, name in AccessLevelInstance.objects.get_ancestors(self).values_list("depth", "name")
+        }
         ancestors[level_names[self.depth - 1]] = self.name
 
         return ancestors
@@ -143,7 +145,7 @@ def set_path(sender, instance, **kwargs):
                 # update our path
                 instance.path[level_name] = instance.name
                 # update our children's path
-                for ali in instance.get_descendants():
+                for ali in AccessLevelInstance.objects.get_descendants(instance):
                     ali.path[level_name] = instance.name
                     ali.save()
 
@@ -453,7 +455,10 @@ class Organization(models.Model):
         if len(self.access_level_names) < parent.depth + 1:
             raise UserWarning("Cannot create child at an unnamed level")
 
-        new_access_level_instance = parent.add_child(organization=self, name=name)
+        new_access_level_instance = AccessLevelInstance.objects.add_child(
+            parent,
+            create_kwargs={"organization": self, "name": name},
+        )
 
         return new_access_level_instance
 
@@ -573,6 +578,6 @@ def post_save_organization(sender, instance, created, **kwargs):
         if not instance.access_level_names:
             instance.access_level_names = [instance.name]
 
-        root = AccessLevelInstance.add_root(organization=instance, name="root")
+        root = AccessLevelInstance.objects.add_root(create_kwargs={"organization": instance, "name": "root"})
         root.save()
         instance.save()

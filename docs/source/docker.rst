@@ -9,7 +9,7 @@ understanding of this project's layout.
 
 .. _Django Project: https://www.djangoproject.com/
 
-.. _AWS: http://aws.amazon.com/
+.. _AWS: https://aws.amazon.com/
 
 Installation
 ^^^^^^^^^^^^

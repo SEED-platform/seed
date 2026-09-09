@@ -14,7 +14,7 @@ from io import BytesIO
 
 import usaddress
 from lxml import etree, objectify
-from nameparser import HumanName
+from nameparser import parse
 from quantityfield.units import ureg
 
 _log = logging.getLogger(__name__)
@@ -142,14 +142,14 @@ class HPXML:
 
         # Owner Name
         if property_state.owner is not None:
-            owner_name = HumanName(property_state.owner)
+            owner_name = parse(property_state.owner)
             owner.Name.clear()
             if owner_name.title:
                 owner.Name.append(E.PrefixName(owner_name.title))
-            owner.Name.append(E.FirstName(owner_name.first))
+            owner.Name.append(E.FirstName(owner_name.given))
             if owner_name.middle:
                 owner.Name.append(E.MiddleName(owner_name.middle))
-            owner.Name.append(E.LastName(owner_name.last))
+            owner.Name.append(E.LastName(owner_name.family))
             if owner_name.suffix:
                 owner.Name.append(E.SuffixName(owner_name.suffix))
 

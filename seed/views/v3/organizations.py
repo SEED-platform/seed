@@ -1624,7 +1624,7 @@ class OrganizationViewSet(viewsets.ViewSet):
                     stats = self.get_axis_stats(organization, cycle, axis, axis_var, all_property_views, access_level_instance)
                     axis_data[cycle.name][name_to_display]["values"] = self.clean_axis_data(data_type, stats)
 
-                    children = access_level_instance.get_children()
+                    children = AccessLevelInstance.objects.get_children(access_level_instance)
                     if len(children):
                         axis_data[cycle.name][name_to_display]["children"] = {}
                         for child_ali in children:

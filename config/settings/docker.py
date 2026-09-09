@@ -79,6 +79,8 @@ else:
 # By default we are using SES as our email client. If you would like to use
 # another backend (e.g., SMTP), then please update this model to support both and
 # create a pull request.
+# Keep the legacy email settings until django-post-office and django-ses
+# support Django's MAILERS configuration.
 EMAIL_BACKEND = env_var("DJANGO_EMAIL_BACKEND", "django_ses.SESBackend")
 PASSWORD_RESET_EMAIL = SERVER_EMAIL
 DEFAULT_FROM_EMAIL = SERVER_EMAIL

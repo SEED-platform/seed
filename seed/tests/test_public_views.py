@@ -98,6 +98,12 @@ class TestPublicViews(DataMappingBaseTestCase):
         assert len(data["properties"]) == 6
         assert len(data["taxlots"]) == 0
 
+        # pint-aware fields (e.g. gross_floor_area) should be unit-less numbers, with the units
+        # reported in a sibling "<field>_units" key instead of embedded in the value itself
+        for prop in data["properties"]:
+            assert isinstance(prop["gross_floor_area"], (int, float))
+            assert "foot" in prop["gross_floor_area_units"]
+
         url = reverse_lazy("api:v3:public-organizations-feed-html", args=[self.org.id])
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200

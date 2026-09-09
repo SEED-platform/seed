@@ -9,7 +9,7 @@ from datetime import datetime
 from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Column, CycleGoal, Goal, GoalNote, HistoricalNote
+from seed.models import AccessLevelInstance, Column, CycleGoal, Goal, GoalNote, HistoricalNote
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeCycleFactory,
@@ -36,7 +36,7 @@ class GoalViewTests(AccessLevelBaseTestCase):
         self.cycle3 = self.cycle_factory.get_cycle(start=datetime(2003, 1, 1), end=datetime(2004, 1, 1))
 
         self.root_ali = self.org.root
-        self.child_ali = self.org.root.get_children().first()
+        self.child_ali = AccessLevelInstance.objects.get_children(self.org.root).first()
 
         # columns
         extra_eui = Column.objects.create(

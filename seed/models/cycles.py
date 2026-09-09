@@ -29,15 +29,14 @@ class Cycle(models.Model):
 
     @classmethod
     def get_or_create_default(cls, organization):
+        existing = Cycle.objects.filter(organization=organization).first()
+        if existing:
+            return existing
+
         year = date.today().year - 1
-        cycle_name = f"{year} Calendar Year"
-        cycle = Cycle.objects.filter(name=cycle_name, organization=organization).first()
-        if not cycle:
-            return Cycle.objects.create(
-                name=cycle_name,
-                organization=organization,
-                start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
-                end=datetime(year + 1, 1, 1, tzinfo=timezone.get_current_timezone()),
-            )
-        else:
-            return cycle
+        return Cycle.objects.create(
+            name=f"{year} Calendar Year",
+            organization=organization,
+            start=datetime(year, 1, 1, tzinfo=timezone.get_current_timezone()),
+            end=datetime(year + 1, 1, 1, tzinfo=timezone.get_current_timezone()),
+        )

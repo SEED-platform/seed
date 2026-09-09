@@ -675,7 +675,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             else:
                 # Not sure why we are going through the pain of logging this all right now... need to
                 # reevaluate this.
-                log = TaxLotAuditLog.objects.select_related().filter(state=taxlot_view.state).order_by("-id").first()
+                log = TaxLotAuditLog.objects.select_related("organization", "state").filter(state=taxlot_view.state).order_by("-id").first()
 
                 # if checks above pass, create an exact copy of the current state for historical purposes
                 if log.name == "Import Creation":
@@ -728,7 +728,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
                 taxlot_state_data.update({k: v for k, v in new_taxlot_state_data.items() if k != "extra_data"})
 
-                log = TaxLotAuditLog.objects.select_related().filter(state=taxlot_view.state).order_by("-id").first()
+                log = TaxLotAuditLog.objects.select_related("organization", "state").filter(state=taxlot_view.state).order_by("-id").first()
 
                 if log.name in {"Manual Edit", "Manual Match", "System Match", "Merge current state in migration"}:
                     # Convert this to using the serializer to save the data. This will override the

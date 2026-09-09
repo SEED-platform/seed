@@ -54,7 +54,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         # nest each ancestor underneath each other.
         # remember, we shouldn't see our aunts.
-        for a in user_ali.get_ancestors():
+        for a in AccessLevelInstance.objects.get_ancestors(user_ali):
             curr.append(
                 {
                     "id": a.pk,
@@ -100,7 +100,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         access_level_tree = org.get_access_tree(from_ali=user_ali)
         # find level names for current node and descendants
-        descendants = user_ali.get_descendants()
+        descendants = AccessLevelInstance.objects.get_descendants(user_ali)
         if descendants:
             end_depth = max(descendant.get_depth() for descendant in descendants)
         else:

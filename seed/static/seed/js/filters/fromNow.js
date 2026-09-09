@@ -3,7 +3,7 @@
  * See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
  *
  * filter 'fromNow' using the moment.js function 'fromNow()'
- * see: http://momentjs.com/
+ * see: https://momentjs.com/
  */
 angular.module('fromNow', []).filter(
   'fromNow',
