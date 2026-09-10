@@ -630,3 +630,63 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
 
         cross_cycle_labels = PropertyViewLabel.objects.filter(goal_id__isnull=False)
         assert cross_cycle_labels.count() == 0
+
+    def test_cross_cycle_dqc_with_string_extra_and_derived_data(self):
+        self.login_as_root_member()
+
+        extra_area = Column.objects.create(
+            table_name="PropertyState",
+            column_name="goal_area_extra",
+            organization=self.org,
+            is_extra_data=True,
+        )
+        derived_eui = Column.objects.create(
+            table_name="PropertyState",
+            column_name="goal_eui_derived",
+            organization=self.org,
+            derived_column=True,
+        )
+
+        self.goal.area_column = extra_area
+        self.goal.eui_column1 = derived_eui
+        self.goal.eui_column2 = None
+        self.goal.eui_column3 = None
+        self.goal.save()
+
+        self.state11.extra_data = {"goal_area_extra": "5000"}
+        self.state11.derived_data = {"goal_eui_derived": "100"}
+        self.state12.extra_data = {"goal_area_extra": "5005"}
+        self.state12.derived_data = {"goal_eui_derived": "90"}
+        self.state21.extra_data = {"goal_area_extra": "5000"}
+        self.state21.derived_data = {"goal_eui_derived": "100"}
+        self.state22.extra_data = {"goal_area_extra": "100"}
+        self.state22.derived_data = {"goal_eui_derived": "100"}
+        self.state31.extra_data = {"goal_area_extra": "5000"}
+        self.state31.derived_data = {"goal_eui_derived": "100"}
+        self.state32.extra_data = {"goal_area_extra": "5000"}
+        self.state32.derived_data = {"goal_eui_derived": "5"}
+        self.state11.save()
+        self.state12.save()
+        self.state21.save()
+        self.state22.save()
+        self.state31.save()
+        self.state32.save()
+
+        url = reverse_lazy("api:v3:data_quality_checks-start", args=[self.org.id])
+        self.client.post(
+            url,
+            {"property_view_ids": [], "taxlot_view_ids": [], "goal_id": self.goal.id},
+            content_type="application/json",
+        )
+
+        goalnote1 = self.property1.goalnote_set.get(goal=self.goal)
+        goalnote2 = self.property2.goalnote_set.get(goal=self.goal)
+        goalnote3 = self.property3.goalnote_set.get(goal=self.goal)
+        assert goalnote1.passed_checks
+        assert not goalnote2.passed_checks
+        assert not goalnote3.passed_checks
+
+        assert self.label_lookup["Low Area % Change"] in self.view22.labels.all()
+        assert self.label_lookup["Low Area"] in self.view22.labels.all()
+        assert self.label_lookup["High EUI % Change"] in self.view32.labels.all()
+        assert self.label_lookup["Low EUI"] in self.view32.labels.all()
