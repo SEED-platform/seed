@@ -640,12 +640,15 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
             organization=self.org,
             is_extra_data=True,
         )
-        derived_eui = Column.objects.create(
-            table_name="PropertyState",
-            column_name="goal_eui_derived",
+        # DerivedColumn.save() creates the matching Column; the expression is never
+        # evaluated here because the test writes derived_data directly
+        derived_column = DerivedColumn.objects.create(
+            name="goal_eui_derived",
+            expression="$a",
             organization=self.org,
-            derived_column=True,
+            inventory_type=DerivedColumn.PROPERTY_TYPE,
         )
+        derived_eui = Column.objects.get(derived_column=derived_column)
 
         self.goal.area_column = extra_area
         self.goal.eui_column1 = derived_eui
