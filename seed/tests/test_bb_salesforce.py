@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from urllib.parse import quote_plus
 
 import responses
+from django.test import override_settings
 from django.urls import reverse_lazy
 from responses import matchers
 
@@ -65,6 +66,25 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
         )
 
         assert get_cache_raw(f"code_verifier_{self.org.id}") == example_code_verifier
+
+    @responses.activate
+    @override_settings(SALESFORCE_REDIRECT_URI_ENDING="/ng-app/salesforce-login")
+    def test_login_url_honors_redirect_uri_ending_override(self):
+        example_code_verifier = "example_code_verifier"
+        example_code_challenge = "example_code_challenge"
+        responses.add(
+            responses.GET,
+            f"{self.salesforce_url}/oauth2/pkce/generator",
+            json={"code_verifier": example_code_verifier, "code_challenge": example_code_challenge},
+            status=200,
+        )
+
+        url = reverse_lazy("api:v3:bb_salesforce-login-url") + "?organization_id=" + str(self.org.id)
+        response = self.client.get(url, content_type="application/json")
+
+        assert response.status_code == 200
+        assert quote_plus("https://127.0.0.1:8000/ng-app/salesforce-login") in response.json()["url"]
+        assert quote_plus(REDIRECT_URI_ENDING) not in response.json()["url"]
 
     def test_login_url_no_connection(self):
         # Set Up
