@@ -64,11 +64,7 @@ class LabelInventoryViewSet(APIView):
 
     def get_queryset(self, inventory_type, organization_id):
         Model = self.models[inventory_type]
-        qs = Model.objects.filter(statuslabel__super_organization_id=organization_id)
-        if inventory_type == "property":
-            # goal-applied labels are owned by their data quality check, not editable from the inventory
-            qs = qs.filter(goal__isnull=True)
-        return qs
+        return Model.objects.filter(statuslabel__super_organization_id=organization_id)
 
     def get_label_desc(self, add_label_ids, remove_label_ids):
         return Label.objects.filter(pk__in=add_label_ids + remove_label_ids).values("id", "color", "name")

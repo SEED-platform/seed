@@ -14,6 +14,7 @@ class LabelSerializer(serializers.ModelSerializer):
         read_only=True,
     )
     is_applied = serializers.SerializerMethodField()
+    is_applied_by_goal = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
         """
@@ -39,6 +40,7 @@ class LabelSerializer(serializers.ModelSerializer):
             "organization_id",
             "super_organization",
             "is_applied",
+            "is_applied_by_goal",
             "show_in_list",
         )
         extra_kwargs = {
@@ -52,6 +54,9 @@ class LabelSerializer(serializers.ModelSerializer):
         if "is_applied" not in dir(instance):
             del ret["is_applied"]
 
+        if ret.get("is_applied_by_goal") is None:
+            del ret["is_applied_by_goal"]
+
         return ret
 
     def get_is_applied(self, obj):
@@ -63,3 +68,10 @@ class LabelSerializer(serializers.ModelSerializer):
 
         else:
             return obj.is_applied
+
+    def get_is_applied_by_goal(self, obj):
+        goal_applied = self.context.get("goal_applied_views")
+        if goal_applied is None:
+            return None
+
+        return goal_applied.get(obj.id, [])

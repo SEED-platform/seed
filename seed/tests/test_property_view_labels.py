@@ -3,6 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import json
 from datetime import datetime
 
 from django.urls import reverse_lazy
@@ -106,3 +107,63 @@ class PropertyLabelViewTests(AccessLevelBaseTestCase):
         goals = [label["goal"] for label in labels]
         assert goals.count(None) == 2
         assert goals.count(self.goal1.id) == 2
+
+    def _inventory_labels(self):
+        url = reverse_lazy("api:v3:properties-labels")
+        response = self.client.post(
+            f"{url}?organization_id={self.org.id}&cycle_id={self.cycle1.id}",
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        return {label["id"]: label for label in response.json()}
+
+    def test_inventory_labels_is_applied_includes_goal_applied_views(self):
+        """Goal-applied labels must stay visible in the inventory list and detail pages."""
+        labels = self._inventory_labels()
+
+        manual_label = labels[self.pvl1.statuslabel_id]
+        assert manual_label["is_applied"] == [self.view1.id]
+        assert manual_label["is_applied_by_goal"] == []
+
+        # statuslabel shared by goal1 (view3) and goal2 (view5)
+        assert self.pvl3.statuslabel_id in labels, "goal-applied label missing from the payload"
+        goal_label = labels[self.pvl3.statuslabel_id]
+        assert sorted(goal_label["is_applied"]) == sorted([self.view3.id, self.view5.id])
+        assert sorted(goal_label["is_applied_by_goal"]) == sorted([self.view3.id, self.view5.id])
+
+    def test_inventory_labels_reports_unapplied_labels(self):
+        """Labels with no applications at all must still be returned."""
+        labels = self._inventory_labels()
+        unapplied = StatusLabel.objects.exclude(
+            id__in=[
+                self.pvl1.statuslabel_id,
+                self.pvl2.statuslabel_id,
+                self.pvl3.statuslabel_id,
+                self.pvl4.statuslabel_id,
+                self.pvl6.statuslabel_id,
+            ]
+        ).first()
+
+        assert unapplied.id in labels
+        assert labels[unapplied.id]["is_applied"] == []
+        assert labels[unapplied.id]["is_applied_by_goal"] == []
+
+    def test_taxlot_labels_omit_is_applied_by_goal(self):
+        url = reverse_lazy("api:v3:taxlots-labels")
+        response = self.client.post(f"{url}?organization_id={self.org.id}", content_type="application/json")
+
+        assert response.status_code == 200
+        assert all("is_applied_by_goal" not in label for label in response.json())
+
+    def test_goal_applied_label_can_be_removed_from_inventory(self):
+        """Users may delete a cross-cycle label from the inventory; the UI warns them first."""
+        response = self.client.put(
+            f"/api/v3/labels_property/?organization_id={self.org.id}",
+            data=json.dumps({"inventory_ids": [self.view3.id], "remove_label_ids": [self.pvl3.statuslabel_id]}),
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        assert not PropertyViewLabel.objects.filter(id=self.pvl3.id).exists()
+        # the other goal's use of the same label is untouched
+        assert PropertyViewLabel.objects.filter(id=self.pvl5.id).exists()
