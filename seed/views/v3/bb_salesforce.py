@@ -44,9 +44,7 @@ def _get_redirect_uri_ending():
 
     # This setting is intended to be a path appended to the site domain, not a full URL.
     if "://" in ending:
-        logger.error(
-            "SALESFORCE_REDIRECT_URI_ENDING must be a path (e.g. /ng-app/salesforce-login); falling back to legacy UI"
-        )
+        logger.error("SALESFORCE_REDIRECT_URI_ENDING must be a path (e.g. /ng-app/salesforce-login); falling back to legacy UI")
         return REDIRECT_URI_ENDING
 
     if not ending.startswith("/"):

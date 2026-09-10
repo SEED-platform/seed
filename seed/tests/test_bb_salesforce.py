@@ -117,6 +117,7 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
 
         assert token_response.status_code == 200
         assert get_cache_raw(f"access_token_{self.org.id}") == "example access token"
+
     def test_login_url_no_connection(self):
         # Set Up
         BBSalesforceConfig.objects.filter(organization=self.org).delete()
