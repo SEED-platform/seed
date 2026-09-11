@@ -1,3 +1,115 @@
+# SEED Version 3.4.1
+
+<!-- Release notes generated using configuration in .github/release.yml at develop -->
+
+## What's Changed
+### New Features 🎉
+* Portfolio Summary Salesforce by @haneslinger in https://github.com/SEED-platform/seed/pull/5126
+* Create HVAC metrics by @haneslinger in https://github.com/SEED-platform/seed/pull/5114
+* Add a select-all for `Recognize Empty` column property by @perryr16 in https://github.com/SEED-platform/seed/pull/5115
+* Custom SMTP backend by @JesseMBarr in https://github.com/SEED-platform/seed/pull/5176
+* Check mapped data for blanks by @perryr16 in https://github.com/SEED-platform/seed/pull/5127
+* Sort on related columns from inventory list by @perryr16 in https://github.com/SEED-platform/seed/pull/5142
+* Add chart to Meters inventory page by @haneslinger in https://github.com/SEED-platform/seed/pull/5161
+* Add max data charted to organization settings by @haneslinger in https://github.com/SEED-platform/seed/pull/5163
+* Add copy-to-cycle function by @haneslinger in https://github.com/SEED-platform/seed/pull/5211
+* Add ESPM Data Explorer benchmark data by @nllong in https://github.com/SEED-platform/seed/pull/5270
+### Improvements 📈
+* BB Salesforce cleanup by @kflemin in https://github.com/SEED-platform/seed/pull/5141
+* BB import scripts by @haneslinger in https://github.com/SEED-platform/seed/pull/5151
+* Remove legend by @haneslinger in https://github.com/SEED-platform/seed/pull/5175
+* Limit organization data based on user access level by @perryr16 in https://github.com/SEED-platform/seed/pull/5124
+* Add square footage total to data summary page enhancement by @LaurenKerrNREL in https://github.com/SEED-platform/seed/pull/5131
+* Fix blank postal code bug by @perryr16 in https://github.com/SEED-platform/seed/pull/5139
+* Revert "Disable ability to remove matching criteria fields once inventory is added" by @haneslinger in https://github.com/SEED-platform/seed/pull/5156
+* Update Salesforce dependency and enhance benchmark object retrieval by @kflemin in https://github.com/SEED-platform/seed/pull/5179
+* Python 3.12 and other architectural improvements by @axelstudios in https://github.com/SEED-platform/seed/pull/5182
+* Add new BETTER mappings by @kflemin in https://github.com/SEED-platform/seed/pull/5226
+* Make filter groups optional for custom report configurations by @kflemin in https://github.com/SEED-platform/seed/pull/5232
+* Update summary endpoint to return total GFA by @kflemin in https://github.com/SEED-platform/seed/pull/5234
+* Add v4 property column stats API by @nllong in https://github.com/SEED-platform/seed/pull/5262
+* Add AGENTS.md orienting on the two-frontend migration by @nllong in https://github.com/SEED-platform/seed/pull/5279
+* Ensure portfolio summary partner approvals are stored with user attached by @kflemin in https://github.com/SEED-platform/seed/pull/5288
+* Optimize cross-cycles queries (properties_across_cycles / taxlots_across_cycles) by @nllong in https://github.com/SEED-platform/seed/pull/5295
+* Stop embedding units in public feed values; add "<field>_units" sibling key by @nllong in https://github.com/SEED-platform/seed/pull/5293
+* Implement 2FA login for new UI by @kflemin in https://github.com/SEED-platform/seed/pull/5303
+* Allow cross-cycle labels on inventory pages by @kflemin in https://github.com/SEED-platform/seed/pull/5321
+* Add env variable to configure server to redirect to new UI vs old after Salesforce authentication by @kflemin in https://github.com/SEED-platform/seed/pull/5322
+### Maintenance 🧹
+* NLR name change by @kflemin in https://github.com/SEED-platform/seed/pull/5152
+* Bump django from 4.2.26 to 4.2.27 in /requirements by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5148
+* Update copyright to 2026 by @axelstudios in https://github.com/SEED-platform/seed/pull/5160
+* Migration to pnpm and jasmine v6 by @axelstudios in https://github.com/SEED-platform/seed/pull/5172
+* Bump django from 4.2.27 to 4.2.29 in /requirements by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5180
+* Update `urllib3` and replace NREL references by @axelstudios in https://github.com/SEED-platform/seed/pull/5196
+* deps: bump the dev-deps group with 2 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5194
+* Bump requests from 2.32.5 to 2.33.0 by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5186
+* Use corepack-pinned pnpm and Node 24 in Docker by @axelstudios in https://github.com/SEED-platform/seed/pull/5191
+* Dependency update by @axelstudios in https://github.com/SEED-platform/seed/pull/5210
+* deps: bump the dev-deps group with 2 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5217
+* Psycopg v3 migration by @axelstudios in https://github.com/SEED-platform/seed/pull/5219
+* Postgres 18 by @axelstudios in https://github.com/SEED-platform/seed/pull/5222
+* Django v6 by @axelstudios in https://github.com/SEED-platform/seed/pull/5221
+* 22x `add_eeej_data` Performance Improvement by @axelstudios in https://github.com/SEED-platform/seed/pull/5225
+* Docker multi-stage build by @axelstudios in https://github.com/SEED-platform/seed/pull/5227
+* deps: bump urllib3 from 2.6.3 to 2.7.0 by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5231
+* deps: bump the dev-deps group across 1 directory with 6 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5235
+* deps: bump the prod-deps group across 1 directory with 4 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5236
+* Updated mypy to v2 by @axelstudios in https://github.com/SEED-platform/seed/pull/5238
+* deps: bump the dev-deps group across 1 directory with 3 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5241
+* deps: bump the prod-deps group across 1 directory with 3 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5242
+* ci: add copilot-setup-steps for cloud agent test environment by @nllong in https://github.com/SEED-platform/seed/pull/5267
+* Update instructions for using uv by @nllong in https://github.com/SEED-platform/seed/pull/5257
+* Fix NLR name by @nllong in https://github.com/SEED-platform/seed/pull/5259
+* Fix migrations when restoring prod database, sort deterministically when ordering property|tax states by @nllong in https://github.com/SEED-platform/seed/pull/5261
+* Consolidate and update dependency and CI packages by @nllong in https://github.com/SEED-platform/seed/pull/5260
+* chore: remove Dockerfile.ecs (Stratus now builds from Dockerfile) by @dhaley in https://github.com/SEED-platform/seed/pull/5277
+* deps: bump the dev-deps group with 6 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5275
+* deps: bump the prod-deps group with 5 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5276
+* Add standalone Salesforce connection test by @nllong in https://github.com/SEED-platform/seed/pull/5281
+* deps: bump the dev-deps group with 3 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5284
+* Update agent documentation to ensure branching off develop, not main by @nllong in https://github.com/SEED-platform/seed/pull/5290
+* Update puppeteer for CVE by @kflemin in https://github.com/SEED-platform/seed/pull/5287
+* deps: bump hypothesis from 6.161.1 to 6.161.8 in the dev-deps group by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5292
+* deps: bump cryptography from 48.0.1 to 50.0.0 by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5297
+* fix: consolidate gettext into main apk add to reduce network calls by @dhaley in https://github.com/SEED-platform/seed/pull/5302
+* Only update direct dependencies by @nllong in https://github.com/SEED-platform/seed/pull/5310
+* Update new UI sha by @kflemin in https://github.com/SEED-platform/seed/pull/5312
+* Send Nginx logs to stdout for aws troubleshooting by @kflemin in https://github.com/SEED-platform/seed/pull/5313
+* Dependency Updates by @axelstudios in https://github.com/SEED-platform/seed/pull/5314
+* Bump seed version by @nllong in https://github.com/SEED-platform/seed/pull/5316
+* deps: bump the prod-deps group with 2 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5318
+* deps: bump the dev-deps group with 4 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5319
+* deps: bump the prod-deps group across 1 directory with 4 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5320
+* deps: bump the prod-deps group with 4 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5324
+* deps: bump the dev-deps group with 2 updates by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5323
+* deps: bump hypothesis from 6.167.1 to 6.168.0 in the dev-deps group across 1 directory by @dependabot[bot] in https://github.com/SEED-platform/seed/pull/5325
+### Bug Fixes 🐛
+* Fix Portfolio Summary load and test issue by @perryr16 in https://github.com/SEED-platform/seed/pull/5146
+* Fix Salesforce redirect URI for BB testing by @kflemin in https://github.com/SEED-platform/seed/pull/5153
+* Update redirect URI identification for BB Salesforce by @kflemin in https://github.com/SEED-platform/seed/pull/5154
+* Fix HVAC metrics analysis card by @haneslinger in https://github.com/SEED-platform/seed/pull/5159
+* Fix code retrieval for BB Salesforce URL by @kflemin in https://github.com/SEED-platform/seed/pull/5165
+* Update viewer group permissions by @perryr16 in https://github.com/SEED-platform/seed/pull/4925
+* Improve file download capabilities by @perryr16 in https://github.com/SEED-platform/seed/pull/5129
+* Replace all OTP emails with null by @axelstudios in https://github.com/SEED-platform/seed/pull/5209
+* Fix error when logging out by @nllong in https://github.com/SEED-platform/seed/pull/5258
+* Fix ARM builds by @axelstudios in https://github.com/SEED-platform/seed/pull/5273
+* Fix flaky report axis options test with deterministic column ordering by @nllong in https://github.com/SEED-platform/seed/pull/5280
+* Fix column mapping export to handle omitted fields by @kflemin in https://github.com/SEED-platform/seed/pull/5286
+* Fix 404 on public feed/geojson URLs by disabling trailing slash by @nllong in https://github.com/SEED-platform/seed/pull/5294
+* Fix nginx path to new app collected_static by @kflemin in https://github.com/SEED-platform/seed/pull/5308
+* Fix nginx new UI path again by @kflemin in https://github.com/SEED-platform/seed/pull/5309
+* Fix merging PropertyMeasures from both PropertyStates by @axelstudios in https://github.com/SEED-platform/seed/pull/5304
+* Fix default cycle creation when cycles already exist by @kflemin in https://github.com/SEED-platform/seed/pull/5315
+
+## New Contributors
+* @JesseMBarr made their first contribution in https://github.com/SEED-platform/seed/pull/5176
+* @LaurenKerrNREL made their first contribution in https://github.com/SEED-platform/seed/pull/5131
+
+
+**Full Changelog**: https://github.com/SEED-platform/seed/compare/v3.3.2...v3.4.1
+
 # SEED Version 3.3.2
 
 <!-- Release notes generated using configuration in .github/release.yml at develop -->

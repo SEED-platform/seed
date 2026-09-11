@@ -5,5 +5,11 @@ packages:
   - ng_seed/seed-angular
   - vendors
 
-onlyBuiltDependencies:
-  - puppeteer
+allowBuilds:
+  '@parcel/watcher': true
+  '@scarf/scarf': false
+  esbuild: true
+  lmdb: true
+  msgpackr-extract: true
+  puppeteer: true
+  unrs-resolver: true

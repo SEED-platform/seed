@@ -38,6 +38,11 @@ local_untracked.py file
         ),
     )
 
+Version 3.4.1
+-------------
+- This release migrated from Postgres v12 to v18, and requires that pre-existing SEED database be migrated. This is a breaking change and requires updating your existing database via `these instructions <https://github.com/SEED-platform/seed/blob/develop/docs/source/postgres_upgrade.rst>`_, or starting fresh with a new database on postgres 18. See `this PR <https://github.com/SEED-platform/seed/pull/5222>`_ for details.
+- In addition, run ``./manage.py migrate`` like migrating the database.
+
 Version 3.3.2
 -------------
 - There are no special migrations needed for this version. Simply run ``./manage.py migrate``.
