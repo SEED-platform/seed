@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 
 import requests
+from django.conf import settings
 from django.contrib.sites.models import Site
 from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
@@ -25,6 +26,31 @@ from seed.utils.cache import get_cache_raw, set_cache_raw
 logger = logging.getLogger(__name__)
 
 REDIRECT_URI_ENDING = "/app/#/salesforce_login"
+
+
+def _get_redirect_uri_ending():
+    """Callback path for the Salesforce OAuth flow, defaulting to the legacy UI.
+
+    Deployments that prefer the Angular UI set SALESFORCE_REDIRECT_URI_ENDING to
+    "/ng-app/salesforce-login". Whatever this returns must be registered as a callback
+    URL on the Salesforce external client app, and must be identical for the authorize
+    request and the token exchange.
+    """
+    ending = getattr(settings, "SALESFORCE_REDIRECT_URI_ENDING", None)
+    if not ending:
+        return REDIRECT_URI_ENDING
+
+    ending = ending.strip()
+
+    # This setting is intended to be a path appended to the site domain, not a full URL.
+    if "://" in ending:
+        logger.error("SALESFORCE_REDIRECT_URI_ENDING must be a path (e.g. /ng-app/salesforce-login); falling back to legacy UI")
+        return REDIRECT_URI_ENDING
+
+    if not ending.startswith("/"):
+        ending = f"/{ending}"
+
+    return ending
 
 
 def _get_redirect_uri():
@@ -93,14 +119,14 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
             # will need to use ENV VAR to define the domain name b/c right now
             # it's coming in as the raw AWS domain
             redirect_uri = "https://dev1.seed-platform.org"
-        logger.warning(f"BB SALESFORCE REDIRECT URI: {redirect_uri + REDIRECT_URI_ENDING}")
+        logger.warning(f"BB SALESFORCE REDIRECT URI: {redirect_uri + _get_redirect_uri_ending()}")
 
         request = PreparedRequest()
         request.prepare_url(
             url=f"{bb_salesforce_config.salesforce_url}/oauth2/authorize",
             params={
                 "client_id": bb_salesforce_config.client_id,
-                "redirect_uri": redirect_uri + REDIRECT_URI_ENDING,
+                "redirect_uri": redirect_uri + _get_redirect_uri_ending(),
                 "response_type": "code",
                 "code_challenge": code_challenge,
             },
@@ -156,7 +182,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
                 "code": code,
                 "client_id": bb_salesforce_config.client_id,
                 "client_secret": bb_salesforce_config.client_secret,
-                "redirect_uri": redirect_uri + REDIRECT_URI_ENDING,
+                "redirect_uri": redirect_uri + _get_redirect_uri_ending(),
                 "code_verifier": code_verifier,
             },
             headers={"accept": "application/json"},

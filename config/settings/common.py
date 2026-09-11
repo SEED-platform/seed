@@ -349,6 +349,11 @@ BETTER_HOST = os.environ.get("BETTER_HOST", "https://better.lbl.gov")
 # Audit Template Production Host
 AUDIT_TEMPLATE_HOST = os.environ.get("AUDIT_TEMPLATE_HOST", "https://buildingenergyscore.energy.gov")
 
+# Path appended to the site domain for the Salesforce OAuth callback. Unset means the
+# legacy AngularJS UI; set to "/ng-app/salesforce-login" to send a deployment to the Angular UI.
+# Must match a callback URL registered on the Salesforce external client app.
+SALESFORCE_REDIRECT_URI_ENDING = os.environ.get("SALESFORCE_REDIRECT_URI_ENDING")
+
 # Google reCAPTCHA env variable for self-registration. SITE_KEY defaults
 # to the key registered for SEED. Override it needing to test.
 # https://developers.google.com/recaptcha/docs/faq#id-like-to-run-automated-tests-with-recaptcha.-what-should-i-do
