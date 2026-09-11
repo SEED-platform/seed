@@ -334,9 +334,13 @@ class TaxLotProperty(models.Model):
                 obj_dict["goal_note"] = goal_note.serialize() if goal_note else None
                 obj_dict["historical_note"] = obj.property.historical_note.serialize()
 
-            # add non goal label ids
+            # add label ids
             if this_cls == "Property":
-                obj_dict["labels"] = list(obj.propertyviewlabel_set.filter(goal__isnull=True).values_list("statuslabel_id", flat=True))
+                label_qs = obj.propertyviewlabel_set.all()
+                if goal_id:
+                    # the goal's own labels are served separately by /property_view_labels/
+                    label_qs = label_qs.filter(goal__isnull=True)
+                obj_dict["labels"] = list(label_qs.values_list("statuslabel_id", flat=True).distinct())
             else:
                 obj_dict["labels"] = list(obj.labels.values_list("id", flat=True))
 

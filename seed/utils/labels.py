@@ -4,7 +4,9 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+from collections import defaultdict
 
+from django.apps import apps
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db.models import Q
 from rest_framework import response, status
@@ -58,9 +60,6 @@ def get_labels(request, qs, super_organization, inv_type):
         }
     )
     inventory = inventory.filter(in_subtree)
-    # remove labels that have been applied to goals
-    if inv_type == "property_view":
-        qs = qs.filter(propertyviewlabel__goal__isnull=True)
 
     # "is_applied" is a list of views with the label, but only the views that are in inventory.
     qs = qs.annotate(
@@ -71,7 +70,31 @@ def get_labels(request, qs, super_organization, inv_type):
         )
     )
 
-    results = LabelSerializer(qs, super_organization=super_organization, many=True).data
+    results = LabelSerializer(
+        qs,
+        super_organization=super_organization,
+        many=True,
+        context={"goal_applied_views": _goal_applied_views(inv_type, inventory)},
+    ).data
 
     status_code = status.HTTP_200_OK
     return response.Response(results, status=status_code)
+
+
+def _goal_applied_views(inv_type, inventory):
+    """
+    Map each label id to the views it was applied to by a goal's cross-cycle data quality check.
+    Queried separately rather than as a second ArrayAgg so the extra join can't multiply is_applied.
+    """
+    if inv_type != "property_view":
+        return None
+
+    PropertyViewLabel = apps.get_model("seed", "PropertyViewLabel")
+    rows = PropertyViewLabel.objects.filter(propertyview__in=inventory.values_list("id", flat=True), goal__isnull=False).values_list(
+        "statuslabel_id", "propertyview_id"
+    )
+
+    goal_applied = defaultdict(list)
+    for label_id, view_id in rows:
+        goal_applied[label_id].append(view_id)
+    return goal_applied

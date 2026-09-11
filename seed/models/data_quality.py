@@ -651,7 +651,15 @@ def _get_value_from_state(state, column):
     else:
         res = getattr(state, column.column_name)
 
-    return None if res is None else res.m
+    if res is None:
+        return None
+    if isinstance(res, ureg.Quantity):
+        return res.m
+    # extra_data and derived_data are stored raw (usually as strings) and carry no pint units
+    try:
+        return float(res)
+    except (TypeError, ValueError):
+        return None
 
 
 class DataQualityCheck(models.Model):
