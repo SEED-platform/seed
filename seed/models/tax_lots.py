@@ -72,6 +72,7 @@ class TaxLotState(models.Model):
     merge_state = models.IntegerField(choices=MERGE_STATE, default=MERGE_STATE_UNKNOWN, null=True)
     raw_access_level_instance = models.ForeignKey(AccessLevelInstance, null=True, on_delete=models.SET_NULL)
     raw_access_level_instance_error = models.TextField(null=True)
+    incoming_labels = models.TextField(null=True, blank=True)
 
     custom_id_1 = models.CharField(max_length=255, null=True, blank=True, db_collation="natural_sort")
 
