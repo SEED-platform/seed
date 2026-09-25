@@ -96,7 +96,7 @@ dev = [
     "mock==5.2.0",
     "hypothesis~=6.168.0",
     # Coverage / reporting
-    "coverage~=7.16.0",
+    "coverage~=7.16.1",
     "coveralls==4.1.0",
     # Local/CI orchestration
     "tox-uv-bare==1.36.0",
