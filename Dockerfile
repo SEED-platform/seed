@@ -126,7 +126,11 @@ RUN apk add --no-cache \
         tzdata \
         xz-libs \
         zlib && \
-    mkdir -p /run/nginx /var/log/supervisord
+    mkdir -p /run/nginx /var/log/supervisord && \
+    # Remove the npm CLI bundled with the base node image: this app installs all JS
+    # dependencies via pnpm and never invokes npm/npx at build or run time, so dropping it
+    # trims unused attack surface
+    rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
 
 ## Note on some of the commands above:
 ##   - coreutils is required due to an issue with our wait-for-it.sh script:
