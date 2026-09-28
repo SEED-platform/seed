@@ -13,3 +13,8 @@ allowBuilds:
   msgpackr-extract: true
   puppeteer: true
   unrs-resolver: true
+
+# Keep in sync with ng_seed/seed-angular/pnpm-workspace.yaml: pnpm only reads overrides from the
+# outermost pnpm-workspace.yaml, so the nested one is ignored when this root install runs.
+overrides:
+  less: ^4.9.1

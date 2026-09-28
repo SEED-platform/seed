@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  less: ^4.9.1
+
 importers:
 
   .:
@@ -623,7 +626,7 @@ packages:
     resolution: {integrity: sha512-uJaamHkagcZtHPqCIHZxnFrXlunQXgBOsZSUOWwFw31QJCAbyTBoHMW75YOTur5ZNx8pIeAKgf6GWIgaqqiLhA==}
 
   dimple@https://codeload.github.com/PMSI-AlignAlytics/dimple/tar.gz/65f69857f5e64f3a49f0898fa00799a530607a41:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/PMSI-AlignAlytics/dimple/tar.gz/65f69857f5e64f3a49f0898fa00799a530607a41}
+    resolution: {gitHosted: true, integrity: sha512-uF2MoQOCBKBR7GjhMyu7jS2bQtJdEuj00qcn0PHSjM+rlrE2Qt7IGLYv6mPcY3uQdgvX34wYefKOFnht6KwheQ==, tarball: https://codeload.github.com/PMSI-AlignAlytics/dimple/tar.gz/65f69857f5e64f3a49f0898fa00799a530607a41}
     version: 2.3.0
 
   dom-serialize@2.2.1:
@@ -1020,7 +1023,7 @@ packages:
       ol: '>= 5.3.0'
 
   ol@https://codeload.github.com/SEED-platform/ol/tar.gz/33113bdd81c1a5e8cbabb50fc2cd535576d22f93:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/SEED-platform/ol/tar.gz/33113bdd81c1a5e8cbabb50fc2cd535576d22f93}
+    resolution: {gitHosted: true, integrity: sha512-/fbSVkDudML3aMCo3owAXlaJpmavk+DaaOGUtF7JurEbyRwX7CxDiJGk492gakWGd+59P4K5e61Suhh1h/L2Ag==, tarball: https://codeload.github.com/SEED-platform/ol/tar.gz/33113bdd81c1a5e8cbabb50fc2cd535576d22f93}
     version: 5.3.3
 
   on-finished@2.3.0:
@@ -1038,7 +1041,7 @@ packages:
     resolution: {integrity: sha512-DBm14BSn40Ee241n80zIFXIT6+y8Tb0I+jTdosLJ8Sidvr2qONvymwqymVbHV2nS+1gkDZ5eTNpnOIVV0Kn2fw==}
 
   open-location-code@https://codeload.github.com/google/open-location-code/tar.gz/2c7115db77a3c4cdd396cdeaddc4ab676216b448:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/google/open-location-code/tar.gz/2c7115db77a3c4cdd396cdeaddc4ab676216b448}
+    resolution: {gitHosted: true, integrity: sha512-HPGVZ1MDLNP1ubua2QHi1MN2j44HEuULvi0Ww9ZTYwQRf2VGcJNHeMZn8z8ug6vo2w9Xid/jysgNMMpvGXa4NA==, tarball: https://codeload.github.com/google/open-location-code/tar.gz/2c7115db77a3c4cdd396cdeaddc4ab676216b448}
     version: 1.0.0
 
   parseurl@1.3.3:
