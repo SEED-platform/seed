@@ -654,6 +654,12 @@ BASE_MAPPING_V2 = {
                 "formatter": to_float,
             },
             "measure_material_cost": {"xpath": "./auc:MeasureMaterialCost", "type": "value", "value": "text", "formatter": to_float},
+            "annual_cost_savings": {
+                "xpath": "./auc:MeasureSavingsAnalysis/auc:AnnualSavingsCost",
+                "type": "value",
+                "value": "text",
+                "formatter": to_float,
+            },
             "mv_cost": {"xpath": "./auc:MVCost", "type": "value", "value": "text", "formatter": to_float},
             "useful_life": {"xpath": "./auc:UsefulLife", "type": "value", "value": "text", "formatter": to_float},
         },

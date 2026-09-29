@@ -4,7 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.core.exceptions import ValidationError
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -13,7 +13,7 @@ from rest_framework.renderers import JSONRenderer
 
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
-from seed.models import Scenario
+from seed.models import PropertyMeasure, Scenario
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
@@ -153,12 +153,16 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     def destroy(self, request, property_pk=None, pk=None):
         try:
             scenario = Scenario.objects.get(pk=pk)
-            measures = scenario.measures.all()
         except Scenario.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No Scenario found with given pks"}, status=status.HTTP_404_NOT_FOUND)
 
-        for property_measure in measures:
-            property_measure.delete()
+        # A PropertyMeasure can be shared by several scenarios (e.g. a "package of all measures"
+        # scenario references the same measures as the individual packages), so only delete the
+        # ones that are orphaned once this scenario is gone.
+        measure_ids = list(scenario.measures.values_list("id", flat=True))
         scenario.delete()
+        PropertyMeasure.objects.filter(id__in=measure_ids, scenario__isnull=True).delete()
 
-        return JsonResponse({"status": "success", "message": "Successfully Deleted Scenario"}, status=status.HTTP_204_NO_CONTENT)
+        # A 204 response must not have a body, otherwise the declared Content-Length does not
+        # match what is sent and clients/proxies reject the response.
+        return HttpResponse(status=status.HTTP_204_NO_CONTENT)

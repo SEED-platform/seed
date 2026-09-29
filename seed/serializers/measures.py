@@ -49,6 +49,7 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
             "cost_material",
             "cost_capital_replacement",
             "cost_residual_value",
+            "annual_cost_savings",
             "useful_life",
             "scenario_id",
         )

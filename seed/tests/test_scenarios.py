@@ -215,6 +215,29 @@ class TestScenarios(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 204)
 
+    def test_delete_scenario_keeps_measures_used_by_other_scenarios(self):
+        """A PropertyMeasure shared with another scenario must survive the delete."""
+        property_state = FakePropertyMeasureFactory(self.org).get_property_state()
+        property_view = self.property_view_factory.get_property_view(state=property_state)
+
+        measures = list(property_state.propertymeasure_set.all())
+        shared_measure, exclusive_measure = measures[0], measures[1]
+
+        scenario = Scenario.objects.create(property_state=property_state, name="package all")
+        scenario.measures.set([shared_measure, exclusive_measure])
+        other_scenario = Scenario.objects.create(property_state=property_state, name="package 1")
+        other_scenario.measures.set([shared_measure])
+
+        url = reverse_lazy("api:v3:property-scenarios-detail", args=[property_view.id, scenario.id]) + f"?organization_id={self.org.pk}"
+        response = self.client.delete(url)
+
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Scenario.objects.filter(id=scenario.id).exists())
+        # the shared measure is still referenced by "package 1", the exclusive one is orphaned
+        self.assertTrue(PropertyMeasure.objects.filter(id=shared_measure.id).exists())
+        self.assertFalse(PropertyMeasure.objects.filter(id=exclusive_measure.id).exists())
+        self.assertEqual(list(other_scenario.measures.all()), [shared_measure])
+
     def test_put_scenario_permissions(self):
         property = self.property_factory.get_property(organization=self.org)
         property_view = self.property_view_factory.get_property_view(prprty=property)

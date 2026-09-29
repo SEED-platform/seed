@@ -370,6 +370,7 @@ def _spreadsheet_response(data, column_name_mappings):
         "cost_material",
         "cost_capital_replacement",
         "cost_residual_value",
+        "annual_cost_savings",
     )
     measure_keys = ("name", "display_name", "category", "category_display_name")
     # find measures and scenarios

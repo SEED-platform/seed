@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from config.settings.common import BASE_DIR
-from seed.models import Property, User
+from seed.models import Measure, Property, PropertyMeasure, User
 from seed.models.building_file import BuildingFile
 from seed.models.events import ATEvent
 from seed.models.meters import Meter, MeterReading
@@ -98,6 +98,55 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(event.cycle_id, property_view.cycle_id)
         self.assertEqual(event.building_file_id, bf.id)
         self.assertEqual(len(event.scenarios.all()), 1)
+
+    def test_buildingsync_measures_fall_back_to_latest_schema_version(self):
+        # Orgs only get 1.0.0 and 2.7.0 measures, so a 2.6.0 file should fall back to the latest available version
+        filename = path.join(BASE_DIR, "seed", "building_sync", "tests", "data", "ex_1_v2.7.0.xml")
+        with open(filename, "rb") as f:
+            content = f.read().replace(b"v2.7.0", b"v2.6.0").replace(b'version="2.7.0"', b'version="2.6.0"')
+        self.assertFalse(Measure.objects.filter(organization=self.org, schema_version="2.6.0").exists())
+
+        bf = BuildingFile.objects.create(
+            file=SimpleUploadedFile("ex_1_v2.6.0.xml", content),
+            filename="ex_1_v2.6.0.xml",
+            file_type=BuildingFile.BUILDINGSYNC,
+        )
+
+        status, property_state, _property_view, messages = bf.process(
+            self.org.id, self.org.cycles.first(), access_level_instance=self.org.root
+        )
+        self.assertTrue(status)
+        self.assertEqual(messages["errors"], [])
+        self.assertIn(
+            "Measure service_hot_water_systems:install_heat_pump_shw_system not found for schema version 2.6.0; using schema version 2.7.0",
+            messages["warnings"],
+        )
+
+        property_measures = PropertyMeasure.objects.filter(property_state=property_state)
+        self.assertEqual(property_measures.count(), 1)
+        self.assertEqual(property_measures.first().measure.schema_version, "2.7.0")
+
+    def test_buildingsync_measure_annual_cost_savings(self):
+        filename = path.join(BASE_DIR, "seed", "building_sync", "tests", "data", "ex_1_v2.7.0.xml")
+        with open(filename, "rb") as f:
+            content = f.read().replace(
+                b"<auc:LongDescription>Install heat pump SHW system</auc:LongDescription>",
+                b"<auc:LongDescription>Install heat pump SHW system</auc:LongDescription>"
+                b"<auc:MeasureSavingsAnalysis><auc:AnnualSavingsCost>1000</auc:AnnualSavingsCost></auc:MeasureSavingsAnalysis>",
+            )
+
+        bf = BuildingFile.objects.create(
+            file=SimpleUploadedFile("ex_1_v2.7.0.xml", content),
+            filename="ex_1_v2.7.0.xml",
+            file_type=BuildingFile.BUILDINGSYNC,
+        )
+
+        status, property_state, _property_view, messages = bf.process(
+            self.org.id, self.org.cycles.first(), access_level_instance=self.org.root
+        )
+        self.assertTrue(status)
+        self.assertEqual(messages["errors"], [])
+        self.assertEqual(PropertyMeasure.objects.get(property_state=property_state).annual_cost_savings, 1000.0)
 
     def test_buildingsync_bricr_import(self):
         filename = path.join(BASE_DIR, "seed", "building_sync", "tests", "data", "buildingsync_v2_0_bricr_workflow.xml")

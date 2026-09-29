@@ -128,6 +128,21 @@ class BuildingFile(models.Model):
 
         return self._cache_kbtu_thermal_conversion_factors
 
+    @staticmethod
+    def _find_measure(organization_id, category, name, schema_version):
+        return Measure.objects.filter(organization_id=organization_id, category=category, name=name, schema_version=schema_version).first()
+
+    @staticmethod
+    def _latest_measure_schema_version(organization_id):
+        versions = set(Measure.objects.filter(organization_id=organization_id).values_list("schema_version", flat=True))
+        valid_versions = []
+        for version in versions:
+            try:
+                valid_versions.append(semantic_version.Version(version))
+            except ValueError:
+                continue
+        return str(max(valid_versions)) if valid_versions else None
+
     def process(self, organization_id, cycle, property_view=None, promote_property_state=True, access_level_instance=None):
         """
         Process the building file that was uploaded and create the correct models for the object
@@ -190,14 +205,21 @@ class BuildingFile(models.Model):
             # if there is an error parsing the version, just use 1.0.0
             version_string = "1.0.0"
 
-        for m in data.get("measures", []):
-            # find measure in db (by schema_version)
-            try:
-                measure = Measure.objects.get(
-                    category=m["category"], name=m["name"], organization_id=organization_id, schema_version=version_string
-                )
+        # Orgs only have measures for some schema versions (e.g., 1.0.0 and the latest), so if the
+        # file's exact version isn't found, fall back to the latest version the org has.
+        fallback_version = self._latest_measure_schema_version(organization_id)
 
-            except Measure.DoesNotExist:
+        for m in data.get("measures", []):
+            measure = self._find_measure(organization_id, m["category"], m["name"], version_string)
+            if measure is None and fallback_version and fallback_version != version_string:
+                measure = self._find_measure(organization_id, m["category"], m["name"], fallback_version)
+                if measure is not None:
+                    messages["warnings"].append(
+                        f"Measure {m['category']}:{m['name']} not found for schema version {version_string}; "
+                        f"using schema version {fallback_version}"
+                    )
+
+            if measure is None:
                 messages["warnings"].append(
                     f"Measure category and name is not valid {m['category']}:{m['name']} for schema version {version_string}"
                 )
@@ -230,6 +252,7 @@ class BuildingFile(models.Model):
             join.cost_material = m.get("measure_material_cost")
             join.cost_capital_replacement = m.get("measure_capital_replacement_cost")
             join.cost_residual_value = m.get("measure_residual_value")
+            join.annual_cost_savings = m.get("annual_cost_savings")
             join.useful_life = m.get("useful_life")
             join.save()
 
