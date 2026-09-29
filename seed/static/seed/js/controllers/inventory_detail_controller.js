@@ -161,9 +161,12 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     }
 
     // Only PackageOfMeasures scenarios should be shown; scenario type isn't stored, so measures are the proxy.
+    // The API returns the most recently imported state as `state`; `history` only holds *prior* states,
+    // so looking at history alone hides the newest scenarios entirely.
     // Copies are made so the unfiltered historical_items remain intact.
-    $scope.order_historical_items_with_scenarios = () => {
-      $scope.historical_items_with_scenarios = ($scope.historical_items || [])
+    $scope.order_historical_items_with_scenarios = (payload = inventory_payload) => {
+      const current_item = { date_edited: payload.date_edited, state: payload.state };
+      $scope.historical_items_with_scenarios = [current_item, ...($scope.historical_items || [])]
         .map((item) => ({
           ...item,
           state: { ...item.state, scenarios: (item.state.scenarios || []).filter((scenario) => !_.isEmpty(scenario.measures)) }
@@ -943,7 +946,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
             else if ($stateParams.inventory_type === 'taxlots') promise = inventory_service.get_taxlot(property_view_id);
             promise.then((data) => {
               $scope.historical_items = data.history;
-              $scope.order_historical_items_with_scenarios();
+              $scope.order_historical_items_with_scenarios(data);
             });
           })
           .catch((err) => {
@@ -967,7 +970,7 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
     };
 
     const setMeasureGridOptions = () => {
-      if (!$scope.historical_items) {
+      if (!$scope.historical_items_with_scenarios) {
         return;
       }
 
@@ -975,7 +978,8 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
       $scope.gridApiByScenarioId = {};
       $scope.show_uigrid = {};
 
-      const at_scenarios = $scope.historical_items.filter((item) => !_.isEmpty(item.state.scenarios)).map((item) => item.state.scenarios);
+      // Use the same list the template renders so the newest import's scenarios get grids too
+      const at_scenarios = $scope.historical_items_with_scenarios.map((item) => item.state.scenarios);
       const scenarios = [].concat(...at_scenarios);
       scenarios.forEach((scenario) => {
         $scope.show_uigrid[scenario.id] = false;
@@ -992,6 +996,9 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
             cost_residual_value: measure.cost_residual_value,
             cost_total_first: measure.cost_total_first,
             annual_cost_savings: measure.annual_cost_savings,
+            annual_electricity_savings: measure.annual_electricity_savings,
+            annual_peak_electricity_reduction: measure.annual_peak_electricity_reduction,
+            annual_natural_gas_savings: measure.annual_natural_gas_savings,
             cost_capital_replacement: measure.cost_capital_replacement,
             description: measure.description,
             useful_life: measure.useful_life,
@@ -1009,6 +1016,9 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
             { field: 'cost_residual_value' },
             { field: 'cost_total_first' },
             { field: 'annual_cost_savings' },
+            { field: 'annual_electricity_savings', displayName: 'Electricity Savings (kBtu)' },
+            { field: 'annual_peak_electricity_reduction', displayName: 'Peak Electricity Reduction (kW)' },
+            { field: 'annual_natural_gas_savings', displayName: 'Natural Gas Savings (kBtu)' },
             { field: 'cost_capital_replacement' },
             { field: 'description' },
             { field: 'useful_life' },
@@ -1056,6 +1066,16 @@ angular.module('SEED.controller.inventory_detail', []).controller('inventory_det
         return null;
       }
       return values.reduce((sum, value) => sum + value, 0);
+    };
+
+    // BuildingSync reports savings on the package (ScenarioType/PackageOfMeasures) and/or on each
+    // measure (MeasureSavingsAnalysis). Prefer the package value when present, otherwise roll up
+    // the measures; Audit Template files often report savings at only one of the two levels.
+    $scope.scenario_savings_total = (scenario, field) => {
+      if (typeof scenario[field] === 'number') {
+        return scenario[field];
+      }
+      return $scope.scenario_measure_total(scenario, field);
     };
 
     $scope.formatMeasureStatuses = (scenario) => {

@@ -87,6 +87,9 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         request_body=AutoSchemaHelper.schema_factory(
             {
                 "annual_cost_savings": "integer",
+                "annual_electricity_savings": "integer",
+                "annual_natural_gas_savings": "integer",
+                "annual_peak_electricity_reduction": "integer",
                 "application_scale": PropertyMeasure.APPLICATION_SCALE_TYPES,
                 "category_affected": PropertyMeasure.CATEGORY_AFFECTED_TYPE,
                 "cost_capital_replacement": "integer",

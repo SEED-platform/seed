@@ -210,68 +210,71 @@ def to_energy_type(energy_type):
     if energy_type is None:
         return energy_type
 
-    # valid energy type values from the schema (<xs:simpleType name="FuelTypes">) and their maps
-    # non-trivial or non-obvious mappings currently map to "Other:" and are flagged with a comment
-    # this mapping is important for unit generation... see "kbtu_thermal_conversion_factors"
-    energy_name = {
-        "Electricity": "Electric - Grid",
-        "Electricity-Exported": "Electric - Grid",
-        "Electricity-Onsite generated": "Other:",  # other?
-        "Natural gas": "Natural Gas",
-        "Fuel oil": "Other:",  # other?
-        "Fuel oil no 1": "Fuel oil (No. 1)",
-        "Fuel oil no 2": "Fuel Oil (No. 2)",
-        "Fuel oil no 4": "Fuel Oil (No. 4)",
-        "Fuel oil no 5": "Other:",  # other?
-        "Fuel oil no 5 (light)": "Other:",  # other?
-        "Fuel oil no 5 (heavy)": "Other:",  # other?
-        "Fuel oil no 6": "Fuel Oil (No. 5 and No. 6)",  # other?
-        "Fuel oil no 5 and no 6": "Fuel Oil (No. 5 and No. 6)",
-        "District steam": "District Steam",
-        "District hot water": "District Hot Water",
-        "District chilled water": "District Chilled Water - Other",  # correct mapping?
-        "Propane": "Propane",
-        "Liquid propane": "Propane",
-        "Kerosene": "Kerosene",
-        "Diesel": "Diesel",
-        "Coal": "Other:",  # other?
-        "Coal anthracite": "Coal (anthracite)",
-        "Coal bituminous": "Coal (bituminous)",
-        "Coke": "Coke",
-        "Wood": "Wood",
-        "Wood pellets": "Wood",
-        "Hydropower": "Other:",  # other?
-        "Biofuel": "Other:",  # other?
-        "Biofuel B5": "Other:",  # other?
-        "Biofuel B10": "Other:",  # other?
-        "Biofuel B20": "Other:",  # other?
-        "Wind": "Electric - Wind",
-        "Geothermal": "Other:",  # other?
-        "Solar": "Electric - Solar",
-        "Biomass": "Other:",  # other?
-        "Hydrothermal": "Other:",  # other?
-        "Dry steam": "Other:",  # other?
-        "Flash steam": "Other:",  # other?
-        "Ethanol": "Other:",  # other?
-        "Biodiesel": "Other:",  # other?
-        "Waste heat": "Other:",  # other?
-        "Dual fuel": "Other:",  # other?
-        "Gasoline": "Other:",  # other?
-        "Thermal-Exported": "Other:",  # other?
-        "Thermal-Onsite generated": "Other:",  # other?
-        "Other delivered-Exported": "Other:",  # other?
-        "Other delivered-Onsite generated": "Other:",  # other?
-        "Other metered-Exported": "Other:",  # other?
-        "Other metered-Onsite generated": "Other:",  # other?
-        "Other": "Other:",
-        "Unknown": "Other:",  # other?
-    }.get(energy_type, energy_type).lower()
+    energy_name = BSYNC_TO_PM_ENERGY_TYPE.get(energy_type, energy_type).lower()
     for energy_pair in Meter.ENERGY_TYPES:
         if energy_pair[1].lower() == energy_name:
             return energy_pair[0]
 
     # couldn't find this energy type... default to "Other:"
     return Meter.ENERGY_TYPES.OTHER
+
+
+# valid energy type values from the schema (<xs:simpleType name="FuelTypes">) and their maps
+# non-trivial or non-obvious mappings currently map to "Other:" and are flagged with a comment
+# this mapping is important for unit generation... see "kbtu_thermal_conversion_factors"
+BSYNC_TO_PM_ENERGY_TYPE = {
+    "Electricity": "Electric - Grid",
+    "Electricity-Exported": "Electric - Grid",
+    "Electricity-Onsite generated": "Other:",  # other?
+    "Natural gas": "Natural Gas",
+    "Fuel oil": "Other:",  # other?
+    "Fuel oil no 1": "Fuel oil (No. 1)",
+    "Fuel oil no 2": "Fuel Oil (No. 2)",
+    "Fuel oil no 4": "Fuel Oil (No. 4)",
+    "Fuel oil no 5": "Other:",  # other?
+    "Fuel oil no 5 (light)": "Other:",  # other?
+    "Fuel oil no 5 (heavy)": "Other:",  # other?
+    "Fuel oil no 6": "Fuel Oil (No. 5 and No. 6)",  # other?
+    "Fuel oil no 5 and no 6": "Fuel Oil (No. 5 and No. 6)",
+    "District steam": "District Steam",
+    "District hot water": "District Hot Water",
+    "District chilled water": "District Chilled Water - Other",  # correct mapping?
+    "Propane": "Propane",
+    "Liquid propane": "Propane",
+    "Kerosene": "Kerosene",
+    "Diesel": "Diesel",
+    "Coal": "Other:",  # other?
+    "Coal anthracite": "Coal (anthracite)",
+    "Coal bituminous": "Coal (bituminous)",
+    "Coke": "Coke",
+    "Wood": "Wood",
+    "Wood pellets": "Wood",
+    "Hydropower": "Other:",  # other?
+    "Biofuel": "Other:",  # other?
+    "Biofuel B5": "Other:",  # other?
+    "Biofuel B10": "Other:",  # other?
+    "Biofuel B20": "Other:",  # other?
+    "Wind": "Electric - Wind",
+    "Geothermal": "Other:",  # other?
+    "Solar": "Electric - Solar",
+    "Biomass": "Other:",  # other?
+    "Hydrothermal": "Other:",  # other?
+    "Dry steam": "Other:",  # other?
+    "Flash steam": "Other:",  # other?
+    "Ethanol": "Other:",  # other?
+    "Biodiesel": "Other:",  # other?
+    "Waste heat": "Other:",  # other?
+    "Dual fuel": "Other:",  # other?
+    "Gasoline": "Other:",  # other?
+    "Thermal-Exported": "Other:",  # other?
+    "Thermal-Onsite generated": "Other:",  # other?
+    "Other delivered-Exported": "Other:",  # other?
+    "Other delivered-Onsite generated": "Other:",  # other?
+    "Other metered-Exported": "Other:",  # other?
+    "Other metered-Onsite generated": "Other:",  # other?
+    "Other": "Other:",
+    "Unknown": "Other:",  # other?
+}
 
 
 def to_energy_units(units):
@@ -308,6 +311,39 @@ def to_energy_units(units):
         "Unknown": "Unknown",
         "None": "None",
     }.get(units, "Unknown")
+
+
+def savings_to_kbtu(value, energy_resource, resource_units, country="US"):
+    """Converts a BuildingSync AnnualSavingsNativeUnits value into kBtu.
+
+    BuildingSync reports fuel savings in whatever units the auditor used (kWh for
+    electricity, therms for natural gas, ...), but SEED stores and displays these
+    savings in kBtu. This reuses the Portfolio Manager thermal conversion factors
+    along with the same BuildingSync -> PM vocabulary maps used for meter readings.
+
+    :param value: float | None, the savings in native units
+    :param energy_resource: string | None, BuildingSync auc:EnergyResource
+    :param resource_units: string | None, BuildingSync auc:ResourceUnits
+    :param country: string, org thermal conversion assumption ("US" or "CAN")
+    :return: (float | None, string | None) the kBtu value and a warning when not converted
+    """
+    # avoid circular dependency
+    from seed.data_importer.utils import kbtu_thermal_conversion_factors
+
+    if value is None:
+        return None, None
+
+    if resource_units is None:
+        return value, f'Assuming kBtu for "{energy_resource}" savings because no auc:ResourceUnits was provided'
+
+    pm_type = BSYNC_TO_PM_ENERGY_TYPE.get(energy_resource, energy_resource)
+    pm_units = to_energy_units(resource_units)
+    factor = kbtu_thermal_conversion_factors(country).get(pm_type, {}).get(pm_units)
+
+    if factor is None:
+        return value, f'Could not convert "{energy_resource}" savings from "{resource_units}" to kBtu; storing the value as provided'
+
+    return value * factor, None
 
 
 def to_float(value):
@@ -660,6 +696,34 @@ BASE_MAPPING_V2 = {
                 "value": "text",
                 "formatter": to_float,
             },
+            "annual_electricity_savings": {
+                "xpath": './auc:MeasureSavingsAnalysis/auc:AnnualSavingsByFuels/auc:AnnualSavingsByFuel[auc:EnergyResource="Electricity"]/auc:AnnualSavingsNativeUnits',
+                "type": "value",
+                "value": "text",
+                "formatter": to_float,
+            },
+            "annual_electricity_savings_units": {
+                "xpath": './auc:MeasureSavingsAnalysis/auc:AnnualSavingsByFuels/auc:AnnualSavingsByFuel[auc:EnergyResource="Electricity"]/auc:ResourceUnits',
+                "type": "value",
+                "value": "text",
+            },
+            "annual_natural_gas_savings": {
+                "xpath": './auc:MeasureSavingsAnalysis/auc:AnnualSavingsByFuels/auc:AnnualSavingsByFuel[auc:EnergyResource="Natural gas"]/auc:AnnualSavingsNativeUnits',
+                "type": "value",
+                "value": "text",
+                "formatter": to_float,
+            },
+            "annual_natural_gas_savings_units": {
+                "xpath": './auc:MeasureSavingsAnalysis/auc:AnnualSavingsByFuels/auc:AnnualSavingsByFuel[auc:EnergyResource="Natural gas"]/auc:ResourceUnits',
+                "type": "value",
+                "value": "text",
+            },
+            "annual_peak_electricity_reduction": {
+                "xpath": "./auc:MeasureSavingsAnalysis/auc:AnnualPeakElectricityReduction",
+                "type": "value",
+                "value": "text",
+                "formatter": to_float,
+            },
             "mv_cost": {"xpath": "./auc:MVCost", "type": "value", "value": "text", "formatter": to_float},
             "useful_life": {"xpath": "./auc:UsefulLife", "type": "value", "value": "text", "formatter": to_float},
         },
@@ -712,9 +776,21 @@ BASE_MAPPING_V2 = {
                 "xpath": './auc:ScenarioType/auc:PackageOfMeasures/auc:AnnualSavingsByFuels/auc:AnnualSavingsByFuel[auc:EnergyResource="Electricity"]/auc:AnnualSavingsNativeUnits',
                 "type": "value",
                 "value": "text",
+                "formatter": to_float,
+            },
+            "annual_electricity_savings_units": {
+                "xpath": './auc:ScenarioType/auc:PackageOfMeasures/auc:AnnualSavingsByFuels/auc:AnnualSavingsByFuel[auc:EnergyResource="Electricity"]/auc:ResourceUnits',
+                "type": "value",
+                "value": "text",
             },
             "annual_natural_gas_savings": {
                 "xpath": './auc:ScenarioType/auc:PackageOfMeasures/auc:AnnualSavingsByFuels/auc:AnnualSavingsByFuel[auc:EnergyResource="Natural gas"]/auc:AnnualSavingsNativeUnits',
+                "type": "value",
+                "value": "text",
+                "formatter": to_float,
+            },
+            "annual_natural_gas_savings_units": {
+                "xpath": './auc:ScenarioType/auc:PackageOfMeasures/auc:AnnualSavingsByFuels/auc:AnnualSavingsByFuel[auc:EnergyResource="Natural gas"]/auc:ResourceUnits',
                 "type": "value",
                 "value": "text",
             },
@@ -752,6 +828,7 @@ BASE_MAPPING_V2 = {
                 "xpath": "./auc:ScenarioType/auc:PackageOfMeasures/auc:AnnualPeakElectricityReduction",
                 "type": "value",
                 "value": "text",
+                "formatter": to_float,
             },
             "annual_natural_gas_energy": {
                 "xpath": './auc:ResourceUses/auc:ResourceUse[auc:EnergyResource="Natural gas"]/auc:AnnualFuelUseConsistentUnits',

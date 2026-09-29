@@ -11,9 +11,11 @@ import semantic_version
 from django.db import models
 
 from seed.building_sync.building_sync import BuildingSync, ParsingError
+from seed.building_sync.mappings import savings_to_kbtu
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.hpxml.hpxml import HPXML as HPXMLParser  # noqa: N811
 from seed.lib.merging.merging import merge_state
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     AUDIT_IMPORT,
     MERGE_STATE_MERGED,
@@ -133,6 +135,28 @@ class BuildingFile(models.Model):
         return Measure.objects.filter(organization_id=organization_id, category=category, name=name, schema_version=schema_version).first()
 
     @staticmethod
+    def _savings_in_kbtu(source, country, messages):
+        """Converts a parsed scenario's or measure's fuel savings from native units into kBtu.
+
+        Both mappings expose the same key names, so this works for either level.
+
+        :return: (float | None, float | None), electricity and natural gas savings in kBtu
+        """
+        electricity, warning = savings_to_kbtu(
+            source.get("annual_electricity_savings"), "Electricity", source.get("annual_electricity_savings_units"), country
+        )
+        if warning:
+            messages["warnings"].append(warning)
+
+        natural_gas, warning = savings_to_kbtu(
+            source.get("annual_natural_gas_savings"), "Natural gas", source.get("annual_natural_gas_savings_units"), country
+        )
+        if warning:
+            messages["warnings"].append(warning)
+
+        return electricity, natural_gas
+
+    @staticmethod
     def _latest_measure_schema_version(organization_id):
         versions = set(Measure.objects.filter(organization_id=organization_id).values_list("schema_version", flat=True))
         valid_versions = []
@@ -208,6 +232,7 @@ class BuildingFile(models.Model):
         # Orgs only have measures for some schema versions (e.g., 1.0.0 and the latest), so if the
         # file's exact version isn't found, fall back to the latest version the org has.
         fallback_version = self._latest_measure_schema_version(organization_id)
+        org_country = Organization.objects.get(pk=organization_id).get_thermal_conversion_assumption_display()
 
         for m in data.get("measures", []):
             measure = self._find_measure(organization_id, m["category"], m["name"], version_string)
@@ -253,6 +278,8 @@ class BuildingFile(models.Model):
             join.cost_capital_replacement = m.get("measure_capital_replacement_cost")
             join.cost_residual_value = m.get("measure_residual_value")
             join.annual_cost_savings = m.get("annual_cost_savings")
+            join.annual_electricity_savings, join.annual_natural_gas_savings = self._savings_in_kbtu(m, org_country, messages)
+            join.annual_peak_electricity_reduction = m.get("annual_peak_electricity_reduction")
             join.useful_life = m.get("useful_life")
             join.save()
 
@@ -280,8 +307,7 @@ class BuildingFile(models.Model):
             scenario.hdd_base_temperature = s.get("hdd_base_temperature")
             scenario.cdd = s.get("cdd")
             scenario.cdd_base_temperature = s.get("cdd_base_temperature")
-            scenario.annual_electricity_savings = s.get("annual_electricity_savings")
-            scenario.annual_natural_gas_savings = s.get("annual_natural_gas_savings")
+            scenario.annual_electricity_savings, scenario.annual_natural_gas_savings = self._savings_in_kbtu(s, org_country, messages)
             scenario.annual_site_energy = s.get("annual_site_energy")
             scenario.annual_source_energy = s.get("annual_source_energy")
             scenario.annual_site_energy_use_intensity = s.get("annual_site_energy_use_intensity")

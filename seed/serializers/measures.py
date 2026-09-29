@@ -50,6 +50,9 @@ class PropertyMeasureSerializer(serializers.HyperlinkedModelSerializer):
             "cost_capital_replacement",
             "cost_residual_value",
             "annual_cost_savings",
+            "annual_electricity_savings",
+            "annual_natural_gas_savings",
+            "annual_peak_electricity_reduction",
             "useful_life",
             "scenario_id",
         )
