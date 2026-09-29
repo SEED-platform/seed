@@ -14,7 +14,7 @@ from zoneinfo import ZoneInfo
 
 import pytest
 from django.db.models import Q
-from django.test import TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.utils.timezone import make_aware
 from lxml import etree
 from quantityfield.units import ureg
@@ -23,6 +23,12 @@ from requests import Response
 from config.settings.common import BASE_DIR, TIME_ZONE
 from seed.analysis_pipelines.better.buildingsync import _build_better_input
 from seed.analysis_pipelines.bsyncr import PREMISES_ID_NAME, BsyncrPipeline, _build_bsyncr_input, _parse_analysis_property_view_id
+from seed.analysis_pipelines.building_energy_surrogate import (
+    DEFAULT_TAX_YEAR,
+    TAX_POLICY_BY_YEAR,
+    _tax_policy_for_date,
+    _tax_year_from_date,
+)
 from seed.analysis_pipelines.eeej import _get_data_for_census_tract_fetch, _get_eeej_indicators, _get_location
 from seed.analysis_pipelines.eui import (
     ERROR_INVALID_GROSS_FLOOR_AREA,
@@ -1165,3 +1171,37 @@ class TestEeejPipeline(TestCase):
         self.assertEqual(results[self.property_view_not_dac.id]["energy_burden_low_income"], False)
         self.assertEqual(results[self.property_view_not_dac.id]["energy_burden_percentile"], 8.0)
         self.assertEqual(results[self.property_view_not_dac.id]["number_affordable_housing"], 0)
+
+
+class TestBuildingEnergySurrogateTaxPolicy(SimpleTestCase):
+    """Year-aware §179D deduction schedule selection (placed-in-service date)."""
+
+    def test_known_years_select_their_schedule(self):
+        for year in (2023, 2024, 2025):
+            self.assertEqual(_tax_year_from_date(f"{year}-06-01"), year)
+            self.assertEqual(_tax_policy_for_date(f"{year}-06-01"), TAX_POLICY_BY_YEAR[year])
+
+    def test_accepts_multiple_date_formats(self):
+        self.assertEqual(_tax_year_from_date("2024-06-01"), 2024)
+        self.assertEqual(_tax_year_from_date("06/01/2024"), 2024)
+        self.assertEqual(_tax_year_from_date("2024"), 2024)
+
+    def test_missing_or_invalid_falls_back_to_default_year(self):
+        for value in (None, "", "not-a-date"):
+            self.assertEqual(_tax_year_from_date(value), DEFAULT_TAX_YEAR)
+            self.assertEqual(_tax_policy_for_date(value), TAX_POLICY_BY_YEAR[DEFAULT_TAX_YEAR])
+
+    def test_out_of_range_years_clamp_to_known_schedule(self):
+        earliest, latest = min(TAX_POLICY_BY_YEAR), max(TAX_POLICY_BY_YEAR)
+        self.assertEqual(_tax_year_from_date("2019-01-01"), earliest)
+        self.assertEqual(_tax_year_from_date("2099-01-01"), latest)
+
+    def test_schedule_increment_matches_rate_span(self):
+        # Deduction reaches max at 50% savings (25 points above the 25% floor).
+        for year, sched in TAX_POLICY_BY_YEAR.items():
+            span_all = sched["all_179d_tax_deduction_rate_max"] - sched["all_179d_tax_deduction_rate_min"]
+            span_energy = sched["energy_tax_deduction_rate_max"] - sched["energy_tax_deduction_rate_min"]
+            self.assertAlmostEqual(sched["increment_all_179d"], span_all / 25.0, places=6, msg=f"{year} all")
+            self.assertAlmostEqual(sched["increment_energy"], span_energy / 25.0, places=6, msg=f"{year} energy")
+            self.assertEqual(sched["min_threshold_all_179d"], 0.25)
+            self.assertEqual(sched["min_threshold_energy"], 0.25)

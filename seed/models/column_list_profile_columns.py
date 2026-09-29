@@ -16,5 +16,12 @@ class ColumnListProfileColumn(models.Model):
     order = models.IntegerField(null=True)
     pinned = models.BooleanField(default=False)
 
+    class Meta:
+        # Order by the profile-defined column position so API consumers (e.g. the
+        # inventory list grid, which renders columns in the order returned) always
+        # receive columns left-to-right by `order`. Without this, the reverse
+        # relation returns rows in an arbitrary DB order.
+        ordering = ["order", "id"]
+
     def __str__(self):
         return f"{self.column_list_profile.name} {self.order} {self.pinned}"

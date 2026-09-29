@@ -368,3 +368,16 @@ GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION = None
 
 # Config self registration
 INCLUDE_ACCT_REG = os.environ.get("INCLUDE_ACCT_REG", "true").lower() == "true"
+
+# Building Energy Surrogate Models (BEM-prediction-models; currently calculator_179d).
+# The calculator depends on a pinned scientific-Python stack that is incompatible
+# with SEED's, so SEED runs it out-of-process using its own virtual environment
+# interpreter. BUILDING_ENERGY_SURROGATE_PYTHON must point at that interpreter (a
+# venv with `calculator_179d` installed). When unset, the analysis is unavailable
+# and fails with a clear configuration error.
+BUILDING_ENERGY_SURROGATE_PYTHON = os.environ.get("BUILDING_ENERGY_SURROGATE_PYTHON")
+# Optional: extra directory to add to PYTHONPATH when invoking the calculator
+# (e.g. the BEM-prediction-models checkout, if it is not pip-installed).
+BUILDING_ENERGY_SURROGATE_PACKAGE_DIR = os.environ.get("BUILDING_ENERGY_SURROGATE_PACKAGE_DIR")
+# Seconds before a single-property calculator subprocess call is aborted.
+BUILDING_ENERGY_SURROGATE_TIMEOUT = int(os.environ.get("BUILDING_ENERGY_SURROGATE_TIMEOUT", "120"))

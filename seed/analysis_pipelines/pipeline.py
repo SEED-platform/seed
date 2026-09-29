@@ -269,6 +269,7 @@ class AnalysisPipeline(abc.ABC):
         # import here to avoid circular dependencies
         from seed.analysis_pipelines.better import BETTERPipeline
         from seed.analysis_pipelines.bsyncr import BsyncrPipeline
+        from seed.analysis_pipelines.building_energy_surrogate import BuildingEnergySurrogatePipeline
         from seed.analysis_pipelines.co2 import CO2Pipeline
         from seed.analysis_pipelines.eeej import EEEJPipeline
         from seed.analysis_pipelines.element_statistics import ElementStatisticsPipeline
@@ -292,6 +293,8 @@ class AnalysisPipeline(abc.ABC):
             return UpgradeRecommendationPipeline(analysis.id)
         elif analysis.service == Analysis.HVACMETRICS:
             return HVACMetricsPipeline(analysis.id)
+        elif analysis.service == Analysis.BUILDING_ENERGY_SURROGATE:
+            return BuildingEnergySurrogatePipeline(analysis.id)
         else:
             raise AnalysisPipelineError(f'Analysis service type is unknown/unhandled. Service ID "{analysis.service}"')
 

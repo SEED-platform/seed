@@ -27,6 +27,7 @@ class Analysis(models.Model):
     ELEMENTSTATISTICS = 6
     UPGRADERECOMMENDATION = 7
     HVACMETRICS = 8
+    BUILDING_ENERGY_SURROGATE = 9
 
     SERVICE_TYPES = (
         (BSYNCR, "BSyncr"),
@@ -37,6 +38,7 @@ class Analysis(models.Model):
         (ELEMENTSTATISTICS, "Element Statistics"),
         (UPGRADERECOMMENDATION, "Building Upgrade Recommendation"),
         (HVACMETRICS, "HVAC Metrics"),
+        (BUILDING_ENERGY_SURROGATE, "Building Energy Surrogate Models"),
     )
 
     PENDING_CREATION = 8
@@ -207,6 +209,18 @@ class Analysis(models.Model):
                 {"name": "Main Refrigerant Type", "value": results.get("Main Refrigerant Type")},
                 {"name": "Total Electric Data Max Fuse", "value": results.get("Total HVAC Electric Service Size (Amps)")},
                 {"name": "Airflow Rate per unit Area", "value": results.get("Airflow Rate per unit Area (cfm/sqft)")},
+            ]
+
+        # Building Energy Surrogate Models (currently 179D outputs)
+        elif self.service == self.BUILDING_ENERGY_SURROGATE:
+            savings = results.get("Total Energy Cost Savings (%)")
+            savings = "N/A" if savings is None else f"{savings}%"
+            deduction = results.get("179D Deduction - Whole Building ($/sqft)")
+            deduction = "N/A" if deduction is None else f"${deduction}/sqft"
+            return [
+                {"name": "Total Energy Cost Savings", "value": savings},
+                {"name": "Qualifies for 179D", "value": results.get("Qualifies for 179D", "N/A")},
+                {"name": "179D Deduction (Whole Building)", "value": deduction},
             ]
 
         # Unexpected
