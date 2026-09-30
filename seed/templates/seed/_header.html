@@ -1,7 +1,7 @@
 <script type="text/ng-template" id="logo">
-  <div class="logo_text">
-    <span class="logo_text_seed">Seed</span>
-    <span class="logo_text_platform">Platform™</span>
+  <div class="logo_text" ng-class="{'has-deployment-logo': deployment.branding.logo_url}">
+    <img ng-if="deployment.branding.logo_url" ng-src="{$ deployment.branding.logo_url $}" class="deployment-logo" alt="" />
+    <span><span class="logo_text_seed">Seed</span><span class="logo_text_platform">Platform™</span></span>
   </div>
 </script>
 <div class="header">

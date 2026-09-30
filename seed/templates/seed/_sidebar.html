@@ -40,19 +40,19 @@
 
     <div class="divider"></div>
 
-    <a id="sidebar-api" ng-class="{item: true, active: is_active('/api/swagger'), 'disabled-item': !logged_in}" title="{$:: 'API Documentation' | translate $}" href="{% url "seed:home" %}#/api/swagger">
+    <a id="sidebar-api" ng-if="deployment.hidden_navigation.indexOf('api') === -1" ng-class="{item: true, active: is_active('/api/swagger'), 'disabled-item': !logged_in}" title="{$:: 'API Documentation' | translate $}" href="{% url "seed:home" %}#/api/swagger">
       <div class="icon"><i class="fa-solid fa-lg fa-code"></i></div>
       <div class="item_name" translate>API Documentation</div>
     </a>
-    <a id="sidebar-contact" ng-class="{item: true, active: is_active('/contact'), 'disabled-item': !logged_in}" title="{$:: 'Contact' | translate $}" href="{% url "seed:home" %}#/contact">
+    <a id="sidebar-contact" ng-if="deployment.hidden_navigation.indexOf('contact') === -1" ng-class="{item: true, active: is_active('/contact'), 'disabled-item': !logged_in}" title="{$:: 'Contact' | translate $}" href="{% url "seed:home" %}#/contact">
       <div class="icon"><i class="fa-solid fa-lg fa-question-circle"></i></div>
       <div class="item_name" translate>Contact</div>
     </a>
-    <a id="sidebar-about" ng-class="{item: true, active: is_active('/about'), 'disabled-item': !logged_in}" title="{$:: 'About' | translate $}" href="{% url "seed:home" %}#/about">
+    <a id="sidebar-about" ng-if="deployment.hidden_navigation.indexOf('about') === -1" ng-class="{item: true, active: is_active('/about'), 'disabled-item': !logged_in}" title="{$:: 'About' | translate $}" href="{% url "seed:home" %}#/about">
       <div class="icon"><i class="fa-solid fa-lg fa-info-circle"></i></div>
       <div class="item_name" translate>About</div>
     </a>
-    <a id="sidebar-docs" ng-class="{item: true, active: is_active('/documentation/', true)}" title="{$:: 'Documentation' | translate $}" href="{% url "docs:documentation" %}#/">
+    <a id="sidebar-docs" ng-if="deployment.hidden_navigation.indexOf('documentation') === -1" ng-class="{item: true, active: is_active('/documentation/', true)}" title="{$:: 'Documentation' | translate $}" href="{% url "docs:documentation" %}#/">
       <div class="icon"><i class="fa-solid fa-lg fa-book"></i></div>
       <div class="item_name" translate>Documentation</div>
     </a>

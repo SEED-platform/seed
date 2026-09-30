@@ -22,39 +22,53 @@
         >
       </div>
 
-      <div class="bg jumbotron">
+      <div ng-if="deployment.branding.home_content_mode === 'custom'">
+        <img ng-if="deployment.branding.home_hero_image_url" ng-src="{$ deployment.branding.home_hero_image_url $}" alt="" style="display: block; width: 100%; height: auto" />
+        <div class="getting_started_container">
+          <div class="getting_started">
+            <h1 ng-if="deployment.branding.home_heading" ng-bind="deployment.branding.home_heading"></h1>
+            <p ng-bind="deployment.branding.home_text"></p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg jumbotron" ng-if="deployment.branding.home_content_mode !== 'custom'" ng-style="deployment.branding.home_hero_image_url ? {'background-image': 'url(' + deployment.branding.home_hero_image_url + ')'} : {}">
         <div class="home_hero_content_container">
-          <h1 translate>The SEED Platform™</h1>
-          <div translate>SEED_SUMMARY</div>
-          <div class="row">
-            <div class="content_col col-md-4">
-              <div class="content_col_header">
-                <i class="fa-solid fa-cloud-arrow-up"></i>
-                <h3 translate>Upload your data</h3>
+          <img ng-if="deployment.branding.logo_url" ng-src="{$ deployment.branding.logo_url $}" alt="Organization logo" style="max-width: 180px; max-height: 90px" />
+          <h1 ng-if="deployment.branding.home_heading" ng-bind="deployment.branding.home_heading"></h1>
+          <h1 ng-if="!deployment.branding.home_heading" translate>The SEED Platform™</h1>
+          <div ng-if="!deployment.branding.home_hero_image_url">
+            <div translate>SEED_SUMMARY</div>
+            <div class="row">
+              <div class="content_col col-md-4">
+                <div class="content_col_header">
+                  <i class="fa-solid fa-cloud-arrow-up"></i>
+                  <h3 translate>Upload your data</h3>
+                </div>
+                <div class="copy" translate>MARKETING_BULLET_1</div>
               </div>
-              <div class="copy" translate>MARKETING_BULLET_1</div>
-            </div>
 
-            <div class="content_col col-md-4">
-              <div class="content_col_header">
-                <i class="fa-solid fa-arrow-right-arrow-left"></i>
-                <h3 translate>Match your data</h3>
+              <div class="content_col col-md-4">
+                <div class="content_col_header">
+                  <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                  <h3 translate>Match your data</h3>
+                </div>
+                <div class="copy" translate>MARKETING_BULLET_2</div>
               </div>
-              <div class="copy" translate>MARKETING_BULLET_2</div>
-            </div>
 
-            <div class="content_col col-md-4">
-              <div class="content_col_header">
-                <i class="fa-solid fa-square-check"></i>
-                <h3 translate>Manage compliance</h3>
+              <div class="content_col col-md-4">
+                <div class="content_col_header">
+                  <i class="fa-solid fa-square-check"></i>
+                  <h3 translate>Manage compliance</h3>
+                </div>
+                <div class="copy" translate>MARKETING_BULLET_3</div>
               </div>
-              <div class="copy" translate>MARKETING_BULLET_3</div>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="getting_started_container">
+      <div class="getting_started_container" ng-if="deployment.branding.home_content_mode !== 'custom'">
         <div class="getting_started">
           <h2 translate>Getting Started</h2>
 

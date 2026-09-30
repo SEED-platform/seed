@@ -6,12 +6,14 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from copy import deepcopy
 
 import django.core.exceptions
+from django.conf import settings
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 
 from seed.decorators import ajax_request, require_organization_id
 from seed.lib.superperms.orgs.decorators import has_perm
@@ -75,6 +77,11 @@ def _validate_data(data, org_id):
 class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = SalesforceConfigSerializer
     model = SalesforceConfig
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if not settings.SEED_SALESFORCE_ENABLED:
+            raise PermissionDenied("Salesforce is disabled on this deployment")
 
     @swagger_auto_schema_org_query_param
     @method_decorator(

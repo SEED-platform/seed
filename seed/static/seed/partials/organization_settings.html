@@ -195,7 +195,7 @@
         </div>
       </div>
 
-      <div class="section_content_container">
+      <div class="section_content_container" ng-if="deployment.integrations.better">
         <div class="section_content with_padding">
           <h3 translate>BETTER Analysis API Key</h3>
           <form class="form-horizontal" role="form">
@@ -1207,7 +1207,7 @@
       </div>
     </uib-tab>
 
-    <uib-tab index="6" heading="{$:: 'Salesforce' | translate $}">
+    <uib-tab index="6" heading="{$:: 'Salesforce' | translate $}" ng-if="deployment.integrations.salesforce">
       <div class="section_header_container has_btm_margin">
         <div class="section_header">
           <h2>

@@ -1,7 +1,10 @@
 {% load i18n %}
 
 <div class="section_marketing">
-  <h1>{% trans "Welcome to SEED Platform™" %}</h1>
+  {% if deployment.branding.logo_url %}<img src="{{ deployment.branding.logo_url }}" alt="Organization logo" style="display: block; max-width: 180px; max-height: 90px; margin: 20px auto 0">{% endif %}
+  <h1>{% if deployment.branding.login_heading %}{{ deployment.branding.login_heading }}{% else %}{% trans "Welcome to SEED Platform™" %}{% endif %}</h1>
+  {% if deployment.branding.login_text %}<p style="padding: 0 30px">{{ deployment.branding.login_text|linebreaksbr }}</p>{% endif %}
+  {% if not deployment.branding.login_text %}
   <div class="marketing_text">
     <div class="bullet">
       <div></div>
@@ -32,4 +35,5 @@
       {% endblocktrans %}
     </div>
   </div>
+  {% endif %}
 </div>

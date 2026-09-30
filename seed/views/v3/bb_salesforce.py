@@ -15,6 +15,7 @@ from django.utils.decorators import method_decorator
 from requests.models import PreparedRequest
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 
 from seed.decorators import ajax_request, get_bb_salesforce_config
 from seed.lib.superperms.orgs.decorators import has_perm
@@ -91,6 +92,11 @@ def is_valid_url(url):
 
 
 class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if not settings.SEED_SALESFORCE_ENABLED:
+            raise PermissionDenied("Salesforce is disabled on this deployment")
+
     @swagger_auto_schema_org_query_param
     @method_decorator(
         [

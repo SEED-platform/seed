@@ -226,7 +226,7 @@
             Update Derived Data
           </option>
           <option
-            ng-show="menu.user.organization.user_role !== 'viewer'"
+            ng-show="deployment.integrations.salesforce && menu.user.organization.user_role !== 'viewer'"
             value="update_salesforce"
             ng-disabled="!organization.salesforce_enabled || selectedCount === 0"
             translate

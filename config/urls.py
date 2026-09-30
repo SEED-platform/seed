@@ -82,9 +82,11 @@ handler500 = "seed.views.main.error500"
 
 if settings.DEBUG:
     from django.contrib import admin
+    from django.views.static import serve
 
     admin.autodiscover()
     urlpatterns += [
+        re_path(r"^branding/(?P<path>.*)$", serve, {"document_root": settings.SEED_BRANDING_ROOT}, name="branding"),
         re_path(rf"^{re.escape(settings.STATIC_URL.lstrip('/'))}(?P<path>.*)$", debug_static_serve, name="static"),
         re_path(rf"^{re.escape(settings.MEDIA_URL.lstrip('/'))}(?P<path>.*)$", debug_media_serve, name="media"),
     ]

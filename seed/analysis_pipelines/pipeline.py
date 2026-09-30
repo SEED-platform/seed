@@ -10,6 +10,7 @@ import json
 import logging
 
 from celery import shared_task
+from django.conf import settings
 from django.db import transaction
 from django.db.utils import OperationalError
 from django.utils import timezone as tz
@@ -279,6 +280,8 @@ class AnalysisPipeline(abc.ABC):
         if analysis.service == Analysis.BSYNCR:
             return BsyncrPipeline(analysis.id)
         elif analysis.service == Analysis.BETTER:
+            if not settings.SEED_BETTER_ENABLED:
+                raise AnalysisPipelineError("BETTER is disabled on this deployment")
             return BETTERPipeline(analysis.id)
         elif analysis.service == Analysis.EUI:
             return EUIPipeline(analysis.id)

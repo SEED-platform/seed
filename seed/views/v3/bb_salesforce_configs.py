@@ -5,10 +5,12 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import logging
 
+from django.conf import settings
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
 
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
@@ -25,6 +27,11 @@ class BBSalesforceConfigsViewSet(ModelViewSetWithoutPatch, OrgMixin):
     model = BBSalesforceConfig
     serializer_class = BBSalesforceConfigSerializer
     queryset = BBSalesforceConfig.objects.all()
+
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        if not settings.SEED_SALESFORCE_ENABLED:
+            raise PermissionDenied("Salesforce is disabled on this deployment")
 
     @method_decorator(
         [

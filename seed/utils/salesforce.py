@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import datetime
 import json
 
+from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import get_current_timezone
 from django_celery_beat.models import CrontabSchedule, PeriodicTask
@@ -26,6 +27,8 @@ def test_connection(params):
     """test Salesforce connection with credentials stored in the salesforce_config model"""
     status = False
     message = None
+    if not settings.SEED_SALESFORCE_ENABLED:
+        return status, "Salesforce is disabled on this deployment", None
     try:
         sf = SalesforceClient(connection_params=params)
         if isinstance(sf, SalesforceClient):
@@ -38,6 +41,8 @@ def test_connection(params):
 
 def check_salesforce_enabled(org_id):
     """check that salesforce process is enabled before syncing"""
+    if not settings.SEED_SALESFORCE_ENABLED:
+        return False
     enabled = False
     org = Organization.objects.get(pk=org_id)
     if org.salesforce_enabled:
@@ -82,7 +87,7 @@ def toggle_salesforce_sync(salesforce_enabled, org_id):
     tasks = PeriodicTask.objects.filter(name=AUTO_SYNC_NAME + str(org_id))
     if tasks:
         task = tasks.first()
-        task.enabled = bool(salesforce_enabled)
+        task.enabled = bool(salesforce_enabled and settings.SEED_SALESFORCE_ENABLED)
         task.save()
 
 
@@ -143,6 +148,9 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
     status = False
     message = None
     params = {}
+
+    if not settings.SEED_SALESFORCE_ENABLED:
+        return status, "Salesforce is disabled on this deployment"
 
     """ INITIALIZATION """
     # if client is initialized, use it, otherwise initialize it

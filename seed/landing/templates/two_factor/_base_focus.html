@@ -3,13 +3,24 @@
 {% block content%}
   <div class="page">
     <div class="page_section" style="border-radius: 8px; overflow: hidden">
+      {% if deployment.branding.logo_url or deployment.branding.login_heading or deployment.branding.login_text %}
+      <div class="section_forms deployment-branded">
+        <div class="deployment-signin-content">
+          {% if deployment.branding.logo_url %}<img class="deployment-logo" src="{{ deployment.branding.logo_url }}" alt="">{% endif %}
+          <div class="form_title">
+            {% if deployment.branding.login_heading %}<h1>{{ deployment.branding.login_heading }}</h1>{% elif not deployment.branding.logo_url %}<h1>{% trans "Sign in" %}</h1>{% endif %}
+            {% if deployment.branding.login_text %}<p>{{ deployment.branding.login_text|linebreaksbr }}</p>{% endif %}
+          </div>
+
+      {% else %}
         {% include "landing/_marketing_bullets.html" %}
       <div class="section_forms">
         <div class="form_title">
           <h2>{% trans "Log in to SEED Platform™" %}</h2>
         </div>
-
-          {% block content_inner %}{% endblock %}
+      {% endif %}
+        {% block content_inner %}{% endblock %}
+        {% if deployment.branding.logo_url or deployment.branding.login_heading or deployment.branding.login_text %}</div>{% endif %}
       </div>
     </div>
   </div>

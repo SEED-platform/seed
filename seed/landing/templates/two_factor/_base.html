@@ -27,8 +27,17 @@
     body {
       display: flex;
       align-items: center;
+      {% if deployment.branding.logo_url or deployment.branding.login_heading or deployment.branding.login_text %}
+      {% if deployment.branding.home_hero_image_url %}
+      background: #f3f4f6 url('{{ deployment.branding.home_hero_image_url }}') no-repeat center center;
+      background-size: cover;
+      {% else %}
+      background: #f3f4f6;
+      {% endif %}
+      {% else %}
       background: #808080 url('{% static "landing/images/landing/landing-bg.webp" %}') no-repeat;
       background-size: cover;
+      {% endif %}
       font-family: 'PT Sans', 'Helvetica Neue', helvetica, arial, sans-serif;
       font-size: 16px;
       font-weight: normal;
@@ -134,6 +143,31 @@
           background: url("{% static 'landing/images/landing/bg-paper.webp'%}");
           border-top-right-radius: 8px;
           border-bottom-right-radius: 8px;
+
+          &.deployment-branded {
+            float: none;
+            width: 100%;
+            border-left: 0;
+            border-radius: 8px;
+            background: white;
+
+            .deployment-signin-content {
+              max-width: 520px;
+              margin: 0 auto;
+              padding: 24px 16px;
+            }
+
+            .deployment-logo {
+              display: block;
+              max-width: 100%;
+              max-height: 120px;
+              margin: 0 auto 16px;
+            }
+
+            .form_title {
+              padding-top: 0;
+            }
+          }
 
           .form_title {
             padding-top: 42px;
