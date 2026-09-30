@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse_lazy
 from django.utils import timezone as tz
 
@@ -380,6 +380,18 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
         response = self.client.post(url, content_type="application/json")
         assert response.status_code == 200
+
+    @override_settings(SEED_BETTER_ENABLED=False)
+    def test_better_analysis_start_is_rejected_when_disabled(self):
+        self.root_analysis.service = Analysis.BETTER
+        self.root_analysis.save()
+        url = reverse_lazy("api:v3:analyses-start", args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)
+
+        self.login_as_root_member()
+        response = self.client.post(url, content_type="application/json")
+
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["message"], "BETTER is disabled on this deployment")
 
     def test_analysis_stop(self):
         url = reverse_lazy("api:v3:analyses-stop", args=[self.root_analysis.pk]) + "?organization_id=" + str(self.org.id)

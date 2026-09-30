@@ -8,7 +8,7 @@ from django.test import RequestFactory, SimpleTestCase, override_settings
 from rest_framework.exceptions import PermissionDenied
 
 from config.settings.common import deployment_image_url
-from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineError
+from seed.analysis_pipelines.pipeline import AnalysisPipeline
 from seed.decorators import get_bb_salesforce_config
 from seed.models import Analysis
 from seed.utils.salesforce import test_connection, update_salesforce_property
@@ -88,8 +88,8 @@ class DeploymentConfigTests(SimpleTestCase):
             client.assert_not_called()
         self.assertEqual(update_salesforce_property(1, 1, salesforce_client=object())[0], False)
 
-        with self.assertRaisesMessage(AnalysisPipelineError, "BETTER is disabled"):
-            AnalysisPipeline.factory(SimpleNamespace(service=Analysis.BETTER, id=1))
+        pipeline = AnalysisPipeline.factory(SimpleNamespace(service=Analysis.BETTER, id=1))
+        self.assertEqual(type(pipeline).__name__, "BETTERPipeline")
 
     @override_settings(SEED_SALESFORCE_ENABLED=False)
     def test_bb_salesforce_endpoints_are_blocked_when_disabled(self):

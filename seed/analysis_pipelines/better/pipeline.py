@@ -8,6 +8,7 @@ import logging
 from datetime import date, datetime, time, timedelta
 
 from celery import chain, shared_task
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db.models import Count
 from django.utils.timezone import is_naive, make_aware
@@ -303,6 +304,9 @@ def _finish_preparation(self, analysis_id, start_analysis):
 @analysis_pipeline_task(Analysis.QUEUED)
 def _start_analysis(self, analysis_id):
     """Start better analysis by making requests to the service"""
+    if not settings.SEED_BETTER_ENABLED:
+        raise AnalysisPipelineError("BETTER is disabled on this deployment")
+
     pipeline = BETTERPipeline(analysis_id)
     progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step("Sending requests to BETTER service")
