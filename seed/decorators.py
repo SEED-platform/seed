@@ -6,8 +6,10 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 from functools import wraps
 
+from django.conf import settings
 from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.lib.superperms.orgs.permissions import get_org_id
@@ -192,6 +194,9 @@ DRFEndpointMixin = decorator_to_mixin(drf_api_endpoint)
 def get_bb_salesforce_config(func):
     @wraps(func)
     def _wrapper(*args, **kwargs):
+        if not settings.SEED_SALESFORCE_ENABLED:
+            raise PermissionDenied("Salesforce is disabled on this deployment")
+
         org_id = get_org_id(args[1])
         bb_salesforce_config = BBSalesforceConfig.objects.filter(organization=org_id).first()
 
