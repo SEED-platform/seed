@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import os
 from datetime import timedelta
+from urllib.parse import urlsplit
 
 from django.utils.translation import gettext_lazy as _
 from kombu.serialization import register
@@ -152,7 +153,7 @@ COMPRESS_FILTERS = {
         "compressor.filters.jsmin.rJSMinFilter",
     ],
 }
-COMPRESS_PRECOMPILERS = (("text/x-scss", "pnpm exec sass --style=compressed {infile} {outfile}"),)
+COMPRESS_PRECOMPILERS = (("text/x-scss", "./node_modules/.bin/sass --style=compressed {infile} {outfile}"),)
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "collected_static")
@@ -345,6 +346,36 @@ BUILDINGSYNC_VERSION = os.environ.get("BUILDINGSYNC_VERSION", "2.7.0")
 
 # LBNL's BETTER tool host location
 BETTER_HOST = os.environ.get("BETTER_HOST", "https://better.lbl.gov")
+
+
+# Deployment-specific presentation and integration policy. Unset values preserve SEED's defaults.
+def deployment_image_url(name):
+    url = os.environ.get(name, "").strip()
+    if url:
+        parts = urlsplit(url)
+        if (
+            parts.scheme
+            or parts.netloc
+            or parts.query
+            or parts.fragment
+            or not parts.path.startswith("/branding/")
+            or ".." in parts.path.split("/")
+        ):
+            raise ValueError(f"{name} must be a path under /branding/ (for example, /branding/logo.svg)")
+    return url
+
+
+SEED_BRAND_LOGO_URL = deployment_image_url("SEED_BRAND_LOGO_URL")
+SEED_HOME_HERO_IMAGE_URL = deployment_image_url("SEED_HOME_HERO_IMAGE_URL")
+SEED_HOME_HEADING = os.environ.get("SEED_HOME_HEADING", "")
+SEED_HOME_TEXT = os.environ.get("SEED_HOME_TEXT", "")
+SEED_LOGIN_HEADING = os.environ.get("SEED_LOGIN_HEADING", "")
+SEED_LOGIN_TEXT = os.environ.get("SEED_LOGIN_TEXT", "")
+SEED_HOME_CONTENT_MODE = os.environ.get("SEED_HOME_CONTENT_MODE", "default")
+SEED_HIDDEN_NAVIGATION = [item.strip() for item in os.environ.get("SEED_HIDDEN_NAVIGATION", "").split(",") if item.strip()]
+SEED_SALESFORCE_ENABLED = yn(os.environ.get("SEED_SALESFORCE_ENABLED", "true"))
+SEED_BETTER_ENABLED = yn(os.environ.get("SEED_BETTER_ENABLED", "true"))
+SEED_BRANDING_ROOT = os.path.join(BASE_DIR, "branding")
 
 # Audit Template Production Host
 AUDIT_TEMPLATE_HOST = os.environ.get("AUDIT_TEMPLATE_HOST", "https://buildingenergyscore.energy.gov")

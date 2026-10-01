@@ -49,6 +49,7 @@
       {% include "seed/_vendor_scripts.html" %}
     {% endcompress %}
 
+    {{ deployment|json_script:"seed-deployment" }}
     <script>
       const username = "{{ username }}";
       const firstName = "{{ request.user.first_name }}";
@@ -56,6 +57,7 @@
       const email = "{{ request.user.email }}";
 
       window.SEED = {
+        deployment: JSON.parse(document.getElementById('seed-deployment').textContent),
         username: username || `${firstName} ${lastName}`.trim() || email,
         initial_org_id: '{{ initial_org_id }}',
         initial_org_user_role: '{{ initial_org_user_role }}',

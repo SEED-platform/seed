@@ -46,6 +46,7 @@ angular.module('SEED.controller.menu', []).controller('menu_controller', [
     $scope.username = window.SEED.username;
     $scope.logged_in = $scope.username.length > 0;
     $scope.urls = urls;
+    $scope.deployment = window.SEED.deployment;
     $scope.datasets_count = 0;
     $scope.organizations_count = 0;
     $scope.menu = {

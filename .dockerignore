@@ -12,6 +12,7 @@ collected_static
 deploy.sh
 docs
 media
+branding
 node_modules
 **/node_modules
 config/settings/local_untracked.py

@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 
+from django.conf import settings
 from django.db.models import F
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
@@ -86,6 +87,8 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         serializer = CreateAnalysisSerializer(data=request.data)
         if not serializer.is_valid():
             return JsonResponse({"status": "error", "message": "Bad request", "errors": serializer.errors})
+        if serializer.validated_data["service"] == Analysis.BETTER and not settings.SEED_BETTER_ENABLED:
+            return JsonResponse({"status": "error", "message": "BETTER is disabled on this deployment"}, status=HTTP_409_CONFLICT)
 
         analysis = serializer.save(user_id=request.user.id, organization_id=self.get_organization(request))
 
@@ -219,6 +222,8 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         organization_id = int(self.get_organization(request))
         try:
             analysis = Analysis.objects.get(id=pk, organization_id=organization_id)
+            if analysis.service == Analysis.BETTER and not settings.SEED_BETTER_ENABLED:
+                return JsonResponse({"status": "error", "message": "BETTER is disabled on this deployment"}, status=HTTP_409_CONFLICT)
             pipeline = AnalysisPipeline.factory(analysis)
             progress_data = pipeline.start_analysis()
             return JsonResponse(
@@ -458,6 +463,8 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=False, methods=["get"])
     def verify_better_token(self, request):
         """Check the validity of a BETTER API token"""
+        if not settings.SEED_BETTER_ENABLED:
+            return JsonResponse({"status": "error", "message": "BETTER is disabled on this deployment"}, status=HTTP_409_CONFLICT)
         better_token = request.query_params.get("better_token")
         client = BETTERClient(better_token)
         validity, message = client.token_is_valid()

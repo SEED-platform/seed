@@ -380,6 +380,18 @@ a:not([href]) {
             font-weight: normal;
             text-transform: uppercase;
 
+            &.has-deployment-logo {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+
+              .deployment-logo {
+                height: 24px;
+                max-width: 80px;
+                object-fit: contain;
+              }
+            }
+
             .logo_text_seed {
               font-family: $font-family-base;
               font-weight: bold;

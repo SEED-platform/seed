@@ -44,6 +44,16 @@ services:
       - SEED_ADMIN_ORG=default
       - SECRET_KEY=ARQV8qGuJKH8sGnBf6ZeEdJQRKLTUhsvEcp8qG9X9sCPXvGLhdxqnNXpZcy6HEyf
       - COOKIE_EXPIRATION
+      - SEED_BRAND_LOGO_URL
+      - SEED_HOME_HERO_IMAGE_URL
+      - SEED_LOGIN_HEADING
+      - SEED_LOGIN_TEXT
+      - SEED_HOME_HEADING
+      - SEED_HOME_TEXT
+      - SEED_HOME_CONTENT_MODE
+      - SEED_HIDDEN_NAVIGATION
+      - SEED_SALESFORCE_ENABLED
+      - SEED_BETTER_ENABLED
       - DJANGO_SETTINGS_MODULE=config.settings.docker
       - NGINX_LISTEN_OPTS="http2"
       # Sentry configuration if you want to use it (make sure to enable on web-celery container too)
@@ -58,6 +68,7 @@ services:
       - db-postgres
     volumes:
       - seed_media:/seed/media
+      - ${SEED_BRANDING_DIR:-./branding}:/seed/branding:ro
     ports:
       - "80:80"
     healthcheck:
@@ -89,6 +100,8 @@ services:
       # - SENTRY_RAVEN_DSN=https://<userid>@<ordid>.ingest.sentry.io/<jobid>
       # - SENTRY_JS_DSN=https://<userid>@<ordid>.ingest.sentry.io/<jobid>
       - NUMBER_OF_WORKERS
+      - SEED_SALESFORCE_ENABLED
+      - SEED_BETTER_ENABLED
     depends_on:
       - db-redis
       - db-postgres

@@ -163,6 +163,12 @@ http {
             }
         }
 
+        location /branding/ {
+            alias /seed/branding/;
+            try_files $uri =404;
+            include seed-security-headers.conf;
+        }
+
         # Redirect Angular requests without trailing slash
         location = /ng-app {
             return 301 $uri/;

@@ -69,6 +69,16 @@ services:
       - SEED_ADMIN_ORG
       - SECRET_KEY
       - COOKIE_EXPIRATION
+      - SEED_BRAND_LOGO_URL
+      - SEED_HOME_HERO_IMAGE_URL
+      - SEED_LOGIN_HEADING
+      - SEED_LOGIN_TEXT
+      - SEED_HOME_HEADING
+      - SEED_HOME_TEXT
+      - SEED_HOME_CONTENT_MODE
+      - SEED_HIDDEN_NAVIGATION
+      - SEED_SALESFORCE_ENABLED
+      - SEED_BETTER_ENABLED
       # Pass the Sentry config to the containers
       - SENTRY_RAVEN_DSN
       - SENTRY_JS_DSN
@@ -82,6 +92,7 @@ services:
       - db-postgres
     volumes:
       - seed_media:/seed/media
+      - ${SEED_BRANDING_DIR:-./branding}:/seed/branding:ro
     ports:
       - "80:80"
     healthcheck:
@@ -114,6 +125,8 @@ services:
       - SENTRY_RAVEN_DSN
       - DJANGO_SETTINGS_MODULE=config.settings.docker
       - NUMBER_OF_WORKERS
+      - SEED_SALESFORCE_ENABLED
+      - SEED_BETTER_ENABLED
     depends_on:
       - db-redis
       - db-postgres

@@ -21,6 +21,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 
 from seed.celery_app import app
+from seed.context_processors import deployment_config
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.utils.api import api_endpoint
@@ -206,6 +207,17 @@ def health_check(request):
         200: AutoSchemaHelper.schema_factory(
             {
                 "allow_signup": "boolean",
+                "branding": {
+                    "logo_url": "string",
+                    "home_hero_image_url": "string",
+                    "home_heading": "string",
+                    "home_text": "string",
+                    "login_heading": "string",
+                    "login_text": "string",
+                    "home_content_mode": "string",
+                },
+                "hidden_navigation": ["string"],
+                "integrations": {"salesforce": "boolean", "better": "boolean"},
             }
         )
     },
@@ -220,6 +232,7 @@ def config(request):
 
     return {
         "allow_signup": settings.INCLUDE_ACCT_REG,
+        **deployment_config(),
     }
 
 

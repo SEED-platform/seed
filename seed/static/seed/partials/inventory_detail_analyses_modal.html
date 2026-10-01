@@ -42,7 +42,14 @@
             required
           >
             <option ng-option value="BSyncr" selected="selected">BSyncr</option>
-            <option ng-option value="BETTER" selected="selected">BETTER</option>
+            <option
+              ng-if="deployment.integrations.better"
+              ng-option
+              value="BETTER"
+              selected="selected"
+            >
+              BETTER
+            </option>
             <option ng-option value="EUI" selected="selected">EUI</option>
             <option ng-option value="CO2" selected="selected">
               Average Annual CO2
