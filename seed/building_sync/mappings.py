@@ -334,7 +334,7 @@ def savings_to_kbtu(value, energy_resource, resource_units, country="US"):
         return None, None
 
     if resource_units is None:
-        return value, f'Assuming kBtu for "{energy_resource}" savings because no auc:ResourceUnits was provided'
+        return None, f'Could not convert "{energy_resource}" savings because no auc:ResourceUnits was provided; skipping the value'
 
     pm_type = BSYNC_TO_PM_ENERGY_TYPE.get(energy_resource, energy_resource)
     pm_units = to_energy_units(resource_units)
