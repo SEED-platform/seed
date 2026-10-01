@@ -86,10 +86,10 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     @swagger_auto_schema(
         request_body=AutoSchemaHelper.schema_factory(
             {
-                "annual_cost_savings": "integer",
-                "annual_electricity_savings": "integer",
-                "annual_natural_gas_savings": "integer",
-                "annual_peak_electricity_reduction": "integer",
+                "annual_cost_savings": "number",
+                "annual_electricity_savings": "number",
+                "annual_natural_gas_savings": "number",
+                "annual_peak_electricity_reduction": "number",
                 "application_scale": PropertyMeasure.APPLICATION_SCALE_TYPES,
                 "category_affected": PropertyMeasure.CATEGORY_AFFECTED_TYPE,
                 "cost_capital_replacement": "integer",
