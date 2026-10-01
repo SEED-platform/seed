@@ -1858,7 +1858,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Use an array so it can update one or more properties
         """
         if not settings.SEED_SALESFORCE_ENABLED:
-            return JsonResponse({"status": "error", "message": "Salesforce is disabled on this deployment"}, status=status.HTTP_403_FORBIDDEN)
+            return JsonResponse(
+                {"status": "error", "message": "Salesforce is disabled on this deployment"}, status=status.HTTP_403_FORBIDDEN
+            )
         org_id = self.get_organization(request)
         ids = request.data.get("property_view_ids", [])
 

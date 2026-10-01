@@ -153,7 +153,7 @@ COMPRESS_FILTERS = {
         "compressor.filters.jsmin.rJSMinFilter",
     ],
 }
-COMPRESS_PRECOMPILERS = (("text/x-scss", "pnpm exec sass --style=compressed {infile} {outfile}"),)
+COMPRESS_PRECOMPILERS = (("text/x-scss", "./node_modules/.bin/sass --style=compressed {infile} {outfile}"),)
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "collected_static")
@@ -352,7 +352,14 @@ def deployment_image_url(name):
     url = os.environ.get(name, "").strip()
     if url:
         parts = urlsplit(url)
-        if parts.scheme or parts.netloc or parts.query or parts.fragment or not parts.path.startswith("/branding/") or ".." in parts.path.split("/"):
+        if (
+            parts.scheme
+            or parts.netloc
+            or parts.query
+            or parts.fragment
+            or not parts.path.startswith("/branding/")
+            or ".." in parts.path.split("/")
+        ):
             raise ValueError(f"{name} must be a path under /branding/ (for example, /branding/logo.svg)")
     return url
 

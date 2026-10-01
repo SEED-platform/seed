@@ -172,6 +172,24 @@ class TestAnalysisPipeline(TestCase):
         self.analysis.refresh_from_db()
         self.assertEqual(Analysis.CREATING, self.analysis.status)
 
+    @override_settings(SEED_BETTER_ENABLED=False)
+    def test_better_task_does_not_contact_service_when_disabled(self):
+        from seed.analysis_pipelines.better.pipeline import _start_analysis
+
+        self.analysis.service = Analysis.BETTER
+        self.analysis.status = Analysis.QUEUED
+        self.analysis.save()
+
+        with (
+            patch("seed.analysis_pipelines.better.pipeline.BETTERClient") as client,
+            pytest.raises(AnalysisPipelineError, match="BETTER is disabled"),
+        ):
+            _start_analysis.run(self.analysis.id)
+
+        client.assert_not_called()
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.FAILED, self.analysis.status)
+
     def test_fail_sets_status_to_failed_when_not_already_in_terminal_state(self):
         # Setup
         pipeline = MockPipeline(self.analysis.id)

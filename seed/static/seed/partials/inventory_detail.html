@@ -193,7 +193,10 @@
               >
             </li>
 
-            <li role="menuitem" ng-if="deployment.integrations.salesforce && organization.salesforce_enabled">
+            <li
+              role="menuitem"
+              ng-if="deployment.integrations.salesforce && organization.salesforce_enabled"
+            >
               <a ng-click="update_salesforce()"
                 >{$:: 'Update Salesforce' | translate $}</a
               >

@@ -222,6 +222,8 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         organization_id = int(self.get_organization(request))
         try:
             analysis = Analysis.objects.get(id=pk, organization_id=organization_id)
+            if analysis.service == Analysis.BETTER and not settings.SEED_BETTER_ENABLED:
+                return JsonResponse({"status": "error", "message": "BETTER is disabled on this deployment"}, status=HTTP_409_CONFLICT)
             pipeline = AnalysisPipeline.factory(analysis)
             progress_data = pipeline.start_analysis()
             return JsonResponse(

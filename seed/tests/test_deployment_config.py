@@ -5,9 +5,11 @@ from unittest.mock import patch
 import pytest
 from django.template.loader import render_to_string
 from django.test import RequestFactory, SimpleTestCase, override_settings
+from rest_framework.exceptions import PermissionDenied
 
 from config.settings.common import deployment_image_url
 from seed.analysis_pipelines.pipeline import AnalysisPipeline, AnalysisPipelineError
+from seed.decorators import get_bb_salesforce_config
 from seed.models import Analysis
 from seed.utils.salesforce import test_connection, update_salesforce_property
 
@@ -18,8 +20,8 @@ class DeploymentConfigTests(SimpleTestCase):
         login = render_to_string("two_factor/_base_focus.html", request=RequestFactory().get("/account/login/"))
 
         self.assertIn('<div class="section_marketing">', login)
-        self.assertIn('Log in to SEED Platform', login)
-        self.assertIn('landing-bg.webp', login)
+        self.assertIn("Log in to SEED Platform", login)
+        self.assertIn("landing-bg.webp", login)
         self.assertNotIn('<div class="section_forms deployment-branded">', login)
 
     @override_settings(SEED_BRAND_LOGO_URL="/branding/client-logo.svg", SEED_LOGIN_HEADING="Client portal", SEED_HOME_HERO_IMAGE_URL="")
@@ -28,22 +30,23 @@ class DeploymentConfigTests(SimpleTestCase):
 
         self.assertIn('<div class="section_forms deployment-branded">', login)
         self.assertIn('src="/branding/client-logo.svg"', login)
-        self.assertIn('Client portal', login)
-        self.assertIn('background: #f3f4f6;', login)
-        self.assertIn('background: white;', login)
-        self.assertNotIn('landing-bg.webp', login)
-        self.assertNotIn('Log in to SEED Platform', login)
+        self.assertIn("Client portal", login)
+        self.assertIn("background: #f3f4f6;", login)
+        self.assertIn("background: white;", login)
+        self.assertNotIn("landing-bg.webp", login)
+        self.assertNotIn("Log in to SEED Platform", login)
 
     @override_settings(SEED_BRAND_LOGO_URL="/branding/client-logo.svg", SEED_HOME_HERO_IMAGE_URL="/branding/hero.webp")
     def test_custom_hero_can_replace_legacy_login_background(self):
         login = render_to_string("two_factor/_base_focus.html", request=RequestFactory().get("/account/login/"))
 
         self.assertIn("background: #f3f4f6 url('/branding/hero.webp')", login)
-        self.assertNotIn('landing-bg.webp', login)
+        self.assertNotIn("landing-bg.webp", login)
 
     def test_external_branding_image_is_rejected(self):
-        with patch.dict(os.environ, SEED_BRAND_LOGO_URL="https://images.example.com/logo.svg"), pytest.raises(
-            ValueError, match="must be a path under /branding/"
+        with (
+            patch.dict(os.environ, SEED_BRAND_LOGO_URL="https://images.example.com/logo.svg"),
+            pytest.raises(ValueError, match="must be a path under /branding/"),
         ):
             deployment_image_url("SEED_BRAND_LOGO_URL")
 
@@ -88,3 +91,10 @@ class DeploymentConfigTests(SimpleTestCase):
 
         with self.assertRaisesMessage(AnalysisPipelineError, "BETTER is disabled"):
             AnalysisPipeline.factory(SimpleNamespace(service=Analysis.BETTER, id=1))
+
+    @override_settings(SEED_SALESFORCE_ENABLED=False)
+    def test_bb_salesforce_endpoints_are_blocked_when_disabled(self):
+        endpoint = get_bb_salesforce_config(lambda *_args, **_kwargs: self.fail("Salesforce endpoint should not execute"))
+        with self.assertRaisesMessage(PermissionDenied, "Salesforce is disabled on this deployment"):
+            endpoint(None, None)
+            endpoint(None, None)
