@@ -75,6 +75,19 @@ class AuditTemplateViewTests(TestCase):
         self.assertEqual(200, response.status_code, response.content)
         self.assertEqual(response.content, b"submission response")
 
+    def test_report_types(self):
+        # -- Act
+        url = reverse("api:v3:audit_template-report-types")
+        response = self.client.get(url)
+
+        # -- Assert
+        self.assertEqual(200, response.status_code, response.content)
+        result = response.json()
+        self.assertEqual("success", result["status"])
+        self.assertIsInstance(result["data"], list)
+        self.assertIn("Demo City Report", result["data"])
+        self.assertIn("Federal Energy and Water Audit Report", result["data"])
+
 
 class ExportToAuditTemplate(TestCase):
     def setUp(self):

@@ -12,6 +12,11 @@ angular.module('SEED.service.audit_template', []).factory('audit_template_servic
       .then((response) => response.data)
       .catch((response) => response.data);
 
+    audit_template_factory.get_report_types = () => $http
+      .get('/api/v3/audit_template/report_types/')
+      .then((response) => response.data.data)
+      .catch((response) => response.data.data);
+
     audit_template_factory.get_city_submission_xml_and_update = (org_id, city_id, custom_id_1) => $http
       .put(`/api/v3/audit_template/get_city_submission_xml/?organization_id=${org_id}`, { city_id, custom_id_1 })
       .then((response) => response)

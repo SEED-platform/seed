@@ -13,6 +13,7 @@ describe('controller: organization_settings_controller', () => {
     module('SEED');
     inject((_$httpBackend_) => {
       _$httpBackend_.whenGET(/^\/static\/seed\/locales\/.*\.json/).respond(200, {});
+      _$httpBackend_.whenGET('/api/v3/audit_template/report_types/').respond(200, { status: 'success', data: [] });
     });
     inject(($controller, $rootScope, $uibModal, $q, organization_service, meters_service) => {
       controller = $controller;
