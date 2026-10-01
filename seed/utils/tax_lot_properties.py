@@ -337,6 +337,7 @@ def _spreadsheet_response(data, column_name_mappings):
         "annual_cost_savings",
         "annual_electricity_savings",
         "annual_natural_gas_savings",
+        "annual_peak_electricity_reduction",
         "annual_site_energy",
         "annual_source_energy",
         "annual_natural_gas_energy",
@@ -358,6 +359,7 @@ def _spreadsheet_response(data, column_name_mappings):
         "annual_peak_demand": "annual_peak_demand_kw",
         "annual_electricity_savings": "annual_electricity_savings_kbtu",
         "annual_natural_gas_savings": "annual_natural_gas_savings_kbtu",
+        "annual_peak_electricity_reduction": "annual_peak_electricity_reduction_kw",
     }
 
     property_measure_keys = (
@@ -370,7 +372,17 @@ def _spreadsheet_response(data, column_name_mappings):
         "cost_material",
         "cost_capital_replacement",
         "cost_residual_value",
+        "annual_cost_savings",
+        "annual_electricity_savings",
+        "annual_natural_gas_savings",
+        "annual_peak_electricity_reduction",
     )
+    property_measure_key_mappings = {
+        "annual_cost_savings": "annual_cost_savings_dollars",
+        "annual_electricity_savings": "annual_electricity_savings_kbtu",
+        "annual_natural_gas_savings": "annual_natural_gas_savings_kbtu",
+        "annual_peak_electricity_reduction": "annual_peak_electricity_reduction_kw",
+    }
     measure_keys = ("name", "display_name", "category", "category_display_name")
     # find measures and scenarios
     for i, record in enumerate(data):
@@ -443,7 +455,8 @@ def _spreadsheet_response(data, column_name_mappings):
             if add_m_headers:
                 # grab headers
                 for key in property_measure_keys:
-                    ws2.write(row2, col2, key, bold)
+                    # double check property_measure_key_mappings in case a different header is desired
+                    ws2.write(row2, col2, property_measure_key_mappings.get(key, key), bold)
                     col2 += 1
                 for key in measure_keys:
                     ws2.write(row2, col2, "measure " + key, bold)

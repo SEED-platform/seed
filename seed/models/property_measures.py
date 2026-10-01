@@ -140,6 +140,10 @@ class PropertyMeasure(models.Model):
     cost_material = models.FloatField(null=True)
     cost_capital_replacement = models.FloatField(null=True)
     cost_residual_value = models.FloatField(null=True)
+    annual_cost_savings = models.FloatField(null=True)
+    annual_electricity_savings = models.FloatField(null=True)
+    annual_natural_gas_savings = models.FloatField(null=True)
+    annual_peak_electricity_reduction = models.FloatField(null=True)
     category_affected = models.IntegerField(choices=CATEGORY_AFFECTED_TYPE, default=CATEGORY_OTHER)
     useful_life = models.FloatField(null=True)
 

@@ -18,6 +18,8 @@
           <th sd-resizable>Electricity savings (kBtu)</th>
           <th sd-resizable>Peak electricity reduction (kW)</th>
           <th sd-resizable>Natural gas savings (kBtu)</th>
+          <th sd-resizable>Total first cost</th>
+          <th sd-resizable>Annual cost savings</th>
           <th sd-resizable>Status of Measures</th>
         </tr>
       </thead>
@@ -57,7 +59,8 @@
               <span
                 style="font-weight: bold; font-size: 14px; margin-left: 10px"
               >
-                {$ (scenario.annual_electricity_savings | number: 0) || 'N/A' $}
+                {$ (scenario_savings_total(scenario,
+                'annual_electricity_savings') | number: 0) || 'N/A' $}
               </span>
             </td>
             <td>
@@ -68,8 +71,8 @@
               <span
                 style="font-weight: bold; font-size: 14px; margin-left: 10px"
               >
-                {$ (scenario.annual_peak_electricity_reduction | number: 0) ||
-                'N/A' $}
+                {$ (scenario_savings_total(scenario,
+                'annual_peak_electricity_reduction') | number: 0) || 'N/A' $}
               </span>
             </td>
             <td>
@@ -80,7 +83,32 @@
               <span
                 style="font-weight: bold; font-size: 14px; margin-left: 10px"
               >
-                {$ (scenario.annual_natural_gas_savings | number: 0) || 'N/A' $}
+                {$ (scenario_savings_total(scenario,
+                'annual_natural_gas_savings') | number: 0) || 'N/A' $}
+              </span>
+            </td>
+            <td>
+              <i
+                class="fa-solid fa-money-bill-wave scenario-cost-icon"
+                aria-hidden="true"
+              ></i>
+              <span
+                style="font-weight: bold; font-size: 14px; margin-left: 10px"
+              >
+                {$ (scenario_measure_total(scenario, 'cost_total_first') |
+                currency: '$' : 0) || 'N/A' $}
+              </span>
+            </td>
+            <td>
+              <i
+                class="fa-solid fa-piggy-bank scenario-savings-icon"
+                aria-hidden="true"
+              ></i>
+              <span
+                style="font-weight: bold; font-size: 14px; margin-left: 10px"
+              >
+                {$ (scenario_savings_total(scenario, 'annual_cost_savings') |
+                currency: '$' : 0) || 'N/A' $}
               </span>
             </td>
             <td>
@@ -95,7 +123,7 @@
           </div>
         </tr>
         <tr ng-repeat-end>
-          <td colspan="6" class="hidden-row" style="padding: 0">
+          <td colspan="8" class="hidden-row" style="padding: 0">
             <div
               class="accordian-body collapse measure-section scenario-collapse"
               id="scenario-{$ scenario.id $}"
