@@ -11,7 +11,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
-from seed.audit_template.audit_template import AuditTemplate
+from seed.audit_template.audit_template import AUDIT_TEMPLATE_REPORT_TYPES, AuditTemplate
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import PropertyView
 from seed.utils.api import OrgMixin
@@ -205,3 +205,14 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         if progress_data is None:
             return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
         return JsonResponse(progress_data)
+
+    @swagger_auto_schema(
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "data": ["string"]})},
+    )
+    @action(detail=False, methods=["GET"])
+    def report_types(self, request):
+        """
+        Returns the canonical list of valid Audit Template report types (e.g., for populating a
+        "Report Type" dropdown). This is not organization-specific.
+        """
+        return JsonResponse({"status": "success", "data": AUDIT_TEMPLATE_REPORT_TYPES})

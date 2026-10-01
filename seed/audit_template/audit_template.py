@@ -33,6 +33,35 @@ _log = logging.getLogger(__name__)
 
 AUTO_SYNC_NAME = "audit_template_sync_org-"
 
+# Canonical list of Audit Template report types. This is the single source of truth: both the
+# legacy AngularJS app and the new Angular app fetch this list from the `report_types` endpoint
+# (seed.views.v3.audit_template.AuditTemplateViewSet.report_types) rather than hardcoding it.
+AUDIT_TEMPLATE_REPORT_TYPES = [
+    "ASHRAE Level 2 Report",
+    "Atlanta Report",
+    "Baltimore Energy Audit Report",
+    "Berkeley Report",
+    "BRICR Phase 0/1",
+    "Brisbane Energy Audit Report",
+    "DC BEPS Energy Audit Report",
+    "DC BEPS RCx Report",
+    "Demo City Report",
+    "Denver Energy Audit Report",
+    "EE-RLF Template",
+    "Energy Trust of Oregon Report",
+    "Federal Energy and Water Audit Report",
+    "Los Angeles Report",
+    "Minneapolis Energy Evaluation Report",
+    "New York City Energy Efficiency Report",
+    "Office of Recapitalization Energy Audit Report",
+    "Open Efficiency Report",
+    "San Francisco Report",
+    "St. Louis RCx Report",
+    "St. Louis Report",
+    "WA Commerce Clean Buildings - Form D Report",
+    "WA Commerce Grants Report",
+]
+
 # Currently default version is the latest version.
 # Need to keep this version in sync with Audit Template
 AT_BUILDINGSYNC_VERSION = settings.BUILDINGSYNC_VERSION
