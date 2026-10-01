@@ -180,9 +180,11 @@ class TestAnalysisPipeline(TestCase):
         self.analysis.status = Analysis.QUEUED
         self.analysis.save()
 
-        with patch("seed.analysis_pipelines.better.pipeline.BETTERClient") as client:
-            with pytest.raises(AnalysisPipelineError, match="BETTER is disabled"):
-                _start_analysis.run(self.analysis.id)
+        with (
+            patch("seed.analysis_pipelines.better.pipeline.BETTERClient") as client,
+            pytest.raises(AnalysisPipelineError, match="BETTER is disabled"),
+        ):
+            _start_analysis.run(self.analysis.id)
 
         client.assert_not_called()
         self.analysis.refresh_from_db()

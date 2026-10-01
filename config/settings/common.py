@@ -347,12 +347,20 @@ BUILDINGSYNC_VERSION = os.environ.get("BUILDINGSYNC_VERSION", "2.7.0")
 # LBNL's BETTER tool host location
 BETTER_HOST = os.environ.get("BETTER_HOST", "https://better.lbl.gov")
 
+
 # Deployment-specific presentation and integration policy. Unset values preserve SEED's defaults.
 def deployment_image_url(name):
     url = os.environ.get(name, "").strip()
     if url:
         parts = urlsplit(url)
-        if parts.scheme or parts.netloc or parts.query or parts.fragment or not parts.path.startswith("/branding/") or ".." in parts.path.split("/"):
+        if (
+            parts.scheme
+            or parts.netloc
+            or parts.query
+            or parts.fragment
+            or not parts.path.startswith("/branding/")
+            or ".." in parts.path.split("/")
+        ):
             raise ValueError(f"{name} must be a path under /branding/ (for example, /branding/logo.svg)")
     return url
 
