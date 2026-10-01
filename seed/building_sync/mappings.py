@@ -341,7 +341,7 @@ def savings_to_kbtu(value, energy_resource, resource_units, country="US"):
     factor = kbtu_thermal_conversion_factors(country).get(pm_type, {}).get(pm_units)
 
     if factor is None:
-        return value, f'Could not convert "{energy_resource}" savings from "{resource_units}" to kBtu; storing the value as provided'
+        return None, f'Could not convert "{energy_resource}" savings from "{resource_units}" to kBtu; skipping the value'
 
     return value * factor, None
 
