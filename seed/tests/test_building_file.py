@@ -148,6 +148,69 @@ class TestBuildingFiles(TestCase):
         self.assertEqual(messages["errors"], [])
         self.assertEqual(PropertyMeasure.objects.get(property_state=property_state).annual_cost_savings, 1000.0)
 
+    def test_buildingsync_measure_and_scenario_energy_savings(self):
+        filename = path.join(BASE_DIR, "seed", "building_sync", "tests", "data", "ex_1_v2.7.0.xml")
+        with open(filename, "rb") as f:
+            content = f.read().replace(
+                b"<auc:LongDescription>Install heat pump SHW system</auc:LongDescription>",
+                b"<auc:LongDescription>Install heat pump SHW system</auc:LongDescription>"
+                b"<auc:MeasureSavingsAnalysis>"
+                b"<auc:AnnualSavingsByFuels>"
+                b"<auc:AnnualSavingsByFuel><auc:EnergyResource>Electricity</auc:EnergyResource>"
+                b"<auc:AnnualSavingsNativeUnits>10</auc:AnnualSavingsNativeUnits>"
+                b"<auc:ResourceUnits>kWh</auc:ResourceUnits>"
+                b"</auc:AnnualSavingsByFuel>"
+                b"<auc:AnnualSavingsByFuel><auc:EnergyResource>Natural gas</auc:EnergyResource>"
+                b"<auc:AnnualSavingsNativeUnits>2</auc:AnnualSavingsNativeUnits>"
+                b"<auc:ResourceUnits>therms</auc:ResourceUnits>"
+                b"</auc:AnnualSavingsByFuel>"
+                b"</auc:AnnualSavingsByFuels>"
+                b"<auc:AnnualPeakElectricityReduction>7.5</auc:AnnualPeakElectricityReduction>"
+                b"</auc:MeasureSavingsAnalysis>",
+            )
+
+        content = content.replace(
+            b"</auc:Facility>",
+            b"<auc:Reports><auc:Report><auc:Scenarios>"
+            b'<auc:Scenario ID="Scenario-1"><auc:ScenarioName>Energy savings</auc:ScenarioName><auc:ScenarioType>'
+            b"<auc:PackageOfMeasures><auc:AnnualSavingsByFuels>"
+            b"<auc:AnnualSavingsByFuel><auc:EnergyResource>Electricity</auc:EnergyResource>"
+            b"<auc:AnnualSavingsNativeUnits>5</auc:AnnualSavingsNativeUnits>"
+            b"<auc:ResourceUnits>kWh</auc:ResourceUnits>"
+            b"</auc:AnnualSavingsByFuel>"
+            b"<auc:AnnualSavingsByFuel><auc:EnergyResource>Natural gas</auc:EnergyResource>"
+            b"<auc:AnnualSavingsNativeUnits>1.25</auc:AnnualSavingsNativeUnits>"
+            b"<auc:ResourceUnits>therms</auc:ResourceUnits>"
+            b"</auc:AnnualSavingsByFuel>"
+            b"</auc:AnnualSavingsByFuels>"
+            b"<auc:AnnualPeakElectricityReduction>4.5</auc:AnnualPeakElectricityReduction>"
+            b"</auc:PackageOfMeasures></auc:ScenarioType></auc:Scenario>"
+            b"</auc:Scenarios></auc:Report></auc:Reports></auc:Facility>",
+            1,
+        )
+
+        bf = BuildingFile.objects.create(
+            file=SimpleUploadedFile("ex_1_v2.7.0.xml", content),
+            filename="ex_1_v2.7.0.xml",
+            file_type=BuildingFile.BUILDINGSYNC,
+        )
+
+        status, property_state, _property_view, messages = bf.process(
+            self.org.id, self.org.cycles.first(), access_level_instance=self.org.root
+        )
+        self.assertTrue(status)
+        self.assertEqual(messages["errors"], [])
+
+        measure = PropertyMeasure.objects.get(property_state=property_state)
+        self.assertEqual(measure.annual_electricity_savings, 34.1)
+        self.assertEqual(measure.annual_natural_gas_savings, 200.0)
+        self.assertEqual(measure.annual_peak_electricity_reduction, 7.5)
+
+        scenario = Scenario.objects.get(property_state=property_state, name="Energy savings")
+        self.assertEqual(scenario.annual_electricity_savings, 17.05)
+        self.assertEqual(scenario.annual_natural_gas_savings, 125.0)
+        self.assertEqual(scenario.annual_peak_electricity_reduction, 4.5)
+
     def test_buildingsync_bricr_import(self):
         filename = path.join(BASE_DIR, "seed", "building_sync", "tests", "data", "buildingsync_v2_0_bricr_workflow.xml")
         with open(filename, "rb") as file:
