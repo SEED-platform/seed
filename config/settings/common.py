@@ -347,6 +347,7 @@ BUILDINGSYNC_VERSION = os.environ.get("BUILDINGSYNC_VERSION", "2.7.0")
 # LBNL's BETTER tool host location
 BETTER_HOST = os.environ.get("BETTER_HOST", "https://better.lbl.gov")
 
+
 # Deployment-specific presentation and integration policy. Unset values preserve SEED's defaults.
 def deployment_image_url(name):
     url = os.environ.get(name, "").strip()
