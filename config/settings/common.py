@@ -153,7 +153,7 @@ COMPRESS_FILTERS = {
         "compressor.filters.jsmin.rJSMinFilter",
     ],
 }
-COMPRESS_PRECOMPILERS = (("text/x-scss", "pnpm exec sass --style=compressed {infile} {outfile}"),)
+COMPRESS_PRECOMPILERS = (("text/x-scss", "./node_modules/.bin/sass --style=compressed {infile} {outfile}"),)
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "collected_static")
