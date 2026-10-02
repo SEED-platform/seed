@@ -70,6 +70,7 @@ class Column(models.Model):
         "gross_floor_area_orig",
         "conditioned_floor_area_orig",
         "source_eui_weather_normalized_orig",
+        "incoming_labels",
     ]
 
     QUANTITY_UNIT_COLUMNS = [
@@ -1427,9 +1428,9 @@ class Column(models.Model):
             f.name
             for f in inventory_type._meta.fields
             if (
-                (f.get_internal_type() != "ForeignKey")
-                and (f.name not in Column.COLUMN_EXCLUDE_FIELDS)
-                and (f.name not in excluded_columns)
+                f.get_internal_type() != "ForeignKey"
+                and (f.name not in Column.COLUMN_EXCLUDE_FIELDS or f.name == "incoming_labels")
+                and f.name not in excluded_columns
             )
         ]
 

@@ -9,6 +9,7 @@ from collections import defaultdict
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
+from django.apps import apps
 from django.contrib.postgres.aggregates.general import ArrayAgg
 from django.db import IntegrityError, transaction
 from django.db.models import Subquery
@@ -30,6 +31,8 @@ from seed.models import (
     PropertyAuditLog,
     PropertyState,
     PropertyView,
+    PropertyViewLabel,
+    StatusLabel,
     TaxLotAuditLog,
     TaxLotState,
     TaxLotView,
@@ -796,6 +799,19 @@ def link_states(states, ViewClass, cycle, highest_ali, sub_progress_key, tuple_v
         if view is None:
             state.raw_access_level_instance = ali
             view = state.promote(cycle=cycle)
+
+        # assign incoming labels to view
+        if view and state.incoming_labels:
+            incoming_label_names = state.incoming_labels.split(",")
+            for incoming_label_name in incoming_label_names:
+                incoming_label, _ = StatusLabel.objects.get_or_create(
+                    name=incoming_label_name, super_organization=cycle.organization, show_in_list=True
+                )
+                if isinstance(view, PropertyView):
+                    PropertyViewLabel.objects.get_or_create(statuslabel=incoming_label, propertyview=view)
+                elif isinstance(view, TaxLotView):
+                    TaxLotViewLabel = apps.get_model("seed", "TaxLotView_labels")
+                    TaxLotViewLabel.objects.get_or_create(statuslabel=incoming_label, taxlotview=view)
 
         # link state
         link_count = _link_matches([*existing_views_matches, view], cycle.organization_id, view, ViewClass)
