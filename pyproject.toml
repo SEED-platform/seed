@@ -94,9 +94,9 @@ dev = [
     "vcrpy==8.3.0",
     "Faker~=40.15.0",
     "mock==5.2.0",
-    "hypothesis~=6.168.0",
+    "hypothesis~=6.168.3",
     # Coverage / reporting
-    "coverage~=7.16.0",
+    "coverage~=7.16.2",
     "coveralls==4.1.0",
     # Local/CI orchestration
     "tox-uv-bare==1.36.0",
