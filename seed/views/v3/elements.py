@@ -5,13 +5,14 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
+from rest_framework.response import Response
 from tkbl import bsync_by_uniformat_code, filter_by_uniformat_code
 
 from seed.decorators import ajax_request
@@ -19,11 +20,20 @@ from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.lib.uniformat.uniformat import uniformat_codes
-from seed.models import Element, Uniformat
-from seed.serializers.elements import ElementPropertySerializer, ElementSerializer
+from seed.models import Element, Property, Uniformat
+from seed.serializers.elements import (
+    ElementBulkSerializer,
+    ElementPropertySerializer,
+    ElementSerializer,
+)
 from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
-from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet, SEEDOrgReadOnlyModelViewSet
+from seed.utils.viewsets import (
+    SEEDOrgNoPatchOrOrgCreateModelViewSet,
+    SEEDOrgReadOnlyModelViewSet,
+)
+
+ELEMENT_BULK_BATCH_SIZE = 1000
 
 
 @method_decorator(
@@ -65,6 +75,114 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
                 .only(*element_fields, "code__code")
             )
         return self.model.objects.none()
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=ElementBulkSerializer(many=True),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "added": "integer",
+                    "updated": "integer",
+                }
+            )
+        },
+    )
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("requires_member"),
+        ]
+    )
+    @action(detail=False, methods=["POST"])
+    def bulk(self, request):
+        """Create or update Elements from a single organization-wide batch."""
+        serializer = ElementBulkSerializer(
+            data=request.data,
+            many=True,
+            allow_empty=False,
+            max_length=ELEMENT_BULK_BATCH_SIZE,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        organization_id = self.get_organization(request)
+        access_level_instance = AccessLevelInstance.objects.only("lft", "rgt").get(pk=request.access_level_instance_id)
+        element_data = serializer.validated_data
+        property_ids = {element["property_id"] for element in element_data}
+        element_ids = {element["id"] for element in element_data}
+
+        accessible_property_ids = set(
+            Property.objects.filter(
+                organization_id=organization_id,
+                id__in=property_ids,
+                access_level_instance__lft__gte=access_level_instance.lft,
+                access_level_instance__rgt__lte=access_level_instance.rgt,
+            ).values_list("id", flat=True)
+        )
+        if accessible_property_ids != property_ids:
+            return Response(
+                {"status": "error", "message": "One or more properties do not exist or are not accessible."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        existing_elements = Element.objects.filter(organization_id=organization_id, element_id__in=element_ids)
+        if existing_elements.exclude(
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).exists():
+            return Response(
+                {"status": "error", "message": "One or more elements do not exist or are not accessible."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        existing_element_ids = set(existing_elements.values_list("element_id", flat=True))
+        uniformat_ids = dict(Uniformat.objects.filter(code__in={element["code"] for element in element_data}).values_list("code", "id"))
+
+        elements = []
+        for element in element_data:
+            fields = element.copy()
+            property_id = fields.pop("property_id")
+            element_id = fields.pop("id")
+            code = fields.pop("code")
+            elements.append(
+                Element(
+                    organization_id=organization_id,
+                    property_id=property_id,
+                    element_id=element_id,
+                    code_id=uniformat_ids[code],
+                    **fields,
+                )
+            )
+
+        with transaction.atomic():
+            Element.objects.bulk_create(
+                elements,
+                batch_size=ELEMENT_BULK_BATCH_SIZE,
+                update_conflicts=True,
+                update_fields=[
+                    "property",
+                    "code",
+                    "description",
+                    "installation_date",
+                    "condition_index",
+                    "remaining_service_life",
+                    "replacement_cost",
+                    "manufacturing_date",
+                    "extra_data",
+                    "modified",
+                ],
+                unique_fields=["organization", "element_id"],
+            )
+
+        return Response(
+            {
+                "status": "success",
+                "added": len(element_ids - existing_element_ids),
+                "updated": len(existing_element_ids),
+            }
+        )
 
     @swagger_auto_schema(
         manual_parameters=[
