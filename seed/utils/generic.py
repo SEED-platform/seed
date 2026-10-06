@@ -7,7 +7,6 @@ import json
 import logging
 import math
 import re
-from contextlib import suppress
 from datetime import datetime
 
 from dateutil.parser import parse
@@ -166,18 +165,13 @@ def parse_date(value):
 
     """
     if not value:
-        return timezone.make_aware(datetime.min)
+        return datetime.min.replace(tzinfo=timezone.get_default_timezone())
 
-    # standardize separators, ignore optional operators
-    s = str(value).strip()
-    match = re.match(r"^(=|!=|<=|>=|<|>)\s*(.+)$", s)
-    if match:
-        s = match.group(2)
+    # ignore optional operators
+    s = re.sub(r"^(=|!=|<=|>=|<|>)\s*", "", str(value).strip())
 
-    with suppress(ValueError, TypeError):
-        parsed = parse(s)
-        if timezone.is_aware(parsed):
-            return parsed
-        return timezone.make_aware(parsed)
-
-    raise ValueError(f'Unable to parse date from value "{value}".')
+    try:
+        # Use 1/1/1 as defaults when values are missing
+        return parse(s, default=datetime(1, 1, 1, tzinfo=timezone.get_default_timezone()))
+    except Exception:
+        raise ValueError(f'Unable to parse date from value "{value}".')
