@@ -3,6 +3,8 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import os
+
 from django.core.management.base import BaseCommand
 
 from seed.landing.models import SEEDUser as User
@@ -15,12 +17,28 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--username", default="demo@seed-platform.org", help="Sets the default username.", action="store", dest="username"
+            "--username",
+            default=os.getenv("SEED_ADMIN_USER", "demo@seed-platform.org"),
+            help="Sets the default username.",
+            action="store",
+            dest="username",
         )
 
-        parser.add_argument("--password", default="demo", help="Sets the default password", action="store", dest="password")
+        parser.add_argument(
+            "--password",
+            default=os.getenv("SEED_ADMIN_PASSWORD", "demo"),
+            help="Sets the default password",
+            action="store",
+            dest="password",
+        )
 
-        parser.add_argument("--organization", default="demo", help="Sets the default organization", action="store", dest="organization")
+        parser.add_argument(
+            "--organization",
+            default=os.getenv("SEED_ADMIN_ORG", "demo"),
+            help="Sets the default organization",
+            action="store",
+            dest="organization",
+        )
 
         parser.add_argument(
             "--type", default="superuser", help="Type of user to create, defaults to superuser", action="store", dest="usertype"
@@ -45,8 +63,11 @@ class Command(BaseCommand):
 
         if Organization.objects.filter(name=options["organization"]).exists():
             org = Organization.objects.get(name=options["organization"])
-            self.stdout.write(f"Org <{options['organization']}> already exists, adding user", ending="\n")
-            org.add_member(u, org.root.id, ROLE_OWNER)
+            if org.is_owner(u):
+                self.stdout.write(f"Org <{options['organization']}> already exists; user is already an owner", ending="\n")
+            else:
+                self.stdout.write(f"Org <{options['organization']}> already exists, adding user", ending="\n")
+                org.add_member(u, org.root.id, ROLE_OWNER)
         else:
             self.stdout.write(f"Creating org <{options['organization']}> ...", ending=" ")
             org, _, _user_added = create_organization(u, options["organization"])

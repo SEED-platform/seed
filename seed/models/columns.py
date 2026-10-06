@@ -828,7 +828,7 @@ class Column(models.Model):
 
     shared_field_type = models.IntegerField(choices=SHARED_FIELD_TYPES, default=SHARED_NONE)
 
-    # By default, when two records are merge the new data will take precedence over the existing
+    # By default, when two records are merged the new data will take precedence over the existing
     # data, however, the user can override this on a column-by-column basis.
     merge_protection = models.IntegerField(choices=COLUMN_MERGE_PROTECTION, default=COLUMN_MERGE_FAVOR_NEW)
 
