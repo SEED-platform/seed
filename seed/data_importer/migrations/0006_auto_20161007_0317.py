@@ -7,6 +7,9 @@ from django.utils import timezone
 
 
 def forwards_func(apps, schema_editor):
+    if not apps.get_model("data_importer", "ImportFile").objects.exists():
+        return
+
     cycle = None
     if apps.get_model("seed", "Cycle").objects.count() == 0:
         year = date.today().year - 1

@@ -7,8 +7,13 @@ from django.urls import reverse
 from rest_framework import status
 
 from seed.landing.models import SEEDUser as User
+from seed.models import Element
 from seed.test_helpers.fake import FakeElementFactory, FakePropertyFactory
-from seed.tests.util import AccessLevelBaseTestCase, AssertDictSubsetMixin, DeleteModelsTestCase
+from seed.tests.util import (
+    AccessLevelBaseTestCase,
+    AssertDictSubsetMixin,
+    DeleteModelsTestCase,
+)
 from seed.utils.organizations import create_organization
 
 
@@ -114,6 +119,64 @@ class ElementViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.json(), {"extra_data": ["Nested structures are not allowed"]})
+
+    def test_bulk_upsert_elements(self):
+        url = self.reverse("api:v3:elements-bulk")
+        new_element_id = "dcc29e47-814e-49c3-a3e1-02a0d3ab1abc"
+        payload = [
+            {
+                "property_id": self.property2.pk,
+                "id": self.element1.element_id,
+                "code": "D304008",
+                "description": "Updated existing element",
+                "installation_date": "2004-06-01",
+                "condition_index": 80,
+                "remaining_service_life": 10,
+                "replacement_cost": 200000,
+                "extra_data": {"source": "bulk update"},
+            },
+            {
+                "property_id": self.property2.pk,
+                "id": new_element_id,
+                "code": "D305001",
+                "description": "New bulk element",
+                "installation_date": "2020-01-01",
+                "condition_index": 95,
+                "remaining_service_life": 20,
+                "replacement_cost": 100000,
+                "extra_data": {"source": "bulk insert"},
+            },
+        ]
+
+        response = self.client.post(url, payload, content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"status": "success", "added": 1, "updated": 1})
+
+        self.element1.refresh_from_db()
+        self.assertEqual(self.element1.property_id, self.property2.pk)
+        self.assertEqual(self.element1.description, "Updated existing element")
+        self.assertEqual(Element.objects.get(element_id=new_element_id).property_id, self.property2.pk)
+        self.assertEqual(Element.objects.count(), 4)
+
+        response = self.client.post(url, payload, content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), {"status": "success", "added": 0, "updated": 2})
+        self.assertEqual(Element.objects.count(), 4)
+
+    def test_bulk_upsert_rejects_duplicate_element_ids(self):
+        url = self.reverse("api:v3:elements-bulk")
+        element = {
+            "property_id": self.property2.pk,
+            "id": "dcc29e47-814e-49c3-a3e1-02a0d3ab1abc",
+            "code": "D304008",
+        }
+
+        response = self.client.post(url, [element, element], content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            response.json(),
+            {"non_field_errors": ["Duplicate element IDs: ['dcc29e47-814e-49c3-a3e1-02a0d3ab1abc']"]},
+        )
 
     def test_update_property_element(self):
         url = self.reverse("api:v3:property-elements-detail", args=[self.property1.pk, self.element1.element_id])
@@ -247,6 +310,19 @@ class PropertyElementViewPermissionsTests(AccessLevelBaseTestCase, AssertDictSub
         self.login_as_root_member()
         response = self.client.post(url, self.payload_data, content_type="application/json")
         assert response.status_code == 201
+
+    def test_bulk_upsert_element_permissions(self):
+        url = self.reverse("api:v3:elements-bulk")
+        payload = [{"property_id": self.property.pk, **self.payload_data}]
+
+        self.login_as_child_member()
+        response = self.client.post(url, payload, content_type="application/json")
+        assert response.status_code == 404
+
+        self.login_as_root_member()
+        response = self.client.post(url, payload, content_type="application/json")
+        assert response.status_code == 200
+        assert response.json() == {"status": "success", "added": 1, "updated": 0}
 
     def test_update_property_element_permissions(self):
         url = self.reverse("api:v3:property-elements-detail", args=[self.property.pk, self.element.element_id])
