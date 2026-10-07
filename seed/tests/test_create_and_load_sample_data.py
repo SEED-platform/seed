@@ -3,11 +3,14 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from itertools import pairwise
+
 from django.core.management import call_command
 from django.test import TestCase
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Cycle, PropertyAuditLog, PropertyView, TaxLotAuditLog, TaxLotView
+from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_EDIT
 
 
 class TestCreateAndLoadSampleData(TestCase):
@@ -39,7 +42,31 @@ class TestCreateAndLoadSampleData(TestCase):
         taxlot_views = TaxLotView.objects.filter(cycle__organization=org)
         self.assertGreater(property_views.count(), 0)
         self.assertGreater(taxlot_views.count(), 0)
-        self.assertGreaterEqual(PropertyAuditLog.objects.filter(organization=org).count(), property_views.count())
-        self.assertGreaterEqual(TaxLotAuditLog.objects.filter(organization=org).count(), taxlot_views.count())
-        for view in [*property_views, *taxlot_views]:
-            self.assertEqual(view.state.organization_id, org.id)
+
+        for views, log_model in ((property_views, PropertyAuditLog), (taxlot_views, TaxLotAuditLog)):
+            for view in views:
+                self.assertEqual(view.state.organization_id, org.id)
+                logs = list(log_model.objects.filter(view=view).order_by("pk"))
+                # creation log followed by one edit per audit-depth update; cases B/C/D may touch a view in more than one pass
+                self.assertGreaterEqual(len(logs), 2, view)
+                self.assertEqual(logs[0].record_type, AUDIT_IMPORT)
+                self.assertIsNone(logs[0].parent1)
+                for parent, log in pairwise(logs):
+                    self.assertEqual(log.record_type, AUDIT_USER_EDIT)
+                    self.assertEqual(log.parent1_id, parent.pk)
+                    self.assertEqual(log.parent_state1_id, parent.state_id)
+                self.assertEqual(logs[-1].state_id, view.state_id)
+
+    def test_earlier_cycle_keeps_its_own_state(self):
+        org = self._run("2022,2023")
+
+        early = TaxLotView.objects.filter(cycle__organization=org, cycle__name="2022 Annual")
+        late = TaxLotView.objects.filter(cycle__organization=org, cycle__name="2023 Annual")
+        self.assertGreater(early.count(), 0)
+        self.assertFalse({v.state_id for v in early} & {v.state_id for v in late})
+        for view in late:
+            self.assertEqual(view.state.extra_data["Tax Year"], "2023")
+        for view in early:
+            self.assertNotEqual(view.state.extra_data["Tax Year"], "2023")
+        # the same taxlot is carried from one cycle to the next
+        self.assertTrue({v.taxlot_id for v in early} & {v.taxlot_id for v in late})
