@@ -82,8 +82,8 @@ class ExpressionEvaluator:
         Should be used with the expression grammar above
         """
 
-        from operator import add, mod, mul, neg, sub  # type: ignore[misc]
-        from operator import truediv as div  # type: ignore[misc]
+        from operator import add, mod, mul, neg, sub
+        from operator import truediv as div
 
         number = float
         min = min
@@ -144,7 +144,7 @@ class ExpressionEvaluator:
             parameters = {}
 
         self._transformer.set_params(parameters)
-        return self._parser.parse(self._expression)  # type: ignore[return-value]
+        return self._parser.parse(self._expression)
 
 
 class InvalidExpressionError(Exception):

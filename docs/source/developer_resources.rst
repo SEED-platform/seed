@@ -50,21 +50,21 @@ Common gotchas:
 
 - If trying to annotate a class method with the class itself, import :code:`from __future__ import annotations`
 - If you're getting warnings about runtime errors due to a type name, make sure your IDE is set up to point to an environment with python 3.9
-- If you're wasting time trying to please the type checker, feel free to throw :code:`# type: ignore` on the problematic line (or at the top of the file to ignore all issues for that file)
+- For justified exceptions, use a rule-specific suppression such as :code:`# ty: ignore[invalid-argument-type]`.
 
 Type Checking
 *************
 
-CI currently runs static type checking on the codebase using `mypy <http://mypy-lang.org/>`_. For
+CI currently runs static type checking on the codebase using `ty <https://docs.astral.sh/ty/>`_. For
 your own IDE, we recommend the following extensions:
 
 - VSCode: `Pylance <https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance>`_ (uses Microsoft's Pyright type checking)
 
-To run the same typechecking applied in CI (i.e., using mypy) you can run the following
+To run the same type checking applied in CI you can run the following
 
 .. code-block:: bash
 
-    uv run tox -e mypy
+    uv run tox -e ty
 
 
 Django Notes

@@ -147,7 +147,7 @@ class LabelViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         label_ids = request.data.get("label_ids")
         data = request.data.get("data")
         if not organization_id or not label_ids or not data:
-            return JsonResponse({"status": "error", "message": "Missing required arguments"}, status=status.HTTP_400_BAD_REQUETS)
+            return JsonResponse({"status": "error", "message": "Missing required arguments"}, status=status.HTTP_400_BAD_REQUEST)
 
         labels = Label.objects.filter(id__in=label_ids, super_organization=organization_id)
         try:
@@ -155,4 +155,4 @@ class LabelViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 labels.update(**data)
                 return JsonResponse({})
         except Exception as e:
-            return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUETS)
+            return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

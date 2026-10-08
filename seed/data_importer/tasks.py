@@ -1113,7 +1113,7 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
     try:
         org = Organization.objects.get(pk=org_id)
     except ObjectDoesNotExist:
-        raise "Could not retrieve organization at pk = " + str(org_id)
+        raise ObjectDoesNotExist(f"Could not retrieve organization at pk = {org_id}")
 
     # get access level names (array of ordered names)
     access_level_names = AccessLevelInstancesParser._access_level_names(org_id)

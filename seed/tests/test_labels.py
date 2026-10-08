@@ -123,3 +123,11 @@ class TestLabelViewSet(AccessLevelBaseTestCase):
         self.client.put(url, data=json.dumps(data), content_type="application/json")
         show_in_list_count = Label.objects.filter(show_in_list=True).count()
         assert show_in_list_count == 0
+
+    def test_label_bulk_update_requires_update_data(self):
+        label = Label.objects.create(name="bulk-update-label", super_organization=self.org)
+        url = reverse_lazy("api:v3:labels-bulk-update") + "?organization_id=" + str(self.org.id)
+
+        response = self.client.put(url, data=json.dumps({"label_ids": [label.id]}), content_type="application/json")
+
+        assert response.status_code == 400
