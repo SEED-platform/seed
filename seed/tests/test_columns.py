@@ -924,13 +924,35 @@ class TestColumnsByInventory(TestCase):
             if c["name"] == "Column A":
                 self.assertEqual(c["sharedFieldType"], "Public")
 
-    def test_column_retrieve_all_duplicate_error(self):
+    def test_inventory_column_name_is_unique_across_extra_data(self):
+        """Canonical and extra-data inventory columns cannot use the same name."""
+        with pytest.raises(ValidationError, match="unique_inventory_column_name"):
+            seed_models.Column.objects.create(
+                column_name="custom_id_1", table_name="PropertyState", organization=self.fake_org, is_extra_data=True
+            )
+
+    def test_raw_column_name_can_exist_for_both_extra_data_values(self):
+        """Blank-table raw and hierarchy columns may use the same name."""
         seed_models.Column.objects.create(
-            column_name="custom_id_1", table_name="PropertyState", organization=self.fake_org, is_extra_data=True
+            column_name="raw-and-extra-column", table_name="", organization=self.fake_org, is_extra_data=False
+        )
+        seed_models.Column.objects.create(column_name="raw-and-extra-column", table_name="", organization=self.fake_org, is_extra_data=True)
+
+        self.assertEqual(
+            seed_models.Column.objects.filter(column_name="raw-and-extra-column", table_name="", organization=self.fake_org).count(),
+            2,
         )
 
-        with pytest.raises(Exception, match="Duplicate name"):
-            Column.retrieve_all(self.fake_org.pk, "property", False)
+    def test_raw_column_name_is_unique_within_extra_data_value(self):
+        """Blank-table columns with the same role cannot duplicate a name."""
+        seed_models.Column.objects.create(
+            column_name="duplicate-raw-column", table_name="", organization=self.fake_org, is_extra_data=False
+        )
+
+        with pytest.raises(ValidationError, match="unique_raw_column_name"):
+            seed_models.Column.objects.create(
+                column_name="duplicate-raw-column", table_name="", organization=self.fake_org, is_extra_data=False
+            )
 
     def test_column_retrieve_schema(self):
         schema = {

@@ -841,11 +841,20 @@ class Column(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["organization", "comstock_mapping"], name="unique_comstock_mapping"),
-            # create a name constraint on the column. The name must be unique across the organization,
-            # table_name (property or tax lot), if it is extra_data. Note that this may require some
-            # database cleanup because older organizations might have imported data before the `units_pint`
-            # column existed and there will be duplicates.
-            models.UniqueConstraint(fields=["organization", "column_name", "table_name", "is_extra_data"], name="unique_column_name"),
+            # Blank table names are used by both raw import columns and hierarchy extra-data columns.
+            # They may share a name, so is_extra_data remains part of this namespace's identity.
+            models.UniqueConstraint(
+                fields=["organization", "column_name", "is_extra_data"],
+                condition=Q(table_name=""),
+                name="unique_raw_column_name",
+            ),
+            # PropertyState and TaxLotState columns share one name namespace per table. A canonical
+            # field and an extra-data field with the same name cannot coexist.
+            models.UniqueConstraint(
+                fields=["organization", "column_name", "table_name"],
+                condition=~Q(table_name=""),
+                name="unique_inventory_column_name",
+            ),
         ]
 
     def __str__(self):
