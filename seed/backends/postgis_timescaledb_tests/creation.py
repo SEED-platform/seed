@@ -1,6 +1,4 @@
-import sys
 from contextlib import contextmanager
-from multiprocessing import cpu_count
 from time import sleep
 
 from django.db.backends.postgresql.creation import DatabaseCreation as PostgreSQLDatabaseCreation
@@ -10,6 +8,7 @@ class DatabaseCreation(PostgreSQLDatabaseCreation):
     _hold_restore_mode_for_parallel = False
     _block_source_database_connections = False
     _remaining_parallel_clones = 0
+    _parallel_processes = 0
 
     @contextmanager
     def _source_database_cursor(self):
@@ -20,25 +19,8 @@ class DatabaseCreation(PostgreSQLDatabaseCreation):
         finally:
             self.connection.close()
 
-    def _parallel_test_processes_requested(self):
-        args = sys.argv[1:]
-        for index, arg in enumerate(args):
-            if arg == "--parallel":
-                if index + 1 >= len(args) or args[index + 1].startswith("-"):
-                    return cpu_count()
-                value = args[index + 1]
-            elif arg.startswith("--parallel="):
-                value = arg.split("=", 1)[1]
-            else:
-                continue
-
-            if value == "auto":
-                return cpu_count()
-            try:
-                return int(value)
-            except ValueError:
-                return 0
-        return 0
+    def set_parallel_processes(self, processes):
+        self._parallel_processes = processes
 
     def _source_database_name(self):
         return self.connection.settings_dict["NAME"]
@@ -130,13 +112,12 @@ class DatabaseCreation(PostgreSQLDatabaseCreation):
 
         test_database_name = super().create_test_db(**create_kwargs)
 
-        parallel_processes = self._parallel_test_processes_requested()
-        if parallel_processes > 1:
+        if self._parallel_processes > 1:
             self._hold_restore_mode_for_parallel = self._enter_timescaledb_restore_mode() or self._timescaledb_restore_mode_enabled()
             self._set_source_database_allow_connections(False)
             self._block_source_database_connections = True
             self._disconnect_source_database_sessions()
-            self._remaining_parallel_clones = parallel_processes
+            self._remaining_parallel_clones = self._parallel_processes
 
         return test_database_name
 

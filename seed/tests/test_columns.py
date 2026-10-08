@@ -8,7 +8,7 @@ from datetime import UTC, date, datetime
 
 import pytest
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.test import TestCase
 from django.utils import timezone
 from quantityfield.units import ureg
@@ -926,7 +926,7 @@ class TestColumnsByInventory(TestCase):
 
     def test_inventory_column_name_is_unique_across_extra_data(self):
         """Canonical and extra-data inventory columns cannot use the same name."""
-        with pytest.raises(IntegrityError), transaction.atomic():
+        with pytest.raises(ValidationError, match="unique_inventory_column_name"):
             seed_models.Column.objects.create(
                 column_name="custom_id_1", table_name="PropertyState", organization=self.fake_org, is_extra_data=True
             )
@@ -949,7 +949,7 @@ class TestColumnsByInventory(TestCase):
             column_name="duplicate-raw-column", table_name="", organization=self.fake_org, is_extra_data=False
         )
 
-        with pytest.raises(IntegrityError), transaction.atomic():
+        with pytest.raises(ValidationError, match="unique_raw_column_name"):
             seed_models.Column.objects.create(
                 column_name="duplicate-raw-column", table_name="", organization=self.fake_org, is_extra_data=False
             )
