@@ -12,6 +12,7 @@ from django.core.management.base import BaseCommand
 
 import seed.models
 from seed.lib.superperms.orgs.models import Organization
+from seed.models.auditlog import AUDIT_USER_EDIT
 from seed.test_helpers.fake import BaseFake, FakePropertyStateFactory, FakeTaxLotStateFactory
 
 logging.basicConfig(level=logging.DEBUG)
@@ -395,67 +396,70 @@ def create_cases(org, cycle, tax_lots, properties):
         tl_extra_data = del_datetimes(tl_extra_data)
         prop_extra_data = del_datetimes(prop_extra_data)
 
-        # states don't have an org and since this script was doing all buildings twice
-        # (once for individual, once for _caseALL).  So if the get_or_create returns
-        # an existing one then it still is unknown if it is something that already exists.
-        # Check the view model to see if there is something with this state and this org.
-        # If it does not exist then create one.  If it does exist than that is correct (hopefully)
-        #
-        # FIXME.  In the instance where this script is creating both individual cases and _caseALL this
-        # throws an error for some taxlots that multiple are returned.  Since TaxLotState does not depend
-        # on an org I think this might have to go something like filter the view for this org and a state that
-        # has fields that match **state_def.  However per Robin we are OK just restricting things to
-        # the _caseALLL case for now so this is not currently a problem.
-        def _create_state(view_model, state_model, org, state_def):
-            state, created = state_model.objects.get_or_create(**state_def)
-            if not created and not view_model.objects.filter(state=state).filter(cycle__organization=org).exists():
-                state = state_model.objects.create(**state_def)
-                created = True
-            return state, created
+        def _get_state_and_entity(view_model, state_model, entity_model, entity_field, state_def, extra_data):
+            """
+            Returns the state for this cycle and the Property/TaxLot it belongs to.
+            A state already attached to a view in this cycle is reused (e.g. a taxlot shared by several properties).
+            Otherwise a new state is created and attached to the entity of the matching record from another cycle, if any.
+            Audit updates leave identical copies of a state, so get_or_create would raise MultipleObjectsReturned.
+            """
+            matches = state_model.objects.filter(organization=org, **state_def)
+            in_cycle = view_model.objects.filter(state__in=matches, cycle=cycle).order_by("pk").first()
+            if in_cycle:
+                state, entity = in_cycle.state, getattr(in_cycle, entity_field)
+            else:
+                other = view_model.objects.filter(state__in=matches).order_by("pk").first()
+                entity = getattr(other, entity_field) if other else entity_model.objects.create(organization=org)
+                state = state_model.objects.create(organization=org, **state_def)
 
-        prop_state, property_state_created = _create_state(seed.models.PropertyView, seed.models.PropertyState, org, prop_def)
+            for k, v in extra_data.items():
+                state.extra_data[k] = v
+            state.save()
+            return state, entity
 
-        for k, v in prop_extra_data.items():
-            prop_state.extra_data[k] = v
-
-        prop_state.save()
-
-        taxlot_state, taxlot_state_created = _create_state(seed.models.TaxLotView, seed.models.TaxLotState, org, tl_def)
-
-        for k, v in tl_extra_data.items():
-            taxlot_state.extra_data[k] = v
-
-        taxlot_state.save()
-
-        # Moved the property and taxlot items below the state items because they only depend on an org
-        # So if they are just left at the top as get_or_create(organization=org) then there will only
-        # be one property created per org.  Instead, for creating this data if the state was created
-        # then a property/taxlot needs to be created too.
-        if property_state_created:
-            property = seed.models.Property.objects.create(organization=org)
-        else:
-            # else the property_state already existed so there should also be a PropertyView
-            # with this property_state.  Find and use that property.
-            property = seed.models.PropertyView.objects.filter(state=prop_state).filter(property__organization=org)[0].property
-
-        if taxlot_state_created:
-            taxlot = seed.models.TaxLot.objects.create(organization=org)
-        else:
-            # else the taxlot_state already existed so there should also be a TaxlotView
-            # with this taxlot_state.  Find and use that taxlot.
-            taxlot = seed.models.TaxLotView.objects.filter(state=taxlot_state).filter(taxlot__organization=org)[0].taxlot
+        prop_state, property = _get_state_and_entity(
+            seed.models.PropertyView, seed.models.PropertyState, seed.models.Property, "property", prop_def, prop_extra_data
+        )
+        taxlot_state, taxlot = _get_state_and_entity(
+            seed.models.TaxLotView, seed.models.TaxLotState, seed.models.TaxLot, "taxlot", tl_def, tl_extra_data
+        )
 
         taxlot_view, created = seed.models.TaxLotView.objects.get_or_create(taxlot=taxlot, cycle=cycle, state=taxlot_state)
         if created:
+            taxlot_view.initialize_audit_logs(name="Sample data creation")
             created_taxlot_views.append(taxlot_view)
 
         prop_view, created = seed.models.PropertyView.objects.get_or_create(property=property, cycle=cycle, state=prop_state)
         if created:
+            prop_view.initialize_audit_logs(name="Sample data creation")
             created_property_views.append(prop_view)
 
         _tlp, created = seed.models.TaxLotProperty.objects.get_or_create(property_view=prop_view, taxlot_view=taxlot_view, cycle=cycle)
 
     return created_taxlot_views, created_property_views
+
+
+def _add_audit_record(view, audit_log_model, org_id):
+    """
+    Copies the view's current state into a new state, records an audit log entry for it and points the view at the copy.
+    """
+    new_state = view.state
+    old_state_id = new_state.pk
+    parent = audit_log_model.objects.filter(view=view, state_id=old_state_id).order_by("-created", "-pk").first()
+    new_state.pk = None  # set pk to None to get a new copy on save
+    new_state.save()
+    audit_log_model.objects.create(
+        organization_id=org_id,
+        parent1=parent,
+        parent_state1_id=old_state_id,
+        state=new_state,
+        view=view,
+        name="Sample data update",
+        description="Generated by create_and_load_sample_data",
+        record_type=AUDIT_USER_EDIT,
+    )
+    view.state = new_state
+    view.save()
 
 
 def update_taxlot_views(views, number_of_updates):
@@ -465,12 +469,9 @@ def update_taxlot_views(views, number_of_updates):
     :param views: list of TaxLotViews to be updated
     :param number_of_updates: int, number of times to update (the number of audit records to be created)
     """
-    for i in range(number_of_updates):
+    for _ in range(number_of_updates):
         for taxlot_view in views:
-            state = taxlot_view.state
-            state.pk = None  # set state to None to get a new copy on save
-            state.save()
-            taxlot_view.update_state(state)
+            _add_audit_record(taxlot_view, seed.models.TaxLotAuditLog, taxlot_view.taxlot.organization_id)
 
 
 def update_property_views(views, number_of_updates):
@@ -480,13 +481,10 @@ def update_property_views(views, number_of_updates):
     :param views: list of PropertyViews to be updated
     :param number_of_updates: int, number of times to update (the number of audit records to be created)
     """
-    for i in range(number_of_updates):
+    for _ in range(number_of_updates):
         for property_view in views:
-            state = property_view.state
-            state.site_eui = str(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
-            state.pk = None  # set state to None to get a new copy on save
-            state.save()
-            property_view.update_state(state)
+            property_view.state.site_eui = str(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
+            _add_audit_record(property_view, seed.models.PropertyAuditLog, property_view.property.organization_id)
 
 
 def create_cases_with_multi_records_per_cycle(org, cycle, taxlots, properties, number_records=1):
@@ -524,7 +522,7 @@ def create_case_a(org, cycle, taxlot_factory, property_factory, number_records_p
     """
     taxlot = taxlot_factory.tax_lot()
     taxlots = [taxlot]
-    properties = [property_factory.property_state(address_line_1=taxlot.data["address"], city=taxlot.data["city"])]
+    properties = [property_factory.property_state(address_line_1=taxlot.data["address_line_1"], city=taxlot.data["city"])]
 
     taxlots, properties = create_cases_with_multi_records_per_cycle(org, cycle, taxlots, properties, number_records_per_cycle)
 
@@ -593,7 +591,7 @@ def _create_case_d(org, cycle, taxlots, properties, campus, number_records_per_c
     def _create_states_with_extra_data(model, records):
         states = []
         for rec in records:
-            state = model.objects.get_or_create(**rec.data)[0]
+            state = model.objects.create(organization=org, **rec.data)
             state = add_extra_data(state, rec.extra_data)
             states.append(state)
         return states
@@ -610,15 +608,19 @@ def _create_case_d(org, cycle, taxlots, properties, campus, number_records_per_c
 
     property_states = _create_states_with_extra_data(seed.models.PropertyState, [property_, *properties])
     property_views = [
-        seed.models.PropertyView.objects.get_or_create(property=property, cycle=cycle, state=prop_state)[0]
+        seed.models.PropertyView.objects.create(property=property, cycle=cycle, state=prop_state)
         for (property, prop_state) in list(zip(property_objs, property_states))
     ]
+    for view in property_views:
+        view.initialize_audit_logs(name="Sample data creation")
 
     taxlot_states = _create_states_with_extra_data(seed.models.TaxLotState, taxlots)
     taxlot_views = [
-        seed.models.TaxLotView.objects.get_or_create(taxlot=taxlot, cycle=cycle, state=taxlot_state)[0]
+        seed.models.TaxLotView.objects.create(taxlot=taxlot, cycle=cycle, state=taxlot_state)
         for (taxlot, taxlot_state) in list(zip(taxlot_objs, taxlot_states))
     ]
+    for view in taxlot_views:
+        view.initialize_audit_logs(name="Sample data creation")
 
     seed.models.TaxLotProperty.objects.get_or_create(property_view=property_views[0], taxlot_view=taxlot_views[0], cycle=cycle)
     seed.models.TaxLotProperty.objects.get_or_create(property_view=property_views[1], taxlot_view=taxlot_views[0], cycle=cycle)
@@ -781,7 +783,7 @@ def create_sample_data(years, a_ct=0, b_ct=0, c_ct=0, d_ct=0, number_records_per
     :param d_ct: int, the number of D cases to create.
     """
     year = years[0]
-    extra_years = years[1:] if len(years) > 1 else None
+    extra_years = years[1:]
     org, _ = Organization.objects.get_or_create(name="SampleDataDemo_caseALL")
     cycle = get_cycle(org, year)
     year_ending = date(year, 1, 1)
