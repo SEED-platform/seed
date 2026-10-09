@@ -9,9 +9,10 @@ import os
 import pathlib
 import time
 import unittest
-from datetime import datetime
+from datetime import UTC, datetime
 from zoneinfo import ZoneInfo
 
+from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import Q
 from django.test.client import BOUNDARY, MULTIPART_CONTENT, encode_multipart
@@ -21,7 +22,7 @@ from django.utils.timezone import (
     make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 )
 
-from config.settings.common import BASE_DIR, TIME_ZONE
+from config.settings.common import BASE_DIR
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import geocode_and_match_buildings_task, save_raw_data
 from seed.landing.models import SEEDUser as User
@@ -1785,9 +1786,8 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
         # Check that there are 2 overlapping readings (that are separate for now) out of 4.
         self.assertEqual(MeterReading.objects.count(), 4)
-        tz_obj = ZoneInfo(TIME_ZONE)
-        start_time_match = make_aware(datetime(2011, 3, 5, 21, 15, 0), timezone=tz_obj)
-        end_time_match = make_aware(datetime(2011, 3, 5, 21, 30, 0), timezone=tz_obj)
+        start_time_match = datetime.fromtimestamp(1299388500, tz=UTC)
+        end_time_match = datetime.fromtimestamp(1299389400, tz=UTC)
         same_time_windows = MeterReading.objects.filter(start_time=start_time_match, end_time=end_time_match)
         self.assertEqual(same_time_windows.count(), 2)
 
@@ -2343,7 +2343,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         }
         gb_gas_meter = Meter.objects.create(**meter_details)
 
-        tz_obj = ZoneInfo(TIME_ZONE)
+        tz_obj = ZoneInfo(settings.TIME_ZONE)
         gb_gas_reading_details = {
             "start_time": make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
             "end_time": make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
@@ -2510,7 +2510,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         }
         diesel_meter = Meter.objects.create(**meter_details)
 
-        tz_obj = ZoneInfo(TIME_ZONE)
+        tz_obj = ZoneInfo(settings.TIME_ZONE)
         diesel_reading_details = {
             "start_time": make_aware(datetime(2016, 1, 1, 0, 0, 0), timezone=tz_obj),
             "end_time": make_aware(datetime(2016, 2, 1, 0, 0, 0), timezone=tz_obj),
@@ -2567,7 +2567,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         save_raw_data(self.import_file.id)
 
         # add additional entries for each initial meter
-        tz_obj = ZoneInfo(TIME_ZONE)
+        tz_obj = ZoneInfo(settings.TIME_ZONE)
         for meter in Meter.objects.all():
             # March 2016 reading
             reading_details = {
@@ -2650,7 +2650,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         property_1_electric_meter = Meter.objects.get(source_id="5766973-0")
         # add additional sub-monthly entries for each initial meter
-        tz_obj = ZoneInfo(TIME_ZONE)
+        tz_obj = ZoneInfo(settings.TIME_ZONE)
         for meter in Meter.objects.all():
             # November 2019 reading between DST transition
             reading_details = {
@@ -2728,7 +2728,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         save_raw_data(self.import_file.id)
 
         # add additional 2018 entries for each initial meter
-        tz_obj = ZoneInfo(TIME_ZONE)
+        tz_obj = ZoneInfo(settings.TIME_ZONE)
         for meter in Meter.objects.all():
             # March 2018 reading
             reading_details = {
@@ -2797,7 +2797,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         save_raw_data(self.import_file.id)
 
         # add additional entries for the Electricity meter
-        tz_obj = ZoneInfo(TIME_ZONE)
+        tz_obj = ZoneInfo(settings.TIME_ZONE)
         meter = Meter.objects.get(property_id=self.property_view_1.property.id, type=Meter.type_lookup["Electric - Grid"])
 
         # 2020 January-February reading has 1 full day in January 1 full day in February.

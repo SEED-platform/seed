@@ -102,7 +102,7 @@ class ProgressData:
         if "func_name" in data and "unique_id" in data:
             return cls(func_name=data["func_name"], unique_id=data["unique_id"], init_data=data)
         else:
-            raise KeyError(f"Could not find key {key} in cache")
+            raise RuntimeError(f"Could not find key {key} in cache")
 
     def save(self):
         """Save the data to the cache"""
