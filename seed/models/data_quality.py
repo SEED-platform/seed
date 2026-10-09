@@ -510,8 +510,8 @@ class Rule(models.Model):
                 # try to convert to float
                 try:
                     value = float(value)
-                except ValueError:
-                    raise DataQualityTypeCastError(f"Error converting {value} to number")
+                except ValueError as e:
+                    raise DataQualityTypeCastError(f"Error converting {value} to number") from e
             else:
                 # must be a float...
                 value = float(value)
@@ -519,10 +519,10 @@ class Rule(models.Model):
             try:
                 # If rule_min is undefined/None or value is okay, then it is valid.
                 return not value < rule_min
-            except DimensionalityError:
-                raise UnitMismatchError("Dimensions do not match for minimum compare. (Check units.)")
-            except ValueError:
-                raise ComparisonError("Value could not be compared numerically")
+            except DimensionalityError as e:
+                raise UnitMismatchError("Dimensions do not match for minimum compare. (Check units.)") from e
+            except ValueError as e:
+                raise ComparisonError("Value could not be compared numerically") from e
 
     def maximum_valid(self, value):
         """
@@ -549,18 +549,18 @@ class Rule(models.Model):
                 # try to convert to float
                 try:
                     value = float(value)
-                except ValueError:
-                    raise DataQualityTypeCastError(f"Error converting {value} to number")
+                except ValueError as e:
+                    raise DataQualityTypeCastError(f"Error converting {value} to number") from e
             else:
                 # must be a float...
                 value = float(value)
 
             try:
                 return not value > rule_max
-            except DimensionalityError:
-                raise UnitMismatchError("Dimensions do not match for maximum compare. (Check units.)")
-            except ValueError:
-                raise ComparisonError("Value could not be compared numerically")
+            except DimensionalityError as e:
+                raise UnitMismatchError("Dimensions do not match for maximum compare. (Check units.)") from e
+            except ValueError as e:
+                raise ComparisonError("Value could not be compared numerically") from e
 
     def str_to_data_type(self, value):
         """
@@ -597,7 +597,7 @@ class Rule(models.Model):
                         if dt is not None:
                             return dt.date()
             except ValueError as e:
-                raise DataQualityTypeCastError(f"Error converting {value} with {e}")
+                raise DataQualityTypeCastError(f"Error converting {value} with {e}") from e
         else:
             return value
 
@@ -638,7 +638,7 @@ class Rule(models.Model):
             f_min = str(self.min)
             f_max = str(self.max)
         else:
-            raise Exception(f"Unknown data type ({value}:{value.__class__})")
+            raise TypeError(f"Unknown data type ({value}:{value.__class__})")
 
         return [f_min, f_max, f_value]
 
@@ -1080,9 +1080,7 @@ class DataQualityCheck(models.Model):
         # objects instead of object of objects.
         existing_results = get_cache_raw(DataQualityCheck.cache_key(identifier, organization_id)) or []
 
-        results = []
-        for key, value in self.results.items():
-            results.append(value)
+        results = list(self.results.values())
 
         existing_results += results
 
@@ -1153,7 +1151,7 @@ class DataQualityCheck(models.Model):
         try:
             r = Rule.objects.create(**rule)
         except TypeError as e:
-            raise TypeError(f"Rule data is not defined correctly: {e}")
+            raise TypeError(f"Rule data is not defined correctly: {e}") from e
 
         self.rules.add(r)
 

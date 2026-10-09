@@ -25,7 +25,7 @@ from seed.serializers.systems import (
 from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 type_by_class = {
     DESSystem: "DES",

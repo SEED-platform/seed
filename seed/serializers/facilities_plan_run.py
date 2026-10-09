@@ -39,7 +39,7 @@ class FacilitiesPlanRunSerializer(serializers.ModelSerializer):
             many=True,
         ).data
 
-        return dict(zip(nonnull_column_names, nonnull_columns))
+        return dict(zip(nonnull_column_names, nonnull_columns, strict=False))
 
     def get_property_display_field(self, obj):
         org = obj.facilities_plan.organization

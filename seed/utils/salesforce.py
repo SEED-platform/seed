@@ -143,8 +143,10 @@ def _get_property_view(property_id, org_id):
     return result
 
 
-def update_salesforce_property(org_id, property_id, salesforce_client=None, config=None, mappings={}):
+def update_salesforce_property(org_id, property_id, salesforce_client=None, config=None, mappings=None):
     """Sync a specific SEED property record with Salesforce"""
+    if mappings is None:
+        mappings = {}
     status = False
     message = None
     params = {}
@@ -492,9 +494,9 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         if config.delete_label_after_sync:
             remove_indication_label(property_id, config.indication_label_id)
 
-    except Exception as ex:
+    except Exception as e:
         template = "Property View {2} / Benchmark ID {3} : An exception of type {0} occurred. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args, str(property_id), benchmark_id)
+        message = template.format(type(e).__name__, e.args, str(property_id), benchmark_id)
 
     return status, message
 
@@ -507,10 +509,10 @@ def remove_indication_label(property_id, label_id):
         pv = PropertyView.objects.get(pk=property_id)
         pv.labels.remove(label_id)
         pv.save()
-    except Exception as ex:
+    except Exception as e:
         # could not remove label
         # TODO: We need to save this to the logger too, not just print it.
-        print(f"Error removing label: {ex!s}")
+        print(f"Error removing label: {e!s}")
 
 
 def update_salesforce_properties(org_id, property_ids):

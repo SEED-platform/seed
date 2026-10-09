@@ -3,16 +3,11 @@
 </div>
 
 <div class="modal-body">
-  <p
-    translate="MOVE_INVENTORY_ALI_TXT"
-    translate-values="{num: ids.length, label: label}"
-  ></p>
+  <p translate="MOVE_INVENTORY_ALI_TXT" translate-values="{num: ids.length, label: label}"></p>
   <form name="access_level_form">
     <div class="row pad-bot-10">
       <div class="form-group">
-        <label class="control-label col-sm-3" for="newAccessLevel" translate
-          >Access Level</label
-        >
+        <label class="control-label col-sm-3" for="newAccessLevel" translate>Access Level</label>
         <div class="col-sm-8">
           <select
             class="form-control"
@@ -28,12 +23,7 @@
     </div>
     <div class="row">
       <div class="form-group">
-        <label
-          class="control-label col-sm-3"
-          for="newAccessLevelInstance"
-          translate
-          >Access Level Instance</label
-        >
+        <label class="control-label col-sm-3" for="newAccessLevelInstance" translate>Access Level Instance</label>
         <div class="col-sm-8">
           <select
             class="form-control"
@@ -50,15 +40,6 @@
 </div>
 
 <div class="modal-footer" ng-show="!moving">
-  <button
-    type="button"
-    class="btn btn-primary"
-    ng-click="move_properties()"
-    translate
-  >
-    Move Properties
-  </button>
-  <button type="button" class="btn btn-default" ng-click="cancel()" translate>
-    Cancel
-  </button>
+  <button type="button" class="btn btn-primary" ng-click="move_properties()" translate>Move Properties</button>
+  <button type="button" class="btn btn-default" ng-click="cancel()" translate>Cancel</button>
 </div>

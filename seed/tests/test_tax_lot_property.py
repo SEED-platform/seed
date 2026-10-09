@@ -72,7 +72,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
     def test_tax_lot_property_get_related(self):
         """Test to make sure get_related returns the fields"""
-        for i in range(50):
+        for _i in range(50):
             p = self.property_view_factory.get_property_view()
             self.properties.append(p.id)
 
@@ -129,7 +129,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
     def test_csv_export(self):
         """Test to make sure get_related returns the fields"""
-        for i in range(50):
+        for _i in range(50):
             p = self.property_view_factory.get_property_view()
             self.properties.append(p.id)
 
@@ -252,7 +252,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         self.assertTrue(notes_string in data[1])
 
     def test_xlsx_export(self):
-        for i in range(50):
+        for _i in range(50):
             p = self.property_view_factory.get_property_view()
             self.properties.append(p.id)
 
@@ -284,7 +284,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
     def test_json_export(self):
         """Test to make sure get_related returns the fields"""
-        for i in range(50):
+        for _i in range(50):
             p = self.property_view_factory.get_property_view()
             self.properties.append(p.id)
 

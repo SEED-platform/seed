@@ -1048,7 +1048,7 @@ class TestMatchingHelperMethods(DataMappingBaseTestCase):
         self.assertEqual(pal.description, "Automatic Merge")
 
     def test_filter_duplicate_states(self):
-        for i in range(10):
+        for _i in range(10):
             self.property_state_factory.get_property_state(
                 no_default_data=True,
                 address_line_1="123 The Same Address",
@@ -1056,7 +1056,7 @@ class TestMatchingHelperMethods(DataMappingBaseTestCase):
                 import_file_id=self.import_file.id,
                 data_state=DATA_STATE_MAPPING,
             )
-        for i in range(5):
+        for _i in range(5):
             self.property_state_factory.get_property_state(
                 import_file_id=self.import_file.id,
                 data_state=DATA_STATE_MAPPING,

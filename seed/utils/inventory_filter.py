@@ -140,7 +140,7 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
 
         # If the children have filters, filter views_list by their children.
         if len(filters) > 0 or len(annotations) > 0:
-            other_inventory_type_class: type[TaxLotView] | type[PropertyView] = TaxLotView if inventory_type == "property" else PropertyView
+            other_inventory_type_class: type[TaxLotView | PropertyView] = TaxLotView if inventory_type == "property" else PropertyView
             other_views_list = other_inventory_type_class.objects.select_related(other_inventory_type, "state", "cycle").filter(
                 **{f"{other_inventory_type}__organization_id": org_id, "cycle": cycle}
             )

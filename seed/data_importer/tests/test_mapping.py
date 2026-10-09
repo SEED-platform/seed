@@ -443,5 +443,5 @@ class TestDuplicateFileHeaders(DataMappingBaseTestCase):
         tasks.save_raw_data(self.import_file.pk)
         Column.create_mappings(self.fake_mappings, self.org, self.user, self.import_file.pk)
 
-        with pytest.raises(Exception):  # noqa: PT011
+        with pytest.raises(ValueError, match="Duplicate column found"):
             tasks.map_data(self.import_file.pk)

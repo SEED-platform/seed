@@ -886,7 +886,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
             for col in columns.filter(Q(id__in=column_ids) | Q(is_matching_criteria=True)).exclude(column_name__in=["created", "updated"])
         ]
         old_view_tuple, new_view_tuple = views.values(*columns_that_should_match)
-        assert all((a == b) for a, b in zip(old_view_tuple.values(), new_view_tuple.values()))
+        assert all((a == b) for a, b in zip(old_view_tuple.values(), new_view_tuple.values(), strict=False))
 
         # Assertion - states do not share the same column values non-selected, non-matching criteria columns
         columns_that_should_not_match = [
@@ -894,7 +894,7 @@ class PropertyViewTests(DataMappingBaseTestCase):
             for col in columns.exclude(Q(id__in=column_ids) | Q(is_matching_criteria=True) | Q(column_name__in=["created", "updated"]))
         ]
         old_view_tuple, new_view_tuple = views.values(*columns_that_should_not_match)
-        assert all((a != b or a is None) for a, b in zip(old_view_tuple.values(), new_view_tuple.values()))
+        assert all((a != b or a is None) for a, b in zip(old_view_tuple.values(), new_view_tuple.values(), strict=False))
 
 
 class PropertyViewTestsPermissions(AccessLevelBaseTestCase):

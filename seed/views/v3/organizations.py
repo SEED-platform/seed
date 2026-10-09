@@ -356,7 +356,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             return JsonResponse({"status": "success"})
 
-    def _start_whole_org_match_merge_link(self, org_id, state_class_name, proposed_columns=[]):
+    def _start_whole_org_match_merge_link(self, org_id, state_class_name, proposed_columns=None):
+        if proposed_columns is None:
+            proposed_columns = []
         identifier = randint(100, 100000)
         result_key = _get_match_merge_link_key(identifier)
         set_cache_raw(result_key, {})
@@ -1120,7 +1122,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         except AttributeError:
             return None
 
-    def setup_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, filter_group_id=None, additional_columns=[]):
+    def setup_report_data(
+        self, organization_id, access_level_instance, cycles, x_var, y_var, filter_group_id=None, additional_columns=None
+    ):
+        if additional_columns is None:
+            additional_columns = []
         all_property_views = (
             PropertyView.objects.select_related("property", "state")
             .filter(

@@ -47,7 +47,7 @@ def decode_unique_ids(qs):
 
     for state in filtered_qs.iterator():
         try:
-            bounding_box_obj = decode(getattr(state, "ubid"))
+            bounding_box_obj = decode(state.ubid)
         except ValueError:
             continue  # state with an incorrectly formatted UBID is skipped
 
@@ -240,7 +240,7 @@ def generate_ubidmodels_for_state(state):
     """
     Generate UbidModels for a State if the ubid field is present
     """
-    ubids = getattr(state, "ubid")
+    ubids = state.ubid
     if not ubids:
         return
 

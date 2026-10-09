@@ -64,7 +64,7 @@ To run the same type checking applied in CI you can run the following
 
 .. code-block:: bash
 
-    uv run tox -e ty
+    uv run pre-commit run ty --all-files
 
 
 Django Notes

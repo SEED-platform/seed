@@ -256,7 +256,7 @@ def expand_rows(row, delimited_fields, expand_row):
         return [copy_row]
 
 
-def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, **kwargs):
+def map_row(row, mapping, model_class, extra_data_fields=None, cleaner=None, **kwargs):
     """Apply mapping of row data to model.
 
     :param row: dict, parsed row data from csv.
@@ -269,6 +269,8 @@ def map_row(row, mapping, model_class, extra_data_fields=[], cleaner=None, **kwa
     :rtype: list of model instances that were created
 
     """
+    if extra_data_fields is None:
+        extra_data_fields = []
     initial_data = kwargs.get("initial_data")
     model = model_class()
 

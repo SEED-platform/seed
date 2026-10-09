@@ -173,7 +173,7 @@ class MappingColumns:
         duplicates = set()
         result = {}
 
-        for raw_column, v in self.data.items():
+        for v in self.data.values():
             if v["initial_mapping_cmp"] in uniques:
                 duplicates.add(v["initial_mapping_cmp"])
             uniques.add(v["initial_mapping_cmp"])
@@ -267,7 +267,7 @@ class MappingColumns:
 
         """
         result = {}
-        for k, v in self.data.items():
+        for k in self.data:
             result[k] = list(self.first_suggested_mapping(k))
 
         return result

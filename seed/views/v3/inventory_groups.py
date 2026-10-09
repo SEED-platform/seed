@@ -1,4 +1,7 @@
-# !/usr/bin/env python
+"""
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+"""
 
 import logging
 from datetime import datetime
@@ -25,7 +28,7 @@ from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_quer
 from seed.utils.meters import PropertyMeterReadingsExporter, update_meter_connection
 from seed.utils.viewsets import ModelViewSetWithoutPatch, SEEDOrgNoPatchOrOrgCreateModelViewSet
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 @method_decorator(

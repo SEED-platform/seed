@@ -37,7 +37,7 @@ class BuildingSyncParser:
             self._add_property_to_data(file_.read(), filename)
 
         else:
-            raise Exception(f"Unsupported file type for BuildingSync {file_extension}")
+            raise ValueError(f"Unsupported file type for BuildingSync {file_extension}")
 
         self.first_five_rows = [self._capture_row(row) for row in self.data[:5]]
 
@@ -46,7 +46,7 @@ class BuildingSyncParser:
             bs = BuildingSync()
             bs.import_file(BytesIO(bsync_file))
         except Exception as e:
-            raise Exception(f"Error importing BuildingSync file {file_name}: {e!s}")
+            raise ValueError(f"Error importing BuildingSync file {file_name}: {e!s}") from e
 
         if not self._xpath_col_dict:
             # get the mapping for the first xml data

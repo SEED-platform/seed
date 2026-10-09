@@ -1,4 +1,8 @@
-# !/usr/bin/env python
+"""
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+"""
+
 import logging
 
 from django.core.exceptions import ValidationError
@@ -9,7 +13,7 @@ from seed.serializers.access_level_instances import AccessLevelInstanceSerialize
 from seed.serializers.base import ChoiceField
 from seed.serializers.systems import SystemSerializer
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class InventoryGroupMappingSerializer(serializers.ModelSerializer):

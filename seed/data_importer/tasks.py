@@ -390,13 +390,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                     # expand the row into multiple rows if needed with the delimited_field replaced
                     # with a single value. This minimizes the need to rewrite the downstream code.
                     expand_row = False
-                    for k, d in delimited_fields.items():
+                    for d in delimited_fields.values():
                         if d["to_table"] == table:
                             expand_row = True
                     # _log.debug("Expand row is set to {}".format(expand_row))
 
                     delimited_field_list = []
-                    for _, v in delimited_fields.items():
+                    for v in delimited_fields.values():
                         delimited_field_list.append(v["from_field"])
 
                     # _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
@@ -447,7 +447,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                             raw_ps_id = original_row.id
                             xml_filename = import_file.raw_property_state_to_filename.get(str(raw_ps_id))
                             if xml_filename is None:
-                                raise Exception(
+                                raise RuntimeError(
                                     "Expected ImportFile to have the raw PropertyStates id in its raw_property_state_to_filename dict"
                                 )
 
@@ -462,7 +462,7 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                             else:
                                 xml_filename = import_file.uploaded_filename
                                 if xml_filename == "":
-                                    raise Exception("Expected ImportFiles uploaded_filename to be non-empty")
+                                    raise ValueError("Expected ImportFiles uploaded_filename to be non-empty")
                                 new_file = SimpleUploadedFile(
                                     name=xml_filename, content=import_file.file.read(), content_type="application/xml"
                                 )
@@ -495,15 +495,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, **kwargs):
                     Column.save_column_names(map_model_obj)
     except IntegrityError as e:
         progress_data.finish_with_error("Could not map_row_chunk with error", str(e))
-        raise IntegrityError(f"Could not map_row_chunk with error: {e!s}")
+        raise IntegrityError(f"Could not map_row_chunk with error: {e!s}") from e
     except DataError as e:
         _log.error(traceback.format_exc())
         progress_data.finish_with_error("Invalid data found", str(e))
-        raise DataError(f"Invalid data found: {e!s}")
+        raise DataError(f"Invalid data found: {e!s}") from e
     except TypeError as e:
         _log.error(f"Error mapping data with error: {e!s}")
         progress_data.finish_with_error("Invalid type found while mapping data", str(e))
-        raise DataError(f"Invalid type found while mapping data: {e!s}")
+        raise DataError(f"Invalid type found while mapping data: {e!s}") from e
 
     progress_data.step()
 
@@ -702,7 +702,7 @@ def map_data_synchronous(import_file_id: int) -> dict:
     for header in column_headers:
         duplicate_tracker[header] += 1
         if duplicate_tracker[header] > 1:
-            raise Exception(f"Duplicate column found in file: {header}")
+            raise ValueError(f"Duplicate column found in file: {header}")
 
     source_type = SEED_DATA_SOURCES_MAPPING.get(import_file.source_type, ASSESSED_RAW)
 
@@ -748,7 +748,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     for header in column_headers:
         duplicate_tracker[header] += 1
         if duplicate_tracker[header] > 1:
-            raise Exception(f"Duplicate column found in file: {header}")
+            raise ValueError(f"Duplicate column found in file: {header}")
 
     if remap:
         # Check to ensure that import files has not already been matched/merged.
@@ -841,7 +841,7 @@ def _save_raw_data_chunk(chunk, file_pk, progress_key):
                     raw_property_state_to_filename[str(raw_property.id)] = source_filename
 
     except IntegrityError as e:
-        raise IntegrityError(f"Could not save_raw_data_chunk with error: {e}")
+        raise IntegrityError(f"Could not save_raw_data_chunk with error: {e}") from e
 
     # Indicate progress
     progress_data = ProgressData.from_key(progress_key)
@@ -1063,7 +1063,7 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
         try:
             with transaction.atomic():
                 is_occupied_data = DataLogger.objects.get(id=data_logger_id).is_occupied_data
-                [occupied_timestamps, is_occupied_arr] = list(zip(*is_occupied_data))
+                [occupied_timestamps, is_occupied_arr] = list(zip(*is_occupied_data, strict=False))
                 occupied_timestamps = [_as_local_naive_datetime(t) for t in occupied_timestamps]
 
                 reading_strings = []
@@ -1086,7 +1086,7 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
                 result[sensor_column_name] = {"error": "Import failed. Unable to import data with duplicate start and end date pairs."}
             else:
                 progress_data.finish_with_error("data failed to import")
-                raise e
+                raise
         except DataError as e:
             if "date/time field" in str(e):
                 result[sensor_column_name] = {"error": "Invalid readings. Ensure timestamps are in iso format."}
@@ -1095,9 +1095,9 @@ def _save_sensor_readings_task(readings_tuples, data_logger_id, sensor_column_na
             else:
                 result[sensor_column_name] = {"error": "Invalid readings."}
 
-        except Exception as e:
+        except Exception:
             progress_data.finish_with_error("data failed to import")
-            raise e
+            raise
 
     progress_data.step()
 
@@ -1112,8 +1112,8 @@ def _save_access_level_instances_task(rows, org_id, progress_key):
     # get org
     try:
         org = Organization.objects.get(pk=org_id)
-    except ObjectDoesNotExist:
-        raise ObjectDoesNotExist(f"Could not retrieve organization at pk = {org_id}")
+    except ObjectDoesNotExist as e:
+        raise ObjectDoesNotExist(f"Could not retrieve organization at pk = {org_id}") from e
 
     # get access level names (array of ordered names)
     access_level_names = AccessLevelInstancesParser._access_level_names(org_id)
@@ -1241,10 +1241,10 @@ def _save_greenbutton_data_task(readings, meter_id, meter_usage_point_id, progre
             result[result_summary_key] = {"error": "Import failed. Unable to import data with duplicate start and end date pairs."}
         else:
             progress_data.finish_with_error("data failed to import")
-            raise e
-    except Exception as e:
+            raise
+    except Exception:
         progress_data.finish_with_error("data failed to import")
-        raise e
+        raise
 
     # Indicate progress
     progress_data.step()
@@ -1301,10 +1301,10 @@ def _save_pm_meter_usage_data_task(meter_readings, file_pk, progress_key):
             result[key] = {"error": "Import failed. Unable to import data with duplicate start and end date pairs."}
         else:
             progress_data.finish_with_error("data failed to import")
-            raise e
-    except Exception as e:
+            raise
+    except Exception:
         progress_data.finish_with_error("data failed to import")
-        raise e
+        raise
 
     progress_data.step()
 
@@ -1711,7 +1711,7 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None
             geocode_buildings(property_state_qs)
         except MapQuestAPIKeyError as e:
             progress_data.finish_with_error(str(e), traceback.format_exc())
-            raise e
+            raise
 
     if sub_progress_key:
         sub_progress_data.step("Geocoding")
@@ -1723,7 +1723,7 @@ def _geocode_properties_or_tax_lots(file_pk, progress_key, sub_progress_key=None
             geocode_buildings(tax_lot_state_qs)
         except MapQuestAPIKeyError as e:
             progress_data.finish_with_error(str(e), traceback.format_exc())
-            raise e
+            raise
 
     if sub_progress_key:
         sub_progress_data.step("Geocoding")
@@ -1745,7 +1745,7 @@ def finish_matching(result, import_file_id, progress_key):
 
 def add_dictionary_repr_to_hash(hash_obj, dict_obj: dict):
     if not isinstance(dict_obj, dict):
-        raise ValueError("Only dictionaries can be hashed")
+        raise TypeError("Only dictionaries can be hashed")
 
     for key, value in sorted(dict_obj.items(), key=lambda x_y: x_y[0]):
         if isinstance(value, dict):
@@ -2013,7 +2013,7 @@ def _validate_use_cases(file_pk, progress_key):
                     if found_version == 0:
                         found_version = bs.version
                     elif found_version != bs.version:
-                        raise Exception(f"Zip contains multiple BuildingSync versions (found {found_version} and {bs.version})")
+                        raise ValueError(f"Zip contains multiple BuildingSync versions (found {found_version} and {bs.version})")
             import_file.refresh_from_db()
 
         # it's not a zip, just get the version directly...

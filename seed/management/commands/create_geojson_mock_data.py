@@ -30,7 +30,7 @@ class Command(BaseCommand):
             coords = [f"{coord[0]} {coord[1]}" for coord in geom["coordinates"][0]]
             return f"POLYGON (( {', '.join(coords)} ))"
         else:
-            raise Exception(f"Unknown type of Geometry in GeoJSON of {geom['type']}")
+            raise ValueError(f"Unknown type of Geometry in GeoJSON of {geom['type']}")
 
     def handle(self, *args, **options):
         self.stdout.write(f"Parsing geojson files in {options['path']}", ending="\n")
@@ -207,8 +207,7 @@ class Command(BaseCommand):
             # write the header, which are all the mapping fields with taxlot / property appended
             row = []
             row.append("Tax Lot Object ID")
-            for value in taxlot_mapping.values():
-                row.append(value)
+            row.extend(taxlot_mapping.values())
             row.append("Tax Lot Coordinates")
             writer.writerow(row)
 

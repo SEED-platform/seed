@@ -131,7 +131,7 @@ def convert_first_five_rows_to_list(header, first_five_rows):
             if len(row_data) == number_of_columns:
                 rows.append(row_data)
 
-    return [dict(zip(header, row)) for row in rows]
+    return [dict(zip(header, row, strict=False)) for row in rows]
 
 
 class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
@@ -989,7 +989,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             )
 
         try:
-            PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id).property_id
+            PropertyView.objects.get(pk=view_id, cycle__organization_id=org_id)
         except PropertyView.DoesNotExist:
             return JsonResponse(
                 {"status": "error", "message": "Could not find property with pk=" + str(view_id)}, status=status.HTTP_400_BAD_REQUEST

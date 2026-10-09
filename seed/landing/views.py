@@ -100,7 +100,7 @@ def create_account(request):
             url = "https://www.google.com/recaptcha/api/siteverify"
             values = {"secret": settings.GOOGLE_RECAPTCHA_SECRET_KEY, "response": recaptcha_response}
             data = parse.urlencode(values).encode()
-            req = urllib_request.Request(url, data=data)  # noqa: S310
+            req = urllib_request.Request(url, data=data)
             response = urllib_request.urlopen(req)  # noqa: S310
             result = json.loads(response.read().decode())
             """ End reCAPTCHA validation """

@@ -104,12 +104,12 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
                 return user
             else:
                 raise exceptions.AuthenticationFailed("Only Basic HTTP_AUTHORIZATION or BEARER Tokens are supported")
-        except ValueError:
-            raise exceptions.AuthenticationFailed("Invalid HTTP_AUTHORIZATION Header")
-        except TokenError:
-            raise exceptions.AuthenticationFailed("Invalid Bearer Token")
-        except SEEDUser.DoesNotExist:
-            raise exceptions.AuthenticationFailed("Invalid API key or Bearer Token")
+        except ValueError as e:
+            raise exceptions.AuthenticationFailed("Invalid HTTP_AUTHORIZATION Header") from e
+        except TokenError as e:
+            raise exceptions.AuthenticationFailed("Invalid Bearer Token") from e
+        except SEEDUser.DoesNotExist as e:
+            raise exceptions.AuthenticationFailed("Invalid API key or Bearer Token") from e
 
     def get_absolute_url(self):
         return f"/users/{quote(self.username)}/"

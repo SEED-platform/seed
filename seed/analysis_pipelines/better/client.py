@@ -197,7 +197,7 @@ class BETTERClient:
             """
             response, errors = res[0], res[1]
             if errors:
-                raise Exception("; ".join(errors))
+                raise RuntimeError("; ".join(errors))
 
             return response["generation_result"] == "COMPLETE" or response["generation_result"] == "FAILED"
 
@@ -213,13 +213,15 @@ class BETTERClient:
             if response[0].get("generation_result") == "FAILED":
                 return [response[0].get("generation_message")]
 
-        except polling.TimeoutException as te:
-            return [f"BETTER analysis timed out after {POLLING_TIMEOUT_SECS} seconds: {te}"]
+        except polling.TimeoutException as e:
+            return [f"BETTER analysis timed out after {POLLING_TIMEOUT_SECS} seconds: {e}"]
         except Exception as e:
             return [
-                f"Unexpected error checking status of BETTER portfolio analysis:"
-                f' better_portfolio_id: "{better_portfolio_id}"; better_analysis_id: "{better_analysis_id}"'
-                f": {e}"
+                (
+                    f"Unexpected error checking status of BETTER portfolio analysis:"
+                    f' better_portfolio_id: "{better_portfolio_id}"; better_analysis_id: "{better_analysis_id}"'
+                    f": {e}"
+                )
             ]
 
         return []
@@ -307,9 +309,9 @@ class BETTERClient:
 
         try:
             response = requests.request("POST", url, headers=headers, data=json.dumps(config), timeout=60)
-        except ConnectionError:
+        except ConnectionError as e:
             message = "BETTER service could not create analytics for this building"
-            raise AnalysisPipelineError(message)
+            raise AnalysisPipelineError(message) from e
 
         return response
 
@@ -330,9 +332,9 @@ class BETTERClient:
             response = requests.request("GET", url, headers=headers, params=params, timeout=60)
             standalone_html = response.text.encode("utf8").decode()
 
-        except ConnectionError:
+        except ConnectionError as e:
             message = "BETTER service could not find the analysis"
-            raise AnalysisPipelineError(message)
+            raise AnalysisPipelineError(message) from e
 
         # save the file from the response
         temporary_results_dir = TemporaryDirectory()
@@ -365,7 +367,7 @@ class BETTERClient:
             response_json = response.json()
         except ConnectionError as e:
             message = f"Failed to connect to BETTER service: {e}"
-            raise AnalysisPipelineError(message)
+            raise AnalysisPipelineError(message) from e
 
         return response_json, []
 

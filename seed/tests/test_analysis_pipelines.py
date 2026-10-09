@@ -103,12 +103,10 @@ class TestAnalysisPipeline(TestCase):
 
         celery_tasks = getmembers(tasks, is_celery_task)
         for _, celery_task in celery_tasks:
-            try:
-                celery_task.__wrapped__._is_analysis_pipeline_task
-            except AttributeError:
-                self.assertTrue(
-                    False, f"Function {celery_task.__wrapped__} must be wrapped by analysis_pipelines.pipeline.analysis_pipeline_task"
-                )
+            self.assertTrue(
+                hasattr(celery_task.__wrapped__, "_is_analysis_pipeline_task"),
+                f"Function {celery_task.__wrapped__} must be wrapped by analysis_pipelines.pipeline.analysis_pipeline_task",
+            )
 
     def test_prepare_analysis_raises_exception_when_analysis_status_indicates_already_prepared(self):
         # Setup
@@ -418,7 +416,7 @@ class TestAnalysisPipeline(TestCase):
         # this func will raise some unexpected error
         @analysis_pipeline_task(analysis_status)
         def my_func(self, analysis_id):
-            raise Exception(exception_message)
+            raise RuntimeError(exception_message)
 
         my_task = MockCeleryTask()
 
@@ -446,7 +444,7 @@ class TestAnalysisPipeline(TestCase):
         # this func will raise some unexpected error
         @analysis_pipeline_task(analysis_status)
         def my_func(self, analysis_id):
-            raise Exception(exception_message)
+            raise RuntimeError(exception_message)
 
         my_task = MockCeleryTask()
 
@@ -511,7 +509,7 @@ class TestBsyncrPipeline(TestCase):
         property_view_factory = FakePropertyViewFactory(organization=self.org)
         self.good_property_views = []
         self.num_good_property_views = 3
-        for i in range(self.num_good_property_views):
+        for _ in range(self.num_good_property_views):
             pv = property_view_factory.get_property_view(
                 # fields required for analysis
                 latitude=39.76550841416409,

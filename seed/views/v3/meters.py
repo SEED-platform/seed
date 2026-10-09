@@ -114,7 +114,7 @@ class MeterViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         if self.property_pk:
             serializer.save(property_id=self.property_pk)
         else:
-            raise Exception("No property_pk (property view id) provided in URL to create the meter")
+            raise ValueError("No property_pk (property view id) provided in URL to create the meter")
 
     @method_decorator(
         [

@@ -169,4 +169,4 @@ class MeterReadingViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         if self.meter_pk:
             serializer.save(meter_id=self.meter_pk)
         else:
-            raise Exception("No meter_pk provided in URL to create the meter reading")
+            raise ValueError("No meter_pk provided in URL to create the meter reading")

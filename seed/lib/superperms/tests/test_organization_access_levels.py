@@ -41,7 +41,7 @@ class TestOrganizationAccessLevels(TestCase):
         fake_org, _, _ = create_organization(self.fake_user, "Organization A")
 
         # create access level instance on an unnamed Instance
-        with pytest.raises(Exception):  # noqa: PT011
+        with pytest.raises(UserWarning, match="Cannot create child at an unnamed level"):
             fake_org.add_new_access_level_instance(fake_org.root.id, "mom")
 
     def test_build_out_tree(self):

@@ -864,7 +864,7 @@ class MeterUtilTests(TestCase):
 
         self.assertEqual(len(actual_readings), 15)
 
-        zipped_readings = zip(actual_readings, expected_readings)
+        zipped_readings = zip(actual_readings, expected_readings, strict=False)
         # round to account for binary nature of floating point
         for readings in zipped_readings:
             self.assertEqual(round(readings[0], 5), round(readings[1], 5))
@@ -897,7 +897,7 @@ class MeterUtilTests(TestCase):
 
         self.assertEqual(len(actual_readings), 1)
 
-        zipped_readings = zip(actual_readings, expected_readings)
+        zipped_readings = zip(actual_readings, expected_readings, strict=False)
         # round to account for binary nature of floating point
         for readings in zipped_readings:
             self.assertEqual(round(readings[0], 5), round(readings[1], 5))

@@ -1,3 +1,8 @@
+"""
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+"""
+
 import base64
 import csv
 import datetime
@@ -25,6 +30,8 @@ from seed.serializers.columns import ColumnSerializer
 from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.serializers.meters import MeterSerializer
 from seed.utils.cache import set_cache_raw
+
+logger = logging.getLogger(__name__)
 
 INVENTORY_MODELS = {"properties": PropertyView, "taxlots": TaxLotView}
 
@@ -216,7 +223,9 @@ def _csv_response(data, column_name_mappings):
     return output.getvalue()
 
 
-def json_response(org_id, filename, data, column_name_mappings, excluded_fields=[]):
+def json_response(org_id, filename, data, column_name_mappings, excluded_fields=None):
+    if excluded_fields is None:
+        excluded_fields = []
     footprint_fields = [
         ColumnSerializer(c).data["name"]
         for c in Column.objects.filter(organization_id=org_id, column_name__in=["property_footprint", "taxlot_footprint"])
@@ -284,7 +293,7 @@ def json_response(org_id, filename, data, column_name_mappings, excluded_fields=
                     if feature["properties"].get("meters") is None:
                         feature["properties"]["meters"] = formatted_value
                     else:
-                        logging.warning("meters already exists in properties, not adding")
+                        logger.warning("meters already exists in properties, not adding")
                 else:
                     display_key = column_name_mappings.get(key, key)
                     feature["properties"][display_key] = formatted_value
@@ -385,7 +394,7 @@ def _spreadsheet_response(data, column_name_mappings):
     }
     measure_keys = ("name", "display_name", "category", "category_display_name")
     # find measures and scenarios
-    for i, record in enumerate(data):
+    for _i, record in enumerate(data):
         measures = PropertyMeasure.objects.filter(property_state_id=record["property_state_id"])
         record["measures"] = measures
 
@@ -451,7 +460,7 @@ def _spreadsheet_response(data, column_name_mappings):
             ws1.write(row, index, row_result)
 
         # measures
-        for index, m in enumerate(datum["measures"]):
+        for m in datum["measures"]:
             if add_m_headers:
                 # grab headers
                 for key in property_measure_keys:
@@ -477,7 +486,7 @@ def _spreadsheet_response(data, column_name_mappings):
         ws4.write("A1", "property_id", bold)
         ws4.write("B1", "scenario_id", bold)
         ws4.write("C1", "measure_id", bold)
-        for index, s in enumerate(datum["scenarios"]):
+        for s in datum["scenarios"]:
             scenario_id = s.id
             if add_s_headers:
                 # grab headers
@@ -512,7 +521,7 @@ def _spreadsheet_response(data, column_name_mappings):
         # datetime formatting
         date_format = wb.add_format({"num_format": "yyyy-mm-dd hh:mm:ss"})
 
-        for index, s in enumerate(datum["scenarios"]):
+        for s in datum["scenarios"]:
             scenario_id = s.id
             # retrieve meters
             meters = Meter.objects.filter(scenario_id=scenario_id)
@@ -542,7 +551,7 @@ def _spreadsheet_response(data, column_name_mappings):
 
 
 def _serialized_coordinates(polygon_wkt):
-    string_coord_pairs = polygon_wkt.lstrip("POLYGON (").rstrip(")").split(", ")
+    string_coord_pairs = polygon_wkt.removeprefix("POLYGON (").removesuffix(")").split(", ")
 
     coordinates = []
     for coord_pair in string_coord_pairs:
@@ -576,8 +585,7 @@ def _extract_related(data):
 
     for datum in data:
         if datum.get("related", None) is not None:
-            for record in datum["related"]:
-                related.append(record)
+            related.extend(datum["related"])
 
     # make array unique
     if is_property:

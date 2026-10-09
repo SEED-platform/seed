@@ -17,7 +17,7 @@ def analysis_input_path(instance, filename):
     :returns: str
     """
     if instance.analysis_id is None:
-        raise Exception("Unable to save analysis input file. Linked Analysis must have an ID (i.e., already saved in db)")
+        raise ValueError("Unable to save analysis input file. Linked Analysis must have an ID (i.e., already saved in db)")
     return f"analysis_input_files/{instance.analysis_id}/{filename}"
 
 

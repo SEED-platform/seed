@@ -25,7 +25,7 @@ def set_cache(progress_key, status, data):
     If data is not a dict, it is assumed to be a progress percentage.
     """
     if not isinstance(status, str):
-        raise ValueError("Invalid value for status; must be a string")
+        raise TypeError("Invalid value for status; must be a string")
 
     result = {}
     if not isinstance(data, dict):
@@ -55,7 +55,7 @@ def get_cache(progress_key, default=None):
 def set_cache_state(progress_key, state):
     """Sets the cache key or progress_key to a bool."""
     if not isinstance(state, bool):
-        raise ValueError("Invalid value for state; must be a bool")
+        raise TypeError("Invalid value for state; must be a bool")
 
     result = state
     set_cache_raw(progress_key, result, DEFAULT_TIMEOUT)
@@ -66,7 +66,7 @@ def set_cache_state(progress_key, state):
 def get_cache_state(progress_key, default=None):
     """Gets the state of progress_key"""
     if default is not None and not isinstance(default, bool):
-        raise ValueError("Invalid value for default; must be a bool")
+        raise TypeError("Invalid value for default; must be a bool")
     data = get_cache_raw(progress_key, default)
     return data
 

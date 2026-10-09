@@ -163,7 +163,16 @@ class TestXMLHelpers(TestCase):
     def test_children_sorter_factory_sorts_building_element_children(self):
         # -- Setup
         xpath = "/".join(
-            ["", "auc:BuildingSync", "auc:Facilities", "auc:Facility", "auc:Sites", "auc:Site", "auc:Buildings", "auc:Building"]
+            [
+                "",
+                "auc:BuildingSync",
+                "auc:Facilities",
+                "auc:Facility",
+                "auc:Sites",
+                "auc:Site",
+                "auc:Buildings",
+                "auc:Building",
+            ]
         )
         building_element = self.tree.xpath(xpath, namespaces=NAMESPACES)
         self.assertEqual(1, len(building_element))
@@ -256,7 +265,16 @@ class TestXMLHelpers(TestCase):
         # -- Setup
         # Full xpath should exist
         xpath = "/".join(
-            ["", "auc:BuildingSync", "auc:Facilities", "auc:Facility", "auc:Sites", "auc:Site", "auc:Buildings", "auc:Building"]
+            [
+                "",
+                "auc:BuildingSync",
+                "auc:Facilities",
+                "auc:Facility",
+                "auc:Sites",
+                "auc:Site",
+                "auc:Buildings",
+                "auc:Building",
+            ]
         )
         self.assertEqual(1, len(self.tree.xpath(xpath, namespaces=NAMESPACES)))
 

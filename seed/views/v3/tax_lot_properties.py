@@ -101,7 +101,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         return progress_data.result()
 
     def _serialized_coordinates(self, polygon_wkt):
-        string_coord_pairs = polygon_wkt.lstrip("POLYGON (").rstrip(")").split(", ")
+        string_coord_pairs = polygon_wkt.removeprefix("POLYGON (").removesuffix(")").split(", ")
 
         coordinates = []
         for coord_pair in string_coord_pairs:
@@ -133,8 +133,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         for datum in data:
             if datum.get("related", None) is not None:
-                for record in datum["related"]:
-                    related.append(record)
+                related.extend(datum["related"])
 
         # make array unique
         if is_property:

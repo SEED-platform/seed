@@ -362,7 +362,7 @@ class FakePropertyMeasureFactory(BaseFake):
         self.property_state.measures.all().delete()
 
         # assign a random number of measures to the PropertyState
-        for n in range(number_of_measures):
+        for _n in range(number_of_measures):
             measure = Measure.objects.all().order_by("?")[0]
             property_measure_details = {
                 "measure_id": measure.id,
@@ -534,7 +534,7 @@ class FakeStatusLabelFactory(BaseFake):
         self.organization = organization
         self.colors = [color[0] for color in StatusLabel.COLOR_CHOICES]
         self.label_names = StatusLabel.DEFAULT_LABELS
-        self.label_values = list(zip(self.colors, self.label_names))
+        self.label_values = list(zip(self.colors, self.label_names, strict=False))
 
     def get_statuslabel(self, organization=None, **kw):
         """Get statuslabel instance."""
@@ -752,8 +752,7 @@ class FakeColumnListProfileFactory(BaseFake):
                 columns.append(Column.objects.get(organization=organization, column_name=c, table_name=table_name))
         else:
             # use all the columns
-            for c in Column.objects.filter(organization=organization):
-                columns.append(c)
+            columns.extend(Column.objects.filter(organization=organization))
 
         # associate all the columns
         for idx, c in enumerate(columns):

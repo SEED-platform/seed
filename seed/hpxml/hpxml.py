@@ -208,7 +208,7 @@ class HPXML:
         ]
         if property_state.building_certification is not None:
             try:
-                root.Project
+                _ = root.Project
             except AttributeError:
                 root.Building[-1].addnext(
                     E.Project(
@@ -220,7 +220,7 @@ class HPXML:
                 property_state.building_certification if property_state.building_certification in program_certificate_options else "other"
             )
             try:
-                root.Project.ProjectDetails.ProgramCertificate
+                _ = root.Project.ProjectDetails.ProgramCertificate
             except AttributeError:
                 for elname in (
                     "YearCertified",

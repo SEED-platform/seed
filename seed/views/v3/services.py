@@ -19,7 +19,7 @@ from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class ServiceViewSet(ModelViewSetWithoutPatch, OrgMixin):

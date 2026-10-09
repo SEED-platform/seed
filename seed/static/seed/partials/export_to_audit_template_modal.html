@@ -1,10 +1,6 @@
 <div class="modal-header" ng-switch on="step.number">
-  <h4 class="modal-title" ng-switch-when="0" translate>
-    Export properties to your Audit Template account
-  </h4>
-  <h4 class="modal-title" ng-switch-when="1" translate>
-    Exporting properties to your Audit Template account
-  </h4>
+  <h4 class="modal-title" ng-switch-when="0" translate>Export properties to your Audit Template account</h4>
+  <h4 class="modal-title" ng-switch-when="1" translate>Exporting properties to your Audit Template account</h4>
   <h4 class="modal-title" ng-switch-when="2" translate>Export Results</h4>
   <h4 class="modal-title" ng-switch-when="3" translate>Export Error</h4>
 </div>
@@ -12,23 +8,15 @@
   <!-- step 0 -->
   <div ng-switch-when="0">
     <h5>
-      <b
-        >{$ ids.length $} Propert{$ ids.length == 1 ? 'y' : 'ies' $} Selected</b
-      >
+      <b>{$ ids.length $} Propert{$ ids.length == 1 ? 'y' : 'ies' $} Selected</b>
     </h5>
     <div translate>The following Property fields are required.</div>
-    <strong translate>
-      Address Line 1, City, Gross Floor Area, Postal Code, Property Name, State,
-      Year Built
-    </strong>
+    <strong translate> Address Line 1, City, Gross Floor Area, Postal Code, Property Name, State, Year Built </strong>
 
     <div style="margin: 10px 0" translate>
       Other fields can be manually updated on
-      <a href="https://buildingenergyscore.energy.gov/rp/buildings"
-        >Audit Template</a
-      >
-      following the export. Properties with Audit Template Building IDs will be
-      skipped.
+      <a href="https://buildingenergyscore.energy.gov/rp/buildings">Audit Template</a>
+      following the export. Properties with Audit Template Building IDs will be skipped.
     </div>
   </div>
 
@@ -37,15 +25,8 @@
     <div>
       <div translate>Exporting selected properties...</div>
       <div class="progress_bar_container">
-        <uib-progressbar
-          class="progress-striped active"
-          value="uploader.progress"
-          type="success"
-        ></uib-progressbar>
-        <div class="progress_bar_copy_bottom">
-          {$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$
-          uploader.status_message ? ': ' + uploader.status_message : '' $}
-        </div>
+        <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
+        <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
       </div>
     </div>
   </div>
@@ -63,18 +44,10 @@
             <td translate>Existing Audit Template Properties (skipped)</td>
             <td>{$ upload_summary.info.count || 0 $}</td>
           </tr>
-          <tr
-            class="import-export-detail-row"
-            ng-if="upload_summary.info.details.length"
-          >
+          <tr class="import-export-detail-row" ng-if="upload_summary.info.details.length">
             <td>
               <div class="import-export-details">
-                <div
-                  ng-repeat="detail in upload_summary.info.details"
-                  class="alert-warning"
-                >
-                  {$ detail.message $}
-                </div>
+                <div ng-repeat="detail in upload_summary.info.details" class="alert-warning">{$ detail.message $}</div>
               </div>
             </td>
             <td></td>
@@ -83,18 +56,10 @@
             <td translate>Unsuccessful Exports</td>
             <td>{$ upload_summary.error.count || 0 $}</td>
           </tr>
-          <tr
-            class="import-export-detail-row"
-            ng-if="upload_summary.error.details.length"
-          >
+          <tr class="import-export-detail-row" ng-if="upload_summary.error.details.length">
             <td>
               <div class="import-export-details">
-                <div
-                  ng-repeat="detail in upload_summary.error.details"
-                  class="alert-danger"
-                >
-                  {$ detail.message $}
-                </div>
+                <div ng-repeat="detail in upload_summary.error.details" class="alert-danger">{$ detail.message $}</div>
               </div>
             </td>
             <td></td>
@@ -106,38 +71,12 @@
 
   <!-- step 3 -->
   <div ng-switch-when="3">
-    <div class="alert-danger" style="padding: 10px; border-radius: 5px">
-      {$ upload_summary $}
-    </div>
+    <div class="alert-danger" style="padding: 10px; border-radius: 5px">{$ upload_summary $}</div>
   </div>
 
   <div class="modal-footer">
-    <button
-      type="button"
-      class="btn btn-primary"
-      ng-click="export()"
-      ng-if="step.number == 0"
-      translate
-    >
-      Export
-    </button>
-    <button
-      type="button"
-      class="btn btn-default"
-      ng-click="cancel()"
-      ng-if="step.number <= 1"
-      translate
-    >
-      Cancel
-    </button>
-    <button
-      type="button"
-      class="btn btn-default"
-      ng-click="cancel(true)"
-      ng-if="step.number >= 2"
-      translate
-    >
-      Close
-    </button>
+    <button type="button" class="btn btn-primary" ng-click="export()" ng-if="step.number == 0" translate>Export</button>
+    <button type="button" class="btn btn-default" ng-click="cancel()" ng-if="step.number <= 1" translate>Cancel</button>
+    <button type="button" class="btn btn-default" ng-click="cancel(true)" ng-if="step.number >= 2" translate>Close</button>
   </div>
 </div>

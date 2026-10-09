@@ -1,4 +1,3 @@
-# # !/usr/bin/env python
 """
 SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
@@ -59,7 +58,7 @@ class SystemSerializer(serializers.ModelSerializer):
         elif isinstance(instance, AggregateMeterSystem):
             data = AggregateMeterSystemSerializer(instance=instance).data
         else:
-            raise ValueError
+            raise TypeError("Expected a system instance")
 
         data["id"] = instance.id
         data["name"] = instance.name

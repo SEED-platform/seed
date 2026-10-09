@@ -27,20 +27,29 @@ repos:
     hooks:
       - id: pyupgrade
         args: [--py312-plus]
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
+  - repo: local
     hooks:
       - id: prettier
-        args: [--no-cache]
+        name: prettier
+        entry: node node_modules/prettier/bin/prettier.cjs --write
+        language: unsupported
+        require_serial: true
         exclude: pnpm-lock\.yaml|pnpm-workspace\.yaml
         types_or: [yaml, markdown, css, scss]
+      - id: prettier-angularjs-templates
+        name: prettier (AngularJS templates)
+        entry: node node_modules/prettier/bin/prettier.cjs --write
+        language: unsupported
+        require_serial: true
+        files: ^seed/static/seed/partials/.*\.html$
+        types: [html]
   - repo: https://github.com/astral-sh/ty-pre-commit
     rev: v0.0.85
     hooks:
       - id: ty
         args: [--locked]
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.13
+    rev: v0.16.10
     hooks:
       - id: ruff-check
         args: [--fix, --exit-non-zero-on-fix, --output-format=full]
