@@ -551,7 +551,7 @@ class CSVParser:
         try:
             dialect = Sniffer().sniff(self.csvfile.read(16384))
             if dialect.delimiter != ",":
-                _log.warn("CSV file has a non-standard delimiter, converting to 'comma'")
+                _log.warning("CSV file has a non-standard delimiter, converting to 'comma'")
                 dialect.delimiter = ","
         except SyntaxError:
             raise Exception("CSV file is not in a format that SEED can interpret. Try converting to XLSX.")

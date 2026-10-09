@@ -163,7 +163,7 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        tox_env: [docs, precommit, mypy, lint]
+        tox_env: [docs, precommit, ty, lint]
     steps:
       - uses: actions/checkout@v7
         with:

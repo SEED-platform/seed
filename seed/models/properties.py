@@ -371,7 +371,7 @@ class PropertyState(models.Model):
 
             # Need to create a property for this state
             if self.organization is None:
-                _log.warn("organization is None")
+                _log.warning("organization is None")
 
             if property_id:
                 try:

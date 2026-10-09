@@ -1,0 +1,313 @@
+[src]
+exclude = [
+    "config/settings/",
+    "**/migrations/",
+    "docs/source/conf.py",
+    "seed/tests/test_search.py",
+]
+
+[analysis]
+# ty does not yet support Django's generated model attributes or plugin system.
+# Faker providers and lxml submodules are also populated dynamically at runtime.
+replace-imports-with-any = [
+    "django.**",
+    "faker.**",
+    "lxml.**",
+]
+
+# ty does not support a baseline file yet. These narrow overrides suppress only
+# the existing rule categories in affected legacy files; all other rules remain
+# active. Remove files and rules from this list as their diagnostics are fixed.
+[[overrides]]
+include = [
+    "seed/building_sync/mappings.py",
+    "seed/data_importer/tests/test_equivalence_partitioner.py",
+    "seed/decorators.py",
+    "seed/lib/util.py",
+    "seed/lib/xml_mapping/mapper.py",
+    "seed/management/commands/create_test_user_json.py",
+    "seed/models/compliance_metrics.py",
+    "seed/renderers.py",
+    "seed/test_helpers/fake.py",
+    "seed/tests/test_audit_template.py",
+    "seed/tests/test_data_view_views.py",
+    "seed/tests/util.py",
+    "seed/utils/address.py",
+    "seed/utils/api.py",
+    "seed/utils/match.py",
+    "seed/utils/merge.py",
+    "seed/utils/pagination.py",
+    "seed/utils/tax_lot_properties.py",
+]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = [
+    "seed/data_importer/tests/integration/test_demo_v2.py",
+    "seed/filters.py",
+    "seed/serializers/base.py",
+    "seed/serializers/celery.py",
+    "seed/serializers/certification.py",
+    "seed/serializers/column_mappings.py",
+    "seed/serializers/events.py",
+    "seed/serializers/facilities_plan_run.py",
+    "seed/serializers/inventory_groups.py",
+    "seed/serializers/meter_readings.py",
+    "seed/serializers/property_view_labels.py",
+    "seed/serializers/rules.py",
+    "seed/serializers/systems.py",
+    "seed/serializers/taxlots.py",
+    "seed/serializers/ubid_models.py",
+    "seed/serializers/utils.py",
+]
+
+[overrides.rules]
+invalid-method-override = "ignore"
+
+[[overrides]]
+include = [
+    "seed/celery_app.py",
+    "seed/data_importer/match.py",
+    "seed/lib/geospatial/eeej.py",
+    "seed/models/column_list_profiles.py",
+    "seed/models/data_views.py",
+    "seed/tests/test_portfoliomanager.py",
+    "seed/tests/test_tax_lot_property.py",
+    "seed/views/v3/access_levels.py",
+    "seed/views/v3/facilities_plan_run.py",
+    "seed/views/v3/tax_lot_properties.py",
+    "seed/views/v3/taxlots.py",
+    "seed/views/v3/users.py",
+]
+
+[overrides.rules]
+invalid-argument-type = "ignore"
+
+[[overrides]]
+include = [
+    "seed/models/properties.py",
+    "seed/models/tax_lots.py",
+    "seed/models/ubid_models.py",
+    "seed/tests/test_decorators.py",
+    "seed/views/main.py",
+]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+
+[[overrides]]
+include = [
+    "seed/utils/inventory_filter.py",
+    "seed/views/v3/portfolio_manager.py",
+    "seed/views/v3/systems.py",
+]
+
+[overrides.rules]
+invalid-argument-type = "ignore"
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = [
+    "seed/analysis_pipelines/better/helpers.py",
+    "seed/tests/test_analyses_views.py",
+    "seed/tests/test_column_views.py",
+]
+
+[overrides.rules]
+not-subscriptable = "ignore"
+
+[[overrides]]
+include = [
+    "seed/serializers/column_list_profiles.py",
+    "seed/serializers/goals.py",
+    "seed/serializers/pint.py",
+]
+
+[overrides.rules]
+invalid-method-override = "ignore"
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = ["seed/models/derived_columns.py", "seed/utils/encrypt.py"]
+
+[overrides.rules]
+invalid-return-type = "ignore"
+
+[[overrides]]
+include = ["seed/utils/salesforce.py", "seed/views/v4/property.py"]
+
+[overrides.rules]
+unsupported-operator = "ignore"
+
+[[overrides]]
+include = ["seed/landing/models.py", "setup.py"]
+
+[overrides.rules]
+unresolved-import = "ignore"
+
+[[overrides]]
+include = ["seed/views/v3/goals.py", "seed/views/v3/property_view_labels.py"]
+
+[overrides.rules]
+call-non-callable = "ignore"
+
+[[overrides]]
+include = ["seed/utils/v4/inventory_filter.py"]
+
+[overrides.rules]
+invalid-argument-type = "ignore"
+not-iterable = "ignore"
+unresolved-attribute = "ignore"
+unsupported-operator = "ignore"
+
+[[overrides]]
+include = ["seed/models/data_quality.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+unsupported-operator = "ignore"
+
+[[overrides]]
+include = ["seed/views/v3/ubid.py"]
+
+[overrides.rules]
+call-non-callable = "ignore"
+invalid-argument-type = "ignore"
+
+[[overrides]]
+include = ["seed/serializers/uniformat.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+invalid-return-type = "ignore"
+
+[[overrides]]
+include = ["seed/serializers/elements.py"]
+
+[overrides.rules]
+invalid-argument-type = "ignore"
+invalid-method-override = "ignore"
+
+[[overrides]]
+include = ["seed/management/commands/create_geojson_mock_data.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+not-subscriptable = "ignore"
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = ["seed/data_importer/tests/integration/test_data_import.py"]
+
+[overrides.rules]
+invalid-argument-type = "ignore"
+not-iterable = "ignore"
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = ["seed/lib/mcm/reader.py"]
+
+[overrides.rules]
+invalid-argument-type = "ignore"
+not-iterable = "ignore"
+
+[[overrides]]
+include = ["seed/data_importer/tests/integration/test_footprints_import.py"]
+
+[overrides.rules]
+invalid-method-override = "ignore"
+unsupported-operator = "ignore"
+
+[[overrides]]
+include = ["seed/building_sync/building_sync.py"]
+
+[overrides.rules]
+not-iterable = "ignore"
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = ["seed/serializers/properties.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+invalid-method-override = "ignore"
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = ["seed/views/v3/elements.py"]
+
+[overrides.rules]
+unknown-argument = "ignore"
+
+[[overrides]]
+include = ["seed/views/v3/inventory_groups.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = ["seed/views/v3/properties.py"]
+
+[overrides.rules]
+invalid-argument-type = "ignore"
+unsupported-operator = "ignore"
+
+[[overrides]]
+include = ["seed/hpxml/hpxml.py"]
+
+[overrides.rules]
+call-non-callable = "ignore"
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = ["seed/lib/progress_data/progress_data.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+unsupported-operator = "ignore"
+
+[[overrides]]
+include = ["seed/views/v3/organizations.py"]
+
+[overrides.rules]
+missing-argument = "ignore"
+
+[[overrides]]
+include = ["seed/data_importer/tasks.py"]
+
+[overrides.rules]
+mismatched-type-name = "ignore"
+missing-argument = "ignore"
+unknown-argument = "ignore"
+
+[[overrides]]
+include = ["seed/utils/serializers.py"]
+
+[overrides.rules]
+unresolved-attribute = "ignore"
+unresolved-import = "ignore"
+
+[[overrides]]
+include = ["seed/serializers/meters.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+invalid-method-override = "ignore"
+
+[[overrides]]
+include = ["seed/models/building_file.py"]
+
+[overrides.rules]
+no-matching-overload = "ignore"
+unresolved-attribute = "ignore"
+
+[[overrides]]
+include = ["seed/tasks.py"]
+
+[overrides.rules]
+invalid-assignment = "ignore"
+missing-argument = "ignore"
+unknown-argument = "ignore"

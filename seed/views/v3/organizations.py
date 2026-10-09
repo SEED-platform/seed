@@ -583,10 +583,10 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         def warn_bad_pint_spec(kind, unit_string):
             if unit_string is not None:
-                _log.warn(f"got bad {kind} unit string {unit_string} for org {org.name}")
+                _log.warning(f"got bad {kind} unit string {unit_string} for org {org.name}")
 
         def warn_bad_units(kind, unit_string):
-            _log.warn(f"got bad {kind} unit string {unit_string} for org {org.name}")
+            _log.warning(f"got bad {kind} unit string {unit_string} for org {org.name}")
 
         desired_display_units_eui = posted_org.get("display_units_eui")
         if is_valid_choice(Organization.MEASUREMENT_CHOICES_EUI, desired_display_units_eui):
@@ -628,7 +628,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         if isinstance(desired_display_decimal_places, int) and desired_display_decimal_places >= 0:
             org.display_decimal_places = desired_display_decimal_places
         elif desired_display_decimal_places is not None:
-            _log.warn(f"got bad sig figs {desired_display_decimal_places} for org {org.name}")
+            _log.warning(f"got bad sig figs {desired_display_decimal_places} for org {org.name}")
 
         desired_display_meter_units = posted_org.get("display_meter_units")
         if desired_display_meter_units:

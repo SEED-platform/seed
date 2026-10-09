@@ -5,7 +5,8 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 import logging
-import urllib
+from urllib import parse
+from urllib import request as urllib_request
 
 from django.conf import settings
 from django.contrib import auth
@@ -98,9 +99,9 @@ def create_account(request):
             recaptcha_response = request.POST.get("g-recaptcha-response")
             url = "https://www.google.com/recaptcha/api/siteverify"
             values = {"secret": settings.GOOGLE_RECAPTCHA_SECRET_KEY, "response": recaptcha_response}
-            data = urllib.parse.urlencode(values).encode()
-            req = urllib.request.Request(url, data=data)  # noqa: S310
-            response = urllib.request.urlopen(req)  # noqa: S310
+            data = parse.urlencode(values).encode()
+            req = urllib_request.Request(url, data=data)  # noqa: S310
+            response = urllib_request.urlopen(req)  # noqa: S310
             result = json.loads(response.read().decode())
             """ End reCAPTCHA validation """
             if result["success"]:

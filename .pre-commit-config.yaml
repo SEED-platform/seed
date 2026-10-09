@@ -34,11 +34,11 @@ repos:
         args: [--no-cache]
         exclude: pnpm-lock\.yaml|pnpm-workspace\.yaml
         types_or: [yaml, markdown, css, scss]
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.1.0
+  - repo: https://github.com/astral-sh/ty-pre-commit
+    rev: v0.0.85
     hooks:
-      - id: mypy
-        args: [--install-types, --non-interactive, --show-error-codes]
+      - id: ty
+        args: [--locked]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.13
     hooks:
