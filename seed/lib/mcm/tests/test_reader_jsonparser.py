@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import os
 
 from django.test import TestCase
+from shapely import wkt
 
 from seed.lib.mcm.reader import GeoJSONParser
 
@@ -57,6 +58,22 @@ class JSONParserTest(TestCase):
 
     def test_it_has_a_num_columns_property(self):
         self.assertEqual(self.parser.num_columns(), 6)
+
+    def test_polygon_interior_rings_are_preserved(self):
+        feature = {
+            "geometry": {
+                "type": "Polygon",
+                "coordinates": [
+                    [[0, 0], [4, 0], [4, 4], [0, 4], [0, 0]],
+                    [[1, 1], [1, 2], [2, 2], [2, 1], [1, 1]],
+                ],
+            },
+            "properties": {},
+        }
+
+        polygon = wkt.loads(self.parser._get_bounding_box(feature))
+
+        assert len(polygon.interiors) == 1
 
     def test_it_has_a_first_five_rows_property(self):
         expectation = [

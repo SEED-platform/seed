@@ -15,6 +15,7 @@ import re
 from csv import DictReader, Sniffer
 
 import xmltodict
+from shapely.geometry import shape
 from xlrd import XLRDError, empty_cell, open_workbook, xldate
 from xlrd.xldate import XLDateAmbiguous
 
@@ -345,20 +346,15 @@ class GeoJSONParser:
         if existing_footprint := self._existing_footprint(feature):
             return existing_footprint
 
-        geometry = feature.get("geometry")
-        raw_coordinates = []
+        geometry = feature.get("geometry", {})
         if "coordinates" in geometry:
-            raw_coordinates = feature.get("geometry").get("coordinates")
-        elif "geometries" in geometry:
-            geometries = feature.get("geometry").get("geometries", [[]])
-            raw_coordinates = geometries[0].get("coordinates")
+            parsed_geometry = shape(geometry)
+        elif geometries := geometry.get("geometries"):
+            parsed_geometry = shape(geometries[0])
+        else:
+            return "POLYGON EMPTY"
 
-        raw_coordinates = raw_coordinates[0] if len(raw_coordinates) else raw_coordinates
-
-        coords_strings = [f"{coords[0]} {coords[1]}" for coords in raw_coordinates]
-        coords = ", ".join(coords_strings)
-        bounding_box = f"POLYGON (({coords}))" if coords else "POLYGON EMPTY"
-        return bounding_box
+        return parsed_geometry.wkt if not parsed_geometry.is_empty else "POLYGON EMPTY"
 
     def _footprint_key(self, keys):
         return "property_footprint" if "property_footprint" in keys else "Property Footprint" if "Property Footprint" in keys else None

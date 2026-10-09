@@ -11,6 +11,7 @@ from random import randint
 
 import pytest
 from django.core.exceptions import ValidationError
+from django.test import SimpleTestCase
 from django.urls import reverse_lazy
 from xlrd import open_workbook
 
@@ -40,6 +41,24 @@ from seed.test_helpers.fake import (
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.cache import get_cache_raw
 from seed.utils.organizations import create_organization
+from seed.utils.tax_lot_properties import _serialized_coordinates, _serialized_point
+
+
+class SerializedGeometryTests(SimpleTestCase):
+    def test_parses_canonical_polygon_wkt(self):
+        coordinates = _serialized_coordinates("POLYGON ((0 0, 1 1, 1 0, 0 0))")
+
+        assert coordinates == [[0.0, 0.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]
+
+    def test_parses_polygon_wkt_with_irregular_whitespace(self):
+        coordinates = _serialized_coordinates("POLYGON ((  0 0,   1 1,\n 1 0,  0 0  ))")
+
+        assert coordinates == [[0.0, 0.0], [1.0, 1.0], [1.0, 0.0], [0.0, 0.0]]
+
+    def test_parses_point_wkt_with_irregular_whitespace(self):
+        coordinates = _serialized_point("POINT (  -104.5   39.75  )")
+
+        assert coordinates == [-104.5, 39.75]
 
 
 class TestTaxLotProperty(DataMappingBaseTestCase):

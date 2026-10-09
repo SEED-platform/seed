@@ -10,6 +10,7 @@ import os
 
 import geojson
 from django.core.management.base import BaseCommand
+from shapely.geometry import shape
 
 
 class Command(BaseCommand):
@@ -19,18 +20,11 @@ class Command(BaseCommand):
         parser.add_argument("--path", default="~", help="Path to local geojson files for parsing", action="store", dest="path")
 
     def convert_list_to_wkt(self, geom):
-        """
-        The structure on the coordinates is list of list of list... so grab the first two levels
-        for now until there is a clearer pattern to this.
-
-        :param geom:
-        :return:
-        """
-        if geom["type"] == "Polygon":
-            coords = [f"{coord[0]} {coord[1]}" for coord in geom["coordinates"][0]]
-            return f"POLYGON (( {', '.join(coords)} ))"
-        else:
+        geometry = shape(geom)
+        if geometry.geom_type != "Polygon":
             raise ValueError(f"Unknown type of Geometry in GeoJSON of {geom['type']}")
+
+        return geometry.wkt
 
     def handle(self, *args, **options):
         self.stdout.write(f"Parsing geojson files in {options['path']}", ending="\n")

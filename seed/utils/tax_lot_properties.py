@@ -13,6 +13,7 @@ from collections import OrderedDict
 
 import xlsxwriter
 from quantityfield.units import ureg
+from shapely import wkt
 
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models import (
@@ -551,24 +552,13 @@ def _spreadsheet_response(data, column_name_mappings):
 
 
 def _serialized_coordinates(polygon_wkt):
-    string_coord_pairs = polygon_wkt.removeprefix("POLYGON (").removesuffix(")").split(", ")
-
-    coordinates = []
-    for coord_pair in string_coord_pairs:
-        float_coords = [float(coord) for coord in coord_pair.split(" ")]
-        coordinates.append(float_coords)
-
-    return coordinates
+    polygon = wkt.loads(polygon_wkt)
+    return [list(coordinate_pair) for coordinate_pair in polygon.exterior.coords]
 
 
 def _serialized_point(point_wkt):
-    string_coords = point_wkt.lstrip("POINT (").rstrip(")").split(", ")
-
-    coordinates = []
-    for coord in string_coords[0].split(" "):
-        coordinates.append(float(coord))
-
-    return coordinates
+    point = wkt.loads(point_wkt)
+    return [point.x, point.y]
 
 
 def _extract_related(data):
