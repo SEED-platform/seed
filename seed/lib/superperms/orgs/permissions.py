@@ -177,7 +177,7 @@ class SEEDOrgPermissions(BasePermission):
         org_id = get_org_id(request)
         if not org_id:
             org = get_user_org(request.user)
-            org_id = getattr(org, "pk")
+            org_id = org.pk
         try:
             org_user = OrganizationUser.objects.get(user=request.user, organization__id=org_id)
             has_perm = org_user.role_level >= required_perm

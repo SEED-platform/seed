@@ -8,13 +8,13 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from django.conf import settings
 from django.test import TestCase
 from django.utils.timezone import (
     get_current_timezone,
     make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 )
 
-from config.settings.common import TIME_ZONE
 from seed.data_importer.meters_parser import MetersParser
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
@@ -69,7 +69,7 @@ class MeterUtilTests(TestCase):
 
         self.property_view = PropertyView.objects.create(property=self.property, cycle=self.cycle, state=self.state)
 
-        self.tz_obj = ZoneInfo(TIME_ZONE)
+        self.tz_obj = ZoneInfo(settings.TIME_ZONE)
 
     def test_parse_meter_preprocess_raw_pm_data_request(self):
         with open(
@@ -634,9 +634,11 @@ class MeterUtilTests(TestCase):
         self.assertEqual([], meters_parser.meter_and_reading_objs)
 
     def test_meters_parser_can_handle_raw_meters_with_start_time_and_duration_involving_dst_change_and_a_leap_year(self):
+        pre_dst_start = make_aware(datetime(2019, 3, 10, 1, 59, 59), timezone=self.tz_obj)
+        leap_year_start = make_aware(datetime(2016, 2, 28, 23, 59, 59), timezone=self.tz_obj)
         raw_meters = [
             {
-                "start_time": 1552211999,  # Mar. 10, 2019 01:59:59 (pre-DST change)
+                "start_time": int(pre_dst_start.timestamp()),
                 "source_id": "ABCDEF",
                 "duration": 900,
                 "Meter Type": "Natural Gas",
@@ -644,7 +646,7 @@ class MeterUtilTests(TestCase):
                 "Usage/Quantity": 100,
             },
             {
-                "start_time": 1456732799,  # Feb. 28, 2016 23:59:59 (leap year)
+                "start_time": int(leap_year_start.timestamp()),
                 "source_id": "ABCDEF",
                 "duration": 900,
                 "Meter Type": "Natural Gas",
@@ -662,15 +664,15 @@ class MeterUtilTests(TestCase):
                 "type": Meter.NATURAL_GAS,
                 "readings": [
                     {
-                        "start_time": make_aware(datetime(2019, 3, 10, 1, 59, 59), timezone=self.tz_obj),
-                        "end_time": make_aware(datetime(2019, 3, 10, 3, 14, 59), timezone=self.tz_obj),
+                        "start_time": pre_dst_start,
+                        "end_time": datetime.fromtimestamp(pre_dst_start.timestamp() + 900, tz=self.tz_obj),
                         "reading": 94782.0,
                         "source_unit": "GJ",
                         "conversion_factor": 947.82,
                     },
                     {
-                        "start_time": make_aware(datetime(2016, 2, 28, 23, 59, 59), timezone=self.tz_obj),
-                        "end_time": make_aware(datetime(2016, 2, 29, 0, 14, 59), timezone=self.tz_obj),
+                        "start_time": leap_year_start,
+                        "end_time": datetime.fromtimestamp(leap_year_start.timestamp() + 900, tz=self.tz_obj),
                         "reading": 947820.0,
                         "source_unit": "GJ",
                         "conversion_factor": 947.82,
@@ -864,7 +866,7 @@ class MeterUtilTests(TestCase):
 
         self.assertEqual(len(actual_readings), 15)
 
-        zipped_readings = zip(actual_readings, expected_readings)
+        zipped_readings = zip(actual_readings, expected_readings, strict=False)
         # round to account for binary nature of floating point
         for readings in zipped_readings:
             self.assertEqual(round(readings[0], 5), round(readings[1], 5))
@@ -897,7 +899,7 @@ class MeterUtilTests(TestCase):
 
         self.assertEqual(len(actual_readings), 1)
 
-        zipped_readings = zip(actual_readings, expected_readings)
+        zipped_readings = zip(actual_readings, expected_readings, strict=False)
         # round to account for binary nature of floating point
         for readings in zipped_readings:
             self.assertEqual(round(readings[0], 5), round(readings[1], 5))

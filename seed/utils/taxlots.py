@@ -8,8 +8,10 @@ from seed.models import VIEW_LIST, VIEW_LIST_TAXLOT, Column, ColumnListProfile, 
 from seed.serializers.pint import apply_display_unit_preferences
 
 
-def taxlots_across_cycles(org_id, ali, profile_id, cycle_ids=[]):
+def taxlots_across_cycles(org_id, ali, profile_id, cycle_ids=None):
     # Identify column preferences to be used to scope fields/values
+    if cycle_ids is None:
+        cycle_ids = []
     columns_from_database = Column.retrieve_all(org_id, "taxlot", False)
 
     if profile_id == -1:

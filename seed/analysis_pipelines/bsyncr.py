@@ -57,8 +57,10 @@ def _validate_bsyncr_config(analysis):
     model_type = config["model_type"]
     if model_type not in BSYNCR_MODEL_TYPE_MAP:
         return [
-            f'Analysis configuration.model_type "{model_type}" is invalid. '
-            f"Must be one of the following: {', '.join(BSYNCR_MODEL_TYPE_MAP.keys())}"
+            (
+                f'Analysis configuration.model_type "{model_type}" is invalid. '
+                f"Must be one of the following: {', '.join(BSYNCR_MODEL_TYPE_MAP.keys())}"
+            )
         ]
 
     return []

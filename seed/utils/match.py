@@ -182,7 +182,9 @@ def _link_matches(matching_views, org_id, view, ViewClass):  # noqa: N803
     return len(matching_views) - 1
 
 
-def match(state, cycle_id, matching_criteria_column_names=[]):
+def match(state, cycle_id, matching_criteria_column_names=None):
+    if matching_criteria_column_names is None:
+        matching_criteria_column_names = []
     org_id = state.organization_id
 
     state_class_name = state.__class__.__name__
@@ -256,7 +258,9 @@ def _get_ali(view, matching_views, highest_ali, class_name):
     return ali
 
 
-def match_merge_link(state, highest_ali, cycle, matching_criteria_column_names=[]):
+def match_merge_link(state, highest_ali, cycle, matching_criteria_column_names=None):
+    if matching_criteria_column_names is None:
+        matching_criteria_column_names = []
     state_class_name = state.__class__.__name__
     if state_class_name == "PropertyState":
         StateClass = PropertyState
@@ -300,7 +304,7 @@ def match_merge_link(state, highest_ali, cycle, matching_criteria_column_names=[
 
 
 @shared_task(serializer="pickle", ignore_result=True)
-def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
+def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=None):
     """
     For a given organization, run a match merge round for each cycle in
     isolation. Afterwards, run a match link round across all cycles at once.
@@ -338,6 +342,8 @@ def whole_org_match_merge_link(org_id, state_class_name, proposed_columns=[]):
             record to each.
             - Delete any unused canonical records.
     """
+    if proposed_columns is None:
+        proposed_columns = []
     summary = {
         "PropertyState": {
             "merged_count": 0,

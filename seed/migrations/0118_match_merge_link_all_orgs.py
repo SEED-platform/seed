@@ -10,7 +10,7 @@ def forwards(apps, schema_editor):
         for org in Organization.objects.all():
             whole_org_match_merge_link(org.id, "PropertyState")
             whole_org_match_merge_link(org.id, "TaxLotState")
-    except ProgrammingError as err:
+    except ProgrammingError:
         print("""
 
 ========== MIGRATION FAILURE ==========
@@ -21,7 +21,7 @@ def forwards(apps, schema_editor):
 =======================================
 
 """)
-        raise err
+        raise
 
 
 class Migration(migrations.Migration):

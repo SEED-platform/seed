@@ -3157,15 +3157,11 @@ tags-input .tags .tag-item .remove-button {
   background-color: #f3f3f3;
 }
 
-.ui-grid-row.ui-grid-row-selected:nth-child(odd)
-  > [ui-grid-row]
-  > .ui-grid-cell {
+.ui-grid-row.ui-grid-row-selected:nth-child(odd) > [ui-grid-row] > .ui-grid-cell {
   background-color: #fdfdfd;
 }
 
-.ui-grid-row.ui-grid-row-selected:nth-child(even)
-  > [ui-grid-row]
-  > .ui-grid-cell {
+.ui-grid-row.ui-grid-row-selected:nth-child(even) > [ui-grid-row] > .ui-grid-cell {
   background-color: #f3f3f3;
 }
 

@@ -15,6 +15,7 @@ import re
 from csv import DictReader, Sniffer
 
 import xmltodict
+from shapely.geometry import shape
 from xlrd import XLRDError, empty_cell, open_workbook, xldate
 from xlrd.xldate import XLDateAmbiguous
 
@@ -345,20 +346,15 @@ class GeoJSONParser:
         if existing_footprint := self._existing_footprint(feature):
             return existing_footprint
 
-        geometry = feature.get("geometry")
-        raw_coordinates = []
+        geometry = feature.get("geometry", {})
         if "coordinates" in geometry:
-            raw_coordinates = feature.get("geometry").get("coordinates")
-        elif "geometries" in geometry:
-            geometries = feature.get("geometry").get("geometries", [[]])
-            raw_coordinates = geometries[0].get("coordinates")
+            parsed_geometry = shape(geometry)
+        elif geometries := geometry.get("geometries"):
+            parsed_geometry = shape(geometries[0])
+        else:
+            return "POLYGON EMPTY"
 
-        raw_coordinates = raw_coordinates[0] if len(raw_coordinates) else raw_coordinates
-
-        coords_strings = [f"{coords[0]} {coords[1]}" for coords in raw_coordinates]
-        coords = ", ".join(coords_strings)
-        bounding_box = f"POLYGON (({coords}))" if coords else "POLYGON EMPTY"
-        return bounding_box
+        return parsed_geometry.wkt if not parsed_geometry.is_empty else "POLYGON EMPTY"
 
     def _footprint_key(self, keys):
         return "property_footprint" if "property_footprint" in keys else "Property Footprint" if "Property Footprint" in keys else None
@@ -448,10 +444,10 @@ class ExcelParser:
             try:
                 date = xldate.xldate_as_datetime(item.value, self._workbook.datemode)
                 return date.strftime("%Y-%m-%d %H:%M:%S")
-            except XLDateAmbiguous:
-                raise Exception(
+            except XLDateAmbiguous as e:
+                raise ValueError(
                     "Date fields are not in a format that SEED can interpret. A possible solution is to save as a CSV file and reimport."
-                )
+                ) from e
 
         if item.ctype == XL_CELL_NUMBER:
             if item.value % 1 == 0:  # integers
@@ -553,8 +549,8 @@ class CSVParser:
             if dialect.delimiter != ",":
                 _log.warning("CSV file has a non-standard delimiter, converting to 'comma'")
                 dialect.delimiter = ","
-        except SyntaxError:
-            raise Exception("CSV file is not in a format that SEED can interpret. Try converting to XLSX.")
+        except SyntaxError as e:
+            raise ValueError("CSV file is not in a format that SEED can interpret. Try converting to XLSX.") from e
 
         self.csvfile.seek(0)
 
@@ -623,9 +619,9 @@ class MCMParser:
             if "Unsupported format" in str(e):
                 return CSVParser(import_file)
             elif "No sheet named" in str(e):
-                raise SheetDoesNotExistError(str(e))
+                raise SheetDoesNotExistError(str(e)) from e
             else:
-                raise Exception("Cannot parse file")
+                raise ValueError("Cannot parse file") from e
 
     def __next__(self):
         """calls the reader's next"""
@@ -639,7 +635,7 @@ class MCMParser:
         elif isinstance(self.reader, ExcelParser):
             self.data = self.reader.excelreader
         else:
-            raise Exception("Unknown type of parser in MCMParser")
+            raise TypeError("Unknown type of parser in MCMParser")
 
         return self.reader.seek_to_beginning()
 
@@ -663,7 +659,7 @@ class MCMParser:
         self.seek_to_beginning()
 
         validation_rows = []
-        for i in range(5):
+        for _i in range(5):
             try:
                 row = next(self)
                 if row:

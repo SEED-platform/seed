@@ -281,13 +281,13 @@ class OrgMixin:
             org = None
             if not org_id:
                 org = get_user_org(request.user)
-                org_id = int(getattr(org, "pk"))
+                org_id = int(org.pk)
             if not org:
                 # ALWAYS check if user is member of org for the ID provided!
                 try:
                     org = request.user.orgs.get(pk=org_id)
-                except ObjectDoesNotExist:
-                    raise PermissionDenied("Incorrect org id.")
+                except ObjectDoesNotExist as e:
+                    raise PermissionDenied("Incorrect org id.") from e
             if return_obj:
                 # not sure why we are allowing _organization to be set as an id
                 # or model instance...
@@ -302,7 +302,7 @@ class OrgMixin:
         :return: organization object.
         """
         org = self.get_organization(request, return_obj=True)
-        return getattr(org.get_parent(), "pk")
+        return org.get_parent().pk
 
 
 class OrgCreateMixin(OrgMixin):
@@ -378,9 +378,9 @@ class OrgValidateMixin:
         pk = get_org_id_from_validator(instance, validator.field)
         try:
             user.orgs.get(pk=pk)
-        except ObjectDoesNotExist:
+        except ObjectDoesNotExist as e:
             msg = f"User is not a member of {validator.key} organization."
-            raise PermissionDenied(msg)
+            raise PermissionDenied(msg) from e
 
     def validate(self, data):
         """Object level validation.

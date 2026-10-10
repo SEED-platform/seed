@@ -141,7 +141,7 @@ class MetersParser:
 
     @property
     def unlinkable_pm_ids(self):
-        self.meter_and_reading_objs  # provided raw details need to have been parsed first
+        _ = self.meter_and_reading_objs  # provided raw details need to have been parsed first
 
         return [{"portfolio_manager_id": id} for id in self._unlinkable_pm_ids]
 
@@ -198,7 +198,7 @@ class MetersParser:
         """
         if self._cache_meter_and_reading_objs is None:
             # Making sure to build out meters and meter readings first
-            self.meter_and_reading_objs
+            _ = self.meter_and_reading_objs
 
         if self._cache_proposed_imports is None:
             self._cache_proposed_imports = []
@@ -493,7 +493,7 @@ class MetersParser:
 
                 type_and_units_match = TYPE_AND_UNITS_REGEX.match(reading_type)
                 if type_and_units_match is None:
-                    raise Exception(f'Failed to parse meter type and units from "{reading_type}"')
+                    raise ValueError(f'Failed to parse meter type and units from "{reading_type}"')
 
                 meter_type_match = type_and_units_match.group("meter_type").strip()
                 for energy_type in Meter.ENERGY_TYPE_BY_HEADER_STRING:
@@ -501,12 +501,12 @@ class MetersParser:
                         meter_type = Meter.ENERGY_TYPE_BY_HEADER_STRING.get(energy_type)
                         continue
                 if not meter_type:
-                    raise Exception(f'Invalid units "{meter_type_match}"')
+                    raise ValueError(f'Invalid units "{meter_type_match}"')
 
                 units_match = type_and_units_match.group("units").strip()
                 units = METER_UNITS_MAPPING.get(units_match)
                 if units is None:
-                    raise Exception(f'Invalid units "{units_match}"')
+                    raise ValueError(f'Invalid units "{units_match}"')
 
                 # Get the correct Property ID depending on the version of meter file
                 if not raw_reading.get("Property Id"):

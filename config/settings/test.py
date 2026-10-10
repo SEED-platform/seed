@@ -76,7 +76,7 @@ LOGGING = {
 
 local_untracked_spec = importlib.util.find_spec("config.settings.local_untracked")
 if local_untracked_spec is None:
-    raise Exception("Unable to find the local_untracked in config/settings/local_untracked.py")
+    raise RuntimeError("Unable to find the local_untracked in config/settings/local_untracked.py")
 else:
     from config.settings.local_untracked import *  # noqa: F403
 

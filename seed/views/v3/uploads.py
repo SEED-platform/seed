@@ -117,8 +117,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
 
         # save the file
         with open(path, "wb+") as temp_file:
-            for chunk in the_file.chunks():
-                temp_file.write(chunk)
+            temp_file.writelines(the_file.chunks())
         org_id = self.get_organization(request)
         import_record_pk = request.POST.get("import_record", request.GET.get("import_record"))
         try:
@@ -252,16 +251,14 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
 
         # We will make a pass through the first property to get the list of unexpected keys
         for pm_property in request.data["properties"]:
-            for pm_key_name, _ in pm_property.items():
+            for pm_key_name in pm_property:
                 if pm_key_name not in pm_key_to_column_heading_map:
                     pm_key_to_column_heading_map[pm_key_name] = pm_key_name
             break
 
         # Create the header row of the csv file first
         rows = []
-        header_row = []
-        for _, csv_header in pm_key_to_column_heading_map.items():
-            header_row.append(csv_header)
+        header_row = list(pm_key_to_column_heading_map.values())
         rows.append(header_row)
 
         num_properties = len(request.data["properties"])
@@ -280,7 +277,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
             this_row = []
 
             # Loop through all known PM variables
-            for pm_variable, _ in pm_key_to_column_heading_map.items():
+            for pm_variable in pm_key_to_column_heading_map:
                 # Initialize this to False for each pm_variable we will search through
                 added = False
 
@@ -328,7 +325,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         # Then write the actual data out as csv
         with open(path, "w", encoding="utf-8") as csv_file:
             pm_csv_writer = csv.writer(csv_file)
-            for row_num, row in enumerate(rows):
+            for _row_num, row in enumerate(rows):
                 pm_csv_writer.writerow(row)
 
         # Look up the import record (data set)

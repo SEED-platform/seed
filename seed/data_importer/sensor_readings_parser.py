@@ -41,8 +41,8 @@ class SensorsReadingsParser:
 
         try:
             keys = list(raw_sensor_readings_data[0].keys())
-        except IndexError:
-            raise ValueError("File has no rows")
+        except IndexError as e:
+            raise ValueError("File has no rows") from e
 
         if "timestamp" not in keys:
             raise ValueError("File does not contain correct columns")

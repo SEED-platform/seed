@@ -1,3 +1,8 @@
+"""
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+"""
+
 import json
 import logging
 
@@ -13,6 +18,8 @@ from seed.models import (
     PropertyState,
     TaxLotState,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def get_import_file_table_mappings(import_file_id):
@@ -42,7 +49,7 @@ def get_import_file_table_mappings(import_file_id):
         import_file = ImportFile.objects.get(pk=import_file_id)
         org = import_file.import_record.super_organization
     except (ImportFile.DoesNotExist, AttributeError):
-        logging.error(f"Unable to get Organization from ImportFile {import_file_id}")
+        logger.error(f"Unable to get Organization from ImportFile {import_file_id}")
         return {}
 
     ali_column_names = Column.objects.filter(

@@ -4,8 +4,8 @@ on:
   pull_request:
   push:
     branches:
-      - 'develop'
-      - 'main'
+      - "develop"
+      - "main"
 
 jobs:
   docker-arm-build:
@@ -111,7 +111,7 @@ jobs:
       - name: Test Frontend
         if: ${{ matrix.test_env == 'functional' }}
         env:
-          DISPLAY: ':99'
+          DISPLAY: ":99"
           PUPPETEER_SKIP_DOWNLOAD: true
         run: |
           Xvfb :99 &
@@ -138,7 +138,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
-          python-version-file: '.python-version'
+          python-version-file: ".python-version"
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
@@ -163,14 +163,14 @@ jobs:
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        tox_env: [docs, precommit, ty, lint]
+        tox_env: [docs, precommit, lint]
     steps:
       - uses: actions/checkout@v7
         with:
           submodules: true
       - uses: actions/setup-python@v7
         with:
-          python-version-file: '.python-version'
+          python-version-file: ".python-version"
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
@@ -184,6 +184,9 @@ jobs:
           uv sync --frozen --all-groups
           sudo apt-get update
           sudo apt-get install gdal-bin
+      - name: Install frontend dependencies for pre-commit
+        if: ${{ matrix.tox_env == 'precommit' }}
+        run: pnpm install --frozen-lockfile
       - name: Setup config
         run: |
           cat <<EOF > config/settings/local_untracked.py

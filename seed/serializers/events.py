@@ -22,7 +22,7 @@ class EventSerializer(serializers.ModelSerializer):
             data = NoteEventSerializer(instance=instance).data
             data["user_id"] = data["note"]["user_id"]
         else:
-            raise ValueError
+            raise TypeError("Expected an event instance")
         data["cycle_end_date"] = instance.cycle.end
         return data
 

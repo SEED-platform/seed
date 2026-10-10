@@ -49,7 +49,7 @@ class ColumnMappingProfile(models.Model):
         types_dict = {v: k for k, v in cls.COLUMN_MAPPING_PROFILE_TYPES}
         if profile_type in types_dict:
             return types_dict[profile_type]
-        raise Exception(f'Invalid profile type "{profile_type}"')
+        raise ValueError(f'Invalid profile type "{profile_type}"')
 
     @classmethod
     def create_from_file(
@@ -87,10 +87,10 @@ class ColumnMappingProfile(models.Model):
                         data["is_omitted"] = "False"
                     mappings.append(data)
         else:
-            raise Exception(f"Mapping file does not exist: {filename}")
+            raise FileNotFoundError(f"Mapping file does not exist: {filename}")
 
         if len(mappings) == 0:
-            raise Exception(f"No mappings in file: {filename}")
+            raise ValueError(f"No mappings in file: {filename}")
 
         # Because this object has a many to many on orgs (which I argue shouldn't), then
         # first, get all the org's mapping profiles
@@ -99,7 +99,7 @@ class ColumnMappingProfile(models.Model):
         # second, get or create the profile now that we are only seeing my 'orgs' profiles
         profile, created = profiles.get_or_create(name=profile_name, profile_type=profile_type)
         if not created and not overwrite_if_exists:
-            raise Exception(f"ColumnMappingProfile already exists, not overwriting: {profile_name}")
+            raise ValueError(f"ColumnMappingProfile already exists, not overwriting: {profile_name}")
 
         # Do I need to confirm that the mappings are defined in the Columns world?
         profile.mappings = mappings

@@ -51,8 +51,8 @@ def check_file_permission(user, filepath):
             import_file = ImportFile.objects.filter(file__in=candidate_paths, deleted=False).first()
             if import_file is None:
                 raise ModelForFileNotFoundError("ImportFile not found")
-        except ImportFile.DoesNotExist:
-            raise ModelForFileNotFoundError("ImportFile not found")
+        except ImportFile.DoesNotExist as e:
+            raise ModelForFileNotFoundError("ImportFile not found") from e
         organization = import_file.import_record.super_organization
 
     elif base_dir == "buildingsync_files":
@@ -60,16 +60,16 @@ def check_file_permission(user, filepath):
             building_file = BuildingFile.objects.filter(file__in=candidate_paths).first()
             if building_file is None:
                 raise ModelForFileNotFoundError("BuildingFile not found")
-        except BuildingFile.DoesNotExist:
-            raise ModelForFileNotFoundError("BuildingFile not found")
+        except BuildingFile.DoesNotExist as e:
+            raise ModelForFileNotFoundError("BuildingFile not found") from e
         organization = building_file.property_state.organization
 
     elif base_dir == "analysis_input_files":
         try:
             _, analysis_id, _ = filepath_parts
             analysis = Analysis.objects.get(id=analysis_id)
-        except ValueError:
-            raise ModelForFileNotFoundError("File path for analysis_input_file was an unexpected structure")
+        except ValueError as e:
+            raise ModelForFileNotFoundError("File path for analysis_input_file was an unexpected structure") from e
         except Analysis.DoesNotExist:
             return ModelForFileNotFoundError("Analysis for AnalysisInputFile not found")
         organization = analysis.organization
@@ -84,8 +84,8 @@ def check_file_permission(user, filepath):
                 raise ModelForFileNotFoundError(
                     f'AnalysisOutputFile "{analysis_output_file.id}" has no property views to validate the org.'
                 )
-        except AnalysisOutputFile.DoesNotExist:
-            raise ModelForFileNotFoundError("AnalysisOutputFile not found")
+        except AnalysisOutputFile.DoesNotExist as e:
+            raise ModelForFileNotFoundError("AnalysisOutputFile not found") from e
         organization = analysis_property_view.cycle.organization
 
     elif base_dir == "inventory_documents":
@@ -93,8 +93,8 @@ def check_file_permission(user, filepath):
             inventory_document = InventoryDocument.objects.filter(file__in=candidate_paths).first()
             if inventory_document is None:
                 raise ModelForFileNotFoundError("InventoryDocument not found")
-        except InventoryDocument.DoesNotExist:
-            raise ModelForFileNotFoundError("InventoryDocument not found")
+        except InventoryDocument.DoesNotExist as e:
+            raise ModelForFileNotFoundError("InventoryDocument not found") from e
         organization = inventory_document.property.organization
     else:
         raise ModelForFileNotFoundError(f'Base directory for media file is not currently handled: "{base_dir}"')

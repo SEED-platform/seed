@@ -222,7 +222,7 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
         cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
         cycle = cycle_factory.get_cycle(start=datetime(2010, 10, 10, tzinfo=timezone.get_current_timezone()))
         property_state_factory = FakePropertyStateFactory(organization=self.org)
-        for i in range(1, 11):
+        for _i in range(1, 11):
             ps = property_state_factory.get_property_state()
             p = Property.objects.create(organization=self.org)
             PropertyView.objects.create(cycle=cycle, state=ps, property=p)

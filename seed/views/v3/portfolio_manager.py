@@ -346,8 +346,8 @@ class PortfolioManagerImport:
         payload = {"j_username": self.username, "j_password": self.password}
         try:
             response = requests.post(login_url, data=payload, timeout=300)
-        except requests.exceptions.SSLError:
-            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        except requests.exceptions.SSLError as e:
+            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
 
         # This returns a 200 even if the credentials are bad, so I'm having to check some text in the response
         if "The username and/or password you entered is not correct. Please try again." in response.content.decode("utf-8"):
@@ -383,8 +383,8 @@ class PortfolioManagerImport:
             json_authenticated_headers["Content-Type"] = "application/json"
             response = requests.get(self.REPORT_URL, headers=json_authenticated_headers, timeout=300)
 
-        except requests.exceptions.SSLError:
-            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        except requests.exceptions.SSLError as e:
+            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
         if not response.status_code == status.HTTP_200_OK:
             raise PMError("Unsuccessful response from report template rows query; aborting.")
 
@@ -432,8 +432,8 @@ class PortfolioManagerImport:
 
                     # print(f'data to parse: {data_to_parse}')
                     child_object = json.loads(data_to_parse)["childrenRows"]
-                except ValueError:
-                    raise PMError("Malformed JSON response from report template child row query; aborting.")
+                except ValueError as e:
+                    raise PMError("Malformed JSON response from report template child row query; aborting.") from e
                 _log.debug("Received the following child JSON return: " + json.dumps(child_object, indent=2))
                 for child_row in child_object:
                     child_row["z_seed_child_row"] = True
@@ -482,8 +482,8 @@ class PortfolioManagerImport:
 
         try:
             response = requests.get(update_report_url, headers=self.authenticated_headers, timeout=300)
-        except requests.exceptions.SSLError:
-            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        except requests.exceptions.SSLError as e:
+            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
         if not response.status_code == status.HTTP_200_OK:
             raise PMError("Unsuccessful response from POST to update report; aborting.")
         _log.debug(f"Triggered report update,\n status code={response.status_code}\n response headers={response.headers!s}")
@@ -514,8 +514,8 @@ class PortfolioManagerImport:
         generation_url = f"https://portfoliomanager.energystar.gov/pm/reports/generateData/{template_report_id}"
         try:
             response = requests.get(generation_url, headers=self.authenticated_headers, timeout=300)
-        except requests.exceptions.SSLError:
-            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        except requests.exceptions.SSLError as e:
+            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
         if not response.status_code == status.HTTP_200_OK:
             raise PMError("Unsuccessful response from POST to trigger report generation; aborting.")
         _log.debug(f"Triggered report generation,\n status code={response.status_code}\n response headers={response.headers!s}")
@@ -532,8 +532,8 @@ class PortfolioManagerImport:
                 json_authenticated_headers["Accept"] = "application/json"
                 json_authenticated_headers["Content-Type"] = "application/json"
                 response = requests.get(self.REPORT_URL, headers=json_authenticated_headers, timeout=300)
-            except requests.exceptions.SSLError:
-                raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+            except requests.exceptions.SSLError as e:
+                raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
             if not response.status_code == status.HTTP_200_OK:
                 raise PMError("Unsuccessful response from report template rows query; aborting.")
 
@@ -561,8 +561,8 @@ class PortfolioManagerImport:
         # Finally we can download the generated report
         try:
             response = requests.get(self.download_url(template_report_id, report_format), headers=self.authenticated_headers, timeout=300)
-        except requests.exceptions.SSLError:
-            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        except requests.exceptions.SSLError as e:
+            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
         if response.status_code != status.HTTP_200_OK:
             error_message = "Unsuccessful response from GET trying to download generated report;"
             error_message += f" Generated report name: {matched_template['name']};"
@@ -598,8 +598,8 @@ class PortfolioManagerImport:
                 allow_redirects=True,
                 timeout=300,
             )
-        except requests.exceptions.SSLError:
-            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        except requests.exceptions.SSLError as e:
+            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
 
         if not response.status_code == status.HTTP_200_OK:
             raise PMError("Unsuccessful response from GET trying to download generated report; aborting.")
@@ -635,8 +635,8 @@ class PortfolioManagerImport:
             else:
                 raise PMError("Unsuccessful response from GET trying to download single report; aborting.")
 
-        except requests.exceptions.SSLError:
-            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        except requests.exceptions.SSLError as e:
+            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
 
     def generate_and_download_meter_data(self, pm_property_ids: list[int], start_date: datetime, end_date: datetime):
         # login if needed
@@ -705,8 +705,8 @@ class PortfolioManagerImport:
                     timeout=300,
                     data='{"page":1,"pageSize":100,"sort":{"column":"CREATE_DATE","ascending":true},"type":"Notices"}',
                 )
-            except requests.exceptions.SSLError:
-                raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+            except requests.exceptions.SSLError as e:
+                raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
             if not response.status_code == status.HTTP_200_OK:
                 raise PMError("Unsuccessful response from report template rows query; aborting.")
 
@@ -731,8 +731,8 @@ class PortfolioManagerImport:
                 headers=self.authenticated_headers,
                 timeout=300,
             )
-        except requests.exceptions.SSLError:
-            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.")
+        except requests.exceptions.SSLError as e:
+            raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
         if response.status_code != status.HTTP_200_OK:
             error_message = "Unsuccessful response from GET trying to download generated report;"
             error_message += f"Returned with a status code = {response.status_code};"

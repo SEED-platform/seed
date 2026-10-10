@@ -88,14 +88,14 @@ def analysis_pipeline_task(expected_status):
         self_error_message = "Decorated task function must have `self` as first argument, and @shared_task decorator must have `bind=True`"
         try:
             if params.args.index("self") != 0:
-                raise Exception(self_error_message)
-        except ValueError:
-            raise Exception(self_error_message)
+                raise ValueError(self_error_message)
+        except ValueError as e:
+            raise ValueError(self_error_message) from e
 
         try:
             analysis_id_param_idx = params.args.index("analysis_id")
-        except ValueError:
-            raise Exception('Decorated task function must include an argument named "analysis_id"')
+        except ValueError as e:
+            raise ValueError('Decorated task function must include an argument named "analysis_id"') from e
 
         @functools.wraps(func)
         def _run_task(*args, **kwargs):
@@ -218,7 +218,7 @@ def analysis_pipeline_task(expected_status):
                     }
                     logger.error(json.dumps(log_message))
                     # no need to stop the task chain b/c raising the exception should do that
-                    raise e
+                    raise
                 except Analysis.DoesNotExist:
                     # someone deleted the analysis, and the original exception was probably due to that
                     # just log the error and forget
@@ -234,7 +234,7 @@ def analysis_pipeline_task(expected_status):
                     return
 
                 if reraise_exception:
-                    raise e
+                    raise
 
         return _run_task
 

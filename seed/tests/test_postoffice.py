@@ -42,8 +42,10 @@ class TestPostOfficeEmailPermissions(AccessLevelBaseTestCase):
             self.client.patch: 200,
         }
 
-    def _test_permissions(self, client_method, url, params={}):
+    def _test_permissions(self, client_method, url, params=None):
         # root owner user can
+        if params is None:
+            params = {}
         self.login_as_root_owner()
         response = client_method(url, params, content_type="application/json")
         assert self.success_code[client_method]
@@ -94,8 +96,10 @@ class TestPostOfficePermissions(AccessLevelBaseTestCase):
             self.client.patch: 200,
         }
 
-    def _test_permissions(self, client_method, url, params={}):
+    def _test_permissions(self, client_method, url, params=None):
         # root owner user can
+        if params is None:
+            params = {}
         self.login_as_root_owner()
         response = client_method(url, params, content_type="application/json")
         assert self.success_code[client_method]

@@ -2,20 +2,14 @@
   <div class="page_header">
     <div class="left page_action_container"></div>
     <div class="page_title">
-      <h1>
-        {$:: (inventory_type === 'taxlots' ? 'Tax Lot Groups' : 'Property
-        Groups') | translate $}
-      </h1>
+      <h1>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Groups' : 'Property Groups') | translate $}</h1>
     </div>
     <div class="right page_action_container page_action_btn"></div>
   </div>
 </div>
 
 <div class="section_nav_container">
-  <div
-    class="section_nav"
-    ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"
-  ></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_nav.html'"></div>
 </div>
 
 <div class="section_header_container">
@@ -23,22 +17,11 @@
     <div class="section_action_container left_40">
       <h2>
         <i class="fa fa-sitemap"></i>
-        <span
-          >{$:: (inventory_type === 'taxlots' ? 'Tax Lot Groups' : 'Property
-          Groups') | translate $}</span
-        >
+        <span>{$:: (inventory_type === 'taxlots' ? 'Tax Lot Groups' : 'Property Groups') | translate $}</span>
       </h2>
     </div>
-    <div
-      class="section_action_container right_40 section_action_btn pull-right"
-    >
-      <button
-        class="btn btn-primary"
-        ng-click="create_inventory_group()"
-        translate
-      >
-        Create Group
-      </button>
+    <div class="section_action_container right_40 section_action_btn pull-right">
+      <button class="btn btn-primary" ng-click="create_inventory_group()" translate>Create Group</button>
     </div>
   </div>
 </div>
@@ -51,11 +34,7 @@
 </div>
 
 <div class="section_content">
-  <table
-    id="groups_table"
-    class="table table-striped table_highlight_first"
-    style="border-bottom: 1px solid #dddddd"
-  >
+  <table id="groups_table" class="table table-striped table_highlight_first" style="border-bottom: 1px solid #dddddd">
     <thead>
       <tr>
         <th>Name</th>
@@ -67,12 +46,7 @@
     <tbody>
       <tr ng-repeat="group in inventory_groups">
         <td>
-          <a
-            class="btn btn btn-default"
-            style="padding: 4px 15px"
-            ui-sref="inventory_group_detail_dashboard({inventory_type: inventory_type, group_id: group.id})"
-            ui-sref-active=""
-          >
+          <a class="btn btn btn-default" style="padding: 4px 15px" ui-sref="inventory_group_detail_dashboard({inventory_type: inventory_type, group_id: group.id})" ui-sref-active="">
             {$ group.name $}
           </a>
         </td>
@@ -80,19 +54,8 @@
         <td>{$ group.inventory_list.length $}</td>
         <td>
           <div class="buttons" ng-show="!rowform.$visible">
-            <button
-              class="btn btn-default btn-rowform"
-              ng-click="edit_inventory_group(group.id)"
-              translate
-            >
-              edit
-            </button>
-            <button
-              class="btn btn-danger btn-rowform"
-              ng-click="remove_inventory_group(group.id)"
-            >
-              X
-            </button>
+            <button class="btn btn-default btn-rowform" ng-click="edit_inventory_group(group.id)" translate>edit</button>
+            <button class="btn btn-danger btn-rowform" ng-click="remove_inventory_group(group.id)">X</button>
           </div>
         </td>
       </tr>

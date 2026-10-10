@@ -110,9 +110,9 @@ def float_cleaner(value, *args):
         value = float(value)
     except ValueError:
         value = None
-    except TypeError:
+    except TypeError as e:
         message = f"float_cleaner cannot convert {type(value)} to float"
-        raise TypeError(message)
+        raise TypeError(message) from e
 
     return value
 
@@ -171,9 +171,9 @@ def int_cleaner(value, *args):
         value = int(float(value))
     except ValueError:
         value = None
-    except TypeError:
+    except TypeError as e:
         message = f"int_cleaner cannot convert {type(value)} to int"
-        raise TypeError(message)
+        raise TypeError(message) from e
 
     return value
 
@@ -194,9 +194,9 @@ def pint_cleaner(value, units, *args):
         value = value * ureg(units)
     except ValueError:
         value = None
-    except TypeError:
+    except TypeError as e:
         message = f"pint_cleaner cannot convert {type(value)} to a valid Quantity"
-        raise TypeError(message)
+        raise TypeError(message) from e
 
     return value
 
@@ -213,7 +213,7 @@ def geometry_cleaner(value):
         if "Improper geometry input type" in str(e):
             return None
     except Exception as e:
-        raise RuntimeError(f"Unexpected error in geometry_cleaner: {e!s}")
+        raise RuntimeError(f"Unexpected error in geometry_cleaner: {e!s}") from e
 
 
 class Cleaner:

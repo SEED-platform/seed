@@ -38,7 +38,7 @@ class DerivedColumnSerializer(serializers.ModelSerializer):
         except ValidationError as e:
             # This validation error is raised when the column name is not unique
             error = {"message": str(e)}
-            raise serializers.ValidationError(error)
+            raise serializers.ValidationError(error) from e
 
     def update(self, instance, validated_data):
         parameters_data = validated_data.get("derivedcolumnparameter_set", [])

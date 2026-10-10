@@ -1,10 +1,7 @@
 <div class="page_header_container">
   <div class="page_header">
     <div class="left page_action_container">
-      <a
-        ui-sref="inventory_groups(::{inventory_type: inventory_type})"
-        class="page_action"
-      >
+      <a ui-sref="inventory_groups(::{inventory_type: inventory_type})" class="page_action">
         <i class="fa-solid fa-chevron-left"></i>
         {$:: 'Groups' | translate $}
       </a>
@@ -16,34 +13,19 @@
   </div>
 </div>
 <div class="section_nav_container">
-  <div
-    class="section_nav"
-    ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"
-  ></div>
+  <div class="section_nav" ng-include="::urls.static_url + 'seed/partials/inventory_group_detail_nav.html'"></div>
 </div>
 <div class="section_header_container">
   <div class="section_header fixed_height_short has_no_padding">
-    <div
-      ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"
-    ></div>
+    <div ng-include="::urls.static_url + 'seed/partials/inventory_detail_header.html'"></div>
   </div>
 </div>
 <div class="section_content systems-list">
   <div class="create-container">
-    <button
-      ng-show="menu.user.organization.user_role !== 'viewer'"
-      type="button"
-      class="btn btn-primary"
-      ng-click="open_system_modal('create')"
-    >
-      Create System
-    </button>
+    <button ng-show="menu.user.organization.user_role !== 'viewer'" type="button" class="btn btn-primary" ng-click="open_system_modal('create')">Create System</button>
   </div>
   <div class="systems-container">
-    <div
-      ng-repeat="table in system_tables"
-      id="{$ table.system_key $}-systems-table"
-    >
+    <div ng-repeat="table in system_tables" id="{$ table.system_key $}-systems-table">
       <div
         ng-include="::urls.static_url + 'seed/partials/systems_table.html'"
         ng-init="

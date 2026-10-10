@@ -39,8 +39,8 @@ class AccessLevelInstancesParser:
 
         try:
             keys = list(raw_data[0].keys())
-        except IndexError:
-            raise ValueError("File has no rows")
+        except IndexError as e:
+            raise ValueError("File has no rows") from e
 
         level_names = keys
         # already checked that headers match level names before saving file

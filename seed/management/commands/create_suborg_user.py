@@ -45,7 +45,7 @@ class Command(BaseCommand):
         elif options["suborg_role"] == "viewer":
             suborg_role = ROLE_VIEWER
         else:
-            raise Exception("Invalid role for suborg user. Expecting owner, member, or viewer.")
+            raise ValueError("Invalid role for suborg user. Expecting owner, member, or viewer.")
 
         create_suborganization(u, org, options["suborg"], suborg_role)
         self.stdout.write("Sub-organization created!", ending="\n")

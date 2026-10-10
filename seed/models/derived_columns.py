@@ -97,8 +97,8 @@ class ExpressionEvaluator:
         def param(self, name):
             try:
                 return self.params[name]
-            except KeyError:
-                raise KeyError(f"Parameter not found: {name}")
+            except KeyError as e:
+                raise KeyError(f"Parameter not found: {name}") from e
 
         def set_params(self, params):
             """Set the parameters available when parsing
@@ -130,11 +130,11 @@ class ExpressionEvaluator:
         try:
             Lark(cls.EXPRESSION_GRAMMAR, parser="lalr").parse(expression)
         except UnexpectedToken as e:
-            raise InvalidExpressionError(expression, e.pos_in_stream)
+            raise InvalidExpressionError(expression, e.pos_in_stream) from e
 
         return True
 
-    def evaluate(self, parameters: None | dict[str, float] = None) -> float:
+    def evaluate(self, parameters: dict[str, float] | None = None) -> float:
         """Evaluate the expression with the provided parameters
 
         :param parameters: dict, keys are parameter names and values are values
@@ -206,7 +206,7 @@ class DerivedColumn(models.Model):
         try:
             ExpressionEvaluator.is_valid(self.expression)
         except InvalidExpressionError as e:
-            raise ValidationError({"expression": str(e)})
+            raise ValidationError({"expression": str(e)}) from e
 
     def save(self, *args, **kwargs):
         created = not self.pk
@@ -265,7 +265,7 @@ class DerivedColumn(models.Model):
 
         return params
 
-    def evaluate(self, inventory_state: None | PropertyState | TaxLotState = None, parameters: None | dict[str, float] = None):
+    def evaluate(self, inventory_state: PropertyState | TaxLotState | None = None, parameters: dict[str, float] | None = None):
         """Evaluate the expression. Caller must provide `parameters`, `inventory_state`,
         or both. Values from the inventory take priority over the parameters dict.
         Values that cannot be coerced into floats (from the inventory or params dict)
@@ -312,15 +312,17 @@ class DerivedColumn(models.Model):
             return None
         except Exception as e:
             # unknown error
-            raise Exception(
+            raise RuntimeError(
                 f"Unhandled exception evaluating derived column:\n"
                 f"    derived column id: {self.id}\n"
                 f"    parameters: {merged_parameters}\n"
                 f"    expression: {self.expression}\n"
                 f"    exception: {e}"
-            )
+            ) from e
 
-    def check_for_source_columns_derived(self, inventory_state=None, merged_parameters={}):
+    def check_for_source_columns_derived(self, inventory_state=None, merged_parameters=None):
+        if merged_parameters is None:
+            merged_parameters = {}
         dcps = self.derivedcolumnparameter_set.all()
         for dcp in dcps:
             column = dcp.source_column

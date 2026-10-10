@@ -62,7 +62,7 @@ def rehash(apps, properties=True, taxlots=True):
                         # `is_excluded_from_hash` column being added in `0225_column_is_excluded_from_hash.py`
                         prefetched_columns[org_id] = sorted({c["column_name"] for c in Column.retrieve_db_fields_from_db_tables()})
 
-                for idx, state in enumerate(state_model.objects.iterator(chunk_size=1_000)):
+                for _idx, state in enumerate(state_model.objects.iterator(chunk_size=1_000)):
                     old_hash = state.hash_object
                     new_hash = hash_state_object(state, prefetched_columns=prefetched_columns.get(state.organization_id))
 

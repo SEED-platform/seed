@@ -88,7 +88,7 @@ def _normalize_address_number(address_number):
             # The end range value is omitting a common prefix.  Add it back.
             prefix_length = len(range_start) - len(range_end)
             range_end = range_start[:prefix_length] + range_end
-        return "-".join([range_start, range_end])
+        return f"{range_start}-{range_end}"
 
     # some addresses have leading zeros, strip them here
     return address_number.lstrip("0")

@@ -272,7 +272,7 @@ class TestRenameColumns(TestCase):
 
         # create the test data and assemble the expected data result
         expected_data = []
-        for i in range(20):
+        for _i in range(20):
             state = self.property_state_factory.get_property_state(data_state=DATA_STATE_MATCHING)
             expected_data.append(state.address_line_1)
 
@@ -1302,13 +1302,13 @@ class TestColumnCasting(TestCase):
         self.assertEqual(datetime(2010, 1, 1, tzinfo=UTC), result)
 
     def test_cast_values_with_errors(self):
-        with pytest.raises(ColumnCastError) as exc:
+        with pytest.raises(ColumnCastError) as e:
             Column.cast_column_value("integer", "abc")
-        self.assertEqual(str(exc.value), 'Invalid data type for "integer". Expected a valid "integer" value.')
+        self.assertEqual(str(e.value), 'Invalid data type for "integer". Expected a valid "integer" value.')
 
-        with pytest.raises(ColumnCastError) as exc:
+        with pytest.raises(ColumnCastError) as e:
             Column.cast_column_value("eui", None, allow_none=False)
-        self.assertEqual(str(exc.value), "Datum is None and allow_none is False.")
+        self.assertEqual(str(e.value), "Datum is None and allow_none is False.")
 
     def test_column_based_cast(self):
         r = self.column_1.cast("123")

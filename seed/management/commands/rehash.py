@@ -47,7 +47,7 @@ class Command(BaseCommand):
                     print(f"Re-hashing {table} ({count:,})")
                     cursor.execute(f"PREPARE update_hash (integer, text) AS UPDATE {table} SET hash_object = $2 WHERE id = $1;")  # noqa: S608
                     progress = ProgressLogger(count)
-                    for idx, state in enumerate(state_model.objects.iterator(chunk_size=1_000)):
+                    for _idx, state in enumerate(state_model.objects.iterator(chunk_size=1_000)):
                         old_hash = state.hash_object
                         new_hash = hash_state_object(state)
 
