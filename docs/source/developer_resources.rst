@@ -325,7 +325,9 @@ Restoring a Database Dump
         --password=password \
         --organization=testorg
 
-If restoring a production backup to a different deployment update the site settings for password reset emails, and disable celerybeat Salesforce updates/emails:
+If restoring a production backup to a different deployment update the site settings for password reset emails, and disable celerybeat Salesforce updates/emails.
+
+Also, when copying a database between environments, preserve the source ``SECRET_KEY`` in the target application's web and Celery containers. SEED uses this key to sign encrypted passwords stored in the database (Salesforce and Audit Template). If the keys differ, the database will restore successfully but those passwords cannot be decrypted.
 
 .. code-block:: bash
 
