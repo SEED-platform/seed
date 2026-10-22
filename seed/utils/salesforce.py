@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import datetime
 import json
+import logging
 
 from django.conf import settings
 from django.utils import timezone
@@ -19,6 +20,8 @@ from seed.models.salesforce_configs import SalesforceConfig
 from seed.models.salesforce_mappings import SalesforceMapping
 from seed.serializers.properties import PropertyViewSerializer
 from seed.utils.encrypt import decrypt
+
+logger = logging.getLogger(__name__)
 
 AUTO_SYNC_NAME = "salesforce_sync_org-"
 
@@ -495,8 +498,15 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             remove_indication_label(property_id, config.indication_label_id)
 
     except Exception as e:
-        template = "Property View {2} / Benchmark ID {3} : An exception of type {0} occurred. Arguments:\n{1!r}"
-        message = template.format(type(e).__name__, e.args, str(property_id), benchmark_id)
+        salesforce_status = getattr(e, "status", None)
+        logger.exception(
+            "Salesforce building sync failed (organization_id=%s, property_view_id=%s, benchmark_id=%s, status=%s)",
+            org_id,
+            property_id,
+            benchmark_id,
+            salesforce_status,
+        )
+        message = f"Property View {property_id} / Benchmark ID {benchmark_id} : An exception of type {type(e).__name__} occurred: {e!s}"
 
     return status, message
 
