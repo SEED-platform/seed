@@ -498,12 +498,13 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
             remove_indication_label(property_id, config.indication_label_id)
 
     except Exception as e:
+        salesforce_status = getattr(e, "status", None)
         logger.exception(
             "Salesforce building sync failed (organization_id=%s, property_view_id=%s, benchmark_id=%s, status=%s)",
             org_id,
             property_id,
             benchmark_id,
-            getattr(e, "status", None),
+            salesforce_status,
         )
         message = f"Property View {property_id} / Benchmark ID {benchmark_id} : An exception of type {type(e).__name__} occurred: {e!s}"
 

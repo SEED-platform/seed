@@ -534,7 +534,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             "https://example.salesforce.com/services/data/v60.0/sobjects/Benchmark__c",
             400,
             "Benchmark__c",
-            [{"errorCode": "INVALID_FIELD", "message": "Unknown field Example__c"}],
+            b'[{"errorCode": "INVALID_FIELD", "message": "Unknown field Example__c"}]',
         )
         for operation in ("get_benchmark_by_custom_id", "update_benchmark"):
             with self.subTest(operation=operation):
@@ -568,7 +568,7 @@ class SalesforceViewTests(DataMappingBaseTestCase):
             "https://example.salesforce.com/services/data/v60.0/query/",
             400,
             "Benchmark__c",
-            [{"errorCode": "INVALID_FIELD", "message": "Unknown field Example__c"}],
+            b'[{"errorCode": "INVALID_FIELD", "message": "Unknown field Example__c"}]',
         )
         mock_update.side_effect = error
         url = reverse("api:v3:properties-update-salesforce") + f"?organization_id={self.org.id}"

@@ -1886,11 +1886,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     status=status.HTTP_400_BAD_REQUEST,
                 )
         except Exception as e:
+            salesforce_status = getattr(e, "status", None)
             logger.exception(
                 "Salesforce building sync request failed (organization_id=%s, property_view_ids=%s, status=%s)",
                 org_id,
                 list(checked_ids),
-                getattr(e, "status", None),
+                salesforce_status,
             )
             message = f"An exception of type {type(e).__name__} occurred: {e!s}"
             return JsonResponse({"status": "error", "message": message}, status=status.HTTP_400_BAD_REQUEST)
