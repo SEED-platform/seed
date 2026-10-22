@@ -13,6 +13,7 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.urls import reverse
 from django.utils.timezone import get_current_timezone
+from simple_salesforce.exceptions import SalesforceMalformedRequest
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import ROLE_MEMBER
@@ -519,6 +520,68 @@ class SalesforceViewTests(DataMappingBaseTestCase):
                 organization=self.org,
                 status_fieldname="Status__c",
             )
+
+    @patch("seed.utils.salesforce.test_connection")
+    def test_malformed_benchmark_request_details_are_logged(self, mock_test_connection):
+        state = self.property_state_factory.get_property_state()
+        state.extra_data["Salesforce Benchmark ID"] = "ERROR_BENCHMARK"
+        state.save()
+        property = self.property_factory.get_property()
+        view = PropertyView.objects.create(property=property, cycle=self.cycle, state=state)
+        view.labels.add(self.ind_label, self.compliance_label)
+
+        error = SalesforceMalformedRequest(
+            "https://example.salesforce.com/services/data/v60.0/sobjects/Benchmark__c",
+            400,
+            "Benchmark__c",
+            [{"errorCode": "INVALID_FIELD", "message": "Unknown field Example__c"}],
+        )
+        for operation in ("get_benchmark_by_custom_id", "update_benchmark"):
+            with self.subTest(operation=operation):
+                mock_client = Mock()
+                mock_client.get_benchmark_by_custom_id.return_value = {"Id": "a01Ea00000VqqMf"}
+                getattr(mock_client, operation).side_effect = error
+                mock_test_connection.return_value = (True, None, mock_client)
+
+                with self.assertLogs("seed.utils.salesforce", level="ERROR") as logs:
+                    status, message = update_salesforce_property(self.org.id, view.id)
+
+                self.assertFalse(status)
+                self.assertIn(str(error), message)
+                self.assertNotIn("{content}", message)
+                self.assertIn(f"Property View {view.id}", message)
+                log = logs.records[0]
+                self.assertIs(log.exc_info[1], error)
+                self.assertIn(f"organization_id={self.org.id}", log.getMessage())
+                self.assertIn(f"property_view_id={view.id}", log.getMessage())
+                self.assertIn("benchmark_id=ERROR_BENCHMARK", log.getMessage())
+                self.assertIn("status=400", log.getMessage())
+                self.assertIn(str(error), logs.output[0])
+                self.assertIn("Traceback (most recent call last)", logs.output[0])
+                if operation == "get_benchmark_by_custom_id":
+                    mock_client.update_benchmark.assert_not_called()
+
+    @patch("seed.views.v3.properties.update_salesforce_properties")
+    def test_unexpected_salesforce_request_details_are_logged(self, mock_update):
+        view = self.property_view_factory.get_property_view()
+        error = SalesforceMalformedRequest(
+            "https://example.salesforce.com/services/data/v60.0/query/",
+            400,
+            "Benchmark__c",
+            [{"errorCode": "INVALID_FIELD", "message": "Unknown field Example__c"}],
+        )
+        mock_update.side_effect = error
+        url = reverse("api:v3:properties-update-salesforce") + f"?organization_id={self.org.id}"
+
+        with self.assertLogs("seed.views.v3.properties", level="ERROR") as logs:
+            response = self.client.post(url, {"property_view_ids": [view.id]}, content_type="application/json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["status"], "error")
+        self.assertIn(str(error), response.json()["message"])
+        self.assertIs(logs.records[0].exc_info[1], error)
+        self.assertIn(f"organization_id={self.org.id}", logs.records[0].getMessage())
+        self.assertIn(str(error), logs.output[0])
 
     def test_no_sync_when_disabled(self):
         """
