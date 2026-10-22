@@ -93,10 +93,10 @@ http {
         server 127.0.0.1:8000;
     }
 
-    # helper to apply CSP only to html responses
+    # Apply CSP to HTML responses, including content types with parameters such as charset=utf-8.
     map $sent_http_content_type $csp_for_html {
-        ~^text/html$ "$CSP";
-        default      "";
+        "~*^text/html(?:;|$)" "$CSP";
+        default               "";
     }
 
     # configuration of the server

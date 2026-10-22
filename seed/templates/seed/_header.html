@@ -12,6 +12,9 @@
     <a class="logo" ui-sref="home" ng-if="!is_active('/documentation/', true)" ng-include="'logo'"></a>
     <a class="logo" href="/" ng-if="is_active('/documentation/', true)" ng-include="'logo'"></a>
   </div>
+  <a href="/ng-app/" class="btn btn-primary new-ui-link">
+    <em translate>Try the New SEED UI ✨</em>
+  </a>
   <div class="add_menu_container">
     <div class="btn-group org-dropdown" uib-dropdown is-open="status.isopen">
       <button id="btnUserOrgs" type="button" class="btn btn-default" uib-dropdown-toggle ng-disabled="disabled" style="display: flex; align-items: center">
