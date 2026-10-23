@@ -173,7 +173,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
     def test_rename_column_property(self):
         column = Column.objects.filter(organization=self.org, table_name="PropertyState", column_name="address_line_1").first()
 
-        for i in range(1, 10):
+        for _i in range(1, 10):
             self.property_state_factory.get_property_state(data_state=DATA_STATE_MATCHING)
             self.tax_lot_state_factory.get_taxlot_state(data_state=DATA_STATE_MATCHING)
 
@@ -215,7 +215,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
     def test_rename_column_property_existing(self):
         column = Column.objects.filter(organization=self.org, table_name="PropertyState", column_name="address_line_1").first()
 
-        for i in range(1, 10):
+        for _i in range(1, 10):
             self.property_state_factory.get_property_state(data_state=DATA_STATE_MATCHING)
 
         for ps in PropertyState.objects.filter(organization=self.org).order_by("pk"):
@@ -259,7 +259,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
     def test_rename_column_taxlot(self):
         column = Column.objects.filter(organization=self.org, table_name="TaxLotState", column_name="address_line_1").first()
 
-        for i in range(1, 10):
+        for _i in range(1, 10):
             self.property_state_factory.get_property_state(data_state=DATA_STATE_MATCHING)
             self.tax_lot_state_factory.get_taxlot_state(data_state=DATA_STATE_MATCHING)
 

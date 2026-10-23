@@ -110,7 +110,7 @@ def get_terminal_value(element, mapping):
             return postfix
         return prefix
 
-    raise Exception(f'Unrecognized value type "{mapping["value"]}"')
+    raise ValueError(f'Unrecognized value type "{mapping["value"]}"')
 
 
 def apply_mapping(element, mapping, messages, namespaces, xpaths_as_keys=False):
@@ -129,7 +129,7 @@ def apply_mapping(element, mapping, messages, namespaces, xpaths_as_keys=False):
         try:
             selection = element.xpath(value_map["xpath"], namespaces=namespaces)
         except Exception as e:
-            raise Exception(f"Error on {value_map['xpath']}: {e}")
+            raise ValueError(f"Error on {value_map['xpath']}: {e}") from e
 
         if len(selection) == 0:
             if value_map["type"] == "value":
@@ -158,7 +158,7 @@ def apply_mapping(element, mapping, messages, namespaces, xpaths_as_keys=False):
             result[updated_key] = value
 
         else:
-            raise Exception(f"Unknown node type {value_map['type']}")
+            raise ValueError(f"Unknown node type {value_map['type']}")
 
     return result
 
@@ -361,14 +361,14 @@ def to_bool(value):
 def to_datetime(value):
     try:
         return datetime.strptime(value, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=UTC)
-    except ValueError as e:
+    except ValueError:
         # parsing datetime with a timezone containing a colon is problematic for python < 3.7
         # https://stackoverflow.com/questions/30999230/how-to-parse-timezone-with-colon
         if value[-3:-2] == ":":
             value = value[:-3] + value[-2:]
             res = datetime.strptime(value, "%Y-%m-%dT%H:%M:%S%z")
             return res
-        raise e
+        raise
 
 
 def snake_case(value):
@@ -405,7 +405,7 @@ def find_last_in_xpath(tree, xpath, namespaces):
         match = tree.xpath("/" + "/".join(xpath_list), namespaces=namespaces)
 
     if not match:
-        raise Exception(f'Failed to find any elements, xpath is probably invalid: "{xpath}"')
+        raise ValueError(f'Failed to find any elements, xpath is probably invalid: "{xpath}"')
 
     return match[0], "/".join(remainder)
 
@@ -489,7 +489,7 @@ def children_sorter_factory(schema, tree, element):
     element_path = tree.getpath(element)
     schema_element = schema.find(element_path)
     if schema_element is None:
-        raise Exception(f'Unable to find path in schema: "{element_path}"')
+        raise ValueError(f'Unable to find path in schema: "{element_path}"')
 
     ordered_children = [child.name for child in schema_element.iterchildren()]
 
@@ -500,11 +500,11 @@ def children_sorter_factory(schema, tree, element):
             # put comments at the end
             return 1e10
         elif not isinstance(element, etree._Element):
-            raise Exception(f'Unknown type while sorting: "{type(element)}"')
+            raise TypeError(f'Unknown type while sorting: "{type(element)}"')
 
         if element.tag not in ordered_children:
             # a more helpful exception that the one raised by .index()
-            raise Exception(f'Failed to find "{element.tag}" in {ordered_children}')
+            raise ValueError(f'Failed to find "{element.tag}" in {ordered_children}')
 
         return ordered_children.index(element.tag)
 
@@ -523,7 +523,7 @@ def update_element(element, target, value):
     elif target == "text":
         element.text = value
     else:
-        raise Exception(f'Unrecognized target "{target}"')
+        raise ValueError(f'Unrecognized target "{target}"')
 
 
 def update_tree(schema, tree, xpath, target, value, namespaces):

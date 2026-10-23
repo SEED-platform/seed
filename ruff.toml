@@ -1,5 +1,6 @@
 fix = true
 line-length = 140
+extend-exclude = ["ng_seed/seed-angular"]
 
 [format]
 # preview = true
@@ -12,10 +13,10 @@ docstring-code-format = true
 extend-select = [
     "A",   # flake8-builtins
     "ARG", # flake8-unused-arguments
+    "B",   # flake8-bugbear
     "BLE", # flake8-blind-except
     "C4",  # flake8-comprehensions
     "COM", # flake8-commas
-    # "DTZ", # flake8-datetimez
     "E",   # Error
     "EXE", # flake8-executable
     "F",   # Pyflakes
@@ -48,10 +49,10 @@ ignore = [
     "BLE001",  # blind-except
     "COM812",  # missing-trailing-comma
     "COM819",  # prohibited-trailing-comma
+    "DTZ", # flake8-datetimez
     "E501",    # line-too-long
     "ISC001",  # single-line-implicit-string-concatenation
     "N806",    # non-lowercase-variable-in-function
-    "PLC0415", # import-outside-top-level
     "PLC1901", # compare-to-empty-string (preview)
     "PLC0415", # `import` should be at the top-level of a file
     "PLR0402", # manual-from-import
@@ -59,6 +60,7 @@ ignore = [
     "PLR0912", # too-many-branches
     "PLR0913", # too-many-arguments
     "PLR0915", # too-many-statements
+    "PLR0917", # too-many-positional-arguments (legacy APIs)
     "PLR2004", # magic-value-comparison
     "PT009",   # pytest-unittest-assertion
     "Q000",    # bad-quotes-inline-string
@@ -72,17 +74,23 @@ ignore = [
 ]
 
 [lint.per-file-ignores]
-"**/tests/test_*" = [
-    "S101", # assert
-    "S105", # hardcoded-password-string
-    "S307", # suspicious-eval-usage
+"**/tests/**/test_*" = [
+    "DTZ001", # fixed-date fixtures intentionally exercise naive datetimes
+    "S101",   # assert
+    "S105",   # hardcoded-password-string
+    "S307",   # suspicious-eval-usage
 ]
 "config/settings/*.py" = [
     "F405", # undefined-local-with-import-star-usage
 ]
 "seed/**/migrations/*" = [
     "ARG001", # unused-function-argument
+    "DTZ",    # preserve the temporal behavior of historical migrations
     "RUF012", # mutable-class-default
+    "TRY",    # exception design in historical migrations
+]
+"seed/building_sync/{building_sync.py,tests/test_mappings.py}" = [
+    "FLY002", # static-join-to-f-string
 ]
 "seed/models/__init__.py" = [
     "F401", # unused-import

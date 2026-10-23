@@ -401,7 +401,7 @@ class TaxLotState(models.Model):
     @classmethod
     def merge_relationships(cls, merged_state, state1, state2):
         """Stub to implement if merging TaxLotState relationships is needed"""
-        return None
+        return
 
 
 @receiver(post_save, sender=TaxLotState)

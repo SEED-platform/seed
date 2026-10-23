@@ -130,8 +130,10 @@ def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
         )
 
 
-def properties_across_cycles(org_id, ali, profile_id, cycle_ids=[]):
+def properties_across_cycles(org_id, ali, profile_id, cycle_ids=None):
     # Identify column preferences to be used to scope fields/values
+    if cycle_ids is None:
+        cycle_ids = []
     columns_from_database = Column.retrieve_all(org_id, "property", False)
 
     if profile_id == -1:
@@ -182,8 +184,12 @@ def properties_across_cycles(org_id, ali, profile_id, cycle_ids=[]):
     return results
 
 
-def properties_across_cycles_with_filters(org_id, user_ali, cycle_ids=[], filter_group=None, columns=[]):
+def properties_across_cycles_with_filters(org_id, user_ali, cycle_ids=None, filter_group=None, columns=None):
     # get relevant views
+    if columns is None:
+        columns = []
+    if cycle_ids is None:
+        cycle_ids = []
     views_list = PropertyView.objects.select_related("property", "state", "cycle").filter(
         property__organization_id=org_id,
         cycle_id__in=cycle_ids,
@@ -228,14 +234,18 @@ def _serialize_views(views_list, columns, org_id):
 
     # use api names and add units
     views_list = views_list.annotate(**annotations).values_list(*values_list)
-    views_list = [dict(zip(returned_name, view)) for view in views_list]  # replace django readable name with api name
+    views_list = [dict(zip(returned_name, view, strict=False)) for view in views_list]  # replace django readable name with api name
     views_list = [apply_display_unit_preferences(org, view) for view in views_list]
 
     return views_list
 
 
-def properties_across_cycles_with_columns(org_id, show_columns=[], cycle_ids=[]):
+def properties_across_cycles_with_columns(org_id, show_columns=None, cycle_ids=None):
     # Identify column preferences to be used to scope fields/values
+    if cycle_ids is None:
+        cycle_ids = []
+    if show_columns is None:
+        show_columns = []
     columns_from_database = Column.retrieve_all(org_id, "property", False)
 
     results = {}

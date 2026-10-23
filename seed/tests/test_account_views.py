@@ -125,12 +125,12 @@ class AccountsViewTests(TestCase):
         self.assertDictEqual(org_payload[0], expected_single_org_payload)
 
         # Now let's make sure that we pick up related buildings correctly.
-        for x in range(10):
+        for _x in range(10):
             ps = PropertyState.objects.create(organization=self.org, raw_access_level_instance=self.org.root)
             ps.promote(self.cycle)
             ps.save()
 
-        for x in range(5):
+        for _x in range(5):
             ts = TaxLotState.objects.create(organization=self.org, raw_access_level_instance=self.org.root)
             ts.promote(self.cycle)
             ts.save()

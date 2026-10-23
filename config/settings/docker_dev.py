@@ -25,7 +25,7 @@ for loc in ENV_VARS:
 
 for loc in ENV_VARS:
     if not locals().get(loc):
-        raise Exception(f"{loc} Not defined as env variables")
+        raise RuntimeError(f"{loc} Not defined as env variables")
 
 DEBUG = True
 SESSION_COOKIE_SECURE = False

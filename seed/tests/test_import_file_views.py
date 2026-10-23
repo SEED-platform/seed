@@ -483,7 +483,7 @@ class TestMeterViewSet(DataMappingBaseTestCase):
 
 def first_five_rows_helper(headers, raw_data):
     save_format = "\n".join([ROW_DELIMITER.join(row) for row in raw_data])
-    expected = [dict(zip(headers, row)) for row in raw_data]
+    expected = [dict(zip(headers, row, strict=False)) for row in raw_data]
     return save_format, expected
 
 
@@ -528,7 +528,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
             ["04422", "4 Adams St.", "etc."],
         ]
 
-        expected = [dict(zip(expected_raw_columns, row)) for row in expected_raw_rows]
+        expected = [dict(zip(expected_raw_columns, row, strict=False)) for row in expected_raw_rows]
         expected_saved_format = "\n".join([ROW_DELIMITER.join(row) for row in expected_raw_rows])
         import_file = ImportFile.objects.create(
             import_record=import_record,

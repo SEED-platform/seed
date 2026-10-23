@@ -97,4 +97,4 @@ class NoteViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         elif self.kwargs.get("taxlot_pk", None):
             serializer.save(organization_id=org_id, user=self.request.user, taxlot_view_id=self.kwargs.get("taxlot_pk", None))
         else:
-            _log.warn("Unable to create model without a property_pk or taxlot_pk")
+            _log.warning("Unable to create model without a property_pk or taxlot_pk")

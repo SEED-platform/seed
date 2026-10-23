@@ -17,7 +17,7 @@ from seed.models.filter_group import FilterGroup
 from seed.models.properties import PropertyState, PropertyView
 from seed.utils.search import build_view_filters_and_sorts
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class DataView(models.Model):
@@ -310,7 +310,7 @@ class DataView(models.Model):
         try:
             filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, "property")
         except Exception:
-            logging.error("error with filter group")
+            logger.error("error with filter group")
 
         views_list = PropertyView.objects.select_related("property", "state", "cycle").filter(
             property__organization_id=org_id,

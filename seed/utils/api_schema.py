@@ -32,7 +32,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         :return: openapi.TYPE_*
         """
         if type_name not in cls.openapi_types:
-            raise Exception(f'Invalid type "{type_name}"; expected one of {cls.openapi_types.keys()}')
+            raise ValueError(f'Invalid type "{type_name}"; expected one of {cls.openapi_types.keys()}')
         return cls.openapi_types[type_name]
 
     @staticmethod
@@ -86,7 +86,9 @@ class AutoSchemaHelper(SwaggerAutoSchema):
         return openapi.Parameter(name, openapi.IN_PATH, description=description, required=True, type=openapi.TYPE_STRING, enum=enum)
 
     @classmethod
-    def body_field(cls, required, description, name="body", params_to_formats={}):
+    def body_field(cls, required, description, name="body", params_to_formats=None):
+        if params_to_formats is None:
+            params_to_formats = {}
         return openapi.Parameter(
             name, openapi.IN_BODY, description=description, required=required, schema=cls.schema_factory(params_to_formats)
         )
@@ -120,7 +122,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
 
         if isinstance(obj, list):
             if len(obj) != 1:
-                raise Exception("List types must have exactly one element to specify the schema of `items`")
+                raise ValueError("List types must have exactly one element to specify the schema of `items`")
             return openapi.Schema(type=openapi.TYPE_ARRAY, items=cls.schema_factory(obj[0]), **kwargs)
 
         if isinstance(obj, dict):
@@ -128,7 +130,7 @@ class AutoSchemaHelper(SwaggerAutoSchema):
                 type=openapi.TYPE_OBJECT, properties={k: cls.schema_factory(sub_obj) for k, sub_obj in obj.items()}, **kwargs
             )
 
-        raise Exception(f'Unhandled type "{type(obj)}" for {obj}')
+        raise TypeError(f'Unhandled type "{type(obj)}" for {obj}')
 
 
 # this is a commonly used swagger decorator so moved here for DRYness

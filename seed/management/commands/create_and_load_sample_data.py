@@ -465,7 +465,7 @@ def update_taxlot_views(views, number_of_updates):
     :param views: list of TaxLotViews to be updated
     :param number_of_updates: int, number of times to update (the number of audit records to be created)
     """
-    for i in range(number_of_updates):
+    for _i in range(number_of_updates):
         for taxlot_view in views:
             state = taxlot_view.state
             state.pk = None  # set state to None to get a new copy on save
@@ -480,7 +480,7 @@ def update_property_views(views, number_of_updates):
     :param views: list of PropertyViews to be updated
     :param number_of_updates: int, number of times to update (the number of audit records to be created)
     """
-    for i in range(number_of_updates):
+    for _i in range(number_of_updates):
         for property_view in views:
             state = property_view.state
             state.site_eui = str(float(randint(0, 1000)) + float(randint(0, 9)) / 10)
@@ -543,7 +543,7 @@ def create_case_b(org, cycle, taxlot_factory, property_factory, number_propertie
     taxlots = [taxlot_factory.tax_lot()]
 
     properties = []
-    for i in range(number_properties):
+    for _i in range(number_properties):
         properties.append(property_factory.property_state(city=taxlots[0].data["city"]))
 
     taxlots, properties = create_cases_with_multi_records_per_cycle(org, cycle, taxlots, properties, number_records_per_cycle)
@@ -563,7 +563,7 @@ def create_case_c(org, cycle, taxlot_factory, property_factory, number_taxlots=3
     properties = [property_factory.property_state()]
 
     taxlots = []
-    for i in range(number_taxlots):
+    for _i in range(number_taxlots):
         taxlots.append(taxlot_factory.tax_lot(city=properties[0].data["city"]))
 
     taxlots, properties = create_cases_with_multi_records_per_cycle(org, cycle, taxlots, properties, number_records_per_cycle)
@@ -611,13 +611,13 @@ def _create_case_d(org, cycle, taxlots, properties, campus, number_records_per_c
     property_states = _create_states_with_extra_data(seed.models.PropertyState, [property_, *properties])
     property_views = [
         seed.models.PropertyView.objects.get_or_create(property=property, cycle=cycle, state=prop_state)[0]
-        for (property, prop_state) in list(zip(property_objs, property_states))
+        for (property, prop_state) in list(zip(property_objs, property_states, strict=False))
     ]
 
     taxlot_states = _create_states_with_extra_data(seed.models.TaxLotState, taxlots)
     taxlot_views = [
         seed.models.TaxLotView.objects.get_or_create(taxlot=taxlot, cycle=cycle, state=taxlot_state)[0]
-        for (taxlot, taxlot_state) in list(zip(taxlot_objs, taxlot_states))
+        for (taxlot, taxlot_state) in list(zip(taxlot_objs, taxlot_states, strict=False))
     ]
 
     seed.models.TaxLotProperty.objects.get_or_create(property_view=property_views[0], taxlot_view=taxlot_views[0], cycle=cycle)
@@ -655,11 +655,11 @@ def create_case_d(org, cycle, taxlot_factory, property_factory, number_records_p
     campus_property_id = campus.data["pm_parent_property_id"]
 
     taxlots = []
-    for i in range(3):
+    for _i in range(3):
         taxlots.append(taxlot_factory.tax_lot(city=city))
 
     properties = []
-    for i in range(5):
+    for _i in range(5):
         properties.append(property_factory.property_state(pm_parent_property_id=campus_property_id, city=city))
 
     taxlots, properties, campus = _create_case_d(org, cycle, taxlots, properties, campus, number_records_per_cycle_per_state)
@@ -762,7 +762,7 @@ def create_additional_years_d(org, years, tuples_taxlots_properties_campus, numb
         print(f"Creating additional year for case D:\t{year}")
         cycle = get_cycle(org, year)
 
-        for i in range(number_records_per_cycle_per_state):
+        for _i in range(number_records_per_cycle_per_state):
             for idx, [taxlots, properties, campus] in enumerate(tuples_taxlots_properties_campus):
                 updated_taxlots = [update_taxlot_year(x, year) for x in taxlots]
                 updated_properties = [update_property_year(x, year) for x in properties]

@@ -1,3 +1,8 @@
+"""
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+"""
+
 #
 # SEED Platform documentation build configuration file, created by
 # sphinx-quickstart on Tue Mar  1 14:43:22 2016.

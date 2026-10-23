@@ -1,38 +1,38 @@
 version: 2
 updates:
-  - package-ecosystem: 'uv'
-    directory: '/'
+  - package-ecosystem: "uv"
+    directory: "/"
     schedule:
-      interval: 'weekly'
+      interval: "weekly"
     allow:
-      - dependency-type: 'direct'
+      - dependency-type: "direct"
     groups:
       dev-deps:
-        dependency-type: 'development'
+        dependency-type: "development"
       prod-deps:
-        dependency-type: 'production'
+        dependency-type: "production"
     open-pull-requests-limit: 5
     commit-message:
-      prefix: 'deps'
+      prefix: "deps"
     labels:
-      - 'Maintenance'
+      - "Maintenance"
     ignore:
-      - dependency-name: 'buildingid'
-      - dependency-name: 'pandas'
-      - dependency-name: 'xlrd'
+      - dependency-name: "buildingid"
+      - dependency-name: "pandas"
+      - dependency-name: "xlrd"
 
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: 'weekly'
+      interval: "weekly"
     allow:
-      - dependency-type: 'direct'
+      - dependency-type: "direct"
     groups:
       actions-deps:
         patterns:
-          - '*'
+          - "*"
     open-pull-requests-limit: 5
     commit-message:
-      prefix: 'ci'
+      prefix: "ci"
     labels:
-      - 'Do not publish'
+      - "Do not publish"

@@ -41,7 +41,7 @@ schema_view = get_schema_view(
 
 def trigger_error(request):
     """Endpoint for testing sentry with a divide by zero"""
-    1 / 0
+    raise ZeroDivisionError("Intentional Sentry test error")
 
 
 urlpatterns = [

@@ -246,8 +246,8 @@ class AuditTemplate:
 
         try:
             response_body = response.json()
-        except ValueError:
-            raise validation_client.ValidationClientError(f"Expected JSON response from Audit Template: {response.text}")
+        except ValueError as e:
+            raise validation_client.ValidationClientError(f"Expected JSON response from Audit Template: {response.text}") from e
 
         # instead of pinging AT for tokens every time, use existing token.
         self.token = response_body.get("token")
@@ -453,7 +453,7 @@ def _build_metering_scenarios(em, property_id, building_id):
     # then grab NATURAL_GAS (AT wants this in therms)
     meters_ng = Meter.objects.filter(property_id=property_id, type__in=[Meter.NATURAL_GAS])
     if len(meters_ng) == 0 or meters_ng.first().meter_readings.count() == 0:
-        meters_ng
+        meters_ng = []
 
     # concatenate the meters_elec and meters results
     meters = list(meters_elec) + list(meters_ng)

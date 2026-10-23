@@ -231,7 +231,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         super().save(*args, **kwargs)
         try:
             if not in_validation:
-                return None
+                return
         except ImportRecord.DoesNotExist:
             pass
             # If we're deleting.

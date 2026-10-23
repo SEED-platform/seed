@@ -1,3 +1,8 @@
+"""
+SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other contributors.
+See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
+"""
+
 from django.db.models import Q
 from django.db.utils import IntegrityError
 from django.http import JsonResponse

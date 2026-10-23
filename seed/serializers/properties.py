@@ -442,7 +442,7 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PropertyView
-        validators = []  # type: ignore[var-annotated]
+        validators = []
         fields = (
             "id",
             "state",
@@ -493,8 +493,8 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
             if org_id:
                 try:
                     org_id = int(org_id)
-                except TypeError:
-                    raise serializers.ValidationError({"org_id": "invalid type"})
+                except TypeError as e:
+                    raise serializers.ValidationError({"org_id": "invalid type"}) from e
             state["organization"] = org_id
             data["state"] = state
         return data

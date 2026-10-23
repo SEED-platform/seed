@@ -681,7 +681,7 @@ def _calculate_co2(meter_readings, region_code):
         year = meter_reading.start_time.year
         rate = _get_co2_rate(year, region_code)
         if rate is None:
-            raise Exception(f"Failed to find CO2 rate for {region_code} in {year}")
+            raise ValueError(f"Failed to find CO2 rate for {region_code} in {year}")
         total_average += reading_mwh * rate
         for day in get_days_in_reading(meter_reading):
             days_affected_by_readings.add(day)

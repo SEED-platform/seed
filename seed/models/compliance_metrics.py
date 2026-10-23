@@ -76,8 +76,7 @@ class ComplianceMetric(models.Model):
             if self.target_emission_column is not None:
                 columns.append(self.target_emission_column)
 
-        for col in self.x_axis_columns.all():
-            columns.append(col)
+        columns.extend(self.x_axis_columns.all())
 
         property_response = properties_across_cycles_with_filters(self.organization_id, user_ali, cycle_ids, self.filter_group, columns)
 
@@ -167,7 +166,7 @@ class ComplianceMetric(models.Model):
         response["properties_by_cycles"] = property_response
         response["metric"] = metric
 
-        for key, dataset in datasets.items():
+        for dataset in datasets.values():
             response["graph_data"]["datasets"].append(dataset)
 
         return response

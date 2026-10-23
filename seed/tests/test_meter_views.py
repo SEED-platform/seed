@@ -845,12 +845,13 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()["reading"], 10)
+        reading_id = response.json()["id"]
 
         # now delete the item and verify that there are no more readings in the database
         detail_url = (
             reverse(
                 "api:v3:property-meter-readings-detail",
-                kwargs={"property_pk": property_view.id, "meter_pk": meter_pk, "pk": "2022-01-05T13:00:00Z"},
+                kwargs={"property_pk": property_view.id, "meter_pk": meter_pk, "pk": reading_id},
             )
             + f"?organization_id={self.org.id}"
         )

@@ -13,8 +13,9 @@ CELERY_TASK_EAGER_PROPAGATES = True
 
 TESTING_MAPQUEST_API_KEY = env_var("TESTING_MAPQUEST_API_KEY", "<your_key_here>")
 
-DATABASES["default"]["ENGINE"] = "seed.backends.postgis_parallel_tests"
+DATABASES["default"]["ENGINE"] = "seed.backends.postgis_timescaledb_tests"
 DATABASES["default"]["CONN_MAX_AGE"] = 0
+TEST_RUNNER = "seed.backends.postgis_timescaledb_tests.runner.ParallelTestRunner"
 
 CACHES = {
     "default": {

@@ -9,6 +9,7 @@ import pathlib
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
@@ -17,7 +18,6 @@ from django.utils.timezone import (
     make_aware,  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 )
 
-from config.settings.common import TIME_ZONE
 from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
@@ -92,7 +92,7 @@ class MeterUsageImportTest(TestCase):
             cycle=self.cycle,
         )
 
-        self.tz_obj = ZoneInfo(TIME_ZONE)
+        self.tz_obj = ZoneInfo(settings.TIME_ZONE)
 
     def test_import_meter_usage_file_base_case(self):
         """

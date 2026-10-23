@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
     def display_stats(self):
         print("Showing users:")
-        for ndx, user in enumerate(User.objects.order_by("id").all()):
+        for _ndx, user in enumerate(User.objects.order_by("id").all()):
             print(f"   id={user.pk}, username={user.username}")
 
     def handle(self, *args, **options):

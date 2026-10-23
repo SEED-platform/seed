@@ -841,11 +841,20 @@ class Column(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["organization", "comstock_mapping"], name="unique_comstock_mapping"),
-            # create a name constraint on the column. The name must be unique across the organization,
-            # table_name (property or tax lot), if it is extra_data. Note that this may require some
-            # database cleanup because older organizations might have imported data before the `units_pint`
-            # column existed and there will be duplicates.
-            models.UniqueConstraint(fields=["organization", "column_name", "table_name", "is_extra_data"], name="unique_column_name"),
+            # Blank table names are used by both raw import columns and hierarchy extra-data columns.
+            # They may share a name, so is_extra_data remains part of this namespace's identity.
+            models.UniqueConstraint(
+                fields=["organization", "column_name", "is_extra_data"],
+                condition=Q(table_name=""),
+                name="unique_raw_column_name",
+            ),
+            # PropertyState and TaxLotState columns share one name namespace per table. A canonical
+            # field and an extra-data field with the same name cannot coexist.
+            models.UniqueConstraint(
+                fields=["organization", "column_name", "table_name"],
+                condition=~Q(table_name=""),
+                name="unique_inventory_column_name",
+            ),
         ]
 
     def __str__(self):
@@ -1036,10 +1045,10 @@ class Column(models.Model):
                     }
                     mappings.append(data)
         else:
-            raise Exception(f"Mapping file does not exist: {filename}")
+            raise FileNotFoundError(f"Mapping file does not exist: {filename}")
 
         if len(mappings) == 0:
-            raise Exception(f"No mappings in file: {filename}")
+            raise ValueError(f"No mappings in file: {filename}")
         else:
             return Column.create_mappings(mappings, organization, user, import_file_id)
 
@@ -1211,8 +1220,8 @@ class Column(models.Model):
             else:
                 try:
                     to_org_col = Column.objects.get(**to_col_params)
-                except Column.DoesNotExist:
-                    raise PermissionError(f"user does not have permission to create column {field['to_field']}")
+                except Column.DoesNotExist as e:
+                    raise PermissionError(f"user does not have permission to create column {field['to_field']}") from e
 
             # the from column is the field in the import file, thus the table_name needs to be
             # blank. Eventually need to handle passing in import_file_id
@@ -1247,7 +1256,7 @@ class Column(models.Model):
             # handle the special edge-case where an old organization may have duplicate columns
             # in the database. We should make this a migration in the future and put a validation
             # in the db.
-            for i in range(5):
+            for _i in range(5):
                 while True:
                     try:
                         Column.objects.get_or_create(
@@ -1256,7 +1265,7 @@ class Column(models.Model):
                             is_extra_data=is_extra_data,
                             organization=model_obj.organization,
                         )
-                    except Column.MultipleObjectsReturned:
+                    except Column.MultipleObjectsReturned as e:
                         _log.debug(f"Column.MultipleObjectsReturned for {key[:511]} in save_column_names")
 
                         columns = Column.objects.filter(
@@ -1280,7 +1289,7 @@ class Column(models.Model):
                             ).count()
                             > 1
                         ):
-                            raise Exception(f"Could not fix duplicate columns for {key}. Contact dev team")
+                            raise RuntimeError(f"Could not fix duplicate columns for {key}. Contact dev team") from e
 
                         continue
 
@@ -1322,8 +1331,8 @@ class Column(models.Model):
         parser = Column.DATA_TYPE_PARSERS.get(column_data_type, str)
         try:
             return parser(value)
-        except Exception:
-            raise ColumnCastError(f'Invalid data type for "{column_data_type}". Expected a valid "{column_data_type}" value.')
+        except Exception as e:
+            raise ColumnCastError(f'Invalid data type for "{column_data_type}". Expected a valid "{column_data_type}" value.') from e
 
     @staticmethod
     def retrieve_db_types():
@@ -1601,7 +1610,7 @@ class Column(models.Model):
         uniq = set()
         for c in columns:
             if (c["table_name"], c["column_name"]) in uniq:
-                raise Exception(f"Duplicate name '{c['name']}' found in columns")
+                raise ValueError(f"Duplicate name '{c['name']}' found in columns")
             else:
                 uniq.add((c["table_name"], c["column_name"]))
 

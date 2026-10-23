@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import datetime as dt
 import math
 from collections import defaultdict
+from typing import Any
 
 from celery import shared_task
 from celery.utils.log import get_task_logger
@@ -390,7 +391,7 @@ def link_views_and_states(merged_views, new_views, errored_new_states, ViewClass
         ViewClass.objects.select_related("state").filter(**{f"{class_name}__organization_id": cycle.organization_id}).exclude(cycle=cycle)
     )
     view_lookup: dict[int, PropertyState | TaxLotState] = {view.state.id: view for view in existing_views}
-    match_lookup: dict[tuple, list[dict[str, any]]] = defaultdict(list)
+    match_lookup: dict[tuple, list[dict[str, Any]]] = defaultdict(list)
     for state in ({k: getattr(view.state, k) for k in ["id", "hash_object", "updated", *matching_columns]} for view in existing_views):
         match_lookup[tuple(state[c] for c in tuple_values)].append(state)
 
@@ -462,7 +463,9 @@ def filter_duplicate_states(unmatched_states, sub_progress_key):
     duplicate_state_ids = []
     errors_state_ids = []
     for states in states_grouped_by_hash:
-        state_ids = [{"id": id, "ali_id": ali_id} for id, ali_id in zip(states["duplicate_sets"], states["duplicate_sets_ali"])]
+        state_ids = [
+            {"id": id, "ali_id": ali_id} for id, ali_id in zip(states["duplicate_sets"], states["duplicate_sets_ali"], strict=False)
+        ]
         state_ids.sort(key=lambda x: x["id"])
         states_with_ali = [s for s in state_ids if s["ali_id"] is not None]
         present_ali_ids = {s["ali_id"] for s in states_with_ali}
@@ -604,7 +607,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
     tuple_values.discard("ubid")
     existing_views = ViewClass.objects.select_related("state").filter(cycle_id=cycle)
     state_lookup: dict[int, PropertyState | TaxLotState] = {view.state.id: view.state for view in existing_views}
-    match_lookup: dict[tuple, list[dict[str, any]]] = defaultdict(list)
+    match_lookup: dict[tuple, list[dict[str, Any]]] = defaultdict(list)
     for state in ({k: getattr(view.state, k) for k in ["id", "hash_object", "updated", *matching_columns]} for view in existing_views):
         match_lookup[tuple(state[c] for c in tuple_values)].append(state)
 
@@ -743,7 +746,7 @@ def states_to_views(unmatched_state_ids, org, access_level_instance, cycle, Stat
             sub_progress_data.finish_with_success()
 
     except IntegrityError as e:
-        raise IntegrityError(f"Could not merge results with error: {e}")
+        raise IntegrityError(f"Could not merge results with error: {e}") from e
 
     # update merge_state while excluding any states that were a product of a previous, file-inclusive merge
     StateClass.objects.filter(pk__in=promoted_state_ids).exclude(merge_state=MERGE_STATE_MERGED).update(merge_state=MERGE_STATE_NEW)
@@ -831,12 +834,12 @@ def save_state_match(state1, state2, priorities):
     if AuditLogClass.objects.filter(state=state1).count() == 0:
         # If there is no audit log for state1, then there is an error!
         # get the info of the object that is causing the issue
-        raise Exception(f"No audit log for merging of (base) state. Base {state1.id}, Incoming {state2.id}")
+        raise RuntimeError(f"No audit log for merging of (base) state. Base {state1.id}, Incoming {state2.id}")
 
     if AuditLogClass.objects.filter(state=state2).count() == 0:
         # If there is no audit log for state1, then there is an error!
         # get the info of the object that is causing the issue
-        raise Exception(f"No audit log for merging of (incoming) state. Base {state1.id}, Incoming {state2.id}")
+        raise RuntimeError(f"No audit log for merging of (incoming) state. Base {state1.id}, Incoming {state2.id}")
 
     # NJACHECK - is this logic correct?
     state_1_audit_log = AuditLogClass.objects.filter(state=state1).first()

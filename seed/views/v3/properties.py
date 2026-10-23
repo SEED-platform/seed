@@ -1527,7 +1527,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         progress_data = ProgressData.from_key(progress_key)
         cycle = Cycle.objects.filter(pk=cycle_id, organization=org_id).first()
         if not cycle:
-            logging.warning(f"Cycle {cycle_id} does not exist")
+            logger.warning(f"Cycle {cycle_id} does not exist")
             return progress_data.finish_with_error(f"Cycle {cycle_id} does not exist")
 
         results = {"success": 0, "failure": 0, "data": []}
@@ -1706,8 +1706,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         # save the file
         with open(path, "wb+") as temp_file:
-            for chunk in the_file.chunks():
-                temp_file.write(chunk)
+            temp_file.writelines(the_file.chunks())
 
         import_file = ImportFile.objects.create(
             cycle_id=cycle_pk,
@@ -1886,9 +1885,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-        except Exception as err:
-            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-            message = template.format(type(err).__name__, err.args)
+        except Exception as e:
+            salesforce_status = getattr(e, "status", None)
+            logger.exception(
+                "Salesforce building sync request failed (organization_id=%s, property_view_ids=%s, status=%s)",
+                org_id,
+                list(checked_ids),
+                salesforce_status,
+            )
+            message = f"An exception of type {type(e).__name__} occurred: {e!s}"
             return JsonResponse({"status": "error", "message": message}, status=status.HTTP_400_BAD_REQUEST)
 
         if the_status:

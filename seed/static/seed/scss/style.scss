@@ -341,11 +341,23 @@ a:not([href]) {
     }
 
     .header {
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
       height: $headerHeight;
       border-bottom: 1px solid $gray_lighter;
       white-space: nowrap;
+
+      .new-ui-link {
+        place-self: center;
+      }
+
+      @media (width < 820px) {
+        grid-template-columns: auto auto;
+
+        .new-ui-link {
+          display: none;
+        }
+      }
 
       .hover-org-container {
         position: absolute;
@@ -416,6 +428,7 @@ a:not([href]) {
 
       .add_menu_container {
         display: flex;
+        justify-content: flex-end;
 
         .btn-group {
           display: flex;
@@ -484,11 +497,19 @@ a:not([href]) {
 
           &.org-dropdown {
             display: flex;
+            min-width: 0;
 
             button {
               border: none;
+              min-width: 0;
               font-family: $font-family-base-narrow;
               font-size: 16px;
+
+              > div {
+                overflow: hidden;
+                min-width: 0;
+                text-overflow: ellipsis;
+              }
             }
 
             ul {
@@ -3157,15 +3178,11 @@ tags-input .tags .tag-item .remove-button {
   background-color: #f3f3f3;
 }
 
-.ui-grid-row.ui-grid-row-selected:nth-child(odd)
-  > [ui-grid-row]
-  > .ui-grid-cell {
+.ui-grid-row.ui-grid-row-selected:nth-child(odd) > [ui-grid-row] > .ui-grid-cell {
   background-color: #fdfdfd;
 }
 
-.ui-grid-row.ui-grid-row-selected:nth-child(even)
-  > [ui-grid-row]
-  > .ui-grid-cell {
+.ui-grid-row.ui-grid-row-selected:nth-child(even) > [ui-grid-row] > .ui-grid-cell {
   background-color: #f3f3f3;
 }
 

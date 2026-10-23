@@ -46,7 +46,7 @@ for loc in ENV_VARS + OPTIONAL_ENV_VARS:
 
 for loc in ENV_VARS:
     if not locals().get(loc):
-        raise Exception(f"{loc} Not defined as env variables")
+        raise RuntimeError(f"{loc} Not defined as env variables")
 
 # Add any env variables that should be booleans to this list
 BOOL_ENV_VARS = ["EMAIL_USE_TLS", "EMAIL_USE_SSL"]

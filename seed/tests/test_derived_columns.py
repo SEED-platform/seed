@@ -33,10 +33,12 @@ no_deadline = settings(deadline=None)
 
 # using 32 width b/c 64 was causing NaNs in multiplication tests (overflow I assume?)
 good_floats = st.floats(allow_nan=False, allow_infinity=False, width=32)
+bounded_exponents = good_floats.filter(lambda x: abs(x) < 10)
+false_values = st.just(False)
 
 
 @st.composite
-def pow_st(draw, base_st=good_floats, exponent_st=good_floats.filter(lambda x: abs(x) < 10)):
+def pow_st(draw, base_st=good_floats, exponent_st=bounded_exponents):
     """Strategy for creating pythonic exponentiation, e.g., 1**2, 3**4, etc
     Avoids divide by zero by default
 
@@ -70,7 +72,7 @@ def func_st(draw, func_name_st, args_st=good_floats, min_args=1, max_args=None):
 
 
 @st.composite
-def arithmetic_st(draw, operators, operand_st=good_floats, max_operands=10, in_parens_st=st.just(False)):
+def arithmetic_st(draw, operators, operand_st=good_floats, max_operands=10, in_parens_st=false_values):
     """Strategy for generating a chain of binary operators and operands
     E.g. 1 + 2 + 3, 4.2 * 2.1 * 0 * ..., etc
 
@@ -107,6 +109,9 @@ def parameter_name_st(draw):
     return f"{prefix}{body}"
 
 
+parameter_dictionaries = st.dictionaries(parameter_name_st(), good_floats, min_size=1)
+
+
 # atomic strategies (excluding parameter names)
 atomic_no_params_st = (
     good_floats.map(str) | pow_st() | func_st(st.sampled_from(["min", "max"]), min_args=2) | func_st(st.just("abs"), min_args=1, max_args=1)
@@ -130,7 +135,7 @@ full_expression_no_params_st = st.recursive(atomic_no_params_st, recursive_st_fu
 
 
 @st.composite
-def full_expression_with_params_st(draw, parameters=st.dictionaries(parameter_name_st(), good_floats, min_size=1)):
+def full_expression_with_params_st(draw, parameters=parameter_dictionaries):
     """Strategy for generating complex / nested expressions that include parameters
 
     :param parameters: Strategy, should provide dictionaries where keys are valid
@@ -335,7 +340,7 @@ class TestDerivedColumns(TestCase):
 
         # make a property state which has all the values for the expression
         property_state_config = {"extra_data": {}}
-        for param_name, param_config in column_parameters.items():
+        for param_config in column_parameters.values():
             col = param_config["source_column"]
             param_value = param_config["value"]
             if col.is_extra_data:
@@ -638,10 +643,10 @@ class TestDerivedColumns(TestCase):
             },
         }
 
-        with pytest.raises(Exception) as exc:  # noqa: PT011
+        with pytest.raises(Exception) as e:  # noqa: PT011
             self._derived_column_for_property_factory(expression, column_parameters, name=derived_column_name)
         # validation errors return as a list of errors, so check the string representation of the list
-        self.assertEqual(str(exc.value), "['Column name PropertyState.gross_floor_area already exists, must be unique']")
+        self.assertEqual(str(e.value), "['Column name PropertyState.gross_floor_area already exists, must be unique']")
 
 
 class TestDerivedColumnsPermissions(AccessLevelBaseTestCase):
@@ -825,7 +830,7 @@ class TestDerivedColumnUpdates(AssertDictSubsetMixin, DataMappingBaseTestCase):
 
         # make a property state which has all the values for the expression
         property_state_config = {"extra_data": {}}
-        for param_name, param_config in column_parameters.items():
+        for param_config in column_parameters.values():
             col = param_config["source_column"]
             param_value = param_config["value"]
             if col.is_extra_data:

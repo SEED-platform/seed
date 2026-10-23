@@ -62,7 +62,7 @@ def get_column_mapping(raw_column, organization, attr_name="column_mapped"):
     else:
         # NL 12/6/2016 - We should never get here, if we see this then find out why and remove the
         # list. Eventually delete this code.
-        raise Exception("I am a LIST! Which makes no sense!")
+        raise TypeError("I am a LIST! Which makes no sense!")
 
     # Should return zero when importing a column name the first time
     # Should return one column if previously imported (table_name is blank to search only raw column names)
@@ -95,7 +95,7 @@ def get_column_mapping(raw_column, organization, attr_name="column_mapped"):
         column_names = column_names[0]
     else:
         # NL 12/2/2016 - Adding this here for now as a catch. If we get here, then we have problems.
-        raise Exception("The mapping returned with not direct!")
+        raise ValueError("The mapping returned with not direct!")
 
     return column_names[0], column_names[1], 100
 
@@ -202,10 +202,10 @@ class ColumnMapping(models.Model):
             value = cm.column_mapped.all().values_list("table_name", "column_name", "display_name", "is_extra_data")
 
             if len(key) != 1:
-                raise Exception("There is either none or more than one mapping raw column")
+                raise ValueError("There is either none or more than one mapping raw column")
 
             if len(value) != 1:
-                raise Exception("There is either none or more than one mapping dest column")
+                raise ValueError("There is either none or more than one mapping dest column")
 
             key = key[0]
             value = value[0]
@@ -229,7 +229,7 @@ class ColumnMapping(models.Model):
         data, _ = ColumnMapping.get_column_mappings(organization)
 
         tables = set()
-        for k, v in data.items():
+        for v in data.values():
             tables.add(v[0])
 
         # initialize the new container to store the results

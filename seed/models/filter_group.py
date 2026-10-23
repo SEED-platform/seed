@@ -24,7 +24,9 @@ class FilterGroup(models.Model):
     or_labels = models.ManyToManyField(StatusLabel, related_name="or_filter_groups")
     exclude_labels = models.ManyToManyField(StatusLabel, related_name="exclude_filter_groups")
 
-    def views(self, views, columns=[]):
+    def views(self, views, columns=None):
+        if columns is None:
+            columns = []
         if VIEW_LIST_INVENTORY_TYPE[self.inventory_type][1] == "Property":
             related_model = "property"
             ViewClass = PropertyView

@@ -79,8 +79,8 @@ class ValidityDurationField(serializers.Field):
         if isinstance(data, str):
             try:
                 data = int(data)
-            except ValueError:
-                raise ValidationError("validity_duration must be an integer or None.")
+            except ValueError as e:
+                raise ValidationError("validity_duration must be an integer or None.") from e
 
         if not isinstance(data, (int, type(None))):
             raise ValidationError("validity_duration must be an integer or None.")
@@ -244,8 +244,8 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
         if metric:
             try:
                 float(metric)
-            except ValueError:
-                raise ValidationError("Metric must be a number.")
+            except ValueError as e:
+                raise ValidationError("Metric must be a number.") from e
             if assessment.is_integer_score and not float(int(metric)) == metric:
                 raise ValidationError("Metric must be an integer.")
         # validate org_ids match

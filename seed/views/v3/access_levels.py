@@ -332,8 +332,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         # save the file
         with open(path, "wb+") as temp_file:
-            for chunk in the_file.chunks():
-                temp_file.write(chunk)
+            temp_file.writelines(the_file.chunks())
 
         return JsonResponse({"success": True, "tempfile": temp_file.name})
 

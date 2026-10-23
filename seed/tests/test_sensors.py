@@ -7,10 +7,10 @@ import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+from django.conf import settings
 from django.urls import reverse
 from django.utils.timezone import make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 
-from config.settings.common import TIME_ZONE
 from seed.data_importer.tasks import _save_sensor_readings_task
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.models.sensors import DataLogger, Sensor, SensorReading
@@ -154,13 +154,13 @@ class PropertySensorViewTests(AccessLevelBaseTestCase):
         dl_1 = DataLogger.objects.create(property_id=self.property_1.id, display_name="moo")
         s1 = Sensor.objects.create(data_logger=dl_1, display_name="s1", sensor_type="first", units="one", column_name="sensor 1")
         SensorReading.objects.create(
-            reading=0.0, timestamp=str(datetime(2000, 1, 1, tzinfo=ZoneInfo(TIME_ZONE))), sensor=s1, is_occupied=False
+            reading=0.0, timestamp=str(datetime(2000, 1, 1, tzinfo=ZoneInfo(settings.TIME_ZONE))), sensor=s1, is_occupied=False
         )
 
         dl_2 = DataLogger.objects.create(property_id=self.property_1.id, display_name="bark")
         s2 = Sensor.objects.create(data_logger=dl_2, display_name="s2", sensor_type="second", units="two", column_name="sensor 2")
         SensorReading.objects.create(
-            reading=0.0, timestamp=str(datetime(2000, 1, 1, tzinfo=ZoneInfo(TIME_ZONE))), sensor=s2, is_occupied=False
+            reading=0.0, timestamp=str(datetime(2000, 1, 1, tzinfo=ZoneInfo(settings.TIME_ZONE))), sensor=s2, is_occupied=False
         )
 
         assert DataLogger.objects.count() == 2
@@ -183,7 +183,7 @@ class PropertySensorViewTests(AccessLevelBaseTestCase):
         s1 = Sensor.objects.create(data_logger=dl, display_name="s1", sensor_type="first", units="one", column_name="sensor 1")
         s2 = Sensor.objects.create(data_logger=dl, display_name="s2", sensor_type="second", units="two", column_name="sensor 2")
 
-        tz_obj = ZoneInfo(TIME_ZONE)
+        tz_obj = ZoneInfo(settings.TIME_ZONE)
         timestamps = [
             make_aware(datetime(year, month, day), timezone=tz_obj) for day in [10, 20] for month in [1, 2] for year in [2000, 2100]
         ]
@@ -261,8 +261,8 @@ class PropertySensorViewTests(AccessLevelBaseTestCase):
             property_id=self.property_1.id,
             display_name="logger",
             is_occupied_data=[
-                (datetime(2020, 1, 1, 8, 0, tzinfo=ZoneInfo(TIME_ZONE)).isoformat(), True),
-                (datetime(2020, 1, 1, 17, 0, tzinfo=ZoneInfo(TIME_ZONE)).isoformat(), False),
+                (datetime(2020, 1, 1, 8, 0, tzinfo=ZoneInfo(settings.TIME_ZONE)).isoformat(), True),
+                (datetime(2020, 1, 1, 17, 0, tzinfo=ZoneInfo(settings.TIME_ZONE)).isoformat(), False),
             ],
         )
         sensor = Sensor.objects.create(
@@ -298,13 +298,13 @@ class PropertySensorViewTests(AccessLevelBaseTestCase):
         dl_1 = DataLogger.objects.create(property_id=self.property_1.id, display_name="moo")
         s1 = Sensor.objects.create(data_logger=dl_1, display_name="s1", sensor_type="first", units="one", column_name="sensor 1")
         SensorReading.objects.create(
-            reading=0.0, timestamp=str(datetime(2000, 1, 1, tzinfo=ZoneInfo(TIME_ZONE))), sensor=s1, is_occupied=False
+            reading=0.0, timestamp=str(datetime(2000, 1, 1, tzinfo=ZoneInfo(settings.TIME_ZONE))), sensor=s1, is_occupied=False
         )
 
         dl_2 = DataLogger.objects.create(property_id=self.property_1.id, display_name="bark")
         s2 = Sensor.objects.create(data_logger=dl_2, display_name="s2", sensor_type="second", units="two", column_name="sensor 2")
         SensorReading.objects.create(
-            reading=0.0, timestamp=str(datetime(2000, 1, 1, tzinfo=ZoneInfo(TIME_ZONE))), sensor=s2, is_occupied=False
+            reading=0.0, timestamp=str(datetime(2000, 1, 1, tzinfo=ZoneInfo(settings.TIME_ZONE))), sensor=s2, is_occupied=False
         )
 
         assert DataLogger.objects.count() == 2

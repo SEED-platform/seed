@@ -175,16 +175,16 @@ def get_meter_readings(property_id, preprocess_meters, config):
             value1 = _as_aware_datetime(cycle.start)
             value2 = _as_aware_datetime(cycle.end) + timedelta(days=1)
 
-    except Exception as err:
-        raise AnalysisPipelineError(f"Analysis configuration error: invalid dates selected for meter readings: {err}")
+    except Exception as e:
+        raise AnalysisPipelineError(f"Analysis configuration error: invalid dates selected for meter readings: {e}") from e
 
     if preprocess_meters:
         for meter in meters:
             if config.get("select_meters") == "date_range":
                 try:
                     meter_readings = meter.meter_readings.filter(start_time__range=[value1, value2])
-                except Exception as err:
-                    logger.error(f"!!! Error retrieving meter readings: {err}")
+                except Exception as e:
+                    logger.error(f"!!! Error retrieving meter readings: {e}")
                     # continue but analysis will fail
                     continue
             else:
@@ -207,8 +207,8 @@ def get_meter_readings(property_id, preprocess_meters, config):
             if config.get("select_meters") in {"date_range", "select_cycle"}:
                 try:
                     readings = meter.meter_readings.filter(start_time__range=[value1, value2], reading__gte=1.0).order_by("start_time")
-                except Exception as err:
-                    logger.error(f"!!! Error retrieving meter readings: {err}")
+                except Exception as e:
+                    logger.error(f"!!! Error retrieving meter readings: {e}")
                     # continue but analysis will fail
                     continue
             else:

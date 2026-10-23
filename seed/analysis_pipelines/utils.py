@@ -198,8 +198,7 @@ def calendarize_and_extrapolate_meter_readings(meter_readings, coverage_threshol
     for meter_reading in meter_readings:
         # set snap_intervals to False so we can preserve the number of seconds
         # in each split up reading
-        for split_reading in _split_reading(meter_reading, snap_intervals=False):
-            split_meter_readings.append(split_reading)
+        split_meter_readings.extend(_split_reading(meter_reading, snap_intervals=False))
 
     totals_by_month = defaultdict(lambda: {"total_usage": 0, "total_seconds": 0})
     for meter_reading in split_meter_readings:

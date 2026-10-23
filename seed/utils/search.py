@@ -174,7 +174,7 @@ def parse_expression(k, parts):
     """
     query_filters = []
 
-    for src, op, val in parts:
+    for _src, op, val in parts:
         try:
             suffix, q_val, is_negated = _translate_expression_parts(op, val)
         except ValueError:
@@ -220,9 +220,9 @@ class QueryFilter:
         if lookup and not is_negated:
             try:
                 filter_operator = QueryFilterOperator(lookup)
-            except ValueError:
+            except ValueError as e:
                 valid_lookups = [op.value for op in list(QueryFilterOperator)]
-                raise FilterError(f'Invalid lookup expression "{lookup}"; expected one of {valid_lookups}')
+                raise FilterError(f'Invalid lookup expression "{lookup}"; expected one of {valid_lookups}') from e
 
         return cls(field_name, filter_operator, is_negated)
 
@@ -394,8 +394,8 @@ def _parse_view_filter(
     else:
         try:
             new_filter_value = Column.cast_column_value(column["data_type"], filter_value)
-        except Exception:
-            raise FilterError(f'Invalid data type for "{column_name}". Expected a valid {column["data_type"]} value.')
+        except Exception as e:
+            raise FilterError(f'Invalid data type for "{column_name}". Expected a valid {column["data_type"]} value.') from e
 
     return updated_filter.to_q(new_filter_value), annotations
 
@@ -411,7 +411,7 @@ def _parse_view_sort(
     related_columns_by_name: dict[str, dict],
     inventory_type: str,
     access_level_names: list[str],
-) -> tuple[None | str | Collate, AnnotationDict]:
+) -> tuple[str | Collate | None, AnnotationDict]:
     """Parse a sort expression
 
     :param sort_expression: should be a valid Column.column_name. Optionally prefixed
@@ -467,7 +467,7 @@ def _parse_view_sort(
 
 
 def build_view_filters_and_sorts(
-    filters: QueryDict, columns: list[dict], inventory_type: str, access_level_names: list[str] = [], include_sorts: bool = True
+    filters: QueryDict, columns: list[dict], inventory_type: str, access_level_names: list[str] | None = None, include_sorts: bool = True
 ) -> tuple[Q, AnnotationDict, list[str]]:
     """Build a query object usable for `*View.filter(...)` as well as a list of
     column names for usable for `*View.order_by(...)`.
@@ -505,6 +505,8 @@ def build_view_filters_and_sorts(
     :param columns: list of all valid Columns in dict format
     :return: filters, annotations and sorts
     """
+    if access_level_names is None:
+        access_level_names = []
     columns_by_name = {}
     related_columns_by_name = {}
     for column in columns:

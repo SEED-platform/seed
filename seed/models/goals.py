@@ -13,7 +13,7 @@ from django.dispatch import receiver
 
 from seed.models import AccessLevelInstance, Column, Cycle, Organization, OrganizationUser, Property
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 GOAL_TYPE_CHOICES = (
     ("standard", "standard"),

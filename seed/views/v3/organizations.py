@@ -356,7 +356,9 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             return JsonResponse({"status": "success"})
 
-    def _start_whole_org_match_merge_link(self, org_id, state_class_name, proposed_columns=[]):
+    def _start_whole_org_match_merge_link(self, org_id, state_class_name, proposed_columns=None):
+        if proposed_columns is None:
+            proposed_columns = []
         identifier = randint(100, 100000)
         result_key = _get_match_merge_link_key(identifier)
         set_cache_raw(result_key, {})
@@ -583,10 +585,10 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         def warn_bad_pint_spec(kind, unit_string):
             if unit_string is not None:
-                _log.warn(f"got bad {kind} unit string {unit_string} for org {org.name}")
+                _log.warning(f"got bad {kind} unit string {unit_string} for org {org.name}")
 
         def warn_bad_units(kind, unit_string):
-            _log.warn(f"got bad {kind} unit string {unit_string} for org {org.name}")
+            _log.warning(f"got bad {kind} unit string {unit_string} for org {org.name}")
 
         desired_display_units_eui = posted_org.get("display_units_eui")
         if is_valid_choice(Organization.MEASUREMENT_CHOICES_EUI, desired_display_units_eui):
@@ -628,7 +630,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         if isinstance(desired_display_decimal_places, int) and desired_display_decimal_places >= 0:
             org.display_decimal_places = desired_display_decimal_places
         elif desired_display_decimal_places is not None:
-            _log.warn(f"got bad sig figs {desired_display_decimal_places} for org {org.name}")
+            _log.warning(f"got bad sig figs {desired_display_decimal_places} for org {org.name}")
 
         desired_display_meter_units = posted_org.get("display_meter_units")
         if desired_display_meter_units:
@@ -1120,7 +1122,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         except AttributeError:
             return None
 
-    def setup_report_data(self, organization_id, access_level_instance, cycles, x_var, y_var, filter_group_id=None, additional_columns=[]):
+    def setup_report_data(
+        self, organization_id, access_level_instance, cycles, x_var, y_var, filter_group_id=None, additional_columns=None
+    ):
+        if additional_columns is None:
+            additional_columns = []
         all_property_views = (
             PropertyView.objects.select_related("property", "state")
             .filter(

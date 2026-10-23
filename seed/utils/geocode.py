@@ -264,9 +264,9 @@ def _address_geocoding_results(id_addresses, mapquest_api_key):
 
         except Exception as e:
             if response.status_code == 403:
-                raise MapQuestAPIKeyError(_("FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"))
+                raise MapQuestAPIKeyError(_("FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR")) from e
             else:
-                raise e
+                raise
 
     return {_response_address(result): _analyze_location(result) for result in results}
 

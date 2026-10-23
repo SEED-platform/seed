@@ -54,9 +54,9 @@ class TestProgressData(TestCase):
         self.assertDictEqual(pd.data, pd2.data)
 
     def test_key_missing(self):
-        with pytest.raises(Exception) as exc:  # noqa: PT011
+        with pytest.raises(Exception) as e:  # noqa: PT011
             ProgressData.from_key("some_random_key")
-        self.assertEqual(str(exc.value), "Could not find key some_random_key in cache")
+        self.assertEqual(str(e.value), "Could not find key some_random_key in cache")
 
     def test_delete_cache(self):
         pd = ProgressData(func_name="test_func_4", unique_id="1q2w3e")

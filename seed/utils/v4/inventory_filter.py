@@ -131,8 +131,10 @@ class InventoryFilter:
         if cycle_id:
             try:
                 cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
-            except Cycle.DoesNotExist:
-                raise InventoryFilterError(JsonResponse({"status": "error", "message": "No such cycle."}, status=status.HTTP_404_NOT_FOUND))
+            except Cycle.DoesNotExist as e:
+                raise InventoryFilterError(
+                    JsonResponse({"status": "error", "message": "No such cycle."}, status=status.HTTP_404_NOT_FOUND)
+                ) from e
         else:
             cycle = Cycle.objects.filter(organization_id=org_id).order_by("name")
             if cycle:
@@ -385,14 +387,14 @@ class InventoryFilter:
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            )
+            ) from e
         except IndexError as e:
             raise InventoryFilterError(
                 JsonResponse(
                     {"status": "error", "message": f"Error filtering - Clear filters and try again: {e!s}"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            )
+            ) from e
 
         return views
 
@@ -453,7 +455,7 @@ class InventoryFilter:
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-            )
+            ) from e
 
         return related_results
 

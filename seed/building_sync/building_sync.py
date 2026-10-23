@@ -454,7 +454,7 @@ class BuildingSync:
         merged_mapping = merge_mappings(base_mapping, custom_mapping)
 
         # remove all root keys except for property since we only want to process property
-        for key, _ in merged_mapping.copy().items():
+        for key in merged_mapping.copy():
             if key != "property":
                 del merged_mapping[key]
 
@@ -516,8 +516,9 @@ class BuildingSync:
 
         :return bool:
         """
-        report_type_xpath = "/" + "/".join(
+        report_type_xpath = "/".join(
             [
+                "",
                 "auc:BuildingSync",
                 "auc:Facilities",
                 "auc:Facility",

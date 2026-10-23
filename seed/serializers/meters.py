@@ -40,8 +40,8 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
             org = self.get_organization(self.context["request"])
             try:
                 Scenario.objects.get(property_state__organization=org, pk=scenario_id)
-            except Scenario.DoesNotExist:
-                raise serializers.ValidationError({"status": "error", "message": "Permission error assigning scenario to meter"})
+            except Scenario.DoesNotExist as e:
+                raise serializers.ValidationError({"status": "error", "message": "Permission error assigning scenario to meter"}) from e
 
         return scenario_id
 

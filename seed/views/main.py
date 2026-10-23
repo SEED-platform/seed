@@ -117,7 +117,7 @@ def celery_queue(request):
         if result is None or "error" in result:
             results[method] = "Error"
             continue
-        for worker, response in result.items():
+        for response in result.values():
             if method == "stats":
                 results["maxConcurrency"] = response["pool"]["max-concurrency"]
             elif response is not None:
@@ -177,9 +177,9 @@ def health_check(request):
         postgres_status = False
 
     try:
-        ping_result = getattr(app.control.inspect(), "ping")()
-        celery_keys = list(ping_result.keys()) if ping_result else []
-        celery_status = False if not len(celery_keys) else ping_result.get(celery_keys[0], {}).get("ok") == "pong"
+        ping_result = app.control.inspect().ping() or {}
+        first_ping = next(iter(ping_result.values()), None)
+        celery_status = first_ping is not None and first_ping.get("ok") == "pong"
     except Exception:
         celery_status = False
 

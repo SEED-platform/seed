@@ -600,7 +600,13 @@ def _finish_copy_property_to_cycle(property_view_ids, progress_key, org_id):
 
 
 @shared_task
-def update_state_derived_data(property_state_ids=[], taxlot_state_ids=[], derived_column_ids=[]):
+def update_state_derived_data(property_state_ids=None, taxlot_state_ids=None, derived_column_ids=None):
+    if derived_column_ids is None:
+        derived_column_ids = []
+    if taxlot_state_ids is None:
+        taxlot_state_ids = []
+    if property_state_ids is None:
+        property_state_ids = []
     progress_data = ProgressData(func_name="update_derived_data", unique_id=randint(10000, 99999))
     progress_data.total = len(property_state_ids) + len(taxlot_state_ids)
     progress_data.save()
@@ -624,7 +630,11 @@ def update_state_derived_data(property_state_ids=[], taxlot_state_ids=[], derive
 
 
 @shared_task
-def _update_property_state_derived_data_chunk(progress_key, property_state_ids=[], derived_column_ids=[]):
+def _update_property_state_derived_data_chunk(progress_key, property_state_ids=None, derived_column_ids=None):
+    if derived_column_ids is None:
+        derived_column_ids = []
+    if property_state_ids is None:
+        property_state_ids = []
     progress_data = ProgressData.from_key(progress_key)
 
     states = PropertyState.objects.filter(id__in=property_state_ids)
@@ -638,7 +648,11 @@ def _update_property_state_derived_data_chunk(progress_key, property_state_ids=[
 
 
 @shared_task
-def _update_taxlot_state_derived_data_chunk(progress_key, taxlot_state_ids=[], derived_column_ids=[]):
+def _update_taxlot_state_derived_data_chunk(progress_key, taxlot_state_ids=None, derived_column_ids=None):
+    if derived_column_ids is None:
+        derived_column_ids = []
+    if taxlot_state_ids is None:
+        taxlot_state_ids = []
     progress_data = ProgressData.from_key(progress_key)
 
     states = TaxLotState.objects.filter(id__in=taxlot_state_ids)

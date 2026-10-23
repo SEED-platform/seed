@@ -60,7 +60,7 @@ class TaxLotProperty(models.Model):
         ]
 
     @classmethod
-    def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None, units={}):
+    def extra_data_to_dict_with_mapping(cls, instance, mappings, fields=None, units=None):
         """
         Convert the extra data to a dictionary with a name mapping for the keys
 
@@ -71,6 +71,8 @@ class TaxLotProperty(models.Model):
 
         :return: dict
         """
+        if units is None:
+            units = {}
         data = {}
 
         def check_and_convert_numeric(value):

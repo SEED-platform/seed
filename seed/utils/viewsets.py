@@ -52,7 +52,7 @@ class ModelViewSetWithoutPatch(
     """
 
 
-class SEEDOrgModelViewSet(DRFEndpointMixin, OrgQuerySetMixin, ModelViewSet):  # type: ignore[misc]
+class SEEDOrgModelViewSet(DRFEndpointMixin, OrgQuerySetMixin, ModelViewSet):
     """Viewset class customized with SEED standard attributes.
 
     Attributes:

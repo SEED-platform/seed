@@ -95,7 +95,7 @@ class PropertyMeterReadingsExporter:
                 start_time = meter_reading.start_time.astimezone(tz=self.tz).strftime(time_format)
                 end_time = meter_reading.end_time.astimezone(tz=self.tz).strftime(time_format)
 
-                times_key = "-".join([start_time, end_time])
+                times_key = f"{start_time}-{end_time}"
 
                 start_end_times[times_key]["start_time"] = start_time
                 start_end_times[times_key]["end_time"] = end_time
@@ -160,7 +160,7 @@ class PropertyMeterReadingsExporter:
         month_count = (et.year - st.year) * 12 + et.month - st.month + 1
         start = st
         ranges = []
-        for idx in range(month_count):
+        for _idx in range(month_count):
             end_of_month = make_aware(
                 datetime.combine(start.replace(day=monthrange(start.year, start.month)[1]), time.max), timezone=self.tz
             )

@@ -20,7 +20,7 @@ from seed.utils.api import OrgMixin
 from seed.utils.api_schema import swagger_auto_schema_org_query_param
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class BBSalesforceConfigsViewSet(ModelViewSetWithoutPatch, OrgMixin):

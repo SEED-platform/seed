@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import datetime
 import json
+import logging
 
 from django.conf import settings
 from django.utils import timezone
@@ -19,6 +20,8 @@ from seed.models.salesforce_configs import SalesforceConfig
 from seed.models.salesforce_mappings import SalesforceMapping
 from seed.serializers.properties import PropertyViewSerializer
 from seed.utils.encrypt import decrypt
+
+logger = logging.getLogger(__name__)
 
 AUTO_SYNC_NAME = "salesforce_sync_org-"
 
@@ -143,8 +146,10 @@ def _get_property_view(property_id, org_id):
     return result
 
 
-def update_salesforce_property(org_id, property_id, salesforce_client=None, config=None, mappings={}):
+def update_salesforce_property(org_id, property_id, salesforce_client=None, config=None, mappings=None):
     """Sync a specific SEED property record with Salesforce"""
+    if mappings is None:
+        mappings = {}
     status = False
     message = None
     params = {}
@@ -492,9 +497,16 @@ def update_salesforce_property(org_id, property_id, salesforce_client=None, conf
         if config.delete_label_after_sync:
             remove_indication_label(property_id, config.indication_label_id)
 
-    except Exception as ex:
-        template = "Property View {2} / Benchmark ID {3} : An exception of type {0} occurred. Arguments:\n{1!r}"
-        message = template.format(type(ex).__name__, ex.args, str(property_id), benchmark_id)
+    except Exception as e:
+        salesforce_status = getattr(e, "status", None)
+        logger.exception(
+            "Salesforce building sync failed (organization_id=%s, property_view_id=%s, benchmark_id=%s, status=%s)",
+            org_id,
+            property_id,
+            benchmark_id,
+            salesforce_status,
+        )
+        message = f"Property View {property_id} / Benchmark ID {benchmark_id} : An exception of type {type(e).__name__} occurred: {e!s}"
 
     return status, message
 
@@ -507,10 +519,10 @@ def remove_indication_label(property_id, label_id):
         pv = PropertyView.objects.get(pk=property_id)
         pv.labels.remove(label_id)
         pv.save()
-    except Exception as ex:
+    except Exception as e:
         # could not remove label
         # TODO: We need to save this to the logger too, not just print it.
-        print(f"Error removing label: {ex!s}")
+        print(f"Error removing label: {e!s}")
 
 
 def update_salesforce_properties(org_id, property_ids):

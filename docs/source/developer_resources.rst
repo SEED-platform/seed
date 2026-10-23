@@ -50,21 +50,21 @@ Common gotchas:
 
 - If trying to annotate a class method with the class itself, import :code:`from __future__ import annotations`
 - If you're getting warnings about runtime errors due to a type name, make sure your IDE is set up to point to an environment with python 3.9
-- If you're wasting time trying to please the type checker, feel free to throw :code:`# type: ignore` on the problematic line (or at the top of the file to ignore all issues for that file)
+- For justified exceptions, use a rule-specific suppression such as :code:`# ty: ignore[invalid-argument-type]`.
 
 Type Checking
 *************
 
-CI currently runs static type checking on the codebase using `mypy <http://mypy-lang.org/>`_. For
+CI currently runs static type checking on the codebase using `ty <https://docs.astral.sh/ty/>`_. For
 your own IDE, we recommend the following extensions:
 
 - VSCode: `Pylance <https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance>`_ (uses Microsoft's Pyright type checking)
 
-To run the same typechecking applied in CI (i.e., using mypy) you can run the following
+To run the same type checking applied in CI you can run the following
 
 .. code-block:: bash
 
-    uv run tox -e mypy
+    uv run pre-commit run ty --all-files
 
 
 Django Notes
@@ -325,7 +325,9 @@ Restoring a Database Dump
         --password=password \
         --organization=testorg
 
-If restoring a production backup to a different deployment update the site settings for password reset emails, and disable celerybeat Salesforce updates/emails:
+If restoring a production backup to a different deployment update the site settings for password reset emails, and disable celerybeat Salesforce updates/emails.
+
+Also, when copying a database between environments, preserve the source ``SECRET_KEY`` in the target application's web and Celery containers. SEED uses this key to sign encrypted passwords stored in the database (Salesforce and Audit Template). If the keys differ, the database will restore successfully but those passwords cannot be decrypted.
 
 .. code-block:: bash
 

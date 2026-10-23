@@ -51,14 +51,14 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
 
     try:
         response = _validation_api_post(file_, schema_version, use_case_name)
-    except requests.exceptions.Timeout:
+    except requests.exceptions.Timeout as e:
         raise ValidationClientError(
             "Request to Selection Tool timed out. SEED may need to increase the timeout",
-        )
+        ) from e
     except Exception as e:
         raise ValidationClientError(
             f"Failed to make request to selection tool: {e}",
-        )
+        ) from e
 
     if response.status_code != 200:
         raise ValidationClientError(
@@ -67,10 +67,10 @@ def validate_use_case(file_, filename=None, schema_version=DEFAULT_SCHEMA_VERSIO
 
     try:
         response_body = response.json()
-    except ValueError:
+    except ValueError as e:
         raise ValidationClientError(
             f"Expected JSON response from Selection Tool: {response.text}",
-        )
+        ) from e
 
     if response_body.get("success", False) is not True:
         raise ValidationClientError(

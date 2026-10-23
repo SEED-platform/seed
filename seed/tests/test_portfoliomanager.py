@@ -26,7 +26,7 @@ from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
-from seed.views.v3.portfolio_manager import PortfolioManagerImport
+from seed.views.v3.portfolio_manager import PMError, PortfolioManagerImport
 
 PM_UN = "SEED_PM_UN"
 PM_PW = "SEED_PM_PW"
@@ -52,7 +52,7 @@ class PortfolioManagerImportTest(TestCase):
         # To test a successful login, we'd have to include valid PM credentials, which we don't want to do,
         # so I will at least test an unsuccessful login attempt here
         pmi = PortfolioManagerImport("bad_username", "bad_password")
-        with pytest.raises(Exception):  # noqa: PT011
+        with pytest.raises(PMError):
             pmi.login_and_set_cookie_header()
 
     def test_get_template_by_name(self):
@@ -61,7 +61,7 @@ class PortfolioManagerImportTest(TestCase):
         template_set = [template_1, template_2]
         self.assertDictEqual(template_1, PortfolioManagerImport.get_template_by_name(template_set, "first"))
         self.assertDictEqual(template_2, PortfolioManagerImport.get_template_by_name(template_set, "second"))
-        with pytest.raises(Exception):  # noqa: PT011
+        with pytest.raises(PMError, match="Could not find a matching template"):
             PortfolioManagerImport.get_template_by_name(template_set, "missing")
 
 
