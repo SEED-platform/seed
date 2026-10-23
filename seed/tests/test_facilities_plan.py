@@ -135,8 +135,8 @@ class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
         Column.objects.filter(organization=self.org, column_name="address_line_1", table_name="PropertyState").update(
             display_name="Site Address"
         )
-        view = self.property_view_factory.get_property_view(
-            cycle=self.cycle,
+        property_ = self.property_view_factory.property_factory.get_property()
+        state = self.property_view_factory.state_factory.get_property_state(
             address_line_1="001 Test Street",
             gross_floor_area=2500,
             extra_data={
@@ -146,6 +146,8 @@ class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
                 "include_in_total_denominator_column": True,
             },
         )
+        # Distinct IDs prevent coincidentally aligned sequences from masking a bad join.
+        view = PropertyView.objects.create(id=property_.id + 1, property=property_, cycle=self.cycle, state=state)
         code = Uniformat.objects.filter(code__in=EISA432_CODES).first()
         assert code is not None
         FakeElementFactory(organization=self.org).get_element(

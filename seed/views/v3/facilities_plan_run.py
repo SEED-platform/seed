@@ -341,7 +341,8 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         properties_df = properties_df.rename(columns={cd["annotated_name"]: cd["display_name"] for cd in properties_columns_dict})
 
         # get the relevant elements, that is, the top 3 RSL for each property with an EISA code
-        top_3_element_query = Element.objects.filter(property=OuterRef("pk"), code__code__in=EISA432_CODES).order_by(
+        # The outer rows are PropertyViews; elements belong to the underlying Property.
+        top_3_element_query = Element.objects.filter(property_id=OuterRef("property_id"), code__code__in=EISA432_CODES).order_by(
             "remaining_service_life"
         )[:3]
         lists_of_element_ids = views.annotate(elements=ArraySubquery(top_3_element_query.values("id"))).values_list("elements", flat=True)
