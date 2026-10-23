@@ -15,6 +15,22 @@ replace-imports-with-any = [
     "lxml.**",
 ]
 
+# Django and DRF consume nested Meta classes as configuration namespaces, not
+# substitutable attributes. Replacing Meta is intentional; inheriting it just to
+# satisfy the type checker can change model constraints and serializer fields.
+[[overrides]]
+include = [
+    "seed/data_importer/models.py",
+    "seed/models/elements.py",
+    "seed/models/models.py",
+    "seed/models/systems.py",
+    "seed/serializers/*.py",
+    "seed/views/v3/analyses.py",
+]
+
+[overrides.rules]
+invalid-attribute-override = "ignore"
+
 # ty does not support a baseline file yet. These narrow overrides suppress only
 # the existing rule categories in affected legacy files; all other rules remain
 # active. Remove files and rules from this list as their diagnostics are fixed.

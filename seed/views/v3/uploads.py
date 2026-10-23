@@ -4,7 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import csv
-import datetime
+import datetime as dt
 import logging
 import os
 
@@ -209,7 +209,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
             )
 
         # base file name (will be appended with a random string to ensure uniqueness if multiple on the same day)
-        today_date = datetime.datetime.today().strftime("%Y-%m-%d")
+        today_date = dt.datetime.today().strftime("%Y-%m-%d")
         file_name = f"pm_import_{today_date}.csv"
 
         # create a folder to keep pm_import files
@@ -262,7 +262,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         rows.append(header_row)
 
         num_properties = len(request.data["properties"])
-        last_time = datetime.datetime.now()
+        last_time = dt.datetime.now()
 
         _log.debug(f"About to try to import {num_properties} properties from ESPM")
         _log.debug(f"Starting at {last_time}")
@@ -271,7 +271,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
         for property_num, pm_property in enumerate(request.data["properties"], 1):
             # report some helpful info every 20 properties
             if property_num % 20 == 0:
-                new_time = datetime.datetime.now()
+                new_time = dt.datetime.now()
                 _log.debug(f"On property number {property_num}; current time: {new_time}")
 
             this_row = []

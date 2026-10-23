@@ -7,7 +7,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 Tests for serializers used by GreenAssessments/Energy Certifications
 """
 
-import datetime
+import datetime as dt
 from collections import OrderedDict
 from unittest import mock
 
@@ -98,7 +98,7 @@ class TestFields(DeleteModelsTestCase):
         """Test ValidityDurationField.to_internal_value()"""
         field = ValidityDurationField()
         result = field.to_internal_value(365)
-        expected = datetime.timedelta(365)
+        expected = dt.timedelta(365)
         self.assertEqual(result, expected)
         result = field.to_internal_value("365")
         self.assertEqual(result, expected)

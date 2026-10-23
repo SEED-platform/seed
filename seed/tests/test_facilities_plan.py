@@ -5,13 +5,19 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 :author nicholas.long@nlr.gov
 """
 
+from contextlib import closing
+from io import BytesIO
+
 from django.test import TestCase
 from django.urls import reverse
+from openpyxl import load_workbook
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.models import Column, Cycle, FacilitiesPlan, FacilitiesPlanRun, PropertyView
+from seed.lib.tkbl.tkbl import EISA432_CODES
+from seed.models import Column, Cycle, FacilitiesPlan, FacilitiesPlanRun, PropertyView, Uniformat
 from seed.test_helpers.fake import (
+    FakeElementFactory,
     FakePropertyViewFactory,
 )
 from seed.utils.organizations import create_organization
@@ -124,6 +130,58 @@ class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
         )
 
         self.property_view_factory = FakePropertyViewFactory(organization=self.org, user=self.user)
+
+    def test_export_preserves_property_and_component_values(self):
+        Column.objects.filter(organization=self.org, column_name="address_line_1", table_name="PropertyState").update(
+            display_name="Site Address"
+        )
+        view = self.property_view_factory.get_property_view(
+            cycle=self.cycle,
+            address_line_1="001 Test Street",
+            gross_floor_area=2500,
+            extra_data={
+                "electric_energy_usage_column": 10,
+                "gas_energy_usage_column": 0,
+                "steam_energy_usage_column": 0,
+                "include_in_total_denominator_column": True,
+            },
+        )
+        code = Uniformat.objects.filter(code__in=EISA432_CODES).first()
+        assert code is not None
+        FakeElementFactory(organization=self.org).get_element(
+            property=view.property,
+            code=code,
+            remaining_service_life=5.5,
+            replacement_cost=1000,
+            extra_data={"Component_SubType": "Heat pump", "CAPACITY_COOLING": 0},
+        )
+        self.facilities_plan_run.run()
+
+        response = self.client.post(
+            f"{reverse('api:v3:facilities_plan_runs-export', args=[self.facilities_plan_run.id])}?organization_id={self.org.id}",
+            content_type="application/json",
+        )
+
+        assert response.status_code == 200
+        with closing(load_workbook(BytesIO(response.content))) as workbook:
+            assert workbook.sheetnames == ["How To Guide", "1. Facilities Plan", "2. Prioritized Bldg Components", "3. ECM Data Dictionary"]
+            for sheet_name in ["1. Facilities Plan", "2. Prioritized Bldg Components"]:
+                sheet = workbook[sheet_name]
+                headers = [cell.value for cell in sheet[1]]
+                row = dict(zip(headers, next(sheet.iter_rows(min_row=2, max_row=2, values_only=True)), strict=True))
+                assert row["Site Address"] == "001 Test Street"
+
+                if sheet_name == "1. Facilities Plan":
+                    assert row["electric_energy_usage_column"] == 10
+                    assert row["include_in_total_denominator_column"] is True
+                    assert row["Total Energy Usage"] == 10
+                else:
+                    assert row["Uniformat Category"] == code.code
+                    assert row["RSL"] == 5.5
+                    assert row["Replacement Cost"] == 1000
+                    assert row["Component_SubType"] == "Heat pump"
+                    assert row["Capacity_cooling"] == 0
+                    assert row["Capacity_heating"] is None
 
     def test_list(self):
         # Action

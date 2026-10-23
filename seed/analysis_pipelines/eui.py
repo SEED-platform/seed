@@ -3,7 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import datetime
+import datetime as dt
 import logging
 
 from celery import chain, shared_task
@@ -33,17 +33,17 @@ EUI_ANALYSIS_MESSAGES = {
 }
 
 VALID_METERS = [Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_SOLAR, Meter.ELECTRICITY_WIND, Meter.ELECTRICITY_UNKNOWN]
-TIME_PERIOD = datetime.timedelta(days=365)
+TIME_PERIOD = dt.timedelta(days=365)
 
 
 def _as_aware_datetime(value):
     if isinstance(value, str):
-        value = datetime.datetime.fromisoformat(value)
+        value = dt.datetime.fromisoformat(value)
 
-    if isinstance(value, datetime.date) and not isinstance(value, datetime.datetime):
-        value = datetime.datetime.combine(value, datetime.time.min)
+    if isinstance(value, dt.date) and not isinstance(value, dt.datetime):
+        value = dt.datetime.combine(value, dt.time.min)
 
-    if not isinstance(value, datetime.datetime):
+    if not isinstance(value, dt.datetime):
         return value
 
     if timezone.is_naive(value):
@@ -139,7 +139,7 @@ def _calculate_eui(meter_readings, gross_floor_area):
         for day in get_days_in_reading(meter_reading):
             days_affected_by_readings.add(day)
 
-    total_seconds_covered = len(days_affected_by_readings) * datetime.timedelta(days=1).total_seconds()
+    total_seconds_covered = len(days_affected_by_readings) * dt.timedelta(days=1).total_seconds()
     fraction_of_time_covered = total_seconds_covered / TIME_PERIOD.total_seconds()
     return {
         "eui": round(total_reading / gross_floor_area, 2),

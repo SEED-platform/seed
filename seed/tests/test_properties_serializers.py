@@ -7,7 +7,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 Tests for serializers used by GreenAssessments/Energy Certifications
 """
 
-import datetime
+import datetime as dt
 import json
 from collections import OrderedDict
 from unittest import mock
@@ -65,10 +65,10 @@ class TestPropertySerializers(DeleteModelsTestCase):
         self.gap_data = {
             "source": "test",
             "status": "complete",
-            "status_date": datetime.date(2017, 0o1, 0o1),
+            "status_date": dt.date(2017, 0o1, 0o1),
             "metric": 5,
             "version": "0.1",
-            "date": datetime.date(2016, 0o1, 0o1),
+            "date": dt.date(2016, 0o1, 0o1),
             "eligibility": True,
             "assessment": self.assessment,
             "view": self.property_view,
@@ -187,10 +187,10 @@ class TestPropertyViewAsStateSerializers(DeleteModelsTestCase):
         self.gap_data = {
             "source": "test",
             "status": "complete",
-            "status_date": datetime.date(2017, 0o1, 0o1),
+            "status_date": dt.date(2017, 0o1, 0o1),
             "metric": 5,
             "version": "0.1",
-            "date": datetime.date(2016, 0o1, 0o1),
+            "date": dt.date(2016, 0o1, 0o1),
             "eligibility": True,
             "assessment": self.assessment,
             "view": self.property_view,

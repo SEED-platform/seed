@@ -3,7 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import datetime
+import datetime as dt
 import json
 
 from django.urls import reverse_lazy
@@ -15,7 +15,7 @@ class TestCycleViewSetPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase)
     def setUp(self):
         super().setUp()
         self.cycle = self.cycle_factory.get_cycle(organization=self.org)
-        self.payload = {"name": "boo", "start": datetime.date(2000, 1, 1).isoformat(), "end": datetime.date(2000, 1, 1).isoformat()}
+        self.payload = {"name": "boo", "start": dt.date(2000, 1, 1).isoformat(), "end": dt.date(2000, 1, 1).isoformat()}
 
     def test_cycle_create_permissions(self):
         url = reverse_lazy("api:v3:cycles-list") + "?organization_id=" + str(self.org.id)

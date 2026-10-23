@@ -10,11 +10,11 @@ DRF's ModelViewSet and setting SEED relevant defaults to renderer_classes,
 parser_classes, authentication_classes, and pagination_classes attributes.
 """
 
-from typing import Any
+from collections.abc import Sequence
 
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
-from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
+from rest_framework.parsers import BaseParser, FormParser, JSONParser, MultiPartParser
 from rest_framework.viewsets import GenericViewSet, ModelViewSet, ReadOnlyModelViewSet
 
 # Local Imports
@@ -63,7 +63,7 @@ class SEEDOrgModelViewSet(DRFEndpointMixin, OrgQuerySetMixin, ModelViewSet):
     """
 
     renderer_classes = RENDERER_CLASSES
-    parser_classes: "tuple[Any, ...]" = PARSER_CLASSES
+    parser_classes: Sequence[type[BaseParser]] = PARSER_CLASSES
     authentication_classes = AUTHENTICATION_CLASSES
     permission_classes = PERMISSIONS_CLASSES
 
@@ -83,7 +83,7 @@ class SEEDOrgReadOnlyModelViewSet(
     """
 
     renderer_classes = RENDERER_CLASSES
-    parser_classes: "tuple[Any, ...]" = PARSER_CLASSES
+    parser_classes: Sequence[type[BaseParser]] = PARSER_CLASSES
     authentication_classes = AUTHENTICATION_CLASSES
     permission_classes = PERMISSIONS_CLASSES
 

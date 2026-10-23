@@ -3,7 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import datetime
+import datetime as dt
 from calendar import monthrange
 from collections import defaultdict, namedtuple
 from statistics import mean, pstdev
@@ -84,7 +84,7 @@ def _split_reading(meter_reading, snap_intervals=True):
     :param snap_intervals: bool
     :return: List[SimpleMeterReading], in sorted order by start_date
     """
-    reading_unaware_start_time = datetime.datetime(
+    reading_unaware_start_time = dt.datetime(
         meter_reading.start_time.year,
         meter_reading.start_time.month,
         meter_reading.start_time.day,
@@ -92,7 +92,7 @@ def _split_reading(meter_reading, snap_intervals=True):
         meter_reading.start_time.minute,
         meter_reading.start_time.second,
     )
-    reading_unaware_end_time = datetime.datetime(
+    reading_unaware_end_time = dt.datetime(
         meter_reading.end_time.year,
         meter_reading.end_time.month,
         meter_reading.end_time.day,
@@ -101,8 +101,8 @@ def _split_reading(meter_reading, snap_intervals=True):
         meter_reading.end_time.second,
     )
 
-    reading_first_month = datetime.datetime(meter_reading.start_time.year, meter_reading.start_time.month, 1)
-    reading_last_month = datetime.datetime(meter_reading.end_time.year, meter_reading.end_time.month, 1)
+    reading_first_month = dt.datetime(meter_reading.start_time.year, meter_reading.start_time.month, 1)
+    reading_last_month = dt.datetime(meter_reading.end_time.year, meter_reading.end_time.month, 1)
     last_month_affected = reading_last_month + relativedelta.relativedelta(months=1)
 
     # collect all consecutive months this reading "touches"
@@ -203,7 +203,7 @@ def calendarize_and_extrapolate_meter_readings(meter_readings, coverage_threshol
     totals_by_month = defaultdict(lambda: {"total_usage": 0, "total_seconds": 0})
     for meter_reading in split_meter_readings:
         start = meter_reading.start_time
-        month_start = datetime.datetime(start.year, start.month, 1)
+        month_start = dt.datetime(start.year, start.month, 1)
         totals_by_month[month_start]["total_usage"] += meter_reading.reading
         totals_by_month[month_start]["total_seconds"] += (meter_reading.end_time - meter_reading.start_time).total_seconds()
 
@@ -301,12 +301,12 @@ def get_days_in_reading(meter_reading):
     :param meter_reading: List[SimpleMeterReading | MeterReading]
     :return: List[datetime.datetime], days (at midnight, timezone unaware)
     """
-    start = datetime.datetime(
+    start = dt.datetime(
         meter_reading.start_time.year,
         meter_reading.start_time.month,
         meter_reading.start_time.day,
     )
-    end = datetime.datetime(
+    end = dt.datetime(
         meter_reading.end_time.year,
         meter_reading.end_time.month,
         meter_reading.end_time.day,

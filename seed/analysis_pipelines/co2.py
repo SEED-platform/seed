@@ -3,7 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import datetime
+import datetime as dt
 import logging
 
 from celery import chain, shared_task
@@ -34,7 +34,7 @@ CO2_ANALYSIS_MESSAGES = {
 }
 
 VALID_METERS = [Meter.ELECTRICITY_GRID, Meter.ELECTRICITY_UNKNOWN]
-TIME_PERIOD = datetime.timedelta(days=365)
+TIME_PERIOD = dt.timedelta(days=365)
 
 # These factors represent how much CO2e is emitted per MWh of electricity used
 # in a specific year and eGRID Subregion
@@ -685,7 +685,7 @@ def _calculate_co2(meter_readings, region_code):
         total_average += reading_mwh * rate
         for day in get_days_in_reading(meter_reading):
             days_affected_by_readings.add(day)
-    total_seconds_covered = len(days_affected_by_readings) * datetime.timedelta(days=1).total_seconds()
+    total_seconds_covered = len(days_affected_by_readings) * dt.timedelta(days=1).total_seconds()
     fraction_of_time_covered = total_seconds_covered / TIME_PERIOD.total_seconds()
     return {
         "average_annual_kgco2e": round(total_average),
