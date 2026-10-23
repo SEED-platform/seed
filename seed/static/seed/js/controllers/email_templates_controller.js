@@ -13,7 +13,6 @@ angular.module('SEED.controller.email_templates', []).controller('email_template
   '$uibModal',
   'urls',
   'modified_service',
-  'flippers',
   '$translate',
   'i18nService',
   'Notification',
@@ -29,7 +28,6 @@ angular.module('SEED.controller.email_templates', []).controller('email_template
     $uibModal,
     urls,
     modified_service,
-    flippers,
     $translate,
     i18nService,
     Notification

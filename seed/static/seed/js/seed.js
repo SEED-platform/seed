@@ -221,7 +221,6 @@
     'SEED.service.facilities_plan',
     'SEED.service.facilities_plan_run',
     'SEED.service.filter_groups',
-    'SEED.service.flippers',
     'SEED.service.geocode',
     'SEED.service.goal',
     'SEED.service.httpParamSerializerSeed',
