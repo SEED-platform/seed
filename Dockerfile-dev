@@ -67,7 +67,7 @@ COPY ./pyproject.toml /seed/pyproject.toml
 COPY ./uv.lock /seed/uv.lock
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --managed-python --no-install-project && \
-    uv pip install supervisor==4.3.0 remote-pdb "watchdog[watchmedo]"
+    uv pip install supervisor==4.3.0 remote-pdb debugpy "watchdog[watchmedo]"
 
 FROM dev-base AS frontend-dev-deps
 ENV CI=true
