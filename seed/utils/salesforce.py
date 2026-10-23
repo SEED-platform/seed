@@ -3,7 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import datetime
+import datetime as dt
 import json
 import logging
 
@@ -582,7 +582,7 @@ def auto_sync_salesforce_properties(org_id):
     ind_label_id = config.indication_label_id
 
     # set date
-    compare_date = config.last_update_date if config.last_update_date else datetime.datetime(1970, 1, 1, tzinfo=get_current_timezone())
+    compare_date = config.last_update_date if config.last_update_date else dt.datetime(1970, 1, 1, tzinfo=get_current_timezone())
 
     # get IDs by label and date
     property_matches = (

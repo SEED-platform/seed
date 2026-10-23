@@ -3,7 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import datetime
+import datetime as dt
 import logging
 import os.path as osp
 import pathlib
@@ -151,7 +151,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
     def test_hash_release_date(self):
         """The hash_state_object method makes the timezones naive, so this should work because
         the date times are equivalent, even though the database objects are not"""
-        ps1_dt = datetime.datetime(2010, 1, 1, 0, 0, tzinfo=datetime.UTC).astimezone(ZoneInfo("America/Los_Angeles"))
+        ps1_dt = dt.datetime(2010, 1, 1, 0, 0, tzinfo=dt.UTC).astimezone(ZoneInfo("America/Los_Angeles"))
         ps1 = PropertyState.objects.create(
             organization=self.org,
             address_line_1="123 fake st",
@@ -164,7 +164,7 @@ class TestCaseMultipleDuplicateMatching(DataMappingBaseTestCase):
             organization=self.org,
             address_line_1="123 fake st",
             extra_data={"a": "result"},
-            release_date=datetime.datetime(2010, 1, 1, 0, 0, tzinfo=datetime.UTC),
+            release_date=dt.datetime(2010, 1, 1, 0, 0, tzinfo=dt.UTC),
             data_state=DATA_STATE_IMPORT,
             import_file_id=0,
         )

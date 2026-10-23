@@ -19,7 +19,6 @@ from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from rest_framework import status
 from rest_framework.decorators import action
-from styleframe import StyleFrame
 
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
@@ -28,6 +27,7 @@ from seed.models import AccessLevelInstance, Column, Element, FacilitiesPlanRun,
 from seed.serializers.facilities_plan_run import FacilitiesPlanRunSerializer
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint
+from seed.utils.excel import write_template_dataframe
 from seed.utils.search import FilterError, build_view_filters_and_sorts
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
@@ -244,29 +244,21 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         # import blank template
         BLANK_CTS_FILE_PATH = Path(__file__).parents[2] / "utils" / "facilities_plan_output.xlsx"
-        hot_to_df = pd.read_excel(BLANK_CTS_FILE_PATH, sheet_name="How To Guide")
-        properties_df = pd.read_excel(BLANK_CTS_FILE_PATH, sheet_name="1. Facilities Plan")
-        components_df = pd.read_excel(BLANK_CTS_FILE_PATH, sheet_name="2. Prioritized Bldg Components")
+        how_to_df = pd.read_excel(BLANK_CTS_FILE_PATH, sheet_name="How To Guide")
         data_dictionary_df = pd.read_excel(BLANK_CTS_FILE_PATH, sheet_name="3. ECM Data Dictionary")
 
         # populate properties_df
         properties_df, components_df = self._populate_properties_and_components(fpr, org)
 
-        # put it in a styleframe
-        how_to_sf = StyleFrame.read_excel_as_template(BLANK_CTS_FILE_PATH, df=hot_to_df, sheet_name="How To Guide")
-        # properties_sf = StyleFrame.read_excel_as_template(BLANK_CTS_FILE_PATH, df=properties_df, sheet_name="1. Facilities Plan")
-        # components_sf = StyleFrame.read_excel_as_template(BLANK_CTS_FILE_PATH, df=components_df, sheet_name="2. Prioritized Bldg Components")
-        data_dictionary_sf = StyleFrame.read_excel_as_template(
-            BLANK_CTS_FILE_PATH, df=data_dictionary_df, sheet_name="3. ECM Data Dictionary"
-        )
-
         # write it back out
         output = io.BytesIO()
-        with StyleFrame.ExcelWriter(output) as writer:
-            how_to_sf.to_excel(writer, sheet_name="How To Guide", index=False)
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            write_template_dataframe(how_to_df, writer, BLANK_CTS_FILE_PATH, "How To Guide", sheet_name="How To Guide")
             properties_df.to_excel(writer, sheet_name="1. Facilities Plan", index=False)
             components_df.to_excel(writer, sheet_name="2. Prioritized Bldg Components", index=False)
-            data_dictionary_sf.to_excel(writer, sheet_name="3. ECM Data Dictionary", index=False)
+            write_template_dataframe(
+                data_dictionary_df, writer, BLANK_CTS_FILE_PATH, "3. ECM Data Dictionary", sheet_name="3. ECM Data Dictionary"
+            )
 
         # build response
         response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
@@ -349,7 +341,8 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         properties_df = properties_df.rename(columns={cd["annotated_name"]: cd["display_name"] for cd in properties_columns_dict})
 
         # get the relevant elements, that is, the top 3 RSL for each property with an EISA code
-        top_3_element_query = Element.objects.filter(property=OuterRef("pk"), code__code__in=EISA432_CODES).order_by(
+        # The outer rows are PropertyViews; elements belong to the underlying Property.
+        top_3_element_query = Element.objects.filter(property_id=OuterRef("property_id"), code__code__in=EISA432_CODES).order_by(
             "remaining_service_life"
         )[:3]
         lists_of_element_ids = views.annotate(elements=ArraySubquery(top_3_element_query.values("id"))).values_list("elements", flat=True)

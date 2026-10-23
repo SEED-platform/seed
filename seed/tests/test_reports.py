@@ -3,7 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import datetime
+import datetime as dt
 
 from django.urls import reverse
 from django.utils import timezone
@@ -27,7 +27,7 @@ class ExportReport(DataMappingBaseTestCase):
         user_details = {"username": "test_user@demo.com", "password": "test_pass", "email": "test_user@demo.com"}
         self.client.login(**user_details)
         self.cycle_factory = FakeCycleFactory(organization=self.org, user=self.user)
-        start = datetime.datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone())
+        start = dt.datetime(2016, 1, 1, tzinfo=timezone.get_current_timezone())
         self.cycle_2 = self.cycle_factory.get_cycle(name="Cycle 2", start=start)
 
         # create 5 records with site_eui and gross_floor_area in each cycle

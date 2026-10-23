@@ -5,7 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import base64
 import csv
-import datetime
+import datetime as dt
 import io
 import logging
 import math
@@ -204,7 +204,7 @@ def _csv_response(data, column_name_mappings):
                 # Join all non-null non-duplicate related values for this column with ';'
                 row_result = "; ".join(
                     {
-                        val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val, datetime.datetime) else str(val)
+                        val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val, dt.datetime) else str(val)
                         for related in datum["related"]
                         if (val := related.get(column)) not in (None, "")
                     }
@@ -213,9 +213,9 @@ def _csv_response(data, column_name_mappings):
             # Convert quantities (this is typically handled in the JSON Encoder, but that isn't here).
             if isinstance(row_result, ureg.Quantity):
                 row_result = row_result.magnitude
-            elif isinstance(row_result, datetime.datetime):
+            elif isinstance(row_result, dt.datetime):
                 row_result = row_result.strftime("%Y-%m-%d %H:%M:%S")
-            elif isinstance(row_result, datetime.date):
+            elif isinstance(row_result, dt.date):
                 row_result = row_result.strftime("%Y-%m-%d")
             row.append(row_result)
 
@@ -251,9 +251,9 @@ def json_response(org_id, filename, data, column_name_mappings, excluded_fields=
 
             if isinstance(value, ureg.Quantity):
                 formatted_value = value.magnitude
-            elif isinstance(value, datetime.datetime):
+            elif isinstance(value, dt.datetime):
                 formatted_value = value.strftime("%Y-%m-%d %H:%M:%S")
-            elif isinstance(value, datetime.date):
+            elif isinstance(value, dt.date):
                 formatted_value = value.strftime("%Y-%m-%d")
             else:
                 formatted_value = value
@@ -445,7 +445,7 @@ def _spreadsheet_response(data, column_name_mappings):
                 # Join all non-null non-duplicate related values for this column with ';'
                 row_result = "; ".join(
                     {
-                        val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val, datetime.datetime) else str(val)
+                        val.strftime("%Y-%m-%d %H:%M:%S") if isinstance(val, dt.datetime) else str(val)
                         for related in datum["related"]
                         if (val := related.get(column)) not in (None, "")
                     }
@@ -454,9 +454,9 @@ def _spreadsheet_response(data, column_name_mappings):
             # Convert quantities (this is typically handled in the JSON Encoder, but that isn't here).
             if isinstance(row_result, ureg.Quantity):
                 row_result = row_result.magnitude
-            elif isinstance(row_result, datetime.datetime):
+            elif isinstance(row_result, dt.datetime):
                 row_result = row_result.strftime("%Y-%m-%d %H:%M:%S")
-            elif isinstance(row_result, datetime.date):
+            elif isinstance(row_result, dt.date):
                 row_result = row_result.strftime("%Y-%m-%d")
             ws1.write(row, index, row_result)
 

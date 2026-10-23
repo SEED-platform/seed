@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+from typing import override
 
 from rest_framework import filters
 
@@ -12,8 +13,8 @@ from seed.models import VIEW_LIST_INVENTORY_TYPE, VIEW_LOCATION_TYPES
 
 
 class ColumnListProfileFilterBackend(filters.BaseFilterBackend):
-    @staticmethod
-    def filter_queryset(request, queryset, _view, **_kwargs):
+    @override
+    def filter_queryset(self, request, queryset, view, **_kwargs):
         if "organization_id" in request.query_params:
             queryset = queryset.filter(
                 organization_id=request.query_params["organization_id"],

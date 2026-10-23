@@ -30,7 +30,6 @@ from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
-from styleframe import StyleFrame
 
 from seed.building_sync.building_sync import BuildingSync
 from seed.data_importer import tasks
@@ -89,6 +88,7 @@ from seed.serializers.taxlots import TaxLotViewSerializer
 from seed.tasks import copy_properties_to_cycle, update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.excel import write_template_dataframe
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
 from seed.utils.match import MergeLinkPairError, match_merge_link
@@ -2080,7 +2080,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         # import blank template
         BLANK_CTS_FILE_PATH = Path(__file__).parents[2] / "utils" / "CTS Facility Upload Template.xlsx"
-        output_df = pd.read_excel(BLANK_CTS_FILE_PATH, sheet_name="Facility Upload Template")
+        # CTS template columns contain both text and numeric facility data.
+        output_df = pd.read_excel(BLANK_CTS_FILE_PATH, sheet_name="Facility Upload Template", dtype=object)
         old_columns = output_df.columns
         output_df.columns = output_df.loc[0]
 
@@ -2114,14 +2115,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         # write back out
         output_df.columns = old_columns
-        sf = StyleFrame.read_excel_as_template(BLANK_CTS_FILE_PATH, df=output_df, sheet_name="Facility Upload Template")
 
         # build response
         response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         response["Content-Disposition"] = 'attachment; filename="output.xlsx"'
         output = io.BytesIO()
-        writer = sf.to_excel(pd.ExcelWriter(output, engine="openpyxl"), row_to_add_filters=1)
-        writer.close()
+        with pd.ExcelWriter(output, engine="openpyxl") as writer:
+            write_template_dataframe(output_df, writer, BLANK_CTS_FILE_PATH, "Facility Upload Template", row_to_add_filters=1)
         xlsx_data = output.getvalue()
         response.write(xlsx_data)
 
@@ -2166,7 +2166,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
 
 def _row_from_views(views):
-    data = pd.Series()
+    data = pd.Series(dtype=object)
 
     def mode(field, extra_data=False):
         if not extra_data:
@@ -2174,7 +2174,7 @@ def _row_from_views(views):
         else:
             m = pd.Series([v.state.extra_data.get(field) for v in views]).mode()
 
-        return None if len(m) < 1 else m[0]
+        return None if len(m) < 1 else m.iloc[0]
 
     # Facility Status
     data["Facility Status"] = mode("Covered Building (75% Energy Usage)", extra_data=True)
@@ -2194,7 +2194,7 @@ def _row_from_views(views):
     }.get(energy_status_string, 0)
     # Facility Name
     installation_mode = pd.Series([v.installation for v in views]).mode()
-    data["Facility Name"] = None if len(installation_mode) < 1 else installation_mode[0]
+    data["Facility Name"] = None if len(installation_mode) < 1 else installation_mode.iloc[0]
     # City
     data["City"] = mode("Installation City", extra_data=True)
     # State

@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 # pylint:disable=no-name-in-module
-import datetime
+import datetime as dt
 
 import pytest
 from django.core.exceptions import ValidationError
@@ -37,9 +37,9 @@ class GreenAssessmentTests(DeleteModelsTestCase):
         )
         self.url_factory = FakeGreenAssessmentURLFactory()
         self.gap_factory = FakeGreenAssessmentPropertyFactory(organization=self.org, user=self.user)
-        self.start_date = datetime.date.today() - datetime.timedelta(2 * 365)
-        self.status_date = datetime.date.today() - datetime.timedelta(7)
-        self.target_date = datetime.date.today() - datetime.timedelta(7)
+        self.start_date = dt.date.today() - dt.timedelta(2 * 365)
+        self.status_date = dt.date.today() - dt.timedelta(7)
+        self.target_date = dt.date.today() - dt.timedelta(7)
         self.gap = self.gap_factory.get_green_assessment_property(
             assessment=self.green_assessment,
             organization=self.org,
@@ -107,18 +107,18 @@ class GreenAssessmentTests(DeleteModelsTestCase):
 
     def test_expiration(self):
         """Test expiration_date and is_valid properties"""
-        expected_date = self.start_date + datetime.timedelta(365 * 5)
+        expected_date = self.start_date + dt.timedelta(365 * 5)
         self.assertEqual(expected_date, self.gap.expiration_date)
         self.assertTrue(self.gap.is_valid)
 
         # test setting/retrieving _expiration_date
-        new_expiration = datetime.date.today() + datetime.timedelta(5 * 365)
+        new_expiration = dt.date.today() + dt.timedelta(5 * 365)
         self.gap.expiration_date = new_expiration
         self.assertEqual(new_expiration, self.gap.expiration_date)
         self.assertTrue(self.gap.is_valid)
 
         # test past expiration date
-        new_expiration = datetime.date.today() - datetime.timedelta(365)
+        new_expiration = dt.date.today() - dt.timedelta(365)
         self.gap.expiration_date = new_expiration
         self.assertFalse(self.gap.is_valid)
 

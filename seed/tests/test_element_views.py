@@ -57,6 +57,18 @@ class ElementViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):
         data = response.json()
         self.assertEqual(data["id"], self.element3.element_id)
 
+    def test_filter_org_elements(self):
+        # The custom filter action must use the view's configured serializer.
+        code = self.element1.code.code
+        expected_ids = set(Element.objects.filter(organization=self.org, code__code__startswith=code).values_list("element_id", flat=True))
+
+        response = self.client.get(f"{self.reverse('api:v3:elements-filter')}&code={code}")
+
+        assert response.status_code == status.HTTP_200_OK
+        data = response.json()
+        assert data["total"] == len(expected_ids)
+        assert {element["id"] for element in data["results"]} == expected_ids
+
     def test_get_property_elements(self):
         url = self.reverse("api:v3:property-elements-list", args=[self.property1.pk])
         response = self.client.get(url)

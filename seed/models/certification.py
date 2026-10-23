@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 # pylint:disable=too-few-public-methods
 
-import datetime
+import datetime as dt
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -20,7 +20,7 @@ from seed.utils.strings import titlecase
 
 DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION = getattr(settings, "GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION", None)
 if DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION:
-    DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION = datetime.timedelta(DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION)
+    DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION = dt.timedelta(DEFAULT_GREEN_ASSESSMENT_VALIDITY_DURATION)
 
 # logger = logging.getLogger(__name__)
 
@@ -168,7 +168,7 @@ class GreenAssessmentProperty(models.Model):
         """Check if cert is still valid."""
         validity = True
         if self.expiration_date:
-            validity = self.expiration_date > datetime.date.today()
+            validity = self.expiration_date > dt.date.today()
         return validity
 
     @property

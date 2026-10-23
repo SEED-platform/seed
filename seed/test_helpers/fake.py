@@ -11,7 +11,7 @@ method multiple times will always return the same sequence of results
     .. codeauthor:: Paul Munday<paul@paulmunday.net>
 """
 
-import datetime
+import datetime as dt
 import random
 import re
 import string
@@ -158,11 +158,11 @@ class FakeCycleFactory(BaseFake):
         if "start" in kw:
             start = kw.pop("start")
         else:
-            start = datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone())
+            start = dt.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone())
         if "end" in kw:
             end = kw.pop("end")
         else:
-            end = start + datetime.timedelta(365)
+            end = start + dt.timedelta(365)
         cycle_details = {
             "organization": getattr(self, "organization", None),
             "user": getattr(self, "user", None),
@@ -421,8 +421,8 @@ class FakeGreenAssessmentFactory(BaseFake):
         validity_duration = kw.pop("validity_duration", None)
         if validity_duration:
             if isinstance(validity_duration, int):
-                validity_duration = datetime.timedelta(validity_duration)
-            if not (isinstance(validity_duration, datetime.timedelta)):
+                validity_duration = dt.timedelta(validity_duration)
+            if not (isinstance(validity_duration, dt.timedelta)):
                 raise TypeError("validity_duration must be an integer or timedelta")
             green_assessment["validity_duration"] = validity_duration
         green_assessment.update(kw)
@@ -780,7 +780,7 @@ class FakeAnalysisFactory(BaseFake):
             "access_level_instance": access_level_instance if access_level_instance is not None else self.organization.root,
             "user": user if user is not None else user,  # noqa: RUF034
             "service": service if service is not None else Analysis.BSYNCR,
-            "start_time": datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
+            "start_time": dt.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
             "configuration": configuration if configuration is not None else {},
         }
 
@@ -902,7 +902,7 @@ class FakeElementFactory(BaseFake):
 
     def get_element(self, organization=None, property=None, **kw):  # noqa: A002
         uniformat_code = random.choice(uniformat_codes)
-        formatted_date = datetime.date.today().strftime("%Y-%m-%d")
+        formatted_date = dt.date.today().strftime("%Y-%m-%d")
         element_details = {
             "organization_id": organization.pk if organization else self.organization.pk,
             "property_id": property.pk if property else self.property.pk,

@@ -4,7 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import calendar
-import datetime
+import datetime as dt
 
 import dateutil
 from dateutil import tz as dateutil_tz
@@ -33,9 +33,9 @@ def convert_datestr(datestr, make_tz_aware=False):
         value = dateutil.parser.parse(datestr)
         if make_tz_aware:
             if value.tzinfo is None:
-                value = make_aware(value, timezone=datetime.UTC)
+                value = make_aware(value, timezone=dt.UTC)
             else:
-                value = value.astimezone(datetime.UTC)
+                value = value.astimezone(dt.UTC)
         return value
     except (TypeError, ValueError):
         return None
@@ -53,7 +53,7 @@ def parse_datetime(maybe_datetime):
     Process a datetime value that may be None, timestamp, strftime.
     """
     if isinstance(maybe_datetime, (int, float)):
-        return datetime.datetime.fromtimestamp(maybe_datetime / 1000)
+        return dt.datetime.fromtimestamp(maybe_datetime / 1000)
     elif isinstance(maybe_datetime, str):
         return dateutil.parser.parse(maybe_datetime)
     else:

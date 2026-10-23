@@ -209,7 +209,7 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
         elements = self.get_queryset().filter(code__code__startswith=code)
         page = self.paginator.paginate_queryset(elements, request)
 
-        return self.paginator.get_paginated_response(self.serializer_class(page, many=True).data)
+        return self.paginator.get_paginated_response(self.get_serializer(page, many=True).data)
 
 
 @method_decorator(
