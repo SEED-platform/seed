@@ -19,6 +19,7 @@ from collections import defaultdict, namedtuple
 from datetime import UTC, date, datetime
 from itertools import chain
 from math import ceil
+from uuid import uuid4
 
 from celery import chain as celery_chain
 from celery import chord, group, shared_task
@@ -124,7 +125,7 @@ def _is_occupied_at_timestamp(occupied_timestamps, occupied_states, timestamp):
 
 
 @shared_task(ignore_result=True)
-def check_data_chunk(org_id, model, ids, dq_id, cycle_goal_id=None):
+def check_data_chunk(org_id, model, ids, dq_id, cycle_goal_id=None, chunk_identifier=None, chunk_index=None):
     try:
         organization = Organization.objects.get(id=org_id)
         super_organization = organization.get_parent()
@@ -145,17 +146,23 @@ def check_data_chunk(org_id, model, ids, dq_id, cycle_goal_id=None):
     else:
         cycle_goal = CycleGoal.objects.get(pk=cycle_goal_id)
         d.check_data_cross_cycle(cycle_goal.goal_id, state_pairs)
-    d.save_to_cache(dq_id, organization.id)
+    if chunk_identifier is not None and chunk_index is not None:
+        d.save_chunk_to_cache(chunk_identifier, organization.id, chunk_index)
+    else:
+        d.save_to_cache(dq_id, organization.id)
 
 
 @shared_task(ignore_result=True)
-def finish_checking(progress_key):
+def finish_checking(progress_key, organization_id=None, dq_id=None, chunk_identifier=None, chunk_count=None):
     """
     Chord that is called after the data quality check is complete
 
     :param progress_key: import file primary key
     :return: dict, results from queue
     """
+    if organization_id is not None and dq_id is not None and chunk_identifier is not None and chunk_count is not None:
+        DataQualityCheck.combine_cached_chunks(chunk_identifier, dq_id, organization_id, chunk_count)
+
     progress_data = ProgressData.from_key(progress_key)
     progress_data.finish_with_success()
     return progress_data.result()
@@ -178,6 +185,7 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, goal_id, import_file_i
 
     progress_data = ProgressData(func_name="check_data", unique_id=dq_id)
     progress_data.delete()
+    chunk_identifier = uuid4().hex
 
     if import_file_id:
         propertystate_ids = list(
@@ -191,12 +199,12 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, goal_id, import_file_i
             .values_list("id", flat=True)
         )
 
-    tasks = _data_quality_check_create_tasks(org_id, propertystate_ids, taxlotstate_ids, goal_id, dq_id)
+    tasks = _data_quality_check_create_tasks(org_id, propertystate_ids, taxlotstate_ids, goal_id, dq_id, chunk_identifier)
     progress_data.total = len(tasks)
     progress_data.save()
     if tasks:
         # specify the chord as an immutable with .si
-        chord(tasks, interval=15)(finish_checking.si(progress_data.key))
+        chord(tasks, interval=15)(finish_checking.si(progress_data.key, org_id, dq_id, chunk_identifier, len(tasks)))
     else:
         progress_data.finish_with_success()
 
@@ -631,7 +639,7 @@ def _map_data_create_tasks(import_file_id, progress_key):
     return tasks
 
 
-def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_ids, goal, dq_id):
+def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_ids, goal, dq_id, chunk_identifier):
     """
     Entry point into running data quality checks.
 
@@ -654,12 +662,16 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
     if property_state_ids:
         id_chunks = [list(chunk) for chunk in batch(property_state_ids, 100)]
         for ids in id_chunks:
-            tasks.append(check_data_chunk.s(org_id, "PropertyState", ids, dq_id))
+            tasks.append(
+                check_data_chunk.s(org_id, "PropertyState", ids, dq_id, chunk_identifier=chunk_identifier, chunk_index=len(tasks))
+            )
 
     if taxlot_state_ids:
         id_chunks_tl = [list(chunk) for chunk in batch(taxlot_state_ids, 100)]
         for ids in id_chunks_tl:
-            tasks.append(check_data_chunk.s(org_id, "TaxLotState", ids, dq_id))
+            tasks.append(
+                check_data_chunk.s(org_id, "TaxLotState", ids, dq_id, chunk_identifier=chunk_identifier, chunk_index=len(tasks))
+            )
 
     if goal:
         # If goal is passed, treat as a cross cycle data quality check.
@@ -671,7 +683,17 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
             property_ids = most_recent_cycle_goal.properties().values_list("id", flat=True)
             id_chunks = [list(chunk) for chunk in batch(property_ids, 100)]
             for ids in id_chunks:
-                tasks.append(check_data_chunk.s(org_id, "Property", ids, dq_id, most_recent_cycle_goal.id))
+                tasks.append(
+                    check_data_chunk.s(
+                        org_id,
+                        "Property",
+                        ids,
+                        dq_id,
+                        most_recent_cycle_goal.id,
+                        chunk_identifier,
+                        len(tasks),
+                    )
+                )
         except Goal.DoesNotExist:
             pass
 

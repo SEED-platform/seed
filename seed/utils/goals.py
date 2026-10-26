@@ -312,12 +312,13 @@ def get_state_pairs(property_ids, cycle_goal_id):
     """Given a list of property ids, return a dictionary containing baseline and current states"""
     # Prefetch PropertyView objects
     try:
-        cycle_goal = CycleGoal.objects.get(id=cycle_goal_id)
+        cycle_goal = CycleGoal.objects.select_related("goal__baseline_cycle", "current_cycle").get(id=cycle_goal_id)
     except CycleGoal.DoesNotExist:
         return []
 
-    property_views = PropertyView.objects.filter(
-        cycle__in=[cycle_goal.goal.baseline_cycle, cycle_goal.current_cycle], property__in=property_ids
+    property_views = (
+        PropertyView.objects.filter(cycle__in=[cycle_goal.goal.baseline_cycle, cycle_goal.current_cycle], property__in=property_ids)
+        .select_related("state", "cycle")
     )
     prefetch = Prefetch("views", queryset=property_views, to_attr="prefetched_views")
 
@@ -333,7 +334,15 @@ def get_state_pairs(property_ids, cycle_goal_id):
         baseline_state = baseline_view.state if baseline_view else None
         current_state = current_view.state if current_view else None
 
-        state_pairs.append({"property": property, "baseline": baseline_state, "current": current_state})
+        state_pairs.append(
+            {
+                "property": property,
+                "baseline": baseline_state,
+                "current": current_state,
+                "baseline_view": baseline_view,
+                "current_view": current_view,
+            }
+        )
 
     return state_pairs
 

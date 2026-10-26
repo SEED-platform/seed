@@ -19,7 +19,7 @@ from quantityfield.units import ureg
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Column, DerivedColumn, GoalNote, PropertyView, PropertyViewLabel, StatusLabel, TaxLotView, obj_to_dict
 from seed.serializers.pint import pretty_units
-from seed.utils.cache import get_cache_raw, set_cache_raw
+from seed.utils.cache import delete_cache, get_cache_raw, set_cache_raw
 from seed.utils.goals import percentage_difference
 from seed.utils.time_utils import convert_datestr
 
@@ -745,6 +745,25 @@ class DataQualityCheck(models.Model):
         """
         return f"data_quality_results__{organization_id}__{identifier}"
 
+    @staticmethod
+    def chunk_cache_key(identifier, organization_id, chunk_index):
+        return f"{DataQualityCheck.cache_key(identifier, organization_id)}__chunk__{chunk_index}"
+
+    def save_chunk_to_cache(self, identifier, organization_id, chunk_index):
+        set_cache_raw(self.chunk_cache_key(identifier, organization_id, chunk_index), list(self.results.values()), 86400)
+
+    @classmethod
+    def combine_cached_chunks(cls, chunk_identifier, identifier, organization_id, chunk_count):
+        chunk_keys = [cls.chunk_cache_key(chunk_identifier, organization_id, index) for index in range(chunk_count)]
+        results = []
+        for chunk_key in chunk_keys:
+            results.extend(get_cache_raw(chunk_key) or [])
+
+        results.sort(key=lambda result: result["id"])
+        set_cache_raw(cls.cache_key(identifier, organization_id), results, 86400)
+        for chunk_key in chunk_keys:
+            delete_cache(chunk_key)
+
     def check_data(self, record_type, rows):
         """
         Send in data as a queryset from the Property/Taxlot ids.
@@ -788,14 +807,16 @@ class DataQualityCheck(models.Model):
         :param goal:
         :param state_pairs: [{property: Property, baseline: PropertyState, current: PropertyState}, {}, ...]
         """
-        rules = self.rules.filter(enabled=True, table_name="Goal")
-        goal_notes = GoalNote.objects.filter(goal=goal_id)
+        rules = self.rules.filter(enabled=True, table_name="Goal").select_related("status_label")
+        goal_notes = GoalNote.objects.filter(goal=goal_id).select_related(
+            "goal__area_column", "goal__eui_column1", "goal__eui_column2", "goal__eui_column3"
+        )
         goal_notes = {note.property_id: note for note in goal_notes}
         goal_notes_to_update = []
         fields = self.get_fieldnames("PropertyState")
         for row in state_pairs:
             for cycle_key in ["baseline", "current"]:
-                self.init_result("PropertyState", row[cycle_key], fields)
+                self.init_result("PropertyState", row[cycle_key], fields, row.get(f"{cycle_key}_view"))
 
             goal_note = self._check_cross_cycle(rules, row, goal_notes)
             if goal_note:
@@ -805,16 +826,18 @@ class DataQualityCheck(models.Model):
 
         GoalNote.objects.bulk_update(goal_notes_to_update, ["passed_checks"])
 
-    def init_result(self, record_type, row, fields):
+    def init_result(self, record_type, row, fields, view=None):
         # Initialize the ID if it does not exist yet. Add in the other
         # fields that are of interest to the GUI
         if row and row.id not in self.results:
             self.results[row.id] = {}
             for field in fields:
                 self.results[row.id][field] = getattr(row, field)
-                view = row.taxlotview_set.first() if record_type == "TaxLotState" else row.propertyview_set.first()
-                if view:
-                    self.results[row.id]["cycle"] = view.cycle.name
+            if view is None:
+                views = row.taxlotview_set if record_type == "TaxLotState" else row.propertyview_set
+                view = views.first()
+            if view:
+                self.results[row.id]["cycle"] = view.cycle.name
             self.results[row.id]["data_quality_results"] = []
 
     def prune_results(self):
@@ -971,8 +994,12 @@ class DataQualityCheck(models.Model):
             # NEED TO MAKE SURE MISSING DATA IS APPLIED
             return
         goal = goal_note.goal
-        baseline_view = row["baseline"].propertyview_set.first() if row["baseline"] else None
-        current_view = row["current"].propertyview_set.first() if row["current"] else None
+        baseline_view = row.get("baseline_view")
+        current_view = row.get("current_view")
+        if baseline_view is None and row["baseline"]:
+            baseline_view = row["baseline"].propertyview_set.first()
+        if current_view is None and row["current"]:
+            current_view = row["current"].propertyview_set.first()
 
         def check_range():
             return (rule.min is None or value > float(rule.min)) and (rule.max is None or value < float(rule.max))
