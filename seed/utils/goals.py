@@ -316,10 +316,9 @@ def get_state_pairs(property_ids, cycle_goal_id):
     except CycleGoal.DoesNotExist:
         return []
 
-    property_views = (
-        PropertyView.objects.filter(cycle__in=[cycle_goal.goal.baseline_cycle, cycle_goal.current_cycle], property__in=property_ids)
-        .select_related("state", "cycle")
-    )
+    property_views = PropertyView.objects.filter(
+        cycle__in=[cycle_goal.goal.baseline_cycle, cycle_goal.current_cycle], property__in=property_ids
+    ).select_related("state", "cycle")
     prefetch = Prefetch("views", queryset=property_views, to_attr="prefetched_views")
 
     # Fetch properties and related PropertyView objects

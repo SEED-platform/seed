@@ -662,16 +662,12 @@ def _data_quality_check_create_tasks(org_id, property_state_ids, taxlot_state_id
     if property_state_ids:
         id_chunks = [list(chunk) for chunk in batch(property_state_ids, 100)]
         for ids in id_chunks:
-            tasks.append(
-                check_data_chunk.s(org_id, "PropertyState", ids, dq_id, chunk_identifier=chunk_identifier, chunk_index=len(tasks))
-            )
+            tasks.append(check_data_chunk.s(org_id, "PropertyState", ids, dq_id, chunk_identifier=chunk_identifier, chunk_index=len(tasks)))
 
     if taxlot_state_ids:
         id_chunks_tl = [list(chunk) for chunk in batch(taxlot_state_ids, 100)]
         for ids in id_chunks_tl:
-            tasks.append(
-                check_data_chunk.s(org_id, "TaxLotState", ids, dq_id, chunk_identifier=chunk_identifier, chunk_index=len(tasks))
-            )
+            tasks.append(check_data_chunk.s(org_id, "TaxLotState", ids, dq_id, chunk_identifier=chunk_identifier, chunk_index=len(tasks)))
 
     if goal:
         # If goal is passed, treat as a cross cycle data quality check.
