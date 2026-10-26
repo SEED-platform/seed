@@ -808,7 +808,7 @@ class DataQualityCheck(models.Model):
         :param state_pairs: [{property: Property, baseline: PropertyState, current: PropertyState}, {}, ...]
         """
         rules = self.rules.filter(enabled=True, table_name="Goal").select_related("status_label")
-        goal_notes = GoalNote.objects.filter(goal=goal_id).select_related(
+        goal_notes = GoalNote.objects.filter(goal=goal_id, property_id__in=[row["property"].id for row in state_pairs]).select_related(
             "goal__area_column", "goal__eui_column1", "goal__eui_column2", "goal__eui_column3"
         )
         goal_notes = {note.property_id: note for note in goal_notes}
