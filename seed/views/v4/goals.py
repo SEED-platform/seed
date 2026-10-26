@@ -41,11 +41,15 @@ class GoalViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
 
         access_level_instance = goal.access_level_instance
-        property_view_ids = PropertyView.objects.filter(
-            cycle_id=goal.baseline_cycle_id,
-            property__organization_id=org_id,
-            property__access_level_instance__lft__gte=access_level_instance.lft,
-            property__access_level_instance__rgt__lte=access_level_instance.rgt,
-        ).order_by("id").values_list("id", flat=True)
+        property_view_ids = (
+            PropertyView.objects.filter(
+                cycle_id=goal.baseline_cycle_id,
+                property__organization_id=org_id,
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
+            .order_by("id")
+            .values_list("id", flat=True)
+        )
 
         return JsonResponse({"property_view_ids": list(property_view_ids)})
