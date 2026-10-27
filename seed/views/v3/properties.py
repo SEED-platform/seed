@@ -400,6 +400,18 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 {"status": "error", "message": "Need to pass organization_id as query parameter"}, status=status.HTTP_400_BAD_REQUEST
             )
 
+        try:
+            if profile_id is not None:
+                profile_id = int(profile_id)
+            if not isinstance(cycle_ids, list):
+                raise TypeError
+            cycle_ids = [int(cycle_id) for cycle_id in cycle_ids]
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {"status": "error", "message": "profile_id must be an integer and cycle_ids must be a list of integers"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         response = properties_across_cycles(org_id, ali, profile_id, cycle_ids)
 

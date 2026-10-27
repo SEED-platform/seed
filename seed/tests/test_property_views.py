@@ -1188,6 +1188,19 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         assert resp.status_code == 200
         assert len(resp.json()[str(self.cycle.id)]) == 0
 
+    def test_property_filter_by_cycle_invalid_params(self):
+        url = reverse("api:v3:properties-filter-by-cycle") + f"?organization_id={self.org.pk}"
+        self.login_as_root_member()
+
+        for body in ({"profile_id": "abc", "cycle_ids": [self.cycle.id]}, {"cycle_ids": ["x"]}, {"cycle_ids": self.cycle.id}):
+            resp = self.client.post(url, json.dumps(body), content_type="application/json")
+            assert resp.status_code == 400, body
+            assert resp.json()["status"] == "error"
+
+        # a null profile_id is still accepted
+        resp = self.client.post(url, json.dumps({"profile_id": None, "cycle_ids": [self.cycle.id]}), content_type="application/json")
+        assert resp.status_code == 200
+
     def test_property_filter_by_cycle_multiple_cycles(self):
         # a second cycle with a view for the *same* underlying property (i.e. the same
         # linking id) plus an unrelated property that only exists in the second cycle
