@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from datetime import UTC, datetime
+from uuid import uuid4
 from zoneinfo import ZoneInfo
 
 import pytest
@@ -26,6 +27,8 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, AssertDictSubsetMixin, DataMappingBaseTestCase
+from seed.utils.cache import delete_cache, get_cache_raw, set_cache_raw
+from seed.utils.goals import get_state_pairs
 
 
 class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
@@ -56,6 +59,26 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
 
         rule = Rule.objects.filter(table_name="PropertyState", field="conditioned_floor_area", severity=Rule.SEVERITY_ERROR)
         self.assertDictContainsSubset(ex_rule, model_to_dict(rule.first()))
+
+    def test_combine_cached_result_chunks(self):
+        chunk_identifier = uuid4().hex
+        identifier = uuid4().hex
+        first_chunk_key = DataQualityCheck.chunk_cache_key(chunk_identifier, self.org.id, 0)
+        second_chunk_key = DataQualityCheck.chunk_cache_key(chunk_identifier, self.org.id, 1)
+        result_key = DataQualityCheck.cache_key(identifier, self.org.id)
+        set_cache_raw(first_chunk_key, [{"id": 12, "data_quality_results": []}], 86400)
+        set_cache_raw(second_chunk_key, [{"id": 4, "data_quality_results": []}], 86400)
+
+        try:
+            DataQualityCheck.combine_cached_chunks(chunk_identifier, identifier, self.org.id, 2)
+
+            self.assertEqual([result["id"] for result in get_cache_raw(result_key)], [4, 12])
+            self.assertIsNone(get_cache_raw(first_chunk_key))
+            self.assertIsNone(get_cache_raw(second_chunk_key))
+        finally:
+            delete_cache(result_key)
+            delete_cache(first_chunk_key)
+            delete_cache(second_chunk_key)
 
     def test_remove_rules(self):
         dq = DataQualityCheck.retrieve(self.org.id)
@@ -553,6 +576,16 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
             "Low Area % Change": StatusLabel.objects.get(name="Low Area % Change"),
             "Low Area": StatusLabel.objects.get(name="Low Area"),
         }
+
+    def test_cross_cycle_checks_load_related_rows_without_per_property_queries(self):
+        Rule.objects.filter(table_name="Goal").update(enabled=False)
+        state_pairs = get_state_pairs(
+            [self.property1.id, self.property2.id, self.property3.id, self.property4.id],
+            self.cycle_goal.id,
+        )
+
+        with self.assertNumQueries(3):
+            self.dq.check_data_cross_cycle(self.goal.id, state_pairs)
 
     def test_cross_cycle_dqc(self):
         self.login_as_root_member()

@@ -36,6 +36,7 @@ from seed.models import (
     PropertyState,
     PropertyView,
 )
+from seed.models.data_quality import DataQualityCheck
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.cache import get_cache_raw
@@ -1329,11 +1330,16 @@ class TestImportFileViewSetPermissions(AccessLevelBaseTestCase, DataMappingBaseT
     def test_import_file_start_data_quality_checks(self):
         url = reverse_lazy("api:v3:import_files-start-data-quality-checks", args=[self.import_file.pk])
         data = json.dumps({"cycle_id": self.cycle.id, "organization_id": self.org.id})
+        self.state.import_file = self.import_file
+        self.state.data_state = DATA_STATE_MAPPING
+        self.state.save(update_fields=["import_file", "data_state"])
 
         # root users can
         self.login_as_root_member()
         response = self.client.post(url, data, content_type="application/json")
         assert response.status_code == 200
+        assert response.json()["progress"]["status"] == "success"
+        assert get_cache_raw(DataQualityCheck.cache_key(self.import_file.pk, self.org.id)) is not None
 
         # child user cannot
         self.login_as_child_member()
