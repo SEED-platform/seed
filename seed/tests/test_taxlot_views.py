@@ -395,6 +395,20 @@ class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
         assert resp.status_code == 200
         assert len(resp.json()[str(self.cycle.id)]) == 0
 
+    def test_taxlot_filter_by_cycle_invalid_params(self):
+        url = reverse("api:v3:taxlots-filter-by-cycle") + f"?organization_id={self.org.pk}"
+        self.login_as_root_member()
+
+        for body in ({"profile_id": "abc", "cycle_ids": [self.cycle.id]}, {"cycle_ids": ["x"]}, {"cycle_ids": self.cycle.id}):
+            resp = self.client.post(url, json.dumps({**body, "organization_id": self.org.pk}), content_type="application/json")
+            assert resp.status_code == 400, body
+            assert resp.json()["status"] == "error"
+
+        # a null profile_id is still accepted
+        params = json.dumps({"profile_id": None, "cycle_ids": [self.cycle.id], "organization_id": self.org.pk})
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 200
+
     def test_taxlot_filter_by_cycle_multiple_cycles(self):
         # a second cycle with a view for the *same* underlying tax lot (i.e. the same
         # linking id) plus an unrelated tax lot that only exists in the second cycle
