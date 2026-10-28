@@ -130,7 +130,7 @@ def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
         )
 
 
-def properties_across_cycles(org_id, ali, profile_id, cycle_ids=None):
+def properties_across_cycles(org_id, ali, profile_id, cycle_ids=None, property_ids=None):
     # Identify column preferences to be used to scope fields/values
     if cycle_ids is None:
         cycle_ids = []
@@ -162,16 +162,15 @@ def properties_across_cycles(org_id, ali, profile_id, cycle_ids=None):
     # notes, merged-state audit log, access level paths, related tax lot views, etc.) and
     # re-fetched the (unchanging) organization row once per selected cycle - the more
     # cycles requested, the more redundant work was done for no benefit.
-    property_views = list(
-        PropertyView.objects.select_related("property", "state", "cycle")
-        .filter(
-            property__organization_id=org_id,
-            cycle_id__in=cycle_ids,
-            property__access_level_instance__lft__gte=ali.lft,
-            property__access_level_instance__rgt__lte=ali.rgt,
-        )
-        .order_by("id")
+    views = PropertyView.objects.select_related("property", "state", "cycle").filter(
+        property__organization_id=org_id,
+        cycle_id__in=cycle_ids,
+        property__access_level_instance__lft__gte=ali.lft,
+        property__access_level_instance__rgt__lte=ali.rgt,
     )
+    if property_ids is not None:
+        views = views.filter(property_id__in=property_ids)
+    property_views = list(views.order_by("id"))
     cycle_id_by_view_id = {view.id: view.cycle_id for view in property_views}
 
     related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)

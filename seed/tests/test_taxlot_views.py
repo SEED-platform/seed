@@ -399,7 +399,13 @@ class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
         url = reverse("api:v3:taxlots-filter-by-cycle") + f"?organization_id={self.org.pk}"
         self.login_as_root_member()
 
-        for body in ({"profile_id": "abc", "cycle_ids": [self.cycle.id]}, {"cycle_ids": ["x"]}, {"cycle_ids": self.cycle.id}):
+        for body in (
+            {"profile_id": "abc", "cycle_ids": [self.cycle.id]},
+            {"cycle_ids": ["x"]},
+            {"cycle_ids": self.cycle.id},
+            {"cycle_ids": [self.cycle.id], "taxlot_ids": ["x"]},
+            {"cycle_ids": [self.cycle.id], "taxlot_ids": self.taxlot.id},
+        ):
             resp = self.client.post(url, json.dumps({**body, "organization_id": self.org.pk}), content_type="application/json")
             assert resp.status_code == 400, body
             assert resp.json()["status"] == "error"
@@ -408,6 +414,35 @@ class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
         params = json.dumps({"profile_id": None, "cycle_ids": [self.cycle.id], "organization_id": self.org.pk})
         resp = self.client.post(url, params, content_type="application/json")
         assert resp.status_code == 200
+
+    def test_taxlot_filter_by_cycle_taxlot_ids(self):
+        # another tax lot with views in both cycles; self.taxlot only has a view in self.cycle
+        cycle_2 = self.cycle_factory.get_cycle(start=datetime(2019, 1, 1, tzinfo=get_current_timezone()))
+        other_view = self.taxlot_view_factory.get_taxlot_view(cycle=self.cycle)
+        self.taxlot_view_factory.get_taxlot_view(taxlot=other_view.taxlot, cycle=cycle_2)
+
+        url = reverse("api:v3:taxlots-filter-by-cycle") + f"?organization_id={self.org.pk}"
+        self.login_as_root_member()
+
+        params = json.dumps({"cycle_ids": [self.cycle.id, cycle_2.id], "taxlot_ids": [self.taxlot.id], "organization_id": self.org.pk})
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert [row["id"] for row in data[str(self.cycle.id)]] == [self.taxlot.id]
+        assert data[str(cycle_2.id)] == []
+
+        # an empty taxlot_ids list means no tax lot, not every tax lot
+        params = json.dumps({"cycle_ids": [self.cycle.id, cycle_2.id], "taxlot_ids": [], "organization_id": self.org.pk})
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 200
+        assert resp.json() == {str(self.cycle.id): [], str(cycle_2.id): []}
+
+        # omitting taxlot_ids returns every tax lot
+        params = json.dumps({"cycle_ids": [self.cycle.id, cycle_2.id], "organization_id": self.org.pk})
+        resp = self.client.post(url, params, content_type="application/json")
+        data = resp.json()
+        assert len(data[str(self.cycle.id)]) == 2
+        assert len(data[str(cycle_2.id)]) == 1
 
     def test_taxlot_filter_by_cycle_multiple_cycles(self):
         # a second cycle with a view for the *same* underlying tax lot (i.e. the same

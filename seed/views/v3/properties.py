@@ -369,12 +369,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 "organization_id": "integer",
                 "profile_id": "integer",
                 "cycle_ids": ["integer"],
+                "property_ids": ["integer"],
             },
             required=["organization_id", "cycle_ids"],
             description="Properties:\n"
             "- organization_id: ID of organization\n"
             "- profile_id: Either an id of a list settings profile, or undefined\n"
-            "- cycle_ids: The IDs of the cycle to get properties",
+            "- cycle_ids: The IDs of the cycle to get properties\n"
+            "- property_ids: Optional IDs of the properties to limit results to",
         )
     )
     @method_decorator(
@@ -394,6 +396,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         org_id = self.get_organization(request)
         profile_id = request.data.get("profile_id", -1)
         cycle_ids = request.data.get("cycle_ids", [])
+        property_ids = request.data.get("property_ids")
 
         if not org_id:
             return JsonResponse(
@@ -406,14 +409,18 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             if not isinstance(cycle_ids, list):
                 raise TypeError
             cycle_ids = [int(cycle_id) for cycle_id in cycle_ids]
+            if property_ids is not None:
+                if not isinstance(property_ids, list):
+                    raise TypeError
+                property_ids = [int(property_id) for property_id in property_ids]
         except (TypeError, ValueError):
             return JsonResponse(
-                {"status": "error", "message": "profile_id must be an integer and cycle_ids must be a list of integers"},
+                {"status": "error", "message": "profile_id must be an integer and cycle_ids and property_ids must be lists of integers"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-        response = properties_across_cycles(org_id, ali, profile_id, cycle_ids)
+        response = properties_across_cycles(org_id, ali, profile_id, cycle_ids, property_ids=property_ids)
 
         return JsonResponse(response)
 

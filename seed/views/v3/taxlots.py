@@ -124,12 +124,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                 "organization_id": "integer",
                 "profile_id": "integer",
                 "cycle_ids": ["integer"],
+                "taxlot_ids": ["integer"],
             },
             required=["organization_id", "cycle_ids"],
             description="Properties:\n"
             "- organization_id: ID of organization\n"
             "- profile_id: Either an id of a list settings profile, or undefined\n"
-            "- cycle_ids: The IDs of the cycle to get taxlots",
+            "- cycle_ids: The IDs of the cycle to get taxlots\n"
+            "- taxlot_ids: Optional IDs of the tax lots to limit results to",
         )
     )
     @method_decorator(
@@ -149,6 +151,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         org_id = request.data.get("organization_id", None)
         profile_id = request.data.get("profile_id", -1)
         cycle_ids = request.data.get("cycle_ids", [])
+        taxlot_ids = request.data.get("taxlot_ids")
 
         if not org_id:
             return JsonResponse(
@@ -161,14 +164,18 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             if not isinstance(cycle_ids, list):
                 raise TypeError
             cycle_ids = [int(cycle_id) for cycle_id in cycle_ids]
+            if taxlot_ids is not None:
+                if not isinstance(taxlot_ids, list):
+                    raise TypeError
+                taxlot_ids = [int(taxlot_id) for taxlot_id in taxlot_ids]
         except (TypeError, ValueError):
             return JsonResponse(
-                {"status": "error", "message": "profile_id must be an integer and cycle_ids must be a list of integers"},
+                {"status": "error", "message": "profile_id must be an integer and cycle_ids and taxlot_ids must be lists of integers"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-        response = taxlots_across_cycles(org_id, ali, profile_id, cycle_ids)
+        response = taxlots_across_cycles(org_id, ali, profile_id, cycle_ids, taxlot_ids=taxlot_ids)
 
         return JsonResponse(response)
 

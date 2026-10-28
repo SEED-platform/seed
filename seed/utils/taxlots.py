@@ -8,7 +8,7 @@ from seed.models import VIEW_LIST, VIEW_LIST_TAXLOT, Column, ColumnListProfile, 
 from seed.serializers.pint import apply_display_unit_preferences
 
 
-def taxlots_across_cycles(org_id, ali, profile_id, cycle_ids=None):
+def taxlots_across_cycles(org_id, ali, profile_id, cycle_ids=None, taxlot_ids=None):
     # Identify column preferences to be used to scope fields/values
     if cycle_ids is None:
         cycle_ids = []
@@ -39,16 +39,15 @@ def taxlots_across_cycles(org_id, ali, profile_id, cycle_ids=None):
     # previous per-cycle loop re-ran serialize()'s internal `__in` sub-queries and
     # re-fetched the (unchanging) organization row once per selected cycle - the more
     # cycles requested, the more redundant work was done for no benefit.
-    taxlot_views = list(
-        TaxLotView.objects.select_related("taxlot", "state", "cycle")
-        .filter(
-            taxlot__organization_id=org_id,
-            cycle_id__in=cycle_ids,
-            taxlot__access_level_instance__lft__gte=ali.lft,
-            taxlot__access_level_instance__rgt__lte=ali.rgt,
-        )
-        .order_by("id")
+    views = TaxLotView.objects.select_related("taxlot", "state", "cycle").filter(
+        taxlot__organization_id=org_id,
+        cycle_id__in=cycle_ids,
+        taxlot__access_level_instance__lft__gte=ali.lft,
+        taxlot__access_level_instance__rgt__lte=ali.rgt,
     )
+    if taxlot_ids is not None:
+        views = views.filter(taxlot_id__in=taxlot_ids)
+    taxlot_views = list(views.order_by("id"))
     cycle_id_by_view_id = {view.id: view.cycle_id for view in taxlot_views}
 
     related_results = TaxLotProperty.serialize(taxlot_views, show_columns, columns_from_database)

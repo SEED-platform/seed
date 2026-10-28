@@ -1192,7 +1192,13 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         url = reverse("api:v3:properties-filter-by-cycle") + f"?organization_id={self.org.pk}"
         self.login_as_root_member()
 
-        for body in ({"profile_id": "abc", "cycle_ids": [self.cycle.id]}, {"cycle_ids": ["x"]}, {"cycle_ids": self.cycle.id}):
+        for body in (
+            {"profile_id": "abc", "cycle_ids": [self.cycle.id]},
+            {"cycle_ids": ["x"]},
+            {"cycle_ids": self.cycle.id},
+            {"cycle_ids": [self.cycle.id], "property_ids": ["x"]},
+            {"cycle_ids": [self.cycle.id], "property_ids": self.property.id},
+        ):
             resp = self.client.post(url, json.dumps(body), content_type="application/json")
             assert resp.status_code == 400, body
             assert resp.json()["status"] == "error"
@@ -1200,6 +1206,35 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         # a null profile_id is still accepted
         resp = self.client.post(url, json.dumps({"profile_id": None, "cycle_ids": [self.cycle.id]}), content_type="application/json")
         assert resp.status_code == 200
+
+    def test_property_filter_by_cycle_property_ids(self):
+        # another property with views in both cycles; self.property only has a view in self.cycle
+        cycle_2 = self.cycle_factory.get_cycle(start=datetime(2019, 1, 1, tzinfo=get_current_timezone()))
+        other_view = self.property_view_factory.get_property_view(cycle=self.cycle)
+        self.property_view_factory.get_property_view(prprty=other_view.property, cycle=cycle_2)
+
+        url = reverse("api:v3:properties-filter-by-cycle") + f"?organization_id={self.org.pk}"
+        self.login_as_root_member()
+
+        params = json.dumps({"cycle_ids": [self.cycle.id, cycle_2.id], "property_ids": [self.property.id]})
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert [row["id"] for row in data[str(self.cycle.id)]] == [self.property.id]
+        assert data[str(cycle_2.id)] == []
+
+        # an empty property_ids list means no property, not every property
+        params = json.dumps({"cycle_ids": [self.cycle.id, cycle_2.id], "property_ids": []})
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 200
+        assert resp.json() == {str(self.cycle.id): [], str(cycle_2.id): []}
+
+        # omitting property_ids returns every property
+        params = json.dumps({"cycle_ids": [self.cycle.id, cycle_2.id]})
+        resp = self.client.post(url, params, content_type="application/json")
+        data = resp.json()
+        assert len(data[str(self.cycle.id)]) == 2
+        assert len(data[str(cycle_2.id)]) == 1
 
     def test_property_filter_by_cycle_multiple_cycles(self):
         # a second cycle with a view for the *same* underlying property (i.e. the same
