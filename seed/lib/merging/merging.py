@@ -155,6 +155,13 @@ def _merge_extra_data(ed1, ed2, priorities, recognize_empty_columns, ignore_merg
     return extra_data
 
 
+def _merge_incoming_labels(state1, state2, merged_state):
+    state1_labels = state1.incoming_labels.split(",") if state1.incoming_labels else []
+    state2_labels = state2.incoming_labels.split(",") if state2.incoming_labels else []
+    combined_labels = set(state1_labels + state2_labels)
+    merged_state.incoming_labels = ",".join(combined_labels) if combined_labels else None
+
+
 def merge_state(merged_state, state1, state2, priorities, ignore_merge_protection=False):
     """
     Set attributes on our Canonical model, saving differences.
@@ -216,6 +223,8 @@ def merge_state(merged_state, state1, state2, priorities, ignore_merge_protectio
     recognize_empty_ed_columns = state2.organization.column_set.filter(
         table_name=state2.__class__.__name__, recognize_empty=True, is_extra_data=True
     ).values_list("column_name", flat=True)
+
+    _merge_incoming_labels(state1, state2, merged_state)
 
     merged_state.extra_data = _merge_extra_data(
         state1.extra_data,
