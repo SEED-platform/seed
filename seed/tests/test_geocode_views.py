@@ -9,6 +9,7 @@ import vcr
 from django.conf import settings
 from django.test import TestCase
 from django.urls import reverse
+from django.utils.translation import gettext
 from rest_framework import status
 
 from seed.landing.models import SEEDUser as User
@@ -97,6 +98,11 @@ class GeocodeViewTests(TestCase):
         with base_vcr.use_cassette("seed/tests/data/vcr_cassettes/geocode_invalid_or_expired_key.yaml"):
             property_details = self.property_state_factory.get_details()
             property_details["organization_id"] = self.org.id
+            property_details["address_line_1"] = "3001 Brighton Blvd"
+            property_details["address_line_2"] = "suite 2693"
+            property_details["city"] = "Denver"
+            property_details["state"] = "Colorado"
+            property_details["postal_code"] = "80216"
             self.org.mapquest_api_key = "placeholder"
             self.org.save()
 
@@ -110,6 +116,7 @@ class GeocodeViewTests(TestCase):
             url = reverse("api:v3:geocode-geocode-by-ids") + f"?organization_id={self.org.pk}"
             response = self.client.post(url, post_params)
             self.assertEqual(response.status_code, status.HTTP_412_PRECONDITION_FAILED)
+            self.assertEqual(response.json()["message"], gettext("FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"))
 
     def test_geocode_confidence_summary_returns_summary_dictionary(self):
         property_none_details = self.property_state_factory.get_details()
