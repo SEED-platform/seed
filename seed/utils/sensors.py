@@ -76,7 +76,7 @@ class PropertySensorReadingsExporter:
 
             sensor_readings = sensor_readings.filter(timestamp__range=[earliest_time, latest_time])
 
-            for sensor_reading in sensor_readings.all():
+            for sensor_reading in sensor_readings.order_by("timestamp"):
                 timestamp = sensor_reading.timestamp.astimezone(tz=self.tz).strftime(time_format)
                 times_key = str(timestamp)
 

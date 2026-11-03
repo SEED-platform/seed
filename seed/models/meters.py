@@ -272,9 +272,14 @@ class MeterReading(models.Model):
     will contain the original units and meter readings.
     """
 
-    meter = models.ForeignKey(Meter, on_delete=models.CASCADE, related_name="meter_readings", null=True, blank=True)
+    # seed_meterreading is a TimescaleDB hypertable partitioned on `start_time`, so every unique index (including the
+    # primary key) must contain it. The primary key also serves as the meter_id index, and TimescaleDB maintains its own
+    # start_time index (seed_meterreading_start_time_idx).
+    pk = models.CompositePrimaryKey("meter", "start_time", "end_time")
 
-    start_time = models.DateTimeField(db_index=True, primary_key=True)
+    meter = models.ForeignKey(Meter, on_delete=models.CASCADE, related_name="meter_readings", db_index=False)
+
+    start_time = models.DateTimeField()
     end_time = models.DateTimeField(db_index=True)
 
     reading = models.FloatField(null=True)
@@ -284,9 +289,6 @@ class MeterReading(models.Model):
 
     # This field is determined by the meter type and raw units upon import
     conversion_factor = models.FloatField()
-
-    class Meta:
-        unique_together = ("meter", "start_time", "end_time")
 
 
 def bulk_upsert_meter_readings(meter_readings):

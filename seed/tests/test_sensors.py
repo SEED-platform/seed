@@ -7,7 +7,9 @@ import json
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
+import pytest
 from django.conf import settings
+from django.db import IntegrityError, connection, transaction
 from django.urls import reverse
 from django.utils.timezone import make_aware  # make_aware is used because inconsistencies exist in creating datetime with tzinfo
 
@@ -379,3 +381,66 @@ class PropertySensorViewTests(AccessLevelBaseTestCase):
 
         # Assert
         assert result.status_code == 400
+
+
+class SensorReadingTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+
+        property_view = FakePropertyViewFactory(organization=self.org).get_property_view()
+        self.data_logger = DataLogger.objects.create(
+            property_id=property_view.property.id,
+            display_name="logger",
+            is_occupied_data=[(datetime(2020, 1, 1, tzinfo=ZoneInfo(settings.TIME_ZONE)).isoformat(), True)],
+        )
+        self.sensor_1 = Sensor.objects.create(
+            data_logger=self.data_logger, display_name="s1", sensor_type="t", units="u", column_name="sensor 1"
+        )
+        self.sensor_2 = Sensor.objects.create(
+            data_logger=self.data_logger, display_name="s2", sensor_type="t", units="u", column_name="sensor 2"
+        )
+        self.timestamp = make_aware(datetime(2020, 1, 1, 12), timezone=ZoneInfo(settings.TIME_ZONE))
+
+    def test_table_is_a_hypertable_partitioned_on_timestamp(self):
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "SELECT column_name FROM timescaledb_information.dimensions WHERE hypertable_name = 'seed_sensorreading'",
+            )
+            self.assertEqual(cursor.fetchall(), [("timestamp",)])
+
+    def test_pk_is_sensor_and_timestamp(self):
+        reading = SensorReading.objects.create(sensor=self.sensor_1, timestamp=self.timestamp, reading=1, is_occupied=False)
+
+        self.assertEqual(reading.pk, (self.sensor_1.id, self.timestamp))
+        self.assertEqual(SensorReading.objects.get(pk=(self.sensor_1.id, self.timestamp)).reading, 1)
+
+    def test_deleting_a_reading_instance_only_deletes_that_reading(self):
+        reading_1 = SensorReading.objects.create(sensor=self.sensor_1, timestamp=self.timestamp, reading=1, is_occupied=False)
+        SensorReading.objects.create(sensor=self.sensor_2, timestamp=self.timestamp, reading=2, is_occupied=False)
+
+        reading_1.delete()
+
+        self.assertEqual(list(SensorReading.objects.values_list("sensor_id", "reading")), [(self.sensor_2.id, 2)])
+
+    def test_duplicate_sensor_and_timestamp_is_rejected(self):
+        SensorReading.objects.create(sensor=self.sensor_1, timestamp=self.timestamp, reading=1, is_occupied=False)
+
+        with pytest.raises(IntegrityError), transaction.atomic():
+            SensorReading.objects.create(sensor=self.sensor_1, timestamp=self.timestamp, reading=2, is_occupied=False)
+
+    def test_save_sensor_readings_task_updates_existing_readings(self):
+        progress_data = ProgressData("save-sensor-readings-test", self.id())
+        progress_data.total = 2
+        progress_data.save()
+
+        _save_sensor_readings_task([("2020-01-01 12:00:00", 1.0)], self.data_logger.id, self.sensor_1.column_name, progress_data.key)
+        _save_sensor_readings_task([("2020-01-01 12:00:00", 2.0)], self.data_logger.id, self.sensor_2.column_name, progress_data.key)
+        result = _save_sensor_readings_task(
+            [("2020-01-01 12:00:00", 10.0)], self.data_logger.id, self.sensor_1.column_name, progress_data.key
+        )
+
+        self.assertEqual(result[self.sensor_1.column_name]["count"], 1)
+        self.assertEqual(
+            sorted(SensorReading.objects.values_list("sensor_id", "reading")),
+            [(self.sensor_1.id, 10.0), (self.sensor_2.id, 2.0)],
+        )

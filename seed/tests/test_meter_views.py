@@ -7,8 +7,11 @@ import ast
 import copy
 import json
 from datetime import UTC, datetime
+from urllib.parse import quote
 
 from django.urls import reverse
+from django.utils import timezone as django_timezone
+from django.utils.timezone import make_aware
 
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.landing.models import SEEDUser as User
@@ -865,6 +868,186 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
         response = self.client.get(url, content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 0)
+
+
+class TestMeterReadingPrimaryKey(DeleteModelsTestCase):
+    """Readings of different meters can share a start_time, so operations on one reading mustn't touch the others"""
+
+    def setUp(self):
+        super().setUp()
+
+        self.user_details = {
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+        }
+        self.user = User.objects.create_user(email="test_user@demo.com", **self.user_details)
+        self.org, _, _ = create_organization(self.user, "meter reading pk test org")
+        self.client.login(**self.user_details)
+
+        self.property_view = FakePropertyViewFactory(organization=self.org).get_property_view()
+        self.meter_1 = Meter.objects.create(property=self.property_view.property)
+        self.meter_2 = Meter.objects.create(property=self.property_view.property)
+
+        self.tz = django_timezone.get_default_timezone()
+        self.start_time = make_aware(datetime(2024, 1, 1), timezone=self.tz)
+        self.end_time = make_aware(datetime(2024, 2, 1), timezone=self.tz)
+        self.reading_1 = self._create_reading(self.meter_1, self.start_time, self.end_time, 1)
+        self.reading_2 = self._create_reading(self.meter_2, self.start_time, self.end_time, 2)
+
+    def _create_reading(self, meter, start_time, end_time, reading):
+        return MeterReading.objects.create(
+            meter=meter, start_time=start_time, end_time=end_time, reading=reading, source_unit="kBtu (thousand Btu)", conversion_factor=1
+        )
+
+    def _detail_url(self, meter, start_time, end_time=None):
+        url = reverse(
+            "api:v3:property-meter-readings-detail",
+            kwargs={"property_pk": self.property_view.id, "meter_pk": meter.id, "pk": start_time.isoformat()},
+        )
+        url += f"?organization_id={self.org.id}"
+        if end_time is not None:
+            url += f"&end_time={quote(end_time.isoformat())}"
+        return url
+
+    def _payload(self, start_time, end_time, reading):
+        # The API takes naive datetimes in the server's time zone
+        return json.dumps(
+            {
+                "start_time": start_time.astimezone(self.tz).replace(tzinfo=None).isoformat(),
+                "end_time": end_time.astimezone(self.tz).replace(tzinfo=None).isoformat(),
+                "reading": reading,
+                "source_unit": "kBtu (thousand Btu)",
+                "conversion_factor": 1,
+            }
+        )
+
+    def test_pk_is_meter_start_time_and_end_time(self):
+        self.assertEqual(self.reading_1.pk, (self.meter_1.id, self.start_time, self.end_time))
+
+    def test_saving_a_new_reading_does_not_overwrite_another_meters_reading(self):
+        later_end_time = make_aware(datetime(2024, 3, 1), timezone=self.tz)
+        MeterReading(
+            meter=self.meter_2, start_time=self.start_time, end_time=later_end_time, reading=3, source_unit="kBtu", conversion_factor=1
+        ).save()
+
+        self.assertEqual(MeterReading.objects.count(), 3)
+        self.reading_1.refresh_from_db()
+        self.assertEqual(self.reading_1.reading, 1)
+        self.assertEqual(self.reading_1.meter_id, self.meter_1.id)
+
+    def test_deleting_a_reading_instance_only_deletes_that_reading(self):
+        self.reading_2.delete()
+
+        self.assertEqual(list(MeterReading.objects.values_list("meter_id", flat=True)), [self.meter_1.id])
+
+    def test_retrieve_reading(self):
+        response = self.client.get(self._detail_url(self.meter_2, self.start_time))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["reading"], 2)
+
+        # Clients use the returned id as the detail URL's pk
+        url = reverse(
+            "api:v3:property-meter-readings-detail",
+            kwargs={"property_pk": self.property_view.id, "meter_pk": self.meter_2.id, "pk": response.json()["id"]},
+        )
+        response = self.client.get(url + f"?organization_id={self.org.id}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["reading"], 2)
+
+    def test_retrieve_reading_with_invalid_start_time(self):
+        url = reverse(
+            "api:v3:property-meter-readings-detail",
+            kwargs={"property_pk": self.property_view.id, "meter_pk": self.meter_1.id, "pk": "not-a-date"},
+        )
+        response = self.client.get(url + f"?organization_id={self.org.id}")
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_delete_reading_only_deletes_that_meters_reading(self):
+        response = self.client.delete(self._detail_url(self.meter_1, self.start_time))
+
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(list(MeterReading.objects.values_list("meter_id", flat=True)), [self.meter_2.id])
+
+    def test_update_reading_only_updates_that_meters_reading(self):
+        response = self.client.put(
+            self._detail_url(self.meter_1, self.start_time),
+            self._payload(self.start_time, self.end_time, 100),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["reading"], 100)
+        self.assertEqual(
+            sorted(MeterReading.objects.values_list("meter_id", "reading")),
+            [(self.meter_1.id, 100), (self.meter_2.id, 2)],
+        )
+
+    def test_update_reading_end_time_updates_it_in_place(self):
+        new_end_time = make_aware(datetime(2024, 1, 15), timezone=self.tz)
+        response = self.client.put(
+            self._detail_url(self.meter_1, self.start_time),
+            self._payload(self.start_time, new_end_time, 1),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(self.meter_1.meter_readings.values_list("end_time", flat=True)), [new_end_time])
+        self.reading_2.refresh_from_db()
+        self.assertEqual(self.reading_2.end_time, self.end_time)
+
+    def test_update_reading_start_time_moves_it_to_another_chunk(self):
+        # seed_meterreading is a hypertable with 7 day chunks, so this start_time is in a different chunk
+        new_start_time = make_aware(datetime(2024, 3, 1), timezone=self.tz)
+        new_end_time = make_aware(datetime(2024, 4, 1), timezone=self.tz)
+        response = self.client.put(
+            self._detail_url(self.meter_1, self.start_time),
+            self._payload(new_start_time, new_end_time, 1),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(list(self.meter_1.meter_readings.values_list("start_time", "end_time")), [(new_start_time, new_end_time)])
+        self.assertEqual(list(self.meter_2.meter_readings.values_list("start_time", flat=True)), [self.start_time])
+
+    def test_update_reading_with_invalid_data_is_rejected(self):
+        payload = json.loads(self._payload(self.start_time, self.end_time, 1))
+        payload["conversion_factor"] = None
+        response = self.client.put(self._detail_url(self.meter_1, self.start_time), json.dumps(payload), content_type="application/json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertNotIn("already exists", response.json()["message"])
+        self.reading_1.refresh_from_db()
+        self.assertEqual(self.reading_1.conversion_factor, 1)
+
+    def test_update_reading_to_an_existing_readings_times_is_rejected(self):
+        other_end_time = make_aware(datetime(2024, 1, 15), timezone=self.tz)
+        self._create_reading(self.meter_1, self.start_time, other_end_time, 3)
+
+        response = self.client.put(
+            self._detail_url(self.meter_1, self.start_time, end_time=other_end_time),
+            self._payload(self.start_time, self.end_time, 3),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(sorted(self.meter_1.meter_readings.values_list("end_time", "reading")), [(other_end_time, 3), (self.end_time, 1)])
+
+    def test_readings_sharing_a_start_time_require_end_time(self):
+        other_end_time = make_aware(datetime(2024, 1, 15), timezone=self.tz)
+        self._create_reading(self.meter_1, self.start_time, other_end_time, 3)
+
+        response = self.client.get(self._detail_url(self.meter_1, self.start_time))
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client.get(self._detail_url(self.meter_1, self.start_time, end_time=other_end_time))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["reading"], 3)
+
+        response = self.client.delete(self._detail_url(self.meter_1, self.start_time, end_time=other_end_time))
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(sorted(MeterReading.objects.values_list("meter_id", "reading")), [(self.meter_1.id, 1), (self.meter_2.id, 2)])
 
 
 class TestMeterReadingPermission(AccessLevelBaseTestCase):

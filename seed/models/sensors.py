@@ -48,14 +48,16 @@ class Sensor(models.Model):
 
 
 class SensorReading(models.Model):
+    # seed_sensorreading is a TimescaleDB hypertable partitioned on `timestamp`, so every unique index (including the
+    # primary key) must contain it. The primary key also serves as the sensor_id index.
+    pk = models.CompositePrimaryKey("sensor", "timestamp")
+
     reading = models.FloatField(null=True)
     timestamp = models.DateTimeField()
     sensor = models.ForeignKey(
         Sensor,
         on_delete=models.CASCADE,
         related_name="sensor_readings",
+        db_index=False,
     )
     is_occupied = models.BooleanField(null=False)
-
-    class Meta:
-        unique_together = ("timestamp", "sensor")
