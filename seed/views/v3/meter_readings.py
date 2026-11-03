@@ -3,9 +3,11 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.decorators import method_decorator
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
@@ -14,6 +16,15 @@ from seed.models import MeterReading, PropertyView
 from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+
+END_TIME_QUERY_PARAM = AutoSchemaHelper.base_field(
+    name="end_time",
+    location_attr="IN_QUERY",
+    type_attr="TYPE_STRING",
+    required=False,
+    description="End time of the reading, required only when several of the meter's readings share the start_time in the URL.",
+)
+DETAIL_SCHEMA = swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(), END_TIME_QUERY_PARAM])
 
 
 @method_decorator(
@@ -26,7 +37,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
+        DETAIL_SCHEMA,
         has_perm("requires_viewer"),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
@@ -91,6 +102,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
                     required=True,
                     description="ID of the meter to attached the meter readings.",
                 ),
+                END_TIME_QUERY_PARAM,
             ],
             request_body=AutoSchemaHelper.schema_factory(
                 {
@@ -111,7 +123,7 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
+        DETAIL_SCHEMA,
         has_perm("requires_member"),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
@@ -155,6 +167,29 @@ class MeterReadingViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return MeterReading.objects.filter(
             meter__property__organization_id=org_id, meter__property=self.property_pk, meter_id=meter_pk
         ).order_by("start_time", "end_time")
+
+    def get_object(self):
+        # The detail URL's pk is the reading's start_time, which is only unique within the meter together with end_time
+        filters = {"start_time": self.kwargs["pk"]}
+        if end_time := self.request.query_params.get("end_time"):
+            filters["end_time"] = end_time
+
+        try:
+            readings = list(self.filter_queryset(self.get_queryset()).filter(**filters)[:2])
+        except DjangoValidationError as e:
+            raise NotFound() from e
+        if not readings:
+            raise NotFound()
+        if len(readings) > 1:
+            raise ValidationError(
+                {
+                    "status": "error",
+                    "message": "Multiple readings start at this time, so specify which one with the end_time query parameter",
+                }
+            )
+
+        self.check_object_permissions(self.request, readings[0])
+        return readings[0]
 
     def get_serializer(self, *args, **kwargs):
         if isinstance(kwargs.get("data", {}), list):
