@@ -9,14 +9,17 @@ import json
 from datetime import UTC, datetime
 from urllib.parse import quote
 
+import pytest
 from django.urls import reverse
 from django.utils import timezone as django_timezone
 from django.utils.timezone import make_aware
+from rest_framework.exceptions import NotFound
 
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.landing.models import SEEDUser as User
 from seed.models import Meter, MeterReading, Property
 from seed.models.scenarios import Scenario
+from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.test_helpers.fake import FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase, AssertDictSubsetMixin, DeleteModelsTestCase
 from seed.utils.organizations import create_organization
@@ -1020,6 +1023,33 @@ class TestMeterReadingPrimaryKey(DeleteModelsTestCase):
         self.assertNotIn("already exists", response.json()["message"])
         self.reading_1.refresh_from_db()
         self.assertEqual(self.reading_1.conversion_factor, 1)
+
+    def _update_stale_reading(self, stale_reading, start_time, end_time, reading):
+        # Mimics a PUT whose get_object() loaded the reading before a concurrent request changed it
+        validated_data = {"start_time": start_time, "end_time": end_time, "reading": reading, "source_unit": "kBtu", "conversion_factor": 1}
+        MeterReadingSerializer().update(stale_reading, validated_data)
+
+    def test_moving_a_reading_that_was_concurrently_moved_is_rejected(self):
+        stale_reading = MeterReading.objects.get(pk=self.reading_1.pk)
+        moved_start_time = make_aware(datetime(2024, 3, 1), timezone=self.tz)
+        moved_end_time = make_aware(datetime(2024, 4, 1), timezone=self.tz)
+        self._update_stale_reading(MeterReading.objects.get(pk=self.reading_1.pk), moved_start_time, moved_end_time, 1)
+
+        with pytest.raises(NotFound):
+            self._update_stale_reading(
+                stale_reading, make_aware(datetime(2024, 5, 1), timezone=self.tz), make_aware(datetime(2024, 6, 1), timezone=self.tz), 1
+            )
+
+        self.assertEqual(list(self.meter_1.meter_readings.values_list("start_time", flat=True)), [moved_start_time])
+
+    def test_updating_a_reading_that_was_concurrently_deleted_is_rejected(self):
+        stale_reading = MeterReading.objects.get(pk=self.reading_1.pk)
+        self.reading_1.delete()
+
+        with pytest.raises(NotFound):
+            self._update_stale_reading(stale_reading, self.start_time, self.end_time, 100)
+
+        self.assertFalse(self.meter_1.meter_readings.exists())
 
     def test_update_reading_to_an_existing_readings_times_is_rejected(self):
         other_end_time = make_aware(datetime(2024, 1, 15), timezone=self.tz)

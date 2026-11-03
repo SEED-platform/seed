@@ -12,6 +12,7 @@ from django.utils import timezone as django_timezone
 from django.utils.timezone import make_aware
 from psycopg.errors import UniqueViolation
 from rest_framework import serializers
+from rest_framework.exceptions import NotFound
 
 from seed.models import METER_READING_FIELDS, METER_READING_UPDATE_FIELDS, MeterReading, bulk_upsert_meter_readings
 
@@ -75,13 +76,18 @@ class MeterReadingSerializer(serializers.ModelSerializer):
 
         try:
             with transaction.atomic():
+                # The reading was looked up before this transaction, so if another request has since moved or deleted
+                # it, no rows match its original key. Reject the update rather than inserting the stale reading.
                 if instance.pk == original_pk:
-                    instance.save()
+                    rows = MeterReading.objects.filter(pk=original_pk).update(**updates)
                 else:
                     # start_time and end_time are part of the primary key, and TimescaleDB can't UPDATE a row's
                     # start_time into another chunk, so replace the reading instead
-                    MeterReading.objects.filter(pk=original_pk).delete()
-                    instance.save(force_insert=True)
+                    rows, _ = MeterReading.objects.filter(pk=original_pk).delete()
+                    if rows:
+                        instance.save(force_insert=True)
+                if not rows:
+                    raise NotFound({"status": "error", "message": "This meter reading was changed or deleted by another request"})
         except IntegrityError as e:
             if getattr(e.__cause__, "sqlstate", None) == UNIQUE_VIOLATION:
                 message = "A reading with this start_time and end_time already exists for this meter"
