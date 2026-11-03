@@ -180,4 +180,43 @@ To connect to the remote session, run netcat from inside the container (using th
 
     docker exec -it seed_web nc 127.0.0.1:41653
 
+Debugging with VS Code
+^^^^^^^^^^^^^^^^^^^^^^
+
+The dev image includes `debugpy <https://github.com/microsoft/debugpy>`_ and the web container publishes
+port 5678 on localhost, so you can set breakpoints in VS Code and attach to a process running in the container.
+Rebuild the image and recreate the containers after pulling these changes.
+
+Add the following configuration to ``.vscode/launch.json`` (``.vscode`` is git-ignored, so this is a local file):
+
+.. code-block:: json
+
+    {
+        "name": "Docker: Attach to seed_web (debugpy)",
+        "type": "debugpy",
+        "request": "attach",
+        "connect": {"host": "localhost", "port": 5678},
+        "pathMappings": [
+            {"localRoot": "${workspaceFolder}/seed", "remoteRoot": "/seed/seed"},
+            {"localRoot": "${workspaceFolder}/config", "remoteRoot": "/seed/config"}
+        ],
+        "django": true,
+        "justMyCode": false
+    }
+
+Then:
+
+1. Set a breakpoint in a file under ``seed/``.
+2. Start a process in the container that waits for the debugger, for example a test module:
+
+   .. code-block:: bash
+
+       docker exec -it seed_web python -Xfrozen_modules=off -m debugpy --listen 0.0.0.0:5678 --wait-for-client manage.py test --settings config.settings.docker_test seed.tests.test_benchmark_data_views
+
+3. In VS Code, run the "Docker: Attach to seed_web (debugpy)" configuration. Execution stops at your breakpoint.
+
+The command blocks until VS Code attaches, and you must attach again every time you start a new process. This approach
+is intended for tests and one-off commands such as ``manage.py shell``; it is not reliable for the hypercorn server
+because of ``--reload``.
+
 .. _Be Patient: https://www.youtube.com/watch?v=f4hkPn0Un_Q

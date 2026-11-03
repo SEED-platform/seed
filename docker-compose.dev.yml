@@ -24,6 +24,8 @@ services:
       context: .
       dockerfile: Dockerfile-dev
     command: uv run hypercorn config.asgi:seed --bind 0.0.0.0:80 --reload
+    ports:
+      - "127.0.0.1:5678:5678" # debugpy
     environment:
       - DJANGO_SETTINGS_MODULE=config.settings.docker_dev
       - DJANGO_LOG_LEVEL
