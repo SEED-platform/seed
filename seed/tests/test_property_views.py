@@ -1197,6 +1197,14 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
             assert resp.status_code == 400, body
             assert resp.json()["status"] == "error"
 
+        for body in (
+            f'{{"profile_id": 1e309, "cycle_ids": [{self.cycle.id}]}}',
+            '{"cycle_ids": [1e309]}',
+        ):
+            resp = self.client.post(url, body, content_type="application/json")
+            assert resp.status_code == 400, body
+            assert resp.json()["status"] == "error"
+
         # a null profile_id is still accepted
         resp = self.client.post(url, json.dumps({"profile_id": None, "cycle_ids": [self.cycle.id]}), content_type="application/json")
         assert resp.status_code == 200

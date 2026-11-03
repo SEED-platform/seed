@@ -404,6 +404,14 @@ class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
             assert resp.status_code == 400, body
             assert resp.json()["status"] == "error"
 
+        for body in (
+            f'{{"organization_id": {self.org.pk}, "profile_id": 1e309, "cycle_ids": [{self.cycle.id}]}}',
+            f'{{"organization_id": {self.org.pk}, "cycle_ids": [1e309]}}',
+        ):
+            resp = self.client.post(url, body, content_type="application/json")
+            assert resp.status_code == 400, body
+            assert resp.json()["status"] == "error"
+
         # a null profile_id is still accepted
         params = json.dumps({"profile_id": None, "cycle_ids": [self.cycle.id], "organization_id": self.org.pk})
         resp = self.client.post(url, params, content_type="application/json")

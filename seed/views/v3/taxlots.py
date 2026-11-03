@@ -161,7 +161,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             if not isinstance(cycle_ids, list):
                 raise TypeError
             cycle_ids = [int(cycle_id) for cycle_id in cycle_ids]
-        except (TypeError, ValueError):
+        except (TypeError, ValueError, OverflowError):
             return JsonResponse(
                 {"status": "error", "message": "profile_id must be an integer and cycle_ids must be a list of integers"},
                 status=status.HTTP_400_BAD_REQUEST,
