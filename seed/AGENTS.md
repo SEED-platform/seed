@@ -1,0 +1,99 @@
+# Backend Agent Guide
+
+This guide adds backend instructions to the [root guide](../AGENTS.md).
+For legacy frontend work under `seed/`, also read the
+[AngularJS guide](static/seed/AGENTS.md).
+
+## Backend Map
+
+| Area                                         | Start with                                                                                                |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| API routing                                  | `seed/api/base/urls.py`, `seed/api/v3/urls.py`, `seed/api/v4/urls.py`                                     |
+| API implementations                          | `seed/views/v3/`, `seed/views/v4/`, `seed/serializers/`                                                   |
+| Inventory and relationships                  | `seed/models/properties.py`, `seed/models/tax_lots.py`, `seed/models/columns.py`, `seed/models/meters.py` |
+| Organizations, roles, access-level hierarchy | `seed/lib/superperms/orgs/`, `seed/decorators.py`, `seed/utils/api.py`, `seed/utils/viewsets.py`          |
+| User model and login                         | `seed/landing/models.py` (`SEEDUser`), `seed/landing/views.py`                                            |
+| Import, mapping, matching, merging           | `seed/data_importer/`, `seed/lib/mcm/`, `seed/lib/xml_mapping/`, `seed/utils/merge.py`                    |
+| Analysis and background jobs                 | `seed/analysis_pipelines/`, `seed/tasks.py`, `seed/celery_app.py`                                         |
+| Building-data integrations                   | `seed/building_sync/`, `seed/hpxml/`, `seed/audit_template/`, `seed/utils/salesforce.py`                  |
+| Tests and factories                          | `seed/tests/`, app-local `tests/`, `seed/tests/util.py`, `seed/test_helpers/fake.py`                      |
+
+## Backend Invariants
+
+- SEED is multi-tenant. Preserve organization scoping, role checks, and
+  access-level hierarchy restrictions in querysets and actions, including bulk
+  and export paths. Follow the existing decorators/mixins and test denied access
+  as well as the happy path.
+- `Property` is the persistent inventory identity; `PropertyState` holds its
+  attributes; `PropertyView` connects a property, state, and cycle. Tax lots use
+  the analogous pattern. Their primary keys are independent: join using the
+  actual foreign key, never an assumed equality of property/view/state IDs.
+- Import and merge changes must preserve audit history and relationships, not
+  just scalar fields. Start with `PropertyState.merge_relationships` and the
+  matching/merging tests when changing state propagation.
+- `Column` metadata is organization- and inventory-table-specific, with distinct
+  model-field/extra-data identities and conditional uniqueness constraints.
+  Read `seed/models/columns.py` before changing identity or JSON key handling.
+  Import/deduplication paths use `hash_state_object` in
+  `seed/data_importer/tasks.py`; account for hashes when altering state data.
+- Use the shared Pint registry in `seed/utils/generic.py` and existing display
+  unit serializers. Preserve quantities, units, and JSON/API representations.
+- Use `zoneinfo.ZoneInfo` and the helpers in `seed/utils/time_utils.py` for local
+  timestamps and DST ambiguity/gaps. Preserve local-date and cycle-boundary
+  semantics; do not blanket-convert naive values or assume every workflow uses
+  UTC. Test explicit timezones independently of the developer machine's timezone.
+- Use Shapely/GeoDjango parsers for WKT/geometry, not manual delimiter stripping.
+- Dynamic DRF views may be inspected without a normal request during Swagger
+  generation. Respect `swagger_fake_view` guards and existing schema conventions.
+
+## Backend Tests
+
+Use test settings explicitly with Django's runner; `manage.py` otherwise
+defaults to dev settings.
+
+```sh
+uv run python manage.py test seed.tests.test_columns --settings=config.settings.test --keepdb
+uv run python manage.py test seed --settings=config.settings.test --parallel=auto --keepdb
+uv run pytest seed/tests/test_columns.py
+```
+
+- `pytest.ini` selects test settings and reuses databases. `--keepdb` is useful
+  for repeated Django runs; account for retained database state and migrations
+  when diagnosing a failure. Do not drop a reused database without approval.
+- `config.settings.test` installs
+  `seed.backends.postgis_timescaledb_tests.runner.ParallelTestRunner` and its
+  database backend. They coordinate Timescale workers and database connections
+  during cloning, using the effective minimum of requested processes and
+  parallelizable TestCase groups. Do not bypass this setup for parallel tests.
+- `--parallel=1` is useful for debugging, but a test that only passes alone is
+  not necessarily correct. Avoid ordering assumptions and coincidentally equal
+  primary keys in fixtures. Prefer the CLI when isolating IDE/spawn issues.
+- Reuse `AccessLevelBaseTestCase`, `DataMappingBaseTestCase`, and the fake
+  factories where appropriate; inspect their setup before creating duplicate
+  organization, cycle, or permission fixtures.
+- Some tests call external services. Portfolio Manager uses `SEED_PM_UN` and
+  `SEED_PM_PW`; live Salesforce checks use `SF_*`; geocoding uses VCR cassettes
+  and optionally `TESTING_MAPQUEST_API_KEY`. Separate missing credentials from
+  regressions in mocked tests. Do not refresh recordings against live services
+  or skip unrelated tests just to get a green run.
+- `uv run tox -e python` runs Django tests under coverage with explicit
+  `config.settings.test` settings, followed by a Coveralls upload step.
+
+## Model Changes and Exports
+
+- For model changes, add a migration and check:
+
+```sh
+uv run python manage.py makemigrations --check --dry-run --settings=config.settings.dev
+```
+
+- This checks model/migration consistency without applying migrations, but may
+  read the configured database's migration history. Use historical models in
+  data migrations. Do not rewrite old migrations unless that is the requested
+  task. Fresh database setup loads substantial static EEEJ/Uniformat data;
+  test settings support a small EEEJ dataset.
+- For Excel/pandas changes, preserve cell values/types, leading-zero identifiers,
+  blank cells, formatting, and sheet layout. See `seed/utils/excel.py`,
+  `seed/tests/test_cts_exports.py`, and `seed/tests/test_excel_templates.py`.
+  The StyleFrame reference workbooks are an independent compatibility baseline;
+  do not regenerate them using the replacement writer to make tests pass.
