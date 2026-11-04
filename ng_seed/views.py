@@ -39,19 +39,35 @@ def _serve_file(request, path, content_type=None, streaming=True):
     return response
 
 
+def _contained_file(root, requested_path):
+    """Return the regular file at root/requested_path, or None if it is missing, not a regular file, or resolves outside root.
+
+    Symlinks are followed before the containment check, so a link inside root that points outside it is not served.
+    """
+    # An absolute requested_path (including Windows drive and UNC paths) would replace root, so reject it before touching the filesystem
+    if Path(requested_path).anchor:
+        return None
+    root = root.resolve()
+    try:
+        # resolve() collapses ".." and follows symlinks, so check containment on the result
+        candidate = (root / requested_path).resolve()
+    except (OSError, ValueError):  # e.g. an embedded NUL byte on POSIX
+        return None
+    if candidate.is_relative_to(root) and candidate.is_file():
+        return candidate
+    return None
+
+
 def seed_angular(request):
-    requested_path = request.path.replace("/ng-app/", "", 1)
+    requested_path = request.path_info.replace("/ng-app/", "", 1)
     ng_app_root = Path(settings.STATIC_ROOT) / "ng-app"
     browser_root = ng_app_root / "browser"
 
     # Serve static files first
     if requested_path and "." in requested_path:
-        static_candidates = [
-            ng_app_root / requested_path,
-            browser_root / requested_path,
-        ]
-        for static_path in static_candidates:
-            if static_path.exists():
+        for root in (ng_app_root, browser_root):
+            static_path = _contained_file(root, requested_path)
+            if static_path is not None:
                 return _serve_file(request, static_path)
 
     # Otherwise serve index.html
