@@ -84,3 +84,15 @@ docker-compose-dbs.yml
 /.ruff_cache
 #ignore appfleet config files downloaded at build time
 appfleet-config*
+
+# local AI-agent tooling (wicked-garden / wicked-understanding / Claude Code)
+/.agents/
+/agent/
+/skills-lock.json
+/.claude/skills/
+/.claude/.cc-writes/
+/.claude/settings.local.json
+/.claude/CLAUDE.md
+/.wicked-estate/
+/.playwright-mcp/
+*.plur-backup-*
