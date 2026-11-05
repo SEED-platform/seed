@@ -3,14 +3,13 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import json
 import logging
 
 from django.conf import settings
 from django.db.models import F
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, extend_schema_serializer
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT
@@ -47,6 +46,8 @@ class CreateAnalysisSerializer(AnalysisSerializer):
     class Meta:
         model = Analysis
         fields = ["name", "service", "configuration", "property_view_ids", "access_level_instance_id"]
+        # `name` has a model default of None, but `create` requires it
+        extra_kwargs = {"name": {"required": True}}
 
     def create(self, validated_data):
         return Analysis.objects.create(
@@ -59,20 +60,79 @@ class CreateAnalysisSerializer(AnalysisSerializer):
         )
 
 
+# The serializers below are only used to document responses
+class AnalysisHighlightSerializer(serializers.Serializer):
+    name = serializers.CharField()
+    value = serializers.JSONField()
+
+
+class AnalysisDetailSerializer(AnalysisSerializer):
+    number_of_analysis_property_views = serializers.IntegerField()
+    views = serializers.ListField(child=serializers.IntegerField(), help_text="AnalysisPropertyView IDs")
+    cycles = serializers.ListField(child=serializers.IntegerField(), help_text="Cycle IDs")
+    highlights = AnalysisHighlightSerializer(many=True)
+
+
+class AnalysisListOutputFileSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    content_type = serializers.CharField()
+    file = serializers.CharField(help_text="Path of the file on the server")
+
+
+class AnalysisListPropertyViewSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    display_name = serializers.CharField(allow_null=True)
+    analysis = serializers.IntegerField()
+    property = serializers.IntegerField(allow_null=True)
+    cycle = serializers.IntegerField()
+    property_state = serializers.IntegerField(allow_null=True)
+    output_files = AnalysisListOutputFileSerializer(many=True)
+
+
+@extend_schema_serializer(many=False)
+class AnalysisListResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    analyses = AnalysisDetailSerializer(many=True)
+    views = AnalysisListPropertyViewSerializer(
+        many=True,
+        required=False,
+        help_text="AnalysisPropertyViews of the listed analyses; omitted if there are none or include_views is false",
+    )
+    original_views = serializers.DictField(
+        child=serializers.IntegerField(allow_null=True),
+        required=False,
+        help_text="Original PropertyView ID (or null) keyed by AnalysisPropertyView ID; omitted along with `views`",
+    )
+
+
+class AnalysisRetrieveResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    analysis = AnalysisDetailSerializer()
+
+
+analysis_progress_response_schema = AutoSchemaHelper.schema_factory(
+    {"status": "string", "progress_key": "string", "progress": "object"}, required=["status", "progress_key", "progress"]
+)
+success_response_schema = AutoSchemaHelper.schema_factory({"status": "string"}, required=["status"])
+analysis_detail_parameters = [AutoSchemaHelper.query_org_id_field(), AutoSchemaHelper.path_id_field("Analysis ID")]
+
+
 class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = AnalysisSerializer
     model = Analysis
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_boolean_field(
                 name="start_analysis",
-                required=True,
+                required=False,
                 description="If true, immediately start running the analysis after creation. Defaults to false.",
             ),
         ],
-        request_body=CreateAnalysisSerializer,
+        request={"application/json": CreateAnalysisSerializer},
+        responses={200: analysis_progress_response_schema},
+        description="Create an analysis of the given property views, which must be within the analysis's access level instance.",
     )
     @method_decorator(
         [
@@ -90,10 +150,21 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         if serializer.validated_data["service"] == Analysis.BETTER and not settings.SEED_BETTER_ENABLED:
             return JsonResponse({"status": "error", "message": "BETTER is disabled on this deployment"}, status=HTTP_409_CONFLICT)
 
+        # existing property views must be in the org and within the analysis's access level instance; IDs that
+        # don't exist are reported as analysis messages by the pipeline
+        property_view_ids = serializer.validated_data["property_view_ids"]
+        analysis_ali = AccessLevelInstance.objects.get(pk=serializer.validated_data["access_level_instance_id"])
+        property_views = PropertyView.objects.filter(id__in=property_view_ids)
+        if property_views.exclude(
+            property__organization_id=self.get_organization(request),
+            property__access_level_instance__lft__gte=analysis_ali.lft,
+            property__access_level_instance__rgt__lte=analysis_ali.rgt,
+        ).exists():
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
+
         analysis = serializer.save(user_id=request.user.id, organization_id=self.get_organization(request))
 
         # create events
-        property_views = PropertyView.objects.filter(id__in=request.data["property_view_ids"])
         for property_view in property_views:
             event = AnalysisEvent.objects.create(property_id=property_view.property_id, cycle_id=property_view.cycle_id, analysis=analysis)
 
@@ -102,7 +173,8 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         pipeline = AnalysisPipeline.factory(analysis)
         try:
             progress_data = pipeline.prepare_analysis(
-                serializer.validated_data["property_view_ids"], start_analysis=request.query_params.get("start_analysis", False)
+                property_view_ids,
+                start_analysis=request.query_params.get("start_analysis", "").lower() in serializers.BooleanField.TRUE_VALUES,
             )
             return JsonResponse(
                 {
@@ -114,11 +186,14 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         except AnalysisPipelineError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=HTTP_409_CONFLICT)
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(True),
-            AutoSchemaHelper.query_integer_field("property_id", False, "Property ID"),
-        ]
+            AutoSchemaHelper.query_boolean_field(
+                "include_views", False, "Include the AnalysisPropertyViews of the listed analyses (`true` or `false`). Defaults to true."
+            ),
+        ],
+        responses={200: AnalysisListResponseSerializer},
     )
     @method_decorator(
         [
@@ -131,7 +206,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     def list(self, request):
         organization_id = self.get_organization(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
-        include_views = json.loads(request.query_params.get("include_views", "true"))
+        include_views = request.query_params.get("include_views", "true").lower() in serializers.BooleanField.TRUE_VALUES
 
         analyses = []
         analyses_queryset = Analysis.objects.filter(
@@ -155,7 +230,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             if display_column.is_extra_data:
                 display_column_field = "extra_data__" + display_column_field
 
-            views_queryset = AnalysisPropertyView.objects.filter(analysis__organization_id=organization_id).order_by("-id")
+            views_queryset = AnalysisPropertyView.objects.filter(analysis__in=analyses_queryset).order_by("-id")
             views_queryset = views_queryset.annotate(display_name=F(f"property_state__{display_column_field}")).prefetch_related(
                 "analysisoutputfile_set"
             )
@@ -183,7 +258,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse(results)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
+    @extend_schema(parameters=analysis_detail_parameters, responses={200: AnalysisRetrieveResponseSerializer})
     @method_decorator(
         [
             require_organization_id,
@@ -207,7 +282,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "analysis": serialized_analysis})
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(parameters=analysis_detail_parameters, request=None, responses={200: analysis_progress_response_schema})
     @method_decorator(
         [
             require_organization_id,
@@ -240,7 +315,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
         except AnalysisPipelineError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=HTTP_409_CONFLICT)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(parameters=analysis_detail_parameters, request=None, responses={200: success_response_schema})
     @method_decorator(
         [
             require_organization_id,
@@ -267,7 +342,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 {"status": "error", "message": "Requested analysis doesn't exist in this organization."}, status=HTTP_409_CONFLICT
             )
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(parameters=analysis_detail_parameters, responses={200: success_response_schema})
     @method_decorator(
         [
             require_organization_id,
@@ -293,7 +368,15 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 {"status": "error", "message": "Requested analysis doesn't exist in this organization."}, status=HTTP_409_CONFLICT
             )
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(
+        parameters=analysis_detail_parameters,
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "progress_key": "string"},
+                description="`progress_key` is null if the analysis has no progress data",
+            )
+        },
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -325,6 +408,25 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
                 {"status": "error", "message": "Requested analysis doesn't exist in this organization."}, status=HTTP_409_CONFLICT
             )
 
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("cycle_id", True, "Cycle ID"),
+        ],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "total_records": "integer",
+                    "number_extra_data_fields": "integer",
+                    "total_sqft": "number",
+                    "column_settings fields and counts": "object",
+                },
+                description="`column_settings fields and counts` maps each property column name to its number of non-null values",
+            )
+        },
+        description="Summarize the properties in a cycle that are within the user's access level instance.",
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -377,8 +479,15 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
-    """ Get all property and taxlot columns that have data in them for an org """
-
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "columns": ["object"]},
+                description="`columns` are serialized columns, with `shared_field_type` renamed to `sharedFieldType`",
+            )
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -388,6 +497,7 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
     )
     @action(detail=False, methods=["get"])
     def used_columns(self, request):
+        """Get all property and taxlot columns that have data in them for an org"""
         org_id = self.get_organization(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
@@ -423,16 +533,14 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
             tcolumns = Column.objects.filter(organization_id=org_id, derived_column=None, table_name="TaxLotState").exclude(
                 column_name__in=EXCLUDED_API_FIELDS
             )
-            num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(tstate_ids, TaxLotState, tcolumns)
+            tnum_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(tstate_ids, TaxLotState, tcolumns)
 
         # properties and taxlots together
-        num_of_nonnulls_by_column_name.update(tnum_of_nonnulls_by_column_name)
+        num_of_nonnulls_by_table = {"PropertyState": num_of_nonnulls_by_column_name, "TaxLotState": tnum_of_nonnulls_by_column_name}
         columns = columns | tcolumns
 
         # keep only non-zero columns (return full columns)
-        nonzero_cols = [k for k, v in num_of_nonnulls_by_column_name.items() if v != 0]
-
-        columns_to_return = [c for c in columns if c.column_name in nonzero_cols]
+        columns_to_return = [c for c in columns if num_of_nonnulls_by_table[c.table_name].get(c.column_name)]
         # remove "excluded columns that shouldn't be returned":
         columns_to_return = [c for c in columns_to_return if c.column_name not in Column.COLUMN_EXCLUDE_FIELDS]
 
@@ -449,10 +557,9 @@ class AnalysisViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "columns": final_columns})
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-        ]
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_string_field("better_token", True, "BETTER API token")],
+        responses={200: AutoSchemaHelper.schema_factory({"token": "string", "validity": "boolean"})},
     )
     @method_decorator(
         [

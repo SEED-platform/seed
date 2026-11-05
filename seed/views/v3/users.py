@@ -12,7 +12,7 @@ from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django_otp.plugins.otp_email.models import EmailDevice
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, extend_schema_serializer
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_400_BAD_REQUEST
@@ -21,10 +21,11 @@ from seed.decorators import ajax_request
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.decorators import PERMS, has_perm
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, AccessLevelInstance, Organization, OrganizationUser
+from seed.lib.superperms.orgs.permissions import get_org_or_id
 from seed.models.data_quality import Rule
 from seed.tasks import invite_to_seed
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.organizations import create_organization
 from seed.utils.users import get_role_from_js
 
@@ -74,9 +75,13 @@ class EmailAndIDSerializer(serializers.Serializer):
     user_id = serializers.IntegerField()
 
 
+@extend_schema_serializer(many=False)
 class ListUsersResponseSerializer(serializers.Serializer):
     users = EmailAndIDSerializer(many=True)
 
+
+# the role names accepted by `get_role_from_js`
+role_enum = tuple((role, role) for role in ("viewer", "member", "owner"))
 
 # this is used for swagger docs for some views below
 user_response_schema = AutoSchemaHelper.schema_factory(
@@ -84,13 +89,32 @@ user_response_schema = AutoSchemaHelper.schema_factory(
         "first_name": "string",
         "last_name": "string",
         "email": "string",
+        "username": "string",
         "api_key": "string",
-    }
+        "is_superuser": "boolean",
+        "id": "integer",
+        "pk": "integer",
+        "two_factor_method": tuple((method, method) for method in ("disabled", "email", "token")),
+        "org_id": "integer",
+        "org_name": "string",
+        "org_role": "string",
+        "ali_name": "string",
+        "ali_id": "integer",
+        "is_ali_root": "boolean",
+        "is_ali_leaf": "boolean",
+        "org_user_id": "integer",
+        "settings": "object",
+    },
+    description="The user and their default organization; the organization fields are empty strings if the user has no organization",
 )
+
+status_response_schema = AutoSchemaHelper.schema_factory({"status": "string"})
 
 
 class UserViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
+    # only used to type the `id` path parameter in the API schema
+    queryset = User.objects.none()
 
     def validate_request_user(self, pk, request):
         try:
@@ -105,23 +129,29 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             )
         return True, user
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description="Existing organization to add the user to (required unless a superuser provides `org_name`)"
+            )
+        ],
+        request=AutoSchemaHelper.json_body(
             {
                 "org_name": "string",
                 "first_name": "string",
                 "last_name": "string",
-                "role": "string",
+                "role": role_enum,
                 "email": "string",
+                "access_level_instance_id": "integer",
             },
-            required=["first_name", "last_name", "role", "email"],
+            required=["first_name", "last_name", "email"],
             description="An object containing meta data for a new user:\n"
-            "-org_name: New organization name if creating a new organization for this user\n"
+            "-org_name: New organization name if creating a new organization for this user (superusers only, instead of `organization_id`)\n"
             "-first_name: First name of new user\n"
             "-last_name: Last name of new user\n"
-            "-role: one of owner, member, or viewer\n"
-            "-email: Email address of the new user",
+            "-role: one of owner, member, or viewer (default owner)\n"
+            "-email: Email address of the new user\n"
+            "-access_level_instance_id: Access level instance of the user in the existing organization (required with `organization_id`)",
         ),
         responses={
             200: AutoSchemaHelper.schema_factory(
@@ -131,7 +161,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
                     "org": "string",
                     "org_created": "boolean",
                     "username": "string",
-                    "user_id": "string",
+                    "user_id": "integer",
                 },
                 description="Properties:\n"
                 "-org: name of new org (or existing org)\n"
@@ -160,10 +190,16 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         # consistent with our permissions checking (has_perm decorator)
         body = request.data
         org_name = body.get("org_name")
-        org_id = request.query_params.get("organization_id", None)
+        # Resolve the org from the query params exactly as `has_perm` does, so that it is the org that was authorized
+        org_id = get_org_or_id(request.query_params)
         if (org_name and org_id) or (not org_name and not org_id):
             return JsonResponse(
                 {"status": "error", "message": "Choose either an existing org or provide a new one"}, status=status.HTTP_409_CONFLICT
+            )
+        # `has_perm` also authorizes owners by a body `organization_id`, but only superusers can create organizations here
+        if org_name and not request.user.is_superuser:
+            return JsonResponse(
+                {"status": "error", "message": "Only superusers can create a new organization"}, status=status.HTTP_403_FORBIDDEN
             )
 
         first_name = body["first_name"]
@@ -171,8 +207,14 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         email = body["email"]
         username = body["email"]
         access_level_instance_id = body.get("access_level_instance_id")
-        role = body.get("role", "owner")
-        user, created = User.objects.get_or_create(username=username.lower())
+
+        # Validate the request before creating anything, so that rejected requests do not leave users or orgs behind
+        try:
+            role = get_role_from_js(body.get("role", "owner"))
+        except Exception:
+            return JsonResponse(
+                {"status": "error", "message": "valid arguments for role are [viewer, member, owner]"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         if org_id:
             org = Organization.objects.get(pk=org_id)
@@ -182,7 +224,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
                     {"status": "error", "message": "if using an existing org, you must provide a `access_level_instance_id`"},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-        else:
+            if not AccessLevelInstance.objects.filter(organization=org, pk=access_level_instance_id).exists():
+                return JsonResponse({"status": "error", "message": "No such access_level_instance"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user, created = User.objects.get_or_create(username=username.lower())
+
+        if not org_id:
             org, _, _ = create_organization(user, org_name)
             access_level_instance_id = AccessLevelInstance.objects.get(organization=org, depth=1).id
             org_created = True
@@ -191,17 +238,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         # the user becomes the owner/admin automatically.
         # see Organization.add_member()
 
-        try:
-            role = get_role_from_js(role)
-        except Exception:
-            return JsonResponse(
-                {"status": "error", "message": "valid arguments for role are [viewer, member, owner]"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
         if not org.is_member(user):
             try:
                 org.add_member(user, access_level_instance_id, role)
             except IntegrityError as e:
+                if created:
+                    user.delete()
                 return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         if created:
@@ -230,7 +272,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             200: ListUsersResponseSerializer,
         }
@@ -251,6 +293,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             users.append({"email": user.email, "user_id": user.id})
         return JsonResponse({"users": users})
 
+    @extend_schema(responses={200: user_response_schema})
     @method_decorator(
         [
             api_endpoint,
@@ -260,26 +303,22 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=False, methods=["GET"])
     def current(self, request):
         """
-        Returns the id (primary key) for the current user to allow it
+        Returns the current user, including the id (primary key) to allow it
         to be passed to other user related endpoints
-        ---
-        type:
-            pk:
-                description: Primary key for the current user
-                required: true
-                type: string
         """
 
         return JsonResponse(request.user.serialize())
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {
-                "role": "string",
+                "role": role_enum,
             },
+            required=["role"],
             description="new role for user",
         ),
+        responses={200: status_response_schema},
     )
     @method_decorator(
         [
@@ -334,6 +373,11 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success"})
 
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body({"access_level_instance_id": "integer"}, required=["access_level_instance_id"]),
+        responses={200: status_response_schema},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -343,6 +387,9 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     )
     @action(detail=True, methods=["PUT"])
     def access_level_instance(self, request, pk=None):
+        """
+        Updates a user's access level instance within an organization.
+        """
         user_id = int(pk)
         organization_id = self.get_organization(request)
 
@@ -360,6 +407,8 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             access_level_instance = AccessLevelInstance.objects.get(organization_id=organization_id, id=access_level_instance_id)
         except AccessLevelInstance.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No such access_level_instance"}, status=status.HTTP_400_BAD_REQUEST)
+        if user.role_level == ROLE_OWNER and access_level_instance != user.organization.root:
+            return JsonResponse({"status": "error", "message": "Owners must belong to the root ali."}, status=status.HTTP_400_BAD_REQUEST)
 
         # set user ali
         user.access_level_instance = access_level_instance
@@ -367,7 +416,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success"})
 
-    @swagger_auto_schema(
+    @extend_schema(
         responses={
             200: user_response_schema,
         }
@@ -381,7 +430,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     def retrieve(self, request, pk=None):
         """
         Retrieves user's first_name, last_name, email
-        and api key if exists by user ID (pk).
+        and api key if exists by user ID (pk). Users can only retrieve themselves.
         """
 
         ok, content = self.validate_request_user(pk, request)
@@ -392,6 +441,10 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse(user.serialize())
 
+    @extend_schema(
+        request=None,
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "api_key": "string"})},
+    )
     @method_decorator(
         [
             ajax_request,
@@ -400,24 +453,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=True, methods=["POST"])
     def generate_api_key(self, request, pk=None):
         """
-        Generates a new API key
-        ---
-        parameter_strategy: replace
-        parameters:
-            - name: pk
-              description: User ID / primary key
-              type: integer
-              required: true
-              paramType: path
-        type:
-            status:
-                description: success or error
-                type: string
-                required: true
-            api_key:
-                description: the new API key for this user
-                type: string
-                required: true
+        Generates a new API key for the current user
         """
         ok, content = self.validate_request_user(pk, request)
         if ok:
@@ -427,9 +463,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         user.generate_key()
         return {"status": "success", "api_key": User.objects.get(pk=pk).api_key}
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory({"first_name": "string", "last_name": "string", "email": "string"}),
-        description="An object containing meta data for a updated user: \n- Required - first_name, last_name, email",
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
+            {"first_name": "string", "last_name": "string", "email": "string"},
+            required=["first_name", "last_name", "email"],
+            description="An object containing meta data for a updated user",
+        ),
         responses={
             200: user_response_schema,
         },
@@ -451,22 +490,32 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         else:
             return content
         json_user = body
+        email = json_user.get("email")
+        if not email or json_user.get("first_name") is None or json_user.get("last_name") is None:
+            return JsonResponse(
+                {"status": "error", "message": "first_name, last_name, and email are required"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        # the email is also the (unique) username
+        if User.objects.filter(username=email.lower()).exclude(pk=user.pk).exists():
+            return JsonResponse({"status": "error", "message": "A user with this email already exists"}, status=status.HTTP_400_BAD_REQUEST)
         user.first_name = json_user.get("first_name")
         user.last_name = json_user.get("last_name")
-        user.email = json_user.get("email")
-        user.username = json_user.get("email", "").lower()
+        user.email = email
+        user.username = email.lower()
         user.save()
         return JsonResponse(user.serialize())
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
             {
                 "current_password": "string",
                 "password_1": "string",
                 "password_2": "string",
             },
+            required=["current_password", "password_1", "password_2"],
             description="Fill in the current and new matching passwords",
         ),
+        responses={200: status_response_schema},
     )
     @method_decorator(
         [
@@ -512,17 +561,23 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             "actions": list(PERMS.keys()),
         }
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {
                 "actions": ["string"],
             },
             description="A list of actions to check: examples include (requires_parent_org_owner, "
             "requires_owner, requires_member, requires_viewer, "
             "requires_superuser, can_create_sub_org, can_remove_org)",
+            required=["actions"],
         ),
-        responses={200: AutoSchemaHelper.schema_factory({"auth": {"action_name": "boolean"}})},
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "auth": "object"},
+                description="`auth` maps each requested action name to whether the user is authorized for it",
+            )
+        },
     )
     @method_decorator(
         [
@@ -558,7 +613,8 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         except OrganizationUser.DoesNotExist:
             return JsonResponse({"status": "error", "message": "user does not exist"})
 
-        auth = {action: PERMS[action](ou) for action in actions}
+        # like `has_perm`, unknown actions are not authorized
+        auth = {action: PERMS.get(action, lambda _: False)(ou) for action in actions}
         return JsonResponse({"status": "success", "auth": auth})
 
     def _parse_is_authenticated_params(self, request):
@@ -607,7 +663,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
 
         return {action: PERMS["requires_owner"](ou) for action in actions}
 
-    @swagger_auto_schema(responses={200: AutoSchemaHelper.schema_factory({"show_shared_buildings": "boolean"})})
+    @extend_schema(responses={200: AutoSchemaHelper.schema_factory({"status": "string", "show_shared_buildings": "boolean"})})
     @method_decorator(
         [
             ajax_request,
@@ -631,7 +687,16 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=None,
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "user": {"id": "integer", "access_level_instance": {"id": "integer", "name": "string"}}},
+                description="`user.id` is the ID of the user's membership (OrganizationUser) in the new default organization",
+            )
+        },
+    )
     @method_decorator(
         [
             ajax_request,
@@ -663,6 +728,14 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             },
         }
 
+    @extend_schema(
+        request=None,
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "data": "string"}, description="`data` is the deactivated user's email"
+            )
+        },
+    )
     @method_decorator(
         [
             ajax_request,

@@ -7,8 +7,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q, Subquery
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from drf_spectacular.utils import extend_schema, extend_schema_serializer, extend_schema_view
+from rest_framework import serializers, status
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request
@@ -19,11 +19,27 @@ from seed.models.properties import PropertyState, PropertyView
 from seed.models.tax_lots import TaxLotState, TaxLotView
 from seed.serializers.ubid_models import UbidModelSerializer
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.ubid import decode_unique_ids, get_jaccard_index, validate_ubid
 from seed.utils.viewsets import ModelViewSetWithoutPatch
 
 
+# The serializers below are only used to document responses
+class UbidResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    data = UbidModelSerializer()
+
+
+@extend_schema_serializer(many=False)
+class UbidListResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    data = UbidModelSerializer(many=True)
+
+
+success_response_schema = AutoSchemaHelper.schema_factory({"status": "string"}, required=["status"])
+
+
+@extend_schema_view(destroy=extend_schema_org_query_param)
 @method_decorator(
     [
         has_perm("requires_member"),
@@ -37,15 +53,16 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = UbidModelSerializer
     queryset = UbidModel.objects.all()
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {
                 "property_view_ids": ["integer"],
                 "taxlot_view_ids": ["integer"],
             },
             description="IDs by inventory type for records to have their UBID decoded.",
         ),
+        responses={200: success_response_schema},
     )
     @method_decorator(
         [
@@ -87,15 +104,21 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse({"status": "success"})
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {
                 "property_view_ids": ["integer"],
                 "taxlot_view_ids": ["integer"],
             },
             description="IDs by inventory type for records to be used in building a UBID decoding summary.",
         ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"ubid_unpopulated": "integer", "ubid_successfully_decoded": "integer", "ubid_not_decoded": "integer"},
+                description="Counts for the tax lots if `taxlot_view_ids` is given, otherwise for the properties",
+            )
+        },
     )
     @method_decorator(
         [
@@ -156,15 +179,16 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return result
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {
                 "ubid1": "string",
                 "ubid2": "string",
             },
             required=["ubid1", "ubid2"],
         ),
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "data": "number"}, description="`data` is the Jaccard index")},
     )
     @method_decorator(
         [
@@ -195,14 +219,15 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {
                 "ubid": "string",
             },
             required=["ubid"],
         ),
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "data": {"valid": "boolean", "ubid": "string"}})},
     )
     @method_decorator(
         [
@@ -220,7 +245,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse({"status": "success", "data": {"valid": validate_ubid(ubid), "ubid": ubid}})
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()], responses={200: UbidListResponseSerializer})
     @method_decorator(
         [
             api_endpoint,
@@ -248,7 +273,7 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse({"status": "success", "data": self.serializer_class(ubid_models, many=True).data})
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()], responses={200: UbidResponseSerializer})
     @method_decorator(
         [
             api_endpoint,
@@ -265,7 +290,11 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
         except UbidModel.DoesNotExist:
             return JsonResponse({"status": "error", "message": f"UBID with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={201: UbidResponseSerializer},
+        description="Associate a UBID with exactly one of a PropertyState (`property`) or a TaxLotState (`taxlot`).",
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -332,14 +361,16 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse({"status": "success", "data": serializer.data}, status=status.HTTP_201_CREATED)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {
                 "ubid": "string",
                 "preferred": "boolean",
             },
+            description="Only `ubid` and `preferred` may be given; any other field is rejected (422).",
         ),
+        responses={200: UbidResponseSerializer},
     )
     @method_decorator(
         [
@@ -384,12 +415,14 @@ class UbidViewSet(ModelViewSetWithoutPatch, OrgMixin):
             }
         )
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {"view_id": "integer", "type": "string"},
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
+            {"view_id": "integer", "type": (("property", "property"), ("taxlot", "taxlot"))},
+            required=["view_id", "type"],
             description="Retrieve UBIDs for a Property or TaxLot State associated with a specific view",
         ),
+        responses={200: UbidListResponseSerializer},
     )
     @method_decorator(
         [

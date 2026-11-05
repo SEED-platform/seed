@@ -8,7 +8,8 @@ import csv
 from celery.utils.log import get_task_logger
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
@@ -17,13 +18,17 @@ from seed.decorators import ajax_request
 from seed.lib.mcm.cleaners import normalize_unicode_and_characters
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.models import PropertyView, TaxLotView
+from seed.models import Goal, PropertyView, TaxLotView
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.api_schema import PROGRESS_DATA_SCHEMA, AutoSchemaHelper
 from seed.utils.cache import get_cache_raw
 
 logger = get_task_logger(__name__)
+
+run_id_field = AutoSchemaHelper.query_integer_field(
+    "run_id", True, "Import file ID, or the `progress.unique_id` returned when starting the data quality checks"
+)
 
 
 class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
@@ -38,31 +43,31 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
     # allow organization_id path id to be used for authorization (i.e., has_perm)
     authz_org_id_kwarg = "organization_id"
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.base_field(
-                "organization_id", "IN_PATH", "Organization ID - identifier used to specify a DataQualityCheck", True, "TYPE_INTEGER"
-            )
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.path_id_field("Organization ID - identifier used to specify a DataQualityCheck", name="organization_id")
         ],
-        request_body=AutoSchemaHelper.schema_factory(
+        request=AutoSchemaHelper.json_body(
             {
                 "property_view_ids": ["integer"],
                 "taxlot_view_ids": ["integer"],
+                "goal_id": "integer",
             },
-            description="An object containing IDs of the records to perform"
-            " data quality checks on. Should contain two keys- "
-            "property_view_ids and taxlot_view_ids, each of "
-            "which is an array of appropriate IDs.",
+            description="The IDs of the property and tax lot views to perform data quality checks on (views outside"
+            " of the organization or the user's access level are ignored), and optionally the ID of a goal to also"
+            " run its cross-cycle checks.",
         ),
         responses={
-            200: AutoSchemaHelper.schema_factory(
-                {
-                    "num_properties": "integer",
-                    "num_taxlots": "integer",
-                    "progress_key": "string",
-                    "progress": {},
-                }
-            )
+            200: {
+                "type": "object",
+                "properties": {
+                    "num_properties": {"type": "integer"},
+                    "num_taxlots": {"type": "integer"},
+                    "progress_key": {"type": "string"},
+                    "progress": PROGRESS_DATA_SCHEMA,
+                },
+            },
+            404: OpenApiResponse(description="Goal not found in the organization or the user's access level"),
         },
     )
     @method_decorator(
@@ -83,6 +88,17 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
         taxlot_view_ids = body.get("taxlot_view_ids", [])
         goal_id = body.get("goal_id", None)
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+
+        if (
+            goal_id
+            and not Goal.objects.filter(
+                pk=goal_id,
+                organization_id=organization_id,
+                access_level_instance__lft__gte=access_level_instance.lft,
+                access_level_instance__rgt__lte=access_level_instance.rgt,
+            ).exists()
+        ):
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
         property_state_ids = PropertyView.objects.filter(
             id__in=property_view_ids,
@@ -110,11 +126,12 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("run_id", True, "Import file ID or cache key"),
-        ]
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field(), run_id_field],
+        responses={
+            (200, "text/csv"): OpenApiTypes.BINARY,
+            400: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"}, description="`run_id` is missing"),
+        },
     )
     @method_decorator(
         [
@@ -184,11 +201,16 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
 
         return response
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("run_id", True, "Import file ID or cache key"),
-        ]
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field(), run_id_field],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"data": ["object"]},
+                description="`data` is the list of checked records with their `data_quality_results`, or null if no"
+                " results are found for `run_id`",
+            ),
+            400: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"}, description="`run_id` is missing"),
+        },
     )
     @method_decorator(
         [
@@ -206,6 +228,11 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
         Note that it is not related to objects in the database, since the results
         are stored in redis!
         """
-        data_quality_id = request.query_params["run_id"]
+        data_quality_id = request.query_params.get("run_id")
+        if data_quality_id is None:
+            return JsonResponse(
+                {"status": "error", "message": "must include Import file ID or cache key as run_id"}, status=status.HTTP_400_BAD_REQUEST
+            )
+
         data_quality_results = get_cache_raw(DataQualityCheck.cache_key(data_quality_id, self.get_organization(request)))
         return JsonResponse({"data": data_quality_results})

@@ -12,3 +12,5 @@ class GoalNoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = GoalNote
         fields = "__all__"
+        # a note belongs to the goal and property it was created for
+        read_only_fields = ("goal", "property")

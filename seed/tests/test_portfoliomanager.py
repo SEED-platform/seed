@@ -12,7 +12,7 @@ from datetime import datetime
 from io import BytesIO
 from os import path
 from pathlib import Path
-from unittest import skip, skipIf
+from unittest import mock, skip, skipIf
 
 import pandas as pd
 import pytest
@@ -658,3 +658,31 @@ class PortfolioManagerCustomDownloadTest(TestCase):
             110291021: 11,
             110291022: 11,
         }
+
+
+class PortfolioManagerMeterDownloadDateTest(TestCase):
+    def setUp(self):
+        user_details = {
+            "username": "test_user@demo.com",
+            "password": "test_pass",
+        }
+        self.user = User.objects.create_user(email="test_user@demo.com", **user_details)
+        self.client.login(**user_details)
+        self.body = {"username": "pm_user", "password": "pm_pass", "property_ids": ["16731961"]}
+
+    @mock.patch("seed.views.v3.portfolio_manager.PortfolioManagerImport.generate_and_download_meter_data", return_value=b"excel")
+    def test_meter_download_dates(self, mock_download):
+        url = reverse_lazy("api:v3:portfolio_manager-meter-download")
+
+        # dates that are not MM/DD/YYYY are rejected before contacting ESPM
+        body = {**self.body, "start_date": "2019-01-01", "end_date": "2019-12-31"}
+        resp = self.client.post(url, json.dumps(body), content_type="application/json")
+        assert resp.status_code == 400
+        assert resp.json() == {"status": "error", "message": "start_date and end_date must be formatted as MM/DD/YYYY"}
+        mock_download.assert_not_called()
+
+        body = {**self.body, "start_date": "01/01/2019", "end_date": "12/31/2019"}
+        resp = self.client.post(url, json.dumps(body), content_type="application/json")
+        assert resp.status_code == 200
+        assert resp.content == b"excel"
+        mock_download.assert_called_once_with(["16731961"], datetime(2019, 1, 1), datetime(2019, 12, 31))

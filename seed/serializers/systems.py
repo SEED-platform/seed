@@ -21,7 +21,7 @@ class ServiceSerializer(serializers.ModelSerializer):
         model = Service
         fields = ["id", "name", "emission_factor", "system_id", "properties"]
 
-    def get_properties(self, obj):
+    def get_properties(self, obj) -> dict[str, list[dict[str, str]]]:
         meters_by_property = defaultdict(list)
         for meter in obj.meters.all():
             meters_by_property[meter.property_id].append(

@@ -183,7 +183,8 @@ def _validate_permissions(perm_name, request, requires_org):
         return
 
     try:
-        org_user = OrganizationUser.objects.get(user=request.user, organization=org)
+        # Ignore memberships whose access level instance belongs to another organization
+        org_user = OrganizationUser.objects.get(user=request.user, organization=org, access_level_instance__organization=org)
     except OrganizationUser.DoesNotExist:
         return _make_resp("user_dne")
     else:
@@ -234,6 +235,8 @@ def assert_hierarchy_access(
     """Helper function to has_hierarchy_access"""
     body = request.data
     params = request.GET
+    # other access level instances that the request must also have access to
+    other_requests_alis = []
     try:
         if property_id_kwarg and property_id_kwarg in kwargs:
             property = Property.objects.get(pk=kwargs[property_id_kwarg])
@@ -300,19 +303,22 @@ def assert_hierarchy_access(
 
         elif ubid_id_kwarg and ubid_id_kwarg in kwargs:
             ubid = UbidModel.objects.get(pk=kwargs[ubid_id_kwarg])
-            if ubid.property:
-                requests_ali = ubid.property.propertyview_set.first().property.access_level_instance
-            else:
-                requests_ali = ubid.taxlot.taxlotview_set.first().taxlot.access_level_instance
+            requests_ali = None
+            if ubid.property_id:
+                requests_ali = AccessLevelInstance.objects.filter(properties__views__state_id=ubid.property_id).first()
+            elif ubid.taxlot_id:
+                requests_ali = AccessLevelInstance.objects.filter(taxlots__views__state_id=ubid.taxlot_id).first()
+            # e.g., the states of imports and of merged-away records have no view, so no access level instance
+            if requests_ali is None:
+                raise UbidModel.DoesNotExist
 
         elif goal_id_kwarg and goal_id_kwarg in kwargs:
             goal = Goal.objects.get(pk=kwargs[goal_id_kwarg])
+            requests_ali = goal.access_level_instance
+            # a goal being moved must be accessible both where it is and where it's going
             body_ali_id = body.get("access_level_instance")
             if body_ali_id:
-                body_ali = AccessLevelInstance.objects.get(pk=body_ali_id)
-                requests_ali = body_ali if body_ali.depth < goal.access_level_instance.depth else goal.access_level_instance
-            else:
-                requests_ali = goal.access_level_instance
+                other_requests_alis.append(AccessLevelInstance.objects.get(pk=body_ali_id))
 
         elif data_logger_id_kwarg and data_logger_id_kwarg in kwargs:
             data_logger = DataLogger.objects.get(pk=kwargs[data_logger_id_kwarg])
@@ -334,8 +340,9 @@ def assert_hierarchy_access(
         return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
     user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-    if not (user_ali == requests_ali or requests_ali.is_descendant_of(user_ali)):
-        return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
+    for ali in [requests_ali, *other_requests_alis]:
+        if not (user_ali == ali or ali.is_descendant_of(user_ali)):
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
 
 def has_hierarchy_access(

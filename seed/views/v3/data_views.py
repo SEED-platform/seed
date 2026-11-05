@@ -8,8 +8,8 @@ from copy import deepcopy
 import django.core.exceptions
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, viewsets
+from drf_spectacular.utils import extend_schema, extend_schema_serializer, inline_serializer
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request, require_organization_id
@@ -19,14 +19,45 @@ from seed.models.columns import Column
 from seed.models.data_views import DataView
 from seed.serializers.data_views import DataViewSerializer
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
+
+data_view_id_field = AutoSchemaHelper.path_id_field("Data view ID")
+DATA_VIEW_PROPERTIES = {
+    "name": {"type": "string"},
+    "cycles": {"type": "array", "items": {"type": "integer"}},
+    "filter_groups": {"type": "array", "items": {"type": "integer"}},
+    "parameters": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+                "column": {"type": "integer"},
+                "location": {"type": "string"},
+                "aggregations": {"type": "array", "items": {}},
+                "target": {"type": "string"},
+            },
+            "required": ["column", "location"],
+        },
+    },
+}
+data_view_response = inline_serializer("DataViewResponse", fields={"status": serializers.CharField(), "data_view": DataViewSerializer()})
+
+
+# the list action's response is a single envelope object, not an array
+@extend_schema_serializer(many=False)
+class DataViewListResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    data_views = DataViewSerializer(many=True)
 
 
 class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = DataViewSerializer
     model = DataView
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={200: DataViewListResponseSerializer},
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -43,7 +74,10 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
             {"status": "success", "data_views": DataViewSerializer(data_view_queryset, many=True).data}, status=status.HTTP_200_OK
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[data_view_id_field, AutoSchemaHelper.query_org_id_field()],
+        responses={200: data_view_response},
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -63,7 +97,10 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
         except DataView.DoesNotExist:
             return JsonResponse({"status": "error", "message": f"DataView with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[data_view_id_field, AutoSchemaHelper.query_org_id_field()],
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"})},
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -82,16 +119,10 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "message": f"Successfully deleted DataView ID {pk}"}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "name": "string",
-                "columns": ["integer"],
-                "cycles": ["integer"],
-                "data_aggregations": ["integer"],
-            },
-        ),
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request={"application/json": {"type": "object", "properties": DATA_VIEW_PROPERTIES, "required": ["name", "cycles", "parameters"]}},
+        responses={200: data_view_response},
     )
     @method_decorator(
         [
@@ -119,16 +150,10 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
             message_dict = e.message_dict
             return JsonResponse({"status": "error", "message": "Bad Request", "errors": message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "name": "string",
-                "columns": ["integer"],
-                "cycles": ["integer"],
-                "data_aggregations": ["integer"],
-            },
-        ),
+    @extend_schema(
+        parameters=[data_view_id_field, AutoSchemaHelper.query_org_id_field()],
+        request={"application/json": {"type": "object", "properties": DATA_VIEW_PROPERTIES}},
+        responses={200: data_view_response},
     )
     @method_decorator(
         [
@@ -180,13 +205,22 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "columns": ["integer"],
-            },
-        ),
+    @extend_schema(
+        parameters=[data_view_id_field, AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body({"columns": ["integer"]}, required=["columns"]),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "data": {
+                        "meta": {"organization": "integer", "data_view": "integer"},
+                        "views_by_filter_group_id": "object",
+                        "columns_by_id": "object",
+                        "graph_data": {"labels": ["string"], "datasets": ["object"]},
+                    },
+                }
+            )
+        },
     )
     @method_decorator(
         [
@@ -198,6 +232,9 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     )
     @action(detail=True, methods=["POST"])
     def evaluate(self, request, pk):
+        """
+        Aggregate the given columns' values over the data view's cycles and filter groups, within your access level.
+        """
         organization = self.get_organization(request)
         deepcopy(request.data)
         data = deepcopy(request.data)
@@ -207,7 +244,7 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
         except DataView.DoesNotExist:
             return JsonResponse({"status": "error", "message": f"DataView with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND)
 
-        columns = Column.objects.filter(id__in=data["columns"])
+        columns = Column.objects.filter(id__in=data["columns"], organization_id=organization)
         if len(columns) != len(data["columns"]):
             return JsonResponse(
                 {"status": "error", "message": f"Columns with ids {data['columns']} do not exist"}, status=status.HTTP_404_NOT_FOUND
@@ -217,6 +254,15 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
         response = data_view.evaluate(columns, user_ali)
         return JsonResponse({"status": "success", "data": response})
 
+    @extend_schema(
+        parameters=[data_view_id_field, AutoSchemaHelper.query_org_id_field()],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "data": "object"},
+                description="`data` maps each filter group ID to an object of property view IDs to display names",
+            )
+        },
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -227,6 +273,9 @@ class DataViewViewSet(viewsets.ViewSet, OrgMixin):
     )
     @action(detail=True, methods=["GET"])
     def inventory(self, request, pk):
+        """
+        List the property views matching each of the data view's filter groups, within your access level.
+        """
         organization = self.get_organization(request)
         deepcopy(request.data)
 

@@ -32,10 +32,11 @@ class ColumnMappingSerializer(serializers.ModelSerializer):
 
 class ImportMappingSerializer(serializers.Serializer):
     from_field = serializers.CharField()
-    from_units = serializers.CharField()
+    from_units = serializers.CharField(required=False, allow_null=True)
     to_field = serializers.CharField()
-    to_field_display_name = serializers.CharField()
+    to_field_display_name = serializers.CharField(required=False)
     to_table_name = serializers.CharField()
+    to_data_type = serializers.CharField(required=False)
 
 
 class SaveColumnMappingsRequestPayloadSerializer(serializers.Serializer):

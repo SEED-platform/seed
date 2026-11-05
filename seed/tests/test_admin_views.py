@@ -258,3 +258,72 @@ class AdminViewsTest(TestCase):
         user = User.objects.get(pk=user.pk)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.content, b"")
+
+
+class OwnerAddUserViewsTest(TestCase):
+    def setUp(self):
+        owner_details = {"username": "owner@testserver", "email": "owner@testserver", "password": "owner_passS1"}
+        self.owner = User.objects.create_user(**owner_details)
+        self.org, _, _ = create_organization(self.owner, "Owner Org")
+        other_owner = User.objects.create_user(username="other_owner@testserver", email="other_owner@testserver", password="other_passS1")
+        self.other_org, _, _ = create_organization(other_owner, "Other Org")
+        self.client.login(**owner_details)
+
+        self.add_user_url = reverse_lazy("api:v3:user-list")
+        self.new_user_data = {"first_name": "New", "last_name": "User", "email": "new_user@testserver", "role": "member"}
+
+    def _post_json(self, url, data):
+        return self.client.post(url, json.dumps(data), content_type="application/json")
+
+    def test_owner_add_user_to_own_org(self):
+        data = {**self.new_user_data, "access_level_instance_id": self.org.root.id}
+        res = self._post_json(self.add_user_url + f"?organization_id={self.org.id}", data)
+
+        self.assertEqual(res.json()["status"], "success")
+        self.assertTrue(OrganizationUser.objects.filter(organization=self.org, user__username=data["email"]).exists())
+
+    def test_owner_cannot_add_user_with_access_level_instance_of_another_org(self):
+        data = {**self.new_user_data, "access_level_instance_id": self.other_org.root.id}
+        res = self._post_json(self.add_user_url + f"?organization_id={self.org.id}", data)
+
+        self.assertEqual(res.status_code, 400)
+        self.assertFalse(OrganizationUser.objects.filter(user__username=data["email"]).exists())
+
+    def test_owner_cannot_add_user_to_another_org(self):
+        # conflicting `organization` and `organization_id` params are rejected, since views may read either
+        data = {**self.new_user_data, "email": self.owner.email, "role": "owner", "access_level_instance_id": self.other_org.root.id}
+        res = self._post_json(self.add_user_url + f"?organization={self.org.id}&organization_id={self.other_org.id}", data)
+
+        self.assertEqual(res.status_code, 403)
+        self.assertFalse(OrganizationUser.objects.filter(organization=self.other_org, user=self.owner).exists())
+
+    def test_owner_cannot_create_org_with_body_organization_id(self):
+        # `has_perm` authorizes the owner by the body `organization_id`, but only superusers can create organizations
+        data = {**self.new_user_data, "org_name": "New Org", "organization_id": self.org.id}
+        res = self._post_json(self.add_user_url, data)
+
+        self.assertEqual(res.status_code, 403)
+        self.assertFalse(Organization.objects.filter(name="New Org").exists())
+        self.assertFalse(User.objects.filter(username=data["email"]).exists())
+
+    def test_rejected_add_user_does_not_create_user(self):
+        self.org.access_level_names = ["root", "child"]
+        self.org.save()
+        child = self.org.add_new_access_level_instance(self.org.root.id, "child")
+        for data in (
+            {**self.new_user_data, "role": "not_a_role", "access_level_instance_id": self.org.root.id},
+            {**self.new_user_data, "access_level_instance_id": self.other_org.root.id},
+            {**self.new_user_data, "role": "owner", "access_level_instance_id": child.id},
+        ):
+            res = self._post_json(self.add_user_url + f"?organization_id={self.org.id}", data)
+            self.assertEqual(res.status_code, 400)
+
+        self.assertFalse(User.objects.filter(username=self.new_user_data["email"]).exists())
+
+        # the user can still be added afterwards, with their details
+        data = {**self.new_user_data, "access_level_instance_id": child.id}
+        res = self._post_json(self.add_user_url + f"?organization_id={self.org.id}", data)
+        self.assertEqual(res.json()["status"], "success")
+        user = User.objects.get(username=data["email"])
+        self.assertEqual((user.first_name, user.last_name), ("New", "User"))
+        self.assertTrue(OrganizationUser.objects.filter(organization=self.org, user=user, access_level_instance=child).exists())

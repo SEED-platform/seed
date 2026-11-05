@@ -26,6 +26,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, AssertDictSubsetMixin, DeleteModelsTestCase
+from seed.utils.cache import set_cache_raw
 from seed.utils.organizations import create_organization
 
 DEFAULT_CUSTOM_COLUMNS = [
@@ -461,6 +462,16 @@ class TestMCMViews(TestCase):
         body = resp.json()
         self.assertEqual(body.get("progress", None), 50)
         self.assertEqual(body.get("status_message", None), progress_data.data["status_message"])
+
+    def test_progress_only_reads_progress_keys(self):
+        """Other cache entries, e.g., mapping results, cannot be read as progress"""
+        unique_id = f"{self.org.id}12345"
+        set_cache_raw(unique_id, {"status": "success", "properties": [{"address_line_1": "123 Main St"}]})
+
+        resp = self.client.get(reverse("api:v3:progress-detail", args=[unique_id]), content_type="application/json")
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json(), {"progress_key": unique_id, "progress": 0, "status": "waiting"})
 
     def test_create_dataset(self):
         """tests the create_dataset view, allows duplicate dataset names"""

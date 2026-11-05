@@ -5,7 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
@@ -17,7 +17,14 @@ from seed.utils.api_schema import AutoSchemaHelper
 
 
 class GoalViewSet(viewsets.ViewSet, OrgMixin):
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.path_id_field("Goal ID"),
+            AutoSchemaHelper.path_id_field("Cycle goal ID", name="cycle_goal_id"),
+        ],
+        responses={200: AutoSchemaHelper.schema_factory({"property_view_ids": ["integer"]})},
+    )
     @method_decorator(
         [
             api_endpoint,

@@ -307,8 +307,13 @@ class PropertyMeterReadingsExporter:
 
 
 def update_meter_connection(meter, meter_config):
+    """Raises Service.DoesNotExist if the service is not in the meter's organization"""
     service_id = meter_config.get("service_id")
-    meter.service = Service.objects.get(pk=service_id) if service_id else None
+    if service_id:
+        org_id = meter.property.organization_id if meter.property_id else meter.system.group.organization_id
+        meter.service = Service.objects.get(pk=service_id, system__group__organization_id=org_id)
+    else:
+        meter.service = None
 
     connection_lookup = {
         "imported using": Meter.RECEIVING_SERVICE,

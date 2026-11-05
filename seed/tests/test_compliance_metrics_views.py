@@ -9,7 +9,9 @@ from django.core import serializers
 from django.urls import reverse
 
 from seed.models import ComplianceMetric, FilterGroup
+from seed.test_helpers.fake import FakeCycleFactory
 from seed.tests.util import AccessLevelBaseTestCase
+from seed.utils.organizations import create_organization
 
 
 class ComplianceMetricViewTests(AccessLevelBaseTestCase):
@@ -277,6 +279,72 @@ class ComplianceMetricViewTests(AccessLevelBaseTestCase):
         compliance_metrics = ComplianceMetric.objects.all().order_by("created")
         self.assertEqual(1, len(compliance_metrics))
 
+    def test_compliance_metric_update_cannot_change_organization(self):
+        other_org, _, _ = create_organization(self.superuser, "other org")
+
+        self.login_as_root_member()
+        response = self.client.put(
+            reverse("api:v3:compliance_metrics-detail", args=[self.compliance_metric1.id]) + "?organization_id=" + str(self.org.id),
+            data=json.dumps({"name": "updated name", "organization_id": other_org.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.org.id, json.loads(response.content)["compliance_metric"]["organization_id"])
+
+        cm1 = ComplianceMetric.objects.get(id=self.compliance_metric1.id)
+        self.assertEqual("updated name", cm1.name)
+        self.assertEqual(self.org.id, cm1.organization_id)
+
+    def test_compliance_metric_create_and_update_reject_another_organizations_data(self):
+        other_org, _, _ = create_organization(self.superuser, "other org")
+        other_cycle = FakeCycleFactory(organization=other_org, user=self.superuser).get_cycle(name="Other Cycle")
+        other_column = self.column_factory.get_column("other column", organization=other_org, is_extra_data=True)
+        other_filter_group = FilterGroup.objects.create(name="other", organization_id=other_org.id, inventory_type=0, query_dict={})
+        list_url = reverse("api:v3:compliance_metrics-list") + "?organization_id=" + str(self.org.id)
+        detail_url = reverse("api:v3:compliance_metrics-detail", args=[self.compliance_metric1.id]) + "?organization_id=" + str(self.org.id)
+        metric_details = {
+            "name": "compliance metric 3",
+            "actual_energy_column": self.column1.id,
+            "energy_metric_type": "Target > Actual for Compliance",
+            "filter_group": self.filter_group.id,
+            "cycles": [self.cycle1.id],
+            "x_axis_columns": [self.column5.id],
+        }
+
+        self.login_as_root_member()
+        for field, value in [
+            ("cycles", [other_cycle.id]),
+            ("actual_energy_column", other_column.id),
+            ("x_axis_columns", [self.column6.id, other_column.id]),
+            ("filter_group", other_filter_group.id),
+        ]:
+            response = self.client.post(list_url, data=json.dumps({**metric_details, field: value}), content_type="application/json")
+            self.assertEqual(response.status_code, 400)
+            self.assertIn(field, response.json()["errors"])
+            response = self.client.put(detail_url, data=json.dumps({field: value}), content_type="application/json")
+            self.assertEqual(response.status_code, 400)
+            self.assertIn(field, response.json()["errors"])
+
+        self.assertEqual(2, ComplianceMetric.objects.count())
+        cm1 = ComplianceMetric.objects.get(id=self.compliance_metric1.id)
+        self.assertEqual(self.column1, cm1.actual_energy_column)
+        self.assertEqual(self.filter_group, cm1.filter_group)
+        self.assertEqual(set(self.cycles1), set(cm1.cycles.all()))
+        self.assertEqual(set(self.x_axes1), set(cm1.x_axis_columns.all()))
+
+        # the organization's own data is accepted
+        response = self.client.post(list_url, data=json.dumps(metric_details), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        response = self.client.put(
+            detail_url,
+            data=json.dumps({"cycles": [self.cycle4.id], "actual_energy_column": self.column3.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        cm1.refresh_from_db()
+        self.assertEqual(self.column3, cm1.actual_energy_column)
+        self.assertEqual([self.cycle4], list(cm1.cycles.all()))
+
 
 class ComplianceMetricEvaluationTests(AccessLevelBaseTestCase):
     """
@@ -393,3 +461,19 @@ class ComplianceMetricEvaluationTests(AccessLevelBaseTestCase):
 
         properties_by_cycle = data["data"]["properties_by_cycles"][str(self.cycle1.id)]
         self.assertEqual(len(properties_by_cycle), 2)
+
+    def test_compliance_metric_evaluate_unknown_access_level_instance(self):
+        url = (
+            reverse("api:v3:compliance_metrics-evaluate", args=[self.compliance_metric.id])
+            + f"?organization_id={self.org.id}&access_level_instance_id="
+        )
+
+        self.login_as_root_member()
+        for access_level_instance_id in [0, "abc"]:
+            response = self.client.get(url + str(access_level_instance_id), content_type="application/json")
+            self.assertEqual(response.status_code, 404)
+            self.assertEqual("No such resource.", response.json()["message"])
+
+        response = self.client.get(url + str(self.child_level_instance.id), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["data"]["properties_by_cycles"][str(self.cycle1.id)]), 2)

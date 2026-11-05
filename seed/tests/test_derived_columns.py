@@ -706,6 +706,39 @@ class TestDerivedColumnsPermissions(AccessLevelBaseTestCase):
         response = self.client.put(url, post_params, content_type="application/json")
         assert response.status_code == 403
 
+    def test_derived_columns_source_column_from_other_organization(self):
+        other_org, _, _ = create_organization(self.superuser, "test-organization-b")
+        other_column = Column.objects.filter(organization=other_org, is_extra_data=False, table_name="PropertyState").first()
+        self.login_as_root_owner()
+
+        # users cannot create derived columns from another organization's columns
+        url = reverse("api:v3:derived_columns-list") + "?organization_id=" + str(self.org.id)
+        post_params = {
+            "name": "new column",
+            "expression": "$param_a / 100",
+            "inventory_type": "Property",
+            "parameters": [{"parameter_name": "param_a", "source_column": other_column.id}],
+        }
+        response = self.client.post(url, dumps(post_params), content_type="application/json")
+        assert response.status_code == 400
+        assert not DerivedColumn.objects.filter(organization=self.org, name="new column").exists()
+
+        # nor update derived columns to use them
+        url = reverse("api:v3:derived_columns-detail", args=[self.derived_column.id]) + "?organization_id=" + str(self.org.id)
+        response = self.client.put(url, dumps({"parameters": post_params["parameters"]}), content_type="application/json")
+        assert response.status_code == 400
+        assert not DerivedColumnParameter.objects.filter(derived_column=self.derived_column).exists()
+
+    def test_derived_columns_update_without_name(self):
+        url = reverse("api:v3:derived_columns-detail", args=[self.derived_column.id]) + "?organization_id=" + str(self.org.id)
+        self.login_as_root_owner()
+
+        response = self.client.put(url, dumps({"expression": "$a * 2"}), content_type="application/json")
+        assert response.status_code == 200
+        self.derived_column.refresh_from_db()
+        assert self.derived_column.expression == "$a * 2"
+        assert self.derived_column.name == "hello"
+
     def test_derived_columns_delete(self):
         url = reverse("api:v3:derived_columns-detail", args=[self.derived_column.id]) + "?organization_id=" + str(self.org.id)
 

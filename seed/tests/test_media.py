@@ -207,6 +207,23 @@ class TestMeasures(TestCase):
         # Assert
         self.assertFalse(is_permitted)
 
+    def test_fails_get_analysis_input_file_when_analysis_does_not_exist(self):
+        # Setup
+        analysis = FakeAnalysisFactory(organization=self.org_a, user=self.user_a).get_analysis()
+        analysis_input_file = AnalysisInputFile.objects.create(analysis=analysis, content_type=AnalysisInputFile.BUILDINGSYNC)
+        analysis_input_file.file.save("test.xml", ContentFile(b"Hello World"))
+        filepath = analysis_input_file.file.name
+        # deleting the analysis leaves its input files on disk
+        analysis.delete()
+
+        # Act / Assert
+        with pytest.raises(ModelForFileNotFoundError):
+            check_file_permission(self.user_b, filepath)
+
+        self.client.login(**self.user_details_b)
+        response = self.client.get(f"/api/v3/media/{filepath}")
+        self.assertEqual(response.status_code, 404)
+
     def test_successfully_get_analysis_output_file_when_user_is_org_member(self):
         # Setup
         # create AnalysisOutputFile for org_a

@@ -9,11 +9,13 @@ from collections import OrderedDict
 from datetime import timedelta
 
 from django.core.exceptions import ValidationError
+from drf_spectacular.extensions import OpenApiSerializerFieldExtension
 from rest_framework import serializers
 
 from seed.models import GreenAssessment, GreenAssessmentProperty, GreenAssessmentURL, PropertyView
 from seed.models.auditlog import AUDIT_USER_CREATE
 from seed.utils.api import OrgValidateMixin, OrgValidator
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.strings import titlecase
 
 ASSESSMENT_VALIDATOR = OrgValidator("assessment", "organization_id")
@@ -30,6 +32,17 @@ class GreenAssessmentField(serializers.PrimaryKeyRelatedField):
         return GreenAssessmentSerializer(green_assessment).data
 
 
+class GreenAssessmentFieldExtension(OpenApiSerializerFieldExtension):
+    """`GreenAssessmentField` is written as an ID but read as the serialized green assessment"""
+
+    target_class = GreenAssessmentField
+
+    def map_serializer_field(self, auto_schema, direction):
+        if direction == "request":
+            return auto_schema._map_serializer_field(self.target, direction, bypass_extensions=True)
+        return auto_schema.resolve_serializer(GreenAssessmentSerializer, direction).ref
+
+
 class GreenAssessmentURLField(serializers.ListField):
     """De/Serialize urls attached to GreenAssessmentProperty"""
 
@@ -40,6 +53,18 @@ class GreenAssessmentURLField(serializers.ListField):
         """Return list of attached urls"""
         urls = list(obj.all())
         return [(url.url, url.description) for url in urls]
+
+
+class GreenAssessmentURLFieldExtension(OpenApiSerializerFieldExtension):
+    """`GreenAssessmentURLField` is written as a list of urls but read as a list of `[url, description]` pairs"""
+
+    target_class = GreenAssessmentURLField
+
+    def map_serializer_field(self, auto_schema, direction):
+        schema = auto_schema._map_serializer_field(self.target, direction, bypass_extensions=True)
+        if direction == "response":
+            schema["items"] = AutoSchemaHelper.schema_factory(["string"], minItems=2, maxItems=2, description="[url, description]")
+        return schema
 
 
 class PropertyViewField(serializers.PrimaryKeyRelatedField):
@@ -68,6 +93,28 @@ class PropertyViewField(serializers.PrimaryKeyRelatedField):
         )
 
 
+class PropertyViewFieldExtension(OpenApiSerializerFieldExtension):
+    """`PropertyViewField` is written as an ID but read as a summary of the property view"""
+
+    target_class = PropertyViewField
+
+    def map_serializer_field(self, auto_schema, direction):
+        if direction == "request":
+            return auto_schema._map_serializer_field(self.target, direction, bypass_extensions=True)
+        return AutoSchemaHelper.schema_factory(
+            {
+                "id": "integer",
+                "address_line_1": "string",
+                "address_line_2": "string",
+                "city": "string",
+                "state": "string",
+                "postal_code": "string",
+                "property": "integer",
+                "cycle": {"id": "integer", "start": "string", "end": "string"},
+            }
+        )
+
+
 class ValidityDurationField(serializers.Field):
     """Serialize validity_duration (as number of days)."""
 
@@ -92,6 +139,16 @@ class ValidityDurationField(serializers.Field):
         return validity_duration
 
 
+class ValidityDurationFieldExtension(OpenApiSerializerFieldExtension):
+    """`ValidityDurationField` is a number of days, which is null in responses when the duration isn't set"""
+
+    target_class = ValidityDurationField
+
+    def map_serializer_field(self, auto_schema, direction):
+        schema = AutoSchemaHelper.schema_factory("integer", minimum=1, description="Number of days")
+        return {**schema, "nullable": True} if direction == "response" else schema
+
+
 class GreenAssessmentSerializer(serializers.ModelSerializer):
     recognition_type = serializers.ChoiceField(GreenAssessment.RECOGNITION_TYPE_CHOICES)
     recognition_description = serializers.SerializerMethodField()
@@ -111,12 +168,14 @@ class GreenAssessmentSerializer(serializers.ModelSerializer):
             "validity_duration",
         )
 
-    def get_recognition_description(self, obj):
+    def get_recognition_description(self, obj) -> str:
         """Human readable recognition_type"""
         return obj.get_recognition_type_display()
 
 
 class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSerializer):
+    """Green assessment attached to a property view"""
+
     # use all for queryset as model ensures orgs match
     assessment = GreenAssessmentField(queryset=GreenAssessment.objects.all(), allow_null=True)
     view = PropertyViewField(queryset=PropertyView.objects.all(), allow_null=True)
@@ -253,6 +312,8 @@ class GreenAssessmentPropertySerializer(OrgValidateMixin, serializers.ModelSeria
 
 
 class GreenAssessmentURLSerializer(OrgValidateMixin, serializers.ModelSerializer):
+    """Link to the rating or scoring details of a green assessment property"""
+
     # ensure request.users org matches that property_assessment
     org_validators = [ASSESSMENT_PROPERTY_VALIDATOR]
 

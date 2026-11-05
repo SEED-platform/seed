@@ -5,13 +5,14 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import GoalNote
 from seed.serializers.goal_notes import GoalNoteSerializer
 from seed.utils.api import OrgMixin
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.goal_notes import get_permission_data
 from seed.utils.viewsets import UpdateWithoutPatchModelMixin
 
@@ -25,7 +26,11 @@ class GoalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
     serializer_class = GoalNoteSerializer
     queryset = GoalNote.objects.all()
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.path_id_field("Property ID", name="property_pk")],
+        request=GoalNoteSerializer(partial=True),
+    )
     @method_decorator(
         [
             has_perm("requires_member"),
@@ -34,6 +39,7 @@ class GoalNoteViewSet(UpdateWithoutPatchModelMixin, OrgMixin):
         ]
     )
     def update(self, request, property_pk, pk):
+        """Partially updates a property's goal note (users at a leaf access level may only update `resolution`)"""
         try:
             goal_note = GoalNote.objects.get(property=property_pk, pk=pk)
         except GoalNote.DoesNotExist:

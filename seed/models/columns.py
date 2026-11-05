@@ -1189,8 +1189,9 @@ class Column(models.Model):
         """
         # Container to store the dicts with the Column object
         new_data = []
-        org_user = OrganizationUser.objects.get(organization=organization, user=user)
-        is_root_user = org_user.access_level_instance == organization.root
+        org_user = OrganizationUser.objects.filter(organization=organization, user=user).first()
+        # superusers who do not belong to the organization act at its root, as in has_perm
+        is_root_user = org_user.access_level_instance == organization.root if org_user else user.is_superuser
 
         for field in fields:
             new_field = field

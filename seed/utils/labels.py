@@ -51,10 +51,12 @@ def filter_labels_for_inv_type(request, inventory_type=None):
 def get_labels(request, qs, super_organization, inv_type):
     inventory = filter_labels_for_inv_type(request=request, inventory_type=inv_type)
 
-    # filter by AH
+    # filter by AH, within the ALI's organization (lft/rgt ranges overlap across organizations, and
+    # `show_shared_buildings` can add other organizations to the inventory)
     ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
     in_subtree = Q(
         **{
+            f"{inv_type[:-5]}__organization_id": ali.organization_id,
             f"{inv_type[:-5]}__access_level_instance__lft__gte": ali.lft,
             f"{inv_type[:-5]}__access_level_instance__rgt__lte": ali.rgt,
         }

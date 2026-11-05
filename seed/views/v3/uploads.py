@@ -15,7 +15,7 @@ from django.core.files.storage import FileSystemStorage
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.utils.text import get_valid_filename
-from drf_yasg.utils import no_body, swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
@@ -28,6 +28,11 @@ from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 
 _log = logging.getLogger(__name__)
+
+UPLOAD_RESPONSE_SCHEMA = AutoSchemaHelper.schema_factory(
+    {"success": "boolean", "import_file_id": "integer", "message": "string"},
+    description="On failure, `success` is false and `message` explains why; most failures still respond with HTTP 200",
+)
 
 
 def get_upload_path(filename):
@@ -46,7 +51,7 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
     Returns::
 
         {
-            'import_record': True,
+            'success': True,
             'import_file_id': The ID of the newly-uploaded ImportFile
         }
 
@@ -54,21 +59,25 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
 
     parser_classes = (FormParser, MultiPartParser)
 
-    @swagger_auto_schema(
-        request_body=no_body,
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.upload_file_field(name="file", required=True, description="File to Upload"),
-            AutoSchemaHelper.form_integer_field(
-                name="import_record", required=True, description="the dataset ID you want to associate this file with."
-            ),
-            AutoSchemaHelper.form_string_field(
-                name="source_type", required=True, description='the type of file (e.g., "Portfolio Raw" or "Assessed Raw")'
-            ),
-            AutoSchemaHelper.form_string_field(
-                name="source_program_version", required=False, description="the version of the file as related to the source_type"
-            ),
-        ],
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.multipart_body(
+            {
+                "file": "file",
+                "import_record": "integer",
+                "source_type": SEED_DATA_SOURCES,
+                "source_program": "string",
+                "source_program_version": "string",
+            },
+            required=["file", "import_record"],
+            description="- file: File to Upload (may instead be sent as `qqfile`)\n"
+            "- import_record: the dataset ID you want to associate this file with.\n"
+            '- source_type: the type of file (e.g., "Portfolio Raw" or "Assessed Raw")\n'
+            '- source_program: the program that produced the file (e.g., "PortfolioManager")\n'
+            "- source_program_version: the version of the file as related to the source_type\n\n"
+            "The form fields other than the file may also be sent as query parameters.",
+        ),
+        responses={200: UPLOAD_RESPONSE_SCHEMA},
     )
     @method_decorator(
         [
@@ -159,28 +168,21 @@ class UploadViewSet(viewsets.ViewSet, OrgMixin):
                 return {"success": False, "message": f'Unsupported units string: "{original_unit_string}"'}
             return {"success": True, "pint_value": pint_val}
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(required=False, description="Organization ID (defaults to the body's organization_id)")
+        ],
+        request=AutoSchemaHelper.json_body(
             {
+                "organization_id": "integer",
                 "import_record_id": "integer",
-                "properties": [
-                    {
-                        "address_1": "string",
-                        "city": "string",
-                        "state_province": "string",
-                        "postal_code": "string",
-                        "county": "string",
-                        "country": "string",
-                        "property_name": "string",
-                        "property_id": "integer",
-                        "year_built": "integer",
-                    }
-                ],
+                "properties": ["object"],
             },
-            required=["import_record_id", "properties"],
-            description="An object containing meta data for a property",
+            required=["organization_id", "import_record_id", "properties"],
+            description="- properties: Portfolio Manager properties; the keys of the first property become the CSV columns. "
+            'Values are strings or Portfolio Manager value objects (e.g., `{"@uom": "kBtu", "#text": "123.4"}`)',
         ),
+        responses={200: UPLOAD_RESPONSE_SCHEMA},
     )
     @method_decorator(
         [

@@ -73,7 +73,7 @@ def export_data(args):
     column_profile = None
     if "profile_id" in request_data and str(request_data["profile_id"]) not in {"None", ""}:
         profile_id = request_data["profile_id"]
-        column_profile = ColumnListProfile.objects.get(id=profile_id)
+        column_profile = ColumnListProfile.objects.get(id=profile_id, organization_id=org_id)
 
     # get the class to operate on and the relationships
     view_klass_str = query_params.get("inventory_type", "properties")
@@ -566,6 +566,8 @@ def _extract_related(data):
     related = []
 
     # figure out if we are dealing with properties or taxlots
+    if not data:
+        return []
     if data[0].get("property_state_id", None) is not None:
         is_property = True
     elif data[0].get("taxlot_state_id", None) is not None:

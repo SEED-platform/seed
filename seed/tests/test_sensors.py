@@ -382,6 +382,63 @@ class PropertySensorViewTests(AccessLevelBaseTestCase):
         # Assert
         assert result.status_code == 400
 
+    def test_update_and_delete_sensor_of_another_property(self):
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        child_property_view = self.property_view_factory.get_property_view(child_property)
+        child_dl = DataLogger.objects.create(property_id=child_property.id, display_name="child")
+        child_sensor = Sensor.objects.create(data_logger=child_dl, display_name="s1", sensor_type="first", units="one", column_name="c 1")
+        dl = DataLogger.objects.create(property_id=self.property_1.id, display_name="moo")
+        s = Sensor.objects.create(data_logger=dl, display_name="s1", sensor_type="first", units="one", column_name="sensor 1")
+
+        def sensor_url(sensor):
+            url = reverse("api:v3:property-sensors-detail", kwargs={"property_pk": child_property_view.pk, "pk": sensor.id})
+            return url + f"?organization_id={self.org.pk}"
+
+        self.login_as_child_member()
+        params = json.dumps({"display_name": "quack"})
+
+        # child users can update the sensors of their properties
+        result = self.client.put(sensor_url(child_sensor), params, content_type="application/json")
+        assert result.status_code == 200
+
+        # but not the sensors of a root property, through the view of their own property
+        result = self.client.put(sensor_url(s), params, content_type="application/json")
+        assert result.status_code == 404
+        result = self.client.delete(sensor_url(s))
+        assert result.status_code == 404
+        s.refresh_from_db()
+        assert s.display_name == "s1"
+
+    def test_update_sensor_cannot_move_it_to_another_data_logger(self):
+        dl = DataLogger.objects.create(property_id=self.property_1.id, display_name="moo")
+        other_dl = DataLogger.objects.create(property_id=self.property_2.id, display_name="boo")
+        s = Sensor.objects.create(data_logger=dl, display_name="s1", sensor_type="first", units="one", column_name="sensor 1")
+
+        url = reverse("api:v3:property-sensors-detail", kwargs={"property_pk": self.property_view_1.pk, "pk": s.id})
+        url += f"?organization_id={self.org.pk}"
+        params = json.dumps({"display_name": "quack", "data_logger_id": other_dl.id})
+        result = self.client.put(url, params, content_type="application/json")
+
+        assert result.status_code == 200
+        s.refresh_from_db()
+        assert s.display_name == "quack"
+        assert s.data_logger_id == dl.id
+
+    def test_update_data_logger_cannot_move_it_to_another_property(self):
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        dl = DataLogger.objects.create(property_id=child_property.id, display_name="moo")
+
+        url = reverse("api:v3:data_logger-detail", kwargs={"pk": dl.id})
+        url += f"?organization_id={self.org.pk}"
+        params = json.dumps({"display_name": "quack", "property": self.property_1.id})
+        self.login_as_child_member()
+        result = self.client.put(url, params, content_type="application/json")
+
+        assert result.status_code == 200
+        dl.refresh_from_db()
+        assert dl.display_name == "quack"
+        assert dl.property_id == child_property.id
+
 
 class SensorReadingTests(AccessLevelBaseTestCase):
     def setUp(self):

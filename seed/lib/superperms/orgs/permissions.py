@@ -30,7 +30,11 @@ def is_authenticated(user):
 
 
 def get_org_or_id(dictlike: dict) -> int | None:
-    """Get value of organization or organization_id"""
+    """Get value of organization or organization_id
+
+    Returns -1 (an invalid ID) if a value is malformed, or if the keys disagree: views may read a different
+    key (usually `organization_id`) than the one that was used to authorize the request.
+    """
     # while documentation should encourage the use of one consistent key choice
     # for supplying an organization to query_params, we check all reasonable
     # permutations of organization id.
@@ -42,12 +46,15 @@ def get_org_or_id(dictlike: dict) -> int | None:
     org_id = None
     for org_str in org_query_strings:
         try:
-            org_id = dictlike.get(org_str)
-            if org_id:
+            value = dictlike.get(org_str)
+            if value:
                 # Type case the organization_id as a integer
                 if "_id" in org_str:
-                    org_id = int(org_id)
-                break
+                    value = int(value)
+                if org_id is None:
+                    org_id = value
+                elif str(value) != str(org_id):
+                    return -1
         except (ValueError, TypeError):
             return -1
     return org_id
@@ -179,7 +186,10 @@ class SEEDOrgPermissions(BasePermission):
             org = get_user_org(request.user)
             org_id = org.pk
         try:
-            org_user = OrganizationUser.objects.get(user=request.user, organization__id=org_id)
+            # Ignore memberships whose access level instance belongs to another organization
+            org_user = OrganizationUser.objects.get(
+                user=request.user, organization_id=org_id, access_level_instance__organization_id=org_id
+            )
             has_perm = org_user.role_level >= required_perm
         except OrganizationUser.DoesNotExist:
             self.message = "No relationship to organization"

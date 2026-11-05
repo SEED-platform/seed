@@ -33,8 +33,13 @@ from seed.models import (
     PORTFOLIO_RAW,
     SEED_DATA_SOURCES,
     Column,
+    DataLogger,
+    InventoryGroup,
+    Meter,
+    MeterReading,
     PropertyState,
     PropertyView,
+    System,
 )
 from seed.models.data_quality import DataQualityCheck
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory
@@ -1386,3 +1391,185 @@ class TestImportFileViewSetPermissions(AccessLevelBaseTestCase, DataMappingBaseT
             self.login_as_child_member()
             response = self.client.post(url, content_type="application/json")
             assert response.status_code == 404
+
+    def _use_test_file(self, filename):
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+        self.import_file.file = SimpleUploadedFile(name=filename, content=pathlib.Path(filepath).read_bytes())
+        self.import_file.save()
+
+    def _get_child_property_view(self):
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        return PropertyView.objects.create(
+            property=child_property, cycle=self.cycle, state=self.property_state_factory.get_property_state()
+        )
+
+    def test_import_file_start_save_data_cycle_must_be_in_org(self):
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_cycle = FakeCycleFactory(organization=other_org, user=self.superuser).get_cycle()
+        url = reverse_lazy("api:v3:import_files-start-save-data", args=[self.import_file.pk]) + f"?organization_id={self.org.id}"
+
+        # a cycle from another organization is rejected
+        self.login_as_root_member()
+        response = self.client.post(url, json.dumps({"cycle_id": other_cycle.id}), content_type="application/json")
+        assert response.status_code == 400
+        self.import_file.refresh_from_db()
+        assert self.import_file.cycle_id is None
+
+        # a cycle from the organization is accepted
+        response = self.client.post(url, json.dumps({"cycle_id": self.cycle.id}), content_type="application/json")
+        assert response.status_code == 200
+        self.import_file.refresh_from_db()
+        assert self.import_file.cycle_id == self.cycle.id
+
+    def test_import_file_greenbutton_meters_preview_hierarchy(self):
+        self._use_test_file("example-GreenButton-data.xml")
+        url = (
+            reverse("api:v3:import_files-greenbutton-meters-preview", kwargs={"pk": self.import_file.id})
+            + f"?organization_id={self.org.pk}"
+        )
+
+        # child user cannot preview (and so modify) an import file above their access level, even for their own property
+        self.login_as_child_member()
+        response = self.client.get(url + f"&view_id={self._get_child_property_view().id}")
+        assert response.status_code == 404
+        self.import_file.refresh_from_db()
+        assert self.import_file.matching_results_data == {}
+
+        # systems from other organizations are rejected
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_group = InventoryGroup.objects.create(name="other group", organization=other_org, access_level_instance=other_org.root)
+        other_system = System.objects.create(name="other system", group=other_group)
+        self.login_as_root_member()
+        response = self.client.get(url + f"&system_id={other_system.id}")
+        assert response.status_code == 400
+        self.import_file.refresh_from_db()
+        assert self.import_file.matching_results_data == {}
+
+        # systems from the organization are accepted
+        group = InventoryGroup.objects.create(name="group", organization=self.org, access_level_instance=self.org.root)
+        system = System.objects.create(name="system", group=group)
+        response = self.client.get(url + f"&system_id={system.id}")
+        assert response.status_code == 200
+        self.import_file.refresh_from_db()
+        assert self.import_file.matching_results_data == {"property_id": None, "system_id": system.id}
+
+    def test_import_file_sensors_preview_hierarchy(self):
+        self._use_test_file("example-sensor-metadata.xlsx")
+        url = reverse("api:v3:import_files-sensors-preview", kwargs={"pk": self.import_file.id}) + f"?organization_id={self.org.pk}"
+
+        # child user cannot preview (and so modify) an import file above their access level, even for their own property
+        self.login_as_child_member()
+        response = self.client.get(url + f"&view_id={self._get_child_property_view().id}")
+        assert response.status_code == 404
+        self.import_file.refresh_from_db()
+        assert self.import_file.matching_results_data == {}
+
+        # data loggers from other organizations are rejected
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_property = FakePropertyFactory(organization=other_org).get_property()
+        other_data_logger = DataLogger.objects.create(property=other_property, display_name="other logger")
+        self.login_as_root_member()
+        response = self.client.get(url + f"&view_id={self.property_view.id}&data_logger_id={other_data_logger.id}")
+        assert response.status_code == 400
+        self.import_file.refresh_from_db()
+        assert self.import_file.matching_results_data == {}
+
+        # data loggers from the organization are accepted
+        data_logger = DataLogger.objects.create(property=self.property, display_name="logger")
+        response = self.client.get(url + f"&view_id={self.property_view.id}&data_logger_id={data_logger.id}")
+        assert response.status_code == 200
+        self.import_file.refresh_from_db()
+        assert self.import_file.matching_results_data == {"data_logger_id": str(data_logger.id)}
+
+    def test_import_file_sensor_readings_preview_data_logger_must_be_accessible(self):
+        self._use_test_file("example-sensor-readings.csv")
+        url = reverse("api:v3:import_files-sensor-readings-preview", kwargs={"pk": self.import_file.id}) + f"?organization_id={self.org.pk}"
+        self.login_as_root_member()
+
+        # data loggers from other organizations are rejected
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_property = FakePropertyFactory(organization=other_org).get_property()
+        other_data_logger = DataLogger.objects.create(property=other_property, display_name="other logger")
+        response = self.client.get(url + f"&data_logger_id={other_data_logger.id}")
+        assert response.status_code == 400
+        self.import_file.refresh_from_db()
+        assert self.import_file.matching_results_data == {}
+
+        # data loggers from the organization are accepted
+        data_logger = DataLogger.objects.create(property=self.property, display_name="logger")
+        response = self.client.get(url + f"&data_logger_id={data_logger.id}")
+        assert response.status_code == 200
+        self.import_file.refresh_from_db()
+        assert self.import_file.matching_results_data == {"data_logger_id": str(data_logger.id)}
+
+    def test_import_file_pm_meters_limited_to_import_file_access_level(self):
+        # self.property (root access level) has PM ID 5766973; add a child property with the file's other PM ID
+        filename = "example-pm-monthly-meter-usage.xlsx"
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        PropertyView.objects.create(
+            property=child_property, cycle=self.cycle, state=self.property_state_factory.get_property_state(pm_property_id="5766975")
+        )
+        child_import_record = ImportRecord.objects.create(
+            owner=self.child_member_user, super_organization=self.org, access_level_instance=self.child_level_instance
+        )
+        child_import_file = ImportFile.objects.create(
+            import_record=child_import_record,
+            source_type=SEED_DATA_SOURCES[PORTFOLIO_METER_USAGE][1],
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(name=filename, content=(pathlib.Path(__file__).parent / "data" / filename).read_bytes()),
+        )
+
+        # a child import file only links meters to properties in its access level subtree, when previewing and saving
+        self.login_as_child_member()
+        url = reverse("api:v3:import_files-pm-meters-preview", args=[child_import_file.pk]) + f"?organization_id={self.org.pk}"
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert {meter["property_id"] for meter in response.json()["proposed_imports"]} == {child_property.id}
+        assert response.json()["unlinkable_pm_ids"] == [{"portfolio_manager_id": "5766973"}]
+
+        url = reverse("api:v3:import_files-start-save-data", args=[child_import_file.pk]) + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, json.dumps({"cycle_id": self.cycle.id}), content_type="application/json")
+        assert response.status_code == 200
+        assert child_property.meters.count() == 2
+        assert not self.property.meters.exists()
+
+        # a root import file still links meters to properties at every access level
+        self._use_test_file(filename)
+        self.login_as_root_member()
+        url = reverse("api:v3:import_files-pm-meters-preview", args=[self.import_file.pk]) + f"?organization_id={self.org.pk}"
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert {meter["property_id"] for meter in response.json()["proposed_imports"]} == {self.property.id, child_property.id}
+        assert response.json()["unlinkable_pm_ids"] == []
+
+    def test_import_file_system_meter_upload_meter_must_be_accessible(self):
+        self._use_test_file("system_meter_readings.xlsx")
+        url = reverse("api:v3:import_files-system-meter-upload", args=[self.import_file.pk]) + f"?organization_id={self.org.pk}"
+        self.login_as_root_member()
+
+        # meters from other organizations are rejected
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_property = FakePropertyFactory(organization=other_org).get_property()
+        other_meter = Meter.objects.create(property=other_property, type=Meter.ELECTRICITY_GRID)
+        response = self.client.post(url, json.dumps({"meter_id": other_meter.id}), content_type="application/json")
+        assert response.status_code == 404
+        assert not MeterReading.objects.filter(meter=other_meter).exists()
+
+        # meters from the organization are accepted
+        meter = Meter.objects.create(property=self.property, type=Meter.ELECTRICITY_GRID)
+        response = self.client.post(url, json.dumps({"meter_id": meter.id}), content_type="application/json")
+        assert response.status_code == 200
+        assert MeterReading.objects.filter(meter=meter).count() == 2
+
+    def test_import_file_verify_data_type_mapping(self):
+        url = reverse("api:v3:import_files-verify-data-type-mapping", args=[self.import_file.pk]) + f"?organization_id={self.org.pk}"
+
+        # root users can
+        self.login_as_root_member()
+        response = self.client.post(url, content_type="application/json")
+        assert response.status_code == 200
+
+        # child user cannot
+        self.login_as_child_member()
+        response = self.client.post(url, content_type="application/json")
+        assert response.status_code == 404

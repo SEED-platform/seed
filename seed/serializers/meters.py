@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from rest_framework import serializers
 
 from seed.data_importer.utils import usage_point_id
-from seed.models import Meter, Scenario
+from seed.models import AccessLevelInstance, Meter, Scenario
 from seed.serializers.base import ChoiceField
 from seed.utils.api import OrgMixin
 
@@ -35,13 +35,18 @@ class MeterSerializer(serializers.ModelSerializer, OrgMixin):
         )
 
     def validate_scenario_id(self, scenario_id):
-        # validate that the user has access to the scenario
+        # validate that the user has access to the scenario: it must be in the org and on a property in the user's ALI subtree
         if scenario_id is not None:
-            org = self.get_organization(self.context["request"])
-            try:
-                Scenario.objects.get(property_state__organization=org, pk=scenario_id)
-            except Scenario.DoesNotExist as e:
-                raise serializers.ValidationError({"status": "error", "message": "Permission error assigning scenario to meter"}) from e
+            request = self.context["request"]
+            org = self.get_organization(request)
+            user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+            if not Scenario.objects.filter(
+                pk=scenario_id,
+                property_state__organization=org,
+                property_state__propertyview__property__access_level_instance__lft__gte=user_ali.lft,
+                property_state__propertyview__property__access_level_instance__rgt__lte=user_ali.rgt,
+            ).exists():
+                raise serializers.ValidationError({"status": "error", "message": "Permission error assigning scenario to meter"})
 
         return scenario_id
 

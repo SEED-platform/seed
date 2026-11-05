@@ -15,6 +15,7 @@ from seed.models.building_file import BuildingFile
 from seed.models.events import ATEvent
 from seed.models.meters import Meter, MeterReading
 from seed.models.scenarios import Scenario
+from seed.test_helpers.fake import FakeCycleFactory, FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -377,3 +378,34 @@ class TestBuildingFilesPermission(AccessLevelBaseTestCase):
             )
         property = Property.objects.get(pk=response.json()["data"]["property_view"]["property"])
         assert property.access_level_instance == self.child_level_instance
+
+    def test_list_and_get_exclude_other_organizations(self):
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_view = FakePropertyViewFactory(organization=other_org).get_property_view()
+        with open(self.filename, "rb") as f:
+            other_bf = BuildingFile.objects.create(
+                file=SimpleUploadedFile(f.name, f.read()),
+                filename=self.filename,
+                file_type=BuildingFile.BUILDINGSYNC,
+                property_state=other_view.state,
+            )
+
+        self.login_as_root_member()
+        result = self.client.get(reverse("api:v3:building_files-list") + f"?organization_id={self.org.id}")
+        assert {d["id"] for d in result.json()["data"]} == {self.root_bf.id, self.child_bf.id}
+
+        url = reverse("api:v3:building_files-detail", args=[other_bf.id]) + f"?organization_id={self.org.id}"
+        result = self.client.get(url)
+        assert result.status_code == 404
+
+    def test_create_in_other_organization_cycle(self):
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_cycle = FakeCycleFactory(organization=other_org, user=self.superuser).get_cycle()
+        url = reverse("api:v3:building_files-list") + f"?organization_id={self.org.id}&cycle_id={other_cycle.id}"
+
+        self.login_as_root_member()
+        with open(self.filename, "rb") as f:
+            response = self.client.post(url, {"file": f, "file_type": "BuildingSync"})
+        assert response.status_code == 400
+        assert response.json() == {"success": False, "message": "Cycle does not exist"}
+        assert not other_cycle.propertyview_set.exists()

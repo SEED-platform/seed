@@ -7,6 +7,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
@@ -16,13 +17,41 @@ from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, Organization, OrganizationUser
 from seed.tasks import invite_to_organization
 from seed.utils.api import api_endpoint
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.users import get_js_role
 
+_status_response = AutoSchemaHelper.schema_factory({"status": "string"})
 
+
+@extend_schema(parameters=[AutoSchemaHelper.path_id_field("Organization ID", name="organization_pk")])
 class OrganizationUserViewSet(viewsets.ViewSet):
     # allow using `organization_pk` in url path for authorization (i.e., for has_perm)
     authz_org_id_kwarg = "organization_pk"
 
+    @extend_schema(
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "users": [
+                        {
+                            "email": "string",
+                            "first_name": "string",
+                            "last_name": "string",
+                            "user_id": "integer",
+                            "number_of_orgs": "integer",
+                            "role": "string",
+                            "access_level_instance_id": "integer",
+                            "access_level_instance_name": "string",
+                            "access_level": "string",
+                        }
+                    ],
+                },
+                description="Users at or below the requesting user's access level instance. The number of organizations, role, and "
+                "access level details are only included for members, owners, and superusers.",
+            )
+        }
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -79,6 +108,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
 
         return JsonResponse({"status": "success", "users": users})
 
+    @extend_schema(parameters=[AutoSchemaHelper.path_id_field("User ID")], request=None, responses={200: _status_response})
     @method_decorator(
         [
             api_endpoint,
@@ -109,6 +139,7 @@ class OrganizationUserViewSet(viewsets.ViewSet):
 
         return JsonResponse({"status": "success"})
 
+    @extend_schema(parameters=[AutoSchemaHelper.path_id_field("User ID")], responses={200: _status_response})
     @method_decorator(
         [
             api_endpoint,
@@ -140,6 +171,13 @@ class OrganizationUserViewSet(viewsets.ViewSet):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        try:
+            ou = OrganizationUser.objects.get(user=user, organization=org)
+        except OrganizationUser.DoesNotExist:
+            return JsonResponse(
+                {"status": "error", "message": "user is not a member of the organization"}, status=status.HTTP_404_NOT_FOUND
+            )
+
         is_last_member = (
             not OrganizationUser.objects.filter(
                 organization=org,
@@ -167,7 +205,6 @@ class OrganizationUserViewSet(viewsets.ViewSet):
                 {"status": "error", "message": "an organization must have at least one owner level member"}, status=status.HTTP_409_CONFLICT
             )
 
-        ou = OrganizationUser.objects.get(user=user, organization=org)
         ou.delete()
 
         # check the user and make sure they still have a valid organization to belong to

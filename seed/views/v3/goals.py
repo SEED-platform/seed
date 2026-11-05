@@ -10,17 +10,30 @@ from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.utils import DataError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from rest_framework import status
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_serializer, extend_schema_view
+from rest_framework import serializers, status
 from rest_framework.decorators import action
 from simple_salesforce import Salesforce
 
 from seed.decorators import ajax_request, get_bb_salesforce_config
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
-from seed.models import AccessLevelInstance, Column, CycleGoal, Goal, GoalNote, HistoricalNote, Organization, Property, TaxLotProperty
+from seed.models import (
+    AccessLevelInstance,
+    Column,
+    Cycle,
+    CycleGoal,
+    Goal,
+    GoalNote,
+    HistoricalNote,
+    Organization,
+    Property,
+    TaxLotProperty,
+)
+from seed.serializers.cycles import CycleSerializer
 from seed.serializers.goals import CycleGoalSerializer, GoalSerializer
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import OrgMixin
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.cache import get_cache_raw
 from seed.utils.generic import get_int
 from seed.utils.goal_notes import get_permission_data
@@ -40,9 +53,111 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
 logger = logging.getLogger(__name__)
 
 
+class GoalResponseSerializer(GoalSerializer):
+    """Documents a goal as represented, including the fields added by `GoalSerializer.to_representation`"""
+
+    level_name_index = serializers.IntegerField()
+    level_name = serializers.CharField()
+    baseline_cycle_name = serializers.CharField()
+    eui_column1_name = serializers.CharField(allow_null=True)
+    eui_column2_name = serializers.CharField(allow_null=True)
+    eui_column3_name = serializers.CharField(allow_null=True)
+    area_column_name = serializers.CharField(allow_null=True)
+    transactions_column_name = serializers.CharField(allow_null=True, required=False, help_text="Only included for transaction goals")
+    partner_note_approval_user_name = serializers.CharField(
+        required=False, help_text="Only included when `partner_note_approval_user` is set"
+    )
+
+
+@extend_schema_serializer(many=False)
+class GoalListResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    goals = GoalResponseSerializer(many=True)
+
+
+class GoalDetailResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    goal = GoalResponseSerializer()
+
+
+class CycleGoalResponseSerializer(CycleGoalSerializer):
+    """Documents a cycle goal as represented, with its current cycle expanded"""
+
+    current_cycle = CycleSerializer()
+
+
+@extend_schema_serializer(many=False)
+class CycleGoalListResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    cycle_goals = CycleGoalResponseSerializer(many=True)
+
+
+# org from the request body's `organization` (see `get_org_id`), which the frontend sends instead
+body_or_query_org_id_field = AutoSchemaHelper.query_org_id_field(
+    required=False, description="Organization ID; required unless `organization` is in the request body"
+)
+
+portfolio_summary_schema = AutoSchemaHelper.schema_factory(
+    {
+        "total_properties": "integer",
+        "shared_sqft": "number",
+        "total_passing": "integer",
+        "total_new_or_acquired": "integer",
+        "passing_committed": "integer",
+        "passing_shared": "integer",
+        "baseline_cycle_name": "string",
+        "baseline_total_sqft": "number",
+        "baseline_total_kbtu": "integer",
+        "baseline_weighted_eui": "integer",
+        "current_cycle_name": "string",
+        "current_total_sqft": "number",
+        "current_total_kbtu": "integer",
+        "current_weighted_eui": "integer",
+        "sqft_change": "integer",
+        "eui_change": "integer",
+        "baseline_total_transactions": "integer",
+        "baseline_weighted_eui_t": "integer",
+        "current_total_transactions": "integer",
+        "current_weighted_eui_t": "integer",
+        "transactions_change": "integer",
+        "eui_t_change": "integer",
+    },
+    description="Portfolio summary of a cycle goal's baseline and current cycles. Values that cannot be calculated are null, and the "
+    "transaction fields (`*_transactions`, `*_eui_t`, `transactions_change`, and `eui_t_change`) are only included for transaction goals.",
+)
+
+salesforce_annual_report_fields = {
+    "baseline_portfolio_kbtu": "number",
+    "reporting_year_start": "date",
+    "reporting_year_end": "date",
+    "number_of_properties": "number",
+    "portfolio_average_eui": "number",
+    "shared_square_feet": "number",
+    "reviewed_square_feet": "number",
+    "ei_annual_improvement": "number",
+    "portfolio_kbtu": "number",
+    "total_ei_improvement": "number",
+    "new_energy_savings": "number",
+}
+
+salesforce_config_error_description = (
+    "If the organization's BB Salesforce connection is missing or incomplete, "
+    'the response is `{"status": "error", "valid": false, "response": "<message>"}` (also with HTTP 200).'
+)
+
+salesforce_update_response_description = (
+    "The body is `null` on success. Errors (e.g., an unknown cycle goal, or one without a Salesforce annual report) "
+    'are returned as `{"status": "error", "message": "<message>"}` with HTTP 200, or HTTP 500 if Salesforce fails. '
+    + salesforce_config_error_description
+)
+
+
+@extend_schema_org_query_param
+@extend_schema_view(
+    create=extend_schema(parameters=[body_or_query_org_id_field], responses={201: GoalResponseSerializer}),
+)
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_member"),
         has_perm("requires_non_leaf_access"),
         has_hierarchy_access(goal_id_kwarg="pk"),
@@ -51,7 +166,6 @@ logger = logging.getLogger(__name__)
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_member"),
         has_perm("requires_non_leaf_access"),
         has_hierarchy_access(body_ali_id="access_level_instance"),
@@ -59,10 +173,13 @@ logger = logging.getLogger(__name__)
     name="create",
 )
 class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
+    """Goals to reduce the weighted EUI of the properties in an access level instance, relative to a baseline cycle"""
+
     serializer_class = GoalSerializer
     queryset = Goal.objects.all()
+    pagination_class = None
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(responses=GoalListResponseSerializer)
     @method_decorator(
         [
             has_perm("requires_viewer"),
@@ -79,7 +196,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         )
         return JsonResponse({"status": "success", "goals": self.serializer_class(goals, many=True).data})
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(responses=GoalDetailResponseSerializer)
     @method_decorator(
         [
             has_perm("requires_viewer"),
@@ -103,7 +220,11 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse({"status": "success", "goal": goal_data})
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[body_or_query_org_id_field],
+        request=GoalSerializer(partial=True),
+        responses=GoalResponseSerializer,
+    )
     @method_decorator(
         [
             has_perm("requires_member"),
@@ -112,6 +233,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         ]
     )
     def update(self, request, pk):
+        """Partially updates a goal (only the given fields are changed)"""
         try:
             goal = Goal.objects.get(pk=pk)
         except Goal.DoesNotExist:
@@ -132,7 +254,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse(serializer.data)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(responses={200: portfolio_summary_schema})
     @method_decorator(
         [
             ajax_request,
@@ -158,46 +280,95 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         summary = get_portfolio_summary(org, goal)
         return JsonResponse(summary)
 
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
+            {
+                "property_view_ids": ["integer"],
+                "data": {
+                    "question": "string",
+                    "resolution": "string",
+                    "passed_checks": "boolean",
+                    "new_or_acquired": "boolean",
+                    "historical_note": "string",
+                },
+            }
+        ),
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"})},
+    )
     @method_decorator(
         [
             has_perm("requires_member"),
+            has_hierarchy_access(goal_id_kwarg="pk"),
         ]
     )
     @action(detail=True, methods=["PUT"])
     def bulk_update_goal_notes(self, request, pk):
-        """Bulk updates Goal-related fields for a given goal and property view ids"""
+        """Bulk updates Goal-related fields for a given goal and property view ids
+
+        `data` holds the goal note fields to set (`question`, `resolution`, `passed_checks`, and `new_or_acquired`; other keys
+        are ignored), plus `historical_note` to set the properties' historical note text.
+        Users at a leaf access level may only update `resolution` (and `historical_note`).
+        """
         org_id = self.get_organization(request)
         try:
             goal = Goal.objects.get(pk=pk, organization=org_id)
         except Goal.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No such resource."}, status=404)
 
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         property_view_ids = request.data.get("property_view_ids", [])
-        properties = Property.objects.filter(views__in=property_view_ids).select_related("historical_notes")
+        properties = Property.objects.filter(
+            organization_id=org_id,
+            access_level_instance__lft__gte=access_level_instance.lft,
+            access_level_instance__rgt__lte=access_level_instance.rgt,
+            views__in=property_view_ids,
+        ).select_related("historical_notes")
         goal_notes = GoalNote.objects.filter(goal=goal, property__in=properties)
 
         data = request.data.get("data", {})
+        result = 0
 
         if "historical_note" in data:
             historical_notes = HistoricalNote.objects.filter(property__in=properties)
             result = historical_notes.update(text=data["historical_note"])
-            del data["historical_note"]
 
+        # only the goal note fields the user may update (so not `historical_note`)
+        data = get_permission_data(data, request.access_level_instance_id)
         if data:
-            data = get_permission_data(data, request.access_level_instance_id)
             result = goal_notes.update(**data)
 
         return JsonResponse({"status": "success", "message": f"Updated {result} properties"})
 
+    @extend_schema(
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "results": [
+                        {
+                            "Cycle Name": "string",
+                            "Baseline?": "integer",
+                            "EUI": "integer",
+                            "Goal": "number",
+                            "Annual % Imp": "number",
+                            "Cumulative % Imp": "number",
+                        }
+                    ],
+                },
+                description="`results` starts with the baseline cycle, followed by each cycle goal in chronological order. "
+                "It is empty if the baseline weighted EUI cannot be calculated.",
+            )
+        }
+    )
     @method_decorator(
         [
-            swagger_auto_schema_org_query_param,
             has_perm("requires_viewer"),
             has_hierarchy_access(goal_id_kwarg="pk"),
         ],
     )
     @action(detail=True, methods=["GET"])
     def get_weighted_euis(self, request, pk):
+        """Gets the weighted EUI of the goal's baseline cycle and each of its cycle goals"""
         org_id = int(self.get_organization(request))
         try:
             org = Organization.objects.get(pk=org_id)
@@ -209,10 +380,37 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse({"status": "success", "results": weighted_euis})
 
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(
+                {
+                    "type": "object",
+                    "description": "Keyed by the name of each cycle goal's current cycle",
+                    "additionalProperties": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "integer", "description": "Cycle goal ID"},
+                            "seed": portfolio_summary_schema,
+                            "salesforce": AutoSchemaHelper.schema_factory(
+                                {
+                                    "id": "string",
+                                    "baseline_portfolio_eui": "number",
+                                    **salesforce_annual_report_fields,
+                                    "report_status": "string",
+                                    "review_status": "string",
+                                },
+                                description="The cycle goal's Salesforce annual report; empty if none is attached",
+                            ),
+                        },
+                    },
+                },
+                description=salesforce_config_error_description,
+            )
+        }
+    )
     @method_decorator(
         [
             ajax_request,
-            swagger_auto_schema_org_query_param,
             has_perm("requires_viewer"),
             has_hierarchy_access(goal_id_kwarg="pk"),
         ],
@@ -220,6 +418,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @action(detail=True, methods=["GET"])
     @get_bb_salesforce_config
     def salesforce_summary(self, request, pk, bb_salesforce_config):
+        """Compares the SEED portfolio summary of each of the goal's cycle goals with its Salesforce annual report"""
         org_id = int(self.get_organization(request))
         try:
             org = Organization.objects.get(pk=org_id)
@@ -297,17 +496,28 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse(summary)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
+            {"cycle_goal_id": "integer", "report_status": "string", "review_status": "string"},
+            required=["cycle_goal_id"],
+        ),
+        responses={200: OpenApiResponse(description=salesforce_update_response_description)},
+    )
     @method_decorator(
         [
             ajax_request,
-            has_perm("requires_viewer"),
+            has_perm("requires_member"),
+            has_perm("requires_non_leaf_access"),
             has_hierarchy_access(goal_id_kwarg="pk"),
         ]
     )
     @action(detail=True, methods=["PUT"])
     @get_bb_salesforce_config
     def update_salesforce_current(self, request, pk, bb_salesforce_config):
+        """Updates the Salesforce annual report of a cycle goal, and the Salesforce goal, with the SEED portfolio summary
+
+        `report_status` and `review_status` optionally set the annual report's statuses.
+        """
         # Init a bunch of values
         report_status = request.data.get("report_status")
         review_status = request.data.get("review_status")
@@ -330,7 +540,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         access_token = get_cache_raw(f"access_token_{org_id}")
         try:
             sf = Salesforce(
-                instance="doe-bb--kanbantest.sandbox.my.salesforce.com",
+                instance_url=bb_salesforce_config.salesforce_url,
                 session_id=access_token,
             )
         except Exception as e:
@@ -382,17 +592,22 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        request=AutoSchemaHelper.json_body({"cycle_goal_ids": ["integer"]}),
+        responses={200: OpenApiResponse(description=salesforce_update_response_description)},
+    )
     @method_decorator(
         [
             ajax_request,
-            has_perm("requires_viewer"),
+            has_perm("requires_member"),
+            has_perm("requires_non_leaf_access"),
             has_hierarchy_access(goal_id_kwarg="pk"),
         ]
     )
     @action(detail=True, methods=["PUT"])
     @get_bb_salesforce_config
     def update_salesforce_historical(self, request, pk, bb_salesforce_config):
+        """Updates the Salesforce annual reports of past cycle goals with their SEED portfolio summaries"""
         # Init a bunch of values
         cycle_goal_ids = request.data.get("cycle_goal_ids", [])
         org_id = int(self.get_organization(request))
@@ -413,7 +628,7 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         access_token = get_cache_raw(f"access_token_{org_id}")
         try:
             sf = Salesforce(
-                instance="doe-bb--kanbantest.sandbox.my.salesforce.com",
+                instance_url=bb_salesforce_config.salesforce_url,
                 session_id=access_token,
             )
         except Exception as e:
@@ -441,43 +656,72 @@ class GoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
                 )
 
 
+@extend_schema_org_query_param
+@extend_schema_view(
+    retrieve=extend_schema(responses=CycleGoalResponseSerializer),
+    update=extend_schema(responses=CycleGoalResponseSerializer),
+)
+@method_decorator(
+    [
+        has_perm("requires_viewer"),
+        has_hierarchy_access(goal_id_kwarg="goal_pk"),
+    ],
+    name="retrieve",
+)
+@method_decorator(
+    [
+        has_perm("requires_member"),
+        has_perm("requires_non_leaf_access"),
+        has_hierarchy_access(goal_id_kwarg="goal_pk"),
+    ],
+    name="update",
+)
 @method_decorator(
     name="destroy",
     decorator=[
-        swagger_auto_schema_org_query_param,
         has_perm("requires_member"),
         has_perm("requires_non_leaf_access"),
         has_hierarchy_access(goal_id_kwarg="goal_pk"),
     ],
 )
 class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
+    """The cycles whose properties are compared against a goal's baseline cycle"""
+
     serializer_class = CycleGoalSerializer
     queryset = CycleGoal.objects.all()
+    pagination_class = None
 
+    def get_queryset(self):
+        # a cycle goal is only accessible through its own goal, whose access is checked by `has_hierarchy_access`
+        return CycleGoal.objects.filter(goal_id=self.kwargs.get("goal_pk"))
+
+    @extend_schema(responses={201: CycleGoalResponseSerializer})
     @method_decorator(
         [
-            swagger_auto_schema_org_query_param,
             has_perm("requires_member"),
             has_perm("requires_non_leaf_access"),
             has_hierarchy_access(goal_id_kwarg="goal_pk"),
         ],
-        name="destroy",
     )
     def create(self, request, goal_pk):
+        goal = Goal.objects.get(pk=goal_pk)
+        current_cycle_id = request.data.get("current_cycle")
+        if not Cycle.objects.filter(pk=current_cycle_id, organization_id=goal.organization_id).exists():
+            return JsonResponse({"status": "error", "message": "No such cycle."}, status=status.HTTP_400_BAD_REQUEST)
         cycle_goal = CycleGoal.objects.create(
-            goal_id=goal_pk,
-            current_cycle_id=request.data.get("current_cycle"),
+            goal=goal,
+            current_cycle_id=current_cycle_id,
             salesforce_annual_report_id=request.data.get("salesforce_annual_report_id"),
             salesforce_annual_report_name=request.data.get("salesforce_annual_report_name"),
         )
 
         return JsonResponse(CycleGoalSerializer(cycle_goal).data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(responses=CycleGoalListResponseSerializer)
     @method_decorator(
         [
             ajax_request,
-            swagger_auto_schema_org_query_param,
-            has_perm("requires_member"),
+            has_perm("requires_viewer"),
             has_hierarchy_access(goal_id_kwarg="goal_pk"),
         ],
     )
@@ -487,10 +731,10 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         ).order_by("-current_cycle__start")
         return JsonResponse({"status": "success", "cycle_goals": self.serializer_class(cycle_goals, many=True).data})
 
+    @extend_schema(responses={200: portfolio_summary_schema})
     @method_decorator(
         [
             ajax_request,
-            swagger_auto_schema_org_query_param,
             has_perm("requires_viewer"),
             has_hierarchy_access(goal_id_kwarg="goal_pk"),
         ],
@@ -498,12 +742,12 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @action(detail=True, methods=["GET"])
     def portfolio_summary(self, request, goal_pk, pk):
         """
-        Gets a Portfolio Summary dictionary given a goal
+        Gets a Portfolio Summary dictionary given a cycle goal
         """
         org_id = int(self.get_organization(request))
         try:
             org = Organization.objects.get(pk=org_id)
-            cycle_goal = CycleGoal.objects.get(pk=pk)
+            cycle_goal = CycleGoal.objects.get(pk=pk, goal=goal_pk)
         except (Organization.DoesNotExist, CycleGoal.DoesNotExist):
             return JsonResponse({"status": "error", "message": "No such resource."})
 
@@ -514,10 +758,20 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse(summary)
 
+    @extend_schema(
+        responses={
+            200: OpenApiResponse(
+                AutoSchemaHelper.schema_factory(
+                    {"status": "string", "results": {"baseline_portfolio_eui:": "number", **salesforce_annual_report_fields}}
+                ),
+                description="The cycle goal's Salesforce annual report. If no annual report is attached, the response is "
+                '`{"status": "error", "message": "<message>"}` (also with HTTP 200). ' + salesforce_config_error_description,
+            )
+        }
+    )
     @method_decorator(
         [
             ajax_request,
-            swagger_auto_schema_org_query_param,
             has_perm("requires_viewer"),
             has_hierarchy_access(goal_id_kwarg="goal_pk"),
         ],
@@ -525,9 +779,10 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     @action(detail=True, methods=["GET"])
     @get_bb_salesforce_config
     def salesforce_summary(self, request, goal_pk, pk, bb_salesforce_config):
+        """Gets the Salesforce annual report attached to a cycle goal"""
         org_id = int(self.get_organization(request))
         try:
-            cycle_goal = CycleGoal.objects.get(pk=pk)
+            cycle_goal = CycleGoal.objects.get(pk=pk, goal=goal_pk)
         except CycleGoal.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No such resource."})
 
@@ -584,10 +839,48 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
             status=status.HTTP_200_OK,
         )
 
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_array_field(
+                "order_by",
+                required=False,
+                description="Column names to sort by, prefixed with `-` for descending order",
+                item_type="string",
+            ),
+        ],
+        request=AutoSchemaHelper.json_body(
+            {
+                "page": "integer",
+                "per_page": "integer",
+                "baseline_first": "boolean",
+                "access_level_instance_id": "integer",
+                "related_model_sort": "boolean",
+            },
+            required=["per_page", "access_level_instance_id"],
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "pagination": {
+                        "page": "integer",
+                        "start": "integer",
+                        "end": "integer",
+                        "num_pages": "integer",
+                        "has_next": "boolean",
+                        "has_previous": "boolean",
+                        "total": "integer",
+                    },
+                    "properties": ["object"],
+                    "property_lookup": "object",
+                },
+                description="`properties` combines each property's baseline and current cycle data with its goal statistics, "
+                "and `property_lookup` maps property view IDs to property IDs",
+            )
+        },
+    )
     @method_decorator(
         [
             ajax_request,
-            swagger_auto_schema_org_query_param,
             has_perm("requires_viewer"),
             has_hierarchy_access(goal_id_kwarg="goal_pk"),
         ],
@@ -596,22 +889,35 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
     def data(self, request, goal_pk, pk):
         """
         Gets goal data for the main grid
+
+        The properties are those in the `access_level_instance_id` subtree, filtered by column name query parameters
+        (e.g., `?site_eui__gte=100`) and sorted by `order_by`.
         """
         # Init a bunch of values
         org_id = int(self.get_organization(request))
         try:
             org = Organization.objects.get(pk=org_id)
-            cycle_goal = CycleGoal.objects.get(pk=pk)
+            cycle_goal = CycleGoal.objects.get(pk=pk, goal=goal_pk)
             goal = cycle_goal.goal
-        except (Organization.DoesNotExist, Goal.DoesNotExist):
-            return JsonResponse({"status": "error", "message": "No such resource."})
+        except (Organization.DoesNotExist, CycleGoal.DoesNotExist):
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
         page = request.data.get("page")
         per_page = request.data.get("per_page")
         baseline_first = request.data.get("baseline_first")
         access_level_instance_id = request.data.get("access_level_instance_id")
         related_model_sort = request.data.get("related_model_sort")
         inventory_type = "property"
-        access_level_instance = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+        user_access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        try:
+            # only properties within the user's access level instance subtree may be returned
+            access_level_instance = AccessLevelInstance.objects.get(
+                pk=access_level_instance_id,
+                organization_id=org_id,
+                lft__gte=user_access_level_instance.lft,
+                rgt__lte=user_access_level_instance.rgt,
+            )
+        except AccessLevelInstance.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
         columns_from_database = Column.retrieve_all(
             org_id=org_id,
             inventory_type=inventory_type,
@@ -625,6 +931,7 @@ class CycleGoalViewSet(ModelViewSetWithoutPatch, OrgMixin):
         cycle1, cycle2 = (baseline_cycle, current_cycle) if baseline_first else (current_cycle, baseline_cycle)
         views1 = (
             cycle1.propertyview_set.filter(
+                property__organization_id=org_id,
                 property__access_level_instance__lft__gte=access_level_instance.lft,
                 property__access_level_instance__rgt__lte=access_level_instance.rgt,
             )

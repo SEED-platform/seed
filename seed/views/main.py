@@ -15,7 +15,7 @@ from django.core.cache import cache
 from django.db import connection
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -91,6 +91,20 @@ def home(request):
     return render(request, "seed/index.html", locals())
 
 
+@extend_schema(
+    responses={
+        200: AutoSchemaHelper.schema_factory(
+            {
+                "active": {"total": "integer", "tasks": ["string"]},
+                "reserved": {"total": "integer", "tasks": ["string"]},
+                "scheduled": {"total": "integer", "tasks": ["string"]},
+                "maxConcurrency": "integer",
+            },
+            description='If the workers could not be inspected, a task group (or `stats`, instead of `maxConcurrency`) is the string "Error". '
+            "`tasks` lists the distinct task names and is omitted when there are none",
+        )
+    },
+)
 @api_endpoint
 @ajax_request
 @has_perm("requires_superuser", False)
@@ -131,8 +145,7 @@ def celery_queue(request):
     return JsonResponse(results)
 
 
-@swagger_auto_schema(
-    method="GET",
+@extend_schema(
     responses={
         200: AutoSchemaHelper.schema_factory(
             {
@@ -201,8 +214,7 @@ def health_check(request):
     )
 
 
-@swagger_auto_schema(
-    method="GET",
+@extend_schema(
     responses={
         200: AutoSchemaHelper.schema_factory(
             {
@@ -236,6 +248,7 @@ def config(request):
     }
 
 
+@extend_schema(responses={200: AutoSchemaHelper.schema_factory({"version": "string", "sha": "string"})})
 @api_endpoint
 @ajax_request
 @api_view(["GET"])

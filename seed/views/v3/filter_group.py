@@ -8,34 +8,74 @@ from django.db import IntegrityError
 from django.db.models import Prefetch
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from rest_framework import status
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema, extend_schema_view
+from rest_framework import serializers, status
 
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import VIEW_LIST_INVENTORY_TYPE, FilterGroup
 from seed.models.models import StatusLabel
 from seed.serializers.filter_groups import FilterGroupSerializer
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
+
+INVENTORY_TYPES = [name for _, name in VIEW_LIST_INVENTORY_TYPE]
+FILTER_GROUP_FIELDS = {
+    "name": "string",
+    "inventory_type": tuple(VIEW_LIST_INVENTORY_TYPE),
+    "query_dict": "object",
+    "and_labels": ["integer"],
+    "or_labels": ["integer"],
+    "exclude_labels": ["integer"],
+}
+
+
+# Schema only: `FilterGroupSerializer` represents the inventory type by its name
+class FilterGroupResponseSerializer(FilterGroupSerializer):
+    inventory_type = serializers.ChoiceField(choices=INVENTORY_TYPES)
+
+
+optional_org_param = AutoSchemaHelper.query_org_id_field(
+    required=False, description="Optional org id which overrides the users (default) current org id"
+)
 
 
 def _get_inventory_type_int(inventory_type: str) -> int:
     return next(k for k, v in VIEW_LIST_INVENTORY_TYPE if v == inventory_type)
 
 
-@method_decorator([swagger_auto_schema_org_query_param], name="retrieve")
+@extend_schema_view(
+    retrieve=extend_schema(
+        parameters=[optional_org_param],
+        responses=FilterGroupResponseSerializer,
+    ),
+    destroy=extend_schema_org_query_param,
+)
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_root_member_access"),
     ],
     name="destroy",
 )
 class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
+    """API endpoint for managing the filter groups (saved inventory filters) of an organization"""
+
     model = FilterGroup
     serializer_class = FilterGroupSerializer
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema_org_query_param
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(FILTER_GROUP_FIELDS, required=["name", "inventory_type"]),
+        responses={
+            201: OpenApiResponse(
+                FilterGroupResponseSerializer,
+                description="The response also contains `warnings` (string) listing any label IDs that are not labels of the organization",
+            ),
+            400: OpenApiResponse(description="Missing or invalid arguments"),
+        },
+    )
     @method_decorator(
         [
             ajax_request,
@@ -100,7 +140,18 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         return JsonResponse(result, status=status.HTTP_201_CREATED)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema_org_query_param
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
+            FILTER_GROUP_FIELDS,
+            description="Only the given attributes are updated. If any of the label lists is given, the omitted label lists are cleared.",
+        ),
+        responses={
+            200: FilterGroupResponseSerializer,
+            400: OpenApiResponse(description="Invalid arguments"),
+            404: OpenApiResponse(description="Filter group not found"),
+        },
+    )
     @method_decorator(
         [
             ajax_request,
@@ -108,7 +159,7 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         ]
     )
     def update(self, request, pk=None):
-        filter_group = FilterGroup.objects.get(pk=pk)
+        filter_group = self.get_object()
 
         if "name" in request.data:
             filter_group.name = request.data["name"]
@@ -150,7 +201,20 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         return JsonResponse(result, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[
+            optional_org_param,
+            AutoSchemaHelper.query_enum_field(
+                "inventory_type", "Only return filter groups of this inventory type", INVENTORY_TYPES, required=False
+            ),
+            OpenApiParameter("page", OpenApiTypes.INT, OpenApiParameter.QUERY, description="Page number", default=1),
+            OpenApiParameter("per_page", OpenApiTypes.INT, OpenApiParameter.QUERY, description="Number of results per page", default=1000),
+        ],
+        responses={
+            200: FilterGroupResponseSerializer(many=True),
+            400: OpenApiResponse(description="Invalid inventory_type"),
+        },
+    )
     def list(self, request):
         page = request.query_params.get("page", 1)
         per_page = request.query_params.get("per_page", 1000)
@@ -204,10 +268,13 @@ class FilterGroupViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         )
 
     def _get_labels(self, label_ids):
+        """Split label_ids into the IDs of the organization's labels and the others"""
+        organization = Organization.objects.get(pk=self.get_organization(self.request))
+        org_labels = StatusLabel.objects.filter(super_organization=organization.get_parent())
         good_label_ids = []
         bad_label_ids = []
         for id in label_ids:
-            label = StatusLabel.objects.filter(id=id)
+            label = org_labels.filter(id=id)
 
             if label.exists():
                 good_label_ids.append(id)

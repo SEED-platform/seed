@@ -6,14 +6,18 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 # pylint:disable=no-name-in-module
+from importlib import import_module
 from unittest import mock
 
 import pytest
+from django.apps import apps
+from django.db import IntegrityError
 from django.test import TestCase
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, Organization, OrganizationUser
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions, SEEDPublicPermissions, get_org_id, get_org_or_id, get_user_org
+from seed.test_helpers.fake import FakeCycleFactory, FakePropertyViewFactory
 from seed.utils.organizations import create_organization
 
 
@@ -39,9 +43,14 @@ class PermissionsFunctionsTests(TestCase):
 
     def test_org_or_id(self):
         """Test getting org or org id"""
-        test_dict = {"organization": 1, "organization_id": 2}
+        test_dict = {"organization": 1, "organization_id": 1}
         result = get_org_or_id(test_dict)
         self.assertEqual(1, result)
+
+        # conflicting keys are invalid, since views may read a different key than the one authorized
+        test_dict = {"organization": 1, "organization_id": 2}
+        result = get_org_or_id(test_dict)
+        self.assertEqual(-1, result)
 
         test_dict = {"organization_id": 2}
         result = get_org_or_id(test_dict)
@@ -328,3 +337,54 @@ class SEEDPublicPermissionsTests(TestCase):
         for view_type in SEEDOrgPermissions.perm_map:
             mock_request.method = view_type
             self.assertTrue(permissions.has_perm(mock_request))
+
+
+class OrganizationUserAccessLevelTests(TestCase):
+    """Memberships must use an access level instance of their own organization"""
+
+    def setUp(self):
+        self.owner = User.objects.create_user(username="owner@demo.com", password="test_pass")
+        self.org_a, _, _ = create_organization(self.owner, "Organization A")
+        self.org_b, _, _ = create_organization(self.owner, "Organization B")
+        self.cycle_b = FakeCycleFactory(organization=self.org_b, user=self.owner).get_cycle()
+        FakePropertyViewFactory(organization=self.org_b, user=self.owner, cycle=self.cycle_b).get_property_view()
+
+        self.user = User.objects.create_user(username="member@demo.com", password="test_pass")
+        self.org_a.add_member(self.user, self.org_a.root.id, ROLE_MEMBER)
+        self.org_user = OrganizationUser.objects.get(organization=self.org_a, user=self.user)
+
+    def test_membership_cannot_use_access_level_of_another_organization(self):
+        with pytest.raises(IntegrityError):
+            self.org_b.add_member(self.user, self.org_a.root.id, ROLE_MEMBER)
+
+        self.org_user.organization = self.org_b
+        with pytest.raises(IntegrityError):
+            self.org_user.save()
+
+    def test_mismatched_membership_grants_no_access(self):
+        # Simulate a membership created before this was enforced
+        OrganizationUser.objects.filter(pk=self.org_user.pk).update(organization=self.org_b)
+        self.client.login(username="member@demo.com", password="test_pass")
+
+        # has_perm decorator
+        response = self.client.post(
+            f"/api/v3/properties/filter/?organization_id={self.org_b.pk}&cycle={self.cycle_b.pk}", data={}, content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+        # SEEDOrgPermissions
+        response = self.client.get(f"/api/v3/cycles/?organization_id={self.org_b.pk}")
+        self.assertEqual(response.status_code, 403)
+
+    def test_migration_deletes_cross_organization_memberships(self):
+        OrganizationUser.objects.filter(pk=self.org_user.pk).update(organization=self.org_b)
+        migration = import_module("seed.lib.superperms.orgs.migrations.0047_delete_cross_organization_memberships")
+
+        with mock.patch("builtins.print") as mock_print:
+            migration.delete_cross_organization_memberships(apps, None)
+
+        self.assertFalse(OrganizationUser.objects.filter(pk=self.org_user.pk).exists())
+        mock_print.assert_called_once()
+        self.assertIn(f"Deleting organization user {self.org_user.pk}", mock_print.call_args.args[0])
+        # memberships that use their own organization's access level instances are kept
+        self.assertEqual(OrganizationUser.objects.filter(user=self.owner).count(), 2)

@@ -8,7 +8,7 @@ from random import randint
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
@@ -16,6 +16,7 @@ from rest_framework.viewsets import GenericViewSet
 from seed.decorators import ajax_request
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.permissions import get_org_id
 from seed.models import AccessLevelInstance, Column, DerivedColumn, PropertyView, TaxLotProperty, TaxLotView
 from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
 from seed.tasks import export_data_task, set_update_to_now
@@ -26,6 +27,19 @@ from seed.utils.match import update_sub_progress_total
 _log = logging.getLogger(__name__)
 
 INVENTORY_MODELS = {"properties": PropertyView, "taxlots": TaxLotView}
+
+PROGRESS_FIELDS = {
+    "status": "string",
+    "status_message": "string",
+    "progress": "number",
+    "progress_key": "string",
+    "unique_id": "string",
+    "func_name": "string",
+    "message": "string",
+    "total": "integer",
+}
+PROGRESS_DESCRIPTION = "Progress data of the background task. Poll `/api/v3/progress/{progress_key}/` for its status."
+PROGRESS_RESPONSE = AutoSchemaHelper.schema_factory(PROGRESS_FIELDS, description=PROGRESS_DESCRIPTION)
 
 
 class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
@@ -40,29 +54,33 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotPropertySerializer
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_string_field("inventory_type", False, "Either 'taxlots' or 'properties' and defaults to 'properties'."),
+            AutoSchemaHelper.query_enum_field(
+                "inventory_type",
+                "Either 'taxlots' or 'properties' and defaults to 'properties'.",
+                ["properties", "taxlots"],
+                required=False,
+            ),
         ],
-        request_body=AutoSchemaHelper.schema_factory(
+        request=AutoSchemaHelper.json_body(
             {
                 "ids": ["integer"],
                 "filename": "string",
-                "export_type": "string",
+                "export_type": (("csv", "csv"), ("geojson", "geojson"), ("xlsx", "xlsx")),
                 "profile_id": "integer",
-                "progress_key": "string",
                 "include_notes": "boolean",
                 "include_meter_readings": "boolean",
             },
-            description="- ids: (View) IDs for records to be exported\n"
+            description="- ids: (View) IDs for records to be exported (defaults to all records)\n"
             "- filename: desired filename including extension (defaulting to 'ExportedData.{export_type}')\n"
-            "- export_types: 'csv', 'geojson', 'xlsx' (defaulting to 'csv')\n"
-            "- profile_id: Column List Profile ID to use for customizing fields included in export"
-            "- progress_key: (Optional) Used to find and update the ProgressData object. If none is provided, a ProgressData object will be created."
-            "- include_notes: (Optional) Include notes in the export. Defaults to False."
-            "- include_meter_readings: (Optional) Include notes in the export. Defaults to False.",
+            "- export_type: 'csv', 'geojson', 'xlsx' (defaulting to 'csv')\n"
+            "- profile_id: Column List Profile ID to use for customizing fields included in export\n"
+            "- include_notes: (Optional) Include labels and notes in the export. Defaults to True.\n"
+            "- include_meter_readings: (Optional) Include meters and their readings in geojson property exports. Defaults to False.",
         ),
+        responses={200: PROGRESS_RESPONSE},
     )
     @method_decorator(
         [
@@ -76,7 +94,8 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         """
         Download a collection of the TaxLot and Properties in multiple formats via a background task.
         """
-        org_id = request.query_params.get("organization_id")
+        # the organization that `has_perm` authorized
+        org_id = get_org_id(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         ali_lft = access_level_instance.lft
         ali_rgt = access_level_instance.rgt
@@ -124,6 +143,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         return unique
 
+    @extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()], responses={200: PROGRESS_RESPONSE})
     @method_decorator(
         [
             api_endpoint,
@@ -140,6 +160,17 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         progress_data = ProgressData(func_name="set_update_to_now", unique_id=f"metadata{randint(10000, 99999)}")
         return progress_data.result()
 
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
+            {"property_views": ["integer"], "taxlot_views": ["integer"], "progress_key": "string"},
+            required=["property_views", "taxlot_views", "progress_key"],
+            description="- property_views: IDs of the property views to update\n"
+            "- taxlot_views: IDs of the tax lot views to update\n"
+            "- progress_key: The progress_key returned by `start_set_update_to_now`",
+        ),
+        responses={200: OpenApiResponse(description="Returns `null`; poll the progress_key for the status of the background task")},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -156,16 +187,19 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         taxlot_view_ids = request.data.get("taxlot_views")
         progress_key = request.data.get("progress_key")
 
+        org_id = get_org_id(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         property_view_ids = list(
             PropertyView.objects.filter(
                 id__in=property_view_ids,
+                property__organization_id=org_id,
                 property__access_level_instance__lft__gte=access_level_instance.lft,
                 property__access_level_instance__rgt__lte=access_level_instance.rgt,
             ).values_list("id", flat=True)
         )
         taxlot_view_ids = list(
             TaxLotView.objects.filter(
+                taxlot__organization_id=org_id,
                 taxlot__access_level_instance__lft__gte=access_level_instance.lft,
                 taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
                 id__in=taxlot_view_ids,
@@ -174,6 +208,14 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         set_update_to_now.subtask([property_view_ids, taxlot_view_ids, progress_key]).apply_async()
 
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
+            {"property_view_ids": ["integer"], "taxlot_view_ids": ["integer"]},
+            description="IDs of the property views and tax lot views whose derived column values are recalculated",
+        ),
+        responses={200: AutoSchemaHelper.schema_factory({**PROGRESS_FIELDS, "unique_id": "integer"}, description=PROGRESS_DESCRIPTION)},
+    )
     @method_decorator(
         [
             api_endpoint,

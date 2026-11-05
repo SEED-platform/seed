@@ -49,7 +49,7 @@ class ColumnListProfileDerivedColumnSerializer(serializers.ModelSerializer):
             "table_name",
         )
 
-    def get_table_name(self, obj):
+    def get_table_name(self, obj) -> str:
         return DerivedColumn.INVENTORY_TYPE_TO_CLASS.get(obj.inventory_type).__name__
 
 

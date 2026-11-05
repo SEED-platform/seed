@@ -488,3 +488,44 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
         assert PropertyView.objects.get(pk=self.root_property_view.pk).property.updated > start_of_test
         assert TaxLotView.objects.get(pk=self.root_taxlot_view.pk).taxlot.updated > start_of_test
         assert TaxLotView.objects.get(pk=self.root_taxlot_view.pk).state.updated > start_of_test
+
+    def test_set_update_to_now_other_organization(self):
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_property_view = FakePropertyViewFactory(organization=other_org).get_property_view()
+        other_taxlot_view = FakeTaxLotViewFactory(organization=other_org).get_taxlot_view()
+        start_of_test = datetime.now(UTC)
+        time.sleep(1)
+
+        progress_data = ProgressData(func_name="set_update_to_now", unique_id=f"metadata{randint(10000, 99999)}")
+        url = reverse_lazy("api:v3:tax_lot_properties-set-update-to-now") + f"?organization_id={self.org.pk}"
+        params = json.dumps(
+            {
+                "property_views": [self.root_property_view.pk, other_property_view.pk],
+                "taxlot_views": [self.root_taxlot_view.pk, other_taxlot_view.pk],
+                "progress_key": progress_data.key,
+            }
+        )
+
+        # records of another organization are not updated, even though their access level instances have overlapping bounds
+        self.login_as_root_member()
+        self.client.post(url, data=params, content_type="application/json")
+        assert PropertyView.objects.get(pk=self.root_property_view.pk).state.updated > start_of_test
+        assert TaxLotView.objects.get(pk=self.root_taxlot_view.pk).state.updated > start_of_test
+        assert PropertyView.objects.get(pk=other_property_view.pk).state.updated < start_of_test
+        assert PropertyView.objects.get(pk=other_property_view.pk).property.updated < start_of_test
+        assert TaxLotView.objects.get(pk=other_taxlot_view.pk).state.updated < start_of_test
+        assert TaxLotView.objects.get(pk=other_taxlot_view.pk).taxlot.updated < start_of_test
+
+    def test_taxlot_export_rejects_conflicting_organization_ids(self):
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        FakeTaxLotViewFactory(organization=other_org).get_taxlot_view(address_line_1="Other Organization Tax Lot")
+
+        # conflicting `organization` and `organization_id` params are rejected, since views may read either
+        url = reverse_lazy("api:v3:tax_lot_properties-start-export")
+        url += f"?organization={self.org.pk}&organization_id={other_org.pk}&inventory_type=taxlots"
+        params = json.dumps({"columns": self.columns, "export_type": "csv"})
+
+        self.login_as_root_member()
+        response = self.client.post(url, data=params, content_type="application/json")
+        assert response.status_code == 403
+        assert "unique_id" not in response.json()

@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+from unittest import mock
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
@@ -11,8 +12,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone as tz
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Analysis, AnalysisOutputFile, AnalysisPropertyView, Meter, MeterReading
-from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory
+from seed.models import Analysis, AnalysisEvent, AnalysisOutputFile, AnalysisPropertyView, Meter, MeterReading
+from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -433,6 +434,171 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
         assert response.json()["total_records"] == 2
+
+    def test_analysis_list_only_includes_views_of_listed_analyses(self):
+        child_analysis = Analysis.objects.create(
+            name="child",
+            service=Analysis.BSYNCR,
+            status=Analysis.READY,
+            user=self.root_owner_user,
+            organization=self.org,
+            access_level_instance=self.child_level_instance,
+            configuration={"model_type": "Simple Linear Regression"},
+        )
+        child_analysis_property_view = AnalysisPropertyView.objects.create(
+            analysis=child_analysis,
+            property=self.child_property,
+            cycle=self.cycle,
+            property_state=self.property_state_factory.get_property_state(),
+        )
+        url = reverse_lazy("api:v3:analyses-list") + "?organization_id=" + str(self.org.id)
+
+        # child user only gets the views of the child analysis, not those of the root analysis
+        self.login_as_child_member()
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 200
+        assert [analysis["id"] for analysis in response.json()["analyses"]] == [child_analysis.id]
+        assert [view["id"] for view in response.json()["views"]] == [child_analysis_property_view.id]
+        assert list(response.json()["original_views"]) == [str(child_analysis_property_view.id)]
+
+        # root users get the views of all analyses
+        self.login_as_root_member()
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 200
+        assert {view["id"] for view in response.json()["views"]} == {
+            child_analysis_property_view.id,
+            self.root_analysis_property_view.id,
+            self.child_analysis_property_view.id,
+        }
+
+    def test_analysis_list_parses_include_views(self):
+        url = reverse_lazy("api:v3:analyses-list") + "?organization_id=" + str(self.org.id)
+        self.login_as_root_member()
+
+        for include_views, expected in [(None, True), ("true", True), ("True", True), ("false", False), ("False", False)]:
+            query = "" if include_views is None else f"&include_views={include_views}"
+            response = self.client.get(url + query)
+            assert response.status_code == 200
+            assert ("views" in response.json()) is expected
+
+    @mock.patch("seed.views.v3.analyses.AnalysisPipeline.factory")
+    def test_analysis_create_rejects_property_views_outside_access_level(self, mock_factory):
+        mock_factory.return_value.prepare_analysis.return_value = {"progress_key": "key"}
+        url = reverse_lazy("api:v3:analyses-list") + "?organization_id=" + str(self.org.id)
+
+        def params(property_view_id):
+            return json.dumps(
+                {
+                    "service": "EUI",
+                    "property_view_ids": [property_view_id],
+                    "name": f"analysis of {property_view_id}",
+                    "access_level_instance_id": self.child_level_instance.id,
+                    "configuration": {"select_meters": "all"},
+                }
+            )
+
+        # child user cannot analyze a property outside their access level instance
+        self.login_as_child_member()
+        response = self.client.post(url, params(self.root_view.id), content_type="application/json")
+        assert response.status_code == 404
+        assert not Analysis.objects.filter(name=f"analysis of {self.root_view.id}").exists()
+        mock_factory.assert_not_called()
+
+        # root users cannot analyze it within a child-level analysis either
+        self.login_as_root_member()
+        response = self.client.post(url, params(self.root_view.id), content_type="application/json")
+        assert response.status_code == 404
+
+        # nor analyze another org's property within a root-level analysis
+        other_org, _, _ = create_organization(self.root_owner_user, "other org")
+        other_org_view = FakePropertyViewFactory(organization=other_org).get_property_view()
+        other_org_params = json.loads(params(other_org_view.id))
+        other_org_params["access_level_instance_id"] = self.root_level_instance.id
+        response = self.client.post(url, json.dumps(other_org_params), content_type="application/json")
+        assert response.status_code == 404
+        assert not Analysis.objects.filter(name=f"analysis of {other_org_view.id}").exists()
+        mock_factory.assert_not_called()
+
+        # child user can analyze their own property
+        self.login_as_child_member()
+        response = self.client.post(url, params(self.child_view.id), content_type="application/json")
+        assert response.status_code == 200
+        assert Analysis.objects.filter(name=f"analysis of {self.child_view.id}").exists()
+        mock_factory.return_value.prepare_analysis.assert_called_once_with([self.child_view.id], start_analysis=False)
+
+    @mock.patch("seed.views.v3.analyses.AnalysisPipeline.factory")
+    def test_analysis_create_leaves_missing_property_views_to_the_pipeline(self, mock_factory):
+        mock_factory.return_value.prepare_analysis.return_value = {"progress_key": "key"}
+        url = reverse_lazy("api:v3:analyses-list") + "?organization_id=" + str(self.org.id)
+        stale_view = self.property_view_factory.get_property_view(prprty=self.child_property, cycle=self.cycle_factory.get_cycle(name="B"))
+        stale_view_id = stale_view.id
+        stale_view.delete()
+        params = json.dumps(
+            {
+                "service": "EUI",
+                "property_view_ids": [self.child_view.id, stale_view_id],
+                "name": "with stale view",
+                "access_level_instance_id": self.child_level_instance.id,
+                "configuration": {"select_meters": "all"},
+            }
+        )
+
+        # IDs that don't exist are still passed on, to be reported as analysis messages
+        self.login_as_child_member()
+        response = self.client.post(url, params, content_type="application/json")
+        assert response.status_code == 200
+        analysis = Analysis.objects.get(name="with stale view")
+        assert list(AnalysisEvent.objects.filter(analysis=analysis).values_list("property_id", flat=True)) == [self.child_property.id]
+        mock_factory.return_value.prepare_analysis.assert_called_once_with([self.child_view.id, stale_view_id], start_analysis=False)
+
+    @mock.patch("seed.views.v3.analyses.AnalysisPipeline.factory")
+    def test_analysis_create_parses_start_analysis(self, mock_factory):
+        mock_factory.return_value.prepare_analysis.return_value = {"progress_key": "key"}
+        params = json.dumps(
+            {
+                "service": "EUI",
+                "property_view_ids": [self.root_view.id],
+                "name": "boo",
+                "access_level_instance_id": self.root_level_instance.id,
+                "configuration": {"select_meters": "all"},
+            }
+        )
+        self.login_as_root_member()
+
+        for start_analysis, expected in [("false", False), ("False", False), ("true", True), ("True", True)]:
+            url = reverse_lazy("api:v3:analyses-list") + f"?organization_id={self.org.id}&start_analysis={start_analysis}"
+            response = self.client.post(url, params, content_type="application/json")
+            assert response.status_code == 200
+            mock_factory.return_value.prepare_analysis.assert_called_with([self.root_view.id], start_analysis=expected)
+
+    def test_analysis_create_requires_name(self):
+        url = reverse_lazy("api:v3:analyses-list") + "?organization_id=" + str(self.org.id)
+        params = json.dumps(
+            {
+                "service": "EUI",
+                "property_view_ids": [self.root_view.id],
+                "access_level_instance_id": self.root_level_instance.id,
+                "configuration": {"select_meters": "all"},
+            }
+        )
+
+        self.login_as_root_member()
+        response = self.client.post(url, params, content_type="application/json")
+        assert response.json()["status"] == "error"
+        assert "name" in response.json()["errors"]
+
+    def test_analysis_used_columns_includes_property_and_taxlot_columns(self):
+        taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.root_level_instance)
+        self.taxlot_view_factory.get_taxlot_view(taxlot=taxlot, cycle=self.cycle)
+        url = reverse_lazy("api:v3:analyses-used-columns") + "?organization_id=" + str(self.org.id)
+
+        self.login_as_root_member()
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 200
+        used_columns = {(column["table_name"], column["column_name"]) for column in response.json()["columns"]}
+        # property columns with data are not dropped when there are also taxlots
+        assert ("PropertyState", "year_built") in used_columns
+        assert ("TaxLotState", "jurisdiction_tax_lot_id") in used_columns
 
 
 class TestAnalysesViewViewPermissions(AccessLevelBaseTestCase):

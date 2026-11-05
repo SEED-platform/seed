@@ -61,7 +61,15 @@ class MetersParser:
 
     _tz = django_timezone.get_default_timezone()
 
-    def __init__(self, org_id, meters_and_readings_details, source_type=Meter.PORTFOLIO_MANAGER, property_id=None, system_id=None):
+    def __init__(
+        self,
+        org_id,
+        meters_and_readings_details,
+        source_type=Meter.PORTFOLIO_MANAGER,
+        property_id=None,
+        system_id=None,
+        access_level_instance=None,
+    ):
         # defaulted to None to show it hasn't been cached yet
         self._cache_meter_and_reading_objs = None
         self._cache_org_country = None
@@ -71,6 +79,7 @@ class MetersParser:
 
         self._meters_and_readings_details = meters_and_readings_details
         self._org_id = org_id
+        self._access_level_instance = access_level_instance
         self._property_id = property_id
         self._system_id = system_id
         self._source_type = source_type
@@ -84,7 +93,9 @@ class MetersParser:
             self._unlinkable_pm_ids = set()  # to avoid duplicates
 
     @classmethod
-    def factory(cls, meters_file, org_id, source_type=Meter.PORTFOLIO_MANAGER, property_id=None, system_id=None):
+    def factory(
+        cls, meters_file, org_id, source_type=Meter.PORTFOLIO_MANAGER, property_id=None, system_id=None, access_level_instance=None
+    ):
         """Factory function for MetersParser
 
         :param meters_file: File
@@ -92,6 +103,7 @@ class MetersParser:
         :param source_type: int, type of meter data
         :param property_id: int, id of property - required if meter data is for a specific property (e.g., GreenButton)
         :param property_id: int, id of system - required if meter data is for a specific system (e.g., GreenButton)
+        :param access_level_instance: AccessLevelInstance, if given, Portfolio Manager IDs only link to properties in its subtree
         :return: MetersParser
         """
         if source_type == Meter.GREENBUTTON:
@@ -104,12 +116,14 @@ class MetersParser:
             # spreadsheet (the original method for importing PM meter data)
             parser = reader.MCMParser(meters_file, sheet_name="Meter Entries")
             raw_meter_data = list(parser.data)
-            return cls(org_id, raw_meter_data)
+            return cls(org_id, raw_meter_data, access_level_instance=access_level_instance)
         except reader.SheetDoesNotExistError:
             # try to parse the file as one from a Data Request
             parser = reader.MCMParser(meters_file, sheet_name="Monthly Usage")
             raw_meter_data = cls.preprocess_raw_pm_data_request(parser.data)
-            return cls(org_id, raw_meter_data, source_type=Meter.PORTFOLIO_MANAGER_DATA_REQUEST)
+            return cls(
+                org_id, raw_meter_data, source_type=Meter.PORTFOLIO_MANAGER_DATA_REQUEST, access_level_instance=access_level_instance
+            )
 
     @property
     def _kbtu_thermal_conversion_factors(self):
@@ -330,6 +344,11 @@ class MetersParser:
         """
         pm_property_ids = {str(raw_details["Portfolio Manager ID"]) for raw_details in self._meters_and_readings_details}
         relevant_views = PropertyView.objects.filter(property__organization_id=self._org_id, state__pm_property_id__in=pm_property_ids)
+        if self._access_level_instance is not None:
+            relevant_views = relevant_views.filter(
+                property__access_level_instance__lft__gte=self._access_level_instance.lft,
+                property__access_level_instance__rgt__lte=self._access_level_instance.rgt,
+            )
         pm_property_id_and_property_id_pairs = relevant_views.values_list("state__pm_property_id", "property_id").distinct()
 
         self._source_to_property_ids = defaultdict(list)

@@ -232,6 +232,32 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["pagination"]["total"], 0)
 
+    def test_record_count(self):
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        self.property_view_factory.get_property_view(prprty=child_property, cycle=self.cycle)
+        child_taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.child_level_instance)
+        self.taxlot_view_factory.get_taxlot_view(taxlot=child_taxlot, cycle=self.cycle)
+
+        def record_count(inventory_type):
+            url = (
+                reverse("api:v4:tax_lot_properties-record-count")
+                + "?"
+                + urlencode({"organization_id": self.org.pk, "cycle_id": self.cycle.pk, "inventory_type": inventory_type})
+            )
+            resp = self.client.get(url)
+            self.assertEqual(resp.status_code, 200)
+            return resp.json()["data"]
+
+        # root member counts every record
+        self.login_as_root_member()
+        self.assertEqual(record_count("properties"), 2)
+        self.assertEqual(record_count("taxlots"), 2)
+
+        # child member only counts the records in its subtree
+        self.login_as_child_member()
+        self.assertEqual(record_count("properties"), 1)
+        self.assertEqual(record_count("taxlots"), 1)
+
 
 class FilterTests(AccessLevelBaseTestCase):
     def setUp(self):

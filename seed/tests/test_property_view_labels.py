@@ -19,6 +19,7 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase
+from seed.utils.organizations import create_organization
 
 
 class PropertyLabelViewTests(AccessLevelBaseTestCase):
@@ -167,3 +168,109 @@ class PropertyLabelViewTests(AccessLevelBaseTestCase):
         assert not PropertyViewLabel.objects.filter(id=self.pvl3.id).exists()
         # the other goal's use of the same label is untouched
         assert PropertyViewLabel.objects.filter(id=self.pvl5.id).exists()
+
+
+class PropertyViewLabelAccessTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.label = StatusLabel.objects.create(name="access-test", super_organization=self.org)
+        self.other_label = StatusLabel.objects.create(name="access-test-2", super_organization=self.org)
+        root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        self.root_view = self.property_view_factory.get_property_view(prprty=root_property)
+        self.child_view = self.property_view_factory.get_property_view(prprty=child_property)
+        self.root_pvl = PropertyViewLabel.objects.create(propertyview=self.root_view, statuslabel=self.label)
+        self.child_pvl = PropertyViewLabel.objects.create(propertyview=self.child_view, statuslabel=self.label)
+
+        self.other_org, _, _ = create_organization(self.superuser, "other-org")
+        self.other_org_label = StatusLabel.objects.create(name="other-org-label", super_organization=self.other_org)
+        other_org_view = FakePropertyViewFactory(organization=self.other_org).get_property_view()
+        self.other_org_pvl = PropertyViewLabel.objects.create(propertyview=other_org_view, statuslabel=self.other_org_label)
+
+        self.list_url = reverse_lazy("api:v3:property_view_labels-list") + f"?organization_id={self.org.id}"
+
+    def detail_url(self, pvl):
+        return reverse_lazy("api:v3:property_view_labels-detail", args=[pvl.id]) + f"?organization_id={self.org.id}"
+
+    def test_list_is_limited_to_organization_and_access_level(self):
+        self.login_as_root_member()
+        response = self.client.get(self.list_url)
+        assert response.status_code == 200
+        assert {pvl["id"] for pvl in response.json()["results"]} == {self.root_pvl.id, self.child_pvl.id}
+
+        self.login_as_child_member()
+        response = self.client.get(self.list_url)
+        assert response.status_code == 200
+        assert {pvl["id"] for pvl in response.json()["results"]} == {self.child_pvl.id}
+
+    def test_list_requires_organization_membership(self):
+        self.login_as_root_member()
+        response = self.client.get(reverse_lazy("api:v3:property_view_labels-list") + f"?organization_id={self.other_org.id}")
+        assert response.status_code == 403
+
+    def test_retrieve_and_destroy_are_limited_to_accessible_labels(self):
+        self.login_as_root_member()
+        assert self.client.get(self.detail_url(self.other_org_pvl)).status_code == 404
+        assert self.client.delete(self.detail_url(self.other_org_pvl)).status_code == 404
+        assert PropertyViewLabel.objects.filter(id=self.other_org_pvl.id).exists()
+
+        self.login_as_child_member()
+        assert self.client.get(self.detail_url(self.root_pvl)).status_code == 404
+        assert self.client.delete(self.detail_url(self.root_pvl)).status_code == 404
+        assert PropertyViewLabel.objects.filter(id=self.root_pvl.id).exists()
+
+        assert self.client.get(self.detail_url(self.child_pvl)).status_code == 200
+        assert self.client.delete(self.detail_url(self.child_pvl)).status_code == 204
+        assert not PropertyViewLabel.objects.filter(id=self.child_pvl.id).exists()
+
+    def test_create_and_update_require_accessible_property_view(self):
+        self.login_as_child_member()
+        response = self.client.post(
+            self.list_url,
+            data=json.dumps({"propertyview": self.root_view.id, "statuslabel": self.other_label.id}),
+            content_type="application/json",
+        )
+        assert response.status_code == 400
+        assert not PropertyViewLabel.objects.filter(propertyview=self.root_view, statuslabel=self.other_label).exists()
+
+        response = self.client.put(
+            self.detail_url(self.child_pvl),
+            data=json.dumps({"propertyview": self.root_view.id, "statuslabel": self.other_label.id}),
+            content_type="application/json",
+        )
+        assert response.status_code == 400
+        self.child_pvl.refresh_from_db()
+        assert self.child_pvl.propertyview_id == self.child_view.id
+
+        # labels of other organizations cannot be applied
+        response = self.client.post(
+            self.list_url,
+            data=json.dumps({"propertyview": self.child_view.id, "statuslabel": self.other_org_label.id}),
+            content_type="application/json",
+        )
+        assert response.status_code == 400
+        assert not PropertyViewLabel.objects.filter(propertyview=self.child_view, statuslabel=self.other_org_label).exists()
+
+        response = self.client.post(
+            self.list_url,
+            data=json.dumps({"propertyview": self.child_view.id, "statuslabel": self.other_label.id}),
+            content_type="application/json",
+        )
+        assert response.status_code == 201
+        assert PropertyViewLabel.objects.filter(propertyview=self.child_view, statuslabel=self.other_label).exists()
+
+    def test_list_by_cycle_goal_ignores_other_organization_goals(self):
+        other_org_goal = FakeGoalFactory(organization=self.other_org).get_goal(
+            baseline_cycle=FakeCycleFactory(organization=self.other_org).get_cycle(),
+            access_level_instance=self.other_org.root,
+            eui_column1=Column.objects.get(organization=self.other_org, column_name="source_eui"),
+            area_column=Column.objects.get(organization=self.other_org, column_name="gross_floor_area"),
+            target_percentage=20,
+            name="other-org-goal",
+        )
+        url = reverse_lazy("api:v3:property_view_labels-list-by-cycle-goal")
+        params = {"organization_id": self.org.id, "goal_id": other_org_goal.id, "cycle_id": self.root_view.cycle_id}
+
+        self.login_as_root_member()
+        response = self.client.get(url, params)
+        assert response.json() == {"status": "error", "message": "Goal does not exist"}

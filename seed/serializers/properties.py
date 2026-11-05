@@ -117,6 +117,11 @@ class PropertySerializer(serializers.ModelSerializer):
         kwargs["child"] = PropertyMinimalSerializer()
         return PropertyListSerializer(*args, **kwargs)
 
+    def validate_parent_property(self, value):
+        if value is not None and self.instance is not None and value.organization_id != self.instance.organization_id:
+            raise serializers.ValidationError("The parent property must be in the same organization.")
+        return value
+
 
 class CreatePropertySerializer(serializers.ModelSerializer):
     # The created and updated fields are in UTC time and need to be casted accordingly in this format
@@ -649,7 +654,8 @@ class PropertyViewAsStateSerializer(serializers.ModelSerializer):
 
 
 class UpdatePropertyPayloadSerializer(serializers.Serializer):
-    state = PropertyStateSerializer()
+    # any subset of the state's fields may be updated
+    state = PropertyStateSerializer(partial=True)
 
 
 def conv_value(val):

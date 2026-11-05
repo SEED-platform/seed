@@ -8,38 +8,47 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_409_CONFLICT
 
 from seed import tasks
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Cycle, PropertyView, TaxLotView
 from seed.serializers.cycles import CycleSerializer
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
+optional_org_param = AutoSchemaHelper.query_org_id_field(
+    required=False, description="Optional org id which overrides the users (default) current org id"
+)
 
-@method_decorator(
-    [
-        swagger_auto_schema_org_query_param,
-    ],
-    name="list",
+
+@extend_schema_view(
+    retrieve=extend_schema(
+        description="Return a cycle instance by pk if it is within user`s specified org.",
+        parameters=[optional_org_param],
+    ),
+    list=extend_schema(
+        description="Return all cycles available to user through user`s specified org.",
+        parameters=[optional_org_param],
+    ),
+    create=extend_schema(
+        description="Create a new cycle within user`s specified org.",
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+    ),
+    update=extend_schema(
+        description="Update a cycle record.",
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+    ),
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_root_member_access"),
     ],
     name="create",
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
-    ],
-    name="retrieve",
-)
-@method_decorator(
-    [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_root_member_access"),
     ],
     name="update",
@@ -47,41 +56,20 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """API endpoint for viewing and creating cycles (time periods).
 
-        Returns::
-            {
-                'status': 'success',
-                'cycles': [
-                    {
-                        'id': Cycle`s primary key,
-                        'name': Name given to cycle,
-                        'start': Start date of cycle,
-                        'end': End date of cycle,
-                        'created': Created date of cycle,
-                        'properties_count': Count of properties in cycle,
-                        'taxlots_count': Count of tax lots in cycle,
-                        'organization': Id of organization cycle belongs to,
-                        'user': Id of user who created cycle
-                    }
-                ]
-            }
-
-
-    retrieve:
-          Return a cycle instance by pk if it is within user`s specified org.
-
-    list:
-
-        Return all cycles available to user through user`s specified org.
-
-    create:
-        Create a new cycle within user`s specified org.
-
-    delete:
-        Remove an existing cycle.
-
-    update:
-        Update a cycle record.
-
+    Returns::
+        {
+            'status': 'success',
+            'cycles': [
+                {
+                    'id': Cycle`s primary key,
+                    'name': Name given to cycle,
+                    'start': Start date of cycle,
+                    'end': End date of cycle,
+                    'organization': Id of organization cycle belongs to,
+                    'user': Id of user who created cycle
+                }
+            ]
+        }
     """
 
     serializer_class = CycleSerializer
@@ -99,13 +87,35 @@ class CycleViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         user = self.request.user
         serializer.save(organization_id=org_id, user=user)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema_org_query_param
+    @extend_schema(
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "status_message": "string",
+                    "progress": "number",
+                    "progress_key": "string",
+                    "unique_id": "string",
+                    "func_name": "string",
+                    "message": "string",
+                    "stacktrace": "string",
+                    "summary": "object",
+                    "total": "number",
+                },
+                description="Progress data of the background task deleting the cycle",
+            ),
+            404: OpenApiResponse(description="Cycle not found"),
+            409: OpenApiResponse(description="Cycle has properties or taxlots that must be removed first"),
+        },
+    )
     @method_decorator(
         [
             has_perm("requires_owner"),
         ]
     )
     def destroy(self, request, pk):
+        """Remove an existing cycle."""
         organization_id = self.get_organization(request)
         try:
             cycle = Cycle.objects.get(pk=pk, organization_id=organization_id)

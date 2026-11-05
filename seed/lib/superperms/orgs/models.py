@@ -98,6 +98,9 @@ class OrganizationUser(models.Model):
 
 @receiver(pre_save, sender=OrganizationUser)
 def presave_organization_user(sender, instance, **kwargs):
+    # Access level filters compare nested-set bounds, which overlap between organizations
+    if instance.access_level_instance.organization_id != instance.organization_id:
+        raise IntegrityError("Organization users must belong to an access level instance of their organization.")
     if instance.role_level == ROLE_OWNER and instance.access_level_instance != instance.organization.root:
         raise IntegrityError("Owners must be member of the organization's root.")
 

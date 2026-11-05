@@ -726,3 +726,36 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
         assert self.label_lookup["Low Area"] in self.view22.labels.all()
         assert self.label_lookup["High EUI % Change"] in self.view32.labels.all()
         assert self.label_lookup["Low EUI"] in self.view32.labels.all()
+
+    def test_cross_cycle_dqc_requires_goal_access(self):
+        url = reverse_lazy("api:v3:data_quality_checks-start", args=[self.org.id])
+        body = {"property_view_ids": [], "taxlot_view_ids": [], "goal_id": self.goal.id}
+
+        # the goal is at the root access level, so a child member cannot run (and update the goal notes of) its checks
+        self.login_as_child_member()
+        response = self.client.post(url, body, content_type="application/json")
+        assert response.status_code == 404
+        assert not self.property1.goalnote_set.get(goal=self.goal).passed_checks
+
+        # root member can
+        self.login_as_root_member()
+        response = self.client.post(url, body, content_type="application/json")
+        assert response.status_code == 200
+        assert self.property1.goalnote_set.get(goal=self.goal).passed_checks
+
+    def test_results_requires_run_id(self):
+        url = reverse_lazy("api:v3:data_quality_checks-results") + f"?organization_id={self.org.id}"
+        cache_key = DataQualityCheck.cache_key("12345", self.org.id)
+        set_cache_raw(cache_key, [{"id": 1, "data_quality_results": []}], 86400)
+        self.login_as_root_member()
+
+        try:
+            # missing run_id is a bad request, not a server error
+            response = self.client.get(url)
+            assert response.status_code == 400
+
+            response = self.client.get(url + "&run_id=12345")
+            assert response.status_code == 200
+            assert response.json()["data"] == [{"id": 1, "data_quality_results": []}]
+        finally:
+            delete_cache(cache_key)

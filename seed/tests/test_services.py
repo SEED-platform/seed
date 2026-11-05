@@ -7,7 +7,8 @@ import json
 
 from django.urls import reverse_lazy
 
-from seed.models import Service
+from seed.lib.superperms.orgs.models import ROLE_MEMBER
+from seed.models import InventoryGroupMapping, Meter, Service
 from seed.test_helpers.fake import FakeInventoryGroupFactory, FakeServiceFactory, FakeSystemFactory
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
@@ -126,3 +127,112 @@ class ServiceViewTests(AccessLevelBaseTestCase):
         response = self.client.put(url, data=json.dumps(service_details), content_type="application/json")
         assert response.status_code == 404
         assert response.json() == {"detail": "No Service matches the given query."}
+
+    def test_service_retrieve_other_organization(self):
+        url = (
+            reverse_lazy("api:v3:system-services-detail", args=[self.group1.id, self.system21.id, self.service211.id])
+            + f"?organization_id={self.org.id}"
+        )
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 404
+
+    def test_service_create_uses_path_system(self):
+        # the path's system must belong to the path's group
+        service_details = {"name": "new service", "system_id": self.system21.id}
+        url = reverse_lazy("api:v3:system-services-list", args=[self.group1.id, self.system21.id]) + f"?organization_id={self.org.id}"
+        response = self.client.post(url, data=json.dumps(service_details), content_type="application/json")
+        assert response.status_code == 404
+        assert not Service.objects.filter(name="new service").exists()
+
+        # the body's system_id is ignored
+        url = reverse_lazy("api:v3:system-services-list", args=[self.group1.id, self.system11.id]) + f"?organization_id={self.org.id}"
+        response = self.client.post(url, data=json.dumps(service_details), content_type="application/json")
+        assert response.status_code == 201
+        assert Service.objects.get(name="new service").system_id == self.system11.id
+
+        # services can not be moved to another system
+        url = (
+            reverse_lazy("api:v3:system-services-detail", args=[self.group1.id, self.system11.id, self.service111.id])
+            + f"?organization_id={self.org.id}"
+        )
+        response = self.client.put(url, data=json.dumps({"name": "s111", "system_id": self.system21.id}), content_type="application/json")
+        assert response.status_code == 200
+        self.service111.refresh_from_db()
+        assert self.service111.system_id == self.system11.id
+
+    def test_service_permissions(self):
+        list_url = reverse_lazy("api:v3:system-services-list", args=[self.group1.id, self.system11.id]) + f"?organization_id={self.org.id}"
+        detail_url = (
+            reverse_lazy("api:v3:system-services-detail", args=[self.group1.id, self.system11.id, self.service111.id])
+            + f"?organization_id={self.org.id}"
+        )
+        service_details = {"emission_factor": 10, "name": "new service", "system_id": self.system11.id}
+
+        # group1 is at the root, above the child member's access level
+        self.login_as_child_member()
+        assert self.client.get(list_url, content_type="application/json").status_code == 404
+        assert self.client.post(list_url, data=json.dumps(service_details), content_type="application/json").status_code == 404
+        assert self.client.put(detail_url, data=json.dumps(service_details), content_type="application/json").status_code == 404
+        assert self.client.delete(detail_url, content_type="application/json").status_code == 404
+        self.service111.refresh_from_db()
+        assert self.service111.name == "s111"
+        assert Service.objects.count() == 4
+
+        # users of other organizations have no access
+        self.org2.add_member(self.root_member_user, self.org2.root.id, ROLE_MEMBER)
+        self.login_as_root_member()
+        other_org_url = (
+            reverse_lazy("api:v3:system-services-detail", args=[self.group1.id, self.system11.id, self.service111.id])
+            + f"?organization_id={self.org2.id}"
+        )
+        assert self.client.delete(other_org_url, content_type="application/json").status_code == 404
+        assert Service.objects.count() == 4
+
+        # root members have access
+        assert self.client.get(list_url, content_type="application/json").status_code == 200
+        assert self.client.delete(detail_url, content_type="application/json").status_code == 204
+        assert Service.objects.count() == 3
+
+    def test_service_create_meters(self):
+        view = self.property_view_factory.get_property_view()
+        other_view = self.property_view_factory.get_property_view()
+        InventoryGroupMapping.objects.create(property=view.property, group=self.group1)
+        url = (
+            reverse_lazy("api:v3:system-services-create-meters", args=[self.group1.id, self.system11.id, self.service111.id])
+            + f"?organization_id={self.org.id}"
+        )
+
+        # missing args
+        data = {"property_ids": [view.property_id], "type": "Electric"}
+        response = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 400
+        assert Meter.objects.count() == 0
+
+        # unknown meter type
+        data = {"property_ids": [view.property_id], "direction": "imported", "type": "Unknown"}
+        response = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 400
+        assert Meter.objects.count() == 0
+
+        # properties must be in the group
+        data = {"property_ids": [view.property_id, other_view.property_id], "direction": "imported", "type": "Electric"}
+        response = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 404
+        assert Meter.objects.count() == 0
+
+        # the service must be in the path's system
+        other_service_url = (
+            reverse_lazy("api:v3:system-services-create-meters", args=[self.group1.id, self.system11.id, self.service211.id])
+            + f"?organization_id={self.org.id}"
+        )
+        data = {"property_ids": [view.property_id], "direction": "imported", "type": "Electric"}
+        response = self.client.post(other_service_url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 404
+        assert Meter.objects.count() == 0
+
+        response = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        meter = Meter.objects.get()
+        assert meter.property_id == view.property_id
+        assert meter.service_id == self.service111.id
+        assert meter.connection_type == Meter.RECEIVING_SERVICE

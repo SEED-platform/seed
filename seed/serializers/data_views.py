@@ -30,6 +30,23 @@ class DataViewSerializer(serializers.ModelSerializer):
         model = DataView
         fields = ["id", "cycles", "filter_groups", "name", "organization", "parameters"]
 
+    def validate(self, attrs):
+        """Reject cycles, filter groups, or parameter columns of another organization"""
+        org_id = getattr(attrs.get("organization", getattr(self.instance, "organization", None)), "id", None)
+        related_objects = {
+            "cycles": attrs.get("cycles") or [],
+            "filter_groups": attrs.get("filter_groups") or [],
+            "parameters": [parameter.get("column") for parameter in attrs.get("parameters") or []],
+        }
+        errors = {
+            field: ["Must belong to the requested organization."]
+            for field, objs in related_objects.items()
+            if any(obj is not None and obj.organization_id != org_id for obj in objs)
+        }
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs
+
     def create(self, validated_data):
         with transaction.atomic():
             cycles = validated_data.pop("cycles")

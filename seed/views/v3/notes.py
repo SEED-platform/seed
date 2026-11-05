@@ -8,6 +8,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 
 from django.utils.decorators import method_decorator
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
@@ -15,11 +16,30 @@ from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import Note, PropertyView
 from seed.models.events import NoteEvent
 from seed.serializers.notes import NoteSerializer
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 _log = logging.getLogger(__name__)
 
 
+# the org may instead be given in the request body (e.g., as `organization_id`), as the frontend does
+body_or_query_org_id_field = AutoSchemaHelper.query_org_id_field(
+    required=False, description="Organization ID; required unless given in the request body"
+)
+
+
+@extend_schema(
+    parameters=[
+        AutoSchemaHelper.query_org_id_field(),
+        # only the one in the route applies
+        AutoSchemaHelper.path_id_field("Property view ID", name="property_pk"),
+        AutoSchemaHelper.path_id_field("Tax lot view ID", name="taxlot_pk"),
+    ]
+)
+@extend_schema_view(
+    create=extend_schema(parameters=[body_or_query_org_id_field]),
+    update=extend_schema(parameters=[body_or_query_org_id_field]),
+)
 @method_decorator(
     [
         has_perm("requires_viewer"),
@@ -56,19 +76,7 @@ _log = logging.getLogger(__name__)
     name="destroy",
 )
 class NoteViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
-    """API endpoint for viewing and creating notes.
-
-            Returns::
-                [
-                    {
-                        'id': Note's primary key
-                        'name': Superfluous name,
-                        'text': Note's text
-                    }
-                ]
-
-    ---
-    """
+    """API endpoint for viewing, creating, updating, and deleting the notes of a property or tax lot view"""
 
     serializer_class = NoteSerializer
     renderer_classes = (JSONRenderer,)

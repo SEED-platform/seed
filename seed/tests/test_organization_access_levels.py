@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 import os
+import shutil
 import time
 
 from django.urls import reverse_lazy
@@ -13,6 +14,8 @@ from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Organization, Property, TaxLot
 from seed.test_helpers.fake import FakePropertyFactory, FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase
+from seed.views.v3.access_levels import _uploads_subdir
+from seed.views.v3.uploads import get_upload_path
 
 
 class TestOrganizationViews(AccessLevelBaseTestCase):
@@ -20,6 +23,14 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         super().setUp()
         self.property_factory = FakePropertyFactory(organization=self.org)
         self.property_view_factory = FakePropertyViewFactory(organization=self.org)
+
+    def _upload_data_file(self, filename, org_id=None):
+        """Copy a test data file into the organization's uploads directory, as `importer` saves it, and return its path"""
+        path = get_upload_path(os.path.join(_uploads_subdir(org_id or self.org.id), filename))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        shutil.copy(os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", filename), path)
+        self.addCleanup(os.remove, path)
+        return path
 
     def test_access_level_tree(self):
         url = reverse_lazy(
@@ -194,9 +205,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         self.org.save()
 
         filename = "access-levels-wrong1.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
-
-        uploaded_filepath = filepath
+        uploaded_filepath = self._upload_data_file(filename)
         url = reverse_lazy("api:v3:organization-access_levels-start-save-data", args=[self.org.id])
         raw_result = self.client.post(url, data=json.dumps({"filename": uploaded_filepath}), content_type="application/json")
         # 200 - process ok
@@ -212,9 +221,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         self.org.save()
 
         filename = "access-levels-wrong2.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
-
-        uploaded_filepath = filepath
+        uploaded_filepath = self._upload_data_file(filename)
         url = reverse_lazy("api:v3:organization-access_levels-start-save-data", args=[self.org.id])
         raw_result = self.client.post(url, data=json.dumps({"filename": uploaded_filepath}), content_type="application/json")
         # 200 - process finishes without crashing
@@ -234,9 +241,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         self.org.save()
 
         filename = "access-levels-wrong3.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
-
-        uploaded_filepath = filepath
+        uploaded_filepath = self._upload_data_file(filename)
         url = reverse_lazy("api:v3:organization-access_levels-start-save-data", args=[self.org.id])
         raw_result = self.client.post(url, data=json.dumps({"filename": uploaded_filepath}), content_type="application/json")
         # 200 - process finishes without crashing
@@ -258,9 +263,7 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         self.child_level_instance.delete()
 
         filename = "access-level-instances.xlsx"
-        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
-
-        uploaded_filepath = filepath
+        uploaded_filepath = self._upload_data_file(filename)
         url = reverse_lazy("api:v3:organization-access_levels-start-save-data", args=[self.org.id])
         raw_result = self.client.post(url, data=json.dumps({"filename": uploaded_filepath}), content_type="application/json")
 
@@ -435,3 +438,89 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         alis = result.json()["access_level_instance_ids"]
         assert len(alis) == 1
         assert alis == [self.sibling_level_instance.id]
+
+    def test_add_instance_rejects_parent_from_another_org(self):
+        other_org = Organization.objects.create(name="other org")
+
+        self.login_as_root_owner()
+        url = reverse_lazy("api:v3:organization-access_levels-add-instance", args=[self.org.id])
+        result = self.client.post(
+            url, data=json.dumps({"parent_id": other_org.root.pk, "name": "intruder"}), content_type="application/json"
+        )
+        assert result.status_code == 400
+        assert not AccessLevelInstance.objects.filter(name="intruder").exists()
+
+        # a parent in the organization is still accepted
+        result = self.client.post(url, data=json.dumps({"parent_id": self.org.root.pk, "name": "aunt"}), content_type="application/json")
+        assert result.status_code == 201
+        assert AccessLevelInstance.objects.filter(organization=self.org, name="aunt").exists()
+
+    def test_add_alis_from_file_rejects_files_outside_uploads(self):
+        self.org.access_level_names = ["top level", "Sector", "Sub Sector", "Partner"]
+        self.org.save()
+        self.child_level_instance.delete()
+
+        url = reverse_lazy("api:v3:organization-access_levels-start-save-data", args=[self.org.id])
+        data_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "access-level-instances.xlsx")
+        uploaded_filepath = self._upload_data_file("access-level-instances.xlsx")
+        uploads_dir = os.path.dirname(uploaded_filepath)
+        escaping_filepath = os.path.join(uploads_dir, os.path.relpath(data_filepath, uploads_dir))
+        other_org = Organization.objects.create(name="other org")
+        other_org_filepath = self._upload_data_file("access-level-instances.xlsx", org_id=other_org.id)
+        for filename in [data_filepath, escaping_filepath, other_org_filepath, 1]:
+            raw_result = self.client.post(url, data=json.dumps({"filename": filename}), content_type="application/json")
+            assert raw_result.status_code == 400
+            assert raw_result.json()["status"] == "error"
+        assert not AccessLevelInstance.objects.filter(organization=self.org, name="Company H").exists()
+
+        # the file uploaded by `importer` is still accepted
+        raw_result = self.client.post(url, data=json.dumps({"filename": uploaded_filepath}), content_type="application/json")
+        assert raw_result.status_code == 200
+        assert raw_result.json()["status"] != "error"
+
+    def test_lowest_common_ancestor_is_scoped_to_org_and_user_access_level(self):
+        sibling = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+        root_property = Property.objects.create(organization=self.org, access_level_instance=self.org.root)
+        child_property = Property.objects.create(organization=self.org, access_level_instance=self.child_level_instance)
+        sibling_property = Property.objects.create(organization=self.org, access_level_instance=sibling)
+        other_org = Organization.objects.create(name="other org")
+        other_property = Property.objects.create(organization=other_org, access_level_instance=other_org.root)
+
+        url = reverse_lazy("api:v3:organization-access_levels-lowest-common-ancestor", args=[self.org.id])
+
+        def lowest_common_ancestor(inventory_ids):
+            data = {"inventory_type": "property", "inventory_ids": inventory_ids}
+            result = self.client.post(url, data=json.dumps(data), content_type="application/json")
+            assert result.status_code == 200
+            return result.json()["data"]
+
+        # root owner: the ancestor comes from this org's tree, and other orgs' inventory is ignored
+        self.login_as_root_owner()
+        assert lowest_common_ancestor([root_property.id, child_property.id])["id"] == self.org.root.id
+        assert lowest_common_ancestor([other_property.id]) is None
+
+        # child member: inventory outside their access level instance is ignored
+        self.login_as_child_member()
+        assert lowest_common_ancestor([child_property.id])["id"] == self.child_level_instance.id
+        assert lowest_common_ancestor([sibling_property.id]) is None
+        assert lowest_common_ancestor([child_property.id, sibling_property.id])["id"] == self.child_level_instance.id
+
+    def test_ali_filter_by_views_taxlots_and_user_access_level(self):
+        sibling = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+        child_view = self.taxlot_view_factory.get_taxlot_view(
+            taxlot=self.taxlot_factory.get_taxlot(access_level_instance=self.child_level_instance)
+        )
+        sibling_view = self.taxlot_view_factory.get_taxlot_view(taxlot=self.taxlot_factory.get_taxlot(access_level_instance=sibling))
+
+        url = reverse_lazy("api:v3:organization-access_levels-filter-by-views", args=[self.org.id])
+        data = {"inventory_type": "taxlots", "view_ids": [child_view.id, sibling_view.id]}
+
+        # tax lot views resolve to the tax lots' access level instances
+        self.login_as_root_owner()
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        assert sorted(result.json()["access_level_instance_ids"]) == sorted([self.child_level_instance.id, sibling.id])
+
+        # child member: access level instances outside their own are excluded
+        self.login_as_child_member()
+        result = self.client.post(url, data=json.dumps(data), content_type="application/json")
+        assert result.json()["access_level_instance_ids"] == [self.child_level_instance.id]

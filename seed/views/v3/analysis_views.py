@@ -5,8 +5,8 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from drf_spectacular.utils import extend_schema, extend_schema_serializer
+from rest_framework import serializers, viewsets
 from rest_framework.status import HTTP_409_CONFLICT
 
 from seed.decorators import ajax_request, require_organization_id
@@ -17,11 +17,28 @@ from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 
 
+# The serializers below are only used to document responses
+@extend_schema_serializer(many=False)
+class AnalysisPropertyViewListResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    views = AnalysisPropertyViewSerializer(many=True)
+    original_views = serializers.DictField(
+        child=serializers.IntegerField(allow_null=True), help_text="Original PropertyView ID (or null) keyed by AnalysisPropertyView ID"
+    )
+
+
+class AnalysisPropertyViewRetrieveResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    view = AnalysisPropertyViewSerializer()
+    original_view = serializers.IntegerField(allow_null=True, help_text="Original PropertyView ID")
+
+
+@extend_schema(parameters=[AutoSchemaHelper.query_org_id_field(), AutoSchemaHelper.path_id_field("Analysis ID", name="analysis_pk")])
 class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = AnalysisPropertyViewSerializer
     model = AnalysisPropertyView
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
+    @extend_schema(responses={200: AnalysisPropertyViewListResponseSerializer})
     @method_decorator(
         [
             require_organization_id,
@@ -57,7 +74,10 @@ class AnalysisPropertyViewViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(True)])
+    @extend_schema(
+        parameters=[AutoSchemaHelper.path_id_field("AnalysisPropertyView ID")],
+        responses={200: AnalysisPropertyViewRetrieveResponseSerializer},
+    )
     @method_decorator(
         [
             require_organization_id,

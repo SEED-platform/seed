@@ -13,7 +13,6 @@ from django.contrib import auth
 from django.contrib.auth import login
 from django.contrib.auth.forms import SetPasswordForm
 from django.contrib.auth.tokens import default_token_generator
-from django.core.cache import cache
 from django.forms.forms import NON_FIELD_ERRORS
 from django.forms.utils import ErrorList
 from django.http import HttpResponseRedirect
@@ -26,6 +25,7 @@ from django.views.decorators.csrf import csrf_protect
 from django_otp import devices_for_user
 from django_otp.plugins.otp_email.models import EmailDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -33,6 +33,7 @@ from two_factor.views.core import LoginView
 
 from seed.landing.models import SEEDUser
 from seed.tasks import invite_new_user_to_seed
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.two_factor import send_token_email
 
 from .forms import CustomCreateUserForm
@@ -167,7 +168,7 @@ class CustomLoginView(LoginView):
 
         if "resend_email" in request.POST:
             try:
-                user = SEEDUser.objects.get(username=cache.get("user_email"))
+                user = SEEDUser.objects.get(username=request.session.get("user_email"))
                 devices = list(devices_for_user(user))
                 device = devices[0]
                 if isinstance(device, EmailDevice):
@@ -187,9 +188,9 @@ class CustomLoginView(LoginView):
         user = SEEDUser.objects.filter(username=request.POST["auth-username"]).first()
 
         if not user:
-            cache.set("username", None, timeout=3600)
             return response  # retry
-        cache.set("user_email", user.email, timeout=3600)
+        # Kept in the (per-browser) session, not the shared cache, which concurrent logins would overwrite
+        request.session["user_email"] = user.email
 
         devices = list(devices_for_user(user))
 
@@ -201,7 +202,7 @@ class CustomLoginView(LoginView):
             if isinstance(device, TOTPDevice):
                 method_2fa = "token"
 
-            cache.set("method_2fa", method_2fa, timeout=3600)
+            request.session["method_2fa"] = method_2fa
 
             return response  # go to token step
 
@@ -278,5 +279,27 @@ class TwoFactorTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
 
 
+@extend_schema_view(
+    post=extend_schema(
+        responses={
+            200: {
+                "oneOf": [
+                    AutoSchemaHelper.schema_factory({"access": "string", "refresh": "string"}, required=["access", "refresh"]),
+                    AutoSchemaHelper.schema_factory(
+                        {"two_factor_required": "boolean", "two_factor_method": (("email", "email"), ("token", "token"))},
+                        required=["two_factor_required", "two_factor_method"],
+                    ),
+                ],
+            }
+        }
+    )
+)
 class TwoFactorTokenObtainPairView(TokenObtainPairView):
+    """
+    Takes a set of user credentials and returns an access and refresh JSON web token pair.
+    If the user has two factor authentication, the first request (without `otp_token`) instead returns
+    `two_factor_required` and the method (email devices are sent a code), and the credentials must be
+    sent again with the `otp_token`.
+    """
+
     serializer_class = TwoFactorTokenObtainPairSerializer

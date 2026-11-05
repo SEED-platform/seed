@@ -505,7 +505,7 @@ class InventoryFilter:
         table, other_table, other_suffix = table_map.get(self.inventory_type, ["PropertyState", "TaxLotState"])
 
         if self.profile_id:
-            profile = ColumnListProfile.objects.get(id=self.profile_id)
+            profile = ColumnListProfile.objects.get(id=self.profile_id, organization_id=self.org.id)
             profile = ColumnListProfileSerializer(profile).data
             columns = [c for c in profile["columns"] if c["table_name"] == table]
             other_columns = [c for c in profile["columns"] if c["table_name"] == other_table]

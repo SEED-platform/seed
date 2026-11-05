@@ -228,6 +228,19 @@ class ColumnListProfilesView(DeleteModelsTestCase):
         columns = {c["column_name"] for c in result["data"]["columns"]}
         self.assertSetEqual(columns, {"city", "updated", "created"})
 
+    def test_column_profile_show_populated_empty_cycle(self):
+        columnlistprofile = self.column_list_factory.get_columnlistprofile(columns=["address_line_1", "city"])
+        empty_cycle = self.cycle_factory.get_cycle()
+
+        response = self.client.put(
+            reverse("api:v3:column_list_profiles-show-populated", args=[columnlistprofile.id]) + f"?organization_id={self.org.id}",
+            data=json.dumps({"cycle_id": empty_cycle.id, "inventory_type": "Property"}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["data"]["columns"], [])
+
     def test_column_profile_show_populated_taxlots(self):
         columnlistprofile = self.column_list_factory.get_columnlistprofile(
             columns=["address_line_1", "city"], inventory_type=VIEW_LIST_TAXLOT
@@ -359,3 +372,57 @@ class ColumnsListProfileViewPermissionsTests(AccessLevelBaseTestCase, DeleteMode
         self.login_as_root_member()
         response = self.client.put(url, data=json.dumps(self.payload_data), content_type="application/json")
         assert response.status_code == 200
+
+    def test_column_list_profile_retrieve_other_organization(self):
+        other_org, _, _ = create_organization(self.superuser, "test-organization-b")
+        other_profile = FakeColumnListProfileFactory(organization=other_org).get_columnlistprofile(columns=["address_line_1"])
+        self.login_as_root_member()
+
+        # users cannot retrieve another organization's profile through their own organization
+        url = reverse_lazy("api:v3:column_list_profiles-detail", args=[other_profile.id]) + "?organization_id=" + str(self.org.id)
+        response = self.client.get(url)
+        assert response.status_code == 404
+
+        url = reverse_lazy("api:v3:column_list_profiles-detail", args=[self.columnlistprofile.id]) + "?organization_id=" + str(self.org.id)
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert response.json()["data"]["id"] == self.columnlistprofile.id
+
+    def test_column_list_profile_show_populated_other_organization(self):
+        other_org, _, _ = create_organization(self.superuser, "test-organization-b")
+        other_profile = FakeColumnListProfileFactory(organization=other_org).get_columnlistprofile(columns=["address_line_1"])
+        other_cycle = FakeCycleFactory(organization=other_org, user=self.superuser).get_cycle()
+        other_state = FakePropertyStateFactory(organization=other_org).get_property_state(no_default_data=True, city="Denver")
+        FakePropertyViewFactory(organization=other_org, cycle=other_cycle).get_property_view(state=other_state)
+        payload = json.dumps({"cycle_id": other_cycle.id, "inventory_type": "Property"})
+        self.login_as_root_member()
+
+        # users cannot change another organization's profile through their own organization
+        url = reverse_lazy("api:v3:column_list_profiles-show-populated", args=[other_profile.id]) + "?organization_id=" + str(self.org.id)
+        response = self.client.put(url, data=payload, content_type="application/json")
+        assert response.status_code == 404
+        assert list(other_profile.columns.values_list("column_name", flat=True)) == ["address_line_1"]
+
+        # nor see which columns are populated in another organization's cycle
+        url = (
+            reverse_lazy("api:v3:column_list_profiles-show-populated", args=[self.columnlistprofile.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
+        response = self.client.put(url, data=payload, content_type="application/json")
+        assert response.status_code == 200
+        assert response.json()["data"]["columns"] == []
+
+    def test_column_list_profile_retrieve_comstock_profile(self):
+        url = reverse_lazy("api:v3:column_list_profiles-detail", args=["null"]) + "?organization_id=" + str(self.org.id)
+        self.login_as_root_member()
+
+        # the ComStock profile does not exist unless ComStock is enabled
+        response = self.client.get(url)
+        assert response.status_code == 404
+
+        self.org.comstock_enabled = True
+        self.org.save()
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert response.json()["data"]["name"] == "ComStock"

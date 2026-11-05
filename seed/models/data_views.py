@@ -44,6 +44,8 @@ class DataView(models.Model):
                 views = PropertyView.objects.filter(
                     cycle=cycle,
                     property__organization=self.organization,
+                    property__access_level_instance__lft__gte=user_ali.lft,
+                    property__access_level_instance__rgt__lte=user_ali.rgt,
                 )
                 filter_group_views[0][cycle.id] = views
                 for view in views:

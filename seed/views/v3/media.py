@@ -11,11 +11,13 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.utils.text import get_valid_filename
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import generics
 
 from seed.models import Analysis, AnalysisOutputFile, BuildingFile, ImportFile, InventoryDocument, Organization
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import EmptySerializer
+from seed.utils.api_schema import AutoSchemaHelper, EmptySerializer
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -70,8 +72,8 @@ def check_file_permission(user, filepath):
             analysis = Analysis.objects.get(id=analysis_id)
         except ValueError as e:
             raise ModelForFileNotFoundError("File path for analysis_input_file was an unexpected structure") from e
-        except Analysis.DoesNotExist:
-            return ModelForFileNotFoundError("Analysis for AnalysisInputFile not found")
+        except Analysis.DoesNotExist as e:
+            raise ModelForFileNotFoundError("Analysis for AnalysisInputFile not found") from e
         organization = analysis.organization
 
     elif base_dir == "analysis_output_files":
@@ -113,6 +115,18 @@ def check_file_permission(user, filepath):
     return True
 
 
+@extend_schema_view(
+    get=extend_schema(
+        parameters=[AutoSchemaHelper.path_string_field("filepath", "Path of the file relative to the media root (e.g., uploads/file.csv)")],
+        responses={
+            (200, "application/octet-stream"): OpenApiResponse(
+                OpenApiTypes.BINARY,
+                description="The file, with the content type guessed from its name. Non-HTML files are sent as attachments",
+            ),
+            404: OpenApiResponse(description="The file does not exist or the user does not have access to it"),
+        },
+    )
+)
 class MediaViewSet(generics.RetrieveAPIView, OrgMixin):
     queryset = ()
     serializer_class = EmptySerializer

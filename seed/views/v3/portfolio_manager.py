@@ -12,7 +12,8 @@ from datetime import datetime
 import requests
 import xmltodict
 from django.http import HttpResponse, JsonResponse
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.viewsets import GenericViewSet
@@ -20,6 +21,8 @@ from rest_framework.viewsets import GenericViewSet
 from seed.utils.api_schema import AutoSchemaHelper
 
 _log = logging.getLogger(__name__)
+
+XLSX_CONTENT_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 
 class PMError(Exception):
@@ -38,17 +41,14 @@ class PortfolioManagerViewSet(GenericViewSet):
     queryset = ()
     serializer_class = PortfolioManagerSerializer
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
             {"username": "string", "password": "string"}, description="ESPM account credentials.", required=["username", "password"]
         ),
         responses={
             200: AutoSchemaHelper.schema_factory(
-                {
-                    "status": "string",
-                    "templates": [{"template_information_1": "string", "template_information_2": "integer", "[other keys...]": "string"}],
-                    "message": "string",
-                }
+                {"status": "string", "templates": ["object"]},
+                description="ESPM report templates and their child data request rows, each with `display_name` and `z_seed_child_row` keys added",
             ),
         },
     )
@@ -83,27 +83,25 @@ class PortfolioManagerViewSet(GenericViewSet):
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         return JsonResponse({"status": "success", "templates": possible_templates})
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
             {
                 "username": "string",
                 "password": "string",
-                "template": {"[copy information from template_list]": "string"},
-                "report_format": "string",
+                "template": "object",
+                "report_format": (("XML", "XML"), ("EXCEL", "EXCEL")),
             },
-            description="ESPM account credentials.",
+            description=(
+                "ESPM account credentials, a template object (copied from the template_list response) and the report format "
+                '(defaults to "XML"). An "EXCEL" report is returned as a file.'
+            ),
             required=["username", "password", "template"],
         ),
         responses={
-            200: AutoSchemaHelper.schema_factory(
-                {
-                    "status": "string",
-                    "properties": [
-                        {"properties_information_1": "string", "properties_information_2": "integer", "[other keys...]": "string"}
-                    ],
-                    "message": "string",
-                }
+            (200, "application/json"): AutoSchemaHelper.schema_factory(
+                {"status": "string", "properties": ["object"]}, description="Properties parsed from the generated XML report"
             ),
+            (200, XLSX_CONTENT_TYPE): OpenApiTypes.BINARY,
         },
     )
     @action(detail=False, methods=["POST"])
@@ -209,17 +207,18 @@ class PortfolioManagerViewSet(GenericViewSet):
             _log.debug(f"{e}: {request.data!s}")
             return JsonResponse({"status": "error", "message": e}, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_integer_field("id", True, "ID of the ESPM Property to download")],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.path_id_field("ID of the ESPM Property to download")],
+        request=AutoSchemaHelper.json_body(
             {
                 "username": "string",
                 "password": "string",
                 "filename": "string",
             },
-            description="ESPM account credentials.",
+            description="ESPM account credentials, and an optional filename for the downloaded report.",
             required=["username", "password"],
         ),
+        responses={(200, XLSX_CONTENT_TYPE): OpenApiTypes.BINARY},
     )
     @action(detail=True, methods=["POST"])
     def download(self, request, pk):
@@ -259,22 +258,26 @@ class PortfolioManagerViewSet(GenericViewSet):
             _log.debug(f"{pme!s}: PM Property ID {pk}")
             return JsonResponse({"status": "error", "message": str(pme)}, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_integer_field("id", True, "ID of the ESPM Property to download")],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
             {
                 "username": "string",
                 "password": "string",
-                "filename": "string",
+                "property_ids": ["string"],
+                "start_date": "string",
+                "end_date": "string",
             },
-            description="ESPM account credentials.",
-            required=["username", "password"],
+            description=(
+                "ESPM account credentials, the ESPM Property IDs to download meter data for, and the "
+                "start and end dates (MM/DD/YYYY) of the meter data."
+            ),
+            required=["username", "password", "property_ids", "start_date", "end_date"],
         ),
+        responses={(200, XLSX_CONTENT_TYPE): OpenApiTypes.BINARY},
     )
     @action(detail=False, methods=["POST"])
     def meter_download(self, request):
-        """Download a single property report from Portfolio Manager. The PK is the
-        PM property ID that is on ESPM"""
+        """Download the meter data of ESPM properties from Portfolio Manager as a custom download"""
         required_fields = {"username", "password", "property_ids", "start_date", "end_date"}
         missing_fields = required_fields - set(request.data.keys())
         if len(missing_fields) > 0:
@@ -286,8 +289,14 @@ class PortfolioManagerViewSet(GenericViewSet):
         username = request.data["username"]
         password = request.data["password"]
         property_ids = request.data["property_ids"]
-        start_date = datetime.strptime(request.data.get("start_date"), "%m/%d/%Y")
-        end_date = datetime.strptime(request.data.get("end_date"), "%m/%d/%Y")
+        try:
+            start_date = datetime.strptime(request.data["start_date"], "%m/%d/%Y")
+            end_date = datetime.strptime(request.data["end_date"], "%m/%d/%Y")
+        except (TypeError, ValueError):
+            return JsonResponse(
+                {"status": "error", "message": "start_date and end_date must be formatted as MM/DD/YYYY"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         #  generate and download meter data
         pm = PortfolioManagerImport(username, password)

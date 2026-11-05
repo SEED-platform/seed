@@ -11,7 +11,19 @@ from django.utils.timezone import get_current_timezone
 
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
-from seed.models import DATA_STATE_MAPPING, VIEW_LIST_TAXLOT, Column, Note, PropertyView, StatusLabel, TaxLot, TaxLotProperty, TaxLotView
+from seed.models import (
+    DATA_STATE_MAPPING,
+    VIEW_LIST_TAXLOT,
+    Column,
+    InventoryGroup,
+    InventoryGroupMapping,
+    Note,
+    PropertyView,
+    StatusLabel,
+    TaxLot,
+    TaxLotProperty,
+    TaxLotView,
+)
 from seed.test_helpers.fake import (
     FakeColumnListProfileFactory,
     FakeCycleFactory,
@@ -21,6 +33,7 @@ from seed.test_helpers.fake import (
     FakeStatusLabelFactory,
     FakeTaxLotFactory,
     FakeTaxLotStateFactory,
+    FakeTaxLotViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.match import match_merge_link
@@ -395,6 +408,19 @@ class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
         assert resp.status_code == 200
         assert len(resp.json()[str(self.cycle.id)]) == 0
 
+    def test_taxlot_filter_by_cycle_ignores_unauthorized_organization_id(self):
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_view = FakeTaxLotViewFactory(organization=other_org).get_taxlot_view()
+
+        # permissions are checked against the `organization` query param, so the body's organization_id of another org must not be used
+        url = reverse("api:v3:taxlots-filter-by-cycle") + f"?organization={self.org.pk}"
+        params = json.dumps({"cycle_ids": [other_view.cycle_id], "organization_id": other_org.pk})
+
+        self.login_as_root_member()
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 200
+        assert resp.json()[str(other_view.cycle_id)] == []
+
     def test_taxlot_filter_by_cycle_invalid_params(self):
         url = reverse("api:v3:taxlots-filter-by-cycle") + f"?organization_id={self.org.pk}"
         self.login_as_root_member()
@@ -547,6 +573,34 @@ class TaxLotViewTestPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
         resp = self.client.put(url, content_type="application/json")
         assert resp.status_code == 200
+
+    def test_taxlot_pair_and_unpair_require_access_to_property(self):
+        self.view.taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.child_level_instance)
+        self.view.save()
+        root_property_view = self.property_view_factory.get_property_view(cycle=self.cycle)
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        child_property_view = self.property_view_factory.get_property_view(prprty=child_property, cycle=self.cycle)
+        self.login_as_child_member()
+
+        def put(action, property_view):
+            url = (
+                reverse(f"api:v3:taxlots-{action}", args=[self.view.id]) + f"?property_id={property_view.pk}&organization_id={self.org.pk}"
+            )
+            return self.client.put(url, content_type="application/json")
+
+        def is_paired(property_view):
+            return TaxLotProperty.objects.filter(property_view=property_view, taxlot_view=self.view).exists()
+
+        # child member cannot pair its tax lot with a property outside of its access level instance (previously a 500,
+        # since paired records must share an access level instance)
+        assert put("pair", root_property_view).status_code == 404
+        assert not is_paired(root_property_view)
+
+        # but can with a property within it
+        assert put("pair", child_property_view).status_code == 200
+        assert is_paired(child_property_view)
+        assert put("unpair", child_property_view).status_code == 200
+        assert not is_paired(child_property_view)
 
     def test_taxlot_batch_delete(self):
         self.state_2 = self.taxlot_state_factory.get_taxlot_state(address_line_1="2 taxlot state")
@@ -760,6 +814,37 @@ class TaxLotMergeUnmergeViewTests(DataMappingBaseTestCase):
             TaxLotProperty.objects.filter(taxlot_view_id=taxlot_view.id).values_list("property_view_id", flat=True)
         )
         self.assertCountEqual(paired_propertyview_ids, [property_view_1.id, property_view_2.id])
+
+    def test_taxlots_merge_and_unmerge_keep_access_level_instance_and_groups(self):
+        group = InventoryGroup.objects.create(
+            name="group", organization=self.org, inventory_type=VIEW_LIST_TAXLOT, access_level_instance=self.me_ali
+        )
+        for taxlot in (self.taxlot_1, self.taxlot_2):
+            taxlot.access_level_instance = self.me_ali
+            taxlot.save()
+            InventoryGroupMapping.objects.create(taxlot=taxlot, group=group)
+
+        # Merge the taxlots
+        url = reverse("api:v3:taxlots-merge") + f"?organization_id={self.org.pk}"
+        post_params = json.dumps({"taxlot_view_ids": [self.view_2.pk, self.view_1.pk]})
+        response = self.client.post(url, post_params, content_type="application/json")
+        assert response.status_code == 200
+
+        # The merged tax lot stays in its access level instance and group
+        view = TaxLotView.objects.get()
+        assert view.taxlot.access_level_instance == self.me_ali
+        assert list(view.taxlot.group_mappings.values_list("group", flat=True)) == [group.id]
+
+        # Unmerge the taxlots
+        url = reverse("api:v3:taxlots-unmerge", args=[view.id]) + f"?organization_id={self.org.pk}"
+        response = self.client.post(url, content_type="application/json")
+        assert response.status_code == 200
+
+        views = TaxLotView.objects.all()
+        assert views.count() == 2
+        for new_view in views:
+            assert new_view.taxlot.access_level_instance == self.me_ali
+            assert new_view.taxlot.group_mappings.filter(group=group).exists()
 
     def test_merge_assigns_new_canonical_records_to_each_resulting_record_and_old_canonical_records_are_deleted_when_if_associated_to_views(
         self,

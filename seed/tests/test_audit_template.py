@@ -19,6 +19,7 @@ from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
 from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.models import Meter, MeterReading, Uniformat
+from seed.tasks import sync_audit_template
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakeElementFactory,
@@ -26,6 +27,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
 )
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
 # from seed.utils.encrypt import encrypt
@@ -75,6 +77,29 @@ class AuditTemplateViewTests(TestCase):
         self.assertEqual(200, response.status_code, response.content)
         self.assertEqual(response.content, b"submission response")
 
+    @mock.patch("requests.request")
+    def test_get_submission_xml_from_audit_template(self, mock_request):
+        # -- Act
+        mock_request.side_effect = [self.good_authenticate_response, self.good_get_submission_response]
+        response = self.client.get(self.get_submission_url, data={"organization_id": self.org.id, "report_format": "xml"})
+
+        # -- Assert
+        self.assertEqual(200, response.status_code, response.content)
+        self.assertEqual(response["Content-Type"], "application/xml")
+        self.assertEqual(response.content, b"submission response")
+
+    @mock.patch("seed.audit_template.audit_template._batch_get_city_submission_xml.delay")
+    def test_sync_audit_template(self, mock_delay):
+        self.org.audit_template_city_id = 36
+        self.org.save()
+
+        sync_audit_template(self.org.id)
+
+        # the scheduled sync imports into all of the organization's properties
+        mock_delay.assert_called_once()
+        org_id, city_id, view_ids, default_cycle, _progress_key, access_level_instance_id = mock_delay.call_args.args
+        assert (org_id, city_id, view_ids, default_cycle, access_level_instance_id) == (self.org.id, 36, [], None, None)
+
     def test_report_types(self):
         # -- Act
         url = reverse("api:v3:audit_template-report-types")
@@ -87,6 +112,121 @@ class AuditTemplateViewTests(TestCase):
         self.assertIsInstance(result["data"], list)
         self.assertIn("Demo City Report", result["data"])
         self.assertIn("Federal Energy and Water Audit Report", result["data"])
+
+
+class AuditTemplateAccessLevelTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle = self.cycle_factory.get_cycle()
+        root_property = self.property_factory.get_property(access_level_instance=self.root_level_instance)
+        self.root_view = self.property_view_factory.get_property_view(prprty=root_property, cycle=self.cycle)
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        self.child_view = self.property_view_factory.get_property_view(prprty=child_property, cycle=self.cycle)
+
+    @mock.patch("seed.views.v3.audit_template.AuditTemplate.export_to_audit_template", return_value=("<xml/>", []))
+    def test_export_buildingsync_at_file_is_restricted_to_access_level(self, mock_export):
+        url = reverse("api:v3:audit_template-export-buildingsync-at-file")
+
+        self.login_as_child_member()
+        response = self.client.get(url, {"organization_id": self.org.id, "view_id": self.child_view.id})
+        assert response.status_code == 200
+        assert response.content == b"<xml/>"
+
+        # a property outside of the user's access level instance subtree is not found
+        response = self.client.get(url, {"organization_id": self.org.id, "view_id": self.root_view.id})
+        assert response.status_code == 400
+        assert response.json()["success"] is False
+
+        self.login_as_root_member()
+        response = self.client.get(url, {"organization_id": self.org.id, "view_id": self.root_view.id})
+        assert response.status_code == 200
+        assert mock_export.call_count == 2
+
+    @mock.patch(
+        "seed.views.v3.audit_template.AuditTemplate.batch_export_to_audit_template", return_value=({"progress_key": "fake key"}, [])
+    )
+    def test_batch_export_to_audit_template_is_restricted_to_access_level(self, mock_batch_export):
+        url = reverse("api:v3:audit_template-batch-export-to-audit-template") + f"?organization_id={self.org.id}"
+        body = {"property_view_ids": [self.root_view.id, self.child_view.id]}
+
+        # properties outside of the user's access level instance subtree are not exported
+        self.login_as_child_member()
+        response = self.client.post(url, body, content_type="application/json")
+        assert response.status_code == 200
+        assert response.json() == {"progress_key": "fake key"}
+        mock_batch_export.assert_called_once_with([self.child_view.id])
+
+        mock_batch_export.reset_mock()
+        self.login_as_root_member()
+        response = self.client.post(url, body, content_type="application/json")
+        assert response.status_code == 200
+        mock_batch_export.assert_called_once()
+        assert sorted(mock_batch_export.call_args.args[0]) == sorted([self.root_view.id, self.child_view.id])
+
+    def _mock_city_submissions(self):
+        """Match a city submission to each of the root and child properties, returning the mocked property update"""
+        self.org.audit_template_conditional_import = False
+        self.org.save()
+        for view, custom_id_1 in [(self.root_view, "root"), (self.child_view, "child")]:
+            view.state.custom_id_1 = custom_id_1
+            view.state.save()
+
+        submissions = [
+            {"id": i, "tax_id": tax_id, "created_at": "2015-06-01T00:00:00Z", "updated_at": "2015-06-01T00:00:00Z"}
+            for i, tax_id in enumerate(["root", "child"])
+        ]
+        self.enterContext(
+            mock.patch("seed.audit_template.audit_template.AuditTemplate.get_city_submissions", return_value=(submissions, ""))
+        )
+        self.enterContext(
+            mock.patch("seed.audit_template.audit_template.AuditTemplate.get_submission", return_value=(mock.Mock(text="<xml/>"), ""))
+        )
+        return self.enterContext(
+            mock.patch(
+                "seed.views.v3.properties.PropertyViewSet.batch_update_with_building_sync",
+                return_value={"success": 1, "failure": 0, "data": []},
+            )
+        )
+
+    def test_batch_get_city_submission_xml_is_restricted_to_access_level(self):
+        mock_update = self._mock_city_submissions()
+        url = reverse("api:v3:audit_template-batch-get-city-submission-xml") + f"?organization_id={self.org.id}"
+
+        # properties outside of the user's access level instance subtree are not updated
+        self.login_as_child_member()
+        response = self.client.put(url, {"view_ids": []}, content_type="application/json")
+        assert response.status_code == 200
+        mock_update.assert_called_once()
+        assert [xml["property_view"] for xml in mock_update.call_args.args[0]] == [self.child_view.id]
+
+        mock_update.reset_mock()
+        self.login_as_root_member()
+        response = self.client.put(url, {"view_ids": []}, content_type="application/json")
+        assert response.status_code == 200
+        mock_update.assert_called_once()
+        assert sorted(xml["property_view"] for xml in mock_update.call_args.args[0]) == sorted([self.root_view.id, self.child_view.id])
+
+    def test_get_city_submission_xml_is_restricted_to_access_level(self):
+        mock_update = self._mock_city_submissions()
+        url = reverse("api:v3:audit_template-get-city-submission-xml") + f"?organization_id={self.org.id}"
+
+        # a property outside of the user's access level instance subtree is not updated
+        self.login_as_child_member()
+        response = self.client.put(url, {"city_id": 1, "custom_id_1": "root"}, content_type="application/json")
+        assert response.status_code == 200
+        mock_update.assert_not_called()
+
+        response = self.client.put(url, {"city_id": 1, "custom_id_1": "child"}, content_type="application/json")
+        assert response.status_code == 200
+        mock_update.assert_called_once()
+        assert [xml["property_view"] for xml in mock_update.call_args.args[0]] == [self.child_view.id]
+
+        mock_update.reset_mock()
+        self.login_as_root_member()
+        response = self.client.put(url, {"city_id": 1, "custom_id_1": "root"}, content_type="application/json")
+        assert response.status_code == 200
+        mock_update.assert_called_once()
+        assert [xml["property_view"] for xml in mock_update.call_args.args[0]] == [self.root_view.id]
 
 
 class ExportToAuditTemplate(TestCase):

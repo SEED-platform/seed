@@ -13,44 +13,78 @@ from django.http import JsonResponse
 from django.utils import timezone as django_timezone
 from django.utils.decorators import method_decorator
 from django.utils.timezone import make_aware
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view, inline_serializer
 from pint import Quantity
-from rest_framework import response, status
+from rest_framework import response, serializers, status
 from rest_framework.decorators import action
 
 from seed.filters import ColumnListProfileFilterBackend
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
-from seed.models import AccessLevelInstance, Cycle, InventoryGroup, Meter, MeterReading, Organization, Property, PropertyView, System
-from seed.serializers.inventory_groups import InventoryGroupSerializer
+from seed.models import (
+    VIEW_LIST_INVENTORY_TYPE,
+    AccessLevelInstance,
+    Cycle,
+    InventoryGroup,
+    Meter,
+    MeterReading,
+    Organization,
+    Property,
+    PropertyView,
+    Service,
+    System,
+)
+from seed.serializers.inventory_groups import InventoryGroupResponseSerializer, InventoryGroupSerializer
 from seed.serializers.meters import MeterSerializer
 from seed.utils.api import OrgMixin
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, UnenvelopedResponse, extend_schema_org_query_param
 from seed.utils.meters import PropertyMeterReadingsExporter, update_meter_connection
 from seed.utils.viewsets import ModelViewSetWithoutPatch, SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 logger = logging.getLogger(__name__)
 
 
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_enum_field(
+                "inventory_type",
+                "Only return groups of this inventory type",
+                [name for _, name in VIEW_LIST_INVENTORY_TYPE],
+                required=False,
+            ),
+        ],
+        responses=InventoryGroupResponseSerializer(many=True),
+    ),
+    create=extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()], responses={201: InventoryGroupResponseSerializer}),
+    update=extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()], responses=InventoryGroupResponseSerializer),
+    destroy=extend_schema_org_query_param,
+)
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_viewer"),
     ],
     name="list",
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_member"),
+        has_hierarchy_access(body_ali_id="access_level_instance"),
     ],
     name="create",
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_member"),
+        has_hierarchy_access(body_ali_id="access_level_instance"),
     ],
     name="update",
+)
+@method_decorator(
+    [
+        has_perm("requires_member"),
+    ],
+    name="destroy",
 )
 class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
     serializer_class = InventoryGroupSerializer
@@ -88,15 +122,16 @@ class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
         status_code = status.HTTP_200_OK
         return response.Response(results, status=status_code)
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_string_field("inventory_type", required=True, description="property or tax_lot"),
+            AutoSchemaHelper.query_enum_field("inventory_type", "Inventory type", ["property", "tax_lot"]),
         ],
-        request_body=AutoSchemaHelper.schema_factory(
+        request=AutoSchemaHelper.json_body(
             {"selected": ["integer"]},
-            description="selected: optional list of inventory ids. [] returns all groups.",
+            description="selected: optional property IDs; only groups containing one of them are returned ([] returns all groups)",
         ),
+        responses={200: InventoryGroupResponseSerializer(many=True)},
     )
     @method_decorator(
         [
@@ -112,10 +147,16 @@ class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
         else:
             return self._get_taxlot_groups(request)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses=inline_serializer(
+            "InventoryGroupEnvelope", {"status": serializers.CharField(), "data": InventoryGroupResponseSerializer()}
+        ),
+    )
     @method_decorator(
         [
             has_perm("requires_viewer"),
+            has_hierarchy_access(inventory_group_id_kwarg="pk"),
         ]
     )
     def retrieve(self, request, pk):
@@ -138,7 +179,29 @@ class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
             }
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="Cycle ID"),
+        ],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "data": {
+                        "Gross Floor Area": "number",
+                        "Site EUI": "number",
+                        "Views Count": "integer",
+                        "Views Missing Site EUI": "integer",
+                        "Views Missing Gross Floor Area": "integer",
+                        "importing_total": "object",
+                        "exporting_total": "object",
+                    },
+                },
+                description="importing_total and exporting_total map meter types to the cycle's total readings",
+            )
+        },
+    )
     @method_decorator(
         [
             has_perm("requires_viewer"),
@@ -196,12 +259,18 @@ class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
         }
         return JsonResponse({"status": "success", "data": readable_data})
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="Cycle ID"),
-            AutoSchemaHelper.query_string_field("meter_type", required=True, description="Meter Type"),
+            AutoSchemaHelper.query_enum_field("meter_type", "Meter type", list(Meter.ENERGY_TYPE_BY_METER_TYPE.values())),
         ],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "data": [{"from": "string", "to": "string", "flow": "number"}]},
+                description="Flows of the meter type between the group's systems, properties, and the outside",
+            )
+        },
     )
     @method_decorator(
         [
@@ -301,7 +370,14 @@ class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
 
         return JsonResponse({"status": "success", "data": data})
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "data": [{"property_id": "integer", "property_display_name": "string"}]}
+            )
+        },
+    )
     @method_decorator(
         [
             has_perm("requires_viewer"),
@@ -319,7 +395,16 @@ class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
             }
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {"interval": {"type": "string", "enum": ["Exact", "Month", "Year"], "default": "Exact"}},
+            }
+        },
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "data": {"readings": ["object"], "column_defs": ["object"]}})},
+    )
     @method_decorator(
         [
             has_perm("requires_viewer"),
@@ -352,9 +437,30 @@ class InventoryGroupViewSet(ModelViewSetWithoutPatch, OrgMixin):
         return JsonResponse({"status": "success", "data": data})
 
 
+@extend_schema(
+    parameters=[
+        AutoSchemaHelper.query_org_id_field(),
+        AutoSchemaHelper.path_id_field("Inventory group ID", name="inventory_group_pk"),
+    ]
+)
+@method_decorator(
+    [
+        has_perm("requires_viewer"),
+        has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk"),
+    ],
+    name="retrieve",
+)
+@method_decorator(
+    [
+        has_perm("requires_member"),
+        has_hierarchy_access(inventory_group_id_kwarg="inventory_group_pk"),
+    ],
+    name="destroy",
+)
 class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     model = Meter
     serializer_class = MeterSerializer
+    pagination_class = None
 
     def get_queryset(self):
         inventory_group_pk = self.kwargs.get("inventory_group_pk", None)
@@ -363,18 +469,17 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             group = InventoryGroup.objects.get(pk=inventory_group_pk)
             group = InventoryGroupSerializer(group).data
         except ObjectDoesNotExist:
-            return [], JsonResponse({"status": "error", "message": "No such resource."})
+            return Meter.objects.none()
 
         # taxlots do not support meters
         if group["inventory_type"] != "Property":
-            return [], JsonResponse({"status": "success", "data": []})
+            return Meter.objects.none()
 
         return Meter.objects.filter(
             Q(property_id__in=group["inventory_list"]) | Q(system__group_id=inventory_group_pk),
             Q(service__isnull=True) | Q(service__system__group_id=inventory_group_pk),
         )
 
-    @swagger_auto_schema_org_query_param
     @method_decorator(
         [
             has_perm("requires_viewer"),
@@ -390,6 +495,26 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         return JsonResponse({"status": "success", "data": data})
 
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "alias": {"type": "string"},
+                    "connection_config": {
+                        "type": "object",
+                        "properties": {
+                            "service_id": {"type": "integer", "nullable": True, "description": "Omit or null to disconnect from a service"},
+                            "direction": {"type": "string", "enum": ["imported", "exported"]},
+                            "use": {"type": "string", "enum": ["outside", "using", "offering"], "default": "outside"},
+                        },
+                        "required": ["direction"],
+                    },
+                },
+            }
+        },
+        responses={200: AutoSchemaHelper.schema_factory("object", description="An empty object")},
+    )
     @method_decorator(
         [
             has_perm("can_modify_data"),
@@ -398,6 +523,8 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     )
     def update(self, request, inventory_group_pk, pk):
         meter = self.get_queryset().filter(pk=pk).first()
+        if meter is None:
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
         alias = request.data.get("alias")
         connection_config = request.data.get("connection_config")
 
@@ -409,10 +536,28 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 update_meter_connection(meter, connection_config)
         except IntegrityError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Service.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "No such service."}, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse({}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
+            {
+                "type": Meter.ENERGY_TYPES,
+                "alias": "string",
+                "source_id": "string",
+                "system_id": "integer",
+                "property_id": "integer",
+                "scenario_id": "integer",
+                "is_virtual": "boolean",
+            },
+            required=["type"],
+            description="Creates a manually entered, imported meter on one of the group's systems or properties",
+        ),
+        # returned as a bare `JsonResponse`, bypassing the SEED envelope
+        responses={200: UnenvelopedResponse(MeterSerializer)},
+    )
     @method_decorator(
         [
             has_perm("requires_viewer"),
@@ -425,7 +570,8 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 **request.data,
                 "connection_type": "Imported",
                 "source": "Manual Entry",
-            }
+            },
+            context={"request": request},
         )
 
         if not meter_serializer.is_valid():
@@ -436,6 +582,15 @@ class InventoryGroupMetersViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+        # meters can only be added to the group's own properties and systems
+        group = InventoryGroup.objects.get(pk=inventory_group_pk)
+        property_id = meter_serializer.validated_data.get("property_id")
+        system_id = meter_serializer.validated_data.get("system_id")
+        if (property_id and not group.group_mappings.filter(property_id=property_id).exists()) or (
+            system_id and not group.systems.filter(pk=system_id).exists()
+        ):
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
         meter = meter_serializer.save()
         data = MeterSerializer(meter).data

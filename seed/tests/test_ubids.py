@@ -751,6 +751,20 @@ class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
 
+    def test_ubids_of_states_without_views_are_not_found(self):
+        # e.g., the UBIDs of import states
+        property_ubid = UbidModel.objects.create(ubid="E+E-0-0-0-0", property=self.property_state_factory.get_property_state())
+        taxlot_ubid = UbidModel.objects.create(ubid="F+F-0-0-0-0", taxlot=self.taxlot_state_factory.get_taxlot_state())
+
+        self.login_as_root_member()
+        for ubid in [property_ubid, taxlot_ubid]:
+            url = reverse_lazy("api:v3:ubid-detail", args=[ubid.id]) + "?organization_id=" + str(self.org.id)
+            response = self.client.get(url, content_type="application/json")
+            assert response.status_code == 404
+            response = self.client.delete(url, content_type="application/json")
+            assert response.status_code == 404
+            assert UbidModel.objects.filter(pk=ubid.pk).exists()
+
     def test_ubids_create(self):
         url = reverse_lazy("api:v3:ubid-list") + "?organization_id=" + str(self.org.id)
         params = json.dumps({"ubid": "C+C-0-0-0-0", "property": self.child_property_state.id})

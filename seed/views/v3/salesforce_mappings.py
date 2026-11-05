@@ -9,9 +9,8 @@ import django.core.exceptions
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, viewsets
-from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema, extend_schema_serializer
+from rest_framework import serializers, status, viewsets
 
 from seed.decorators import ajax_request, require_organization_id
 from seed.lib.superperms.orgs.decorators import has_perm
@@ -19,14 +18,28 @@ from seed.lib.superperms.orgs.models import Organization
 from seed.models.salesforce_mappings import SalesforceMapping
 from seed.serializers.salesforce_mappings import SalesforceMappingSerializer
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
+
+mapping_id_param = AutoSchemaHelper.path_id_field("Salesforce mapping ID")
 
 
+class SalesforceMappingResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    salesforce_mapping = SalesforceMappingSerializer()
+
+
+@extend_schema_serializer(many=False)
+class SalesforceMappingListResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    salesforce_mappings = SalesforceMappingSerializer(many=True)
+
+
+@extend_schema_org_query_param
 class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = SalesforceMappingSerializer
     model = SalesforceMapping
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(responses={200: SalesforceMappingListResponseSerializer})
     @method_decorator(
         [
             require_organization_id,
@@ -44,7 +57,7 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
             status=status.HTTP_200_OK,
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(parameters=[mapping_id_param], responses={200: SalesforceMappingResponseSerializer})
     @method_decorator(
         [
             require_organization_id,
@@ -86,7 +99,10 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
                     {"status": "error", "message": f"SalesforceMapping with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND
                 )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[mapping_id_param],
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"})},
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -107,14 +123,11 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "message": f"Successfully deleted SalesforceMapping ID {pk}"}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "column": "integer",
-                "salesforce_fieldname": "string",
-            },
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
+            {"column": "integer", "salesforce_fieldname": "string"}, required=["column", "salesforce_fieldname"]
         ),
+        responses={200: SalesforceMappingResponseSerializer},
     )
     @method_decorator(
         [
@@ -147,14 +160,10 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
             message_dict = e.message_dict
             return JsonResponse({"status": "error", "message": "Bad Request", "errors": message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "column": "integer",
-                "salesforce_fieldname": "string",
-            },
-        ),
+    @extend_schema(
+        parameters=[mapping_id_param],
+        request=AutoSchemaHelper.json_body({"column": "integer", "salesforce_fieldname": "string"}),
+        responses={200: SalesforceMappingResponseSerializer},
     )
     @method_decorator(
         [
@@ -174,7 +183,7 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
             )
 
         data = deepcopy(request.data)
-        data.update({"organization": org_id})
+        data.update({"organization_id": org_id})
         serializer = SalesforceMappingSerializer(salesforce_mapping, data=data, partial=True)
         if not serializer.is_valid():
             return JsonResponse(
@@ -213,26 +222,3 @@ class SalesforceMappingViewSet(viewsets.ViewSet, OrgMixin):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
-    @method_decorator(
-        [
-            require_organization_id,
-            api_endpoint,
-            ajax_request,
-            has_perm("requires_owner"),
-        ]
-    )
-    @action(detail=True, methods=["GET"])
-    def evaluate(self, request, pk):
-        organization = self.get_organization(request)
-        deepcopy(request.data)
-
-        try:
-            salesforce_mapping = SalesforceMapping.objects.get(id=pk, organization=organization)
-        except Exception:
-            return JsonResponse({"status": "error", "message": "SalesforceMapping does not exist"}, status=status.HTTP_404_NOT_FOUND)
-
-        response = salesforce_mapping.evaluate()
-
-        return JsonResponse({"status": "success", "data": response})

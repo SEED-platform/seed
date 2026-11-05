@@ -9,7 +9,7 @@ from django.db import transaction
 from django.db.models import Subquery
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser
@@ -18,6 +18,7 @@ from rest_framework.renderers import JSONRenderer
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
+from seed.lib.superperms.orgs.permissions import get_org_id
 from seed.models import (
     AUDIT_USER_EDIT,
     DATA_STATE_MATCHING,
@@ -36,11 +37,12 @@ from seed.models import (
     TaxLotState,
     TaxLotView,
 )
+from seed.serializers.labels import LabelSerializer
 from seed.serializers.properties import PropertyViewSerializer
 from seed.serializers.taxlots import TaxLotSerializer, TaxLotStateSerializer, TaxLotViewSerializer, UpdateTaxLotPayloadSerializer
 from seed.tasks import update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
 from seed.utils.match import MergeLinkPairError, match_merge_link
@@ -50,6 +52,55 @@ from seed.utils.taxlots import taxlots_across_cycles
 
 ErrorState = namedtuple("ErrorState", ["status_code", "message"])
 
+TAXLOT_VIEW_ID_PARAM = AutoSchemaHelper.path_id_field("Tax lot view ID")
+
+# Query parameters read by `get_filtered_results`
+FILTER_PARAMETERS = [
+    AutoSchemaHelper.query_org_id_field(),
+    AutoSchemaHelper.query_integer_field(
+        "cycle", required=False, description="The ID of the cycle to get tax lots from (defaults to the organization's first cycle by name)"
+    ),
+    AutoSchemaHelper.query_integer_field("page", required=False, description="The page of tax lots to return (defaults to 1)"),
+    AutoSchemaHelper.query_integer_field("per_page", required=False, description="The number of tax lots per page (defaults to 1)"),
+    AutoSchemaHelper.query_integer_field("profile_id", required=False, description="The ID of the column list profile to use"),
+    AutoSchemaHelper.query_string_field(
+        "shown_column_ids", required=False, description="Comma-separated IDs of the columns to return (mutually exclusive with profile_id)"
+    ),
+    AutoSchemaHelper.query_boolean_field(
+        "include_related",
+        required=False,
+        description="If False, related data (i.e., Property data) is not added to the response (default is True)",
+    ),
+    AutoSchemaHelper.query_boolean_field(
+        "ids_only", required=False, description="If True, only tax lot view IDs are returned (cannot be combined with page or per_page)"
+    ),
+    AutoSchemaHelper.query_array_field(
+        "order_by", required=False, description="Column names to sort by, prefixed with `-` for descending order", item_type="string"
+    ),
+]
+
+FILTERED_RESULTS_RESPONSE = AutoSchemaHelper.schema_factory(
+    {
+        "pagination": {
+            "page": "integer",
+            "start": "integer",
+            "end": "integer",
+            "num_pages": "integer",
+            "has_next": "boolean",
+            "has_previous": "boolean",
+            "total": "integer",
+        },
+        "cycle_id": "integer",
+        "results": ["object"],
+    },
+    description="A page of tax lot records, each including its related property records unless include_related is False. "
+    "With ids_only, only `results` is returned, as a list of tax lot view IDs.",
+)
+
+MATCH_MERGE_LINK_RESULT = {"view_id": "integer", "match_merged_count": "integer", "match_link_count": "integer"}
+
+PAIR_RESPONSE = AutoSchemaHelper.schema_factory({"status": "string", "message": "string"})
+
 
 class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
@@ -57,21 +108,28 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     parser_classes = (JSONParser,)
     _organization = None
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(required=True),
             AutoSchemaHelper.query_integer_field(
                 name="cycle_id",
                 required=False,
                 description="Optional cycle id to restrict is_applied ids to only those in the specified cycle",
             ),
+            AutoSchemaHelper.query_string_field(
+                "q", required=False, description="Text search restricting the tax lot views considered for is_applied"
+            ),
+            AutoSchemaHelper.query_string_field(
+                "filter_params", required=False, description="JSON object of filters restricting the tax lot views considered"
+            ),
         ],
-        request_body=AutoSchemaHelper.schema_factory(
+        request=AutoSchemaHelper.json_body(
             {
-                "selected": "integer",
+                "selected": ["integer"],
             },
-            description="IDs for taxlots to be checked for which labels are applied.",
+            description="IDs of the tax lot views to check for applied labels (defaults to all tax lot views).",
         ),
+        responses={200: LabelSerializer(many=True)},
     )
     @method_decorator(
         [
@@ -91,20 +149,7 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         # TODO: refactor to avoid passing request here
         return get_labels(request, labels, super_organization, "taxlot_view")
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("cycle", required=True, description="The ID of the cycle to get taxlots"),
-            AutoSchemaHelper.query_integer_field("page", required=False, description="The current page of taxlots to return"),
-            AutoSchemaHelper.query_integer_field("per_page", required=False, description="The number of items per page to return"),
-            AutoSchemaHelper.query_integer_field("profile_id", required=False, description="The ID of the column profile to use"),
-            AutoSchemaHelper.query_boolean_field(
-                "include_related",
-                required=False,
-                description="If False, related data (i.e., Property data) is not added to the response (default is True)",
-            ),
-        ]
-    )
+    @extend_schema(parameters=FILTER_PARAMETERS, responses={200: FILTERED_RESULTS_RESPONSE})
     @method_decorator(
         [
             api_endpoint,
@@ -114,12 +159,15 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     )
     def list(self, request):
         """
-        List all the properties
+        List all the tax lots
+
+        Tax lots can also be filtered by column with additional query parameters, e.g., `?city=Denver` or
+        `?address_line_1__icontains=main` (`__ne` negates a filter).
         """
         return get_filtered_results(request, "taxlot", profile_id=-1)
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
             {
                 "organization_id": "integer",
                 "profile_id": "integer",
@@ -130,7 +178,14 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             "- organization_id: ID of organization\n"
             "- profile_id: Either an id of a list settings profile, or undefined\n"
             "- cycle_ids: The IDs of the cycle to get taxlots",
-        )
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                "object",
+                additionalProperties={"type": "array", "items": {"type": "object"}},
+                description="Tax lot records keyed by cycle ID",
+            )
+        },
     )
     @method_decorator(
         [
@@ -146,7 +201,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         # NOTE: we are using a POST http method b/c swagger and django handle
         # arrays differently in query parameters. ie this is just simpler
-        org_id = request.data.get("organization_id", None)
+        # the organization that `has_perm` authorized
+        org_id = get_org_id(request)
         profile_id = request.data.get("profile_id", -1)
         cycle_ids = request.data.get("cycle_ids", [])
 
@@ -172,31 +228,22 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return JsonResponse(response)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("cycle", required=True, description="The ID of the cycle to get tax lots"),
-            AutoSchemaHelper.query_integer_field("page", required=False, description="The current page of taxlots to return"),
-            AutoSchemaHelper.query_integer_field("per_page", required=False, description="The number of items per page to return"),
-            AutoSchemaHelper.query_boolean_field(
-                "include_related",
-                required=False,
-                description="If False, related data (i.e., Property data) is not added to the response (default is True)",
-            ),
-            AutoSchemaHelper.query_boolean_field(
-                "ids_only", required=False, description="Function will return a list of tax lot ids instead of tax lot objects"
-            ),
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=FILTER_PARAMETERS,
+        request=AutoSchemaHelper.json_body(
             {
                 "profile_id": "integer",
-                "taxlot_view_ids": ["integer"],
+                "include_view_ids": ["integer"],
+                "exclude_view_ids": ["integer"],
+                "access_level_instance_id": "integer",
             },
-            required=["profile_id"],
             description="Properties:\n"
-            "- profile_id: Either an id of a list settings profile, or undefined\n"
-            "- taxlot_view_ids: List of taxlot view ids",
+            "- profile_id: Either an id of a list settings profile, or undefined (the profile_id query parameter takes precedence)\n"
+            "- include_view_ids: Only return these tax lot view IDs\n"
+            "- exclude_view_ids: Exclude these tax lot view IDs\n"
+            "- access_level_instance_id: Only return tax lots in this access level instance's subtree (defaults to the user's own)",
         ),
+        responses={200: FILTERED_RESULTS_RESPONSE},
     )
     @method_decorator(
         [
@@ -209,6 +256,9 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
     def filter(self, request):
         """
         List all the tax lots
+
+        Tax lots can also be filtered by column with additional query parameters, e.g., `?city=Denver` or
+        `?address_line_1__icontains=main` (`__ne` negates a filter).
         """
         if "profile_id" not in request.data or request.data["profile_id"] == "None":
             profile_id = None
@@ -217,15 +267,18 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return get_filtered_results(request, "taxlot", profile_id=profile_id)
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
-        request_body=AutoSchemaHelper.schema_factory(
+        request=AutoSchemaHelper.json_body(
             {"taxlot_view_ids": ["integer"]},
             required=["taxlot_view_ids"],
-            description="Properties:\n- taxlot_view_ids: Array containing tax lot state ids to merge",
+            description="Properties:\n- taxlot_view_ids: Array containing tax lot view ids to merge",
         ),
+        responses={
+            200: AutoSchemaHelper.schema_factory({"status": "string", "match_merged_count": "integer", "match_link_count": "integer"})
+        },
     )
     @method_decorator(
         [
@@ -283,7 +336,11 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             "match_link_count": link_count,
         }
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field(), TAXLOT_VIEW_ID_PARAM],
+        request=None,
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "view_id": "integer"})},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -397,8 +454,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             Note.objects.filter(id__in=ids).update(created=created, updated=updated)
 
         for group in list(groupings):
-            InventoryGroupMapping(tax_lot=new_view1.taxlot, group_id=group).save()
-            InventoryGroupMapping(tax_lot=new_view2.taxlot, group_id=group).save()
+            InventoryGroupMapping(taxlot=new_view1.taxlot, group_id=group).save()
+            InventoryGroupMapping(taxlot=new_view2.taxlot, group_id=group).save()
 
         Note.objects.create(
             organization=old_taxlot.organization,
@@ -415,7 +472,15 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return {"status": "success", "view_id": new_view1.id}
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field(), TAXLOT_VIEW_ID_PARAM],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"data": ["object"]},
+                description="The state of each linked tax lot view (most recent cycle first), with its `cycle_id` and `view_id`",
+            )
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -452,7 +517,11 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             result = {"status": "error", "message": f"property view with id {pk} does not exist in given organization"}
             return JsonResponse(result)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field(), TAXLOT_VIEW_ID_PARAM],
+        request=None,
+        responses={200: AutoSchemaHelper.schema_factory(MATCH_MERGE_LINK_RESULT)},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -466,8 +535,8 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         """
         Runs match merge link for an individual taxlot.
 
-        Note that this method can return a view_id of None if the given -View
-        was not involved in a merge.
+        The returned view_id is that of the resulting tax lot view, which is the given view
+        if it was not involved in a merge.
         """
         org_id = self.get_organization(request)
 
@@ -497,11 +566,16 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         return JsonResponse(result)
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("property_id", required=True, description="The property id to pair up with this taxlot"),
-        ]
+            AutoSchemaHelper.query_integer_field(
+                "property_id", required=True, description="The property view id to pair up with this taxlot view"
+            ),
+            TAXLOT_VIEW_ID_PARAM,
+        ],
+        request=None,
+        responses={200: PAIR_RESPONSE},
     )
     @method_decorator(
         [
@@ -519,13 +593,18 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         organization_id = int(self.get_organization(request))
         property_id = int(request.query_params.get("property_id"))
         taxlot_id = int(pk)
-        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True)
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True, request.access_level_instance_id)
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("property_id", required=True, description="The property id to unpair from this taxlot"),
-        ]
+            AutoSchemaHelper.query_integer_field(
+                "property_id", required=True, description="The property view id to unpair from this taxlot view"
+            ),
+            TAXLOT_VIEW_ID_PARAM,
+        ],
+        request=None,
+        responses={200: PAIR_RESPONSE},
     )
     @method_decorator(
         [
@@ -543,13 +622,20 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         organization_id = int(self.get_organization(request))
         property_id = int(request.query_params.get("property_id"))
         taxlot_id = int(pk)
-        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False, request.access_level_instance_id)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {"taxlot_view_ids": ["integer"]}, required=["taxlot_view_ids"], description="A list of taxlot view ids to delete"
         ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "taxlots": "integer", "message": "string"},
+                description="`status` is 'success' with the number of deleted tax lot states in `taxlots`, "
+                "or 'warning' with a `message` when nothing was deleted",
+            )
+        },
     )
     @method_decorator(
         [
@@ -620,7 +706,27 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
             properties.append(PropertyViewSerializer(property_view).data)
         return properties
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field(), TAXLOT_VIEW_ID_PARAM],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "taxlot": "object",
+                    "cycle": "object",
+                    "labels": ["integer"],
+                    "state": "object",
+                    "properties": ["object"],
+                    "history": [{"state": "object", "date_edited": "number", "source": "string", "filename": "string"}],
+                    "changed_fields": "object",
+                    "date_edited": "number",
+                    "source": "string",
+                    "filename": "string",
+                },
+                description="The tax lot view's tax lot, cycle, labels, state, paired property views, and edit history",
+            )
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -648,9 +754,16 @@ class TaxlotViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=UpdateTaxLotPayloadSerializer,
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field(), TAXLOT_VIEW_ID_PARAM],
+        request=UpdateTaxLotPayloadSerializer,
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "state": "object", **MATCH_MERGE_LINK_RESULT},
+                description="The updated tax lot state and the result of its match and merge round",
+            ),
+            204: OpenApiResponse(description="The given state is identical to the current state, so nothing was updated"),
+        },
     )
     @method_decorator(
         [

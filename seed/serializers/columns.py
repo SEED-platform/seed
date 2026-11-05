@@ -14,8 +14,8 @@ from seed.serializers.base import ChoiceField
 class ColumnSerializer(serializers.ModelSerializer):
     name = serializers.SerializerMethodField("concat_name")
     organization_id = serializers.PrimaryKeyRelatedField(source="organization", read_only=True)
-    unit_name = serializers.SlugRelatedField(source="unit", slug_field="unit_name", read_only=True)
-    unit_type = serializers.SlugRelatedField(source="unit", slug_field="unit_type", read_only=True)
+    unit_name = serializers.SlugRelatedField(source="unit", slug_field="unit_name", read_only=True, allow_null=True)
+    unit_type = serializers.SlugRelatedField(source="unit", slug_field="unit_type", read_only=True, allow_null=True)
 
     merge_protection = ChoiceField(choices=Column.COLUMN_MERGE_PROTECTION, default=Column.COLUMN_MERGE_FAVOR_NEW)
     shared_field_type = ChoiceField(choices=Column.SHARED_FIELD_TYPES)
@@ -45,7 +45,7 @@ class ColumnSerializer(serializers.ModelSerializer):
             "is_excluded_from_hash",
         )
 
-    def concat_name(self, obj):
+    def concat_name(self, obj) -> str:
         """
         set the name of the column which is a special field because it can take on a
         relationship with the table_name and have an _extra associated with it

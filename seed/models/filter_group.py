@@ -34,7 +34,8 @@ class FilterGroup(models.Model):
             related_model = "taxlot"
             ViewClass = TaxLotView
 
-        if not views:
+        # Only default to all the organization's views when none are given; an empty (e.g., access level scoped) queryset stays empty
+        if views is None:
             views = ViewClass.objects.select_related(related_model, "state").filter(
                 **{f"{related_model}__organization_id": self.organization_id}
             )

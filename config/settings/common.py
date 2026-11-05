@@ -119,7 +119,8 @@ SEED_CORE_APPS = (
     "seed",
     "seed.lib.superperms.orgs",
     "seed.docs",
-    "drf_yasg",  # `drf_yasg` must come after `seed` to use the custom swagger-ui template
+    "drf_spectacular",
+    "drf_spectacular_sidecar",  # self-hosted Swagger UI assets
 )
 
 # Added by Ashray Wadhwa (08/19/2020)
@@ -287,33 +288,45 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": [
         "rest_framework.renderers.JSONRenderer",
     ],
-    "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.openapi.AutoSchema",
+    "DEFAULT_SCHEMA_CLASS": "seed.utils.api_schema.SEEDAutoSchema",
     "PAGE_SIZE": 25,
     "TEST_REQUEST_DEFAULT_FORMAT": "json",
     "DATETIME_INPUT_FORMATS": ("%Y:%m:%d", "iso-8601", "%Y-%m-%d"),
     "EXCEPTION_HANDLER": "seed.exception_handler.custom_exception_handler",
 }
 
-SWAGGER_SETTINGS = {
-    "TAGS_SORTER": "alpha",
-    "DEFAULT_FIELD_INSPECTORS": [
-        "drf_yasg.inspectors.CamelCaseJSONFilter",
-        "drf_yasg.inspectors.InlineSerializerInspector",  # this disables models and is the only non-default entry
-        "drf_yasg.inspectors.RelatedFieldInspector",
-        "drf_yasg.inspectors.ChoiceFieldInspector",
-        "drf_yasg.inspectors.FileFieldInspector",
-        "drf_yasg.inspectors.DictFieldInspector",
-        "drf_yasg.inspectors.JSONFieldInspector",
-        "drf_yasg.inspectors.HiddenFieldInspector",
-        "drf_yasg.inspectors.RecursiveFieldInspector",
-        "drf_yasg.inspectors.SerializerMethodFieldInspector",
-        "drf_yasg.inspectors.SimpleFieldInspector",
-        "drf_yasg.inspectors.StringDefaultFieldInspector",
-    ],
-    "DOC_EXPANSION": "none",
-    "LOGOUT_URL": "/accounts/logout",
+SPECTACULAR_SETTINGS = {
+    "TITLE": "SEED API",
+    "DESCRIPTION": "SEED Platform API Documentation",
+    "VERSION": "v3",
+    # Filter operations by the requesting user's permissions
+    "SERVE_PUBLIC": False,
+    "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
+    "SERVE_INCLUDE_SCHEMA": False,
+    # Always define the JWT scheme referenced by `SEEDAuthentication` (see `seed.utils.api_schema`)
+    "APPEND_COMPONENTS": {"securitySchemes": {"jwtAuth": {"type": "http", "scheme": "bearer", "bearerFormat": "JWT"}}},
+    # Keep the API version in operation IDs (e.g., `v3_properties_list`); `SEEDAutoSchema` tags by resource
+    "SCHEMA_PATH_PREFIX": r"/api",
+    # Separate request/response components so read-only fields aren't shown as inputs
+    "COMPONENT_SPLIT_REQUEST": True,
+    # Don't describe operations with the docstrings of SEED's base viewsets
+    "GET_LIB_DOC_EXCLUDES": "seed.utils.api_schema.get_seed_lib_doc_excludes",
+    # Names for choice sets shared by several fields
+    "ENUM_NAME_OVERRIDES": {
+        "ComplianceMetricTypeEnum": ["Target > Actual for Compliance", "Target < Actual for Compliance"],
+        "GoalTypeEnum": "seed.models.goals.GOAL_TYPE_CHOICES",
+        "SuccessStatusEnum": ["success"],
+    },
+    "SWAGGER_UI_DIST": "SIDECAR",
+    "SWAGGER_UI_FAVICON_HREF": "SIDECAR",
+    "REDOC_DIST": "SIDECAR",
+    "SWAGGER_UI_SETTINGS": {
+        "docExpansion": "none",
+        "tagsSorter": "alpha",
+        "filter": False,
+        "defaultModelsExpandDepth": -1,
+    },
 }
-SWAGGER_USE_COMPAT_RENDERERS = False
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5),

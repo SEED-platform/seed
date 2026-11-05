@@ -1,0 +1,25 @@
+{% extends "drf_spectacular/swagger_ui.html" %}
+
+{% block head %}
+    {{ block.super }}
+    <style>
+      .django-session { position: absolute; top: 12px; right: 20px; font-family: sans-serif; font-size: 14px; }
+      .django-session form { display: inline; }
+      .django-session button { background: none; border: none; color: #4990e2; cursor: pointer; font: inherit; padding: 0; }
+    </style>
+{% endblock head %}
+
+{% block body %}
+    <div class="django-session">
+        {% if request.user.is_authenticated %}
+            {{ request.user }} &middot;
+            <form method="post" action="{% url 'landing:logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}?next={{ request.path|urlencode }}">Login</a>
+        {% endif %}
+    </div>
+    {{ block.super }}
+{% endblock body %}

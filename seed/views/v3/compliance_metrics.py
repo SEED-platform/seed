@@ -8,8 +8,8 @@ from copy import deepcopy
 import django.core.exceptions
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, viewsets
+from drf_spectacular.utils import extend_schema, extend_schema_serializer, inline_serializer
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request, require_organization_id
@@ -18,14 +18,41 @@ from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models.compliance_metrics import ComplianceMetric
 from seed.serializers.compliance_metrics import ComplianceMetricSerializer
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
+
+compliance_metric_id_field = AutoSchemaHelper.path_id_field("Compliance metric ID")
+COMPLIANCE_METRIC_BODY = {
+    "name": "string",
+    "cycles": ["integer"],
+    "actual_energy_column": "integer",
+    "target_energy_column": "integer",
+    "energy_metric_type": ComplianceMetric.METRIC_TYPES,
+    "actual_emission_column": "integer",
+    "target_emission_column": "integer",
+    "emission_metric_type": ComplianceMetric.METRIC_TYPES,
+    "filter_group": "integer",
+    "x_axis_columns": ["integer"],
+}
+compliance_metric_response = inline_serializer(
+    "ComplianceMetricResponse", fields={"status": serializers.CharField(), "compliance_metric": ComplianceMetricSerializer()}
+)
+
+
+# the list action's response is a single envelope object, not an array
+@extend_schema_serializer(many=False)
+class ComplianceMetricListResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    compliance_metrics = ComplianceMetricSerializer(many=True)
 
 
 class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = ComplianceMetricSerializer
     model = ComplianceMetric
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={200: ComplianceMetricListResponseSerializer},
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -43,7 +70,10 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
             status=status.HTTP_200_OK,
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[compliance_metric_id_field, AutoSchemaHelper.query_org_id_field()],
+        responses={200: compliance_metric_response},
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -83,7 +113,10 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
                     {"status": "error", "message": f"ComplianceMetric with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND
                 )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[compliance_metric_id_field, AutoSchemaHelper.query_org_id_field()],
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"})},
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -104,23 +137,10 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "message": f"Successfully deleted ComplianceMetric ID {pk}"}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "name": "string",
-                "start": "string",
-                "end": "string",
-                "actual_energy_column": "integer",
-                "target_energy_column": "integer",
-                "energy_metric_type": "string",
-                "actual_emission_column": "integer",
-                "target_emission_column": "integer",
-                "emission_metric_type": "string",
-                "filter_group": "integer",
-                "x_axis_columns": ["integer"],
-            },
-        ),
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(COMPLIANCE_METRIC_BODY, required=["name"]),
+        responses={200: compliance_metric_response},
     )
     @method_decorator(
         [
@@ -153,23 +173,10 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
             message_dict = e.message_dict
             return JsonResponse({"status": "error", "message": "Bad Request", "errors": message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "name": "string",
-                "start": "string",
-                "end": "string",
-                "actual_energy_column": "integer",
-                "target_energy_column": "integer",
-                "energy_metric_type": "string",
-                "actual_emission_column": "integer",
-                "target_emission_column": "integer",
-                "emission_metric_type": "string",
-                "filter_group": "integer",
-                "x_axis_columns": ["integer"],
-            },
-        ),
+    @extend_schema(
+        parameters=[compliance_metric_id_field, AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(COMPLIANCE_METRIC_BODY),
+        responses={200: compliance_metric_response},
     )
     @method_decorator(
         [
@@ -191,7 +198,7 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
             )
 
         data = deepcopy(request.data)
-        data.update({"organization": org_id})
+        data.update({"organization_id": org_id})
         serializer = ComplianceMetricSerializer(compliance_metric, data=data, partial=True)
         if not serializer.is_valid():
             return JsonResponse(
@@ -223,7 +230,33 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(
+        parameters=[
+            compliance_metric_id_field,
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field(
+                "access_level_instance_id",
+                required=False,
+                description="Access level instance to evaluate (default: your own); must be within your access level",
+            ),
+        ],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "data": {
+                        "meta": {"organization": "integer", "compliance_metric": "integer"},
+                        "name": "string",
+                        "graph_data": {"labels": ["string"], "datasets": ["object"]},
+                        "cycles": [{"id": "integer", "name": "string"}],
+                        "results_by_cycles": "object",
+                        "properties_by_cycles": "object",
+                        "metric": "object",
+                    },
+                }
+            )
+        },
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -234,14 +267,20 @@ class ComplianceMetricViewSet(viewsets.ViewSet, OrgMixin):
     )
     @action(detail=True, methods=["GET"])
     def evaluate(self, request, pk):
+        """
+        Evaluate the compliance of the metric's properties, per cycle, within the given access level instance.
+        """
         organization = self.get_organization(request)
         deepcopy(request.data)
 
         user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         requested_ali_id = request.query_params.get("access_level_instance_id")
         if requested_ali_id:
-            requested_ali = AccessLevelInstance.objects.get(pk=requested_ali_id)
-            if not (user_ali == requested_ali or requested_ali.is_descendant_of(user_ali)):
+            try:
+                requested_ali = AccessLevelInstance.objects.get(pk=requested_ali_id)
+            except (AccessLevelInstance.DoesNotExist, ValueError):
+                requested_ali = None
+            if requested_ali is None or not (user_ali == requested_ali or requested_ali.is_descendant_of(user_ali)):
                 return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
         else:
             requested_ali = user_ali
