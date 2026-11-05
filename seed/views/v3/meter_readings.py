@@ -55,7 +55,7 @@ METER_READING_RESPONSE_SCHEMA = AutoSchemaHelper.schema_factory(
 
 
 @extend_schema_view(
-    list=extend_schema(responses={200: METER_READING_RESPONSE_SCHEMA}),
+    list=extend_schema(responses={200: {"type": "array", "items": METER_READING_RESPONSE_SCHEMA}}),
     retrieve=extend_schema(parameters=DETAIL_PARAMETERS, responses={200: METER_READING_RESPONSE_SCHEMA}),
     create=extend_schema(
         request={

@@ -16,6 +16,8 @@ from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
 from seed.models import (
     DATA_STATE_MAPPING,
+    VIEW_DETAIL,
+    VIEW_LIST_TAXLOT,
     Column,
     ColumnMappingProfile,
     Property,
@@ -108,6 +110,45 @@ class TaxLotPropertyViewTests(DataMappingBaseTestCase):
         self.assertEqual(len(results), 1)
         self.assertEqual(list(column_defs[0].keys()), ["field", "headerName"])
         self.assertEqual(list(column_defs[-1].keys()), ["field", "headerName", "sortable"])  # other inventory columns are not sortable
+
+    def test_inventory_filter_column_defs_use_only_organization_profiles(self):
+        url = (
+            reverse("api:v4:tax_lot_properties-filter")
+            + f"?inventory_type=property&cycle_id={self.cycle.pk}&organization_id={self.org.pk}&page=1&per_page=999999999"
+        )
+
+        def column_headers(profile_id=None, query_profile_id=None):
+            data = {} if profile_id is None else {"profile_id": profile_id}
+            query = "" if query_profile_id is None else f"&profile_id={query_profile_id}"
+            response = self.client.post(url + query, data=data, content_type="application/json")
+            self.assertEqual(response.status_code, 200)
+            # the column queries are unordered
+            return sorted(c["headerName"] for c in response.json()["column_defs"])
+
+        all_column_headers = column_headers()
+
+        # the organization's list profile limits the columns, in the body or the query string
+        profile = self.column_list_factory.get_columnlistprofile(columns=["address_line_1", "city"])
+        self.assertEqual(column_headers(profile.id), ["Address Line 1", "City"])
+        self.assertEqual(column_headers(query_profile_id=profile.id), ["Address Line 1", "City"])
+
+        # the shown columns only use list profiles of the inventory type, so the column definitions don't use other profiles
+        detail_profile = self.column_list_factory.get_columnlistprofile(location=VIEW_DETAIL, columns=["address_line_1"])
+        taxlot_profile = self.column_list_factory.get_columnlistprofile(
+            inventory_type=VIEW_LIST_TAXLOT, table_name="TaxLotState", columns=["jurisdiction_tax_lot_id"]
+        )
+
+        # another organization's profile, a missing profile, other profiles, and -1 (all columns) fall back to all columns
+        other_org, _, _ = create_organization(self.user, "other org")
+        other_profile = self.column_list_factory.get_columnlistprofile(organization=other_org, columns=["address_line_1"])
+        for profile_id in (other_profile.id, other_profile.id + 1000, detail_profile.id, taxlot_profile.id, -1):
+            self.assertEqual(column_headers(profile_id), all_column_headers)
+        self.assertEqual(column_headers(query_profile_id=-1), all_column_headers)
+
+        # a query string profile_id must be an integer
+        response = self.client.post(url + "&profile_id=abc", content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["message"], "profile_id must be an integer")
 
     def test_merged_indicators_provided_on_filter_endpoint(self):
         url = (

@@ -46,6 +46,19 @@ class ApiSchemaTests(TestCase):
         self.assertEqual(200, response.status_code)
         self.assertIn("/api/v3/properties/", response.json()["paths"])
 
+    def test_list_responses_are_arrays(self):
+        # These list actions return bare JSON arrays rather than paginated or enveloped results
+        paths = self.client.get(reverse("schema"), {"format": "json"}).json()["paths"]
+        for path in (
+            "/api/v3/data_loggers/",
+            "/api/v3/properties/{property_pk}/meters/{meter_pk}/readings/",
+            "/api/v3/properties/{property_pk}/sensors/",
+        ):
+            with self.subTest(path=path):
+                schema = paths[path]["get"]["responses"]["200"]["content"]["application/json"]["schema"]
+                self.assertEqual(schema["type"], "array")
+                self.assertIn("id", schema["items"]["properties"])
+
     def test_schema_is_valid_openapi_without_warnings(self):
         with tempfile.TemporaryDirectory() as tmp:
             # raises if the schema is invalid OpenAPI, or if generating it emits any warnings or errors

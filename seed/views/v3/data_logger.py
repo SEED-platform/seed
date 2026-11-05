@@ -38,7 +38,7 @@ class DataLoggerViewSet(viewsets.ViewSet, OrgMixin):
 
     @extend_schema(
         parameters=[PROPERTY_VIEW_ID_PARAM],
-        responses={200: AutoSchemaHelper.schema_factory({"id": "integer", **DATA_LOGGER_FIELDS})},
+        responses={200: AutoSchemaHelper.schema_factory([{"id": "integer", **DATA_LOGGER_FIELDS}])},
     )
     @method_decorator(
         [

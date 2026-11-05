@@ -110,17 +110,19 @@ class SensorViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profile
     @extend_schema(
         responses={
             200: AutoSchemaHelper.schema_factory(
-                {
-                    "id": "integer",
-                    "display_name": "string",
-                    "location_description": "string",
-                    "description": "string",
-                    "sensor_type": "string",
-                    "units": "string",
-                    "column_name": "string",
-                    "data_logger": "string",
-                    "data_logger_id": "integer",
-                }
+                [
+                    {
+                        "id": "integer",
+                        "display_name": "string",
+                        "location_description": "string",
+                        "description": "string",
+                        "sensor_type": "string",
+                        "units": "string",
+                        "column_name": "string",
+                        "data_logger": "string",
+                        "data_logger_id": "integer",
+                    }
+                ]
             )
         }
     )
