@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+from urllib.parse import urlencode
 
 from django.urls import reverse, reverse_lazy
 
@@ -381,3 +382,112 @@ class ColumnsViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase)
         self.login_as_root_member()
         response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
         assert response.status_code == 200
+
+    def test_column_update_multiple_other_organization(self):
+        other_org, _, _ = create_organization(self.superuser, "test-organization-b")
+        other_column = Column.objects.create(column_name="test", organization=other_org, table_name="PropertyState", is_extra_data=True)
+        url = reverse_lazy("api:v3:columns-update-multiple") + "?organization_id=" + str(self.org.id)
+        self.login_as_root_member()
+
+        # users cannot change another organization's columns
+        payload = {"table_name": "PropertyState", "changes": {other_column.id: {"display_name": "changed"}}}
+        response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 400
+        other_column.refresh_from_db()
+        assert other_column.display_name != "changed"
+
+        # nor move their own columns to another organization
+        payload = {"table_name": "PropertyState", "changes": {self.column.id: {"organization_id": other_org.id}}}
+        response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 400
+        self.column.refresh_from_db()
+        assert self.column.organization_id == self.org.id
+
+        # but can change their own organization's columns
+        payload = {"table_name": "PropertyState", "changes": {self.column.id: {"display_name": "changed"}}}
+        response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 200
+        self.column.refresh_from_db()
+        assert self.column.display_name == "changed"
+
+    def test_column_mappable_invalid_inventory_type(self):
+        url = reverse_lazy("api:v3:columns-mappable")
+        self.login_as_child_member()
+
+        response = self.client.get(url, {"organization_id": self.org.id, "inventory_type": "bad"})
+        assert response.status_code == 400
+        assert response.json()["status"] == "error"
+
+        response = self.client.get(url, {"organization_id": self.org.id, "inventory_type": "property"})
+        assert response.status_code == 200
+        assert response.json()["status"] == "success"
+
+    def test_column_create_ignores_or_rejects_invalid_fields(self):
+        url = reverse_lazy("api:v3:columns-list") + "?organization_id=" + str(self.org.id)
+        payload = {"column_name": "new_column", "table_name": "PropertyState"}
+        self.login_as_root_member()
+
+        # unknown fields and invalid values are rejected
+        for invalid_fields in ({"whoa": "I shouldnt be here"}, {"unit": 1}, {"is_matching_criteria": True}):
+            response = self.client.post(url, data=json.dumps({**payload, **invalid_fields}), content_type="application/json")
+            assert response.status_code == 400
+        assert not Column.objects.filter(organization=self.org, column_name="new_column").exists()
+
+        # the new column is always extra data
+        response = self.client.post(url, data=json.dumps({**payload, "is_extra_data": False}), content_type="application/json")
+        assert response.status_code == 201
+        assert Column.objects.get(organization=self.org, column_name="new_column").is_extra_data
+
+        # form data is accepted too
+        response = self.client.post(
+            url, data=urlencode({**payload, "column_name": "form_column"}), content_type="application/x-www-form-urlencoded"
+        )
+        assert response.status_code == 201
+        assert Column.objects.get(organization=self.org, column_name="form_column").table_name == "PropertyState"
+
+    def test_column_update_comstock_mapping(self):
+        mapped_column = Column.objects.create(
+            column_name="mapped", organization=self.org, table_name="PropertyState", is_extra_data=True, comstock_mapping="in.sqft"
+        )
+        other_org, _, _ = create_organization(self.superuser, "test-organization-b")
+        other_column = Column.objects.create(column_name="test", organization=other_org, table_name="PropertyState", is_extra_data=True)
+        url = reverse_lazy("api:v3:columns-detail", args=[self.column.id]) + "?organization_id=" + str(self.org.id)
+        payload = {
+            "column_name": "test",
+            "table_name": "PropertyState",
+            "sharedFieldType": "None",
+            "comstock_mapping": "in.sqft",
+            "is_extra_data": True,
+        }
+        self.login_as_root_member()
+
+        # failed updates do not remove other columns' ComStock mappings
+        response = self.client.put(url, data=json.dumps({**payload, "sharedFieldType": "bad"}), content_type="application/json")
+        assert response.status_code == 400
+        other_url = reverse_lazy("api:v3:columns-detail", args=[other_column.id]) + "?organization_id=" + str(self.org.id)
+        response = self.client.put(other_url, data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 404
+        mapped_column.refresh_from_db()
+        assert mapped_column.comstock_mapping == "in.sqft"
+
+        # missing keys are validation errors, and an omitted ComStock mapping is unchanged
+        response = self.client.put(
+            url, data=json.dumps({"column_name": "test", "table_name": "PropertyState"}), content_type="application/json"
+        )
+        assert response.status_code == 400
+        response = self.client.put(
+            url,
+            data=json.dumps({key: value for key, value in payload.items() if key != "comstock_mapping"}),
+            content_type="application/json",
+        )
+        assert response.status_code == 200
+        mapped_column.refresh_from_db()
+        assert mapped_column.comstock_mapping == "in.sqft"
+
+        # successful updates move the ComStock mapping
+        response = self.client.put(url, data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 200
+        mapped_column.refresh_from_db()
+        self.column.refresh_from_db()
+        assert mapped_column.comstock_mapping is None
+        assert self.column.comstock_mapping == "in.sqft"

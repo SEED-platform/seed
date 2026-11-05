@@ -6,11 +6,12 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.db.utils import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from drf_spectacular.utils import extend_schema, extend_schema_serializer
+from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
@@ -22,23 +23,57 @@ from seed.models import Column, Organization
 from seed.serializers.columns import ColumnSerializer
 from seed.serializers.pint import add_pint_unit_suffix
 from seed.utils.api import OrgCreateUpdateMixin, OrgValidateMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
+# Column attributes that `update_multiple` must not change, since they would move or overwrite another organization's column
+PROTECTED_COLUMN_ATTRIBUTES = {"id", "pk", "organization", "organization_id"}
 
-@method_decorator([swagger_auto_schema_org_query_param], name="create")
-@method_decorator([swagger_auto_schema_org_query_param], name="update")
-@method_decorator([swagger_auto_schema_org_query_param], name="destroy")
+TABLE_NAME_SCHEMA = {"type": "string", "enum": ["PropertyState", "TaxLotState"]}
+# The request body may provide the organization instead of the query string
+BODY_ORG_ID_SCHEMA = {"type": "integer", "description": "Organization ID (alternative to the `organization_id` query parameter)"}
+query_or_body_org_id_field = AutoSchemaHelper.query_org_id_field(
+    required=False, description="Organization ID; required unless `organization_id` is provided in the request body"
+)
+progress_schema = AutoSchemaHelper.schema_factory(
+    {"status": "string", "status_message": "string", "progress": "number", "progress_key": "string", "message": "string"},
+    description="Progress of the background task; poll the progress endpoint with `progress_key` for updates",
+)
+
+
+# Schema only: `update` renames `sharedFieldType` to `shared_field_type`
+class ColumnUpdateSerializer(ColumnSerializer):
+    """Column fields, with `sharedFieldType` (as returned by the column list) in place of `shared_field_type`"""
+
+    def get_fields(self):
+        fields = super().get_fields()
+        fields["sharedFieldType"] = fields.pop("shared_field_type")
+        return fields
+
+
+# Schema only: a column as returned by `Column.retrieve_all` and `Column.retrieve_mapping_columns`
+class ColumnListItemSerializer(ColumnUpdateSerializer):
+    def get_fields(self):
+        fields = super().get_fields()
+        fields["related"] = serializers.BooleanField(
+            required=False, help_text="Whether the column belongs to the other inventory type than the requested `inventory_type`"
+        )
+        fields["pinnedLeft"] = serializers.BooleanField(required=False, help_text="Only present (and true) for pinned columns")
+        return fields
+
+
+@extend_schema_serializer(many=False)
+class ColumnsResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    columns = ColumnListItemSerializer(many=True)
+
+
+class ColumnResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    column = ColumnSerializer()
+
+
 class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, OrgCreateUpdateMixin):
-    """
-    create:
-        Create a new Column within a specified org or user's currently activated org.
-    update:
-        Update a column and modify which dataset it belongs to.
-    delete:
-        Deletes a single column.
-    """
-
     raise_exception = True
     serializer_class = ColumnSerializer
     renderer_classes = (JSONRenderer,)
@@ -51,12 +86,15 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         org_id = self.get_organization(self.request)
         return Column.objects.filter(organization_id=org_id)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(required=False),
-            AutoSchemaHelper.query_string_field(
-                name="inventory_type",
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description="Optional org id which overrides the users (default) current org id"
+            ),
+            AutoSchemaHelper.query_enum_field(
+                "inventory_type",
                 required=False,
+                enum=["property", "taxlot"],
                 description='Which inventory type is being matched (for related fields and naming)\nDefault: "property"',
             ),
             AutoSchemaHelper.query_boolean_field(
@@ -69,9 +107,10 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             AutoSchemaHelper.query_boolean_field(
                 name="display_units",
                 required=False,
-                description='If true, any columns that have units will have them added as a suffix to the display_name\nDefault: "false"',
+                description='If true, any columns that have units will have them added as a suffix to the display_name\nDefault: "true"',
             ),
         ],
+        responses=ColumnsResponseSerializer,
     )
     @method_decorator(
         [
@@ -100,6 +139,24 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             }
         )
 
+    @extend_schema(
+        parameters=[query_or_body_org_id_field],
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "organization_id": BODY_ORG_ID_SCHEMA,
+                    "table_name": TABLE_NAME_SCHEMA,
+                    "column_name": {"type": "string"},
+                },
+                "required": ["table_name", "column_name"],
+                "additionalProperties": True,
+                "description": "Other Column model fields (e.g., `display_name`, `column_description`, `data_type`) may also be set; "
+                "`is_extra_data` is always true",
+            }
+        },
+        responses={201: ColumnResponseSerializer},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -108,6 +165,9 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         ]
     )
     def create(self, request):
+        """
+        Create a new extra data Column within the organization
+        """
         org_id = self.get_organization(self.request)
 
         table_name = self.request.data.get("table_name")
@@ -117,12 +177,14 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             )
 
         try:
-            # set request data organization_id to org_id just in case it is not set or incorrectly set
-            self.request.data["organization_id"] = org_id
-
-            new_column = Column.objects.create(is_extra_data=True, **self.request.data)
-            new_column.save()
-        except ValidationError as e:
+            # The column always belongs to the organization and is extra data, whatever the request data says
+            # (`items()` gives single values for form data too)
+            fields = {**dict(self.request.data.items()), "organization_id": org_id, "is_extra_data": True}
+            with transaction.atomic():
+                new_column = Column.objects.create(**fields)
+                new_column.save()
+        except (IntegrityError, TypeError, ValueError, ValidationError) as e:
+            # TypeError and ValueError come from unknown fields and invalid values
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
         return JsonResponse(
@@ -133,7 +195,14 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             status=status.HTTP_201_CREATED,
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(
+                required=False, description="Optional org id which overrides the users (default) current org id"
+            )
+        ],
+        responses=ColumnResponseSerializer,
+    )
     @method_decorator(
         [
             ajax_request,
@@ -158,6 +227,11 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
 
         return JsonResponse({"status": "success", "column": ColumnSerializer(c).data})
 
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request={"application/json": ColumnUpdateSerializer},
+        responses=ColumnSerializer,
+    )
     @method_decorator(
         [
             ajax_request,
@@ -165,24 +239,28 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         ]
     )
     def update(self, request, pk=None):
+        """
+        Update a column
+        """
         organization_id = self.get_organization(request)
 
-        request.data["shared_field_type"] = request.data["sharedFieldType"]
-        del request.data["sharedFieldType"]
-
-        # Ensure ComStock uniqueness across properties and taxlots together
-        if request.data["comstock_mapping"] is not None:
-            Column.objects.filter(organization_id=organization_id, comstock_mapping=request.data["comstock_mapping"]).update(
-                comstock_mapping=None
-            )
+        if "sharedFieldType" in request.data:
+            request.data["shared_field_type"] = request.data.pop("sharedFieldType")
 
         try:
-            result = super().update(request, pk)
+            # Undo the ComStock mapping changes if the column is not found or the update fails
+            with transaction.atomic():
+                # Ensure ComStock uniqueness across properties and taxlots together
+                if request.data.get("comstock_mapping") is not None:
+                    Column.objects.filter(organization_id=organization_id, comstock_mapping=request.data["comstock_mapping"]).update(
+                        comstock_mapping=None
+                    )
+
+                return super().update(request, pk)
         except IntegrityError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        return result
-
+    @extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()], responses={200: progress_schema})
     @method_decorator(
         [
             ajax_request,
@@ -190,6 +268,9 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         ]
     )
     def destroy(self, request, pk=None):
+        """
+        Deletes a single extra data column, removing its data from the inventory in a background task
+        """
         org_id = self.get_organization(request)
         try:
             column = Column.objects.get(id=pk, organization_id=org_id)
@@ -210,6 +291,25 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         result = tasks.delete_organization_column(column.id, org_id)
         return JsonResponse(result)
 
+    @extend_schema(
+        parameters=[query_or_body_org_id_field],
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "organization_id": BODY_ORG_ID_SCHEMA,
+                    "table_name": TABLE_NAME_SCHEMA,
+                    "changes": {
+                        "type": "object",
+                        "additionalProperties": {"type": "object", "description": "Column attribute names mapped to their new values"},
+                        "description": "IDs of the organization's columns mapped to their changes",
+                    },
+                },
+                "required": ["table_name", "changes"],
+            }
+        },
+        responses={200: progress_schema},
+    )
     @method_decorator(
         [
             ajax_request,
@@ -218,6 +318,9 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
     )
     @action(detail=False, methods=["POST"])
     def update_multiple(self, request):
+        """
+        Updates several columns, rehashing the inventory if `is_excluded_from_hash` changes
+        """
         org_id = self.get_organization(self.request)
 
         table_name = self.request.data.get("table_name")
@@ -227,11 +330,40 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             )
 
         changes = request.data.get("changes")
+        if not isinstance(changes, dict) or Column.objects.filter(organization_id=org_id, pk__in=changes).count() != len(changes):
+            return JsonResponse(
+                {"status": "error", "message": "changes must map IDs of the organization's columns to their changes"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not all(isinstance(attributes, dict) and not PROTECTED_COLUMN_ATTRIBUTES & attributes.keys() for attributes in changes.values()):
+            return JsonResponse(
+                {"status": "error", "message": f"Column changes must be objects that do not change {sorted(PROTECTED_COLUMN_ATTRIBUTES)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         key = "".join(str(x) for x in changes)
         result = tasks.update_multiple_columns(key, table_name, org_id, changes)
         return JsonResponse(result)
 
-    @swagger_auto_schema(request_body=AutoSchemaHelper.schema_factory({"new_column_name": "string", "overwrite": "boolean"}))
+    @extend_schema(
+        parameters=[query_or_body_org_id_field],
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "organization_id": BODY_ORG_ID_SCHEMA,
+                    "new_column_name": {"type": "string"},
+                    "overwrite": {
+                        "type": "boolean",
+                        "default": False,
+                        "description": "Whether to overwrite the data of an existing column with the new name",
+                    },
+                },
+                "required": ["new_column_name"],
+            }
+        },
+        responses={200: AutoSchemaHelper.schema_factory({"success": "boolean", "message": "string"})},
+    )
     @method_decorator(
         [
             ajax_request,
@@ -267,13 +399,12 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         else:
             return JsonResponse({"success": True, "message": result[1]})
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_string_field(
-                "inventory_type", required=True, description='Inventory Type, either "property" or "taxlot"'
-            ),
-        ]
+            AutoSchemaHelper.query_enum_field("inventory_type", enum=["property", "taxlot"], description="Inventory Type"),
+        ],
+        responses=ColumnsResponseSerializer,
     )
     @method_decorator(
         [
@@ -290,7 +421,10 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
         organization_id = int(self.get_organization(request))
         inventory_type = request.query_params.get("inventory_type")
         if inventory_type not in {"property", "taxlot"}:
-            return JsonResponse({"status": "error", "message": 'Query param `inventory_type` must be "property" or "taxlot"'})
+            return JsonResponse(
+                {"status": "error", "message": 'Query param `inventory_type` must be "property" or "taxlot"'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         columns = Column.retrieve_mapping_columns(organization_id, inventory_type)
 
         return JsonResponse({"status": "success", "columns": columns})

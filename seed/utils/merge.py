@@ -118,7 +118,7 @@ def merge_taxlots(state_ids, org_id, log_name, ignore_merge_protection=False):
             raise MultipleALIError
 
         # Create new inventory record and associate it to a new view
-        new_taxlot = TaxLot(organization_id=org_id)
+        new_taxlot = TaxLot(organization_id=org_id, access_level_instance_id=alis.first())
         new_taxlot.save()
 
         cycle_id = views.first().cycle_id
@@ -256,9 +256,9 @@ def _copy_taxlotview_relationships(view_ids, new_view):
     new_view.labels.set(StatusLabel.objects.filter(pk__in=label_ids))
 
     # Associate groups
-    group_mappings = InventoryGroupMapping.objects.filter(taxlot__views__in=view_ids)
-    for grouping in group_mappings:
-        InventoryGroupMapping(tax_lot=new_view.taxlot, group=grouping.group).save()
+    groups = InventoryGroup.objects.filter(group_mappings__taxlot__views__in=view_ids).distinct()
+    for group in groups:
+        InventoryGroupMapping(taxlot=new_view.taxlot, group=group).save()
 
     # Associate pairs while deleting old relationships
     paired_view_ids = list(

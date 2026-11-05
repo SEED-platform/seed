@@ -23,9 +23,10 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import F, Value
 from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -68,7 +69,6 @@ from seed.models import (
 from seed.models import StatusLabel as Label
 from seed.serializers.column_mappings import SaveColumnMappingsRequestPayloadSerializer
 from seed.serializers.columns import ColumnSerializer
-from seed.serializers.organizations import SaveSettingsSerializer, SharedFieldsReturnSerializer
 from seed.serializers.pint import add_pint_unit_suffix, apply_display_unit_preferences
 from seed.serializers.report_configurations import ReportConfigurationSerializer
 from seed.utils.api import api_endpoint
@@ -85,6 +85,16 @@ from seed.utils.salesforce import toggle_salesforce_sync
 from seed.utils.users import get_js_role
 
 _log = logging.getLogger(__name__)
+
+
+# Organization details that are only returned to the organization's members and superusers
+_ORGANIZATION_CREDENTIAL_FIELDS = (
+    "mapquest_api_key",
+    "better_analysis_api_key",
+    "at_organization_token",
+    "audit_template_user",
+    "audit_template_password",
+)
 
 
 def _dict_org(request, organizations):
@@ -205,6 +215,9 @@ def _dict_org(request, organizations):
             "require_2fa": o.require_2fa,
             "max_data_charted": o.max_data_charted,
         }
+        # e.g., members of a parent organization who do not belong to this sub-organization
+        if ali is None and not request.user.is_superuser:
+            org.update(dict.fromkeys(_ORGANIZATION_CREDENTIAL_FIELDS, ""))
         orgs.append(org)
 
     return orgs
@@ -245,23 +258,171 @@ def _dict_org_brief(request, organizations):
     return orgs
 
 
-def _get_match_merge_link_key(identifier):
-    return f"org_match_merge_link_result__{identifier}"
+def _get_match_merge_link_key(org_id, identifier):
+    return f"org_match_merge_link_result__{org_id}__{identifier}"
 
 
 @shared_task(serializer="pickle", ignore_result=True)
-def cache_match_merge_link_result(summary, identifier, progress_key):
-    result_key = _get_match_merge_link_key(identifier)
+def cache_match_merge_link_result(summary, result_key, progress_key):
     set_cache_raw(result_key, summary)
 
     progress_data = ProgressData.from_key(progress_key)
     progress_data.finish_with_success()
 
 
+def _choice_values_schema(choices, value_type="string"):
+    """Schema of the stored values (not the labels) of model field choices"""
+    return {"type": value_type, "enum": [value for value, _label in choices]}
+
+
+_status_response = AutoSchemaHelper.schema_factory({"status": "string"})
+
+_progress_response = AutoSchemaHelper.schema_factory(
+    {
+        "status": "string",
+        "status_message": "string",
+        "progress": "number",
+        "progress_key": "string",
+        "unique_id": "string",
+        "func_name": "string",
+        "message": "string",
+        "stacktrace": "string",
+        "summary": "object",
+    },
+    description="Progress of the background task, which can be polled with `/api/v3/progress/{progress_key}/`",
+)
+
+_inventory_columns_response = AutoSchemaHelper.schema_factory(
+    {"PropertyState": ["string"], "TaxLotState": ["string"]},
+    description="Column names, by inventory table",
+)
+
+# Settings shared by the organization details (`_dict_org`) and `save_settings`
+_ORGANIZATION_SETTINGS_FIELDS = {
+    "name": "string",
+    "display_units_eui": "string",
+    "display_units_ghg": "string",
+    "display_units_ghg_intensity": "string",
+    "display_units_water_use": "string",
+    "display_units_wui": "string",
+    "display_units_area": "string",
+    "display_decimal_places": "integer",
+    "display_meter_units": "object",
+    "display_meter_water_units": "object",
+    "thermal_conversion_assumption": "integer",
+    "mapquest_api_key": "string",
+    "geocoding_enabled": "boolean",
+    "better_analysis_api_key": "string",
+    "property_display_field": "string",
+    "taxlot_display_field": "string",
+    "comstock_enabled": "boolean",
+    "new_user_email_from": "string",
+    "new_user_email_subject": "string",
+    "new_user_email_content": "string",
+    "new_user_email_signature": "string",
+    "at_organization_token": "string",
+    "audit_template_user": "string",
+    "audit_template_password": "string",
+    "audit_template_city_id": "integer",
+    "audit_template_export_meters": "boolean",
+    "audit_template_export_measures": "boolean",
+    "audit_template_export_federal": "boolean",
+    "audit_template_federal_agency": "string",
+    "audit_template_conditional_import": "boolean",
+    "audit_template_report_type": "string",
+    "audit_template_status_types": "string",
+    "audit_template_sync_enabled": "boolean",
+    "audit_template_tracking_id_name": "string",
+    "audit_template_tracking_id_field": "string",
+    "salesforce_enabled": "boolean",
+    "bb_salesforce_enabled": "boolean",
+    "ubid_threshold": "number",
+    "public_feed_enabled": "boolean",
+    "public_feed_labels": "boolean",
+    "public_geojson_enabled": "boolean",
+    "require_2fa": "boolean",
+    "max_data_charted": "integer",
+}
+
+_organization_schema = AutoSchemaHelper.schema_factory(
+    {
+        **_ORGANIZATION_SETTINGS_FIELDS,
+        "org_id": "integer",
+        "id": "integer",
+        "number_of_users": "integer",
+        "user_is_owner": "boolean",
+        "user_role": "string",
+        "owners": [{"first_name": "string", "last_name": "string", "email": "string", "id": "integer"}],
+        "sub_orgs": ["object"],
+        "is_parent": "boolean",
+        "parent_id": "integer",
+        "cycles": [{"name": "string", "cycle_id": "integer", "num_properties": "integer", "num_taxlots": "integer"}],
+        "created": "string",
+        "better_host_url": "string",
+        "at_host_url": "string",
+        "inventory_count": "integer",
+        "access_level_names": ["string"],
+        "default_reports_x_axis_options": ["object"],
+        "default_reports_y_axis_options": ["object"],
+    },
+    description="Organization details (`sub_orgs` contains child organizations in the same format, with blank API keys and Audit "
+    "Template credentials for sub-organizations the user does not belong to). With `brief=true`, only name, "
+    "org_id, id, parent_id, is_parent, user_role, display_decimal_places, salesforce_enabled, bb_salesforce_enabled, "
+    "access_level_names, audit_template_conditional_import, property_display_field, and taxlot_display_field are returned.",
+)
+
+_organization_settings_schema = AutoSchemaHelper.schema_factory(
+    {
+        **_ORGANIZATION_SETTINGS_FIELDS,
+        "query_threshold": "integer",
+        "default_reports_x_axis_options": ["integer"],
+        "default_reports_y_axis_options": ["integer"],
+        "public_fields": [{"id": "integer"}],
+    },
+    description="Many omitted settings (e.g., API keys and feature toggles) are reset to their defaults, so send the organization's "
+    "complete settings. Invalid display units are ignored. `default_reports_*_axis_options` are PropertyState column IDs and `public_fields` are the columns to share publicly.",
+)
+_organization_settings_schema["properties"].update(
+    {
+        "display_units_eui": _choice_values_schema(Organization.MEASUREMENT_CHOICES_EUI),
+        "display_units_ghg": _choice_values_schema(Organization.MEASUREMENT_CHOICES_GHG),
+        "display_units_ghg_intensity": _choice_values_schema(Organization.MEASUREMENT_CHOICES_GHG_INTENSITY),
+        "display_units_water_use": _choice_values_schema(Organization.MEASUREMENT_CHOICES_WATER_USE),
+        "display_units_wui": _choice_values_schema(Organization.MEASUREMENT_CHOICES_WUI),
+        "display_units_area": _choice_values_schema(Organization.MEASUREMENT_CHOICES_AREA),
+        "thermal_conversion_assumption": _choice_values_schema(Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES, "integer"),
+        "ubid_threshold": {"type": "number", "minimum": 0, "maximum": 1},
+    }
+)
+
+_inventory_type_schema = {"type": "string", "enum": ["properties", "taxlots"]}
+
+_match_merge_link_response = AutoSchemaHelper.schema_factory(
+    {"progress_key": "string"},
+    description="Progress key of the background task. Its progress data's `unique_id` is the `match_merge_link_id` of the result",
+)
+
+_report_params = [
+    AutoSchemaHelper.query_array_field("cycle_ids", required=False, description="IDs of the cycles to report on"),
+    AutoSchemaHelper.query_integer_field("filter_group_id", required=False, description="Only include properties in this filter group"),
+]
+
+_property_counts_schema = [{"cycle": "string", "yr_e": "string", "num_properties": "integer", "num_properties_w-data": "integer"}]
+
+
 class OrganizationViewSet(viewsets.ViewSet):
     # allow using `pk` in url path for authorization (i.e., for has_perm)
     authz_org_id_kwarg = "pk"
+    # only used to type the `pk` path parameter in the OpenAPI schema
+    queryset = Organization.objects.none()
 
+    @extend_schema(
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "column_mappings_deleted_count": "integer", "columns_deleted_count": "integer"}
+            )
+        }
+    )
     @method_decorator(
         [
             ajax_request,
@@ -310,13 +471,10 @@ class OrganizationViewSet(viewsets.ViewSet):
                 {"status": "error", "message": f"organization with with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_integer_field("import_file_id", required=True, description="Import file id"),
-            openapi.Parameter("id", openapi.IN_PATH, type=openapi.TYPE_INTEGER, description="Organization id"),
-        ],
-        request_body=SaveColumnMappingsRequestPayloadSerializer,
-        responses={200: "success response"},
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_integer_field("import_file_id", required=True, description="Import file id")],
+        request={"application/json": SaveColumnMappingsRequestPayloadSerializer},
+        responses={200: _status_response},
     )
     @method_decorator(
         [
@@ -360,24 +518,25 @@ class OrganizationViewSet(viewsets.ViewSet):
         if proposed_columns is None:
             proposed_columns = []
         identifier = randint(100, 100000)
-        result_key = _get_match_merge_link_key(identifier)
+        result_key = _get_match_merge_link_key(org_id, identifier)
         set_cache_raw(result_key, {})
 
         progress_data = ProgressData(func_name="org_match_merge_link", unique_id=identifier)
         progress_data.delete()
 
         whole_org_match_merge_link.apply_async(
-            args=(org_id, state_class_name, proposed_columns), link=cache_match_merge_link_result.s(identifier, progress_data.key)
+            args=(org_id, state_class_name, proposed_columns), link=cache_match_merge_link_result.s(result_key, progress_data.key)
         )
 
         return progress_data.key
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_boolean_field(
                 "brief", required=False, description="If true, only return high-level organization details"
             )
-        ]
+        ],
+        responses={200: {"type": "object", "properties": {"organizations": {"type": "array", "items": _organization_schema}}}},
     )
     @method_decorator(
         [
@@ -444,6 +603,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             else:
                 return JsonResponse({"organizations": orgs})
 
+    @extend_schema(responses={200: _progress_response})
     @method_decorator(
         [
             api_endpoint,
@@ -458,6 +618,19 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(tasks.delete_organization_and_inventory(pk))
 
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_boolean_field(
+                "brief", required=False, description="If true, only return high-level organization details"
+            )
+        ],
+        responses={
+            200: {
+                "type": "object",
+                "properties": {"status": {"type": "string"}, "organization": _organization_schema},
+            }
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -500,8 +673,8 @@ class OrganizationViewSet(viewsets.ViewSet):
             }
         )
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
             {
                 "organization_name": "string",
                 "user_id": "integer",
@@ -510,7 +683,13 @@ class OrganizationViewSet(viewsets.ViewSet):
             description="Properties:\n"
             "- organization_name: The new organization name\n"
             "- user_id: The user ID (primary key) to be used as the owner of the new organization",
-        )
+        ),
+        responses={
+            200: {
+                "type": "object",
+                "properties": {"status": {"type": "string"}, "message": {"type": "string"}, "organization": _organization_schema},
+            }
+        },
     )
     @method_decorator(
         [
@@ -535,6 +714,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         org, _, _ = create_organization(user, org_name, org_name)
         return JsonResponse({"status": "success", "message": "Organization created", "organization": _dict_org(request, [org])[0]})
 
+    @extend_schema(responses={200: _progress_response})
     @method_decorator(
         [
             api_endpoint,
@@ -550,8 +730,15 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         return JsonResponse(tasks.delete_organization_inventory(pk))
 
-    @swagger_auto_schema(
-        request_body=SaveSettingsSerializer,
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {"organization": _organization_settings_schema},
+                "required": ["organization"],
+            }
+        },
+        responses={200: _status_response},
     )
     @method_decorator(
         [
@@ -849,6 +1036,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({"status": "success"})
 
+    @extend_schema(responses={200: AutoSchemaHelper.schema_factory({"status": "string", "query_threshold": "integer"})})
     @method_decorator(
         [
             api_endpoint,
@@ -867,7 +1055,16 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(pk=pk)
         return JsonResponse({"status": "success", "query_threshold": org.query_threshold})
 
-    @swagger_auto_schema(responses={200: SharedFieldsReturnSerializer})
+    @extend_schema(
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "public_fields": [{"table_name": "string", "name": "string", "column_name": "string", "display_name": "string"}],
+                }
+            )
+        }
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -896,8 +1093,8 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(result)
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
             {
                 "sub_org_name": "string",
                 "sub_org_owner_email": "string",
@@ -906,13 +1103,14 @@ class OrganizationViewSet(viewsets.ViewSet):
             description="Properties:\n"
             "- sub_org_name: Name of the new sub organization\n"
             "- sub_org_owner_email: Email of the owner of the sub organization, which must already exist",
-        )
+        ),
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "organization_id": "integer"})},
     )
     @method_decorator(
         [
             api_endpoint,
             ajax_request,
-            has_perm("requires_member"),
+            has_perm("requires_owner"),
         ]
     )
     @action(detail=True, methods=["POST"])
@@ -936,6 +1134,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             return JsonResponse({"status": "error", "message": mess_or_org}, status=status.HTTP_409_CONFLICT)
 
+    @extend_schema(responses={200: _inventory_columns_response})
     @method_decorator(
         [
             api_endpoint,
@@ -964,18 +1163,21 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(matching_criteria_column_names)
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
-            {"inventory_type": "string"},
-            required=["inventory_type"],
-            description='Properties:\n- inventory_type: either "properties" or "taxlots"',
-        )
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {"inventory_type": _inventory_type_schema},
+                "required": ["inventory_type"],
+            }
+        },
+        responses={200: _match_merge_link_response},
     )
     @method_decorator(
         [
             api_endpoint,
             ajax_request,
-            has_perm("requires_member"),
+            has_perm("requires_root_member_access"),
         ]
     )
     @action(detail=True, methods=["POST"])
@@ -1003,25 +1205,29 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({"progress_key": progress_key})
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "inventory_type": "string",
-                "add": ["string"],
-                "remove": ["string"],
-            },
-            required=["inventory_type"],
-            description="Properties:\n"
-            '- inventory_type: either "properties" or "taxlots"\n'
-            "- add: list of column names\n"
-            "- remove: list of column names",
-        )
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "inventory_type": _inventory_type_schema,
+                    "add": {"type": "array", "items": {"type": "string"}, "description": "Column names to add to the matching criteria"},
+                    "remove": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Column names to remove from the matching criteria",
+                    },
+                },
+                "required": ["inventory_type"],
+            }
+        },
+        responses={200: _match_merge_link_response},
     )
     @method_decorator(
         [
             api_endpoint,
             ajax_request,
-            has_perm("requires_member"),
+            has_perm("requires_root_member_access"),
         ]
     )
     @action(detail=True, methods=["POST"])
@@ -1060,14 +1266,26 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({"progress_key": progress_key})
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_integer_field("match_merge_link_id", required=True, description="ID of match merge link")]
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_integer_field(
+                "match_merge_link_id", required=True, description="ID of match merge link (the `unique_id` of its progress data)"
+            )
+        ],
+        responses={
+            200: {
+                "type": "object",
+                "nullable": True,
+                "description": "Empty until the task finishes, then a summary of merged and linked counts by inventory table, or, for a "
+                "preview, the resulting records keyed by cycle ID. Null if no such result exists.",
+            }
+        },
     )
     @method_decorator(
         [
             api_endpoint,
             ajax_request,
-            has_perm("requires_member"),
+            has_perm("requires_root_member_access"),
         ]
     )
     @action(detail=True, methods=["GET"])
@@ -1080,11 +1298,12 @@ class OrganizationViewSet(viewsets.ViewSet):
             )
 
         identifier = request.query_params["match_merge_link_id"]
-        result_key = _get_match_merge_link_key(identifier)
+        result_key = _get_match_merge_link_key(pk, identifier)
 
         # using unsafe serialization b/c the result might not be a dict
         return JsonResponse(get_cache_raw(result_key), safe=False)
 
+    @extend_schema(responses={200: _inventory_columns_response})
     @method_decorator(
         [
             api_endpoint,
@@ -1139,7 +1358,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         )
 
         if filter_group_id:
-            filter_group = FilterGroup.objects.get(pk=filter_group_id)
+            filter_group = get_object_or_404(FilterGroup, pk=filter_group_id, organization_id=organization_id)
             all_property_views = filter_group.views(all_property_views)
 
         # annotate properties with fields
@@ -1191,15 +1410,31 @@ class OrganizationViewSet(viewsets.ViewSet):
             results.append(result)
         return results
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_string_field("x_var", required=True, description="Raw column name for x axis"),
-            AutoSchemaHelper.query_string_field("y_var", required=True, description="Raw column name for y axis"),
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_string_field(
-                "start", required=True, description='Start time, in the format "2018-12-31T23:53:00-08:00"'
+                "x_var", required=True, description="Raw PropertyState column name or access level name for the x axis"
             ),
-            AutoSchemaHelper.query_string_field("end", required=True, description='End time, in the format "2018-12-31T23:53:00-08:00"'),
-        ]
+            AutoSchemaHelper.query_string_field(
+                "y_var", required=True, description='Raw PropertyState column name or "Count" for the y axis'
+            ),
+            *_report_params,
+            AutoSchemaHelper.query_integer_field(
+                "access_level_instance_id",
+                required=False,
+                description="Only include properties in this access level instance (defaults to the user's access level instance)",
+            ),
+        ],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "data": {"chart_data": ["object"], "property_counts": _property_counts_schema, "axis_data": "object"},
+                },
+                description="`chart_data` holds the x and y values of each property view and `axis_data` holds the axis statistics "
+                "by cycle name, column display name, and child access level instance name",
+            )
+        },
     )
     @method_decorator(
         [
@@ -1232,8 +1467,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             else:
                 ali = selected_ali
 
-        excepted_params = ["x_var", "y_var", "cycle_ids"]
-        missing_params = [p for p in excepted_params if p not in params]
+        missing_params = [p for p in ["x_var", "y_var"] if params[p] is None]
         if missing_params:
             return Response(
                 {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
@@ -1252,7 +1486,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             y_var = params["y_var"]
 
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"]).order_by("-end")
+        cycles = Cycle.objects.filter(organization_id=pk, id__in=params["cycle_ids"]).order_by("-end")
         report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         axis_data = self.get_axis_data(
@@ -1267,19 +1501,36 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return Response({"status": "success", "data": data}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_string_field("x_var", required=True, description="Raw column name for x axis"),
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_string_field(
-                "y_var",
-                required=True,
-                description='Raw column name for y axis, must be one of: "gross_floor_area", "property_type", "year_built"',
+                "x_var", required=True, description='Raw PropertyState column name or "Count" for the x axis'
             ),
             AutoSchemaHelper.query_string_field(
-                "start", required=True, description='Start time, in the format "2018-12-31T23:53:00-08:00"'
+                "y_var", required=True, description="Raw PropertyState column name or access level name to aggregate by (y axis)"
             ),
-            AutoSchemaHelper.query_string_field("end", required=True, description='End time, in the format "2018-12-31T23:53:00-08:00"'),
-        ]
+            *_report_params,
+            AutoSchemaHelper.query_integer_field(
+                "access_level_instance_id", required=True, description="Only include properties in this access level instance"
+            ),
+            OpenApiParameter(
+                "aggregationType",
+                OpenApiTypes.STR,
+                OpenApiParameter.QUERY,
+                description="How to aggregate the x values of each bin (ignored when x_var is Count)",
+                enum=["Average", "Sum"],
+                default="Average",
+            ),
+        ],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "aggregated_data": {"chart_data": ["object"], "property_counts": _property_counts_schema},
+                },
+                description="Each `chart_data` item has the aggregated `x` value, the `y` bin or category, and the year ending `yr_e`",
+            )
+        },
     )
     @method_decorator(
         [
@@ -1333,7 +1584,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             y_var = params["y_var"]
 
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"]).order_by("-end")
+        cycles = Cycle.objects.filter(organization_id=pk, id__in=params["cycle_ids"]).order_by("-end")
         report_data = self.setup_report_data(pk, ali, cycles, x_var, y_var, filter_group_id)
         data = self.get_raw_report_data(pk, cycles, report_data["all_property_views"], report_data["field_data"])
         chart_data = []
@@ -1415,17 +1666,19 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return sorted(results, key=lambda d: d["x"] if d["x"] is not None else -np.inf, reverse=True)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_string_field("x_var", required=True, description="Raw column name for x axis"),
-            AutoSchemaHelper.query_string_field("x_label", required=True, description="Label for x axis"),
-            AutoSchemaHelper.query_string_field("y_var", required=True, description="Raw column name for y axis"),
-            AutoSchemaHelper.query_string_field("y_label", required=True, description="Label for y axis"),
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_string_field(
-                "start", required=True, description='Start time, in the format "2018-12-31T23:53:00-08:00"'
+                "x_var", required=True, description='Raw PropertyState column name or "Count" for the x axis'
             ),
-            AutoSchemaHelper.query_string_field("end", required=True, description='End time, in the format "2018-12-31T23:53:00-08:00"'),
-        ]
+            AutoSchemaHelper.query_string_field("x_label", required=False, description="Label for x axis"),
+            AutoSchemaHelper.query_string_field(
+                "y_var", required=True, description="Raw PropertyState column name or access level name for the y axis"
+            ),
+            AutoSchemaHelper.query_string_field("y_label", required=False, description="Label for y axis"),
+            *_report_params,
+        ],
+        responses={(200, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"): OpenApiTypes.BINARY},
     )
     @method_decorator(
         [
@@ -1452,8 +1705,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         filter_group_id = request.query_params.get("filter_group_id", None)
 
         # error if missing
-        excepted_params = ["x_var", "x_label", "y_var", "y_label", "cycle_ids"]
-        missing_params = [p for p in excepted_params if p not in params]
+        missing_params = [p for p in ["x_var", "y_var"] if params[p] is None]
         if missing_params:
             return Response(
                 {"status": "error", "message": f"Missing params: {', '.join(missing_params)}"}, status=status.HTTP_400_BAD_REQUEST
@@ -1499,7 +1751,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             y_var = params["y_var"]
 
         # Gather base data
-        cycles = Cycle.objects.filter(id__in=params["cycle_ids"])
+        cycles = Cycle.objects.filter(organization_id=pk, id__in=params["cycle_ids"])
         matching_columns = Column.objects.filter(organization_id=pk, is_matching_criteria=True, table_name="PropertyState")
         report_data = self.setup_report_data(
             pk, access_level_instance, cycles, x_var, y_var, filter_group_id, additional_columns=matching_columns
@@ -1645,6 +1897,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         elif data_type == "integer":
             return data[1:3] + np.round(data[3:]).tolist()
 
+    @extend_schema(responses={200: OpenApiTypes.BOOL})
     @method_decorator(
         [
             ajax_request,
@@ -1660,6 +1913,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return bool(org.mapquest_api_key)
 
+    @extend_schema(responses={200: OpenApiTypes.BOOL})
     @method_decorator(
         [
             ajax_request,
@@ -1675,6 +1929,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return org.geocoding_enabled
 
+    @extend_schema(request=None, responses={200: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"})})
     @method_decorator(
         [
             api_endpoint,
@@ -1701,6 +1956,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse({"status": "success", "message": "passwords reset"})
 
+    @extend_schema(responses={200: _status_response})
     @method_decorator(
         [
             ajax_request,
@@ -1710,7 +1966,7 @@ class OrganizationViewSet(viewsets.ViewSet):
     @action(detail=True, methods=["GET"])
     def insert_sample_data(self, request, pk=None):
         """
-        Create a button for new users to import data below if no data exists
+        Inserts sample properties, a tax lot, and meter data into the organization's first cycle, which must be empty
         """
         org = Organization.objects.get(id=pk)
         cycles = Cycle.objects.filter(organization=org)
@@ -1788,7 +2044,7 @@ class OrganizationViewSet(viewsets.ViewSet):
             is_extra_data=True,  # Column objects representing raw/header rows are NEVER extra data
         )
 
-        import_record = ImportRecord.objects.create(name="Auto-Populate", super_organization=org, access_level_instance=self.org.root)
+        import_record = ImportRecord.objects.create(name="Auto-Populate", super_organization=org, access_level_instance=org.root)
 
         # Interval Data
         filename = "PM Meter Data.xlsx"  # contains meter data for bsyncr and BETTER
@@ -1854,6 +2110,11 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        responses={
+            200: inline_serializer("OrganizationReportConfigurationsResponse", fields={"data": ReportConfigurationSerializer(many=True)})
+        }
+    )
     @method_decorator(
         [
             ajax_request,

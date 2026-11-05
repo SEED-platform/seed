@@ -14,6 +14,13 @@ class SalesforceMappingSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return super().to_representation(instance)
 
+    def validate(self, attrs):
+        column = attrs.get("column")
+        organization_id = attrs.get("organization_id", getattr(self.instance, "organization_id", None))
+        if column is not None and column.organization_id != organization_id:
+            raise serializers.ValidationError({"column": "The selected column does not belong to this organization"})
+        return attrs
+
     class Meta:
         model = SalesforceMapping
         fields = (

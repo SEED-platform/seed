@@ -10,7 +10,8 @@ from pathlib import Path
 
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
@@ -77,12 +78,48 @@ def _cached_json_content(file_path_str: str, dataset: str, version: int) -> str:
 
 
 class BenchmarkDataViewSet(viewsets.ViewSet):
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_string_field("dataset", False, "Benchmark dataset: category or subcategory. Defaults to category"),
-            AutoSchemaHelper.query_string_field("output_format", False, "Response format: json or csv. Defaults to json"),
-        ]
+            AutoSchemaHelper.query_enum_field(
+                "dataset", "Benchmark dataset. Defaults to category", list(_SITE_EUI_DATASETS), required=False
+            ),
+            AutoSchemaHelper.query_enum_field("output_format", "Response format. Defaults to json", ["json", "csv"], required=False),
+        ],
+        responses={
+            (200, "application/json"): AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "dataset": "string",
+                    "format": "string",
+                    "count": "integer",
+                    "data": [
+                        {
+                            "building_type": "string",
+                            "building_subtype": "string",
+                            "climate_zone": "string",
+                            "year_built": "string",
+                            "weekly_hours": "string",
+                            "gfa": "string",
+                            "fifth_percentile": "number",
+                            "twenty_fifth_percentile": "number",
+                            "median": "number",
+                            "mean": "number",
+                            "seventy_fifth_percentile": "number",
+                            "ninety_fifth_percentile": "number",
+                            "climate_zone_description": "string",
+                            "year_reported": "integer",
+                            "row_count": "string",
+                        }
+                    ],
+                },
+                description=(
+                    "Rows have `building_type` in the category dataset and `building_subtype` in the subcategory dataset. "
+                    "Numeric values are null when blank."
+                ),
+            ),
+            (200, "text/csv"): OpenApiTypes.BINARY,
+        },
     )
     @method_decorator(
         [

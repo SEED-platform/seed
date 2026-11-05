@@ -8,7 +8,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.db import transaction
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_serializer, extend_schema_view
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
@@ -18,106 +18,75 @@ from seed.filters import LabelFilterBackend
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import StatusLabel as Label
 from seed.serializers.labels import LabelSerializer
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
+# The label attributes clients may set; the organization is always taken from the request
+LABEL_ATTRIBUTES_SCHEMA = {
+    "name": {"type": "string", "maxLength": 255},
+    "color": {"type": "string", "enum": [color for color, _ in Label.COLOR_CHOICES]},
+    "show_in_list": {"type": "boolean"},
+}
+label_body = {"application/json": {"type": "object", "properties": LABEL_ATTRIBUTES_SCHEMA, "required": ["name"]}}
+optional_org_param = AutoSchemaHelper.query_org_id_field(
+    required=False, description="Optional org id which overrides the users (default) current org id"
+)
 
-@method_decorator(
-    [
-        swagger_auto_schema(
-            manual_parameters=[
-                AutoSchemaHelper.query_org_id_field(
-                    required=False, description="Optional org id which overrides the users (default) current org id"
-                )
-            ]
-        ),
-    ],
-    name="retrieve",
+
+# Schema only: this viewset's labels are not annotated for inventory, so `is_applied*` are never returned
+@extend_schema_serializer(exclude_fields=["is_applied", "is_applied_by_goal"])
+class LabelResponseSerializer(LabelSerializer):
+    pass
+
+
+@extend_schema_view(
+    retrieve=extend_schema(
+        description="Return a label instance by pk if it is within user`s specified org.",
+        parameters=[optional_org_param],
+        responses=LabelResponseSerializer,
+    ),
+    list=extend_schema(
+        description="Return all labels available to user through user`s specified org.",
+        parameters=[optional_org_param],
+        responses=LabelResponseSerializer(many=True),
+    ),
+    create=extend_schema(
+        description="Create a new label within user`s specified org.",
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=label_body,
+        responses={201: LabelResponseSerializer},
+    ),
+    destroy=extend_schema(
+        description="Remove an existing label.",
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+    ),
+    update=extend_schema(
+        description="Update a label record.",
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=label_body,
+        responses=LabelResponseSerializer,
+    ),
 )
 @method_decorator(
     [
-        swagger_auto_schema(
-            manual_parameters=[
-                AutoSchemaHelper.query_org_id_field(
-                    required=False, description="Optional org id which overrides the users (default) current org id"
-                )
-            ]
-        )
-    ],
-    name="list",
-)
-@method_decorator(
-    [
-        swagger_auto_schema(
-            manual_parameters=[
-                AutoSchemaHelper.query_org_id_field(
-                    required=False, description="Optional org id which overrides the users (default) current org id"
-                )
-            ],
-            request_body=AutoSchemaHelper.schema_factory(
-                {
-                    "name": "string",
-                    "color": "string",
-                },
-                required=["name"],
-                description="An object containing meta data for a new label",
-            ),
-        ),
         has_perm("requires_root_member_access"),
     ],
     name="create",
 )
 @method_decorator(
     [
-        swagger_auto_schema(
-            manual_parameters=[
-                AutoSchemaHelper.query_org_id_field(
-                    required=False, description="Optional org id which overrides the users (default) current org id"
-                )
-            ]
-        ),
         has_perm("requires_root_member_access"),
     ],
     name="destroy",
 )
 @method_decorator(
     [
-        swagger_auto_schema(
-            manual_parameters=[
-                AutoSchemaHelper.query_org_id_field(
-                    required=False, description="Optional org id which overrides the users (default) current org id"
-                )
-            ],
-            request_body=AutoSchemaHelper.schema_factory(
-                {
-                    "name": "string",
-                    "color": "string",
-                },
-                required=["name"],
-                description="An object containing meta data for updating a label",
-            ),
-        ),
         has_perm("requires_root_member_access"),
     ],
     name="update",
 )
 class LabelViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
-    """
-    retrieve:
-        Return a label instance by pk if it is within user`s specified org.
-
-    list:
-        Return all labels available to user through user`s specified org.
-
-    create:
-        Create a new label within user`s specified org.
-
-    delete:
-        Remove an existing label.
-
-    update:
-        Update a label record.
-    """
+    """API endpoint for viewing and managing the labels of an organization"""
 
     serializer_class = LabelSerializer
     renderer_classes = (JSONRenderer,)
@@ -135,7 +104,23 @@ class LabelViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         kwargs["super_organization"] = self.get_organization(self.request)
         return super().get_serializer(*args, **kwargs)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema_org_query_param
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "label_ids": {"type": "array", "items": {"type": "integer"}, "description": "IDs of the organization's labels"},
+                    "data": {"type": "object", "properties": LABEL_ATTRIBUTES_SCHEMA, "description": "Attributes to set on each label"},
+                },
+                "required": ["label_ids", "data"],
+            }
+        },
+        responses={
+            200: AutoSchemaHelper.schema_factory({}),
+            400: OpenApiResponse(description="Missing or invalid arguments"),
+        },
+    )
     @method_decorator(
         [
             has_perm("requires_root_member_access"),
@@ -143,11 +128,17 @@ class LabelViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     )
     @action(detail=False, methods=["PUT"])
     def bulk_update(self, request):
+        """Set the same attributes on several labels of the organization"""
         organization_id = self.get_parent_org(self.request)
         label_ids = request.data.get("label_ids")
         data = request.data.get("data")
         if not organization_id or not label_ids or not data:
             return JsonResponse({"status": "error", "message": "Missing required arguments"}, status=status.HTTP_400_BAD_REQUEST)
+        if not isinstance(data, dict) or not data.keys() <= LABEL_ATTRIBUTES_SCHEMA.keys():
+            return JsonResponse(
+                {"status": "error", "message": f"data may only contain: {', '.join(LABEL_ATTRIBUTES_SCHEMA)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         labels = Label.objects.filter(id__in=label_ids, super_organization=organization_id)
         try:

@@ -4,7 +4,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.conf import settings
-from django.core.cache import cache
 
 
 def deployment_config():
@@ -23,7 +22,9 @@ def deployment_config():
     }
 
 
-def global_vars(_request):
-    method_2fa = cache.get("method_2fa")
-    user_email = cache.get("user_email")
+def global_vars(request):
+    # set by `CustomLoginView` for this browser's login
+    session = getattr(request, "session", {})
+    method_2fa = session.get("method_2fa")
+    user_email = session.get("user_email")
     return {"method_2fa": method_2fa, "user_email": user_email, "deployment": deployment_config()}

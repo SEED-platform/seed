@@ -5,11 +5,14 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 from datetime import datetime
+from unittest import mock
 
+from django.test import override_settings
 from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.models import AccessLevelInstance, Column, CycleGoal, Goal, GoalNote, HistoricalNote
+from seed.lib.superperms.orgs.models import ROLE_VIEWER
+from seed.models import AccessLevelInstance, BBSalesforceConfig, Column, CycleGoal, Goal, GoalNote, HistoricalNote
 from seed.test_helpers.fake import (
     FakeColumnFactory,
     FakeCycleFactory,
@@ -18,6 +21,7 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase
+from seed.utils.cache import set_cache_raw
 from seed.utils.organizations import create_organization
 
 
@@ -141,6 +145,38 @@ class GoalViewTests(AccessLevelBaseTestCase):
         }
         self.user2 = User.objects.create_superuser(**user2_details)
         self.org2, _, _ = create_organization(self.user2, "org2")
+
+    def _create_org2_goal(self):
+        """Create a goal, with a cycle goal and a property view, below the root of another organization"""
+        self.org2.access_level_names = ["root", "child"]
+        self.org2.save()
+        org2_child_ali = self.org2.add_new_access_level_instance(self.org2.root.id, "org2 child")
+        org2_cycle = FakeCycleFactory(organization=self.org2, user=self.user2).get_cycle(
+            start=datetime(2001, 1, 1), end=datetime(2002, 1, 1)
+        )
+        org2_goal = Goal.objects.create(
+            organization=self.org2,
+            baseline_cycle=org2_cycle,
+            access_level_instance=org2_child_ali,
+            eui_column1=Column.objects.get(organization=self.org2.id, column_name="source_eui"),
+            area_column=Column.objects.get(organization=self.org2.id, column_name="gross_floor_area"),
+            target_percentage=20,
+            name="org2_goal",
+        )
+        org2_cycle_goal = CycleGoal.objects.create(current_cycle=org2_cycle, goal=org2_goal)
+        org2_property = FakePropertyFactory(organization=self.org2).get_property(access_level_instance=org2_child_ali)
+        org2_view = FakePropertyViewFactory(organization=self.org2).get_property_view(prprty=org2_property, cycle=org2_cycle)
+        return org2_goal, org2_cycle_goal, org2_view
+
+    def test_goal_properties_are_scoped_to_organization(self):
+        # access level nested set bounds overlap across organizations, so they alone don't scope a goal's properties
+        _, org2_cycle_goal, org2_view = self._create_org2_goal()
+        assert self.root_goal.access_level_instance.lft <= org2_view.property.access_level_instance.lft
+        assert org2_view.property.access_level_instance.rgt <= self.root_goal.access_level_instance.rgt
+
+        assert self.root_goal.properties().exists()
+        assert not self.root_goal.properties().filter(pk=org2_view.property_id).exists()
+        assert org2_cycle_goal.goal.properties().filter(pk=org2_view.property_id).exists()
 
     def test_goal_list(self):
         url = reverse_lazy("api:v3:goals-list") + "?organization_id=" + str(self.org.id)
@@ -301,6 +337,13 @@ class GoalViewTests(AccessLevelBaseTestCase):
         response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
         assert response.json()["non_field_errors"] == ["Organization mismatch."]
 
+        # columns of another org
+        goal_data = reset_goal_data("other org column goal")
+        goal_data["eui_column1"] = Column.objects.get(organization=self.org2.id, column_name="source_eui").id
+        response = self.client.post(url, data=json.dumps(goal_data), content_type="application/json")
+        assert response.status_code == 400
+        assert response.json()["non_field_errors"] == ["Organization mismatch."]
+
     def test_cycle_goal_create(self):
         cycle_goal_count = CycleGoal.objects.count()
         goal_note_count = GoalNote.objects.count()
@@ -320,6 +363,22 @@ class GoalViewTests(AccessLevelBaseTestCase):
 
         assert CycleGoal.objects.count() == cycle_goal_count + 1
         assert GoalNote.objects.count() == goal_note_count  # goal notes are 1 per goal/property combo (not one per cycle goal)
+
+        # cycles of another organization are rejected, on create and update
+        _, org2_cycle_goal, _ = self._create_org2_goal()
+        org2_cycle_data = json.dumps({"current_cycle": org2_cycle_goal.current_cycle_id})
+        response = self.client.post(url, data=org2_cycle_data, content_type="application/json")
+        assert response.status_code == 400
+        assert not CycleGoal.objects.filter(goal=self.root_goal, current_cycle=org2_cycle_goal.current_cycle).exists()
+
+        cycle_goal = CycleGoal.objects.filter(goal=self.root_goal).last()
+        detail_url = (
+            reverse_lazy("api:v3:goal-cycles-detail", args=[self.root_goal.id, cycle_goal.id]) + "?organization_id=" + str(self.org.id)
+        )
+        response = self.client.put(detail_url, data=org2_cycle_data, content_type="application/json")
+        assert response.status_code == 400
+        cycle_goal.refresh_from_db()
+        assert cycle_goal.current_cycle_id != org2_cycle_goal.current_cycle_id
 
     def test_goal_update(self):
         original_goal = Goal.objects.get(id=self.child_goal.id)
@@ -475,6 +534,232 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert response.status_code == 200
         assert response.json()["text"] == "updated text"
         assert HistoricalNote.objects.get(property=self.property1).text == "updated text"
+
+    def test_historical_note_update_is_scoped_to_property(self):
+        _, _, org2_view = self._create_org2_goal()
+        self.login_as_child_member()
+
+        # notes of other properties can't be updated through an accessible property
+        for historical_note in [self.property4.historical_note, org2_view.property.historical_note]:
+            url = (
+                reverse_lazy("api:v3:property-historical-notes-detail", args=[self.property1.id, historical_note.id])
+                + "?organization_id="
+                + str(self.org.id)
+            )
+            data = {"property": historical_note.property_id, "text": "updated text"}
+            response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+            assert response.status_code == 404
+            historical_note.refresh_from_db()
+            assert historical_note.text == ""
+
+    def test_goal_access_ignores_body_access_level_instance(self):
+        org2_goal, _, _ = self._create_org2_goal()
+        self.login_as_root_member()
+
+        # a goal of another organization can't be deleted by sending an accessible access level instance
+        url = reverse_lazy("api:v3:goals-detail", args=[org2_goal.id]) + "?organization_id=" + str(self.org.id)
+        data = {"access_level_instance": self.root_ali.id}
+        response = self.client.delete(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 404
+        assert Goal.objects.filter(pk=org2_goal.id).exists()
+
+        # a goal can't be moved to an access level instance outside of the user's (here, in another organization)
+        url = reverse_lazy("api:v3:goals-detail", args=[self.child_goal.id]) + "?organization_id=" + str(self.org.id)
+        data = {
+            "organization": self.org2.id,
+            "baseline_cycle": org2_goal.baseline_cycle_id,
+            "access_level_instance": org2_goal.access_level_instance_id,
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 404
+        assert Goal.objects.get(pk=self.child_goal.id).organization_id == self.org.id
+
+    def test_cycle_goal_access_is_scoped_to_goal(self):
+        _, org2_cycle_goal, _ = self._create_org2_goal()
+
+        def detail_url(goal, cycle_goal):
+            return reverse_lazy("api:v3:goal-cycles-detail", args=[goal.id, cycle_goal.id]) + "?organization_id=" + str(self.org.id)
+
+        cycle_goal_data = json.dumps({"current_cycle": self.cycle2.id})
+
+        # cycle goals of other goals (here, in another organization) can't be reached through an accessible goal
+        self.login_as_root_member()
+        url = detail_url(self.root_goal, org2_cycle_goal)
+        assert self.client.get(url).status_code == 404
+        assert self.client.put(url, data=cycle_goal_data, content_type="application/json").status_code == 404
+        assert self.client.delete(url).status_code == 404
+        org2_cycle_goal.refresh_from_db()
+        assert org2_cycle_goal.current_cycle != self.cycle2
+
+        # cycle goals of goals outside of the user's access level instance are inaccessible
+        self.login_as_child_member()
+        url = detail_url(self.root_goal, self.root_cycle_goal)
+        assert self.client.get(url).status_code == 404
+        assert self.client.put(url, data=cycle_goal_data, content_type="application/json").status_code == 403
+        self.root_cycle_goal.refresh_from_db()
+        assert self.root_cycle_goal.current_cycle == self.cycle3
+
+        # valid
+        self.login_as_root_member()
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert response.json()["id"] == self.root_cycle_goal.id
+        response = self.client.put(url, data=cycle_goal_data, content_type="application/json")
+        assert response.status_code == 200
+        assert response.json()["current_cycle"]["id"] == self.cycle2.id
+
+    def test_goal_data_is_scoped_to_user_access(self):
+        _, org2_cycle_goal, _ = self._create_org2_goal()
+        self.login_as_child_member()
+        path = reverse_lazy("api:v3:goal-cycles-data", args=[self.child_goal.id, self.child_cycle_goal.id])
+        url = path + "?organization_id=" + str(self.org.id)
+        data = {
+            "goal_id": self.child_goal.id,
+            "page": 1,
+            "per_page": 50,
+            "baseline_first": True,
+            "access_level_instance_id": self.child_ali.id,
+            "related_model_sort": False,
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+
+        # properties above the user's access level instance can't be requested
+        response = self.client.put(
+            url, data=json.dumps({**data, "access_level_instance_id": self.root_ali.id}), content_type="application/json"
+        )
+        assert response.status_code == 404
+
+        # cycle goals of other goals (here, in another organization) can't be reached through an accessible goal
+        path = reverse_lazy("api:v3:goal-cycles-data", args=[self.child_goal.id, org2_cycle_goal.id])
+        url = path + "?organization_id=" + str(self.org.id)
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 404
+
+    def test_bulk_update_goal_notes_is_scoped_to_user_access(self):
+        _, _, org2_view = self._create_org2_goal()
+        url = reverse_lazy("api:v3:goals-bulk-update-goal-notes", args=[self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+
+        # goals outside of the user's access level instance can't be updated
+        self.login_as_child_member()
+        data = {"property_view_ids": [self.view11.id], "data": {"resolution": "child res"}}
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 404
+        assert GoalNote.objects.get(goal=self.root_goal, property=self.property1).resolution is None
+
+        # properties of other organizations are ignored
+        self.login_as_root_member()
+        data = {"property_view_ids": [self.view11.id, org2_view.id], "data": {"historical_note": "updated", "resolution": "root res"}}
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        assert response.json()["message"] == "Updated 1 properties"
+        assert GoalNote.objects.get(goal=self.root_goal, property=self.property1).resolution == "root res"
+        assert HistoricalNote.objects.get(property=self.property1).text == "updated"
+        assert HistoricalNote.objects.get(property=org2_view.property).text == ""
+
+        # nothing to update
+        data = {"property_view_ids": [self.view11.id]}
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        assert response.json()["message"] == "Updated 0 properties"
+
+    @override_settings(SEED_SALESFORCE_ENABLED=True)
+    def test_salesforce_updates_require_write_access(self):
+        viewer_details = {"username": "root_viewer@demo.com", "password": "test_pass"}
+        self.org.add_member(User.objects.create_user(**viewer_details), self.org.root.id, ROLE_VIEWER)
+
+        for action, data in [
+            ("update-salesforce-current", {"cycle_goal_id": self.root_cycle_goal.id}),
+            ("update-salesforce-historical", {"cycle_goal_ids": [self.root_cycle_goal.id]}),
+        ]:
+            for goal, login in [
+                (self.root_goal, lambda: self.client.login(**viewer_details)),
+                (self.child_goal, self.login_as_child_member),
+            ]:
+                login()
+                url = reverse_lazy(f"api:v3:goals-{action}", args=[goal.id]) + "?organization_id=" + str(self.org.id)
+                response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+                assert response.status_code == 403
+
+            # valid (the organization has no Salesforce connection to update)
+            self.login_as_root_member()
+            url = reverse_lazy(f"api:v3:goals-{action}", args=[self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+            response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+            assert response.status_code == 200
+            assert response.json()["response"] == "Org has no portfolio Salesforce connection."
+
+    def test_goal_note_fields_are_restricted(self):
+        org2_goal, _, org2_view = self._create_org2_goal()
+        goal_note = GoalNote.objects.get(goal=self.root_goal, property=self.property1)
+        self.login_as_root_member()
+
+        # a goal note can't be moved to another goal or property (here, in another organization)
+        url = (
+            reverse_lazy("api:v3:property-goal-notes-detail", args=[self.property1.id, goal_note.id])
+            + "?organization_id="
+            + str(self.org.id)
+        )
+        data = {"goal": org2_goal.id, "property": org2_view.property_id, "resolution": "single res"}
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        assert response.json()["resolution"] == "single res"
+        goal_note.refresh_from_db()
+        assert (goal_note.goal_id, goal_note.property_id) == (self.root_goal.id, self.property1.id)
+
+        # nor through the bulk update, which ignores fields other than the goal note's editable ones
+        url = reverse_lazy("api:v3:goals-bulk-update-goal-notes", args=[self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        data = {
+            "property_view_ids": [self.view11.id],
+            "data": {"goal_id": org2_goal.id, "property_id": org2_view.property_id, "unknown": 1, "resolution": "bulk res"},
+        }
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        assert response.json()["message"] == "Updated 1 properties"
+        goal_note.refresh_from_db()
+        assert (goal_note.goal_id, goal_note.property_id, goal_note.resolution) == (self.root_goal.id, self.property1.id, "bulk res")
+        assert not GoalNote.objects.filter(goal=org2_goal).exists()
+
+    def test_cycle_goal_list(self):
+        viewer_details = {"username": "root_viewer@demo.com", "password": "test_pass"}
+        self.org.add_member(User.objects.create_user(**viewer_details), self.org.root.id, ROLE_VIEWER)
+        url = reverse_lazy("api:v3:goal-cycles-list", args=[self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+
+        # cycle goals of goals outside of the user's access level instance are inaccessible
+        self.login_as_child_member()
+        assert self.client.get(url).status_code == 404
+
+        # viewers may list cycle goals, as they may read the goal's other data
+        self.client.login(**viewer_details)
+        response = self.client.get(url)
+        assert response.status_code == 200
+        assert [cycle_goal["id"] for cycle_goal in response.json()["cycle_goals"]] == [self.root_cycle_goal.id]
+
+    @override_settings(SEED_SALESFORCE_ENABLED=True)
+    @mock.patch("seed.views.v3.goals.Salesforce")
+    def test_salesforce_update_uses_org_salesforce_url(self, mock_salesforce):
+        salesforce_url = "https://example.my.salesforce.com/services"
+        BBSalesforceConfig.objects.create(organization=self.org, salesforce_url=salesforce_url, client_id="id", client_secret="secret")
+        set_cache_raw(f"access_token_{self.org.id}", "example_token")
+        self.child_cycle_goal.salesforce_annual_report_id = "example_annual_report_id"
+        self.child_cycle_goal.save()
+        self.child_goal.goalnote_set.update(passed_checks=True)
+
+        self.login_as_root_member()
+        url = reverse_lazy("api:v3:goals-update-salesforce-current", args=[self.child_goal.id]) + "?organization_id=" + str(self.org.id)
+        response = self.client.put(url, data=json.dumps({"cycle_goal_id": self.child_cycle_goal.id}), content_type="application/json")
+        assert response.status_code == 200
+        mock_salesforce.assert_called_once_with(instance_url=salesforce_url, session_id="example_token")
+        update_args = mock_salesforce.return_value.Annual_Report__c.update.call_args.args
+        assert update_args[0] == "example_annual_report_id"
+        assert update_args[1]["BB_Portfolio_Average_EUI__c"] == 7
+
+        mock_salesforce.reset_mock()
+        url = reverse_lazy("api:v3:goals-update-salesforce-historical", args=[self.child_goal.id]) + "?organization_id=" + str(self.org.id)
+        data = {"cycle_goal_ids": [self.child_cycle_goal.id]}
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        mock_salesforce.assert_called_once_with(instance_url=salesforce_url, session_id="example_token")
+        mock_salesforce.return_value.Annual_Report__c.update.assert_called_once()
 
     def test_portfolio_summary(self):
         self.login_as_child_member()

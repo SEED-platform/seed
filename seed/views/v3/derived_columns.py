@@ -8,9 +8,9 @@ from copy import deepcopy
 import django.core.exceptions
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg import openapi
-from drf_yasg.utils import no_body, swagger_auto_schema
-from rest_framework import status, viewsets
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_serializer
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request, require_organization_id
@@ -19,14 +19,49 @@ from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Column, DerivedColumn, PropertyView, TaxLotView
 from seed.serializers.derived_columns import DerivedColumnSerializer
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
+
+derived_column_id_field = AutoSchemaHelper.path_id_field("Derived column ID")
+# Returned (as the errors of a bad request) when a parameter's source column belongs to another organization
+SOURCE_COLUMN_ORG_ERRORS = {"parameters": ["Source columns must belong to the organization"]}
 
 
+# Schema only: the organization is set from the query string
+@extend_schema_serializer(exclude_fields=["organization"])
+class DerivedColumnWriteSerializer(DerivedColumnSerializer):
+    pass
+
+
+class DerivedColumnResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    derived_column = DerivedColumnSerializer()
+
+
+@extend_schema_serializer(many=False)
+class DerivedColumnsResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    derived_columns = DerivedColumnSerializer(many=True)
+
+
+def source_columns_in_org(serializer, org_id):
+    """Whether the source columns of a validated serializer's parameters all belong to the organization"""
+    parameters = serializer.validated_data.get("derivedcolumnparameter_set", [])
+    return all(parameter["source_column"].organization_id == int(org_id) for parameter in parameters)
+
+
+@extend_schema_org_query_param
 class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = DerivedColumnSerializer
     model = DerivedColumn
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_enum_field(
+                "inventory_type", required=False, enum=["properties", "taxlots"], description="Inventory type to filter by"
+            )
+        ],
+        responses=DerivedColumnsResponseSerializer,
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -54,7 +89,7 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "derived_columns": DerivedColumnSerializer(queryset, many=True).data})
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(parameters=[derived_column_id_field], responses=DerivedColumnResponseSerializer)
     @method_decorator(
         [
             require_organization_id,
@@ -75,7 +110,7 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
                 {"status": "error", "message": f"Derived column with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(request={"application/json": DerivedColumnWriteSerializer}, responses={200: DerivedColumnResponseSerializer})
     @method_decorator(
         [
             require_organization_id,
@@ -90,12 +125,12 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
         data = deepcopy(request.data)
         data.update({"organization": org_id})
         serializer = DerivedColumnSerializer(data=data)
-        if not serializer.is_valid():
+        if not serializer.is_valid() or not source_columns_in_org(serializer, org_id):
             return JsonResponse(
                 {
                     "status": "error",
                     "message": "Bad request",
-                    "errors": serializer.errors,
+                    "errors": serializer.errors or SOURCE_COLUMN_ORG_ERRORS,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
@@ -127,7 +162,11 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[derived_column_id_field],
+        request={"application/json": DerivedColumnWriteSerializer(partial=True)},
+        responses=DerivedColumnResponseSerializer,
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -150,21 +189,22 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
         data = deepcopy(request.data)
         data.update({"organization": org_id})
         serializer = DerivedColumnSerializer(derived_column, data=data, partial=True)
-        if not serializer.is_valid():
+        if not serializer.is_valid() or not source_columns_in_org(serializer, org_id):
             return JsonResponse(
                 {
                     "status": "error",
                     "message": "Bad request",
-                    "errors": serializer.errors,
+                    "errors": serializer.errors or SOURCE_COLUMN_ORG_ERRORS,
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
             serializer.save()
-            Column.objects.filter(derived_column=pk).update(
-                column_name=data["name"], display_name=data["name"], column_description=data["name"]
-            )
+            if "name" in data:
+                Column.objects.filter(derived_column=pk).update(
+                    column_name=data["name"], display_name=data["name"], column_description=data["name"]
+                )
 
             if "parameters" in data or "expression" in data:
                 update_derived_data(serializer.data["id"], org_id, serializer.data["inventory_type"])
@@ -191,7 +231,10 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[derived_column_id_field],
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"})},
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -217,20 +260,39 @@ class DerivedColumnViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
+    @extend_schema(
+        parameters=[
+            derived_column_id_field,
             AutoSchemaHelper.query_integer_field(name="cycle_id", required=True, description="Cycle to evaluate"),
-            openapi.Parameter(
+            OpenApiParameter(
                 "inventory_ids",
-                openapi.IN_QUERY,
-                description="List of inventory IDs (i.e., Property or TaxLot)",
+                OpenApiTypes.INT,
+                OpenApiParameter.QUERY,
                 required=True,
-                type=openapi.TYPE_ARRAY,
-                items=openapi.Items(type=openapi.TYPE_INTEGER),
+                many=True,
+                explode=False,
+                description="Comma-separated list of inventory IDs (i.e., Property or TaxLot)",
             ),
         ],
-        request_body=no_body,
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "status": {"type": "string"},
+                    "results": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "integer"},
+                                "value": {"type": "number", "nullable": True, "description": "null if it can't be evaluated"},
+                            },
+                        },
+                    },
+                },
+                "description": "The derived column's value for each accessible inventory in the cycle",
+            }
+        },
     )
     @method_decorator(
         [

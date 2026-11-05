@@ -12,16 +12,19 @@ from django.core.exceptions import ValidationError
 from django.core.validators import URLValidator
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from drf_spectacular.utils import extend_schema
 from requests.models import PreparedRequest
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
+from simple_salesforce import format_soql
 
 from seed.decorators import ajax_request, get_bb_salesforce_config
 from seed.lib.superperms.orgs.decorators import has_perm
-from seed.models import Goal
+from seed.lib.superperms.orgs.permissions import get_org_id
+from seed.models import AccessLevelInstance, Goal
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.cache import get_cache_raw, set_cache_raw
 
 logger = logging.getLogger(__name__)
@@ -91,13 +94,23 @@ def is_valid_url(url):
         return False
 
 
+def _status_response(**fields):
+    return AutoSchemaHelper.schema_factory({"status": "string", **fields})
+
+
+@extend_schema_org_query_param
 class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
+    """
+    If the organization has no complete BB Salesforce connection (URL, client ID, and client secret), the
+    response is HTTP 200 with `{"status": "error", "valid": false, "response": "<reason>"}` instead.
+    """
+
     def initial(self, request, *args, **kwargs):
         super().initial(request, *args, **kwargs)
         if not settings.SEED_SALESFORCE_ENABLED:
             raise PermissionDenied("Salesforce is disabled on this deployment")
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(responses={200: _status_response(url="string")})
     @method_decorator(
         [
             api_endpoint,
@@ -110,7 +123,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     def login_url(self, request, bb_salesforce_config):
         # we are going to need the code_verifier when the user has logged in and wants a token
 
-        org_id = request.query_params.get("organization_id")
+        org_id = get_org_id(request)
 
         # validate URL
         if not is_valid_url(bb_salesforce_config.salesforce_url):
@@ -140,7 +153,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "url": request.url}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(responses={200: _status_response(response="string")})
     @method_decorator(
         [
             api_endpoint,
@@ -151,17 +164,17 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @get_bb_salesforce_config
     @action(detail=False, methods=["GET"])
     def logout(self, request, bb_salesforce_config):
-        org_id = request.query_params.get("organization_id")
+        org_id = get_org_id(request)
         # delete access_token
         set_cache_raw(f"access_token_{org_id}", None)
 
         return JsonResponse({"status": "success", "response": "access token deleted"}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_string_field("org_id", required=True, description="org_id"),
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_string_field("code", required=True, description="code received from calling url given by /login_url"),
         ],
+        responses={200: _status_response(response="string")},
     )
     @method_decorator(
         [
@@ -173,7 +186,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @get_bb_salesforce_config
     @action(detail=False, methods=["GET"])
     def get_token(self, request, bb_salesforce_config):
-        org_id = request.query_params.get("organization_id")
+        org_id = get_org_id(request)
         # get the cached code validator
         code = request.query_params.get("code")
         code_verifier = get_cache_raw(f"code_verifier_{org_id}")
@@ -204,7 +217,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "response": "access token created"}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(responses={200: _status_response(valid="boolean", message="string")})
     @method_decorator(
         [
             api_endpoint,
@@ -215,7 +228,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=False, methods=["GET"])
     @get_bb_salesforce_config
     def verify_token(self, request, bb_salesforce_config):
-        org_id = request.query_params.get("organization_id")
+        org_id = get_org_id(request)
         access_token = get_cache_raw(f"access_token_{org_id}")
 
         # check if you ever had a token
@@ -242,7 +255,9 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "valid": False, "message": "access token is not valid"}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        responses={200: _status_response(results=[{"id": "string", "name": "string", "goals": [{"id": "string", "name": "string"}]}])}
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -253,7 +268,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @get_bb_salesforce_config
     @action(detail=False, methods=["GET"])
     def partners(self, request, bb_salesforce_config):
-        org_id = request.query_params.get("organization_id")
+        org_id = get_org_id(request)
         access_token = get_cache_raw(f"access_token_{org_id}")
 
         # check the token is still valid
@@ -289,11 +304,9 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
             status=status.HTTP_200_OK,
         )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(True),
-            AutoSchemaHelper.query_integer_field("goal_id", False, "Property ID"),
-        ]
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_integer_field("goal_id", True, "Goal ID")],
+        responses={200: _status_response(results=[{"id": "string", "name": "string"}])},
     )
     @method_decorator(
         [
@@ -305,9 +318,17 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
     @get_bb_salesforce_config
     @action(detail=False, methods=["GET"])
     def annual_report(self, request, bb_salesforce_config):
+        org_id = get_org_id(request)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+
         # get goal
         try:
-            goal = Goal.objects.get(pk=request.query_params.get("goal_id"))
+            goal = Goal.objects.get(
+                pk=request.query_params.get("goal_id"),
+                organization=org_id,
+                access_level_instance__lft__gte=access_level_instance.lft,
+                access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
         except Goal.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No such resource."})
 
@@ -317,12 +338,12 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"status": "error", "message": "No attached salesforce goal."})
 
         # get annual reports
-        org_id = request.query_params.get("organization_id")
         access_token = get_cache_raw(f"access_token_{org_id}")
         response = requests.get(
             f"{bb_salesforce_config.salesforce_url}/data/v64.0/query?",
             params={
-                "q": f"SELECT Id,  Name FROM Annual_Report__c WHERE BB_Goal__c = '{salesforce_goal_id}'",  # noqa: S608 no fear of sql injection as the id comes from the db, and must be an int
+                # `salesforce_goal_id` is user-editable, so it's quoted and escaped
+                "q": format_soql("SELECT Id,  Name FROM Annual_Report__c WHERE BB_Goal__c = {}", salesforce_goal_id),
             },
             headers={"Authorization": f"Bearer {access_token}"},
             timeout=300,

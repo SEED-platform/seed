@@ -11,7 +11,7 @@ from django.db import connection
 from django.db.models import Avg, Count, Max, Min, Sum
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
@@ -588,8 +588,8 @@ def _build_column_summary_for_state_ids(state_ids: list[int], selected_column_na
 class PropertyViewSet(viewsets.ViewSet, OrgMixin):
     pagination_class = None
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_string_field(
                 "cycle_ids",
@@ -604,14 +604,55 @@ class PropertyViewSet(viewsets.ViewSet, OrgMixin):
             AutoSchemaHelper.query_boolean_field(
                 "include_raw_data",
                 required=False,
-                description="If true, include row-level selected column values keyed by property_id",
+                description="If true, include row-level selected column values aligned with their property_ids (not allowed with column_names=all)",
             ),
             AutoSchemaHelper.query_integer_field(
                 "raw_data_limit",
                 required=False,
                 description="Optional max number of raw rows to return when include_raw_data=true",
             ),
-        ]
+        ],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "selected_cycle_ids": ["integer"],
+                    "selected_column_names": ["string"],
+                    "total_records": "integer",
+                    "include_raw_data": "boolean",
+                    "cycles": [
+                        {
+                            "cycle_id": "integer",
+                            "total_records": "integer",
+                            "columns": [
+                                {
+                                    "column_name": "string",
+                                    "display_name": "string",
+                                    "is_extra_data": "boolean",
+                                    "data_type": "string",
+                                    "db_type": "string",
+                                    "unit": {
+                                        "unit_name": "string",
+                                        "unit_type": "integer",
+                                        "unit_type_display": "string",
+                                        "units_pint": "string",
+                                        "display_unit_spec": "string",
+                                        "display_unit_name": "string",
+                                    },
+                                    "stats": "object",
+                                }
+                            ],
+                            "raw_data": {"property_ids": ["integer"], "property_state_ids": ["integer"], "columns": "object"},
+                            "raw_data_count": "integer",
+                        }
+                    ],
+                },
+                description="Summary statistics per cycle and column. Each column's `stats` has non_null_count, null_count, "
+                "distinct_count, min, max, avg, sum, median, p05, p25, p75, p95, stddev, mode, top_k (`[{value, count}]`), "
+                "unique_count, uniqueness_ratio, and blank_count; statistics that don't apply to the column's data type are null. "
+                "`raw_data` (values keyed by column name) and `raw_data_count` are only included when include_raw_data is true.",
+            )
+        },
     )
     @method_decorator(
         [

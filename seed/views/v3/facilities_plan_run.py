@@ -17,8 +17,11 @@ from django.db.models import F, FilteredRelation, OuterRef, Q
 from django.db.utils import DataError
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
@@ -27,13 +30,29 @@ from seed.models import AccessLevelInstance, Column, Element, FacilitiesPlanRun,
 from seed.serializers.facilities_plan_run import FacilitiesPlanRunSerializer
 from seed.serializers.pint import apply_display_unit_preferences
 from seed.utils.api import api_endpoint
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.excel import write_template_dataframe
 from seed.utils.search import FilterError, build_view_filters_and_sorts
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
 logger = logging.getLogger(__name__)
 
+PAGINATION_SCHEMA = {
+    "page": "integer",
+    "start": "integer",
+    "end": "integer",
+    "num_pages": "integer",
+    "has_next": "boolean",
+    "has_previous": "boolean",
+    "total": "integer",
+}
 
+
+@extend_schema_org_query_param
+@extend_schema_view(
+    create=extend_schema(description="Create a facilities plan run. `ali` is required and must be within your access level."),
+    update=extend_schema(description="Update a facilities plan run. If given, `ali` must be within your access level."),
+)
 @method_decorator(
     [
         has_perm("requires_viewer"),
@@ -55,7 +74,23 @@ logger = logging.getLogger(__name__)
     ],
     name="create",
 )
+@method_decorator(
+    [
+        has_perm("requires_member"),
+        has_hierarchy_access(facilities_plan_run_id_kwarg="pk", body_ali_id="ali"),
+    ],
+    name="update",
+)
+@method_decorator(
+    [
+        has_perm("requires_member"),
+        has_hierarchy_access(facilities_plan_run_id_kwarg="pk"),
+    ],
+    name="destroy",
+)
 class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
+    """Runs of a facilities plan for a cycle and access level instance, limited to your access level"""
+
     serializer_class = FacilitiesPlanRunSerializer
     model = FacilitiesPlanRun
     pagination_class = None
@@ -71,6 +106,66 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         return fprs
 
+    def perform_create(self, serializer):
+        self._validate_organization(serializer.validated_data)
+        super().perform_create(serializer)
+
+    def perform_update(self, serializer):
+        self._validate_organization(serializer.validated_data)
+        super().perform_update(serializer)
+
+    def _validate_organization(self, validated_data):
+        """Reject a facilities plan, cycle, or display columns that belong to another organization"""
+        org_id = int(self.get_organization(self.request))
+        related_objects = {
+            "facilities_plan": [validated_data.get("facilities_plan")],
+            "cycle": [validated_data.get("cycle")],
+            "display_columns": validated_data.get("display_columns", []),
+        }
+        errors = {
+            field: ["Must belong to the requested organization."]
+            for field, objs in related_objects.items()
+            if any(obj is not None and obj.organization_id != org_id for obj in objs)
+        }
+        if errors:
+            raise ValidationError(errors)
+
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_integer_field("page", required=False, description="Page to return (default: 1)"),
+            AutoSchemaHelper.query_integer_field("per_page", required=False, description="Number of properties per page (default: 100)"),
+            AutoSchemaHelper.query_boolean_field(
+                "only_ids", required=False, description="If true, return only the IDs of all matching property views"
+            ),
+            AutoSchemaHelper.query_array_field(
+                "order_by",
+                required=False,
+                description="Column names to sort by, prefixed with `-` for descending order",
+                item_type="string",
+            ),
+        ],
+        responses={
+            200: {
+                "oneOf": [
+                    AutoSchemaHelper.schema_factory(
+                        {
+                            "pagination": PAGINATION_SCHEMA,
+                            "properties": [
+                                {
+                                    "total_energy_usage": "number",
+                                    "percentage_of_total_energy_usage": "number",
+                                    "running_percentage": "number",
+                                    "running_square_footage": "number",
+                                }
+                            ],
+                        },
+                        description="Ranked properties, including the plan's columns and the run's display columns",
+                    ),
+                    AutoSchemaHelper.schema_factory({"ids": ["integer"]}, description="Property view IDs, when `only_ids` is true"),
+                ]
+            }
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -82,7 +177,8 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     @action(detail=True, methods=["GET"])
     def properties(self, request, pk):
         """
-        Properties
+        List the property views in the run's cycle and access level, ordered by their rank in the run.
+        Filter by any column with `<column_name>[__<lookup>]=<value>` query parameters.
         """
         # Init a bunch of values
         org_id = int(self.get_organization(request))
@@ -205,6 +301,7 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
             }
         )
 
+    @extend_schema(request=None, responses={200: AutoSchemaHelper.schema_factory({"status": "string"})})
     @method_decorator(
         [
             api_endpoint,
@@ -215,6 +312,10 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     )
     @action(detail=True, methods=["POST"])
     def run(self, request, pk):
+        """
+        Rank the properties in the run's cycle and access level by their share of the total energy usage,
+        replacing any previous results.
+        """
         try:
             fpr = FacilitiesPlanRun.objects.get(pk=pk)
         except (Organization.DoesNotExist, FacilitiesPlanRun.DoesNotExist):
@@ -224,6 +325,10 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
 
         return JsonResponse({"status": "success"})
 
+    @extend_schema(
+        request=None,
+        responses={(200, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"): OpenApiTypes.BINARY},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -234,6 +339,9 @@ class FacilitiesPlanRunViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
     )
     @action(detail=True, methods=["POST"])
     def export(self, request, pk):
+        """
+        Export the run's ranked properties and their prioritized building components as an Excel workbook.
+        """
         # get fpr ready
         org_id = int(self.get_organization(request))
         try:

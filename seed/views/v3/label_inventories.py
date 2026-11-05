@@ -10,14 +10,15 @@ from collections import namedtuple
 from django.apps import apps
 from django.db import IntegrityError
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import response, status
 from rest_framework.parsers import JSONParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.views import APIView
 
 from seed.lib.superperms.orgs.decorators import has_perm
-from seed.lib.superperms.orgs.models import AccessLevelInstance
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
+from seed.lib.superperms.orgs.permissions import get_org_id
 from seed.models import PropertyView, TaxLotView
 from seed.models import StatusLabel as Label
 from seed.utils.api_schema import AutoSchemaHelper
@@ -62,12 +63,14 @@ class LabelInventoryViewSet(APIView):
         """
         return {"property": apps.get_model("seed", "PropertyViewLabel"), "taxlot": apps.get_model("seed", "TaxLotView_labels")}
 
-    def get_queryset(self, inventory_type, organization_id):
+    def get_queryset(self, inventory_type, super_organization_id):
         Model = self.models[inventory_type]
-        return Model.objects.filter(statuslabel__super_organization_id=organization_id)
+        return Model.objects.filter(statuslabel__super_organization_id=super_organization_id)
 
-    def get_label_desc(self, add_label_ids, remove_label_ids):
-        return Label.objects.filter(pk__in=add_label_ids + remove_label_ids).values("id", "color", "name")
+    def get_label_desc(self, add_label_ids, remove_label_ids, super_organization_id):
+        return Label.objects.filter(pk__in=add_label_ids + remove_label_ids, super_organization_id=super_organization_id).values(
+            "id", "color", "name"
+        )
 
     def get_inventory_id(self, q, inventory_type):
         return getattr(q, f"{inventory_type}view_id")
@@ -143,9 +146,9 @@ class LabelInventoryViewSet(APIView):
             rqs.delete()
         return removed
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {
                 "add_label_ids": ["integer"],
                 "remove_label_ids": ["integer"],
@@ -155,8 +158,18 @@ class LabelInventoryViewSet(APIView):
             description="Properties:\n"
             "- add_label_ids: label ids to add to the inventories\n"
             "- remove_label_ids: label ids to remove from the inventories\n"
-            "- inventory_ids: List of inventory IDs",
+            "- inventory_ids: IDs of the property or tax lot views",
         ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "num_updated": "integer",
+                    "labels": [{"id": "integer", "color": "string", "name": "string"}],
+                }
+            ),
+            422: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"}),
+        },
     )
     @method_decorator(
         [
@@ -165,19 +178,18 @@ class LabelInventoryViewSet(APIView):
     )
     def put(self, request, inventory_type):
         """
-        Updates label assignments to inventory items.
+        Updates label assignments to the property (`/labels_property/`) or tax lot (`/labels_taxlot/`) views
+        identified by `inventory_ids`. Views outside the organization or the user's access level are ignored.
 
         Returns::
 
             {
-                'status': {string}              'success' or 'error'
-                'message': {string}             Error message if error
+                'status': {string}              'success'
                 'num_updated': {integer}        Number of properties/taxlots updated
                 'labels': [                     List of labels affected.
                     {
                         'color': {string}
                         'id': {int}
-                        'label': {'string'}
                         'name': {string}
                     }...
                 ]
@@ -187,7 +199,7 @@ class LabelInventoryViewSet(APIView):
         add_label_ids = request.data.get("add_label_ids", [])
         remove_label_ids = request.data.get("remove_label_ids", [])
         inventory_ids = request.data.get("inventory_ids", [])
-        organization_id = request.query_params["organization_id"]
+        organization_id = get_org_id(request)
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
         error = None
         # ensure add_label_ids and remove_label_ids are different
@@ -198,24 +210,27 @@ class LabelInventoryViewSet(APIView):
         elif len(inventory_ids) == 0:
             error = self.errors["missing_inventory_ids"]
         if error:
-            result = {"status": "error", "message": str(error)}
+            result = {"status": "error", "message": error.message}
             status_code = error.status_code
         else:
+            # Labels belong to the parent organization and are shared with its sub-organizations
+            super_organization_id = Organization.objects.get(pk=organization_id).get_parent().id
             Model = self.inventory_models[inventory_type]
             inventory_ids = Model.objects.filter(
                 **{
                     "id__in": inventory_ids,
+                    f"{inventory_type}__organization_id": organization_id,
                     f"{inventory_type}__access_level_instance__lft__gte": access_level_instance.lft,
                     f"{inventory_type}__access_level_instance__rgt__lte": access_level_instance.rgt,
                 }
             ).values_list("id", flat=True)
 
-            qs = self.get_queryset(inventory_type, organization_id)
+            qs = self.get_queryset(inventory_type, super_organization_id)
             qs = self.filter_by_inventory(qs, inventory_type, inventory_ids)
             removed = self.remove_labels(qs, inventory_type, remove_label_ids)
             added = self.add_labels(qs, inventory_type, inventory_ids, add_label_ids)
             num_updated = len(set(added).union(removed))
-            labels = self.get_label_desc(add_label_ids, remove_label_ids)
+            labels = self.get_label_desc(add_label_ids, remove_label_ids, super_organization_id)
             result = {"status": "success", "num_updated": num_updated, "labels": labels}
             status_code = status.HTTP_200_OK
         return response.Response(result, status=status_code)

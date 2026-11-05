@@ -48,7 +48,9 @@ class Goal(models.Model):
     partner_note_approval_user = models.ForeignKey(OrganizationUser, on_delete=models.SET_NULL, null=True, blank=True)
 
     def properties(self):
+        # nested set bounds overlap across organizations' access level trees
         properties = Property.objects.filter(
+            organization_id=self.organization_id,
             access_level_instance__lft__gte=self.access_level_instance.lft,
             access_level_instance__rgt__lte=self.access_level_instance.rgt,
         ).distinct()
@@ -107,6 +109,7 @@ class CycleGoal(models.Model):
     def properties(self):
         properties = Property.objects.filter(
             Q(views__cycle=self.goal.baseline_cycle) | Q(views__cycle=self.current_cycle),
+            organization_id=self.goal.organization_id,
             access_level_instance__lft__gte=self.goal.access_level_instance.lft,
             access_level_instance__rgt__lte=self.goal.access_level_instance.rgt,
         ).distinct()

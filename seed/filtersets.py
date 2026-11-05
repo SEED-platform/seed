@@ -21,7 +21,7 @@ class GreenAssessmentFilterSet(FilterSet):
     name = CharFilter(field_name="name", lookup_expr="exact")
     award_body = CharFilter(field_name="award_body", lookup_expr="exact")
     name_icontains = CharFilter(field_name="name", lookup_expr="icontains")
-    award_body_icontains = CharFilter(field_name="name", lookup_expr="icontains")
+    award_body_icontains = CharFilter(field_name="award_body", lookup_expr="icontains")
     recognition_type = CharFilter(field_name="recognition_type", lookup_expr="iexact")
 
     class Meta:

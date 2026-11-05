@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 
 from seed.decorators import ajax_request
@@ -16,8 +16,16 @@ from seed.serializers.scenarios import PropertyMeasureSerializer
 from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
+from seed.views.v3.property_scenarios import get_property_view_state_ids, property_view_id_path_field
 
 
+@extend_schema(
+    parameters=[
+        AutoSchemaHelper.query_org_id_field(),
+        property_view_id_path_field,
+        AutoSchemaHelper.path_id_field("Scenario ID", name="scenario_pk"),
+    ]
+)
 class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     """
     API view for PropertyMeasures
@@ -83,8 +91,8 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
 
         return JsonResponse({"status": "success", "data": serialized_measure}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
             {
                 "annual_cost_savings": "number",
                 "annual_electricity_savings": "number",
@@ -92,18 +100,19 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
                 "annual_peak_electricity_reduction": "number",
                 "application_scale": PropertyMeasure.APPLICATION_SCALE_TYPES,
                 "category_affected": PropertyMeasure.CATEGORY_AFFECTED_TYPE,
-                "cost_capital_replacement": "integer",
-                "cost_installation": "integer",
-                "cost_material": "integer",
-                "cost_mv": "integer",
-                "cost_residual_value": "integer",
-                "cost_total_first": "integer",
+                "cost_capital_replacement": "number",
+                "cost_installation": "number",
+                "cost_material": "number",
+                "cost_mv": "number",
+                "cost_residual_value": "number",
+                "cost_total_first": "number",
                 "description": "string",
                 "implementation_status": PropertyMeasure.IMPLEMENTATION_TYPES,
                 "property_measure_name": "string",
                 "recommended": "boolean",
-                "useful_life": "integer",
-            }
+                "useful_life": "number",
+            },
+            description="The property measure fields to update; any other key is rejected",
         )
     )
     @method_decorator(
@@ -126,7 +135,8 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
                 {"status": "error", "message": "No Property Measure found with given pks"}, status=status.HTTP_404_NOT_FOUND
             )
 
-        possible_fields = [f.name for f in property_measure._meta.get_fields()]
+        # Only scalar fields can be set from the request; relations cannot be assigned raw values
+        possible_fields = [f.name for f in property_measure._meta.concrete_fields if not f.is_relation and not f.primary_key]
 
         for key, value in request.data.items():
             if key in possible_fields:
@@ -152,6 +162,11 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
 
         return JsonResponse(result, status=status.HTTP_200_OK)
 
+    @extend_schema(
+        responses={
+            200: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"}, description="The property measure was deleted")
+        }
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -166,7 +181,9 @@ class PropertyMeasureViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             # Can't use property_view to find measures on historical property_states.
             # When New scenarios and measures are created the previous property_state looses its connection
             # to a property_view.
-            property_measure = PropertyMeasure.objects.get(pk=pk, scenario=scenario_pk)
+            property_measure = PropertyMeasure.objects.get(
+                pk=pk, scenario=scenario_pk, property_state_id__in=get_property_view_state_ids(property_pk)
+            )
         except (PropertyMeasure.DoesNotExist, PropertyView.DoesNotExist):
             return JsonResponse(
                 {"status": "error", "message": "No Property Measure found with given pks"}, status=status.HTTP_404_NOT_FOUND

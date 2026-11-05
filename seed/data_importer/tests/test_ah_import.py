@@ -733,18 +733,21 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         # city changed in the correct view
         assert PropertyView.objects.count() == 2
         view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
-        assert list(view_info) == [
-            {
-                "property_id": self.existing_property.id,
-                "cycle_id": self.other_cycle.id,
-                "state__city": None,
-            },
-            {
-                "property_id": self.existing_property.id,
-                "cycle_id": self.cycle.id,
-                "state__city": "Denver",
-            },
-        ]
+        self.assertCountEqual(
+            list(view_info),
+            [
+                {
+                    "property_id": self.existing_property.id,
+                    "cycle_id": self.other_cycle.id,
+                    "state__city": None,
+                },
+                {
+                    "property_id": self.existing_property.id,
+                    "cycle_id": self.cycle.id,
+                    "state__city": "Denver",
+                },
+            ],
+        )
 
     def test_no_ali_merges_and_links(self):
         # Set Up - create view for merge
@@ -821,20 +824,23 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         # city changed in the correct view
         assert PropertyView.objects.count() == 2
         view_info = PropertyView.objects.values("property_id", "property__access_level_instance_id", "cycle_id", "state__city")
-        assert list(view_info) == [
-            {
-                "property_id": self.existing_property.id,
-                "property__access_level_instance_id": self.me_ali.id,
-                "cycle_id": self.other_cycle.id,
-                "state__city": None,
-            },
-            {
-                "property_id": self.existing_property.id,
-                "property__access_level_instance_id": self.me_ali.id,
-                "cycle_id": self.cycle.id,
-                "state__city": "Denver",
-            },
-        ]
+        self.assertCountEqual(
+            list(view_info),
+            [
+                {
+                    "property_id": self.existing_property.id,
+                    "property__access_level_instance_id": self.me_ali.id,
+                    "cycle_id": self.other_cycle.id,
+                    "state__city": None,
+                },
+                {
+                    "property_id": self.existing_property.id,
+                    "property__access_level_instance_id": self.me_ali.id,
+                    "cycle_id": self.cycle.id,
+                    "state__city": "Denver",
+                },
+            ],
+        )
 
     def test_has_ali_links_different_ali(self):
         # Set Up - update existing state ali
@@ -894,18 +900,21 @@ class TestAHImportMatchExistingDifferentCycle(TestAHImportFile):
         # city changed in the correct view
         assert PropertyView.objects.count() == 2
         view_info = PropertyView.objects.values("property_id", "cycle_id", "state__city")
-        assert list(view_info) == [
-            {
-                "property_id": self.existing_property.id,
-                "cycle_id": self.other_cycle.id,
-                "state__city": None,
-            },
-            {
-                "property_id": self.existing_property.id,
-                "cycle_id": self.cycle.id,
-                "state__city": "Denver",
-            },
-        ]
+        self.assertCountEqual(
+            list(view_info),
+            [
+                {
+                    "property_id": self.existing_property.id,
+                    "cycle_id": self.other_cycle.id,
+                    "state__city": None,
+                },
+                {
+                    "property_id": self.existing_property.id,
+                    "cycle_id": self.cycle.id,
+                    "state__city": "Denver",
+                },
+            ],
+        )
 
     def test_no_ali_links_no_access(self):
         # Set Up - file and existing property have different alis

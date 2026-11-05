@@ -9,6 +9,7 @@ Unit tests for seed/views/labels.py
 """
 
 import json
+from urllib.parse import urlencode
 
 import pytest
 from django.db import IntegrityError, transaction
@@ -131,3 +132,36 @@ class TestLabelViewSet(AccessLevelBaseTestCase):
         response = self.client.put(url, data=json.dumps({"label_ids": [label.id]}), content_type="application/json")
 
         assert response.status_code == 400
+
+    def test_label_bulk_update_rejects_non_label_attributes(self):
+        label = Label.objects.create(name="bulk-update-label", super_organization=self.org)
+        other_org, _, _ = create_organization(self.superuser, "other-org")
+        url = reverse_lazy("api:v3:labels-bulk-update") + "?organization_id=" + str(self.org.id)
+
+        # labels cannot be moved to another organization
+        data = {"label_ids": [label.id], "data": {"super_organization_id": other_org.id}}
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 400
+        label.refresh_from_db()
+        assert label.super_organization_id == self.org.id
+
+        # label attributes can still be set
+        data = {"label_ids": [label.id], "data": {"color": "blue", "show_in_list": True}}
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        label.refresh_from_db()
+        assert (label.color, label.show_in_list) == ("blue", True)
+
+    def test_label_create_and_update_with_form_data(self):
+        form_content_type = "application/x-www-form-urlencoded"
+        url = reverse_lazy("api:v3:labels-list") + "?organization_id=" + str(self.org.id)
+        response = self.client.post(url, data=urlencode({"name": "form-label", "color": "blue"}), content_type=form_content_type)
+        assert response.status_code == 201
+        label = Label.objects.get(pk=response.json()["id"])
+        assert (label.name, label.color, label.super_organization_id) == ("form-label", "blue", self.org.id)
+
+        url = reverse_lazy("api:v3:labels-detail", args=[label.id]) + "?organization_id=" + str(self.org.id)
+        response = self.client.put(url, data=urlencode({"name": "renamed-form-label"}), content_type=form_content_type)
+        assert response.status_code == 200
+        label.refresh_from_db()
+        assert label.name == "renamed-form-label"

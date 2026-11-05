@@ -3,8 +3,7 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import PolymorphicProxySerializer, extend_schema, extend_schema_view
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from seed.decorators import DRFEndpointMixin
@@ -15,41 +14,32 @@ from seed.utils.api_schema import AutoSchemaHelper
 
 
 # This read-only endpoint doesn't require any org or AH restrictions
-@method_decorator(
-    [
-        swagger_auto_schema(
-            responses={200: UniformatSerializer(many=True)},
-        )
-    ],
-    name="list",
-)
-@method_decorator(
-    [
-        swagger_auto_schema(
-            manual_parameters=[
-                AutoSchemaHelper.path_enum_field(
-                    name="code", description=Uniformat._meta.get_field("code").help_text, enum=uniformat_codes
-                ),
-                AutoSchemaHelper.query_boolean_field(
-                    name="include_children",
-                    required=False,
-                    description="If true, includes all Uniformat specifications that inherit from the specified code. Defaults to false.",
-                ),
-            ],
-            responses={200: UniformatSerializer()},
-        ),
-    ],
-    name="retrieve",
+@extend_schema_view(
+    list=extend_schema(
+        description="Returns all Uniformat specifications, following the Naval Facilities Engineering Command (NAVFAC) UNIFORMAT II "
+        "classification for building elements to divide a building into systems and components",
+    ),
+    retrieve=extend_schema(
+        description="Returns a Uniformat instance by code, optionally including all children of the specified code",
+        parameters=[
+            AutoSchemaHelper.path_enum_field(name="code", description=Uniformat._meta.get_field("code").help_text, enum=uniformat_codes),
+            AutoSchemaHelper.query_boolean_field(
+                name="include_children",
+                required=False,
+                description="If true, includes all Uniformat specifications that inherit from the specified code. Defaults to false.",
+            ),
+        ],
+        responses={
+            200: PolymorphicProxySerializer(
+                component_name="UniformatDetail",
+                serializers=[UniformatSerializer, UniformatChildSerializer],
+                resource_type_field_name=None,
+            )
+        },
+    ),
 )
 class UniformatViewSet(DRFEndpointMixin, ReadOnlyModelViewSet):
-    """Uniformat API Endpoint
-
-    list:
-        Returns all Uniformat specifications, following the Naval Facilities Engineering Command (NAVFAC) UNIFORMAT II classification for building elements to divide a building into systems and components
-
-    retrieve:
-        Returns a Uniformat instance by code, optionally including all children of the specified code
-    """
+    """Uniformat API Endpoint"""
 
     lookup_field = "code"
     model = Uniformat

@@ -51,10 +51,14 @@ class GoalSerializer(serializers.ModelSerializer):
         organization = data.get("organization") or self.instance.organization
         ali = data.get("access_level_instance") or self.instance.access_level_instance
 
+        # referenced columns and the approving user must be of the organization too
+        references = [data.get(field) for field in ("eui_column1", "eui_column2", "eui_column3", "area_column", "transactions_column")]
+        references.append(data.get("partner_note_approval_user"))
         if not all(
             [
                 getattr(baseline_cycle, "organization", None) == organization,
                 getattr(ali, "organization", None) == organization,
+                *(reference.organization == organization for reference in references if reference is not None),
             ]
         ):
             raise ValidationError("Organization mismatch.")
@@ -84,6 +88,11 @@ class GoalSerializer(serializers.ModelSerializer):
 
 class CycleGoalSerializer(serializers.ModelSerializer):
     goal = serializers.IntegerField(source="goal.id", read_only=True)
+
+    def validate_current_cycle(self, current_cycle):
+        if self.instance is not None and current_cycle.organization_id != self.instance.goal.organization_id:
+            raise ValidationError("Organization mismatch.")
+        return current_cycle
 
     def to_representation(self, obj):
         result = super().to_representation(obj)

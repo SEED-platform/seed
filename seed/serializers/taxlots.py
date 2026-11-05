@@ -69,4 +69,5 @@ class TaxLotViewSerializer(serializers.ModelSerializer):
 
 
 class UpdateTaxLotPayloadSerializer(serializers.Serializer):
-    state = TaxLotStateSerializer()
+    # only the given state fields are changed (and `extra_data` is merged), so none are required
+    state = TaxLotStateSerializer(partial=True)

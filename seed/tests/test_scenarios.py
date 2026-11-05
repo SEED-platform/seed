@@ -8,9 +8,10 @@ import json
 from django.urls import reverse_lazy
 from django.utils.dateparse import parse_datetime
 
-from seed.models import Meter, MeterReading, Property, PropertyMeasure, PropertyView, Scenario
-from seed.test_helpers.fake import FakePropertyMeasureFactory
+from seed.models import Meter, MeterReading, Property, PropertyAuditLog, PropertyMeasure, PropertyView, Scenario
+from seed.test_helpers.fake import FakePropertyMeasureFactory, FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
+from seed.utils.organizations import create_organization
 
 
 class TestScenarios(AccessLevelBaseTestCase, DeleteModelsTestCase):
@@ -166,6 +167,21 @@ class TestScenarios(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.assertEqual(response.json()["Success"], False)
         self.assertEqual(response.json()["Message"], '"invalid_field" is not a valid scenario field')
 
+    def test_fails_to_update_scenario_relations(self):
+        """
+        Relations cannot be assigned from the request, so they are rejected instead of raising a server error
+        """
+        property_view = self.property_view_factory.get_property_view()
+        scenario = Scenario.objects.create(property_state=property_view.state, temporal_status=3, name="name1")
+        url = reverse_lazy("api:v3:property-scenarios-detail", args=[property_view.id, scenario.id]) + f"?organization_id={self.org.id}"
+
+        for key, value in (("event", 1), ("meter", []), ("simulations", [])):
+            response = self.client.put(url, data=json.dumps({"name": "name2", key: value}), content_type="application/json")
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json()["Message"], f'"{key}" is not a valid scenario field')
+
+        self.assertEqual(Scenario.objects.get(id=scenario.id).name, "name1")
+
     def test_list_scenarios_permissions(self):
         property = self.property_factory.get_property(organization=self.org)
         property_view = self.property_view_factory.get_property_view(prprty=property)
@@ -301,3 +317,45 @@ class TestScenarios(AccessLevelBaseTestCase, DeleteModelsTestCase):
             url,
         )
         self.assertEqual(response.status_code, 404)
+
+    def test_scenario_must_belong_to_the_property_view(self):
+        property_view = self.property_view_factory.get_property_view()
+        other_org, _, _ = create_organization(self.superuser, "test-organization-b")
+        other_view = FakePropertyViewFactory(organization=other_org).get_property_view()
+        other_scenario = Scenario.objects.create(property_state=other_view.state, name="other")
+        url = (
+            reverse_lazy("api:v3:property-scenarios-detail", args=[property_view.id, other_scenario.id]) + f"?organization_id={self.org.pk}"
+        )
+
+        # another organization's scenario cannot be reached through this organization's property view
+        self.login_as_root_member()
+        response = self.client.put(url, data=json.dumps({"name": "changed"}), content_type="application/json")
+        self.assertEqual(response.status_code, 404)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 404)
+        other_scenario.refresh_from_db()
+        self.assertEqual(other_scenario.name, "other")
+
+        # nor can it be overwritten by changing the primary key of an accessible scenario
+        scenario = Scenario.objects.create(property_state=property_view.state, name="mine")
+        url = reverse_lazy("api:v3:property-scenarios-detail", args=[property_view.id, scenario.id]) + f"?organization_id={self.org.pk}"
+        response = self.client.put(url, data=json.dumps({"id": other_scenario.id, "name": "changed"}), content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        other_scenario.refresh_from_db()
+        self.assertEqual((other_scenario.name, other_scenario.property_state_id), ("other", other_view.state_id))
+
+    def test_delete_scenario_of_historical_state(self):
+        """Scenarios of the property view's historical states (shown in its history) can still be deleted"""
+        property_view = self.property_view_factory.get_property_view()
+        historical_state = self.property_state_factory.get_property_state()
+        historical_log = PropertyAuditLog.objects.create(organization=self.org, state=historical_state, name="Import Creation")
+        PropertyAuditLog.objects.create(
+            organization=self.org, state=property_view.state, parent1=historical_log, name="Manual Edit", view=property_view
+        )
+        scenario = Scenario.objects.create(property_state=historical_state, name="historical")
+        url = reverse_lazy("api:v3:property-scenarios-detail", args=[property_view.id, scenario.id]) + f"?organization_id={self.org.pk}"
+
+        self.login_as_root_member()
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(Scenario.objects.filter(id=scenario.id).exists())

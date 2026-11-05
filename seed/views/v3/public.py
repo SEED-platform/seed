@@ -4,11 +4,14 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.http import HttpResponse, JsonResponse
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 
 from seed.models import Cycle, Organization
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.public import (
     PUBLIC_HTML_DISABLED,
     PUBLIC_HTML_HEADER,
@@ -20,7 +23,27 @@ from seed.utils.public import (
     public_geojson,
 )
 
+# Query params read by `public_feed`
+labels_param = AutoSchemaHelper.query_string_field(
+    "labels",
+    False,
+    "Comma separated list of case sensitive label names. Results include inventory that has any of the listed labels "
+    "(only if the organization enables public feed labels). Default is all inventory",
+)
+page_params = [
+    AutoSchemaHelper.query_integer_field("page", False, "Page number. Default is 1"),
+    AutoSchemaHelper.query_integer_field("per_page", False, "Results per page. Default is 100"),
+]
+feed_params = [
+    labels_param,
+    AutoSchemaHelper.query_string_field("cycles", False, "Comma separated list of cycle IDs. Default is all cycles"),
+    AutoSchemaHelper.query_boolean_field("properties", False, "Whether to include properties. Default is true"),
+    AutoSchemaHelper.query_boolean_field("taxlots", False, "Whether to include tax lots. Default is true"),
+    *page_params,
+]
 
+
+@extend_schema(parameters=[AutoSchemaHelper.path_id_field("Organization ID")])
 class PublicOrganizationViewSet(viewsets.ViewSet):
     """
     Public endpoints that do not require a login
@@ -28,6 +51,27 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        parameters=feed_params,
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "pagination": {
+                        "page": "integer",
+                        "total_pages": "integer",
+                        "per_page": "integer",
+                        "property_count": "integer",
+                        "taxlot_count": "integer",
+                    },
+                    "query_params": "object",
+                    "organization": {"id": "integer", "name": "string"},
+                    "data": {"properties": ["object"], "taxlots": ["object"]},
+                },
+                description="Each property/taxlot contains its view `id` and the organization's public columns. "
+                "If the public feed is disabled, only a `detail` message is returned",
+            )
+        },
+    )
     @action(detail=True, methods=["get"], url_path="feed.json")
     def feed_json(self, request, pk):
         """
@@ -62,6 +106,7 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
         feed = public_feed(org, request, cycles)
         return JsonResponse(feed, json_dumps_params={"indent": 4}, status=status.HTTP_200_OK)
 
+    @extend_schema(parameters=feed_params, responses={(200, "text/html"): OpenApiTypes.STR})
     @action(detail=True, methods=["get"], url_path="feed.html")
     def feed_html(self, request, pk):
         """
@@ -145,6 +190,21 @@ class PublicOrganizationViewSet(viewsets.ViewSet):
 class PublicCycleViewSet(viewsets.ViewSet):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.path_id_field("Organization ID", name="organization_pk"),
+            AutoSchemaHelper.path_id_field("Cycle ID"),
+            AutoSchemaHelper.query_boolean_field("taxlots", False, "Whether to return tax lots instead of properties. Default is false"),
+            labels_param,
+            *page_params,
+        ],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"type": "string", "name": "string", "features": ["object"]},
+                description="A GeoJSON FeatureCollection. If the public GeoJSON is disabled, only a `detail` message is returned",
+            )
+        },
+    )
     @action(detail=True, methods=["get"], url_path="geo.json")
     def geojson(self, request, organization_pk, pk):
         """

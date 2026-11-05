@@ -24,7 +24,7 @@ from seed.building_sync import validation_client
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.models import Element, Measure, Meter, MeterReading, PropertyView
 from seed.utils.encrypt import decrypt
@@ -84,7 +84,8 @@ def require_token(fn):
 def schedule_sync(data, org_id):
     timezone = data.get("timezone", get_current_timezone())
 
-    if "update_at_hour" in data and "update_at_minute" in data:
+    # a schedule needs a day, hour, and minute
+    if all(data.get(field) is not None for field in ("update_at_day", "update_at_hour", "update_at_minute")):
         # create crontab schedule
         schedule, _ = CrontabSchedule.objects.get_or_create(
             minute=data["update_at_minute"],
@@ -131,7 +132,7 @@ class AuditTemplate:
         self.org_id = org_id
         self.org = Organization.objects.get(id=self.org_id)
 
-    def batch_get_city_submission_xml(self, view_ids, default_cycle):
+    def batch_get_city_submission_xml(self, view_ids, default_cycle=None, access_level_instance_id=None):
         """
         1. get city_cubmissions
         2. find views using xml fields custom_id_1 and updated for cycle start/end bounds
@@ -140,17 +141,22 @@ class AuditTemplate:
         5. update cycle grouped views in cycle batches
 
         if param view_ids is empty [], all SEED properties will be used to determine the correct PropertyView
+        if param access_level_instance_id is given, only properties within that access level instance subtree are updated
         """
         progress_data = ProgressData(func_name="batch_get_city_submission_xml", unique_id=self.org_id)
 
-        _batch_get_city_submission_xml.delay(self.org_id, self.org.audit_template_city_id, view_ids, default_cycle, progress_data.key)
+        _batch_get_city_submission_xml.delay(
+            self.org_id, self.org.audit_template_city_id, view_ids, default_cycle, progress_data.key, access_level_instance_id
+        )
 
         return progress_data.result(), ""
 
-    def get_city_submission_xml(self, custom_id_1):
+    def get_city_submission_xml(self, custom_id_1, access_level_instance_id=None):
         progress_data = ProgressData(func_name="get_city_submission_xml", unique_id=self.org_id)
 
-        _get_city_submission_xml.delay(self.org_id, self.org.audit_template_city_id, custom_id_1, progress_data.key)
+        _get_city_submission_xml.delay(
+            self.org_id, self.org.audit_template_city_id, custom_id_1, progress_data.key, access_level_instance_id
+        )
 
         return progress_data.result(), ""
 
@@ -761,8 +767,19 @@ def _get_measures(property_id):
     return bsync_measure_tuples
 
 
+def _filter_by_access_level(property_views, access_level_instance_id):
+    """Limit PropertyViews to an access level instance subtree, if one is given"""
+    if access_level_instance_id is None:
+        return property_views
+    ali = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+    return property_views.filter(
+        property__access_level_instance__lft__gte=ali.lft,
+        property__access_level_instance__rgt__lte=ali.rgt,
+    )
+
+
 @shared_task
-def _batch_get_city_submission_xml(org_id, city_id, view_ids, default_cycle, progress_key):
+def _batch_get_city_submission_xml(org_id, city_id, view_ids, default_cycle, progress_key, access_level_instance_id=None):
     """
     1. get city_cubmissions
     2. find views using xml fields custom_id_1 and updated for cycle start/end bounds
@@ -793,7 +810,7 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, default_cycle, pro
     # however that could return multiple views across many cycles
     # filtering by custom_id and 'updated_at' will require looping through results to query views
 
-    property_views = PropertyView.objects.filter(state__organization_id=org_id)
+    property_views = _filter_by_access_level(PropertyView.objects.filter(state__organization_id=org_id), access_level_instance_id)
     if view_ids:
         property_views = property_views.filter(id__in=view_ids)
 
@@ -862,7 +879,7 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, default_cycle, pro
 
 
 @shared_task
-def _get_city_submission_xml(org_id, city_id, custom_id_1, progress_key):
+def _get_city_submission_xml(org_id, city_id, custom_id_1, progress_key, access_level_instance_id=None):
     """
     1. get city_cubmissions
     2. find view using xml fields custom_id_1 and updated for cycle start/end bounds
@@ -889,15 +906,15 @@ def _get_city_submission_xml(org_id, city_id, custom_id_1, progress_key):
     sub = submissions[0]
     created_at = parser.parse(sub["created_at"])
 
-    view = PropertyView.objects.filter(
-        property__organization=org_id,
+    property_views = _filter_by_access_level(PropertyView.objects.filter(property__organization=org_id), access_level_instance_id)
+    view = property_views.filter(
         state__custom_id_1=custom_id_1,
         cycle__start__lte=created_at,
         cycle__end__gte=created_at,
     ).first()
 
     if not view:
-        progress_data.finish_with_error("No such resource.")
+        return progress_data.finish_with_error("No such resource.")
 
     progress_data.step("Getting XML for submissions...")
     if view:

@@ -17,7 +17,7 @@ from rest_framework.exceptions import NotFound
 
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.landing.models import SEEDUser as User
-from seed.models import Meter, MeterReading, Property
+from seed.models import InventoryGroup, InventoryGroupMapping, Meter, MeterReading, Property, Service, System
 from seed.models.scenarios import Scenario
 from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.test_helpers.fake import FakePropertyViewFactory
@@ -441,6 +441,106 @@ class TestMetersPermissions(AccessLevelBaseTestCase, DeleteModelsTestCase):
         self.login_as_root_member()
         response = self.client.delete(meter_reading_url)
         assert response.status_code == 204
+
+    def test_create_meter_reading_for_meter_of_another_property(self):
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        child_property_view = self.property_view_factory.get_property_view(child_property)
+        child_meter = Meter.objects.create(property=child_property)
+        payload = {
+            "start_time": "2024-02-01T00:00:00",
+            "end_time": "2024-02-02T00:00:00",
+            "reading": 42,
+            "source_unit": "kWh",
+            "conversion_factor": 1,
+        }
+
+        def readings_url(meter):
+            return (
+                reverse("api:v3:property-meter-readings-list", kwargs={"property_pk": child_property_view.id, "meter_pk": meter.id})
+                + f"?organization_id={self.org.id}"
+            )
+
+        # child users can add readings to the meters of their properties
+        self.login_as_child_member()
+        response = self.client.post(readings_url(child_meter), data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 201
+
+        # but not to the meter of a root property, through the view of their own property
+        response = self.client.post(readings_url(self.meter), data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 404
+        assert not MeterReading.objects.filter(meter=self.meter, reading=42).exists()
+
+    def test_meters_of_missing_property_view(self):
+        property_view = self.property_view_factory.get_property_view(self.property)
+        property_view_id = property_view.id
+        property_view.delete()
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": property_view_id}) + f"?organization_id={self.org.id}"
+
+        self.login_as_root_member()
+        response = self.client.get(url)
+        assert response.status_code == 404
+
+    def test_update_meter_of_another_property(self):
+        other_property_view = self.property_view_factory.get_property_view()
+        url = (
+            reverse("api:v3:property-meters-detail", kwargs={"property_pk": other_property_view.id, "pk": self.meter.id})
+            + f"?organization_id={self.org.id}"
+        )
+
+        self.login_as_root_member()
+        response = self.client.put(url, data=json.dumps({"alias": "not my meter"}), content_type="application/json")
+        assert response.status_code == 404
+        self.meter.refresh_from_db()
+        assert self.meter.alias != "not my meter"
+
+    def test_update_meter_connection_is_scoped_to_organization(self):
+        url = (
+            reverse("api:v3:property-meters-detail", kwargs={"property_pk": self.property_view.id, "pk": self.meter.id})
+            + f"?organization_id={self.org.id}"
+        )
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_group = InventoryGroup.objects.create(name="other group", organization=other_org, access_level_instance=other_org.root)
+        other_service = Service.objects.create(name="other service", system=System.objects.create(name="other system", group=other_group))
+        self.login_as_root_member()
+
+        # another organization's service can't be connected
+        data = {"connection_config": {"service_id": other_service.id, "direction": "imported", "use": "using"}}
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 400
+        self.meter.refresh_from_db()
+        assert self.meter.service is None
+
+        # the organization's services can
+        group = InventoryGroup.objects.create(name="group", organization=self.org, access_level_instance=self.org.root)
+        InventoryGroupMapping.objects.create(property=self.property, group=group)
+        service = Service.objects.create(name="service", system=System.objects.create(name="system", group=group))
+        data["connection_config"]["service_id"] = service.id
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        self.meter.refresh_from_db()
+        assert self.meter.service == service
+        assert self.meter.connection_type == Meter.RECEIVING_SERVICE
+
+    def test_create_meter_with_scenario_outside_access_level(self):
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        child_property_view = self.property_view_factory.get_property_view(child_property)
+        child_scenario = Scenario.objects.create(name="child scenario", property_state=child_property_view.state)
+        root_scenario = Scenario.objects.create(name="root scenario", property_state=self.property_view.state)
+        url = reverse("api:v3:property-meters-list", kwargs={"property_pk": child_property_view.id}) + f"?organization_id={self.org.id}"
+        payload = {"type": "Electric", "source": "Manual Entry", "source_id": "1234567890", "connection_type": "Imported"}
+        self.login_as_child_member()
+
+        # child users can't assign the scenario of a property outside their access level
+        response = self.client.post(url, data=json.dumps({**payload, "scenario_id": root_scenario.id}), content_type="application/json")
+        assert response.status_code == 400
+        assert response.json()["scenario_id"]["message"] == "Permission error assigning scenario to meter"
+        assert not root_scenario.meter_set.exists()
+
+        # but can assign the scenarios of their own properties
+        response = self.client.post(url, data=json.dumps({**payload, "scenario_id": child_scenario.id}), content_type="application/json")
+        assert response.status_code == 201
+        assert response.json()["scenario_id"] == child_scenario.id
+        assert response.json()["scenario_name"] == "child scenario"
 
 
 class TestMeterReadingCRUD(DeleteModelsTestCase):

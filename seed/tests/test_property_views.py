@@ -1144,6 +1144,28 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         resp = self.client.get(url, content_type="application/xml")
         assert resp.status_code == 404
 
+    def test_property_building_sync_requires_profile_of_organization(self):
+        other_org, _, _ = create_organization(self.superuser, "test-organization-b")
+        other_profile = other_org.columnmappingprofile_set.get(profile_type=ColumnMappingProfile.BUILDINGSYNC_DEFAULT)
+        url = reverse("api:v3:properties-building-sync", args=[self.view.id]) + f"?organization_id={self.org.pk}"
+        self.login_as_root_member()
+
+        # the organization's own profile can be used
+        resp = self.client.get(url + f"&profile_id={self.profile.id}")
+        assert resp.status_code == 200
+
+        # another organization's profile cannot
+        resp = self.client.get(url + f"&profile_id={other_profile.id}")
+        assert resp.status_code == 400
+
+    def test_property_building_sync_invalid_profile_id(self):
+        url = reverse("api:v3:properties-building-sync", args=[self.view.id]) + f"?organization_id={self.org.pk}"
+        self.login_as_root_member()
+
+        # a missing or non-integer profile_id is a bad request
+        assert self.client.get(url).status_code == 400
+        assert self.client.get(url + "&profile_id=abc").status_code == 400
+
     def test_property_hpxml(self):
         url = reverse("api:v3:properties-hpxml", args=[self.view.id]) + f"?organization_id={self.org.pk}"
 
@@ -1248,6 +1270,35 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         assert resp.status_code == 200
         assert resp.json()["properties"] == []
 
+    def test_properties_get_canonical_properties_excludes_other_organizations(self):
+        other_org, _, _ = create_organization(self.superuser, "test-organization-b")
+        other_view = FakePropertyViewFactory(organization=other_org).get_property_view()
+        url = reverse("api:v3:properties-get-canonical-properties") + f"?organization_id={self.org.pk}"
+        params = json.dumps({"view_ids": [self.view.pk, other_view.pk]})
+
+        # only the property of the requested organization is returned
+        self.login_as_root_member()
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 200
+        assert resp.json()["properties"] == [self.property.pk]
+
+    def test_property_copy_to_cycle(self):
+        new_cycle = self.cycle_factory.get_cycle(start=datetime(2019, 1, 1, tzinfo=get_current_timezone()))
+        url = reverse("api:v3:properties-copy-to-cycle") + f"?organization_id={self.org.pk}"
+        params = json.dumps({"cycle_id": new_cycle.id, "view_ids": [self.view.pk]})
+
+        # child member cannot copy a property outside of its access level instance
+        self.login_as_child_member()
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 200
+        assert not PropertyView.objects.filter(property=self.property, cycle=new_cycle).exists()
+
+        # root member can
+        self.login_as_root_member()
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 200
+        assert PropertyView.objects.filter(property=self.property, cycle=new_cycle).exists()
+
     def test_property_pair(self):
         url = reverse("api:v3:properties-pair", args=[self.view.id]) + f"?taxlot_id={self.taxlot_view.pk}&organization_id={self.org.pk}"
 
@@ -1292,6 +1343,58 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
         resp = self.client.put(url, content_type="application/json")
         assert resp.status_code == 200
+
+    def test_property_pair_and_unpair_require_access_to_taxlot(self):
+        self.view.property = Property.objects.create(organization=self.org, access_level_instance=self.child_level_instance)
+        self.view.save()
+        child_taxlot = self.taxlot_factory.get_taxlot(access_level_instance=self.child_level_instance)
+        child_taxlot_view = self.taxlot_view_factory.get_taxlot_view(taxlot=child_taxlot, cycle=self.cycle)
+        self.login_as_child_member()
+
+        def put(action, taxlot_view):
+            url = reverse(f"api:v3:properties-{action}", args=[self.view.id]) + f"?taxlot_id={taxlot_view.pk}&organization_id={self.org.pk}"
+            return self.client.put(url, content_type="application/json")
+
+        def is_paired(taxlot_view):
+            return TaxLotProperty.objects.filter(property_view=self.view, taxlot_view=taxlot_view).exists()
+
+        # child member cannot pair its property with a tax lot outside of its access level instance (previously a 500,
+        # since paired records must share an access level instance)
+        assert put("pair", self.taxlot_view).status_code == 404
+        assert not is_paired(self.taxlot_view)
+
+        # but can with a tax lot within it
+        assert put("pair", child_taxlot_view).status_code == 200
+        assert is_paired(child_taxlot_view)
+        assert put("unpair", child_taxlot_view).status_code == 200
+        assert not is_paired(child_taxlot_view)
+
+    def test_properties_batch_update_requires_property_column_of_organization(self):
+        other_org, _, _ = create_organization(self.superuser, "test-organization-b")
+        column = Column.objects.create(organization=self.org, table_name="PropertyState", column_name="bulk_field", is_extra_data=True)
+        other_org_column = Column.objects.create(
+            organization=other_org, table_name="PropertyState", column_name="other_field", is_extra_data=True
+        )
+        taxlot_column = Column.objects.create(
+            organization=self.org, table_name="TaxLotState", column_name="taxlot_field", is_extra_data=True
+        )
+        url = reverse("api:v3:properties-batch-update") + f"?organization_id={self.org.pk}"
+        self.login_as_root_member()
+
+        def put(values_by_column_id):
+            params = json.dumps({"property_view_ids": [self.view.pk], "values_by_column_id": values_by_column_id})
+            return self.client.put(url, params, content_type="application/json")
+
+        # unknown columns, another organization's columns, and tax lot columns are rejected
+        for column_id in (-1, other_org_column.id, taxlot_column.id):
+            assert put({column.id: "a", column_id: "b"}).status_code == 400
+        self.view.state.refresh_from_db()
+        assert "bulk_field" not in self.view.state.extra_data
+
+        # the organization's property columns can be updated
+        assert put({column.id: "a"}).status_code == 200
+        self.view.state.refresh_from_db()
+        assert self.view.state.extra_data["bulk_field"] == "a"
 
     def test_property_update_with_building_sync(self):
         filename = os.path.join(BASE_DIR, "seed", "building_sync", "tests", "data", "ex_1.xml")

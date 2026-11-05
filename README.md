@@ -19,8 +19,9 @@ TimescaleDB/Postgres image.
 The SEED web application provides both a browser-based interface for users to
 upload and manage their building data, as well as a full set of APIs that app
 developers can use to access these same data management functions. From a
-running server, the Swagger API documentation can be found at `/api/swagger`
-or from the front end by clicking the API documentation link in the sidebar.
+running server, the Swagger API documentation can be found at `/api/swagger/`
+(OpenAPI 3 schema at `/api/schema/`) or from the front end by clicking the API
+documentation link in the sidebar.
 
 ### Installation
 

@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 :author nicholas.long@nlr.gov
 """
 
+import json
 from contextlib import closing
 from io import BytesIO
 
@@ -17,9 +18,11 @@ from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.models import Column, Cycle, FacilitiesPlan, FacilitiesPlanRun, PropertyView, Uniformat
 from seed.test_helpers.fake import (
+    FakeCycleFactory,
     FakeElementFactory,
     FakePropertyViewFactory,
 )
+from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
 
@@ -114,6 +117,39 @@ class FacilitiesPlanAPITests(BaseFacilitiesPlanTests):
             },
         )
 
+    def test_create_and_update_reject_another_organization(self):
+        other_org, _, _ = create_organization(self.user, "other org")
+        url = reverse("api:v3:facilities_plans-list") + "?organization_id=" + str(self.org.id)
+        detail_url = reverse("api:v3:facilities_plans-detail", args=[self.facilities_plan.id]) + "?organization_id=" + str(self.org.id)
+
+        # cannot create a plan in, or move a plan to, another organization than the requested one
+        response = self.client.post(url, data=json.dumps({"name": "other", "organization": other_org.id}), content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        response = self.client.put(
+            detail_url, data=json.dumps({"name": "test", "organization": other_org.id}), content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertFalse(FacilitiesPlan.objects.filter(organization=other_org).exists())
+
+        # cannot reference another organization's columns
+        other_column = Column.objects.filter(organization=other_org).first()
+        response = self.client.post(
+            url,
+            data=json.dumps({"name": "other", "organization": self.org.id, "electric_energy_usage_column": other_column.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(FacilitiesPlan.objects.filter(organization=self.org).count(), 1)
+
+        # can create and update within the requested organization
+        response = self.client.post(url, data=json.dumps({"name": "other", "organization": self.org.id}), content_type="application/json")
+        self.assertEqual(response.status_code, 201)
+        response = self.client.put(
+            detail_url, data=json.dumps({"name": "renamed", "organization": self.org.id}), content_type="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(FacilitiesPlan.objects.get(pk=self.facilities_plan.id).name, "renamed")
+
 
 class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
     def setUp(self):
@@ -206,6 +242,7 @@ class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
                 "require_in_plan_column",
                 "electric_energy_usage_column",
                 "gas_energy_usage_column",
+                "steam_energy_usage_column",
             ],
         )
         self.assertListEqual(data["display_columns"], [])
@@ -234,6 +271,7 @@ class FacilitiesPlanRunAPITests(BaseFacilitiesPlanTests):
                 "require_in_plan_column",
                 "electric_energy_usage_column",
                 "gas_energy_usage_column",
+                "steam_energy_usage_column",
             ],
         )
         self.assertListEqual(data["display_columns"], [])
@@ -639,3 +677,76 @@ class FacilitiesPlanRunTests(BaseFacilitiesPlanTests):
                 },
             ],
         )
+
+
+class FacilitiesPlanRunPermissionsTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.cycle = self.cycle_factory.get_cycle()
+        self.facilities_plan = FacilitiesPlan.objects.create(organization=self.org, name="test")
+        self.root_run = FacilitiesPlanRun.objects.create(
+            facilities_plan=self.facilities_plan, cycle=self.cycle, ali=self.root_level_instance, name="root run"
+        )
+
+    def _payload(self, ali, **kwargs):
+        return json.dumps(
+            {"ali": ali.id, "facilities_plan": self.facilities_plan.id, "cycle": self.cycle.id, "display_columns": [], **kwargs}
+        )
+
+    def test_update_and_destroy_require_hierarchy_access(self):
+        url = reverse("api:v3:facilities_plan_runs-detail", args=[self.root_run.id]) + "?organization_id=" + str(self.org.id)
+
+        # child members cannot update or delete a run above their access level
+        self.login_as_child_member()
+        response = self.client.put(url, data=self._payload(self.child_level_instance, name="moved"), content_type="application/json")
+        self.assertEqual(response.status_code, 404)
+        response = self.client.delete(url, content_type="application/json")
+        self.assertEqual(response.status_code, 404)
+        self.root_run.refresh_from_db()
+        self.assertEqual(self.root_run.name, "root run")
+        self.assertEqual(self.root_run.ali, self.root_level_instance)
+
+        # nor move their own run above their access level
+        child_run = FacilitiesPlanRun.objects.create(facilities_plan=self.facilities_plan, cycle=self.cycle, ali=self.child_level_instance)
+        child_url = reverse("api:v3:facilities_plan_runs-detail", args=[child_run.id]) + "?organization_id=" + str(self.org.id)
+        response = self.client.put(child_url, data=self._payload(self.root_level_instance), content_type="application/json")
+        self.assertEqual(response.status_code, 404)
+        child_run.refresh_from_db()
+        self.assertEqual(child_run.ali, self.child_level_instance)
+
+        # root members can
+        self.login_as_root_member()
+        response = self.client.put(url, data=self._payload(self.root_level_instance, name="renamed"), content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        self.root_run.refresh_from_db()
+        self.assertEqual(self.root_run.name, "renamed")
+        response = self.client.delete(url, content_type="application/json")
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(FacilitiesPlanRun.objects.filter(pk=self.root_run.id).exists())
+
+    def test_create_and_update_reject_another_organizations_data(self):
+        other_org, _, _ = create_organization(self.superuser, "other org")
+        other_cycle = FakeCycleFactory(organization=other_org, user=self.superuser).get_cycle()
+        other_plan = FacilitiesPlan.objects.create(organization=other_org, name="other")
+        other_column = Column.objects.filter(organization=other_org).first()
+        url = reverse("api:v3:facilities_plan_runs-list") + "?organization_id=" + str(self.org.id)
+        detail_url = reverse("api:v3:facilities_plan_runs-detail", args=[self.root_run.id]) + "?organization_id=" + str(self.org.id)
+
+        self.login_as_root_member()
+        for payload in [
+            self._payload(self.root_level_instance, cycle=other_cycle.id),
+            self._payload(self.root_level_instance, facilities_plan=other_plan.id),
+            self._payload(self.root_level_instance, display_columns=[other_column.id]),
+        ]:
+            response = self.client.post(url, data=payload, content_type="application/json")
+            self.assertEqual(response.status_code, 400)
+            response = self.client.put(detail_url, data=payload, content_type="application/json")
+            self.assertEqual(response.status_code, 400)
+        self.assertEqual(FacilitiesPlanRun.objects.count(), 1)
+        self.root_run.refresh_from_db()
+        self.assertEqual(self.root_run.cycle, self.cycle)
+        self.assertEqual(self.root_run.facilities_plan, self.facilities_plan)
+
+        # data from the requested organization is accepted
+        response = self.client.post(url, data=self._payload(self.root_level_instance), content_type="application/json")
+        self.assertEqual(response.status_code, 201)

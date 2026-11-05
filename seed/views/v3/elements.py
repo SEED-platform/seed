@@ -8,7 +8,7 @@ import json
 from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
@@ -27,7 +27,7 @@ from seed.serializers.elements import (
     ElementSerializer,
 )
 from seed.utils.api import api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import (
     SEEDOrgNoPatchOrOrgCreateModelViewSet,
     SEEDOrgReadOnlyModelViewSet,
@@ -36,16 +36,15 @@ from seed.utils.viewsets import (
 ELEMENT_BULK_BATCH_SIZE = 1000
 
 
+@extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()])
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_viewer"),
     ],
     name="list",
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_viewer"),
     ],
     name="retrieve",
@@ -76,9 +75,8 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
             )
         return self.model.objects.none()
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=ElementBulkSerializer(many=True),
+    @extend_schema(
+        request={"application/json": ElementBulkSerializer(many=True)},
         responses={
             200: AutoSchemaHelper.schema_factory(
                 {
@@ -184,11 +182,11 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
             }
         )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_enum_field(name="code", description=Uniformat._meta.get_field("code").help_text, enum=uniformat_codes),
         ],
+        responses={200: ElementSerializer(many=True)},
     )
     @method_decorator(
         [
@@ -200,7 +198,7 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
     @action(detail=False, methods=["GET"])
     def filter(self, request):
         """
-        Filter all Properties within an organization that have Elements under a specific Uniformat code
+        Filter all Elements within an organization under a specific Uniformat code, including its sub-categories
         """
         code = request.query_params.get("code")
         if code not in uniformat_codes:
@@ -212,9 +210,14 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
         return self.paginator.get_paginated_response(self.get_serializer(page, many=True).data)
 
 
+@extend_schema(
+    parameters=[
+        AutoSchemaHelper.query_org_id_field(),
+        AutoSchemaHelper.path_id_field("ID of the property (not the property view)", name="property_pk"),
+    ]
+)
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_viewer"),
         has_hierarchy_access(property_id_kwarg="property_pk"),
     ],
@@ -222,7 +225,6 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_viewer"),
         has_hierarchy_access(property_id_kwarg="property_pk"),
     ],
@@ -230,7 +232,6 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_member"),
         has_hierarchy_access(property_id_kwarg="property_pk"),
     ],
@@ -238,7 +239,6 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_member"),
         has_hierarchy_access(property_id_kwarg="property_pk"),
     ],
@@ -246,7 +246,6 @@ class OrgElementViewSet(SEEDOrgReadOnlyModelViewSet):
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_member"),
         has_hierarchy_access(property_id_kwarg="property_pk"),
     ],
@@ -275,8 +274,7 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         except IntegrityError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+    @extend_schema(
         responses={
             200: AutoSchemaHelper.schema_factory(
                 [
@@ -306,7 +304,6 @@ class ElementViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
                                 }
                             ],
                             "bsync_measures": ["string"],
-                            "federal_bps_measures": ["string"],
                         },
                     }
                 ]

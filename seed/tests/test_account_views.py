@@ -20,6 +20,7 @@ from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.test_helpers.fake import FakePropertyFactory, FakePropertyViewFactory, FakeTaxLotFactory, FakeTaxLotViewFactory
 from seed.tests.util import AccessLevelBaseTestCase, FakeRequest
+from seed.utils.encrypt import encrypt
 from seed.utils.organizations import create_organization
 from seed.utils.users import get_js_role, get_role_from_js
 from seed.views.main import _get_default_org
@@ -419,6 +420,53 @@ class AccountsViewTests(TestCase):
         )
         self.assertDictEqual(json.loads(resp.content), {"status": "error", "message": "Organization does not exist"})
 
+    def test_remove_user_from_org_not_member(self):
+        u = User.objects.create(username="b@b.com", email="b@be.com")
+
+        resp = self.client.delete(
+            reverse_lazy("api:v3:organization-users-remove", args=[self.org.id, u.id]),
+        )
+        self.assertEqual(resp.status_code, 404)
+        self.assertDictEqual(json.loads(resp.content), {"status": "error", "message": "user is not a member of the organization"})
+        self.assertTrue(OrganizationUser.objects.filter(organization=self.org, user=self.user).exists())
+
+    def test_dict_org_hides_credentials_of_sub_orgs_user_does_not_belong_to(self):
+        sub_org_owner = User.objects.create(username="sub@be.com", email="sub@be.com")
+        sub_org, _, _ = create_organization(sub_org_owner, "sub")
+        sub_org.parent_org = self.org
+        sub_org.mapquest_api_key = "mapquest-key"
+        sub_org.better_analysis_api_key = "better-key"
+        sub_org.at_organization_token = "at-token"
+        sub_org.audit_template_user = "at-user"
+        sub_org.audit_template_password = encrypt("at-password")
+        sub_org.save()
+        credentials = [
+            "mapquest_api_key",
+            "better_analysis_api_key",
+            "at_organization_token",
+            "audit_template_user",
+            "audit_template_password",
+        ]
+
+        # members of the parent organization who do not belong to the sub-organization do not receive its credentials
+        sub_org_payload = _dict_org(self.fake_request, [self.org])[0]["sub_orgs"][0]
+        self.assertEqual(sub_org_payload["name"], "sub")
+        self.assertEqual({key: sub_org_payload[key] for key in credentials}, dict.fromkeys(credentials, ""))
+
+        # sub-organization members do
+        sub_org.add_member(self.user, sub_org.root.id, ROLE_VIEWER)
+        sub_org_payload = _dict_org(self.fake_request, [self.org])[0]["sub_orgs"][0]
+        self.assertEqual(
+            {key: sub_org_payload[key] for key in credentials},
+            {
+                "mapquest_api_key": "mapquest-key",
+                "better_analysis_api_key": "better-key",
+                "at_organization_token": "at-token",
+                "audit_template_user": "at-user",
+                "audit_template_password": "at-password",
+            },
+        )
+
     def test_get_js_role(self):
         self.assertEqual(get_js_role(ROLE_OWNER), "owner")
         self.assertEqual(get_js_role(ROLE_MEMBER), "member")
@@ -465,6 +513,21 @@ class AccountsViewTests(TestCase):
         # Assertion
         assert resp.status_code == 200
         assert OrganizationUser.objects.get(pk=org_user.pk).access_level_instance_id == child_ali.id
+
+    def test_cannot_update_owner_access_level_instance_to_non_root(self):
+        self.org.access_level_names = ["root", "child"]
+        self.org.save()
+        child_ali = self.org.add_new_access_level_instance(self.org.root.id, "child")
+
+        resp = self.client.put(
+            reverse_lazy("api:v3:user-access-level-instance", args=[self.user.id]) + "?organization_id=" + str(self.org.id),
+            data=json.dumps({"access_level_instance_id": child_ali.id}),
+            content_type="application/json",
+        )
+
+        assert resp.status_code == 400
+        assert resp.json() == {"status": "error", "message": "Owners must belong to the root ali."}
+        assert OrganizationUser.objects.get(user=self.user, organization=self.org).access_level_instance_id == self.org.root.id
 
     def test_allowed_to_update_role_if_not_last_owner(self):
         u = User.objects.create(username="b@b.com", email="b@be.com")
@@ -633,6 +696,29 @@ class AccountsViewTests(TestCase):
             "settings": settings,
         }
         self.assertEqual(json.loads(resp.content), profile)
+
+    def test_update_user_invalid(self):
+        User.objects.create_user(username="other@demo.com", email="other@demo.com", password="test_pass")
+        url = reverse_lazy("api:v3:user-detail", args=[self.user.pk])
+
+        # the email (which is also the username) is required and must not belong to another user
+        for user_data in (
+            {"first_name": "bob", "last_name": "d"},
+            {"first_name": "bob", "last_name": "d", "email": ""},
+            {"first_name": "bob", "last_name": "d", "email": "Other@demo.com"},
+        ):
+            resp = self.client.put(url, json.dumps(user_data), content_type="application/json")
+            self.assertEqual(resp.status_code, 400)
+
+        user = User.objects.get(pk=self.user.pk)
+        self.assertEqual((user.username, user.email, user.first_name), ("test_user@demo.com", "test_user@demo.com", "Johnny"))
+
+        # changing only the case of your own email is allowed
+        resp = self.client.put(
+            url, json.dumps({"first_name": "bob", "last_name": "d", "email": "Test_User@demo.com"}), content_type="application/json"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(User.objects.get(pk=self.user.pk).username, "test_user@demo.com")
 
     def test_get_user_profile(self):
         """test for get_user_profile"""
@@ -1039,6 +1125,14 @@ class AuthViewTests(TestCase):
             content_type="application/json",
         )
         self.assertDictEqual(json.loads(resp.content), {"status": "error", "message": "no actions to check"})
+
+    def test_is_authorized_unknown_action(self):
+        resp = self.client.post(
+            reverse_lazy("api:v3:user-is-authorized", args=[self.user.pk]) + "?organization_id=" + str(self.org.id),
+            data=json.dumps({"actions": ["requires_owner", "not_an_action"]}),
+            content_type="application/json",
+        )
+        self.assertDictEqual(resp.json(), {"status": "success", "auth": {"requires_owner": True, "not_an_action": False}})
 
     def test_set_default_organization(self):
         """test seed.views.accounts.set_default_organization"""

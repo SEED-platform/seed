@@ -25,7 +25,8 @@ from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
 from django_filters import CharFilter, DateFilter
 from django_filters import rest_framework as filters
-from drf_yasg.utils import no_body, swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import JSONParser, MultiPartParser
@@ -75,6 +76,7 @@ from seed.models import (
 )
 from seed.models import StatusLabel as Label
 from seed.serializers.analyses import AnalysisSerializer
+from seed.serializers.labels import LabelSerializer
 from seed.serializers.pint import PintJSONEncoder
 from seed.serializers.properties import (
     PropertySerializer,
@@ -87,7 +89,7 @@ from seed.serializers.properties import (
 from seed.serializers.taxlots import TaxLotViewSerializer
 from seed.tasks import copy_properties_to_cycle, update_state_derived_data
 from seed.utils.api import OrgMixin, ProfileIdMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.excel import write_template_dataframe
 from seed.utils.inventory_filter import get_filtered_results
 from seed.utils.labels import get_labels
@@ -108,6 +110,60 @@ DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
 
 ErrorState = namedtuple("ErrorState", ["status_code", "message"])
+
+# Query parameters read by `seed.utils.inventory_filter.get_filtered_results`
+FILTERED_RESULTS_PARAMETERS = [
+    AutoSchemaHelper.query_org_id_field(),
+    AutoSchemaHelper.query_integer_field(
+        "cycle", required=False, description="The ID of the cycle to get properties from (defaults to the first cycle by name)"
+    ),
+    AutoSchemaHelper.query_integer_field("per_page", required=False, description="Number of properties per page (default is 1)"),
+    AutoSchemaHelper.query_integer_field("page", required=False, description="Page to fetch"),
+    AutoSchemaHelper.query_boolean_field(
+        "include_related",
+        required=False,
+        description="If False, related data (i.e., Tax Lot data) is not added to the response (default is True)",
+    ),
+    AutoSchemaHelper.query_boolean_field(
+        "ids_only",
+        required=False,
+        description="If True, only the IDs of the matching property views are returned (cannot be combined with page or per_page)",
+    ),
+    AutoSchemaHelper.query_integer_field(
+        "profile_id", required=False, description="ID of the column list profile whose columns are returned"
+    ),
+    AutoSchemaHelper.query_string_field(
+        "shown_column_ids", required=False, description="Comma-separated IDs of the columns to return (mutually exclusive with profile_id)"
+    ),
+    AutoSchemaHelper.query_array_field(
+        "order_by", required=False, description="Column names to sort by; prefix a name with `-` for descending order", item_type="string"
+    ),
+]
+FILTERED_RESULTS_RESPONSE = AutoSchemaHelper.schema_factory(
+    {
+        "pagination": {
+            "page": "integer",
+            "start": "integer",
+            "end": "integer",
+            "num_pages": "integer",
+            "has_next": "boolean",
+            "has_previous": "boolean",
+            "total": "integer",
+        },
+        "cycle_id": "integer",
+        "results": ["object"],
+    },
+    description="A page of property records (with their related tax lots, unless `include_related` is False). "
+    "With `ids_only`, only `results` is returned, as a list of property view IDs.",
+)
+UPDATED_PROPERTY_VIEW_RESPONSE = AutoSchemaHelper.schema_factory(
+    {"success": "boolean", "status": "string", "message": "string", "data": {"property_view": "object"}},
+    description="`data.property_view` is the property view serialized with its state",
+)
+MATCH_MERGE_LINK_RESULT = {"match_merged_count": "integer", "match_link_count": "integer"}
+STATUS_MESSAGE_RESPONSE = AutoSchemaHelper.schema_factory({"status": "string", "message": "string"})
+UNITS_BY_METER_TYPE = {"type": "object", "additionalProperties": {"type": "array", "items": {"type": "string"}}}
+XLSX_RESPONSE = {(200, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"): OpenApiTypes.BINARY}
 
 
 class PropertyViewFilterBackend(filters.DjangoFilterBackend):
@@ -164,15 +220,37 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     renderer_classes = (JSONRenderer,)
     parser_classes = (JSONParser,)
     serializer_class = PropertySerializer
+    # No action paginates through DRF (`list` and `filter` paginate their own results)
+    pagination_class = None
     _organization = None
 
     # For the Swagger page, GenericAPIView asserts a value exists for `queryset`
     queryset = PropertyView.objects.none()
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(required=True),
-        ]
+            AutoSchemaHelper.query_integer_field(
+                "profile_id", required=False, description="ID of the column list profile whose columns are returned (defaults to all)"
+            ),
+        ],
+        filters=True,
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                [
+                    {
+                        "id": "integer",
+                        "property": "integer",
+                        "created": "datetime",
+                        "updated": "datetime",
+                        "state": "object",
+                        "cycle": {"id": "integer", "name": "string", "start": "datetime", "end": "datetime", "created": "datetime"},
+                        "certifications": ["object"],
+                    }
+                ],
+                description="The matching property views, most recently created state first",
+            )
+        },
     )
     @method_decorator([has_perm("requires_viewer")])
     @action(detail=False, filter_backends=[PropertyViewFilterBackend])
@@ -230,23 +308,30 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return new_state
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(required=True),
             AutoSchemaHelper.query_integer_field(
                 name="cycle_id",
                 required=False,
                 description="Optional cycle id to restrict is_applied ids to only those in the specified cycle",
             ),
+            AutoSchemaHelper.query_string_field(
+                "q", required=False, description="Text search restricting the property views considered for is_applied"
+            ),
+            AutoSchemaHelper.query_string_field(
+                "filter_params", required=False, description="JSON object of filters restricting the property views considered"
+            ),
         ],
-        request_body=AutoSchemaHelper.schema_factory(
+        request=AutoSchemaHelper.json_body(
             {
-                "selected": "integer",
-                "label_names": "string",
+                "selected": ["integer"],
+                "label_names": ["string"],
             },
             description="- selected: Property View IDs to be checked for which labels are applied\n"
             "- label_names: list of label names to query",
         ),
+        responses={200: LabelSerializer(many=True)},
     )
     @method_decorator([has_perm("requires_viewer")])
     @action(detail=False, methods=["POST"])
@@ -271,16 +356,22 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # TODO: refactor to avoid passing request here
         return get_labels(request, labels_qs, super_organization, "property_view")
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
+        request=AutoSchemaHelper.json_body(
             {
-                "interval": "string",
+                "interval": (("Exact", "Exact"), ("Month", "Month"), ("Year", "Year")),
                 "excluded_meter_ids": ["integer"],
             },
-            required=["property_view_id", "interval", "excluded_meter_ids"],
-            description='Properties:\n- interval: one of "Exact", "Month", or "Year"\n- excluded_meter_ids: array of meter IDs to exclude',
+            required=["interval", "excluded_meter_ids"],
+            description="Properties:\n- interval: aggregation interval of the readings\n- excluded_meter_ids: array of meter IDs to exclude",
         ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"readings": ["object"], "column_defs": ["object"]},
+                description="Readings keyed by the time columns and one column per meter, and the definitions of those columns",
+            )
+        },
     )
     @method_decorator(
         [
@@ -308,9 +399,19 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return exporter.readings_and_column_defs(interval)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=no_body,
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.path_id_field(description="ID of the property (not the property view)"),
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("cycle_id", required=False, description="Only return analyses of this cycle"),
+        ],
+        request=None,
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "analyses": ["object"]},
+                description="Each analysis also includes the property view info and highlights of the property",
+            )
+        },
     )
     @method_decorator(
         [
@@ -337,19 +438,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return {"status": "success", "analyses": analyses}
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("cycle", required=False, description="The ID of the cycle to get properties"),
-            AutoSchemaHelper.query_integer_field("per_page", required=False, description="Number of properties per page"),
-            AutoSchemaHelper.query_integer_field("page", required=False, description="Page to fetch"),
-            AutoSchemaHelper.query_boolean_field(
-                "include_related",
-                required=False,
-                description="If False, related data (i.e., Tax Lot data) is not added to the response (default is True)",
-            ),
-        ]
-    )
+    @extend_schema(parameters=FILTERED_RESULTS_PARAMETERS, responses={200: FILTERED_RESULTS_RESPONSE})
     @method_decorator(
         [
             api_endpoint,
@@ -360,22 +449,33 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def list(self, request):
         """
         List all the properties	with all columns
+
+        Other query parameters named `<column_name>` or `<column_name>__<lookup>` filter the properties by column value.
         """
         return get_filtered_results(request, "property", profile_id=-1)
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(required=False, description="Organization ID (required here or in the body)"),
+        ],
+        request=AutoSchemaHelper.json_body(
             {
                 "organization_id": "integer",
                 "profile_id": "integer",
                 "cycle_ids": ["integer"],
             },
-            required=["organization_id", "cycle_ids"],
             description="Properties:\n"
-            "- organization_id: ID of organization\n"
-            "- profile_id: Either an id of a list settings profile, or undefined\n"
+            "- organization_id: ID of organization (required here or as a query parameter)\n"
+            "- profile_id: Either an id of a list settings profile, or undefined (-1, the default, returns all columns)\n"
             "- cycle_ids: The IDs of the cycle to get properties",
-        )
+        ),
+        responses={
+            200: {
+                "type": "object",
+                "additionalProperties": {"type": "array", "items": {"type": "object"}},
+                "description": "Property records keyed by cycle ID",
+            }
+        },
     )
     @method_decorator(
         [
@@ -417,30 +517,24 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return JsonResponse(response)
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("cycle", required=False, description="The ID of the cycle to get properties"),
-            AutoSchemaHelper.query_integer_field("per_page", required=False, description="Number of properties per page"),
-            AutoSchemaHelper.query_integer_field("page", required=False, description="Page to fetch"),
-            AutoSchemaHelper.query_boolean_field(
-                "include_related",
-                required=False,
-                description="If False, related data (i.e., Tax Lot data) is not added to the response (default is True)",
-            ),
-            AutoSchemaHelper.query_boolean_field(
-                "ids_only", required=False, description="Function will return a list of property ids instead of property objects"
-            ),
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=FILTERED_RESULTS_PARAMETERS,
+        request=AutoSchemaHelper.json_body(
             {
                 "profile_id": "integer",
-                "property_view_ids": ["integer"],
+                "access_level_instance_id": "integer",
+                "include_view_ids": ["integer"],
+                "exclude_view_ids": ["integer"],
+                "include_property_ids": ["integer"],
             },
             description="Properties:\n"
-            "- profile_id: Either an id of a list settings profile, or undefined\n"
-            "- property_view_ids: List of property view ids",
+            "- profile_id: Either an id of a list settings profile, or undefined (the `profile_id` query parameter takes precedence)\n"
+            "- access_level_instance_id: Only return properties within this access level instance (defaults to the user's)\n"
+            "- include_view_ids: Only return these property views\n"
+            "- exclude_view_ids: Do not return these property views\n"
+            "- include_property_ids: Only return the views of these properties",
         ),
+        responses={200: FILTERED_RESULTS_RESPONSE},
     )
     @method_decorator(
         [
@@ -453,6 +547,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def filter(self, request):
         """
         List all the properties
+
+        Other query parameters named `<column_name>` or `<column_name>__<lookup>` filter the properties by column value.
         """
         if "profile_id" not in request.data or request.data["profile_id"] == "None":
             profile_id = None
@@ -465,13 +561,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return get_filtered_results(request, "property", profile_id=profile_id)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
+        request=AutoSchemaHelper.json_body(
             {"property_view_ids": ["integer"]},
             required=["property_view_ids"],
             description="Properties:\n- property_view_ids: array containing Property view IDs.",
         ),
+        responses={200: AutoSchemaHelper.schema_factory("boolean", description="Whether any of the properties have meters")},
     )
     @method_decorator(
         [
@@ -501,6 +598,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return Meter.objects.filter(property_id__in=Subquery(property_views.values("property_id"))).exists()
 
+    @extend_schema(
+        responses={
+            200: {
+                "type": "object",
+                "properties": {"energy": UNITS_BY_METER_TYPE, "water": UNITS_BY_METER_TYPE},
+                "description": "Valid units keyed by meter type, for energy and water meters",
+            }
+        }
+    )
     @method_decorator(
         [
             ajax_request,
@@ -523,11 +629,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         }
         return types_and_units
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {"property_view_ids": ["integer"]}, required=["property_view_ids"], description="Array containing property view ids to merge"
         ),
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", **MATCH_MERGE_LINK_RESULT})},
     )
     @method_decorator(
         [
@@ -585,9 +692,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             "match_link_count": link_count,
         }
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=no_body,
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=None,
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "view_id": "integer"}, description="`view_id` is one of the two resulting property views"
+            )
+        },
     )
     @method_decorator(
         [
@@ -720,7 +832,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return {"status": "success", "view_id": new_view1.id}
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"data": ["object"]},
+                description="The state of each view of the property, latest cycle first, with its `cycle_id` and `view_id`",
+            )
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -762,7 +882,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             result = {"status": "error", "message": f"property view with id {pk} does not exist in given organization"}
             return JsonResponse(result)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()], request_body=no_body)
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=None,
+        responses={200: AutoSchemaHelper.schema_factory({"view_id": "integer", **MATCH_MERGE_LINK_RESULT})},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -776,8 +900,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Runs match merge link for an individual property.
 
-        Note that this method can return a view_id of None if the given -View
-        was not involved in a merge.
+        The returned view_id is the resulting property view, which is the given
+        view if it was not involved in a merge.
         """
         org_id = self.get_organization(request)
 
@@ -808,16 +932,17 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return JsonResponse(result)
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
                 "taxlot_id",
                 required=True,
-                description="The taxlot id to pair up with this property",
+                description="The ID of the tax lot view to pair up with this property view",
             ),
         ],
-        request_body=no_body,
+        request=None,
+        responses={200: STATUS_MESSAGE_RESPONSE},
     )
     @method_decorator(
         [
@@ -835,18 +960,19 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         organization_id = int(self.get_organization(request))
         property_id = int(pk)
         taxlot_id = int(request.query_params.get("taxlot_id"))
-        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True)
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, True, request.access_level_instance_id)
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field(
                 "taxlot_id",
                 required=True,
-                description="The taxlot id to unpair from this property",
+                description="The ID of the tax lot view to unpair from this property view",
             ),
         ],
-        request_body=no_body,
+        request=None,
+        responses={200: STATUS_MESSAGE_RESPONSE},
     )
     @method_decorator(
         [
@@ -864,13 +990,19 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         organization_id = int(self.get_organization(request))
         property_id = int(pk)
         taxlot_id = int(request.query_params.get("taxlot_id"))
-        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False)
+        return pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, False, request.access_level_instance_id)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {"property_view_ids": ["integer"]}, required=["property_view_ids"], description="A list of property view ids to delete"
         ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "properties": "integer", "message": "string"},
+                description='`properties` is the number of deleted property states; `status` is "warning" if none were deleted',
+            )
+        },
     )
     @method_decorator(
         [
@@ -948,7 +1080,26 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return history, master
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "cycle": "object",
+                    "property": "object",
+                    "labels": ["integer"],
+                    "state": "object",
+                    "taxlots": ["object"],
+                    "history": ["object"],
+                    "changed_fields": "object",
+                    "date_edited": "integer",
+                    "source": "string",
+                    "filename": "string",
+                }
+            )
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -983,17 +1134,28 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         else:
             return JsonResponse(result, status=status.HTTP_404_NOT_FOUND)
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
-        request_body=AutoSchemaHelper.schema_factory(
+        request=AutoSchemaHelper.json_body(
             {
                 "cycle_id": "integer",
-                "state": "object",
+                "view_ids": ["integer"],
+                "column_ids": ["integer"],
             },
-            required=["cycle_id", "state"],
+            required=["cycle_id", "view_ids"],
+            description="Properties:\n"
+            "- cycle_id: ID of the cycle to copy the properties into\n"
+            "- view_ids: IDs of the property views to copy\n"
+            "- column_ids: IDs of the columns to copy (matching criteria columns are always copied; defaults to all columns)",
         ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "progress": "number", "progress_key": "string", "unique_id": "integer", "func_name": "string"},
+                description="Progress data of the background copy. Poll `/api/v3/progress/{progress_key}/` for its result.",
+            )
+        },
     )
     @method_decorator(
         [
@@ -1004,6 +1166,9 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     )
     @action(detail=False, methods=["POST"])
     def copy_to_cycle(self, request):
+        """
+        Copy property views into another cycle, in the background
+        """
         org_id = self.get_organization(self.request)
         data = request.data
         cycle_pk = data.get("cycle_id", None)
@@ -1022,20 +1187,47 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # only copy the organization's views within the user's access level instance
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        view_ids = list(
+            PropertyView.objects.filter(
+                id__in=view_ids,
+                property__organization_id=org_id,
+                property__access_level_instance__lft__gte=ali.lft,
+                property__access_level_instance__rgt__lte=ali.rgt,
+            ).values_list("id", flat=True)
+        )
+
         result = copy_properties_to_cycle(view_ids, cycle_pk, column_ids, org_id)
         return JsonResponse(result)
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
-        request_body=AutoSchemaHelper.schema_factory(
+        request=AutoSchemaHelper.json_body(
             {
                 "cycle_id": "integer",
+                "access_level_instance_id": "integer",
                 "state": "object",
             },
             required=["cycle_id", "state"],
+            description="Properties:\n"
+            "- cycle_id: ID of the cycle to create the property in\n"
+            "- access_level_instance_id: Access level instance of the new property (defaults to the user's)\n"
+            "- state: PropertyState fields of the new property (extra_data keys must match existing columns)",
         ),
+        responses={
+            201: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "property_view_id": "integer",
+                    "property_state_id": "integer",
+                    "property_id": "integer",
+                    "view": "object",
+                }
+            )
+        },
     )
     @method_decorator(
         [
@@ -1191,7 +1383,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 {"status": "error", "message": f"Invalid state: {property_state_serializer.errors}"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body({"view_ids": ["integer"]}, description="List of property view ids"),
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "properties": ["integer"]})},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -1203,29 +1399,28 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def get_canonical_properties(self, request):
         """
         List all the canonical properties associated with provided view ids
-        ---
-        parameters:
-            - name: organization_id
-              description: The organization_id for this user's organization
-              required: true
-              paramType: query
-            - name: view_ids
-              description: List of property view ids
-              paramType: body
         """
         ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         view_ids = request.data.get("view_ids", [])
         property_queryset = PropertyView.objects.filter(
             id__in=view_ids,
+            property__organization_id=ali.organization_id,
             property__access_level_instance__lft__gte=ali.lft,
             property__access_level_instance__rgt__lte=ali.rgt,
         ).distinct()
         property_ids = list(property_queryset.values_list("property_id", flat=True))
         return JsonResponse({"status": "success", "properties": property_ids})
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=UpdatePropertyPayloadSerializer,
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=UpdatePropertyPayloadSerializer,
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "state": "object", "view_id": "integer", **MATCH_MERGE_LINK_RESULT},
+                description="`state` is the updated state, and `view_id` the property view after matching and merging",
+            ),
+            204: OpenApiResponse(description="The state is unchanged (the records are identical)"),
+        },
     )
     @method_decorator(
         [
@@ -1407,11 +1602,12 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             result = {"status": "error", "message": f"Multiple property views with id {pk}"}
         return result
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field("profile_id", required=True, description="ID of a BuildingSync ColumnMappingProfile"),
-        ]
+        ],
+        responses={(200, "application/xml"): OpenApiTypes.BINARY},
     )
     @method_decorator(
         [
@@ -1429,9 +1625,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         try:
             profile_pk = int(profile_pk)
             column_mapping_profile = ColumnMappingProfile.objects.get(
-                pk=profile_pk, profile_type__in=[ColumnMappingProfile.BUILDINGSYNC_DEFAULT, ColumnMappingProfile.BUILDINGSYNC_CUSTOM]
+                pk=profile_pk,
+                organizations__pk=org_id,
+                profile_type__in=[ColumnMappingProfile.BUILDINGSYNC_DEFAULT, ColumnMappingProfile.BUILDINGSYNC_CUSTOM],
             )
-        except TypeError:
+        except (TypeError, ValueError):
             return JsonResponse(
                 {"success": False, "message": "Query param `profile_id` is either missing or invalid"}, status=status.HTTP_400_BAD_REQUEST
             )
@@ -1461,7 +1659,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={(200, "application/xml"): OpenApiTypes.BINARY},
+    )
     @method_decorator(
         [
             has_perm("can_view_data"),
@@ -1492,23 +1693,18 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             xml = hpxml.export(property_view.state)
             return HttpResponse(xml, content_type="application/xml")
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.path_id_field(description="ID of the property view to update"),
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="ID of the cycle of the property view"),
-            AutoSchemaHelper.upload_file_field(
-                "file",
-                required=True,
-                description="BuildingSync file to use",
-            ),
-            AutoSchemaHelper.form_string_field(
-                "file_type",
-                required=True,
-                description='Either "Unknown" or "BuildingSync"',
-            ),
         ],
-        request_body=no_body,
+        request=AutoSchemaHelper.multipart_body(
+            {"file": "file", "file_type": ((BuildingFile.BUILDINGSYNC, "BuildingSync"), (BuildingFile.HPXML, "HPXML"))},
+            required=["file", "file_type"],
+            description="- file: BuildingSync (or HPXML) file to use\n- file_type: Type of the file",
+        ),
+        responses={200: UPDATED_PROPERTY_VIEW_RESPONSE},
     )
     @method_decorator(
         [
@@ -1630,21 +1826,19 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.path_id_field(description="ID of the property view to update"),
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="ID of the cycle of the property view"),
             AutoSchemaHelper.query_integer_field(
                 "mapping_profile_id", required=True, description="ID of the column mapping profile to use"
             ),
-            AutoSchemaHelper.upload_file_field(
-                "file",
-                required=True,
-                description="ESPM property report to use (in XLSX format)",
-            ),
         ],
-        request_body=no_body,
+        request=AutoSchemaHelper.multipart_body(
+            {"file": "file"}, required=["file"], description="- file: ESPM property report to use (in XLSX format)"
+        ),
+        responses={200: UPDATED_PROPERTY_VIEW_RESPONSE},
     )
     @method_decorator(
         [
@@ -1808,6 +2002,15 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         else:
             return JsonResponse({"status": "error", "message": "Could not process ESPM file"}, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.multipart_body(
+            {"file": "file", "file_type": InventoryDocument.FILE_TYPES},
+            required=["file"],
+            description='- file: Document to upload\n- file_type: Type of the document (default is "Unknown")',
+        ),
+        responses={200: UPDATED_PROPERTY_VIEW_RESPONSE},
+    )
     @action(detail=True, methods=["PUT"], parser_classes=(MultiPartParser,))
     @method_decorator(
         [
@@ -1847,13 +2050,14 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {"property_view_ids": ["integer"]},
             required=["property_view_ids"],
             description="A list of property view ids to sync with Salesforce",
         ),
+        responses={200: AutoSchemaHelper.schema_factory({"success": "boolean", "status": "string", "message": "string"})},
     )
     @method_decorator(
         [
@@ -1916,6 +2120,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         else:
             return JsonResponse({"status": "error", "message": "failed to sync with Salesforce"}, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("file_id", required=True, description="ID of the inventory document to delete"),
+        ],
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string"})},
+    )
     @method_decorator(
         [
             has_perm("can_modify_data"),
@@ -1960,18 +2171,16 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         doc_file.delete()
         return JsonResponse({"status": "success"})
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field(
-                name="access_level_instance_id", required=True, description="Access Level Instance to move properties to"
-            ),
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
-            {"property_view_ids": ["integer"]},
-            required=["property_view_ids"],
-            description="A list of property view ids to move between alis",
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
+            {"property_view_ids": ["integer"], "access_level_instance_id": "integer"},
+            required=["property_view_ids", "access_level_instance_id"],
+            description="Properties:\n"
+            "- property_view_ids: A list of property view ids to move between alis\n"
+            "- access_level_instance_id: Access Level Instance to move properties to",
         ),
+        responses={200: AutoSchemaHelper.schema_factory({"success": "boolean", "status": "string", "message": "string"})},
     )
     @method_decorator(
         [
@@ -2022,6 +2231,16 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             }
         )
 
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
+            {"property_view_ids": ["integer"], "filename": "string"},
+            description="Properties:\n"
+            "- property_view_ids: IDs of the property views whose latest BuildingSync files are exported\n"
+            '- filename: Name of the downloaded file (default is "ExportedData.xlsx")',
+        ),
+        responses=XLSX_RESPONSE,
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -2077,6 +2296,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return response
 
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
+            {"property_view_ids": ["integer"]}, description="Properties:\n- property_view_ids: IDs of the property views to export"
+        ),
+        responses=XLSX_RESPONSE,
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -2139,6 +2365,21 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return response
 
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
+            {"property_view_ids": ["integer"], "values_by_column_id": "object"},
+            description="Properties:\n"
+            "- property_view_ids: IDs of the property views to update\n"
+            "- values_by_column_id: New values keyed by the ID of one of the organization's property columns",
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory({"status": "string"}),
+            400: AutoSchemaHelper.schema_factory(
+                {"status": "string", "message": "string"}, description="`values_by_column_id` has an invalid column ID"
+            ),
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -2153,7 +2394,16 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         org_id = self.get_organization(request)
         ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
-        values_by_column_id = request.data.get("values_by_column_id", {})
+        try:
+            values_by_column_id = {int(column_id): value for column_id, value in request.data.get("values_by_column_id", {}).items()}
+        except (AttributeError, TypeError, ValueError):
+            values_by_column_id = None
+        columns = Column.objects.filter(organization_id=org_id, table_name="PropertyState").in_bulk(values_by_column_id or [])
+        if values_by_column_id is None or len(columns) != len(values_by_column_id):
+            return JsonResponse(
+                {"status": "error", "message": "values_by_column_id must be keyed by the IDs of the organization's property columns"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         property_view_ids = request.data.get("property_view_ids", [])
         property_views = PropertyView.objects.filter(
@@ -2166,7 +2416,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         for property_view in property_views:
             state = property_view.state
             for column_id, value in values_by_column_id.items():
-                column = Column.objects.get(id=column_id)
+                column = columns[column_id]
                 if column.is_extra_data:
                     state.extra_data[column.column_name] = value
                 else:

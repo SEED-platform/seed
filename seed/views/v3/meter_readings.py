@@ -5,31 +5,95 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.decorators import method_decorator
-from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
-from seed.models import MeterReading, PropertyView
+from seed.models import Meter, MeterReading, PropertyView
 from seed.serializers.meter_readings import MeterReadingSerializer
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
-END_TIME_QUERY_PARAM = AutoSchemaHelper.base_field(
-    name="end_time",
-    location_attr="IN_QUERY",
-    type_attr="TYPE_STRING",
-    required=False,
-    description="End time of the reading, required only when several of the meter's readings share the start_time in the URL.",
+DETAIL_PARAMETERS = [
+    AutoSchemaHelper.path_string_field("id", "Start time of the reading (its ID), e.g., 2024-01-01T00:00:00Z"),
+    AutoSchemaHelper.query_string_field(
+        "end_time",
+        required=False,
+        description="End time of the reading, required only when several of the meter's readings share the start_time in the URL.",
+    ),
+]
+# Request timestamps are parsed as local times in SEED's default time zone, so time zone offsets are rejected
+LOCAL_DATETIME_SCHEMA = {"type": "string", "example": "2024-01-01T00:00:00", "description": "ISO 8601 time without a time zone offset"}
+METER_READING_REQUEST_FIELDS = {
+    "start_time": LOCAL_DATETIME_SCHEMA,
+    "end_time": LOCAL_DATETIME_SCHEMA,
+    "reading": {"type": "number", "nullable": True},
+    "source_unit": {"type": "string", "nullable": True},
+    "conversion_factor": {"type": "number"},
+}
+METER_READING_REQUEST_SCHEMA = {
+    "type": "object",
+    "properties": METER_READING_REQUEST_FIELDS,
+    "required": ["start_time", "end_time", "conversion_factor"],
+}
+# `MeterReadingSerializer.to_representation` adds the id and unit conversion fields
+METER_READING_RESPONSE_SCHEMA = AutoSchemaHelper.schema_factory(
+    {
+        "id": "datetime",
+        "start_time": "datetime",
+        "end_time": "datetime",
+        "reading": "number",
+        "source_unit": "string",
+        "conversion_factor": "number",
+        "units": "string",
+        "converted_value": "number",
+        "converted_units": "string",
+    }
 )
-DETAIL_SCHEMA = swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field(), END_TIME_QUERY_PARAM])
 
 
+@extend_schema_view(
+    list=extend_schema(responses={200: {"type": "array", "items": METER_READING_RESPONSE_SCHEMA}}),
+    retrieve=extend_schema(parameters=DETAIL_PARAMETERS, responses={200: METER_READING_RESPONSE_SCHEMA}),
+    create=extend_schema(
+        request={
+            "application/json": {
+                "oneOf": [METER_READING_REQUEST_SCHEMA, {"type": "array", "items": METER_READING_REQUEST_SCHEMA}],
+                "description": "Meter reading or list of meter readings to add (existing readings with the same start and end times are updated).",
+            }
+        },
+        responses={
+            201: OpenApiResponse(
+                {"oneOf": [METER_READING_RESPONSE_SCHEMA, {"type": "array", "items": METER_READING_RESPONSE_SCHEMA}]},
+                description="The added meter reading, or a list of them when a list was posted",
+            )
+        },
+    ),
+    update=extend_schema(
+        parameters=DETAIL_PARAMETERS,
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": METER_READING_REQUEST_FIELDS,
+                "required": ["start_time", "end_time"],
+                "description": "Meter reading to update.",
+            }
+        },
+        responses={200: METER_READING_RESPONSE_SCHEMA},
+    ),
+    destroy=extend_schema(parameters=DETAIL_PARAMETERS),
+)
+@extend_schema(
+    parameters=[
+        AutoSchemaHelper.query_org_id_field(),
+        AutoSchemaHelper.path_id_field("ID of the property view where the meter is associated.", name="property_pk"),
+        AutoSchemaHelper.path_id_field("ID of the meter of the meter readings.", name="meter_pk"),
+    ]
+)
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_viewer"),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
@@ -37,7 +101,6 @@ DETAIL_SCHEMA = swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_or
 )
 @method_decorator(
     [
-        DETAIL_SCHEMA,
         has_perm("requires_viewer"),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
@@ -45,39 +108,6 @@ DETAIL_SCHEMA = swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_or
 )
 @method_decorator(
     [
-        swagger_auto_schema(
-            manual_parameters=[
-                AutoSchemaHelper.query_org_id_field(),
-                AutoSchemaHelper.base_field(
-                    name="property_pk",
-                    location_attr="IN_PATH",
-                    type_attr="TYPE_INTEGER",
-                    required=True,
-                    description="ID of the property view where the meter is associated.",
-                ),
-                AutoSchemaHelper.base_field(
-                    name="meter_pk",
-                    location_attr="IN_PATH",
-                    type_attr="TYPE_INTEGER",
-                    required=True,
-                    description="ID of the meter to attached the meter readings.",
-                ),
-            ],
-            request_body=openapi.Schema(
-                type=openapi.TYPE_ARRAY,
-                items=AutoSchemaHelper.schema_factory(
-                    {
-                        "start_time": "datetime",
-                        "end_time": "datetime",
-                        "reading": "number",
-                        "source_unit": "string",
-                        "conversion_factor": "number",
-                    },
-                    required=["start_time", "end_time", "reading", "source_unit", "conversion_factor"],
-                ),
-                description="Dictionary or list of dictionaries of meter readings to add.",
-            ),
-        ),
         has_perm("requires_member"),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
@@ -85,37 +115,6 @@ DETAIL_SCHEMA = swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_or
 )
 @method_decorator(
     [
-        swagger_auto_schema(
-            manual_parameters=[
-                AutoSchemaHelper.query_org_id_field(),
-                AutoSchemaHelper.base_field(
-                    name="property_pk",
-                    location_attr="IN_PATH",
-                    type_attr="TYPE_INTEGER",
-                    required=True,
-                    description="ID of the property view where the meter is associated.",
-                ),
-                AutoSchemaHelper.base_field(
-                    name="meter_pk",
-                    location_attr="IN_PATH",
-                    type_attr="TYPE_INTEGER",
-                    required=True,
-                    description="ID of the meter to attached the meter readings.",
-                ),
-                END_TIME_QUERY_PARAM,
-            ],
-            request_body=AutoSchemaHelper.schema_factory(
-                {
-                    "start_time": "datetime",
-                    "end_time": "datetime",
-                    "reading": "number",
-                    "source_unit": "string",
-                    "conversion_factor": "number",
-                },
-                required=["start_time", "end_time", "reading", "source_unit", "conversion_factor"],
-            ),
-            description="Meter reading to update.",
-        ),
         has_perm("requires_member"),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
@@ -123,14 +122,13 @@ DETAIL_SCHEMA = swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_or
 )
 @method_decorator(
     [
-        DETAIL_SCHEMA,
         has_perm("requires_member"),
         has_hierarchy_access(property_view_id_kwarg="property_pk"),
     ],
     name="destroy",
 )
 class MeterReadingViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
-    """API endpoint for managing meters."""
+    """API endpoint for managing meter readings."""
 
     serializer_class = MeterReadingSerializer
     renderer_classes = (JSONRenderer,)
@@ -198,10 +196,9 @@ class MeterReadingViewSet(SEEDOrgNoPatchOrOrgCreateModelViewSet):
         return super().get_serializer(*args, **kwargs)
 
     def perform_create(self, serializer):
-        """On create, make sure to add in the property id which comes from the URL kwargs."""
+        """On create, make sure to add in the meter id which comes from the URL kwargs."""
 
-        # check permissions?
-        if self.meter_pk:
-            serializer.save(meter_id=self.meter_pk)
-        else:
-            raise ValueError("No meter_pk provided in URL to create the meter reading")
+        # has_hierarchy_access only checked the property view, so the meter must belong to its property
+        if not Meter.objects.filter(pk=self.meter_pk, property_id=self.property_pk).exists():
+            raise NotFound()
+        serializer.save(meter_id=self.meter_pk)

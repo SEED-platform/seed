@@ -9,11 +9,12 @@ from random import randint
 
 import xlrd
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from django.http import JsonResponse
 from django.utils import timezone as django_timezone
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import serializers, status, viewsets
+from drf_spectacular.utils import extend_schema
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
 from seed.data_importer.meters_parser import MetersParser
@@ -40,6 +41,7 @@ from seed.models import (
     SEED_DATA_SOURCES,
     Column,
     Cycle,
+    DataLogger,
     ImportFile,
     Meter,
     MeterReading,
@@ -54,29 +56,39 @@ from seed.models import (
     obj_to_dict,
 )
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import PROGRESS_DATA_SCHEMA, AutoSchemaHelper
 from seed.utils.import_file import verify_data_types
 from seed.utils.time_utils import localize_datetime_with_dst_fallbacks
 
 _log = logging.getLogger(__name__)
 
 
-class MappingResultsPropertySerializer(serializers.Serializer):
-    pm_property_id = serializers.CharField(max_length=100)
-    address_line_1 = serializers.CharField(max_length=100)
-    property_name = serializers.CharField(max_length=100)
-
-
-class MappingResultsTaxLotSerializer(serializers.Serializer):
-    pm_property_id = serializers.CharField(max_length=100)
-    address_line_1 = serializers.CharField(max_length=100)
-    jurisdiction_tax_lot_id = serializers.CharField(max_length=100)
-
-
-class MappingResultsResponseSerializer(serializers.Serializer):
-    status = serializers.CharField(max_length=100)
-    properties = MappingResultsPropertySerializer(many=True)
-    tax_lots = MappingResultsTaxLotSerializer(many=True)
+STATUS_MESSAGE_SCHEMA = AutoSchemaHelper.schema_factory({"status": "string", "message": "string"})
+# Matching and geocoding counts for one inventory type
+MATCHING_RESULTS_COUNTS = dict.fromkeys(
+    [
+        "initial_incoming",
+        "duplicates_against_existing",
+        "duplicates_within_file",
+        "duplicates_within_file_errors",
+        "merges_against_existing",
+        "merges_against_existing_errors",
+        "merges_between_existing",
+        "merges_within_file",
+        "merges_within_file_errors",
+        "new",
+        "new_errors",
+        "geocoded_high_confidence",
+        "geocoded_low_confidence",
+        "geocoded_census_geocoder",
+        "geocoded_manually",
+        "geocode_not_possible",
+    ],
+    "integer",
+)
+# A meter (see `MetersParser.proposed_imports`) and the parsed type/unit combinations of a meter import preview
+METER_PROPOSED_IMPORT = {"source_id": "string", "type": "string", "incoming": "integer", "property_id": "integer", "system_id": "integer"}
+VALIDATED_TYPE_UNITS = [{"parsed_type": "string", "parsed_unit": "string"}]
 
 
 def convert_first_five_rows_to_list(header, first_five_rows):
@@ -138,6 +150,26 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
     queryset = ImportFile.objects.all()
 
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "import_file": {
+                        "id": "integer",
+                        "name": "string",
+                        "uploaded_filename": "string",
+                        "source_type": "string",
+                        "import_record": "integer",
+                        "cycle": "integer",
+                        "dataset": "object",
+                    },
+                },
+                description="`import_file` contains all of the ImportFile's fields, and `dataset` all of its ImportRecord's fields",
+            )
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -183,7 +215,10 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "data": "boolean"})},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -210,11 +245,16 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         except xlrd.XLRDError:
             return JsonResponse({"status": "success", "data": False})
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(),
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(required=False, description="Organization ID (may instead be sent in the request body)"),
         ],
-        request_body=AutoSchemaHelper.schema_factory({"import_file_id": "integer"}),
+        request=AutoSchemaHelper.json_body(
+            {"import_file_id": "integer", "organization_id": "integer"},
+            required=["import_file_id"],
+            description="- import_file_id: ID of a mapped Assessed Raw ImportFile whose file also contains meter data",
+        ),
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "import_file_id": "integer"})},
     )
     @method_decorator(
         [
@@ -248,7 +288,22 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "import_file_id": new_file.id})
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "status": {"type": "string"},
+                    "first_five_rows": {
+                        "type": "array",
+                        "items": {"type": "object", "additionalProperties": {"type": "string"}},
+                        "description": "Rows keyed by the file's column headers",
+                    },
+                },
+            }
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -285,7 +340,10 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         data = import_file.cached_second_to_fifth_row
         return JsonResponse({"status": "success", "first_five_rows": convert_first_five_rows_to_list(header, data)})
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "raw_columns": ["string"]})},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -310,11 +368,12 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "raw_columns": import_file.first_row_columns})
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
-        responses={200: MappingResultsResponseSerializer},
+        request=AutoSchemaHelper.json_body({"inventory_type": (("all", "all"), ("properties", "properties"), ("taxlots", "taxlots"))}),
+        responses={200: PROGRESS_DATA_SCHEMA},
     )
     @method_decorator(
         [
@@ -327,7 +386,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=True, methods=["POST"], url_path="mapping_results")
     def mapping_results(self, request, pk=None):
         """
-        Retrieves a paginated list of Properties and Tax Lots for an import file after mapping.
+        Starts a background task that collects the mapped Properties and/or Tax Lots (`inventory_type`, defaulting
+        to "all") of an import file. When it completes, the results are available from
+        `GET /api/v3/cache_entries/{unique_id}/`, using the `unique_id` of the returned progress data.
         """
         import_file_id = pk
         org_id = self.get_organization(request)
@@ -345,6 +406,17 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         mapping_results_task.s(args).apply_async()
 
         return progress_data.result()
+
+    @staticmethod
+    def _data_logger_is_accessible(request, org_id, data_logger_id):
+        """Whether the data logger belongs to a property in the organization and the user's access level subtree"""
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        return DataLogger.objects.filter(
+            pk=data_logger_id,
+            property__organization_id=org_id,
+            property__access_level_instance__lft__gte=access_level_instance.lft,
+            property__access_level_instance__rgt__lte=access_level_instance.rgt,
+        ).exists()
 
     @staticmethod
     def has_coparent(state_id, inventory_type):
@@ -373,16 +445,19 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return audit_entry[0]
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
-        request_body=AutoSchemaHelper.schema_factory(
+        request=AutoSchemaHelper.json_body(
             {
                 "remap": "boolean",
                 "mark_as_done": "boolean",
-            }
+            },
+            description="- remap: delete previously mapped records first (default: false)\n"
+            "- mark_as_done: mark the mapping as done when it completes (default: true)",
         ),
+        responses={200: PROGRESS_DATA_SCHEMA},
     )
     @method_decorator(
         [
@@ -412,7 +487,17 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         # return remap_data(import_file_id)
         return JsonResponse(map_data(pk, remap, mark_as_done))
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=None,
+        responses={
+            200: {
+                "type": "object",
+                "properties": {"progress_data": PROGRESS_DATA_SCHEMA, "sub_progress_data": PROGRESS_DATA_SCHEMA},
+                "description": "If matching was already done, a single (warning) progress data object is returned instead",
+            }
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -438,7 +523,16 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return geocode_and_match_buildings_task(pk)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=None,
+        responses={
+            200: {
+                "type": "object",
+                "properties": {"progress_key": {"type": "string"}, "progress": PROGRESS_DATA_SCHEMA},
+            }
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -471,7 +565,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()], request=None, responses={200: PROGRESS_DATA_SCHEMA})
     @method_decorator(
         [
             api_endpoint,
@@ -497,11 +591,18 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return task_validate_use_cases(import_file.pk)
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
         ],
-        request_body=AutoSchemaHelper.schema_factory({"cycle_id": "string"}),
+        request=AutoSchemaHelper.json_body(
+            {"cycle_id": "integer", "multiple_cycle_upload": "boolean"},
+            required=["cycle_id"],
+            description="- cycle_id: the cycle to save the data to\n"
+            "- multiple_cycle_upload: assign each record to the cycle containing its year_ending, "
+            "falling back to cycle_id (default: false)",
+        ),
+        responses={200: PROGRESS_DATA_SCHEMA},
     )
     @method_decorator(
         [
@@ -541,7 +642,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             )
         else:
             # find the cycle
-            cycle = Cycle.objects.get(id=cycle_id)
+            cycle = Cycle.objects.filter(id=cycle_id, organization_id=org_id).first()
             if cycle:
                 # assign the cycle id to the import file object
                 import_file.cycle = cycle
@@ -552,7 +653,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse(task_save_raw(import_file.id))
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()], request=None, responses={200: STATUS_MESSAGE_SCHEMA})
     @method_decorator(
         [
             api_endpoint,
@@ -582,7 +683,20 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "message": ""})
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "import_file_records": "integer",
+                    "multiple_cycle_upload": "boolean",
+                    "properties": MATCHING_RESULTS_COUNTS,
+                    "tax_lots": MATCHING_RESULTS_COUNTS,
+                }
+            )
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -763,7 +877,24 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             },
         }
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "status": {"type": "string"},
+                    "suggested_column_mappings": {
+                        "type": "object",
+                        "additionalProperties": {"type": "array", "items": {}, "minItems": 3, "maxItems": 3},
+                        "description": "Raw column name to `[table_name, column_name, confidence]`",
+                    },
+                    "property_columns": {"type": "array", "items": {"type": "object"}, "description": "Mappable property columns"},
+                    "taxlot_columns": {"type": "array", "items": {"type": "object"}, "description": "Mappable tax lot columns"},
+                },
+            }
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -855,7 +986,10 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse(result)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string"})},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -892,22 +1026,29 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         import_file.delete()
         return JsonResponse({"status": "success"})
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
-            AutoSchemaHelper.query_integer_field("view_id", required=True, description="ID for property view"),
-        ]
+            AutoSchemaHelper.query_integer_field("view_id", required=False, description="ID of the property view to import to"),
+            AutoSchemaHelper.query_integer_field("system_id", required=False, description="ID of the system to import to"),
+        ],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"validated_type_units": VALIDATED_TYPE_UNITS, "proposed_imports": [METER_PROPOSED_IMPORT]}
+            )
+        },
     )
     @method_decorator(
         [
             ajax_request,
             has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
         ]
     )
     @action(detail=True, methods=["GET"])
     def greenbutton_meters_preview(self, request, pk):
         """
-        Returns validated type units and proposed imports
+        Returns validated type units and proposed imports. Exactly one of `view_id` or `system_id` is required.
         """
         org_id = self.get_organization(request)
         view_id = request.query_params.get("view_id")
@@ -941,12 +1082,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             try:
                 system_id = System.objects.get(
                     pk=system_id,
+                    group__organization_id=org_id,
                     group__access_level_instance__lft__gte=access_level_instance.lft,
                     group__access_level_instance__rgt__lte=access_level_instance.rgt,
                 ).id
             except System.DoesNotExist:
                 return JsonResponse(
-                    {"status": "error", "message": "Could not find system with pk=" + str(view_id)}, status=status.HTTP_400_BAD_REQUEST
+                    {"status": "error", "message": "Could not find system with pk=" + str(system_id)}, status=status.HTTP_400_BAD_REQUEST
                 )
             property_id = None
         else:
@@ -965,17 +1107,41 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return result
 
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("view_id", required=True, description="ID of the property view to import to"),
+            AutoSchemaHelper.query_integer_field("data_logger_id", required=False, description="ID of the data logger to import to"),
+        ],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "proposed_imports": [
+                        {
+                            "column_name": "string",
+                            "display_name": "string",
+                            "type": "string",
+                            "units": "string",
+                            "location_description": "string",
+                            "description": "string",
+                        }
+                    ]
+                }
+            )
+        },
+    )
     @method_decorator(
         [
             ajax_request,
             has_perm("requires_member"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
             has_hierarchy_access(param_property_view_id="view_id"),
         ]
     )
     @action(detail=True, methods=["GET"])
     def sensors_preview(self, request, pk):
         """
-        Returns validated type units and proposed imports
+        Returns the sensors that would be imported from a sensor metadata file
         """
         org_id = self.get_organization(request)
         view_id = request.query_params.get("view_id")
@@ -995,6 +1161,12 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 {"status": "error", "message": "Could not find property with pk=" + str(view_id)}, status=status.HTTP_400_BAD_REQUEST
             )
 
+        if data_logger_id is not None and not self._data_logger_is_accessible(request, org_id, data_logger_id):
+            return JsonResponse(
+                {"status": "error", "message": "Could not find data logger with pk=" + str(data_logger_id)},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         parser = reader.MCMParser(import_file.local_file)
         result = {"proposed_imports": list(parser.data)}
 
@@ -1003,6 +1175,13 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return result
 
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.query_integer_field("data_logger_id", required=False, description="ID of the data logger to import to"),
+        ],
+        responses={200: AutoSchemaHelper.schema_factory([{"column_name": "string", "exists": "boolean", "num_readings": "integer"}])},
+    )
     @method_decorator(
         [
             ajax_request,
@@ -1012,6 +1191,9 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     )
     @action(detail=True, methods=["GET"])
     def sensor_readings_preview(self, request, pk):
+        """
+        Returns, for each sensor column of a sensor readings file, whether the sensor exists and how many readings it has
+        """
         org_id = self.get_organization(request)
         data_logger_id = request.query_params.get("data_logger_id")
 
@@ -1020,6 +1202,12 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         except ImportFile.DoesNotExist:
             return JsonResponse(
                 {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if data_logger_id is not None and not self._data_logger_is_accessible(request, org_id, data_logger_id):
+            return JsonResponse(
+                {"status": "error", "message": "Could not find data logger with pk=" + str(data_logger_id)},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -1034,7 +1222,18 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return result
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "validated_type_units": VALIDATED_TYPE_UNITS,
+                    "proposed_imports": [{**METER_PROPOSED_IMPORT, "pm_property_id": "string", "cycles": "string"}],
+                    "unlinkable_pm_ids": [{"portfolio_manager_id": "string"}],
+                }
+            )
+        },
+    )
     @method_decorator(
         [
             ajax_request,
@@ -1051,7 +1250,7 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         try:
             import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
-            meters_parser = MetersParser.factory(import_file.local_file, org_id)
+            meters_parser = MetersParser.factory(import_file.local_file, org_id, access_level_instance=import_file.access_level_instance)
             import_file.num_rows = len(meters_parser.proposed_imports)
             import_file.save()
 
@@ -1067,7 +1266,11 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
 
         return result
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body({"meter_id": "integer"}, required=["meter_id"]),
+        responses={200: STATUS_MESSAGE_SCHEMA},
+    )
     @method_decorator(
         [
             ajax_request,
@@ -1077,10 +1280,30 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
     )
     @action(detail=True, methods=["POST"])
     def system_meter_upload(self, request, pk):
+        """
+        Imports the readings of a file (with "Start Date", "End Date", "Reading", and "Usage Units" columns) into a meter
+        """
         org_id = self.get_organization(request)
         org = Organization.objects.get(pk=org_id)
         meter_id = request.data.get("meter_id")
-        meter = Meter.objects.get(pk=meter_id)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        meter = Meter.objects.filter(
+            Q(
+                property__organization_id=org_id,
+                property__access_level_instance__lft__gte=access_level_instance.lft,
+                property__access_level_instance__rgt__lte=access_level_instance.rgt,
+            )
+            | Q(
+                system__group__organization_id=org_id,
+                system__group__access_level_instance__lft__gte=access_level_instance.lft,
+                system__group__access_level_instance__rgt__lte=access_level_instance.rgt,
+            ),
+            pk=meter_id,
+        ).first()
+        if meter is None:
+            return JsonResponse(
+                {"status": "error", "message": f"Could not find meter with pk={meter_id}"}, status=status.HTTP_404_NOT_FOUND
+            )
 
         import_file = ImportFile.objects.get(pk=pk, import_record__super_organization_id=org_id)
         parser = reader.MCMParser(import_file.local_file)
@@ -1157,7 +1380,24 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
             status=status.HTTP_200_OK,
         )
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()])
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=None,
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "message": "string"},
+                description='`status` is "warning" and `message` describes the problems when blank values were found',
+            )
+        },
+    )
+    @method_decorator(
+        [
+            api_endpoint,
+            ajax_request,
+            has_perm("can_modify_data"),
+            has_hierarchy_access(import_file_id_kwarg="pk"),
+        ]
+    )
     @action(detail=True, methods=["POST"])
     def verify_data_type_mapping(self, request, pk):
         """

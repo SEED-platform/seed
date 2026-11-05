@@ -5,7 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import no_body, swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, JSONParser
@@ -15,19 +15,18 @@ from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import Measure
 from seed.serializers.measures import MeasureSerializer
 from seed.utils.api import OrgMixin
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 
 
+@extend_schema_org_query_param
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("can_view_data"),
     ],
     name="retrieve",
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("can_view_data"),
     ],
     name="list",
@@ -56,7 +55,31 @@ class MeasureViewSet(viewsets.ReadOnlyModelViewSet, OrgMixin):
         # TODO: I set this to latest version for now. I'm not sure this functionality is used.
         return Measure.objects.filter(organization_id=org_id, schema_version="2.6.0")
 
-    @swagger_auto_schema(manual_parameters=[AutoSchemaHelper.query_org_id_field()], request_body=no_body)
+    @extend_schema(
+        request=None,
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "measures": [
+                        {
+                            "id": "integer",
+                            "name": "string",
+                            "display_name": "string",
+                            "category": "string",
+                            "category_display_name": "string",
+                            "schema_type": "string",
+                            "schema_version": "string",
+                            "organization_id": "integer",
+                            "created": "datetime",
+                            "modified": "datetime",
+                        }
+                    ],
+                },
+                description="All of the organization's measures (of every schema version)",
+            )
+        },
+    )
     @method_decorator(
         [
             has_perm("can_modify_data"),

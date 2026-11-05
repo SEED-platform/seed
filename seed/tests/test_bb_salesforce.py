@@ -13,6 +13,7 @@ from responses import matchers
 from seed.models import BBSalesforceConfig, Goal
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.cache import get_cache_raw, set_cache_raw
+from seed.utils.organizations import create_organization
 from seed.views.v3.bb_salesforce import REDIRECT_URI_ENDING
 
 
@@ -401,3 +402,80 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
                 "name": "annual_report 2 name",
             },
         ]
+
+    @responses.activate
+    def test_annual_report_escapes_salesforce_goal_id(self):
+        # Set Up - a goal whose user-editable salesforce_goal_id attempts to widen the SOQL query
+        set_cache_raw(f"access_token_{self.org.id}", "example access token")
+        self.goal.salesforce_goal_id = "x' OR BB_Goal__c != 'x"
+        self.goal.save()
+
+        responses.add(
+            responses.GET,
+            f"{self.salesforce_url}/data/v64.0/query?",
+            json={"records": []},
+            status=200,
+            match=[
+                matchers.query_param_matcher(
+                    {"q": r"SELECT Id,  Name FROM Annual_Report__c WHERE BB_Goal__c = 'x\' OR BB_Goal__c != \'x'"}
+                ),
+            ],
+        )
+
+        # Action
+        url = reverse_lazy("api:v3:bb_salesforce-annual-report")
+        response = self.client.get(url, {"organization_id": str(self.org.id), "goal_id": self.goal.id})
+
+        # Assertion - the value stays inside a single quoted string literal
+        assert response.status_code == 200
+        assert response.json() == {"status": "success", "results": []}
+
+    def test_annual_report_requires_goal_in_hierarchy(self):
+        # Set Up
+        set_cache_raw(f"access_token_{self.org.id}", "example access token")
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_org_goal = Goal.objects.create(
+            name="other org goal",
+            salesforce_goal_id="other_salesforce_goal_id",
+            target_percentage=30,
+            access_level_instance_id=other_org.root.id,
+            area_column_id=self.column_factory.get_column("source_eui").id,
+            baseline_cycle_id=self.cycle_factory.get_cycle(name="Cycle A").id,
+            eui_column1_id=self.column_factory.get_column("source_eui").id,
+            organization_id=other_org.id,
+        )
+        url = reverse_lazy("api:v3:bb_salesforce-annual-report")
+
+        # Action - a goal in another organization
+        response = self.client.get(url, {"organization_id": str(self.org.id), "goal_id": other_org_goal.id})
+
+        # Assertion
+        assert response.json() == {"status": "error", "message": "No such resource."}
+
+        # Action - a child member cannot see a goal above their access level
+        self.login_as_child_member()
+        response = self.client.get(url, {"organization_id": str(self.org.id), "goal_id": self.goal.id})
+
+        # Assertion
+        assert response.json() == {"status": "error", "message": "No such resource."}
+
+    def test_cached_tokens_use_the_authorized_organization(self):
+        # Set Up - the user is not a member of the other organization
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        set_cache_raw(f"access_token_{self.org.id}", "example access token")
+        set_cache_raw(f"access_token_{other_org.id}", "other access token")
+        self.login_as_root_member()
+
+        # Action - conflicting `organization` and `organization_id` params are rejected, since views may read either
+        url = reverse_lazy("api:v3:bb_salesforce-logout")
+        response = self.client.get(url, {"organization": str(self.org.id), "organization_id": str(other_org.id)})
+
+        #  Assertion
+        assert response.status_code == 403
+        assert get_cache_raw(f"access_token_{other_org.id}") == "other access token"
+
+        # Action & Assertion - only the authorized organization's token is removed
+        response = self.client.get(url, {"organization_id": str(self.org.id)})
+        assert response.status_code == 200
+        assert get_cache_raw(f"access_token_{self.org.id}") is None
+        assert get_cache_raw(f"access_token_{other_org.id}") == "other access token"

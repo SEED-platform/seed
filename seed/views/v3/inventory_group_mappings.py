@@ -8,13 +8,13 @@ from collections import namedtuple
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import response, status, viewsets
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
-from seed.models import InventoryGroup, InventoryGroupMapping, Property, PropertyView, TaxLot, TaxLotView
+from seed.models import AccessLevelInstance, InventoryGroup, InventoryGroupMapping, Property, PropertyView, TaxLot, TaxLotView
 from seed.serializers.inventory_groups import InventoryGroupMappingSerializer
 from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
@@ -26,6 +26,8 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
     model = InventoryGroupMapping
     serializer_class = InventoryGroupMappingSerializer
     inventory_models = {"property": Property, "tax_lot": TaxLot}
+    # InventoryGroupMapping field of each inventory type
+    inventory_fields = {"property": "property", "tax_lot": "taxlot"}
 
     errors = {
         "disjoint": ErrorState(
@@ -57,11 +59,11 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
         elif inventory_ali_id != group_ali_id:
             raise IntegrityError("Access Level mismatch between group and inventory.")
         else:
-            create_dict = {"group_id": group_id, f"{inventory_type}_id": inventory_id}
+            create_dict = {"group_id": group_id, f"{self.inventory_fields[inventory_type]}_id": inventory_id}
             return InventoryGroupMapping(**create_dict)
 
     def get_inventory_id(self, q, inventory_type):
-        return getattr(q, f"{inventory_type}_id")
+        return getattr(q, f"{self.inventory_fields[inventory_type]}_id")
 
     def exclude(self, qs, inventory_type, group_ids):
         exclude = {group: [] for group in group_ids}
@@ -71,7 +73,7 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
                 exclude[q.group_id].append(inventory_id)
         return exclude
 
-    def add_groups(self, qs, inventory_type, inventory_ids, add_group_ids):
+    def add_groups(self, qs, organization_id, inventory_type, inventory_ids, add_group_ids):
         """
         Adds items to groups in GroupMappings and returns list of inventory ids that were added.
         """
@@ -79,8 +81,11 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
         if add_group_ids:
             model = InventoryGroupMapping
             inventory_model = self.inventory_models[inventory_type]
+            if not inventory_ids:
+                # all of the organization's inventory, except what is already in the groups
+                inventory_ids = inventory_model.objects.filter(organization_id=organization_id).values_list("pk", flat=True)
+                qs = self.get_queryset_for_inventory_type(inventory_type).filter(group_id__in=add_group_ids)
             exclude = self.exclude(qs, inventory_type, add_group_ids)
-            inventory_ids = inventory_ids if inventory_ids else [m.pk for m in inventory_model.objects.all()]
             new_inventory_groups = [
                 self.group_factory(inventory_type, group_id, pk)
                 for group_id in add_group_ids
@@ -102,7 +107,7 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
                 removed = [self.get_inventory_id(q, inventory_type) for q in rqs]
                 rqs.delete()
             elif inventory_type == "tax_lot":
-                rqs = qs.filter(group_id__in=remove_group_ids, tax_lot__in=inventory_ids)
+                rqs = qs.filter(group_id__in=remove_group_ids, taxlot__in=inventory_ids)
                 removed = [self.get_inventory_id(q, inventory_type) for q in rqs]
                 rqs.delete()
 
@@ -115,7 +120,7 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
         if inventory_type == "property":
             qs = qs.filter(property__in=inventory_ids)
         elif inventory_type == "tax_lot":
-            qs = qs.filter(tax_lot__in=inventory_ids)
+            qs = qs.filter(taxlot__in=inventory_ids)
         return qs
 
     def get_queryset_for_inventory_type(self, inventory_type):
@@ -128,6 +133,20 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
             mappings = InventoryGroupMapping.objects.filter(taxlot__isnull=False).order_by("group_id")
         return mappings
 
+    def has_group_access(self, request, organization_id, group_ids):
+        """
+        Returns whether all groups are in the organization and within the user's access level instance subtree
+        """
+        group_ids = set(group_ids)
+        ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        accessible_groups = InventoryGroup.objects.filter(
+            pk__in=group_ids,
+            organization_id=organization_id,
+            access_level_instance__lft__gte=ali.lft,
+            access_level_instance__rgt__lte=ali.rgt,
+        )
+        return accessible_groups.count() == len(group_ids)
+
     def get_inventory_ids(self, inventory_type, inventory_ids):
         """
         Takes property_view/taxlot_view ids and returns property/taxlot ids
@@ -139,14 +158,24 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
             ids = TaxLotView.objects.filter(pk__in=inventory_ids).order_by("id").values_list("taxlot_id", flat=True)
         return ids
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {"add_group_ids": ["integer"], "remove_group_ids": ["integer"], "inventory_ids": ["integer"], "inventory_type": "string"}
-        ),
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "add_group_ids": {"type": "array", "items": {"type": "integer"}, "default": []},
+                    "remove_group_ids": {"type": "array", "items": {"type": "integer"}, "default": []},
+                    "inventory_ids": {"type": "array", "items": {"type": "integer"}, "description": "Property or tax lot view IDs"},
+                    "inventory_type": {"type": "string", "enum": list(inventory_models)},
+                },
+                "required": ["inventory_ids", "inventory_type"],
+            }
+        },
         responses={
             200: AutoSchemaHelper.schema_factory(
-                {"status": "string", "message": "string", "num_updated": "integer", "inventory_groups": ["integer"]}
+                {"status": "string", "num_updated": "integer", "inventory_groups": [{"id": "integer"}]},
+                description="inventory_groups lists the added and removed groups",
             )
         },
     )
@@ -166,7 +195,7 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
         remove_group_ids = request.data.get("remove_group_ids", [])
         view_ids = request.data.get("inventory_ids", None)
         inventory_type = request.data.get("inventory_type", None)
-        organization = request.query_params["organization_id"]
+        organization = request.query_params.get("organization_id")
         error = None
 
         if not set(add_group_ids).isdisjoint(remove_group_ids):
@@ -174,8 +203,10 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
         elif not organization:
             error = self.errors["missing_org"]
         if error:
-            result = {"status": "error", "message": str(error)}
+            result = {"status": "error", "message": error.message}
             status_code = error.status_code
+        elif not self.has_group_access(request, organization, add_group_ids + remove_group_ids):
+            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
         else:
             # get ids from view_ids
             inventory_ids = self.get_inventory_ids(inventory_type, view_ids)
@@ -185,7 +216,7 @@ class InventoryGroupMappingViewSet(viewsets.ViewSet):
 
             removed = self.remove_groups(qs, inventory_type, inventory_ids, remove_group_ids)
             try:
-                added = self.add_groups(qs, inventory_type, inventory_ids, add_group_ids)
+                added = self.add_groups(qs, organization, inventory_type, inventory_ids, add_group_ids)
             except IntegrityError as e:
                 return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 

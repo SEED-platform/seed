@@ -8,8 +8,8 @@ import logging
 from django.http import JsonResponse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, viewsets
+from drf_spectacular.utils import extend_schema, extend_schema_field, extend_schema_serializer
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 
 from seed.data_importer.models import ImportRecord
@@ -18,16 +18,49 @@ from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization, OrganizationUser
 from seed.models import obj_to_dict
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.time_utils import convert_to_js_timestamp
 
 _log = logging.getLogger(__name__)
+
+# A dataset (ImportRecord) serialized by `obj_to_dict`, which includes all of its model fields
+DATASET_FIELDS = {
+    "id": "integer",
+    "name": "string",
+    "super_organization": "integer",
+    "access_level_instance": "integer",
+    "owner": "integer",
+    "last_modified_by": "string",
+    "created_at": "datetime",
+    "updated_at": "integer",
+}
+SUCCESS_SCHEMA = AutoSchemaHelper.schema_factory({"status": "string"})
+
+
+@extend_schema_field(
+    AutoSchemaHelper.schema_factory(
+        [{**DATASET_FIELDS, "importfiles": ["object"]}],
+        description="`updated_at` is a JavaScript timestamp (ms) and `last_modified_by` is the user's email",
+    )
+)
+class DatasetsField(serializers.JSONField):
+    pass
+
+
+# Schema only: the list action's response is a single envelope object, not an array
+@extend_schema_serializer(many=False)
+class DatasetListResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    datasets = DatasetsField()
 
 
 class DatasetViewSet(viewsets.ViewSet, OrgMixin):
     raise_exception = True
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={200: DatasetListResponseSerializer},
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -66,9 +99,10 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory({"dataset": "string"}, description="The new name for this dataset"),
+    @extend_schema(
+        parameters=[AutoSchemaHelper.path_id_field("Dataset (ImportRecord) ID"), AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body({"dataset": "string"}, required=["dataset"], description="The new name for this dataset"),
+        responses={200: SUCCESS_SCHEMA},
     )
     @method_decorator(
         [
@@ -113,7 +147,15 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.path_id_field("Dataset (ImportRecord) ID"), AutoSchemaHelper.query_org_id_field()],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "dataset": {**DATASET_FIELDS, "importfiles": [{"name": "string"}]}},
+                description="`updated_at` is a JavaScript timestamp (ms) and `last_modified_by` is the user's email",
+            )
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -183,7 +225,10 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.path_id_field("Dataset (ImportRecord) ID"), AutoSchemaHelper.query_org_id_field()],
+        responses={200: SUCCESS_SCHEMA},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -212,12 +257,13 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
         d.delete()
         return JsonResponse({"status": "success"})
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory({"name": "string"}, description="Name of the dataset to be created"),
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body({"name": "string"}, required=["name"], description="Name of the dataset to be created"),
         responses={
             200: AutoSchemaHelper.schema_factory(
                 {
+                    "status": "string",
                     "id": "integer",
                     "name": "string",
                 }
@@ -257,11 +303,12 @@ class DatasetViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "id": record.pk, "name": record.name})
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
         responses={
             200: AutoSchemaHelper.schema_factory(
                 {
+                    "status": "string",
                     "datasets_count": "integer",
                 }
             )

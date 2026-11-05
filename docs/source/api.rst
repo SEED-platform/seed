@@ -64,5 +64,6 @@ A list of interactive endpoints are available by accessing the API menu item on 
 pane within you account on your SEED instance.
 
 To view a list of non-interactive endpoints without an account, view swagger_ on the development server.
+The OpenAPI 3 schema itself is available at ``/api/schema/`` (YAML by default, or JSON with ``?format=json``).
 
 .. _swagger: https://seed-platform.org/api/swagger/

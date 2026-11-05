@@ -35,7 +35,7 @@ class SharingViewTests(TestCase):
         self.des_user_details = {"username": "des_owner@demo.com", "password": "des_pass", "email": "des_owner@demo.com"}
         self.des_user = User.objects.create_user(**self.des_user_details)
         self.des_org = Organization.objects.create(parent_org=self.parent_org, name="Designers")
-        self.des_org.add_member(self.des_user, self.parent_org.root.id, ROLE_MEMBER)
+        self.des_org.add_member(self.des_user, self.des_org.root.id, ROLE_MEMBER)
 
     def test_scenario(self):
         """

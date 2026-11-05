@@ -353,7 +353,8 @@ class OrgValidateMixin:
             )
             org_validators = [my_validator]
 
-    This ensures request.user belongs to the org MyModel.organization
+    This ensures request.user belongs to the org MyModel.organization and, when the
+    serializer is used by an org-scoped (OrgMixin) view, that it is the view's org
 
     You can traverse foreign key relationships by using a double underscore
     in validator.field
@@ -381,6 +382,13 @@ class OrgValidateMixin:
         except ObjectDoesNotExist as e:
             msg = f"User is not a member of {validator.key} organization."
             raise PermissionDenied(msg) from e
+
+        # When used by an org-scoped view, the instance must also be in the org that was authorized
+        context = getattr(self, "context", {})
+        view = context.get("view")
+        if isinstance(view, OrgMixin) and str(pk) != str(view.get_organization(context["request"])):
+            msg = f"The {validator.key} is not in the requested organization."
+            raise PermissionDenied(msg)
 
     def validate(self, data):
         """Object level validation.

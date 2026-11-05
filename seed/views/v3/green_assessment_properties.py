@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 from django.utils.decorators import method_decorator
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -12,9 +13,17 @@ from seed.filtersets import GAPropertyFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import GreenAssessmentProperty
 from seed.serializers.certification import GreenAssessmentPropertySerializer
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
+@extend_schema_org_query_param
+@method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
+    name="create",
+)
 @method_decorator(
     [
         has_perm("requires_root_member_access"),
@@ -94,6 +103,27 @@ class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
     orgfilter = "assessment__organization_id"
     filterset_class = GAPropertyFilterSet
 
+    @extend_schema(
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "data": {
+                        "GreenBuildingVerificationType": "string",
+                        "GreenVerificationBody": "string",
+                        "GreenVerificationSource": "string",
+                        "GreenVerificationStatus": "string",
+                        "GreenVerificationMetric": "number",
+                        "GreenVerificationRating": "string",
+                        "GreenVerificationVersion": "string",
+                        "GreenVerificationYear": "integer",
+                        "GreenVerificationDate": "date",
+                        "GreenVerificationURL": ["string"],
+                    },
+                }
+            )
+        }
+    )
     @method_decorator(
         [
             has_perm("requires_root_member_access"),
@@ -106,6 +136,29 @@ class GreenAssessmentPropertyViewSet(SEEDOrgModelViewSet):
         status_code = status.HTTP_200_OK
         return Response(assessment.to_reso_dict(), status=status_code)
 
+    @extend_schema(
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "data": {
+                        "Assessment Program": "string",
+                        "Assessment Program Organization": "string",
+                        "Assessment Recognition Type": "string",
+                        "Assessment Recognition Status": "string",
+                        "Assessment Recognition Status Date": "date",
+                        "Assessment Value": "number",
+                        "Assessment Level": "string",
+                        "Assessment Version": "string",
+                        "Assessment Year": "integer",
+                        "Assessment Recognition Target Date": "date",
+                        "Assessment Eligibility": "boolean",
+                        "Assessment Program URL": ["string"],
+                    },
+                }
+            )
+        }
+    )
     @method_decorator(
         [
             has_perm("requires_root_member_access"),

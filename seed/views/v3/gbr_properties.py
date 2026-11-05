@@ -5,15 +5,19 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
+from drf_spectacular.utils import OpenApiResponse, extend_schema, extend_schema_view
 from rest_framework import status
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models import Property as PropertyModel
-from seed.serializers.properties import CreatePropertySerializer, PropertySerializer
+from seed.serializers.properties import CreatePropertySerializer, PropertyMinimalSerializer, PropertySerializer
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgCreateUpdateModelViewSet
 
 
+@extend_schema_org_query_param
+@extend_schema_view(list=extend_schema(responses=PropertyMinimalSerializer))
 @method_decorator(
     [
         has_perm("requires_viewer"),
@@ -56,8 +60,7 @@ class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
                 'properties': [
                     {
                         'id': Property primary key,
-                        'parent_property': dict of associated parent property
-                        'labels': list of associated label ids
+                        'parent_property': id of associated parent property
                     }
                 ]
             }
@@ -87,6 +90,7 @@ class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
             access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
             return PropertyModel.objects.filter(
+                organization_id=access_level_instance.organization_id,
                 access_level_instance__lft__gte=access_level_instance.lft,
                 access_level_instance__rgt__lte=access_level_instance.rgt,
             )
@@ -94,6 +98,30 @@ class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
         else:
             return PropertyModel.objects.none()
 
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
+            {"access_level_instance_id": "integer"},
+            description="`access_level_instance_id` is required unless the organization has only a root access level instance",
+        ),
+        responses={
+            201: AutoSchemaHelper.schema_factory(
+                {
+                    "success": "boolean",
+                    "message": {
+                        "id": "integer",
+                        "organization_id": "integer",
+                        "access_level_instance_id": "integer",
+                        "created": "datetime",
+                        "updated": "datetime",
+                        "inventory_documents": ["object"],
+                    },
+                },
+                description="The created property is returned in `message` (`success` is always false)",
+            ),
+            400: OpenApiResponse(description="`access_level_instance_id` is required for this organization"),
+            403: OpenApiResponse(description="The access level instance is not in the organization or not accessible to the user"),
+        },
+    )
     def create(self, request, *args, **kwargs):
         org_id = self.get_organization(self.request)
         access_level_instance_id = request.data.get("access_level_instance_id", None)
@@ -109,14 +137,19 @@ class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
             else:
                 return JsonResponse({"success": False, "message": "requires access_level_instance"}, status=status.HTTP_400_BAD_REQUEST)
 
-        # if user does not have permissions to ali, error
-        property_ali = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+        # if the ali isn't in the org, or user does not have permissions to it, error
+        try:
+            property_ali = AccessLevelInstance.objects.get(pk=access_level_instance_id, organization_id=org_id)
+        except (AccessLevelInstance.DoesNotExist, TypeError, ValueError):
+            property_ali = None
         user_ali = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
-        if not (user_ali == property_ali or property_ali.is_descendant_of(user_ali)):
+        if property_ali is None or not (user_ali == property_ali or property_ali.is_descendant_of(user_ali)):
             return JsonResponse({"success": False, "message": "no access to this access_level_instance"}, status=status.HTTP_403_FORBIDDEN)
 
         # save property
-        property_serializer = CreatePropertySerializer(data={"organization_id": org_id, **request.data})
+        property_serializer = CreatePropertySerializer(
+            data={"organization_id": org_id, "access_level_instance_id": access_level_instance_id}
+        )
         property_serializer.is_valid()
         property_serializer.save()
 

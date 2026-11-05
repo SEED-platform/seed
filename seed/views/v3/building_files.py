@@ -10,7 +10,7 @@ from tempfile import NamedTemporaryFile
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import serializers, status
 from rest_framework.parsers import MultiPartParser
 
@@ -23,6 +23,10 @@ from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgReadOnlyModelViewSet
 
 
+@extend_schema_view(
+    list=extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()]),
+    retrieve=extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()]),
+)
 @method_decorator([has_perm("requires_viewer")], name="list")
 @method_decorator([has_perm("requires_viewer")], name="retrieve")
 class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
@@ -35,6 +39,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         if hasattr(self.request, "access_level_instance_id"):
             access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
             return BuildingFile.objects.filter(
+                property_state__organization_id=self.get_organization(self.request),
                 property_state__propertyview__property__access_level_instance__lft__gte=access_level_instance.lft,
                 property_state__propertyview__property__access_level_instance__rgt__lte=access_level_instance.rgt,
             )
@@ -48,21 +53,27 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
             return serializers.Serializer
         return BuildingFileSerializer
 
-    @swagger_auto_schema(
-        manual_parameters=[
+    @extend_schema(
+        parameters=[
             AutoSchemaHelper.query_org_id_field(),
             AutoSchemaHelper.query_integer_field("cycle_id", required=True, description="Cycle to upload to"),
-            AutoSchemaHelper.upload_file_field(
-                "file",
-                required=True,
-                description="File to upload",
-            ),
-            AutoSchemaHelper.form_string_field(
-                "file_type",
-                required=True,
-                description='Either "Unknown", "BuildingSync" or "HPXML"',
-            ),
         ],
+        request=AutoSchemaHelper.multipart_body(
+            {"file": "file", "file_type": BuildingFile.BUILDING_FILE_TYPES},
+            required=["file"],
+            description='- file: XML file (or a .zip of XML files) to upload\n- file_type: Defaults to "Unknown"',
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "success": "boolean",
+                    "status": "string",
+                    "message": {"warnings": ["string"]},
+                    "data": {"property_view": "object"},
+                },
+                description="`data.property_view` is the created or updated PropertyView, including its state",
+            )
+        },
     )
     @method_decorator(
         [
@@ -87,7 +98,9 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         if not cycle:
             return JsonResponse({"success": False, "message": "Cycle ID is not defined"})
         else:
-            cycle = Cycle.objects.get(pk=cycle)
+            cycle = Cycle.objects.filter(pk=cycle, organization_id=organization_id).first()
+            if cycle is None:
+                return JsonResponse({"success": False, "message": "Cycle does not exist"}, status=status.HTTP_400_BAD_REQUEST)
 
         # figure out if file is xml or zip
         the_filename = the_file._get_name()

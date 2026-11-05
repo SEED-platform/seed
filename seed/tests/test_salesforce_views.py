@@ -13,6 +13,7 @@ from django.conf import settings
 from django.db import IntegrityError, transaction
 from django.urls import reverse
 from django.utils.timezone import get_current_timezone
+from django_celery_beat.models import PeriodicTask
 from simple_salesforce.exceptions import SalesforceMalformedRequest
 
 from seed.landing.models import SEEDUser as User
@@ -795,3 +796,117 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
             self.login_as_root_member()
             resp = self.client.post(url, params, content_type="application/json")
             assert resp.status_code == 200
+
+    def test_update_cannot_move_config_or_mapping_to_another_org(self):
+        # the root owner is not a member of the other organization
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        mapping = SalesforceMapping.objects.create(salesforce_fieldname="Another_Field__c", column=self.another_col, organization=self.org)
+        self.login_as_root_owner()
+
+        # config
+        url = reverse("api:v3:salesforce_configs-detail", args=[self.sf_config.id]) + f"?organization_id={self.org.pk}"
+        new_data = {"organization_id": other_org.id, "status_fieldname": "Moved__c", "update_at_hour": None, "update_at_minute": None}
+        response = self.client.put(url, json.dumps(new_data), content_type="application/json")
+        assert response.status_code == 200
+        self.sf_config.refresh_from_db()
+        assert self.sf_config.organization_id == self.org.id
+        assert self.sf_config.status_fieldname == "Moved__c"
+
+        # mapping
+        url = reverse("api:v3:salesforce_mappings-detail", args=[mapping.id]) + f"?organization_id={self.org.pk}"
+        new_data = {"organization_id": other_org.id, "salesforce_fieldname": "Moved__c"}
+        response = self.client.put(url, json.dumps(new_data), content_type="application/json")
+        assert response.status_code == 200
+        mapping.refresh_from_db()
+        assert mapping.organization_id == self.org.id
+        assert mapping.salesforce_fieldname == "Moved__c"
+
+    def test_config_rejects_labels_and_columns_outside_the_org(self):
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_col = Column.objects.create(table_name="PropertyState", column_name="Other Field", organization=other_org, is_extra_data=True)
+        deleted_label = Label.objects.create(name="Deleted Label", super_organization=self.org)
+        deleted_label_id = deleted_label.id
+        deleted_label.delete()
+        self.login_as_root_owner()
+        url = reverse("api:v3:salesforce_configs-detail", args=[self.sf_config.id]) + f"?organization_id={self.org.pk}"
+
+        # a data admin column from another organization is rejected
+        new_data = {"data_admin_email_column": other_col.id, "update_at_hour": None, "update_at_minute": None}
+        response = self.client.put(url, json.dumps(new_data), content_type="application/json")
+        assert response.status_code == 400
+        assert response.json() == {
+            "status": "error",
+            "message": "The selected column for data_admin_email_column does not belong to this organization",
+        }
+
+        # a nonexistent label is rejected instead of raising
+        new_data = {"compliance_label": deleted_label_id, "update_at_hour": None, "update_at_minute": None}
+        response = self.client.put(url, json.dumps(new_data), content_type="application/json")
+        assert response.status_code == 400
+        assert response.json() == {"status": "error", "message": "the selected compliance label does not belong to this organization"}
+
+        self.sf_config.refresh_from_db()
+        assert self.sf_config.data_admin_email_column_id is None
+        assert self.sf_config.compliance_label_id == self.compliance_label.id
+
+        # columns and labels in the organization are accepted
+        new_data = {"data_admin_email_column": self.another_col.id, "update_at_hour": None, "update_at_minute": None}
+        response = self.client.put(url, json.dumps(new_data), content_type="application/json")
+        assert response.status_code == 200
+        self.sf_config.refresh_from_db()
+        assert self.sf_config.data_admin_email_column_id == self.another_col.id
+
+    def test_config_update_without_schedule_keeps_schedule(self):
+        self.sf_config.update_at_hour = 1
+        self.sf_config.update_at_minute = 2
+        self.sf_config.save()
+        self.login_as_root_owner()
+        url = reverse("api:v3:salesforce_configs-detail", args=[self.sf_config.id]) + f"?organization_id={self.org.pk}"
+        task_name = f"salesforce_sync_org-{self.org.id}"
+
+        # omitting the sync time leaves it (and the scheduled task) unchanged
+        response = self.client.put(url, json.dumps({"status_fieldname": "Changed__c"}), content_type="application/json")
+        assert response.status_code == 200
+        self.sf_config.refresh_from_db()
+        assert self.sf_config.status_fieldname == "Changed__c"
+        assert (self.sf_config.update_at_hour, self.sf_config.update_at_minute) == (1, 2)
+        assert not PeriodicTask.objects.filter(name=task_name).exists()
+
+        # changing only the hour reschedules the sync with the saved minute
+        response = self.client.put(url + "&timezone=UTC", json.dumps({"update_at_hour": 5}), content_type="application/json")
+        assert response.status_code == 200
+        self.sf_config.refresh_from_db()
+        assert (self.sf_config.update_at_hour, self.sf_config.update_at_minute) == (5, 2)
+        crontab = PeriodicTask.objects.get(name=task_name).crontab
+        assert (crontab.hour, crontab.minute) == ("5", "2")
+
+    def test_mapping_rejects_column_outside_the_org(self):
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        other_col = Column.objects.create(table_name="PropertyState", column_name="Other Field", organization=other_org, is_extra_data=True)
+        self.login_as_root_owner()
+        list_url = reverse("api:v3:salesforce_mappings-list") + f"?organization_id={self.org.pk}"
+
+        # create with another organization's column is rejected
+        payload_data = {"salesforce_fieldname": "Other_Field__c", "column": other_col.id}
+        response = self.client.post(list_url, json.dumps(payload_data), content_type="application/json")
+        assert response.status_code == 400
+        assert "column" in response.json()["errors"]
+        assert not SalesforceMapping.objects.filter(column=other_col).exists()
+
+        # create with the organization's column works
+        payload_data = {"salesforce_fieldname": "Another_Field__c", "column": self.another_col.id}
+        response = self.client.post(list_url, json.dumps(payload_data), content_type="application/json")
+        assert response.status_code == 200
+        mapping_id = response.json()["salesforce_mapping"]["id"]
+
+        # update to another organization's column is rejected
+        url = reverse("api:v3:salesforce_mappings-detail", args=[mapping_id]) + f"?organization_id={self.org.pk}"
+        response = self.client.put(url, json.dumps({"column": other_col.id}), content_type="application/json")
+        assert response.status_code == 400
+        assert "column" in response.json()["errors"]
+        assert SalesforceMapping.objects.get(pk=mapping_id).column_id == self.another_col.id
+
+        # update to the organization's column works
+        response = self.client.put(url, json.dumps({"column": self.benchmark_col.id}), content_type="application/json")
+        assert response.status_code == 200
+        assert SalesforceMapping.objects.get(pk=mapping_id).column_id == self.benchmark_col.id

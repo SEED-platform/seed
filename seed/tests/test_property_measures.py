@@ -161,6 +161,15 @@ class TestPropertyMeasures(DeleteModelsTestCase):
         self.assertEqual(response.json()["status"], "error")
         self.assertEqual(response.json()["message"], '"invalid_field" is not a valid property measure field')
 
+        # Relations cannot be assigned from the request, so they are rejected instead of raising a server error
+        for key, value in (("measure", measures[1].id), ("property_state", property_state.id), ("scenario", [scenario0.id])):
+            response = self.client.put(
+                url, data=json.dumps({"description": "updated desc", key: value}), content_type="application/json", **self.headers
+            )
+            self.assertEqual(response.status_code, 400)
+            self.assertEqual(response.json()["message"], f'"{key}" is not a valid property measure field')
+        self.assertEqual(PropertyMeasure.objects.get(pk=property_measure0.id).measure_id, measures[0].id)
+
         property_measure_fields = {
             "description": "updated desc",
         }
@@ -365,3 +374,36 @@ class TestPropertyMeasuresPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
         resp = self.client.delete(url, content_type="application/json")
         assert resp.status_code == 200
+
+    def test_measures_delete_other_organization(self):
+        other_org, _, _ = create_organization(self.superuser, "test-organization-b")
+        other_state = FakePropertyViewFactory(organization=other_org).get_property_view().state
+        other_scenario = Scenario.objects.create(property_state=other_state, name="other scenario")
+        other_measure = PropertyMeasure.objects.create(measure=self.measures[5], property_state=other_state, description="Other Measure")
+        other_measure.scenario_set.add(other_scenario.id)
+        url = (
+            reverse_lazy("api:v3:property-measures-detail", args=[self.property_view.id, other_scenario.id, other_measure.id])
+            + f"?organization_id={self.org.id}"
+        )
+
+        # another organization's measure cannot be deleted through this organization's property view
+        self.login_as_root_member()
+        resp = self.client.delete(url, content_type="application/json")
+        assert resp.status_code == 404
+        assert PropertyMeasure.objects.filter(id=other_measure.id).exists()
+
+    def test_measures_edit_cannot_change_primary_key(self):
+        other_org, _, _ = create_organization(self.superuser, "test-organization-b")
+        other_state = FakePropertyViewFactory(organization=other_org).get_property_view().state
+        other_measure = PropertyMeasure.objects.create(measure=self.measures[5], property_state=other_state, description="Other Measure")
+        url = (
+            reverse_lazy("api:v3:property-measures-detail", args=[self.property_view.id, self.scenario.id, self.property_measure.id])
+            + f"?organization_id={self.org.id}"
+        )
+
+        # another organization's measure cannot be overwritten by changing the primary key of an accessible measure
+        self.login_as_root_member()
+        resp = self.client.put(url, json.dumps({"id": other_measure.id, "description": "changed"}), content_type="application/json")
+        assert resp.status_code == 400
+        other_measure.refresh_from_db()
+        assert (other_measure.description, other_measure.property_state_id) == ("Other Measure", other_state.id)

@@ -357,13 +357,11 @@ def public_geojson(org, cycle, request):
     feed = public_feed(org, request, [cycle.id], "geojson")
     title = f"Cycle {cycle.id} Public GeoJSON"
 
-    if taxlots_only:
-        data = feed["data"]["taxlots"]
-    else:
-        data = feed["data"]["properties"]
+    # the inventory can be empty (e.g., a cycle without tax lots) or excluded (`properties=false`)
+    data = feed["data"].get("taxlots" if taxlots_only else "properties", [])
 
     key_mappings = OrderedDict([])
-    for key in data[0]:
+    for key in data[0] if data else []:
         key_mappings.update({key: key})
 
     geojson = json_response(org.id, title, data, key_mappings)

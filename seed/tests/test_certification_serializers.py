@@ -21,6 +21,7 @@ from seed.serializers.certification import (
     GreenAssessmentURLField,
     PropertyViewField,
     ValidityDurationField,
+    ValidityDurationFieldExtension,
 )
 from seed.test_helpers.fake import FakeGreenAssessmentFactory, FakeGreenAssessmentPropertyFactory, FakePropertyViewFactory
 from seed.tests.util import DeleteModelsTestCase
@@ -113,6 +114,14 @@ class TestFields(DeleteModelsTestCase):
             field.to_internal_value(0)
         with pytest.raises(ValidationError):
             field.to_internal_value(-10)
+
+    def test_validity_duration_field_schema(self):
+        """An unset validity_duration is null in responses, which only the response schema allows"""
+        green_assessment = FakeGreenAssessmentFactory(organization=self.org).get_green_assessment()
+        self.assertIsNone(GreenAssessmentSerializer(green_assessment).data["validity_duration"])
+        extension = ValidityDurationFieldExtension(ValidityDurationField())
+        self.assertTrue(extension.map_serializer_field(None, "response")["nullable"])
+        self.assertNotIn("nullable", extension.map_serializer_field(None, "request"))
 
 
 class TestGreenAssessmentPropertySerializer(DeleteModelsTestCase):

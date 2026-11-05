@@ -142,3 +142,21 @@ class TestPublicViews(DataMappingBaseTestCase):
         assert len(features) == 2
         assert sorted(features[0].keys()) == ["geometry", "properties", "type"]
         assert features[0]["properties"]["id"] == self.view22.id
+
+    def test_public_geojson_without_inventory(self):
+        self.org.public_feed_enabled = True
+        self.org.public_geojson_enabled = True
+        self.org.save()
+        url = reverse_lazy("api:v3:public-organizations-cycles-geojson", args=[self.org.id, self.cycle2.id])
+
+        # the org has no tax lots, and `properties=false` excludes the properties
+        for query in ("?taxlots=true", "?properties=false&taxlots=false"):
+            response = self.client.get(url + query, content_type="application/json")
+            assert response.status_code == 200
+            data = response.json()
+            assert data["type"] == "FeatureCollection"
+            assert data["features"] == []
+
+        response = self.client.get(url + "?taxlots=false", content_type="application/json")
+        assert response.status_code == 200
+        assert len(response.json()["features"]) == 2

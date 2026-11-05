@@ -12,7 +12,7 @@ from django.utils.decorators import method_decorator
 from django_otp import devices_for_user
 from django_otp.plugins.otp_email.models import EmailDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
@@ -22,11 +22,18 @@ from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.two_factor import generate_qr_code, send_token_email
 
+optional_org_id_field = AutoSchemaHelper.query_org_id_field(
+    required=False, description="Organization ID (defaults to the user's default organization)"
+)
+user_email_body = AutoSchemaHelper.json_body(
+    {"user_email": "string"}, required=["user_email"], description="`user_email` must be the current user's email"
+)
+
 
 class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {
                 "user_email": "string",
                 "methods": {
@@ -35,8 +42,15 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
                     "token": "boolean",
                 },
             },
-            description="methods can be 'Disabled', 'Email', or 'Token'",
+            required=["user_email", "methods"],
+            description="`user_email` must be the current user's email. Exactly one of `methods` must be true",
         ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"methods": {"disabled": "boolean", "email": "boolean", "token": "boolean"}, "qr_code": "string"},
+                description="The user's resulting methods. `qr_code` (a base64 PNG) is only included when enabling the token method",
+            )
+        },
     )
     @method_decorator(
         [
@@ -47,7 +61,7 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=False, methods=["POST"])
     def set_method(self, request):
         """
-        Sets the 2 Factor Authentication method for a user. The options are 'disabled', 'email', or 'token'.
+        Sets the 2 Factor Authentication method for the current user. The options are 'disabled', 'email', or 'token'.
         If any organization associated with the user requires 2 Factor Authentication the 'disabled' option will be disabled.
         If 'email' is set a test email will be sent to the user
         If 'token' is set a QR code will be presented to the user for verification before setting the method
@@ -66,7 +80,7 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
                 }
             )
 
-        user, error = get_user(user_email, org_id)
+        user, error = get_user(request, user_email, org_id)
         if error:
             return error
 
@@ -120,9 +134,10 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse(response)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory({"user_email": "string"}),
+    @extend_schema(
+        parameters=[optional_org_id_field],
+        request=user_email_body,
+        responses={200: AutoSchemaHelper.schema_factory({"message": "string"})},
     )
     @method_decorator(
         [
@@ -136,21 +151,22 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
         """
         org_id = self.get_organization(request)
         user_email = request.data.get("user_email")
-        user, error = get_user(user_email, org_id)
+        user, error = get_user(request, user_email, org_id)
         if error:
             return error
 
         devices = list(devices_for_user(user))
-        device = devices[0]
+        device = devices[0] if devices else None
         if not device or not isinstance(device, EmailDevice):
             return JsonResponse({"message": "Email two factor authentication not configured"})
 
         send_token_email(device)
         return JsonResponse({"message": "Token email sent"})
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory({"user_email": "string"}),
+    @extend_schema(
+        parameters=[optional_org_id_field],
+        request=user_email_body,
+        responses={200: AutoSchemaHelper.schema_factory({"qr_code": "string"}, description="`qr_code` is a base64 PNG")},
     )
     @method_decorator(
         [
@@ -164,7 +180,7 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
         """
         org_id = self.get_organization(request)
         user_email = request.data.get("user_email")
-        _, error = get_user(user_email, org_id)
+        _, error = get_user(request, user_email, org_id)
         if error:
             return error
 
@@ -177,9 +193,19 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"qr_code": qr_code_img})
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory({"user_email": "string", "code": "integer"}),
+    @extend_schema(
+        parameters=[optional_org_id_field],
+        request=AutoSchemaHelper.json_body(
+            {"user_email": "string", "code": "string"},
+            required=["user_email", "code"],
+            description="`user_email` must be the current user's email. `code` is the authenticator app code",
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"success": "boolean", "error": "string", "message": "string"},
+                description="`success` is true if the code was verified, otherwise `error` or `message` describes the failure",
+            )
+        },
     )
     @method_decorator(
         [
@@ -192,7 +218,7 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
         Verifies an authenticator app code. A session secret key is required to validate the device
         """
         org_id = self.get_organization(request)
-        secret_key = request.session["otp_secret_key"]
+        secret_key = request.session.get("otp_secret_key")
         if not secret_key:
             return JsonResponse({"message": "Invalid request. Missing secret key"})
 
@@ -202,7 +228,7 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
 
         user_email = request.data.get("user_email")
         code = request.data.get("code")
-        user, error = get_user(user_email, org_id)
+        user, error = get_user(request, user_email, org_id)
         if error:
             return error
 
@@ -220,9 +246,10 @@ class TwoFactorViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"error": "Code not verified."})
 
 
-def get_user(user_email, org_id):
+def get_user(request, user_email, org_id):
+    """Users can only manage their own two factor authentication"""
     try:
-        user = User.objects.get(email=user_email, orgs=org_id)
+        user = User.objects.get(pk=request.user.pk, email=user_email, orgs=org_id)
         return user, None
     except User.DoesNotExist:
         return None, JsonResponse({"status": "error", "message": "No such resource."})

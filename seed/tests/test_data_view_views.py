@@ -1198,3 +1198,75 @@ class DataViewViewSetPermissionsTests(AccessLevelBaseTestCase):
         self.login_as_child_member()
         response = self.client.put(url, data=params, content_type="application/json")
         assert response.status_code == 403
+
+    def test_views_without_filter_groups_are_scoped_to_access_level(self):
+        data_view = DataView.objects.create(name="no filter groups", organization=self.org)
+        data_view.cycles.add(self.cycle)
+        root_view = self.property_view_factory.get_property_view(
+            prprty=self.property_factory.get_property(access_level_instance=self.org.root), cycle=self.cycle
+        )
+        child_view = self.property_view_factory.get_property_view(
+            prprty=self.property_factory.get_property(access_level_instance=self.child_level_instance), cycle=self.cycle
+        )
+
+        _, root_views = data_view.views_by_filter(self.org.root)
+        assert set(root_views[0][self.cycle.id]) == {root_view, child_view}
+
+        _, child_views = data_view.views_by_filter(self.child_level_instance)
+        assert set(child_views[0][self.cycle.id]) == {child_view}
+
+    def test_data_view_evaluate_rejects_another_organizations_columns(self):
+        other_org, _, _ = create_organization(self.superuser, "other org")
+        other_column = Column.objects.filter(organization=other_org, table_name="PropertyState").first()
+        column = Column.objects.filter(organization=self.org, table_name="PropertyState", column_name=other_column.column_name).first()
+        url = reverse("api:v3:data_views-evaluate", args=[self.data_view.pk]) + "?organization_id=" + str(self.org.id)
+
+        self.login_as_root_member()
+        response = self.client.post(url, data=json.dumps({"columns": [other_column.id]}), content_type="application/json")
+        assert response.status_code == 404
+
+        response = self.client.post(url, data=json.dumps({"columns": [column.id]}), content_type="application/json")
+        assert response.status_code == 200
+
+    def test_data_view_create_and_update_reject_another_organizations_data(self):
+        other_org, _, _ = create_organization(self.superuser, "other org")
+        other_cycle = FakeCycleFactory(organization=other_org, user=self.superuser).get_cycle(
+            name="Other Cycle", end=datetime(2022, 1, 1, tzinfo=UTC)
+        )
+        other_filter_group = FilterGroup.objects.create(name="other", organization_id=other_org.id, inventory_type=1, query_dict={})
+        other_column = Column.objects.filter(organization=other_org, table_name="PropertyState").first()
+        column = Column.objects.filter(organization=self.org, table_name="PropertyState", column_name=other_column.column_name).first()
+        list_url = reverse("api:v3:data_views-list") + "?organization_id=" + str(self.org.id)
+        detail_url = reverse("api:v3:data_views-detail", args=[self.data_view.pk]) + "?organization_id=" + str(self.org.id)
+        params = {
+            "name": "ah",
+            "filter_groups": [self.office_filter_group.id],
+            "cycles": [self.cycle.id],
+            "parameters": [{"column": column.id, "location": "axis1", "aggregations": ["Avg"]}],
+        }
+
+        self.login_as_root_member()
+        for field, value in [
+            ("cycles", [other_cycle.id]),
+            ("filter_groups", [other_filter_group.id]),
+            ("parameters", [{"column": other_column.id, "location": "axis1", "aggregations": ["Avg"]}]),
+        ]:
+            response = self.client.post(list_url, data=json.dumps({**params, field: value}), content_type="application/json")
+            assert response.status_code == 400
+            assert field in response.json()["errors"]
+            response = self.client.put(detail_url, data=json.dumps({field: value}), content_type="application/json")
+            assert response.status_code == 400
+            assert field in response.json()["errors"]
+
+        assert DataView.objects.count() == 1
+        assert not self.data_view.cycles.exists()
+        assert not self.data_view.filter_groups.exists()
+        assert not self.data_view.parameters.exists()
+
+        # the organization's own data is accepted
+        response = self.client.post(list_url, data=json.dumps(params), content_type="application/json")
+        assert response.status_code == 200
+        response = self.client.put(detail_url, data=json.dumps({**params, "name": "renamed"}), content_type="application/json")
+        assert response.status_code == 200
+        assert list(self.data_view.cycles.all()) == [self.cycle]
+        assert list(self.data_view.parameters.values_list("column_id", flat=True)) == [column.id]

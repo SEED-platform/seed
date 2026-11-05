@@ -10,7 +10,7 @@ from django.test import TestCase
 from django.urls import reverse_lazy
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Analysis, AnalysisMessage
+from seed.models import Analysis, AnalysisMessage, AnalysisPropertyView
 from seed.test_helpers.fake import FakeAnalysisFactory, FakeAnalysisPropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
@@ -119,3 +119,66 @@ class TestAnalysesViewPermissions(AccessLevelBaseTestCase):
         self.login_as_root_member()
         response = self.client.get(url, content_type="application/json")
         assert response.status_code == 200
+
+    def test_analysis_message_list_for_all_analyses_is_filtered_by_access_level(self):
+        child_analysis = Analysis.objects.create(
+            name="child",
+            service=Analysis.BSYNCR,
+            status=Analysis.READY,
+            user=self.root_owner_user,
+            organization=self.org,
+            access_level_instance=self.child_level_instance,
+            configuration={"model_type": "Simple Linear Regression"},
+        )
+        child_analysis_message = AnalysisMessage.objects.create(
+            analysis_id=child_analysis.pk,
+            type=AnalysisMessage.DEFAULT,
+            user_message="child boo",
+        )
+        # an analysis ID of 0 lists the messages of all analyses in the organization
+        url = reverse_lazy("api:v3:analysis-messages-list", args=[0]) + "?organization_id=" + str(self.org.id)
+
+        # child user only gets the messages of analyses in their access level instance
+        self.login_as_child_member()
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 200
+        assert [message["id"] for message in response.json()["messages"]] == [child_analysis_message.pk]
+
+        # root users get all messages
+        self.login_as_root_member()
+        response = self.client.get(url, content_type="application/json")
+        assert response.status_code == 200
+        assert {message["id"] for message in response.json()["messages"]} == {child_analysis_message.pk, self.analysis_message.pk}
+
+    def test_analysis_view_messages(self):
+        property_view = self.property_view_factory.get_property_view(cycle=self.cycle)
+        analysis_property_view = AnalysisPropertyView.objects.create(
+            analysis=self.root_analysis, property=property_view.property, cycle=self.cycle, property_state=property_view.state
+        )
+        view_message = AnalysisMessage.objects.create(
+            analysis_id=self.root_analysis.pk,
+            analysis_property_view=analysis_property_view,
+            type=AnalysisMessage.DEFAULT,
+            user_message="view boo",
+        )
+        list_url = reverse_lazy("api:v3:analysis-messages-list", args=[self.root_analysis.pk, analysis_property_view.pk])
+        list_url += "?organization_id=" + str(self.org.id)
+        detail_url = reverse_lazy(
+            "api:v3:analysis-messages-detail", args=[self.root_analysis.pk, analysis_property_view.pk, view_message.pk]
+        )
+        detail_url += "?organization_id=" + str(self.org.id)
+
+        # child user cannot
+        self.login_as_child_member()
+        assert self.client.get(list_url, content_type="application/json").status_code == 404
+        assert self.client.get(detail_url, content_type="application/json").status_code == 404
+
+        # root users only get the messages of the analysis property view
+        self.login_as_root_member()
+        response = self.client.get(list_url, content_type="application/json")
+        assert response.status_code == 200
+        assert [message["id"] for message in response.json()["messages"]] == [view_message.pk]
+
+        response = self.client.get(detail_url, content_type="application/json")
+        assert response.status_code == 200
+        assert response.json()["message"]["id"] == view_message.pk

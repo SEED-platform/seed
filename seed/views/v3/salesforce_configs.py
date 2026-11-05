@@ -10,8 +10,8 @@ from django.conf import settings
 from django.db import IntegrityError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status, viewsets
+from drf_spectacular.utils import extend_schema, extend_schema_serializer
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 
@@ -23,57 +23,103 @@ from seed.models.columns import Column
 from seed.models.salesforce_configs import SalesforceConfig
 from seed.serializers.salesforce_configs import SalesforceConfigSerializer
 from seed.utils.api import OrgMixin, api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.salesforce import auto_sync_salesforce_properties, schedule_sync, test_connection
 
 
+def _in_org(queryset, pk):
+    """Whether `pk` identifies a record in the (organization-scoped) `queryset`; invalid ids are not in it"""
+    try:
+        return queryset.filter(pk=pk).exists()
+    except (TypeError, ValueError):
+        return False
+
+
 def _validate_data(data, org_id):
-    error = False
     msgs = []
 
-    # Indication Label
-    i_label_id = data.get("indication_label")
-    if i_label_id:
-        i_label = Label.objects.get(pk=i_label_id)
-        if i_label.super_organization_id != org_id:
-            # error, this label does not belong to this org
-            error = True
-            msgs.append("the selected indication label does not belong to this organization")
+    labels = Label.objects.filter(super_organization_id=org_id)
+    for item in ["indication_label", "violation_label", "compliance_label"]:
+        label_id = data.get(item)
+        if label_id and not _in_org(labels, label_id):
+            msgs.append(f"the selected {item.replace('_', ' ')} does not belong to this organization")
 
-    # Violation Label
-    v_label_id = data.get("violation_label")
-    if v_label_id:
-        v_label = Label.objects.get(pk=v_label_id)
-        if v_label.super_organization_id != org_id:
-            # error, this label does not belong to this org
-            error = True
-            msgs.append("the selected violation label does not belong to this organization")
-
-    # Compliance Label
-    c_label_id = data.get("compliance_label")
-    if c_label_id:
-        c_label = Label.objects.get(pk=c_label_id)
-        if c_label.super_organization_id != org_id:
-            # error, this label does not belong to this org
-            error = True
-            msgs.append("the selected compliance label does not belong to this organization")
-
-    #  Contact Columns
-    column_names = ["seed_benchmark_id_column", "contact_email_column", "contact_name_column", "account_name_column"]
+    columns = Column.objects.filter(organization_id=org_id)
+    column_names = [
+        "seed_benchmark_id_column",
+        "contact_email_column",
+        "contact_name_column",
+        "account_name_column",
+        "data_admin_email_column",
+        "data_admin_name_column",
+        "data_admin_account_name_column",
+    ]
     for item in column_names:
         c_id = data.get(item)
-        if c_id:
-            c_col = Column.objects.get(pk=c_id)
+        if c_id and not _in_org(columns, c_id):
+            msgs.append("The selected column for " + item + " does not belong to this organization")
 
-            if c_col.organization_id != org_id:
-                # error, this column does not belong to this org
-                error = True
-                msgs.append("The selected column for " + item + " does not belong to this organization")
-
-    return error, msgs
+    return bool(msgs), msgs
 
 
+# Writable `SalesforceConfigSerializer` fields (the organization is always taken from the query string)
+SALESFORCE_CONFIG_FIELDS = {
+    "indication_label": "integer",
+    "violation_label": "integer",
+    "compliance_label": "integer",
+    "account_rec_type": "string",
+    "contact_rec_type": "string",
+    "last_update_date": "datetime",
+    "unique_benchmark_id_fieldname": "string",
+    "seed_benchmark_id_column": "integer",
+    "url": "string",
+    "username": "string",
+    "password": "string",
+    "security_token": "string",
+    "domain": "string",
+    "cycle_fieldname": "string",
+    "status_fieldname": "string",
+    "labels_fieldname": "string",
+    "contact_email_column": "integer",
+    "contact_name_column": "integer",
+    "account_name_column": "integer",
+    "default_contact_account_name": "string",
+    "data_admin_name_column": "integer",
+    "data_admin_email_column": "integer",
+    "data_admin_account_name_column": "integer",
+    "data_admin_contact_fieldname": "string",
+    "default_data_admin_account_name": "string",
+    "logging_email": "string",
+    "benchmark_contact_fieldname": "string",
+    "update_at_hour": "integer",
+    "update_at_minute": "integer",
+    "delete_label_after_sync": "boolean",
+}
+# All but `delete_label_after_sync` accept null (e.g., to clear a label, column, or the sync schedule)
+SALESFORCE_CONFIG_BODY = AutoSchemaHelper.json_body(SALESFORCE_CONFIG_FIELDS)
+SALESFORCE_CONFIG_BODY["application/json"]["properties"] = {
+    name: prop if name == "delete_label_after_sync" else {**prop, "nullable": True}
+    for name, prop in SALESFORCE_CONFIG_BODY["application/json"]["properties"].items()
+}
+
+timezone_param = AutoSchemaHelper.query_string_field(
+    "timezone", required=False, description="Timezone of update_at_hour/update_at_minute (defaults to the server timezone)"
+)
+
+
+class SalesforceConfigResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    salesforce_config = SalesforceConfigSerializer()
+
+
+@extend_schema_serializer(many=False)
+class SalesforceConfigListResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    salesforce_configs = SalesforceConfigSerializer(many=True)
+
+
+@extend_schema_org_query_param
 class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
     serializer_class = SalesforceConfigSerializer
     model = SalesforceConfig
@@ -83,7 +129,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         if not settings.SEED_SALESFORCE_ENABLED:
             raise PermissionDenied("Salesforce is disabled on this deployment")
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(responses={200: SalesforceConfigListResponseSerializer})
     @method_decorator(
         [
             api_endpoint,
@@ -102,7 +148,22 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "salesforce_configs": s_data}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
+            {
+                "salesforce_config": {
+                    "url": "string",
+                    "instance": "string",
+                    "username": "string",
+                    "password": "string",
+                    "security_token": "string",
+                    "domain": "string",
+                }
+            },
+            required=["salesforce_config"],
+        ),
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string"})},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -113,7 +174,8 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=False, methods=["POST"])
     def salesforce_connection(self, request):
         """
-        Tests connection to Salesforce using passed-in credentials (may not be saved yet)
+        Tests connection to Salesforce using passed-in credentials (may not be saved yet).
+        `url` takes precedence over `instance`; `domain` is optional (e.g., "test" for a sandbox)
         """
 
         self.get_organization(request)
@@ -143,7 +205,10 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         else:
             return JsonResponse({"status": "success"})
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        request=None,
+        responses={200: AutoSchemaHelper.schema_factory({"success": "boolean", "status": "string", "message": "string"})},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -165,7 +230,10 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         else:
             return JsonResponse({"status": "error", "message": messages}, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.path_id_field("Salesforce config ID")],
+        responses={200: SalesforceConfigResponseSerializer},
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -202,7 +270,10 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                     {"status": "error", "message": f"SalesforceConfig with id {pk} does not exist"}, status=status.HTTP_404_NOT_FOUND
                 )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[AutoSchemaHelper.path_id_field("Salesforce config ID")],
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"})},
+    )
     @method_decorator(
         [
             require_organization_id,
@@ -223,41 +294,10 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
 
         return JsonResponse({"status": "success", "message": f"Successfully deleted SalesforceConfig ID {pk}"}, status=status.HTTP_200_OK)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "indication_label": "integer",
-                "violation_label": "integer",
-                "compliance_label": "integer",
-                "account_rec_type": "string",
-                "contact_rec_type": "string",
-                "last_update_date": "string",
-                "unique_benchmark_id_fieldname": "string",
-                "seed_benchmark_id_fieldname": "string",
-                "url": "string",
-                "username": "string",
-                "password": "string",
-                "security_token": "string",
-                "domain": "string",
-                "cycle_fieldname": "string",
-                "status_fieldname": "string",
-                "labels_fieldname": "string",
-                "contact_email_column": "integer",
-                "contact_name_column": "integer",
-                "account_name_column": "integer",
-                "default_contact_account_name": "string",
-                "logging_email": "string",
-                "benchmark_contact_fieldname": "string",
-                "data_admin_email_column": "integer",
-                "data_admin_name_column": "integer",
-                "data_admin_account_name_column": "integer",
-                "default_data_admin_account_name": "string",
-                "data_admin_contact_fieldname": "integer",
-                "update_at_hour": "integer",
-                "update_at_minute": "integer",
-            },
-        ),
+    @extend_schema(
+        parameters=[timezone_param],
+        request=SALESFORCE_CONFIG_BODY,
+        responses={200: SalesforceConfigResponseSerializer},
     )
     @method_decorator(
         [
@@ -307,41 +347,10 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             message_dict = e.message_dict
             return JsonResponse({"status": "error", "message": "Bad Request", "errors": message_dict}, status=status.HTTP_400_BAD_REQUEST)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "indication_label": "integer",
-                "violation_label": "integer",
-                "compliance_label": "integer",
-                "account_rec_type": "string",
-                "contact_rec_type": "string",
-                "last_update_date": "string",
-                "unique_benchmark_id_fieldname": "string",
-                "seed_benchmark_id_fieldname": "string",
-                "url": "string",
-                "username": "string",
-                "password": "string",
-                "security_token": "string",
-                "domain": "string",
-                "cycle_fieldname": "string",
-                "status_fieldname": "string",
-                "labels_fieldname": "string",
-                "contact_email_column": "integer",
-                "contact_name_column": "integer",
-                "account_name_column": "integer",
-                "default_contact_account_name": "string",
-                "logging_email": "string",
-                "benchmark_contact_fieldname": "string",
-                "data_admin_email_column": "integer",
-                "data_admin_name_column": "integer",
-                "data_admin_account_name_column": "integer",
-                "default_data_admin_account_name": "string",
-                "data_admin_contact_fieldname": "integer",
-                "update_at_hour": "integer",
-                "update_at_minute": "integer",
-            },
-        ),
+    @extend_schema(
+        parameters=[AutoSchemaHelper.path_id_field("Salesforce config ID"), timezone_param],
+        request=SALESFORCE_CONFIG_BODY,
+        responses={200: SalesforceConfigResponseSerializer},
     )
     @method_decorator(
         [
@@ -363,7 +372,7 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
             )
 
         data = deepcopy(request.data)
-        data.update({"organization": org_id})
+        data.update({"organization_id": org_id})
         if data.get("password"):
             data["password"] = encrypt(data["password"])
         error, msgs = _validate_data(data, org_id)
@@ -377,7 +386,9 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
                 {"status": "error", "message": "Bad Request", "errors": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # setup Salesforce update scheduled tasks (if change detected)
+        # setup Salesforce update scheduled tasks (if change detected); an omitted time is unchanged
+        data.setdefault("update_at_hour", salesforce_config.update_at_hour)
+        data.setdefault("update_at_minute", salesforce_config.update_at_minute)
         if data["update_at_hour"] != salesforce_config.update_at_hour or data["update_at_minute"] != salesforce_config.update_at_minute:
             data["timezone"] = request.GET.get("timezone", None)
             schedule_sync(data, org_id)

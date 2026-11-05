@@ -164,7 +164,7 @@ class GreenAssessmentProperty(models.Model):
         self._expiration_date = date
 
     @property
-    def is_valid(self):
+    def is_valid(self) -> bool:
         """Check if cert is still valid."""
         validity = True
         if self.expiration_date:
@@ -172,7 +172,7 @@ class GreenAssessmentProperty(models.Model):
         return validity
 
     @property
-    def year(self):
+    def year(self) -> int | None:
         """Return year awarded"""
         return self.date.year if self.date else None
 
@@ -232,7 +232,7 @@ class GreenAssessmentProperty(models.Model):
         return self.assessment.get_recognition_type_display()
 
     @property
-    def score(self):
+    def score(self) -> float | str | None:
         """
         Rating or metric: determined by self.assessment.is_numeric_score.
         """

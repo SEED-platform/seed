@@ -32,7 +32,8 @@ dependencies = [
     # API / auth / docs
     "djangorestframework==3.18.3",
     "djangorestframework-simplejwt==5.5.1",
-    "drf-yasg==1.21.18",
+    "drf-spectacular==0.30.0",
+    "drf-spectacular-sidecar==2026.10.1",
     "drf-nested-routers==0.95.3",
     # Email / messaging
     "django-post-office==3.12.0",

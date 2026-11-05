@@ -155,6 +155,33 @@ class FilterGroupsTests(TransactionTestCase):
         data = response.json()["data"]
         self.assertEqual([self.status_label.id], data["and_labels"])
 
+    def test_filter_group_rejects_other_organization_labels(self):
+        other_label = StatusLabel.objects.create(name="other", super_organization=self.other_org)
+
+        # Create: the other organization's label is ignored with a warning
+        response = self.client.post(
+            reverse("api:v3:filter_groups-list") + f"?organization_id={self.org.id}",
+            data=json.dumps(
+                {"name": "new_filter_group", "inventory_type": "Tax Lot", "and_labels": [other_label.id, self.status_label.id]}
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(response.json()["warnings"], f"labels with ids do not exist: {other_label.id}")
+        self.assertEqual([self.status_label.id], response.json()["data"]["and_labels"])
+
+        # Update: the other organization's label is rejected
+        url = reverse("api:v3:filter_groups-detail", args=[self.filter_group.id]) + f"?organization_id={self.org.id}"
+        response = self.client.put(url, data=json.dumps({"or_labels": [other_label.id]}), content_type="application/json")
+        self.assertEqual(400, response.status_code)
+        self.assertEqual([self.status_label.id], list(self.filter_group.and_labels.values_list("id", flat=True)))
+        self.assertFalse(self.filter_group.or_labels.exists())
+
+        # The organization's own labels are still accepted
+        response = self.client.put(url, data=json.dumps({"or_labels": [self.status_label.id]}), content_type="application/json")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual([self.status_label.id], response.json()["data"]["or_labels"])
+
     def test_get_filter_group(self):
         # Action
         response = self.client.get(
@@ -464,6 +491,17 @@ class FilterGroupsPermissionsTests(AccessLevelBaseTestCase, TransactionTestCase)
         self.login_as_child_member()
         response = self.client.put(url, params, content_type="application/json")
         assert response.status_code == 403
+
+    def test_filter_group_update_other_organization(self):
+        other_org, _, _ = create_organization(self.superuser, "other-org")
+        other_filter_group = FilterGroup.objects.create(name="other_filter_group", organization_id=other_org.id, inventory_type=1)
+        url = reverse("api:v3:filter_groups-detail", args=[other_filter_group.id]) + f"?organization_id={self.org.id}"
+
+        self.login_as_root_member()
+        response = self.client.put(url, json.dumps({"name": "new_name"}), content_type="application/json")
+        assert response.status_code == 404
+        other_filter_group.refresh_from_db()
+        assert other_filter_group.name == "other_filter_group"
 
 
 class FilterGroupsViewTests(AccessLevelBaseTestCase, TransactionTestCase):

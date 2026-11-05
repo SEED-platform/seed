@@ -3,6 +3,8 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+from drf_spectacular.extensions import OpenApiSerializerExtension
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from seed.models import Column, FacilitiesPlanRun
@@ -24,13 +26,14 @@ class FacilitiesPlanRunSerializer(serializers.ModelSerializer):
         "require_in_plan_column",
         "electric_energy_usage_column",
         "gas_energy_usage_column",
-        "gas_energy_usage_column",
+        "steam_energy_usage_column",
     ]
 
     class Meta:
         model = FacilitiesPlanRun
         fields = "__all__"
 
+    @extend_schema_field(serializers.DictField(child=ColumnSerializer()))
     def get_columns(self, obj):
         facilities_plan = obj.facilities_plan
         nonnull_column_names = [c_name for c_name in self.column_names if getattr(facilities_plan, c_name, None) is not None]
@@ -41,6 +44,7 @@ class FacilitiesPlanRunSerializer(serializers.ModelSerializer):
 
         return dict(zip(nonnull_column_names, nonnull_columns, strict=False))
 
+    @extend_schema_field(ColumnSerializer)
     def get_property_display_field(self, obj):
         org = obj.facilities_plan.organization
         property_display_field = Column.objects.filter(
@@ -58,5 +62,18 @@ class FacilitiesPlanRunSerializer(serializers.ModelSerializer):
 
         return result
 
-    def get_ali_level(self, obj):
+    def get_ali_level(self, obj) -> str:
         return obj.ali.organization.access_level_names[obj.ali.depth - 1]
+
+
+class FacilitiesPlanRunSerializerExtension(OpenApiSerializerExtension):
+    """`display_columns` is written as Column IDs, but read as serialized Columns (see `to_representation`)"""
+
+    target_class = FacilitiesPlanRunSerializer
+
+    def map_serializer(self, auto_schema, direction):
+        schema = super().map_serializer(auto_schema, direction)
+        if direction == "response":
+            column = auto_schema.resolve_serializer(ColumnSerializer, direction)
+            schema["properties"]["display_columns"] = {"type": "array", "items": column.ref}
+        return schema

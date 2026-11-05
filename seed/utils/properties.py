@@ -14,7 +14,7 @@ from django.http import JsonResponse
 from rest_framework import status
 
 # Local Imports
-from seed.lib.superperms.orgs.models import Organization
+from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.models import (
     VIEW_LIST,
     VIEW_LIST_PROPERTY,
@@ -80,7 +80,11 @@ def unique(lol):
     return sorted(set(itertools.chain.from_iterable(lol)))
 
 
-def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
+def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair, access_level_instance_id=None):
+    """Pair or unpair a property view and a tax lot view of the same cycle.
+
+    When ``access_level_instance_id`` is given, both views must be within that access level instance's subtree.
+    """
     # TODO: validate against organization_id, make sure cycle_ids are the same
 
     try:
@@ -95,6 +99,12 @@ def pair_unpair_property_taxlot(property_id, taxlot_id, organization_id, pair):
         return JsonResponse(
             {"status": "error", "message": f"tax lot view with id {taxlot_id} does not exist"}, status=status.HTTP_404_NOT_FOUND
         )
+
+    if access_level_instance_id is not None:
+        user_ali = AccessLevelInstance.objects.get(pk=access_level_instance_id)
+        for ali in (property_view.property.access_level_instance, taxlot_view.taxlot.access_level_instance):
+            if not (ali == user_ali or ali.is_descendant_of(user_ali)):
+                return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
     pv_cycle = property_view.cycle_id
     tv_cycle = taxlot_view.cycle_id

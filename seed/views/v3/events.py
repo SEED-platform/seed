@@ -6,17 +6,47 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from rest_framework import status, viewsets
+from drf_spectacular.utils import extend_schema, extend_schema_serializer
+from rest_framework import serializers, status, viewsets
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.models import Event
 from seed.serializers.events import EventSerializer
 from seed.utils.api import OrgMixin
-from seed.utils.api_schema import swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
+
+
+class EventListPaginationSerializer(serializers.Serializer):
+    page = serializers.IntegerField()
+    start = serializers.IntegerField()
+    end = serializers.IntegerField()
+    num_pages = serializers.IntegerField()
+    has_next = serializers.BooleanField()
+    has_previous = serializers.BooleanField()
+    total = serializers.IntegerField()
+
+
+@extend_schema_serializer(many=False)
+class EventListResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    pagination = EventListPaginationSerializer()
+    data = EventSerializer(
+        many=True,
+        help_text="Events, newest first. Each event also includes its `event_type` (ATEvent, AnalysisEvent, or NoteEvent), "
+        "the fields of that type (e.g., `analysis` or `note`, with the `user_id` of its creator), and the `cycle_end_date`",
+    )
 
 
 class EventViewSet(viewsets.ViewSet, OrgMixin):
-    @swagger_auto_schema_org_query_param
+    @extend_schema(
+        parameters=[
+            AutoSchemaHelper.query_org_id_field(),
+            AutoSchemaHelper.path_id_field("Property ID", name="property_pk"),
+            AutoSchemaHelper.query_integer_field("page", False, "Page number. Default is 1"),
+            AutoSchemaHelper.query_integer_field("per_page", False, "Events per page. Default is all events"),
+        ],
+        responses={200: EventListResponseSerializer},
+    )
     @method_decorator(
         [
             has_perm("requires_viewer"),

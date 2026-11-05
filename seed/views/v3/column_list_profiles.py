@@ -7,8 +7,8 @@ import json
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -30,27 +30,68 @@ from seed.models import (
 from seed.models.columns import EXCLUDED_API_FIELDS
 from seed.serializers.column_list_profiles import ColumnListProfileSerializer
 from seed.utils.api import OrgValidateMixin
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 
+optional_org_id_field = AutoSchemaHelper.query_org_id_field(
+    required=False, description="Optional org id which overrides the users (default) current org id"
+)
 
+create_description = """
+Create a new list profile. Columns and derived columns are referenced by their IDs.
+
+JSON POST Example:
+
+    {
+        "name": "some new name 3",
+        "profile_location": "List View Profile",
+        "inventory_type": "Tax Lot",
+        "columns": [
+            {"id": 1, "pinned": false, "order": 10, "column_name": "address_line_1", "table_name": "TaxLotState"},
+            {"id": 5, "pinned": true, "order": 14, "column_name": "city", "table_name": "TaxLotState"}
+        ],
+        "derived_columns": [{"id": 3}]
+    }
+"""
+
+
+class ColumnListProfileDerivedColumnIdSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+
+
+# Schema only: `create` and `update` only read the IDs of the derived columns
+class ColumnListProfileWriteSerializer(ColumnListProfileSerializer):
+    derived_columns = ColumnListProfileDerivedColumnIdSerializer(many=True)
+
+
+@extend_schema_view(
+    create=extend_schema(
+        description=create_description,
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request={"application/json": ColumnListProfileWriteSerializer},
+        responses={201: ColumnListProfileSerializer},
+    ),
+    update=extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request={"application/json": ColumnListProfileWriteSerializer},
+        responses=ColumnListProfileSerializer,
+    ),
+    destroy=extend_schema(parameters=[AutoSchemaHelper.query_org_id_field()]),
+)
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_root_member_access"),
     ],
     name="create",
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_root_member_access"),
     ],
     name="update",
 )
 @method_decorator(
     [
-        swagger_auto_schema_org_query_param,
         has_perm("requires_root_member_access"),
     ],
     name="destroy",
@@ -58,24 +99,6 @@ from seed.utils.viewsets import SEEDOrgNoPatchOrOrgCreateModelViewSet
 class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet):
     """
     API endpoint for returning Column List Profiles
-
-    create:
-        Create a new list profile. The list of columns is an array of column primary keys. If using Swagger, then
-        this will be entered as a list with returns between each primary key.
-
-        JSON POST Example:
-
-            {
-                "name": "some new name 3",
-                "profile_location": "List View Profile",
-                "inventory_type": "Tax Lot",
-                "columns": [
-                    {"id": 1, "pinned": false, "order": 10},
-                    {"id": 5, "pinned": true, "order": 14},
-                    {"id": 7, "pinned": true, "order": 14}
-                ]
-            }
-
     """
 
     serializer_class = ColumnListProfileSerializer
@@ -86,6 +109,14 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
     # but not yet.
 
     # Overridden to augment with protected ComStock list profile if enabled
+    @extend_schema(
+        parameters=[
+            optional_org_id_field,
+            AutoSchemaHelper.path_string_field(
+                "id", 'Column list profile ID, or "null" for the ComStock list profile of organizations with ComStock enabled'
+            ),
+        ]
+    )
     def retrieve(self, request, *args, **kwargs):
         org_id = self.get_organization(self.request)
 
@@ -111,10 +142,14 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
                 status=status.HTTP_200_OK,
             )
 
+        # Non-numeric IDs (e.g., "null" without ComStock enabled) cannot match a profile
         clp = (
-            ColumnListProfile.objects.filter(pk=kwargs["pk"])
+            self.get_queryset()
+            .filter(pk=kwargs["pk"])
             .prefetch_related("derived_columns__column", "columnlistprofilecolumn_set__column")
             .first()
+            if kwargs["pk"].isdecimal()
+            else None
         )
         if clp is None:
             return JsonResponse(
@@ -125,14 +160,19 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
         return JsonResponse({"status": "success", "data": self.get_serializer(clp).data}, status=status.HTTP_200_OK)
 
     # Overridden to augment with protected ComStock list profile if enabled
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(
-                required=False, description="Optional org id which overrides the users (default) current org id"
+    @extend_schema(
+        parameters=[
+            optional_org_id_field,
+            AutoSchemaHelper.query_enum_field(
+                "inventory_type", required=False, enum=[t for _, t in VIEW_LIST_INVENTORY_TYPE], description="Inventory type to filter by"
             ),
-            AutoSchemaHelper.query_string_field(name="inventory_type", required=True, description="'Property' or 'Tax Lot' for filtering."),
-            AutoSchemaHelper.query_string_field(
-                name="profile_location", required=True, description="'List View Profile' or 'Detail View Profile' for filtering."
+            AutoSchemaHelper.query_enum_field(
+                "profile_location", required=False, enum=[t for _, t in VIEW_LOCATION_TYPES], description="Profile location to filter by"
+            ),
+            AutoSchemaHelper.query_boolean_field(
+                "brief",
+                required=False,
+                description='If true, only return the `id`, `name`, `profile_location`, and `inventory_type` of each profile\nDefault: "false"',
             ),
         ]
     )
@@ -190,6 +230,14 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
 
         return results
 
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
+            {"cycle_id": "integer", "inventory_type": tuple(VIEW_LIST_INVENTORY_TYPE)},
+            description='Any `inventory_type` other than "Property" is treated as "Tax Lot"',
+        ),
+        responses=ColumnListProfileSerializer,
+    )
     @method_decorator(
         [
             has_perm("requires_root_member_access"),
@@ -197,7 +245,10 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
     )
     @action(detail=True, methods=["PUT"])
     def show_populated(self, request, pk):
-        column_list_profile = ColumnListProfile.objects.get(pk=pk)
+        """
+        Sets the profile's columns to those populated in the cycle's inventory
+        """
+        column_list_profile = self.get_object()
         org_id = self.get_organization(self.request)
         cycle_id = request.data.get("cycle_id")
         inventory_type = request.data.get("inventory_type")
@@ -212,10 +263,11 @@ class ColumnListProfileViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelV
         )
         state_ids = ViewTable.objects.filter(
             cycle_id=cycle_id,
+            cycle__organization_id=org_id,
         ).values_list("state_id", flat=True)
 
-        # filter for only the populated columns
-        num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, StateTable, all_columns)
+        # filter for only the populated columns (none are populated without any states, which the count query can't handle)
+        num_of_nonnulls_by_column_name = Column.get_num_of_nonnulls_by_column_name(state_ids, StateTable, all_columns) if state_ids else {}
         needed_column_names = [col for col, count in num_of_nonnulls_by_column_name.items() if count > 0]
         needed_columns = Column.objects.filter(column_name__in=needed_column_names, table_name=StateTable.__name__, organization=org_id)
 

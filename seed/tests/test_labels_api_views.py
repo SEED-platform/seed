@@ -23,7 +23,7 @@ from seed.test_helpers.fake import (
     mock_queryset_factory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, DeleteModelsTestCase
-from seed.utils.organizations import create_organization
+from seed.utils.organizations import create_organization, create_suborganization
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 
 
@@ -240,9 +240,14 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
     def test_get_label_desc(self):
         add_label_ids = [self.status_label.id]
         remove_label_ids = []
-        result = self.api_view.get_label_desc(add_label_ids, remove_label_ids)[0]
+        result = self.api_view.get_label_desc(add_label_ids, remove_label_ids, self.org.id)[0]
         expected = {"id": self.status_label.id, "name": "test", "color": "green"}
         self.assertEqual(result, expected)
+
+        # labels of other organizations are not described
+        other_org, _, _ = create_organization(self.user, "other-org")
+        other_label = Label.objects.create(name="other", super_organization=other_org)
+        self.assertEqual(list(self.api_view.get_label_desc([other_label.id], [], self.org.id)), [])
 
     def test_get_inventory_id(self):
         result = self.api_view.get_inventory_id(self.mock_propertyview_label_qs[0], "property")
@@ -338,6 +343,49 @@ class TestUpdateInventoryLabelsAPIView(DeleteModelsTestCase):
             self.status_label_2.id: sorted([pvid_1, pvid_2, pvid_3]),
         }
         self.assertEqual(label_assignments, expected_label_assignments)
+
+    def test_put_errors(self):
+        url = f"/api/v3/labels_property/?organization_id={self.org.id}"
+        post_params = {
+            "add_label_ids": [self.status_label.id],
+            "remove_label_ids": [self.status_label.id],
+            "inventory_ids": [self.propertyview_ids[0]],
+        }
+        response = self.client.put(url, json.dumps(post_params), content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertEqual(
+            response.json(), {"status": "error", "message": "add_label_ids and remove_label_ids cannot contain elements in common"}
+        )
+
+    def test_put_with_organization_in_body(self):
+        post_params = {"organization_id": self.org.id, "add_label_ids": [self.status_label.id], "inventory_ids": [self.propertyview_ids[0]]}
+        response = self.client.put("/api/v3/labels_property/", json.dumps(post_params), content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["num_updated"], 1)
+        self.assertTrue(
+            self.PropertyViewLabels.objects.filter(propertyview_id=self.propertyview_ids[0], statuslabel=self.status_label).exists()
+        )
+
+    def test_put_in_sub_organization(self):
+        # Sub-organizations use the labels of their parent organization
+        _, sub_org, _ = create_suborganization(self.user, self.org, "sub-org")
+        sub_org_view = FakePropertyViewFactory(organization=sub_org, user=self.user).get_property_view()
+        url = f"/api/v3/labels_property/?organization_id={sub_org.id}"
+        expected_labels = [{"id": self.status_label.id, "color": "green", "name": "test"}]
+
+        post_params = {"add_label_ids": [self.status_label.id], "inventory_ids": [sub_org_view.id]}
+        response = self.client.put(url, json.dumps(post_params), content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["num_updated"], 1)
+        self.assertEqual(response.json()["labels"], expected_labels)
+        self.assertEqual(list(sub_org_view.labels.all()), [self.status_label])
+
+        post_params = {"remove_label_ids": [self.status_label.id], "inventory_ids": [sub_org_view.id]}
+        response = self.client.put(url, json.dumps(post_params), content_type="application/json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json()["num_updated"], 1)
+        self.assertEqual(response.json()["labels"], expected_labels)
+        self.assertEqual(list(sub_org_view.labels.all()), [])
 
 
 class LabelTestPermissions(AccessLevelBaseTestCase):
@@ -442,6 +490,21 @@ class TestPropertyLabelPermissions(AccessLevelBaseTestCase):
         assert list(self.root_property_view.labels.all()) == []
         assert list(self.child_property_view.labels.all()) == []
 
+    def test_add_ignores_other_organization_views(self):
+        other_org, _, _ = create_organization(self.superuser, "other-org")
+        other_label = Label.objects.create(name="other", super_organization=other_org)
+        other_property_view = FakePropertyViewFactory(organization=other_org).get_property_view()
+
+        url = f"/api/v3/labels_property/?organization_id={self.org.id}"
+        post_params = {"add_label_ids": [other_label.pk], "inventory_ids": [other_property_view.pk]}
+
+        self.login_as_root_member()
+        response = self.client.put(url, post_params, content_type="application/json")
+        assert response.status_code == 200
+        assert response.json()["num_updated"] == 0
+        assert response.json()["labels"] == []
+        assert list(other_property_view.labels.all()) == []
+
 
 class TestTaxlotLabelPermissions(AccessLevelBaseTestCase):
     def setUp(self):
@@ -492,3 +555,24 @@ class TestTaxlotLabelPermissions(AccessLevelBaseTestCase):
         self.client.put(url, post_params, content_type="application/json")
         assert list(self.root_taxlot_view.labels.all()) == []
         assert list(self.child_taxlot_view.labels.all()) == []
+
+    def test_labels_is_applied_excludes_other_organization_views(self):
+        _, sub_org, _ = create_suborganization(self.superuser, self.org, "sub-org")
+        sub_org_taxlot_view = FakeTaxLotViewFactory(organization=sub_org).get_taxlot_view()
+        for view in (self.root_taxlot_view, self.child_taxlot_view, sub_org_taxlot_view):
+            view.labels.add(self.status_label)
+
+        # `show_shared_buildings` adds the parent/child organizations to the searched inventory
+        url = reverse("api:v3:taxlots-labels") + f"?organization_id={self.org.id}&show_shared_buildings=true"
+
+        self.login_as_root_member()
+        response = self.client.post(url, content_type="application/json")
+        assert response.status_code == 200
+        label = next(label for label in response.json() if label["name"] == "test")
+        assert sorted(label["is_applied"]) == sorted([self.root_taxlot_view.pk, self.child_taxlot_view.pk])
+
+        self.login_as_child_member()
+        response = self.client.post(url, content_type="application/json")
+        assert response.status_code == 200
+        label = next(label for label in response.json() if label["name"] == "test")
+        assert label["is_applied"] == [self.child_taxlot_view.pk]

@@ -6,20 +6,33 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers, status
 from rest_framework.parsers import FormParser, JSONParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
-from seed.models import PropertyMeasure, Scenario
+from seed.models import PropertyMeasure, PropertyView, Scenario
 from seed.serializers.scenarios import ScenarioSerializer
 from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.viewsets import SEEDOrgNoPatchNoCreateModelViewSet
 
+property_view_id_path_field = AutoSchemaHelper.path_id_field("PropertyView ID", name="property_pk")
 
+
+def get_property_view_state_ids(property_view_id):
+    """IDs of the property view's current state and of the historical states in its history
+
+    Scenarios and measures can belong to historical states, which are no longer linked to the property view.
+    """
+    property_view = PropertyView.objects.get(pk=property_view_id)
+    history, _ = property_view.state.history()
+    return {property_view.state_id, *(h["state_id"] for h in history)}
+
+
+@extend_schema(parameters=[AutoSchemaHelper.query_org_id_field(), property_view_id_path_field])
 @method_decorator(
     [
         has_perm("requires_viewer"),
@@ -75,33 +88,39 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
             property_state__propertyview=property_view_id,
         ).order_by("id")
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
             {
-                "annual_cost_savings": "integer",
-                "annual_electricity_energy": "integer",
-                "annual_electricity_savings": "integer",
-                "annual_natural_gas_energy": "integer",
-                "annual_natural_gas_savings": "integer",
-                "annual_peak_demand": "integer",
-                "annual_peak_electricity_reduction": "integer",
-                "annual_site_energy": "integer",
-                "annual_site_energy_savings": "integer",
-                "annual_site_energy_use_intensity": "integer",
-                "annual_source_energy": "integer",
-                "annual_source_energy_savings": "integer",
-                "annual_source_energy_use_intensity": "integer",
-                "cdd": "integer",
-                "cdd_base_temperature": "integer",
+                "annual_cost_savings": "number",
+                "annual_electricity_energy": "number",
+                "annual_electricity_savings": "number",
+                "annual_natural_gas_energy": "number",
+                "annual_natural_gas_savings": "number",
+                "annual_peak_demand": "number",
+                "annual_peak_electricity_reduction": "number",
+                "annual_site_energy": "number",
+                "annual_site_energy_savings": "number",
+                "annual_site_energy_use_intensity": "number",
+                "annual_source_energy": "number",
+                "annual_source_energy_savings": "number",
+                "annual_source_energy_use_intensity": "number",
+                "cdd": "number",
+                "cdd_base_temperature": "number",
                 "description": "string",
-                "hdd": "integer",
-                "hdd_base_temperature": "integer",
+                "hdd": "number",
+                "hdd_base_temperature": "number",
                 "name": "string",
-                "summer_peak_load_reduction": "integer",
+                "summer_peak_load_reduction": "number",
                 "temporal_status": Scenario.TEMPORAL_STATUS_TYPES,
-                "winter_peak_load_reduction": "integer",
-            }
-        )
+                "winter_peak_load_reduction": "number",
+            },
+            description="The scenario fields to update; any other key is rejected",
+        ),
+        responses={
+            200: inline_serializer(
+                "PropertyScenarioUpdateResponse", fields={"status": serializers.CharField(), "data": ScenarioSerializer()}
+            )
+        },
     )
     @method_decorator(
         [
@@ -114,11 +133,12 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
         Where property_pk is the associated PropertyView.id
         """
         try:
-            scenario = Scenario.objects.get(pk=pk)
+            scenario = Scenario.objects.get(pk=pk, property_state_id__in=get_property_view_state_ids(property_pk))
         except Scenario.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No scenario found with given pks"}, status=status.HTTP_404_NOT_FOUND)
 
-        possible_fields = [f.name for f in scenario._meta.get_fields() if f.name not in {"measures", "property_state", "reference_case"}]
+        # Only scalar fields can be set from the request; relations cannot be assigned raw values
+        possible_fields = [f.name for f in scenario._meta.concrete_fields if not f.is_relation and not f.primary_key]
 
         for key, value in request.data.items():
             if key in possible_fields:
@@ -152,7 +172,7 @@ class PropertyScenarioViewSet(SEEDOrgNoPatchNoCreateModelViewSet):
     )
     def destroy(self, request, property_pk=None, pk=None):
         try:
-            scenario = Scenario.objects.get(pk=pk)
+            scenario = Scenario.objects.get(pk=pk, property_state_id__in=get_property_view_state_ids(property_pk))
         except Scenario.DoesNotExist:
             return JsonResponse({"status": "error", "message": "No Scenario found with given pks"}, status=status.HTTP_404_NOT_FOUND)
 

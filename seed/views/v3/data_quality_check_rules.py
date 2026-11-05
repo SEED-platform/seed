@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import no_body, swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework.decorators import action
 
 from seed.decorators import ajax_request
@@ -21,20 +21,12 @@ from seed.utils.viewsets import ModelViewSetWithoutPatch
 _log = logging.getLogger(__name__)
 
 
-nested_org_id_path_field = AutoSchemaHelper.base_field(
-    "nested_organization_id",
-    "IN_PATH",
-    "Organization ID - identifier used to specify a DataQualityCheck and its Rules",
-    True,
-    "TYPE_INTEGER",
+nested_org_id_path_field = AutoSchemaHelper.path_id_field(
+    "Organization ID - identifier used to specify a DataQualityCheck and its Rules", name="nested_organization_id"
 )
 
 
-@method_decorator([swagger_auto_schema(manual_parameters=[nested_org_id_path_field])], name="list")
-@method_decorator([swagger_auto_schema(manual_parameters=[nested_org_id_path_field])], name="retrieve")
-@method_decorator([swagger_auto_schema(manual_parameters=[nested_org_id_path_field])], name="update")
-@method_decorator([swagger_auto_schema(manual_parameters=[nested_org_id_path_field])], name="destroy")
-@method_decorator([swagger_auto_schema(manual_parameters=[nested_org_id_path_field])], name="create")
+@extend_schema(parameters=[nested_org_id_path_field])
 class DataQualityCheckRuleViewSet(ModelViewSetWithoutPatch):
     serializer_class = RuleSerializer
     model = Rule
@@ -57,7 +49,7 @@ class DataQualityCheckRuleViewSet(ModelViewSetWithoutPatch):
         else:
             return DataQualityCheck.retrieve(org_id).rules.filter(id=rule_id)
 
-    @swagger_auto_schema(manual_parameters=[nested_org_id_path_field], request_body=no_body, responses={200: RuleSerializer(many=True)})
+    @extend_schema(request=None, responses={200: RuleSerializer(many=True)})
     @method_decorator(
         [
             api_endpoint,

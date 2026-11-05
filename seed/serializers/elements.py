@@ -59,7 +59,7 @@ class ElementSerializer(serializers.ModelSerializer):
         model = Element
         exclude = ["element_id", "organization"]
 
-    def get_code(self, element):
+    def get_code(self, element) -> str:
         return element.code.code
 
 

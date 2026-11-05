@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 from datetime import UTC, datetime
+from unittest import mock
 
 from django.urls import reverse
 from xlrd import open_workbook
@@ -14,6 +15,7 @@ from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.progress_data.progress_data import ProgressData
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import ASSESSED_RAW, DATA_STATE_MAPPING, Column, Cycle, FilterGroup, PropertyView
 from seed.models import StatusLabel as Label
 from seed.test_helpers.fake import (
@@ -155,6 +157,31 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
         assert response.status_code == 200
         assert response.json() == {"status": "success"}
 
+    def test_column_mappings_superuser_outside_organization(self):
+        superuser_details = {"username": "other_superuser@demo.com", "password": "test_pass", "email": "other_superuser@demo.com"}
+        User.objects.create_superuser(**superuser_details)
+        url = reverse("api:v3:organizations-column-mappings", args=[self.org.pk]) + f"?import_file_id={self.import_file.id}"
+        params = json.dumps(
+            {
+                "mappings": [
+                    {
+                        "from_field": "a new col",
+                        "from_units": None,
+                        "to_field": "a new col",
+                        "to_field_display_name": "a new col",
+                        "to_table_name": "PropertyState",
+                    }
+                ]
+            }
+        )
+
+        # superusers act at the organization's root, as in has_perm, even when they are not members
+        self.client.login(**superuser_details)
+        response = self.client.post(url, params, content_type="application/json")
+        assert response.status_code == 200
+        assert response.json() == {"status": "success"}
+        assert Column.objects.filter(organization=self.org, table_name="PropertyState", column_name="a new col").exists()
+
     def test_columns_delete(self):
         url = reverse("api:v3:organizations-columns", args=[self.org.pk])
 
@@ -222,6 +249,137 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
         resp = self.client.get(url, content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         wb = open_workbook(file_contents=resp.content)
         assert wb.sheet_by_index(0).cell(1, 2).value == 1.0
+
+    def test_reports_exclude_other_organization_cycles(self):
+        other_org, _, _ = create_organization(self.root_owner_user, "other org")
+        other_cycle = FakeCycleFactory(organization=other_org, user=self.root_owner_user).get_cycle(name="Other Org Cycle")
+        params = f"?x_var=building_count&y_var=gross_floor_area&cycle_ids={other_cycle.id}"
+        self.login_as_root_member()
+
+        url = reverse("api:v3:organizations-report", args=[self.org.pk]) + params
+        resp = self.client.get(url, content_type="application/json")
+        assert resp.status_code == 200
+        assert resp.json()["data"]["property_counts"] == []
+        assert resp.json()["data"]["axis_data"] == {}
+
+        url = reverse("api:v3:organizations-report-aggregated", args=[self.org.pk]) + params
+        resp = self.client.get(url + f"&access_level_instance_id={self.root_level_instance.pk}", content_type="application/json")
+        assert resp.status_code == 200
+        assert resp.json()["aggregated_data"]["property_counts"] == []
+
+    def test_report_filter_group_is_scoped(self):
+        filter_group = FilterGroup.objects.create(name="all", organization_id=self.org.id, inventory_type=0)
+        url = reverse("api:v3:organizations-report", args=[self.org.pk])
+        url += f"?x_var=building_count&y_var=gross_floor_area&cycle_ids={Cycle.objects.first().id}"
+
+        # a filter group does not widen the child user's (empty) access level instance to the whole organization
+        self.login_as_child_member()
+        resp = self.client.get(url + f"&filter_group_id={filter_group.id}", content_type="application/json")
+        assert resp.json()["data"]["property_counts"][0]["num_properties"] == 0
+
+        # root users still get the filtered properties
+        self.login_as_root_member()
+        resp = self.client.get(url + f"&filter_group_id={filter_group.id}", content_type="application/json")
+        assert resp.json()["data"]["property_counts"][0]["num_properties"] == 1
+
+        # other organizations' filter groups (and missing ones) are not found
+        other_org, _, _ = create_organization(self.root_owner_user, "other org")
+        other_filter_group = FilterGroup.objects.create(name="all", organization_id=other_org.id, inventory_type=0)
+        for filter_group_id in [other_filter_group.id, other_filter_group.id + 1]:
+            resp = self.client.get(url + f"&filter_group_id={filter_group_id}", content_type="application/json")
+            assert resp.status_code == 404
+
+    def test_reports_missing_params(self):
+        self.login_as_root_member()
+        params = f"?x_var=building_count&cycle_ids={Cycle.objects.first().id}"
+
+        resp = self.client.get(reverse("api:v3:organizations-report", args=[self.org.pk]) + params, content_type="application/json")
+        assert resp.status_code == 400
+        assert resp.json() == {"status": "error", "message": "Missing params: y_var"}
+
+        resp = self.client.get(reverse("api:v3:organizations-report-export", args=[self.org.pk]) + params)
+        assert resp.status_code == 400
+        assert resp.json() == {"status": "error", "message": "Missing params: y_var"}
+
+    def test_sub_org_requires_owner(self):
+        url = reverse("api:v3:organizations-sub-org", args=[self.org.pk])
+        params = json.dumps({"sub_org_name": "child org", "sub_org_owner_email": self.root_member_user.username})
+
+        # members cannot create sub-organizations (or make themselves owners of existing ones)
+        self.login_as_root_member()
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 403
+        assert not Organization.objects.filter(name="child org").exists()
+
+        # owners can
+        self.login_as_root_owner()
+        resp = self.client.post(url, params, content_type="application/json")
+        assert resp.status_code == 200
+        assert Organization.objects.get(pk=resp.json()["organization_id"]).parent_org == self.org
+
+    def test_whole_org_match_merge_link_requires_root_member_access(self):
+        params = json.dumps({"inventory_type": "properties"})
+        for url_name in ["api:v3:organizations-match-merge-link", "api:v3:organizations-match-merge-link-preview"]:
+            url = reverse(url_name, args=[self.org.pk])
+
+            # child users cannot match, merge, and link (or preview) inventory outside their access level instance
+            self.login_as_child_member()
+            resp = self.client.post(url, params, content_type="application/json")
+            assert resp.status_code == 403
+
+            # root users can
+            self.login_as_root_member()
+            resp = self.client.post(url, params, content_type="application/json")
+            assert resp.status_code == 200
+
+    def test_whole_org_match_merge_link_result_is_scoped(self):
+        self.login_as_root_member()
+        url = reverse("api:v3:organizations-match-merge-link", args=[self.org.pk])
+        resp = self.client.post(url, json.dumps({"inventory_type": "properties"}), content_type="application/json")
+        identifier = ProgressData.from_key(resp.json()["progress_key"]).data["unique_id"]
+        result_url = reverse("api:v3:organizations-match-merge-link-result", args=[self.org.pk]) + f"?match_merge_link_id={identifier}"
+
+        # child users cannot get the result
+        self.login_as_child_member()
+        resp = self.client.get(result_url)
+        assert resp.status_code == 403
+
+        # root users can
+        self.login_as_root_member()
+        resp = self.client.get(result_url)
+        assert set(resp.json().keys()) == {"PropertyState", "TaxLotState"}
+
+        # the result cannot be retrieved through another organization
+        other_org, _, _ = create_organization(self.root_member_user, "other org")
+        other_result_url = (
+            reverse("api:v3:organizations-match-merge-link-result", args=[other_org.pk]) + f"?match_merge_link_id={identifier}"
+        )
+        resp = self.client.get(other_result_url)
+        assert resp.status_code == 200
+        assert resp.json() is None
+
+
+class TestOrganizationSampleData(AccessLevelBaseTestCase):
+    @mock.patch("seed.views.v3.organizations.save_raw_data")
+    @mock.patch("seed.views.v3.organizations.geocode_buildings")
+    def test_insert_sample_data(self, mock_geocode_buildings, mock_save_raw_data):
+        self.cycle_factory.get_cycle()
+        url = reverse("api:v3:organizations-insert-sample-data", args=[self.org.pk])
+
+        # only superusers can insert sample data
+        self.login_as_root_owner()
+        resp = self.client.get(url)
+        assert resp.status_code == 403
+
+        self.client.login(**self.superuser_details)
+        resp = self.client.get(url)
+        assert resp.status_code == 200
+        assert resp.json() == {"status": "success"}
+
+        import_record = ImportRecord.objects.get(super_organization=self.org, name="Auto-Populate")
+        assert import_record.access_level_instance == self.org.root
+        assert ImportFile.objects.filter(import_record=import_record).count() == 2
+        assert mock_save_raw_data.call_count == 2
 
 
 class TestOrganizationViewsWithFilters(AccessLevelBaseTestCase):
@@ -298,7 +456,7 @@ class TestOrganizationViewsWithFilters(AccessLevelBaseTestCase):
         raw_content = json.loads(raw_result.content)
 
         identifier = ProgressData.from_key(raw_content["progress_key"]).data["unique_id"]
-        result_key = f"org_match_merge_link_result__{identifier}"
+        result_key = f"org_match_merge_link_result__{self.org.id}__{identifier}"
         summary = get_cache_raw(result_key)
 
         summary_keys = list(summary.keys())
@@ -327,7 +485,7 @@ class TestOrganizationViewsWithFilters(AccessLevelBaseTestCase):
         raw_content = json.loads(raw_result.content)
 
         identifier = ProgressData.from_key(raw_content["progress_key"]).data["unique_id"]
-        result_key = f"org_match_merge_link_result__{identifier}"
+        result_key = f"org_match_merge_link_result__{self.org.id}__{identifier}"
         summary = get_cache_raw(result_key)
 
         summary_keys = list(summary.keys())
@@ -417,7 +575,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
         raw_content = json.loads(raw_result.content)
 
         identifier = ProgressData.from_key(raw_content["progress_key"]).data["unique_id"]
-        result_key = f"org_match_merge_link_result__{identifier}"
+        result_key = f"org_match_merge_link_result__{self.org.id}__{identifier}"
         raw_summary = get_cache_raw(result_key)
         summary = {str(k): v for k, v in raw_summary.items() if v}  # ignore empty cycles
 
@@ -486,7 +644,7 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
         raw_content = json.loads(raw_result.content)
 
         identifier = ProgressData.from_key(raw_content["progress_key"]).data["unique_id"]
-        result_key = f"org_match_merge_link_result__{identifier}"
+        result_key = f"org_match_merge_link_result__{self.org.id}__{identifier}"
         raw_summary = get_cache_raw(result_key)
 
         summary = {str(k): v for k, v in raw_summary.items() if v}  # ignore empty cycles

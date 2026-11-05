@@ -8,9 +8,17 @@ from django.utils.decorators import method_decorator
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.models import GreenAssessmentURL
 from seed.serializers.certification import GreenAssessmentURLSerializer
+from seed.utils.api_schema import extend_schema_org_query_param
 from seed.utils.viewsets import SEEDOrgModelViewSet
 
 
+@extend_schema_org_query_param
+@method_decorator(
+    [
+        has_perm("requires_root_member_access"),
+    ],
+    name="create",
+)
 @method_decorator(
     [
         has_perm("requires_root_member_access"),

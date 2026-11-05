@@ -106,7 +106,13 @@ class InventoryFilter:
         cycle_id = self.request.query_params.get("cycle")
         inventory_type = self.request.query_params.get("inventory_type")
         ids_only = self.request.query_params.get("ids_only", "false").lower() == "true"
-        self.profile_id = self.request.query_params.get("profile_id", self.profile_id)
+        if profile_id := self.request.query_params.get("profile_id"):
+            try:
+                self.profile_id = int(profile_id)
+            except ValueError as e:
+                raise InventoryFilterError(
+                    JsonResponse({"status": "error", "message": "profile_id must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+                ) from e
         shown_column_ids = self.request.query_params.get("shown_column_ids")
 
         if not org_id:
@@ -398,14 +404,18 @@ class InventoryFilter:
 
         return views
 
+    def get_profile(self):
+        """The organization's list profile for the inventory type, or None if `profile_id` isn't one (e.g., -1)"""
+        if not self.profile_id:
+            return None
+        profile_inventory_type = VIEW_LIST_PROPERTY if self.inventory_type == "property" else VIEW_LIST_TAXLOT
+        return ColumnListProfile.objects.filter(
+            organization_id=self.org.id, id=self.profile_id, profile_location=VIEW_LIST, inventory_type=profile_inventory_type
+        ).first()
+
     def get_show_columns(self):
         # This uses an old method of returning the show_columns. There is a new method that
         # is preferred in v2.1 API with the ProfileIdMixin.
-        if self.inventory_type == "property":
-            profile_inventory_type = VIEW_LIST_PROPERTY
-        elif self.inventory_type == "taxlot":
-            profile_inventory_type = VIEW_LIST_TAXLOT
-
         show_columns: list[int] | None = None
         if self.shown_column_ids and self.profile_id:
             raise InventoryFilterError(
@@ -428,16 +438,10 @@ class InventoryFilter:
             show_columns = None
         elif self.profile_id == -1:
             show_columns = list(Column.objects.filter(organization_id=self.org.id).values_list("id", flat=True))
-        else:
-            try:
-                profile = ColumnListProfile.objects.get(
-                    organization_id=self.org.id, id=self.profile_id, profile_location=VIEW_LIST, inventory_type=profile_inventory_type
-                )
-                show_columns = list(
-                    ColumnListProfileColumn.objects.filter(column_list_profile_id=profile.id).values_list("column_id", flat=True)
-                )
-            except ColumnListProfile.DoesNotExist:
-                show_columns = None
+        elif profile := self.get_profile():
+            show_columns = list(
+                ColumnListProfileColumn.objects.filter(column_list_profile_id=profile.id).values_list("column_id", flat=True)
+            )
 
         return show_columns
 
@@ -504,8 +508,8 @@ class InventoryFilter:
         table_map = {"property": ["PropertyState", "TaxLotState", "(Tax Lot)"], "taxlot": ["TaxLotState", "PropertyState", "(Property)"]}
         table, other_table, other_suffix = table_map.get(self.inventory_type, ["PropertyState", "TaxLotState"])
 
-        if self.profile_id:
-            profile = ColumnListProfile.objects.get(id=self.profile_id)
+        # Use the same profile as `get_show_columns`, or all columns when there is none (e.g., -1)
+        if profile := self.get_profile():
             profile = ColumnListProfileSerializer(profile).data
             columns = [c for c in profile["columns"] if c["table_name"] == table]
             other_columns = [c for c in profile["columns"] if c["table_name"] == other_table]

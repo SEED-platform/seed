@@ -13,8 +13,12 @@ class LabelSerializer(serializers.ModelSerializer):
         source="super_organization",
         read_only=True,
     )
-    is_applied = serializers.SerializerMethodField()
-    is_applied_by_goal = serializers.SerializerMethodField()
+    is_applied = serializers.SerializerMethodField(
+        help_text="IDs of the inventory views with the label (only when listing labels for inventory)"
+    )
+    is_applied_by_goal = serializers.SerializerMethodField(
+        help_text="IDs of the property views the label was applied to by a goal (only when listing labels for properties)"
+    )
 
     def __init__(self, *args, **kwargs):
         """
@@ -22,14 +26,14 @@ class LabelSerializer(serializers.ModelSerializer):
         assigned to.  This serializer requires that the `super_organization`
         for the label be passed into the serializer during initialization so
         that uniqueness constraints involving the `super_organization` can be
-        validated by the serializer.
+        validated by the serializer. (It is only omitted when generating the API schema.)
 
         """
-        if "super_organization" not in kwargs:
-            return
-        super_organization = kwargs.pop("super_organization")
+        super_organization = kwargs.pop("super_organization", None)
         super().__init__(*args, **kwargs)
-        if getattr(self, "initial_data", None):
+        if super_organization is not None and getattr(self, "initial_data", None):
+            # Copy the data, which is immutable for form-encoded requests
+            self.initial_data = self.initial_data.copy()
             self.initial_data["super_organization"] = super_organization.pk
 
     class Meta:
@@ -59,7 +63,7 @@ class LabelSerializer(serializers.ModelSerializer):
 
         return ret
 
-    def get_is_applied(self, obj):
+    def get_is_applied(self, obj) -> list[int] | None:
         if "is_applied" not in dir(obj):
             return None
 
@@ -69,7 +73,7 @@ class LabelSerializer(serializers.ModelSerializer):
         else:
             return obj.is_applied
 
-    def get_is_applied_by_goal(self, obj):
+    def get_is_applied_by_goal(self, obj) -> list[int] | None:
         goal_applied = self.context.get("goal_applied_views")
         if goal_applied is None:
             return None

@@ -6,7 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from django.db.models import Subquery
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 
@@ -19,17 +19,27 @@ from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.geocode import geocode_buildings
 
+CONFIDENCE_COUNTS = {
+    "not_geocoded": "integer",
+    "high_confidence": "integer",
+    "low_confidence": "integer",
+    "census_geocoder": "integer",
+    "manual": "integer",
+    "missing_address_components": "integer",
+}
+
 
 class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {
                 "property_view_ids": ["integer"],
                 "taxlot_view_ids": ["integer"],
             },
             description="IDs by inventory type for records to be geocoded.",
         ),
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string"})},
     )
     @method_decorator(
         [
@@ -74,15 +84,21 @@ class GeocodeViewSet(viewsets.ViewSet, OrgMixin):
         except Exception as e:
             return JsonResponse({"status": "error", "message": f"{e}"}, status=status.HTTP_412_PRECONDITION_FAILED)
 
-    @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
             {
                 "property_view_ids": ["integer"],
                 "taxlot_view_ids": ["integer"],
             },
             description="IDs by inventory type for records to be used in building a geocoding summary.",
         ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"properties": CONFIDENCE_COUNTS, "tax_lots": CONFIDENCE_COUNTS},
+                description="Each inventory type's counts are only included when its IDs were provided",
+            )
+        },
     )
     @method_decorator(
         [

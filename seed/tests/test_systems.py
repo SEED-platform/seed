@@ -11,6 +11,7 @@ from seed.models import System
 from seed.serializers.systems import SystemSerializer
 from seed.test_helpers.fake import FakeInventoryGroupFactory, FakeSystemFactory
 from seed.tests.util import AccessLevelBaseTestCase
+from seed.utils.organizations import create_organization
 
 
 class SystemViewTests(AccessLevelBaseTestCase):
@@ -203,3 +204,31 @@ class SystemViewTests(AccessLevelBaseTestCase):
             "voltage",
         ]
         assert data["voltage"] == 103
+
+    def test_system_update_cannot_move_system_to_another_group(self):
+        des = self.system_factory.get_system(group=self.group1, name="des 1", system_type="DES", cooling_capacity=1)
+        org2, _, _ = create_organization(self.superuser, "org2")
+        org2_group = self.group_factory.get_inventory_group(organization=org2, access_level_instance=org2.root)
+
+        url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, des.id]) + f"?organization_id={self.org.id}"
+        data = SystemSerializer(des).data
+        data["group_id"] = org2_group.id
+        response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+        assert response.status_code == 200
+        des.refresh_from_db()
+        assert des.group_id == self.group1.id
+
+    def test_system_update_requires_valid_type(self):
+        des = self.system_factory.get_system(group=self.group1, name="des 1", system_type="DES", cooling_capacity=1)
+        url = reverse_lazy("api:v3:inventory_group-systems-detail", args=[self.group1.id, des.id]) + f"?organization_id={self.org.id}"
+
+        for data in ({"cooling_capacity": 101}, {"type": "Unknown", "cooling_capacity": 101}):
+            response = self.client.put(url, data=json.dumps(data), content_type="application/json")
+            assert response.status_code == 400
+            assert response.json()["status"] == "error"
+        des.refresh_from_db()
+        assert des.cooling_capacity.magnitude == 1
+
+        response = self.client.put(url, data=json.dumps({"type": "DES", "cooling_capacity": 101}), content_type="application/json")
+        assert response.status_code == 200
+        assert response.json()["cooling_capacity"] == 101

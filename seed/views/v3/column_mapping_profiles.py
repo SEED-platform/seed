@@ -7,7 +7,9 @@ import csv
 
 from django.http import HttpResponse, JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema
+from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.status import HTTP_200_OK, HTTP_400_BAD_REQUEST
 from rest_framework.viewsets import ViewSet
@@ -27,8 +29,31 @@ mappings_description = (
     "from_units: [one of the following:"
     "'ft&#42;&#42;2' 'm&#42;&#42;2' 'kBtu/ft&#42;&#42;2/year' 'kWh/m&#42;&#42;2/year' 'GJ/m&#42;&#42;2/year' "
     "'MJ/m&#42;&#42;2/year' 'kBtu/m&#42;&#42;2/year']\n "
-    "to_table_name: [one of the following: 'TaxLotState' 'PropertyState']"
+    "to_table_name: [one of the following: 'TaxLotState' 'PropertyState']\n"
+    "from_field_value: [required for BuildingSync profiles]"
 )
+optional_org_id_field = AutoSchemaHelper.query_org_id_field(
+    required=False, description="Optional org id which overrides the users (default) current org id"
+)
+mapping_schema = {
+    "to_field": "string",
+    "from_field": "string",
+    "from_units": "string",
+    "to_table_name": "string",
+    "is_omitted": "boolean",
+    "from_field_value": "string",
+}
+profile_type_schema = tuple(ColumnMappingProfile.COLUMN_MAPPING_PROFILE_TYPES)
+
+
+class ColumnMappingProfileResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    data = ColumnMappingProfileSerializer()
+
+
+class ColumnMappingProfilesResponseSerializer(serializers.Serializer):
+    status = serializers.CharField()
+    data = ColumnMappingProfileSerializer(many=True)
 
 
 class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
@@ -36,15 +61,10 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
     # req by SEEDOrgPermissions, but currently not used by any methods.
     queryset = ColumnMappingProfile.objects.none()
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(
-                required=False, description="Optional org id which overrides the users (default) current org id"
-            )
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
-            {"profile_type": ["string"]}, description="Possible Types: 'Normal', 'BuildingSync Default', BuildingSync Custom'"
-        ),
+    @extend_schema(
+        parameters=[optional_org_id_field],
+        request=AutoSchemaHelper.json_body({"profile_type": [profile_type_schema]}, description="Optional profile types to filter by"),
+        responses=ColumnMappingProfilesResponseSerializer,
     )
     @method_decorator(
         [
@@ -80,27 +100,14 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 status=HTTP_400_BAD_REQUEST,
             )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(
-                required=False, description="Optional org id which overrides the users (default) current org id"
-            )
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "name": "string",
-                "mappings": [
-                    {
-                        "to_field": "string",
-                        "from_field": "string",
-                        "from_units": "string",
-                        "to_table_name": "string",
-                        "omit": "boolean",
-                    }
-                ],
-            },
-            description="Optional 'name' or 'mappings'.\n" + mappings_description,
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
+            {"name": "string", "mappings": [mapping_schema]},
+            description="Optional 'name' or 'mappings'. BuildingSync Custom profiles only update the 'to_field' and 'from_units' "
+            "of their existing mappings (matched by 'from_field'), and drop the mappings that are left out.\n" + mappings_description,
         ),
+        responses=ColumnMappingProfileResponseSerializer,
     )
     @method_decorator(
         [
@@ -158,13 +165,7 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
             }
         )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(
-                required=False, description="Optional org id which overrides the users (default) current org id"
-            )
-        ]
-    )
+    @extend_schema(parameters=[optional_org_id_field], responses={(200, "text/csv"): OpenApiTypes.BINARY})
     @method_decorator(
         [
             api_endpoint,
@@ -201,28 +202,14 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
 
         return response
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(
-                required=False, description="Optional org id which overrides the users (default) current org id"
-            )
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
-            {
-                "name": "string",
-                "mappings": [
-                    {
-                        "to_field": "string",
-                        "from_field": "string",
-                        "from_units": "string",
-                        "to_table_name": "string",
-                        "is_omitted": "boolean",
-                    }
-                ],
-            },
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        request=AutoSchemaHelper.json_body(
+            {"name": "string", "mappings": [mapping_schema], "profile_type": profile_type_schema},
             description=mappings_description,
-            required=["name", "mappings"],
+            required=["name"],
         ),
+        responses={200: ColumnMappingProfileResponseSerializer},
     )
     @method_decorator(
         [
@@ -266,12 +253,9 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 status=HTTP_400_BAD_REQUEST,
             )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(
-                required=False, description="Optional org id which overrides the users (default) current org id"
-            )
-        ]
+    @extend_schema(
+        parameters=[AutoSchemaHelper.query_org_id_field()],
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string", "data": "string"})},
     )
     @method_decorator(
         [
@@ -308,15 +292,24 @@ class ColumnMappingProfileViewSet(OrgMixin, ViewSet):
                 }
             )
 
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.query_org_id_field(
-                required=False, description="Optional org id which overrides the users (default) current org id"
-            )
-        ],
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        parameters=[optional_org_id_field],
+        request=AutoSchemaHelper.json_body(
             {"headers": ["string"]}, description="Raw headers - the exact headers for columns in an import file.", required=["headers"]
         ),
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "status": {"type": "string"},
+                    "data": {
+                        "type": "object",
+                        "additionalProperties": {"type": "array", "items": {}},
+                        "description": "Each raw header mapped to its suggested `[table_name, column_name, confidence]`",
+                    },
+                },
+            }
+        },
     )
     @method_decorator(
         [

@@ -5,12 +5,14 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import logging
 import os
+from pathlib import Path
 
 import xlrd
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
-from drf_yasg.utils import swagger_auto_schema
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.parsers import MultiPartParser
@@ -24,13 +26,49 @@ from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization, O
 from seed.models import Analysis, Property, PropertyState, TaxLot, TaxLotState
 from seed.serializers.access_level_instances import AccessLevelInstanceSerializer
 from seed.utils.api import api_endpoint
-from seed.utils.api_schema import AutoSchemaHelper, swagger_auto_schema_org_query_param
+from seed.utils.api_schema import AutoSchemaHelper
 from seed.views.v3.uploads import get_upload_path
 
 _log = logging.getLogger(__name__)
 
 
+def _uploads_subdir(org_id):
+    """The directory, relative to the uploads directory, where `importer` saves the organization's files"""
+    return os.path.join("access_levels", str(org_id))
+
+
+def _is_uploaded_file(filename, org_id):
+    """Whether `filename` is a path in the directory where `importer` saves the organization's files"""
+    uploads_dir = Path(settings.MEDIA_ROOT, "uploads", _uploads_subdir(org_id)).resolve()
+    try:
+        return isinstance(filename, str) and Path(filename).resolve().is_relative_to(uploads_dir)
+    except (OSError, ValueError):
+        return False
+
+
+ali_id_path_field = AutoSchemaHelper.path_id_field("Access Level Instance ID")
+
+ali_fields = {"id": "integer", "name": "string", "organization": "integer", "path": "object"}
+
+access_level_tree_schema = {
+    "type": "object",
+    "properties": {
+        "access_level_names": AutoSchemaHelper.schema_factory(["string"]),
+        "access_level_tree": {
+            "type": "array",
+            "items": AutoSchemaHelper.schema_factory(
+                {**ali_fields, "children": ["object"]},
+                description="An Access Level Instance; `path` maps level names to instance names, and `children` (omitted on leaves) "
+                "holds nested instances of the same shape",
+            ),
+        },
+    },
+}
+
+
+@extend_schema(parameters=[AutoSchemaHelper.path_id_field("Organization ID", name="organization_pk")])
 class AccessLevelViewSet(viewsets.ViewSet):
+    @extend_schema(responses={200: access_level_tree_schema})
     @method_decorator(
         [
             api_endpoint,
@@ -39,6 +77,9 @@ class AccessLevelViewSet(viewsets.ViewSet):
     )
     @action(detail=False, methods=["GET"])
     def tree(self, request, organization_pk=None):
+        """
+        Retrieve the Access Level Tree visible to the user: the ancestors and descendants of their Access Level Instance.
+        """
         try:
             org = Organization.objects.get(pk=organization_pk)
         except ObjectDoesNotExist:
@@ -77,7 +118,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @swagger_auto_schema_org_query_param
+    @extend_schema(responses={200: access_level_tree_schema})
     @method_decorator(
         [
             api_endpoint,
@@ -116,18 +157,11 @@ class AccessLevelViewSet(viewsets.ViewSet):
             status=status.HTTP_200_OK,
         )
 
-    @method_decorator(
-        [
-            api_endpoint,
-            has_perm("requires_owner"),
-        ]
-    )
-    @action(detail=False, methods=["POST"])
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
             {
-                "parent_id": ["integer"],
-                "name": ["string"],
+                "parent_id": "integer",
+                "name": "string",
             },
             required=["parent_id", "name"],
             description="""
@@ -135,7 +169,15 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 - name: name of new level
             """,
         ),
+        responses={201: access_level_tree_schema},
     )
+    @method_decorator(
+        [
+            api_endpoint,
+            has_perm("requires_owner"),
+        ]
+    )
+    @action(detail=False, methods=["POST"])
     def add_instance(self, request, organization_pk=None):
         """Add an AccessLevelInstance to the tree"""
         # get org
@@ -154,7 +196,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 return JsonResponse(
                     {"status": "error", "message": "body param `parent_id` must be int"}, status=status.HTTP_400_BAD_REQUEST
                 )
-            parent = AccessLevelInstance.objects.get(pk=parent_id)
+            parent = AccessLevelInstance.objects.get(pk=parent_id, organization=org)
         except KeyError:
             return JsonResponse({"status": "error", "message": "body param `parent_id` is required"}, status=status.HTTP_400_BAD_REQUEST)
         except ObjectDoesNotExist:
@@ -187,6 +229,12 @@ class AccessLevelViewSet(viewsets.ViewSet):
         status_code = status.HTTP_201_CREATED
         return JsonResponse(result, status=status_code)
 
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
+            {"access_level_names": ["string"]}, required=["access_level_names"], description="A list of level names"
+        ),
+        responses={200: AutoSchemaHelper.schema_factory(["string"], description="The organization's updated access level names")},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -195,11 +243,6 @@ class AccessLevelViewSet(viewsets.ViewSet):
         ]
     )
     @action(detail=False, methods=["POST"])
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
-            {"access_level_names": ["string"]}, required=["access_level_names"], description="A list of level names"
-        ),
-    )
     def access_level_names(self, request, organization_pk=None):
         """alter access_level names"""
         # get org
@@ -248,6 +291,18 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         return org.access_level_names
 
+    @extend_schema(
+        request=AutoSchemaHelper.multipart_body(
+            {"file": "file"}, required=["file"], description="Access Level Instances file to upload (`qqfile` is also accepted)"
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"success": "boolean", "tempfile": "string", "message": "string"},
+                description="On success, `tempfile` is the uploaded file's server path to pass to `start_save_data`; "
+                "otherwise `success` is false and `message` explains why",
+            )
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -256,11 +311,6 @@ class AccessLevelViewSet(viewsets.ViewSet):
         ]
     )
     @action(detail=False, methods=["PUT"], parser_classes=(MultiPartParser,))
-    @swagger_auto_schema(
-        manual_parameters=[
-            AutoSchemaHelper.upload_file_field(name="file", required=True, description="File to Upload"),
-        ]
-    )
     def importer(self, request, organization_pk=None):
         """Import access_level instance names from file"""
         # get org
@@ -281,7 +331,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
         else:
             the_file = request.data["file"]
         filename = the_file.name
-        path = get_upload_path(filename)
+        path = get_upload_path(os.path.join(_uploads_subdir(org.id), filename))
 
         # verify the directory exists
         if not os.path.exists(os.path.dirname(path)):
@@ -336,8 +386,30 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         return JsonResponse({"success": True, "tempfile": temp_file.name})
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory({"filename": "string"}),
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
+            {"filename": "string"}, required=["filename"], description="- filename: the `tempfile` returned by `importer`"
+        ),
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {
+                    "status": "string",
+                    "status_message": "string",
+                    "progress": "number",
+                    "progress_key": "string",
+                    "unique_id": "integer",
+                    "func_name": "string",
+                    "message": "string",
+                    "stacktrace": "string",
+                    "summary": "object",
+                    "total": "integer",
+                },
+                description="Progress data of the background task",
+            ),
+            400: AutoSchemaHelper.schema_factory(
+                {"status": "string", "message": "string"}, description="`filename` is missing or is not a file uploaded with `importer`"
+            ),
+        },
     )
     @method_decorator(
         [
@@ -349,10 +421,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
     @action(detail=False, methods=["POST"])
     def start_save_data(self, request, organization_pk=None):
         """
-        Starts a background task to import raw data from an ImportFile
-        into PropertyState objects as extra_data. If the cycle_id is set to
-        year_ending then the cycle ID will be set to the year_ending column for each
-        record in the uploaded file. Note that the year_ending flag is not yet enabled.
+        Starts a background task to create the Access Level Instances listed in a file uploaded with `importer`.
         """
         # get org
         try:
@@ -366,9 +435,18 @@ class AccessLevelViewSet(viewsets.ViewSet):
         filename = request.data.get("filename")
         if not filename:
             return JsonResponse({"status": "error", "message": "must pass filename to save the data"}, status=status.HTTP_400_BAD_REQUEST)
+        if not _is_uploaded_file(filename, org.id):
+            return JsonResponse(
+                {"status": "error", "message": "filename must be the `tempfile` returned by `importer`"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         return JsonResponse(task_save_raw(filename, org.id))
 
+    @extend_schema(
+        parameters=[ali_id_path_field],
+        request=AutoSchemaHelper.json_body({"name": "string"}, required=["name"], description="Edited access level instance name"),
+        responses={200: AutoSchemaHelper.schema_factory({"status": "string"})},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -377,11 +455,6 @@ class AccessLevelViewSet(viewsets.ViewSet):
         ]
     )
     @action(detail=True, methods=["PUT"])
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory(
-            {"name": ["string"]}, required=["name"], description="Edited access level instance name"
-        ),
-    )
     def edit_instance(self, request, organization_pk=None, pk=None):
         # get org
         try:
@@ -411,6 +484,15 @@ class AccessLevelViewSet(viewsets.ViewSet):
         instance.save()
         return JsonResponse({"status": "success"})
 
+    @extend_schema(
+        parameters=[ali_id_path_field],
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"can_delete": "boolean", "reasons": ["string"]},
+                description="`reasons` lists the related records preventing deletion, and is only present when `can_delete` is false",
+            )
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -520,6 +602,11 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 status=status.HTTP_200_OK,
             )
 
+    @extend_schema(
+        parameters=[ali_id_path_field],
+        request=None,
+        responses={204: OpenApiResponse(description="The Access Level Instance and its descendants were deleted")},
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -554,6 +641,28 @@ class AccessLevelViewSet(viewsets.ViewSet):
 
         return JsonResponse({"status": "success"}, status=status.HTTP_204_NO_CONTENT)
 
+    @extend_schema(
+        request=AutoSchemaHelper.json_body(
+            {"inventory_type": "integer", "inventory_ids": ["integer"]},
+            description="""
+                - inventory_type: 1 for tax lots; any other value for properties
+                - inventory_ids: IDs of the properties or tax lots
+            """,
+        ),
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "status": {"type": "string"},
+                    "data": AutoSchemaHelper.schema_factory(
+                        {**ali_fields, "lft": "integer", "rgt": "integer", "tree_id": "integer", "depth": "integer"},
+                        nullable=True,
+                        description="The lowest common Access Level Instance, or null if no inventory was found",
+                    ),
+                },
+            }
+        },
+    )
     @method_decorator(
         [
             api_endpoint,
@@ -588,19 +697,45 @@ class AccessLevelViewSet(viewsets.ViewSet):
             return JsonResponse({"status": "success", "data": None})
 
         inventory_type, InventoryClass = ("taxlot", TaxLot) if inventory_type == 1 else ("property", Property)
-        inventory = InventoryClass.objects.filter(id__in=inventory_ids)
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        inventory = InventoryClass.objects.filter(
+            id__in=inventory_ids,
+            organization_id=organization_pk,
+            access_level_instance__lft__gte=user_ali.lft,
+            access_level_instance__rgt__lte=user_ali.rgt,
+        )
         alis = [i.access_level_instance for i in list(inventory)]
+        if not alis:
+            return JsonResponse({"status": "success", "data": None})
 
         left_most = min([ali.lft for ali in alis])
         right_most = max([ali.lft for ali in alis])
-        shared_ancestors = AccessLevelInstance.objects.filter(lft__lte=left_most, rgt__gte=right_most)
+        shared_ancestors = AccessLevelInstance.objects.filter(organization_id=organization_pk, lft__lte=left_most, rgt__gte=right_most)
         lowest_common = shared_ancestors.order_by("depth").last()
 
         serialized_ali = AccessLevelInstanceSerializer(lowest_common).data
         return JsonResponse({"status": "success", "data": serialized_ali})
 
-    @swagger_auto_schema(
-        request_body=AutoSchemaHelper.schema_factory({"view_ids": ["number"]}),
+    @extend_schema(
+        request={
+            "application/json": {
+                "type": "object",
+                "properties": {
+                    "inventory_type": {
+                        "type": "string",
+                        "enum": ["properties", "taxlots"],
+                        "default": "properties",
+                        "description": "Any value other than `taxlots` selects properties",
+                    },
+                    "view_ids": AutoSchemaHelper.schema_factory(["integer"], description="Property or tax lot view IDs"),
+                },
+            }
+        },
+        responses={
+            200: AutoSchemaHelper.schema_factory(
+                {"status": "string", "access_level_instance_ids": ["integer"]},
+            )
+        },
     )
     @method_decorator(
         [
@@ -619,8 +754,13 @@ class AccessLevelViewSet(viewsets.ViewSet):
         if not view_ids:
             return JsonResponse({"status": "success", "access_level_instance_ids": []})
 
-        InventoryClass = TaxLot if inventory_type == "taxlots" else Property
+        InventoryClass, ali_relation = (TaxLot, "taxlots") if inventory_type == "taxlots" else (Property, "properties")
         inventory_ids = InventoryClass.objects.filter(views__id__in=view_ids, organization_id=organization_pk).values_list("id", flat=True)
-        access_level_instance_ids = AccessLevelInstance.objects.filter(properties__in=inventory_ids).distinct().values_list("id", flat=True)
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        access_level_instance_ids = (
+            AccessLevelInstance.objects.filter(**{f"{ali_relation}__in": inventory_ids}, lft__gte=user_ali.lft, rgt__lte=user_ali.rgt)
+            .distinct()
+            .values_list("id", flat=True)
+        )
 
         return JsonResponse({"status": "success", "access_level_instance_ids": list(access_level_instance_ids)})
