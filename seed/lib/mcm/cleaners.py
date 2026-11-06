@@ -78,8 +78,9 @@ def default_cleaner(value, *args):
     if isinstance(value, str):
         if fuzzy_in_set(value.lower(), NONE_SYNONYMS):
             return None
-        # guard against `''` coming in from an Excel empty cell
-        if value == "":
+        # guard against `''` coming in from an Excel empty cell, and treat
+        # whitespace-only values as blank
+        if value.strip() == "":
             return None
     return value
 

@@ -92,8 +92,8 @@ def apply_column_value(raw_column_name, column_value, model, mapping, is_extra_d
     if raw_column_name in mapping:
         table_name, mapped_column_name, _display_name, is_extra_data = mapping.get(raw_column_name)
 
-        # special postal case:
-        if mapped_column_name in {"postal_code", "owner_postal_code"} and (column_value or column_value == 0):
+        # special postal case (whitespace-only values are left for the cleaner to blank out):
+        if mapped_column_name in {"postal_code", "owner_postal_code"} and (column_value or column_value == 0) and str(column_value).strip():
             if "-" in str(column_value):
                 postal = str(column_value).split("-")[0].zfill(5)
                 ext = str(column_value).split("-")[1].zfill(4)
