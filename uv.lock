@@ -3043,7 +3043,7 @@ dev = [
     { name = "sphinx", specifier = "==9.1.0" },
     { name = "sphinx-rtd-theme", specifier = "==3.1.0" },
     { name = "sphinxcontrib-spelling", specifier = "==8.0.2" },
-    { name = "tox-uv-bare", specifier = "==1.37.2" },
+    { name = "tox-uv-bare", specifier = "==1.37.3" },
     { name = "types-markdown", specifier = ">=3.10.2.20260408" },
     { name = "types-python-dateutil", specifier = ">=2.9.0.20260716" },
     { name = "types-pyyaml", specifier = ">=6.0.12.20260408" },
@@ -3391,15 +3391,15 @@ wheels = [
 
 [[package]]
 name = "tox-uv-bare"
-version = "1.37.2"
+version = "1.37.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "packaging" },
     { name = "tox" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a2/35/f01dda041190c389737afccce0585a802f66b6a925999df29398d9e4d559/tox_uv_bare-1.37.2.tar.gz", hash = "sha256:7dc7a6bb6753bc958868adceed5bd72c37e51b6dbf346f386a79b8efcd751540", size = 33779, upload-time = "2026-10-27T18:53:27.149Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/95/a5/23841dce225732c58a2094da5e0a8cf268680bb1ea8b0a7387257fd76df9/tox_uv_bare-1.37.3.tar.gz", hash = "sha256:33bbbea7fc3a23d136f81638d87c320822796f6a76dd61b526ee7c2a1585a948", size = 34202, upload-time = "2026-10-31T15:11:11.207Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4e/40/64222c3d0281281dd69d2db417312dce7542d840d643af2379c1662fa456/tox_uv_bare-1.37.2-py3-none-any.whl", hash = "sha256:b7a1ae5884f4c8a949e91b2552517a23e830c969a2f61a65ab29fb0b142ae990", size = 22686, upload-time = "2026-10-27T18:53:25.519Z" },
+    { url = "https://files.pythonhosted.org/packages/5b/aa/606c4c5d7357b7a141a636224265148f2bf1991e09274ecd51e965d86b98/tox_uv_bare-1.37.3-py3-none-any.whl", hash = "sha256:1b999ed029feda594e0b6e391a7915a2c24ab5f91c16194926a18bec0285cdb8", size = 22682, upload-time = "2026-10-31T15:11:09.911Z" },
 ]
 
 [[package]]
