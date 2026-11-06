@@ -1118,6 +1118,7 @@ class TestColumnsByInventory(TestCase):
             "generation_date",
             "gross_floor_area",
             "home_energy_score_id",
+            "incoming_labels",
             "indoor_water_use",
             "indoor_wui",
             "jurisdiction_property_id",
