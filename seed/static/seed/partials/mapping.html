@@ -40,6 +40,12 @@
               <span class="label label-info">{$:: 'FIELD_NAMES_FOR_MATCHING' | translate $} {$:: 'Tax Lots' | translate $}:</span>
               <span><strong>{$ taxlot_matching_criteria_columns $}</strong></span>
             </p>
+            <p ng-show="import_file.multiple_cycle_upload">
+              <span class="label label-info" translate>Multiple Cycle Upload</span>
+              <span translate
+                >Map a column to the Property 'year_ending' field. Each property is assigned to the cycle that contains its 'year_ending' date, or to the default cycle if there is no match.</span
+              >
+            </p>
             <p translate>MATCHING_ADVICE</p>
             <p translate>MERGE_LINK_ADVICE</p>
             <p ng-show="property_geocoding_columns_array.length">
@@ -152,6 +158,12 @@
         >
           <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
         </button>
+        <button class="btn btn-primary" type="button" ng-click="rename_profile()" ng-disabled="!selected_profile_editable()" tooltip-placement="bottom" uib-tooltip="Rename">
+          <i class="fa-solid fa-eraser" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn-danger" type="button" ng-click="remove_profile()" ng-disabled="!selected_profile_editable()" tooltip-placement="bottom" uib-tooltip="Delete">
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
         <button class="btn btn-info" type="button" ng-click="new_profile()" tooltip-placement="bottom" uib-tooltip="New">
           <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
         </button>
@@ -166,6 +178,10 @@
         </div>
         <div class="alert alert-danger" ng-show="!required_taxlot_fields_present() && !import_file.matching_done">
           {$:: 'TAXLOT_MATCHING_FIELDS_REQUIREMENT' | translate $}: {$ taxlot_matching_criteria_columns $}.
+        </div>
+        <div class="alert alert-warning" ng-show="year_ending_unmapped() && !import_file.matching_done">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span translate>This is a Multiple Cycle Upload, but no column is mapped to the Property 'year_ending' field. All properties will be assigned to the selected default cycle.</span>
         </div>
         <div class="alert alert-danger" ng-show="duplicate_suggestions_present" translate>Please review SEED Headers. Duplicate values are not allowed.</div>
         <div class="alert alert-danger" ng-show="duplicate_headers_present" translate>Duplicate Data File Headers are not allowed. Modify the import file and try again.</div>
@@ -257,7 +273,7 @@
               >
                 <input
                   type="text"
-                  uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:{display_name:$viewValue} | limitTo:20"
+                  uib-typeahead="column.display_name for column in (col.suggestion_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:{display_name:$viewValue} | orderBy:'is_extra_data' | limitTo:20"
                   typeahead-template-url="typeahead.html"
                   ng-model="col.suggestion"
                   class="form-control input-sm tcm_field"
