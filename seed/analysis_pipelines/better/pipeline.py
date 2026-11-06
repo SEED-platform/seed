@@ -508,8 +508,9 @@ def _process_results(self, analysis_id):
         # don't check column_description and display_name because they may be changed by
         # the user at a later time.
         # if column doesn't exist, and user has permission to create, then create
+        # all BETTER results are stored as numbers, so the columns are created with the number data type
         try:
-            Column.objects.get(
+            column = Column.objects.get(
                 is_extra_data=True,
                 column_name=column_data_path.column_name,
                 organization=analysis.organization,
@@ -524,9 +525,16 @@ def _process_results(self, analysis_id):
                     table_name="PropertyState",
                     display_name=column_data_path.column_display_name,
                     column_description=column_data_path.column_display_name,
+                    data_type="number",
                 )
             else:
                 missing_columns = True
+        else:
+            # columns created by older versions have no data type ("None", or "" in older data);
+            # keep any type a user has chosen
+            if column.data_type in {"", "None"} and analysis.can_create():
+                column.data_type = "number"
+                column.save(update_fields=["data_type"])
 
     # Update the original PropertyView's PropertyState with analysis results of interest
     analysis_property_views = analysis.analysispropertyview_set.prefetch_related("property", "cycle").all()

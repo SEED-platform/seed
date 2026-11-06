@@ -22,6 +22,7 @@ from requests import Response
 
 from config.settings.common import BASE_DIR, TIME_ZONE
 from seed.analysis_pipelines.better.buildingsync import _build_better_input
+from seed.analysis_pipelines.better.pipeline import BETTERPipeline, _process_results
 from seed.analysis_pipelines.bsyncr import PREMISES_ID_NAME, BsyncrPipeline, _build_bsyncr_input, _parse_analysis_property_view_id
 from seed.analysis_pipelines.eeej import _get_data_for_census_tract_fetch, _get_eeej_indicators, _get_location
 from seed.analysis_pipelines.eui import (
@@ -42,7 +43,17 @@ from seed.analysis_pipelines.utils import SimpleMeterReading
 from seed.building_sync.building_sync import BuildingSync
 from seed.building_sync.mappings import NAMESPACES
 from seed.landing.models import SEEDUser as User
-from seed.models import Analysis, AnalysisInputFile, AnalysisMessage, AnalysisOutputFile, AnalysisPropertyView, Meter, MeterReading
+from seed.models import (
+    Analysis,
+    AnalysisInputFile,
+    AnalysisMessage,
+    AnalysisOutputFile,
+    AnalysisPropertyView,
+    Column,
+    Meter,
+    MeterReading,
+    PropertyView,
+)
 from seed.test_helpers.fake import (
     FakeAnalysisFactory,
     FakeAnalysisPropertyViewFactory,
@@ -905,6 +916,64 @@ class TestBETTERPipeline(TestCase):
         self.assertEqual(2, len(errors))
         self.assertTrue("BETTER analysis requires the property's name." in errors)
         self.assertTrue("BETTER analysis requires the property's city." in errors)
+
+    def _process_better_results(self):
+        analysis = self.analysis_property_view.analysis
+        analysis.user = self.user
+        analysis.status = Analysis.READY
+        analysis.save()
+        self.analysis_property_view.parsed_results = {
+            "assessment": {"assessment_results": {"assessment_energy_use": {"cost_savings_combined": 123456.789}}}
+        }
+        self.analysis_property_view.save()
+        property_view = PropertyView.objects.create(
+            property=self.analysis_property_view.property,
+            cycle=self.analysis_property_view.cycle,
+            state=FakePropertyStateFactory(organization=self.org).get_property_state(),
+        )
+
+        BETTERPipeline(analysis.id).set_analysis_status_to_running()
+        _process_results(analysis.id)
+
+        property_view.state.refresh_from_db()
+        return property_view.state.extra_data
+
+    def test_process_results_creates_number_columns(self):
+        extra_data = self._process_better_results()
+
+        self.assertEqual(extra_data["better_cost_savings_combined"], 123456.79)
+        columns = Column.objects.filter(organization=self.org, table_name="PropertyState", column_name__startswith="better_")
+        self.assertTrue(columns.filter(column_name="better_cost_savings_combined").exists())
+        self.assertEqual(set(columns.values_list("data_type", flat=True)), {"number"})
+
+    def test_process_results_sets_number_type_on_existing_untyped_columns(self):
+        untyped_column = Column.objects.create(
+            is_extra_data=True, column_name="better_cost_savings_combined", organization=self.org, table_name="PropertyState"
+        )
+        self.assertEqual(untyped_column.data_type, "None")
+        # an empty data type, which older data can have, is also unset. Column.save() rejects a
+        # blank data type, so set it with update() like a legacy row
+        blank_typed_column = Column.objects.create(
+            is_extra_data=True, column_name="better_cost_savings_fuel", organization=self.org, table_name="PropertyState"
+        )
+        Column.objects.filter(pk=blank_typed_column.pk).update(data_type="")
+        user_typed_column = Column.objects.create(
+            is_extra_data=True,
+            column_name="better_cost_savings_electricity",
+            organization=self.org,
+            table_name="PropertyState",
+            data_type="string",
+        )
+
+        self._process_better_results()
+
+        untyped_column.refresh_from_db()
+        blank_typed_column.refresh_from_db()
+        user_typed_column.refresh_from_db()
+        self.assertEqual(untyped_column.data_type, "number")
+        self.assertEqual(blank_typed_column.data_type, "number")
+        # a data type chosen by the user is kept
+        self.assertEqual(user_typed_column.data_type, "string")
 
 
 class TestEuiPipeline(TestCase):
