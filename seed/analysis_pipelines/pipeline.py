@@ -307,7 +307,7 @@ class AnalysisPipeline(abc.ABC):
         """
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
-            if locked_analysis.status is Analysis.PENDING_CREATION:
+            if locked_analysis.status == Analysis.PENDING_CREATION:
                 locked_analysis.status = Analysis.CREATING
                 locked_analysis.save()
                 progress_data = ProgressData(
@@ -327,7 +327,7 @@ class AnalysisPipeline(abc.ABC):
         """
         with transaction.atomic():
             locked_analysis = Analysis.objects.select_for_update().get(id=self._analysis_id)
-            if locked_analysis.status is Analysis.READY:
+            if locked_analysis.status == Analysis.READY:
                 locked_analysis.status = Analysis.QUEUED
                 locked_analysis.save()
                 progress_data = ProgressData(
@@ -507,9 +507,8 @@ class AnalysisPipeline(abc.ABC):
 
         if (
             # PENDING_CREATION doesn't have progress data due to... uninteresting reasons...
-            analysis.status is Analysis.PENDING_CREATION
             # READY doesn't have progress data b/c it's waiting for the user to kick it off
-            or analysis.status is Analysis.READY
+            analysis.status in {Analysis.PENDING_CREATION, Analysis.READY}
             # Terminal states (e.g., Failed, Stopped, Complete) don't have progress data
             or analysis.in_terminal_state()
         ):
