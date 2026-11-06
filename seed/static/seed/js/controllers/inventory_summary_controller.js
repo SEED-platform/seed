@@ -77,9 +77,11 @@ angular.module('SEED.controller.inventory_summary', []).controller('inventory_su
       analyses_service
         .get_summary($scope.cycle.selected_cycle.id)
         .then((data) => {
-          // get_summary resolves with the error body on failure (e.g. a 404 for a cycle without properties)
-          if (!data || data.success === false) {
-            $scope.summary_message = (data && data.message) || 'Unable to load the summary for this cycle';
+          // get_summary resolves with the error body on failure, e.g. the endpoint's {success: false, message} 404 for a
+          // cycle without properties, or a permission check's {status: 'error', message}. Only the stats response has
+          // status 'success'.
+          if (!data || data.status !== 'success') {
+            $scope.summary_message = (data && (data.message || data.detail)) || 'Unable to load the summary for this cycle';
             $scope.table_data = [];
             $scope.column_settings_count = [];
             $scope.summaryGridOptions.data = $scope.table_data;
