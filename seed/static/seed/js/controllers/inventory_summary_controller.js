@@ -74,32 +74,47 @@ angular.module('SEED.controller.inventory_summary', []).controller('inventory_su
         scope: $scope
       });
 
-      analyses_service.get_summary($scope.cycle.selected_cycle.id).then((data) => {
-        $scope.table_data = [
-          {
-            Summary: 'Total Records',
-            Value: data.total_records
-          },
-          {
-            Summary: 'Number of Extra Data Fields',
-            Value: data.number_extra_data_fields
-          },
-          {
-            Summary: 'Total Square Feet',
-            Value: data.total_sqft
+      analyses_service
+        .get_summary($scope.cycle.selected_cycle.id)
+        .then((data) => {
+          // get_summary resolves with the error body on failure (e.g. a 404 for a cycle without properties)
+          if (!data || data.success === false) {
+            $scope.summary_message = (data && data.message) || 'Unable to load the summary for this cycle';
+            $scope.table_data = [];
+            $scope.column_settings_count = [];
+            $scope.summaryGridOptions.data = $scope.table_data;
+            $scope.countGridOptions.data = $scope.column_settings_count;
+            return;
           }
-        ];
-        $scope.summaryGridOptions.data = $scope.table_data;
+          $scope.summary_message = null;
 
-        const column_settings_count = data['column_settings fields and counts'];
-        $scope.column_settings_count = Object.entries(column_settings_count).map(([key, value]) => ({
-          Field: key,
-          Count: value
-        }));
+          $scope.table_data = [
+            {
+              Summary: 'Total Records',
+              Value: data.total_records
+            },
+            {
+              Summary: 'Number of Extra Data Fields',
+              Value: data.number_extra_data_fields
+            },
+            {
+              Summary: 'Total Square Feet',
+              Value: data.total_sqft
+            }
+          ];
+          $scope.summaryGridOptions.data = $scope.table_data;
 
-        $scope.countGridOptions.data = $scope.column_settings_count;
-        modalInstance.close();
-      });
+          const column_settings_count = data['column_settings fields and counts'] || {};
+          $scope.column_settings_count = Object.entries(column_settings_count).map(([key, value]) => ({
+            Field: key,
+            Count: value
+          }));
+
+          $scope.countGridOptions.data = $scope.column_settings_count;
+        })
+        .finally(() => {
+          modalInstance.close();
+        });
     };
 
     $scope.update_cycle = (cycle) => {
