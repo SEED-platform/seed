@@ -30,6 +30,7 @@
 
 <div class="inventory-summary columns">
   <div class="column">
+    <div class="alert alert-warning" ng-if="summary_message" ng-bind="summary_message"></div>
     <div id="summary-grid" ui-grid="summaryGridOptions" class="grid" ui-grid-auto-resize></div>
     <div id="count-grid" ui-grid="countGridOptions" class="grid" ui-grid-auto-resize></div>
   </div>
