@@ -110,7 +110,7 @@
 
     <div class="section_content with_padding" style="margin-bottom: 15px">
       <div class="table_list_container has_borders">
-        <table class="table table-striped">
+        <table id="column-mapping-table" class="table table-striped">
           <thead>
             <tr>
               <th colspan="4" class="source_data">SEED</th>
@@ -171,7 +171,7 @@
               <td ng-class="{'danger': col.is_duplicate || col.suggestion === ''}" ng-attr-id="mapped-row-input-{$:: $index $}">
                 <input
                   type="text"
-                  uib-typeahead="column.displayName for column in (col.to_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:$viewValue | limitTo:20"
+                  uib-typeahead="column.displayName for column in (col.to_table_name === 'PropertyState' ? mappable_property_columns : mappable_taxlot_columns) | filter:$viewValue | orderBy:'is_extra_data' | limitTo:20"
                   typeahead-template-url="typeahead.html"
                   typeahead-on-select="flag_change(col)"
                   ng-model="col.to_field"
