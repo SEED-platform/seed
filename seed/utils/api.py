@@ -14,7 +14,9 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
 from django.http import JsonResponse
 from rest_framework import exceptions, status
+from rest_framework.request import Request
 
+from seed.authentication import AUTHENTICATE_HEADER
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
 from seed.models import VIEW_LIST, VIEW_LIST_PROPERTY, Column, ColumnListProfile, ColumnListProfileColumn
@@ -102,7 +104,19 @@ def api_endpoint(fn):
 
     @wraps(fn)
     def _wrapped(request, *args, **kwargs):
-        user = get_api_request_user(request)
+        try:
+            user = get_api_request_user(request)
+        except exceptions.AuthenticationFailed as e:
+            # Inside a DRF view, DRF's exception handling turns the error into its 401 response
+            if isinstance(request, Request):
+                raise
+            # When this decorator runs outside @api_view (e.g. the version and celery_queue views), nothing else
+            # handles the error, and it would become a 500
+            return JsonResponse(
+                {"status": "error", "message": str(e)},
+                status=status.HTTP_401_UNAUTHORIZED,
+                headers={"WWW-Authenticate": AUTHENTICATE_HEADER},
+            )
         if user:
             request.is_api_request = True
             request.user = user
@@ -132,34 +146,6 @@ def get_api_request_user(request):
         return False
 
     return User.process_header_request(request)
-
-
-# pylint: disable=too-few-public-methods
-class APIBypassCSRFMiddleware:
-    """
-    This middleware turns off CSRF protection for API clients.
-
-    It must come before CsrfViewMiddleware in settings.MIDDLEWARE.
-    """
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.get_response(request)
-
-        try:
-            if get_api_request_user(request):
-                request.csrf_processing_done = True
-        except exceptions.AuthenticationFailed as e:
-            return JsonResponse(
-                {
-                    "status": "error",
-                    "message": str(e),
-                },
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-        return response
 
 
 def rgetattr(obj, lst):

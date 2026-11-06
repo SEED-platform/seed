@@ -12,13 +12,12 @@ parser_classes, authentication_classes, and pagination_classes attributes.
 
 from collections.abc import Sequence
 
-from rest_framework.authentication import SessionAuthentication
 from rest_framework.mixins import CreateModelMixin, DestroyModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.parsers import BaseParser, FormParser, JSONParser, MultiPartParser
 from rest_framework.viewsets import GenericViewSet, ModelViewSet, ReadOnlyModelViewSet
 
 # Local Imports
-from seed.authentication import SEEDAuthentication
+from seed.authentication import SEEDAuthentication, SEEDSessionAuthentication
 from seed.decorators import DRFEndpointMixin
 from seed.lib.superperms.orgs.permissions import SEEDOrgPermissions
 from seed.renderers import SEEDJSONRenderer as JSONRenderer
@@ -26,7 +25,7 @@ from seed.utils.api import OrgCreateUpdateMixin, OrgQuerySetMixin
 
 # Constants
 AUTHENTICATION_CLASSES = (
-    SessionAuthentication,
+    SEEDSessionAuthentication,
     SEEDAuthentication,
 )
 PARSER_CLASSES = (FormParser, MultiPartParser, JSONParser)
@@ -58,8 +57,8 @@ class SEEDOrgModelViewSet(DRFEndpointMixin, OrgQuerySetMixin, ModelViewSet):
     Attributes:
         renderer_classes: Tuple of classes, default set to SEEDJSONRenderer.
         parser_classes: Tuple of classes, default set to drf's JSONParser.
-        authentication_classes: Tuple of classes, default set to drf's
-            SessionAuthentication and SEEDAuthentication.
+        authentication_classes: Tuple of classes, default set to
+            SEEDSessionAuthentication and SEEDAuthentication.
     """
 
     renderer_classes = RENDERER_CLASSES
@@ -78,8 +77,8 @@ class SEEDOrgReadOnlyModelViewSet(
     Attributes:
         renderer_classes: Tuple of classes, default set to SEEDJSONRenderer.
         parser_classes: Tuple of classes, default set to drf's JSONParser.
-        authentication_classes: Tuple of classes, default set to drf's
-            SessionAuthentication and SEEDAuthentication.
+        authentication_classes: Tuple of classes, default set to
+            SEEDSessionAuthentication and SEEDAuthentication.
     """
 
     renderer_classes = RENDERER_CLASSES

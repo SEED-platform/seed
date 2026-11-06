@@ -8,6 +8,7 @@ OpenAPI (drf-spectacular) helpers shared by the SEED API views.
 import copy
 
 from django.contrib.gis.db.models import GeometryField
+from drf_spectacular.authentication import SessionScheme
 from drf_spectacular.extensions import OpenApiAuthenticationExtension, OpenApiSerializerFieldExtension
 from drf_spectacular.openapi import AutoSchema
 from drf_spectacular.plumbing import force_instance, get_lib_doc_excludes, get_override, is_serializer
@@ -318,6 +319,15 @@ class SEEDAuthenticationScheme(OpenApiAuthenticationExtension):
 
     def get_security_definition(self, auto_schema):
         return {"type": "http", "scheme": "basic", "description": "Your SEED username and API key"}
+
+
+class SEEDSessionScheme(SessionScheme):
+    """`SEEDSessionAuthentication` is session authentication that also rejects an invalid `Authorization` header
+
+    drf-spectacular's `SessionScheme` only matches `SessionAuthentication` itself, not subclasses.
+    """
+
+    target_class = "seed.authentication.SEEDSessionAuthentication"
 
 
 class DisplayChoiceFieldExtension(OpenApiSerializerFieldExtension):
