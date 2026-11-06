@@ -86,3 +86,36 @@ class TestCleaner(TestCase):
 
         # other fields are just strings
         self.assertEqual(cleaner.clean_value("123,456", "random"), "123,456")
+
+    def test_clean_value_whitespace_only_is_none(self):
+        """Blank and whitespace-only values are cleaned to None for every column type, including extra data (#5076)"""
+        cleaner = tasks._build_cleaner(self.org)
+
+        # One column for each branch of clean_value
+        self.assertIn(self.string_col, cleaner.string_columns)
+        self.assertIn(self.float_col, cleaner.float_columns)
+        self.assertIn("address_line_1", cleaner.string_columns)
+        self.assertIn("year_built", cleaner.int_columns)
+        self.assertIn("year_ending", cleaner.date_columns)
+        self.assertIn("recent_sale_date", cleaner.date_time_columns)
+        self.assertIn("property_footprint", cleaner.geometry_columns)
+        self.assertIn("gross_floor_area", cleaner.float_columns)
+        columns = [
+            (self.string_col, True),
+            (self.float_col, True),
+            ("random", True),  # an extra data column without a type
+            ("address_line_1", False),
+            ("year_built", False),
+            ("year_ending", False),
+            ("recent_sale_date", False),
+            ("property_footprint", False),
+            ("gross_floor_area", False),
+        ]
+        for column_name, is_extra_data in columns:
+            for value in ("", " ", "   ", "\t", "\n", " \r\n "):
+                with self.subTest(column_name=column_name, value=value):
+                    self.assertIsNone(cleaner.clean_value(value, column_name, is_extra_data))
+
+        # Values with text are not stripped
+        self.assertEqual(cleaner.clean_value(" a ", self.string_col), " a ")
+        self.assertEqual(cleaner.clean_value(" a ", "random"), " a ")

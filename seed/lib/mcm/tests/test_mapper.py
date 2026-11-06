@@ -8,6 +8,7 @@ from unittest.mock import Mock
 
 from django.test import TestCase
 
+from seed.lib.mcm.cleaners import Cleaner, default_cleaner
 from seed.lib.mcm.mapper import apply_column_value
 
 
@@ -70,6 +71,41 @@ class ApplyColumnValueTest(TestCase):
         result = get_result(0)
         self.assertEqual(result.postal_code, "00000")
 
+    def test_whitespace_only_postal_code_is_blank(self):
+        """Whitespace-only postal codes are not zero-padded and are stored as blank"""
+        for column_name in ("postal_code", "owner_postal_code"):
+            mapping = {"Postal Code": ("PropertyState", column_name, "Postal Code", False)}
+            for cleaner in (None, Cleaner({"types": {}})):
+                for value in (" ", "   ", "\t"):
+                    result = apply_column_value(
+                        raw_column_name="Postal Code",
+                        column_value=value,
+                        model=self.model,
+                        mapping=mapping,
+                        is_extra_data=False,
+                        cleaner=cleaner,
+                    )
+                    self.assertIsNone(getattr(result, column_name))
+
+    def test_whitespace_only_values_are_blank(self):
+        """Whitespace-only values are stored as blank in both fields and extra_data"""
+        mapping = {
+            "Building Status": ("PropertyState", "Building Status", "Building Status", True),
+            "Address": ("PropertyState", "address_line_1", "Address", False),
+        }
+        for cleaner in (None, Cleaner({"types": {"address_line_1": "string"}})):
+            self.model.extra_data = {}
+            result = apply_column_value(
+                raw_column_name="Building Status", column_value="  ", model=self.model, mapping=mapping, is_extra_data=True, cleaner=cleaner
+            )
+            self.assertIn("Building Status", result.extra_data)
+            self.assertIsNone(result.extra_data["Building Status"])
+
+            result = apply_column_value(
+                raw_column_name="Address", column_value=" \t ", model=self.model, mapping=mapping, is_extra_data=False, cleaner=cleaner
+            )
+            self.assertIsNone(result.address_line_1)
+
     def test_datetime_in_extra_data_converts_to_isoformat(self):
         mapping = {"Date Field": ("PropertyState", "date_field", "Date Field", True)}
         test_date = datetime(2024, 1, 15, 10, 30, 0)
@@ -115,3 +151,14 @@ class ApplyColumnValueTest(TestCase):
 
         mock_cleaner.clean_value.assert_called_once_with("2020", "year_built", False)
         self.assertEqual(result.year_built, 2020)
+
+
+class DefaultCleanerTest(TestCase):
+    def test_whitespace_only_strings_are_none(self):
+        for value in ("", " ", "   ", "\t", "\n", " \r\n "):
+            self.assertIsNone(default_cleaner(value))
+
+    def test_non_blank_strings_are_unchanged(self):
+        self.assertEqual(default_cleaner(" a "), " a ")
+        self.assertEqual(default_cleaner("Active"), "Active")
+        self.assertEqual(default_cleaner(0), 0)
