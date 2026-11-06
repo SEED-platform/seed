@@ -12,10 +12,11 @@ from enum import Enum
 from functools import reduce
 from typing import Any
 
+from django.contrib.postgres.aggregates import BoolAnd
 from django.db import models
 from django.db.models import Case, IntegerField, Min, Q, Value, When
 from django.db.models.fields.json import KeyTextTransform
-from django.db.models.functions import Cast, Coalesce, Collate, Replace
+from django.db.models.functions import Cast, Coalesce, Collate, NullIf, Replace
 from django.http.request import QueryDict
 
 from seed.models.columns import Column
@@ -244,6 +245,33 @@ class QueryFilter:
 AnnotationDict = dict[str, models.Func]
 
 
+class TrimWhitespace(models.Func):
+    """Trim leading and trailing whitespace, including tabs, line breaks and non-breaking spaces.
+
+    PostgreSQL's TRIM() (Django's Trim) only removes spaces by default.
+    """
+
+    function = "BTRIM"
+    output_field = models.TextField()
+
+    # Space, tab, line feed, vertical tab, form feed, carriage return, and no-break space
+    WHITESPACE = " \t\n\v\f\r\u00a0"
+
+    def __init__(self, expression, **extra):
+        super().__init__(expression, models.Value(self.WHITESPACE), **extra)
+
+
+def _blank_to_null(expression):
+    """Trim the text expression and convert an empty result to NULL, so blank or
+    whitespace-only extra_data values don't fail when cast to a non-text type."""
+    return NullIf(TrimWhitespace(expression), models.Value(""))
+
+
+def _strip_commas(expression):
+    """Remove comma separators, then convert blank results to NULL"""
+    return _blank_to_null(Replace(expression, models.Value(","), models.Value("")))
+
+
 def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str, AnnotationDict]:
     """Creates a dictionary of annotations which will cast the extra data column_name
     into the provided data_type, for usage like: `*View.annotate(**annotations)`
@@ -280,8 +308,7 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
         annotations.update(
             {
                 final_field_name: Cast(
-                    # Remove comma separators
-                    Replace(text_field_name, models.Value(","), models.Value("")),
+                    _strip_commas(text_field_name),
                     output_field=models.IntegerField(),
                 )
             }
@@ -290,16 +317,15 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
         annotations.update(
             {
                 final_field_name: Cast(
-                    # Remove comma separators
-                    Replace(text_field_name, models.Value(","), models.Value("")),
+                    _strip_commas(text_field_name),
                     output_field=models.FloatField(),
                 )
             }
         )
     elif data_type in {"date", "datetime"}:
-        annotations.update({final_field_name: Cast(text_field_name, output_field=models.DateField())})
+        annotations.update({final_field_name: Cast(_blank_to_null(text_field_name), output_field=models.DateField())})
     elif data_type == "boolean":
-        annotations.update({final_field_name: Cast(text_field_name, output_field=models.BooleanField())})
+        annotations.update({final_field_name: Cast(_blank_to_null(text_field_name), output_field=models.BooleanField())})
     else:
         # treat as string
         annotations.update(
@@ -322,19 +348,13 @@ def _build_related_extra_data_expression(column_name: str, data_type: str, state
     expression = KeyTextTransform(column_name, json_path)
 
     if data_type == "integer":
-        expression = Cast(
-            Replace(expression, models.Value(","), models.Value("")),
-            output_field=models.IntegerField(),
-        )
+        expression = Cast(_strip_commas(expression), output_field=models.IntegerField())
     elif data_type in {"number", "float", "area", "eui", "ghg", "ghg_intensity"}:
-        expression = Cast(
-            Replace(expression, models.Value(","), models.Value("")),
-            output_field=models.FloatField(),
-        )
+        expression = Cast(_strip_commas(expression), output_field=models.FloatField())
     elif data_type in {"date", "datetime"}:
-        expression = Cast(expression, output_field=models.DateField())
+        expression = Cast(_blank_to_null(expression), output_field=models.DateField())
     elif data_type == "boolean":
-        expression = Cast(expression, output_field=models.BooleanField())
+        expression = Cast(_blank_to_null(expression), output_field=models.BooleanField())
     else:
         expression = Coalesce(expression, models.Value(""), output_field=models.TextField())
 
@@ -451,7 +471,9 @@ def _parse_view_sort(
         else:
             expression = models.F(f"{state_prefix}__{column['column_name']}")
 
-        annotations = {annotation_name: Min(expression)}
+        # PostgreSQL has no MIN() for booleans; BOOL_AND() gives the same result (false sorts before true)
+        aggregate = BoolAnd if column["data_type"] == "boolean" else Min
+        annotations = {annotation_name: aggregate(expression)}
         if column["data_type"] in {"None", "string"}:
             order_expression = Collate(annotation_name, "natural_sort")
             if direction:
