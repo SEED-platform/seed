@@ -85,8 +85,11 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
 
         try:
             if auth_header.startswith("Basic"):
-                auth_header = auth_header.split()[1]
-                auth_header = base64.urlsafe_b64decode(auth_header).decode("utf-8")
+                parts = auth_header.split()
+                if len(parts) < 2:
+                    # "Basic" without credentials
+                    raise exceptions.AuthenticationFailed("Invalid HTTP_AUTHORIZATION Header")
+                auth_header = base64.urlsafe_b64decode(parts[1]).decode("utf-8")
                 username, api_key = auth_header.split(":")
 
                 valid_api_key = re.search("^[a-f0-9]{40}$", api_key)
@@ -97,11 +100,9 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
                 # case, do a username check that is case insensitive since user's are sometimes
                 # sending email addresses as their usernames with mixed-cases.
                 user = SEEDUser.objects.get(api_key=api_key, username__iexact=username)
-                return user
             elif auth_header.startswith("Bearer"):
                 at = AccessToken(auth_header.removeprefix("Bearer "))
                 user = SEEDUser.objects.get(pk=at["user_id"])
-                return user
             else:
                 raise exceptions.AuthenticationFailed("Only Basic HTTP_AUTHORIZATION or BEARER Tokens are supported")
         except ValueError as e:
@@ -110,6 +111,12 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
             raise exceptions.AuthenticationFailed("Invalid Bearer Token") from e
         except SEEDUser.DoesNotExist as e:
             raise exceptions.AuthenticationFailed("Invalid API key or Bearer Token") from e
+
+        # Deactivating a user only clears is_active, so their API key and unexpired access tokens must be rejected here
+        # (simplejwt's JWTAuthentication checks this itself, but SEEDAuthentication and api_endpoint use this method)
+        if not user.is_active:
+            raise exceptions.AuthenticationFailed("User is inactive")
+        return user
 
     def get_absolute_url(self):
         return f"/users/{quote(self.username)}/"

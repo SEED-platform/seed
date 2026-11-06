@@ -8,14 +8,25 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from django.db.models.deletion import ProtectedError
 from django.utils.translation import gettext_lazy as _
-from rest_framework import status
+from rest_framework import exceptions, status
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
+
+from seed.authentication import AUTHENTICATE_HEADER
 
 
 def custom_exception_handler(exc, context):
     """Handle select errors not handled by DRF's default exception handler."""
     response = exception_handler(exc, context)
+
+    if response is not None and isinstance(exc, exceptions.AuthenticationFailed):
+        # DRF returns 403 for invalid credentials when the view's first authentication class has no WWW-Authenticate
+        # challenge, as with the SessionAuthentication-first SEEDOrg* viewsets. Invalid credentials are a 401. Missing
+        # credentials (NotAuthenticated) still get DRF's response.
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+        if "WWW-Authenticate" not in response:
+            response["WWW-Authenticate"] = AUTHENTICATE_HEADER
+        return response
 
     if response is None and isinstance(exc, ProtectedError):
         # provides handling of ProtectError from use of models
