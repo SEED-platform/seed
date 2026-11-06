@@ -532,7 +532,7 @@ def _process_results(self, analysis_id):
         else:
             # columns created by older versions have no data type ("None", or "" in older data);
             # keep any type a user has chosen
-            if column.data_type in {"", "None"} and analysis.can_create():
+            if column.data_type in {"", "None"} and analysis.user is not None and analysis.can_create():
                 column.data_type = "number"
                 column.save(update_fields=["data_type"])
 
