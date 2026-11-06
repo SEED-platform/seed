@@ -7,9 +7,9 @@ import json
 import logging
 import math
 import re
-from contextlib import suppress
 from datetime import datetime
 
+from dateutil.parser import parse
 from django.core import serializers
 from django.db import IntegrityError, models
 from django.utils import timezone
@@ -165,37 +165,13 @@ def parse_date(value):
 
     """
     if not value:
-        return timezone.make_aware(datetime.min)
+        return datetime.min.replace(tzinfo=timezone.get_default_timezone())
 
-    # standardize separators, ignore optional operators
-    s = str(value).strip().replace("/", "-")
-    match = re.match(r"^(=|!=|<=|>=|<|>)\s*(.+)$", s)
-    if match:
-        s = match.group(2)
+    # ignore optional operators
+    s = re.sub(r"^(=|!=|<=|>=|<|>)\s*", "", str(value).strip())
 
-    # ISO/Partial ISO Format
-    with suppress(ValueError, TypeError):
-        parsed = datetime.fromisoformat(s)
-        if timezone.is_aware(parsed):
-            return parsed
-        return timezone.make_aware(parsed)
-
-    if re.fullmatch(r"\d{4}", s):  # YYYY
-        return timezone.make_aware(datetime(int(s), 1, 1))
-
-    if re.fullmatch(r"\d{4}[-]\d{1,2}", s):  # YYYY-MM
-        year, month = map(int, re.split(r"[-]", s))
-        return timezone.make_aware(datetime(year, month, 1))
-
-    if re.fullmatch(r"\d{4}[-]\d{1,2}[-]\d{1,2}", s):  # YYYY-MM-DD
-        year, month, day = map(int, re.split(r"[-]", s))
-        return timezone.make_aware(datetime(year, month, day))
-
-    # US-style:
-    with suppress(ValueError):
-        return timezone.make_aware(datetime.strptime(s, "%m-%d-%Y"))  # MM-DD-YYYY
-
-    with suppress(ValueError):
-        return timezone.make_aware(datetime.strptime(s, "%m-%d-%y"))  # MM-DD-YY
-
-    raise ValueError(f'Unable to parse date from value "{value}".')
+    try:
+        # Use 1/1/1 as defaults when values are missing
+        return parse(s, default=datetime(1, 1, 1, tzinfo=timezone.get_default_timezone()))
+    except Exception:
+        raise ValueError(f'Unable to parse date from value "{value}".')
