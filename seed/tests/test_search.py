@@ -10,17 +10,17 @@ import pytest
 from django.db import models
 from django.db.models import Min, Q
 from django.db.models.fields.json import KeyTextTransform
-from django.db.models.functions import Cast, Coalesce, Collate, Replace
+from django.db.models.functions import Cast, Coalesce, Collate, NullIf, Replace
 from django.http.request import QueryDict
 from django.test import TestCase
 from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Column, PropertyView
+from seed.models import Column, PropertyView, TaxLotProperty
 from seed.serializers.columns import ColumnSerializer
-from seed.test_helpers.fake import FakePropertyViewFactory
+from seed.test_helpers.fake import FakeCycleFactory, FakePropertyViewFactory, FakeTaxLotViewFactory
 from seed.utils.organizations import create_organization
-from seed.utils.search import FilterError, build_view_filters_and_sorts
+from seed.utils.search import FilterError, TrimWhitespace, build_view_filters_and_sorts
 
 
 class TestInventoryViewSearchParsers(TestCase):
@@ -116,7 +116,8 @@ class TestInventoryViewSearchParsers(TestCase):
                 expected_annotations={
                     "_test_number_to_text": KeyTextTransform("test_number", "state__extra_data", output_field=models.TextField()),
                     "_test_number_final": Cast(
-                        Replace("_test_number_to_text", models.Value(","), models.Value("")), output_field=models.FloatField()
+                        NullIf(TrimWhitespace(Replace("_test_number_to_text", models.Value(","), models.Value(""))), models.Value("")),
+                        output_field=models.FloatField(),
                     ),
                 },
             ),
@@ -275,7 +276,8 @@ class TestInventoryViewSearchParsers(TestCase):
                 expected_annotations={
                     "_test_number_to_text": KeyTextTransform("test_number", "state__extra_data", output_field=models.TextField()),
                     "_test_number_final": Cast(
-                        Replace("_test_number_to_text", models.Value(","), models.Value("")), output_field=models.FloatField()
+                        NullIf(TrimWhitespace(Replace("_test_number_to_text", models.Value(","), models.Value(""))), models.Value("")),
+                        output_field=models.FloatField(),
                     ),
                 },
             ),
@@ -344,6 +346,65 @@ class TestInventoryViewSearchParsers(TestCase):
         self.assertIn(annotation_key, annotations)
         self.assertIsInstance(annotations[annotation_key], Min)
 
+    def test_order_by_related_extra_data_columns_can_handle_blank_values(self):
+        """Sorting by a related non-text extra data column should treat blank or whitespace-only
+        values as null, and boolean columns should sort too (GH #5064)
+        """
+        # -- Setup
+        # data_type: (low value, high value)
+        values_by_type = {
+            "integer": ("5", "10"),
+            "number": ("5.5", "10.25"),
+            "date": ("2000-03-01", "2001-01-01"),
+            "boolean": ("false", "true"),
+        }
+        related_columns = {
+            data_type: Column.objects.create(
+                column_name=f"related_{data_type}",
+                data_type=data_type,
+                is_extra_data=True,
+                table_name="TaxLotState",
+                organization=self.fake_org,
+            )
+            for data_type in values_by_type
+        }
+        cycle = FakeCycleFactory(organization=self.fake_org, user=self.fake_user).get_cycle()
+        taxlot_view_factory = FakeTaxLotViewFactory(organization=self.fake_org, cycle=cycle)
+
+        def create_pair(extra_data):
+            property_view = self.property_view_factory.get_property_view(cycle=cycle)
+            taxlot_view = taxlot_view_factory.get_taxlot_view(extra_data=extra_data)
+            TaxLotProperty.objects.create(property_view=property_view, taxlot_view=taxlot_view, cycle=cycle)
+
+        blanks = ("", " ", "\t", "\n", " \t\r\n ", "\u00a0")
+        for blank in blanks:
+            create_pair({f"related_{data_type}": blank for data_type in values_by_type})
+        create_pair({})  # no value at all
+        for index in (1, 0):
+            create_pair({f"related_{data_type}": values[index] for data_type, values in values_by_type.items()})
+
+        columns = Column.retrieve_all(self.fake_org, "property", only_used=False, include_related=True)
+        for data_type, related_column in related_columns.items():
+            column_key = f"related_{data_type}_{related_column.id}"
+            annotation_key = f"related_{column_key}_sort"
+            for direction in ("", "-"):
+                # -- Act
+                _, annotations, order_by = build_view_filters_and_sorts(QueryDict(f"order_by={direction}{column_key}"), columns, "property")
+                sorted_values = list(
+                    PropertyView.objects.filter(cycle=cycle)
+                    .annotate(**annotations)
+                    .order_by(*order_by)
+                    .values_list(annotation_key, flat=True)
+                )
+
+                # -- Assert
+                message = f"Failed for {direction}{data_type}"
+                self.assertEqual(len(sorted_values), len(blanks) + 3, message)
+                non_null_values = [value for value in sorted_values if value is not None]
+                self.assertEqual(len(non_null_values), 2, message)
+                expected = sorted(non_null_values, reverse=bool(direction))
+                self.assertEqual(non_null_values, expected, message)
+
     def test_filter_and_sorts_parser_annotations_works(self):
         # -- Setup
         # create extra data column with a number type
@@ -402,6 +463,50 @@ class TestInventoryViewSearchParsers(TestCase):
         # -- Assert
         # evaluate the queryset -- no exception should be raised!
         list(cast_property_views)
+
+    def test_filter_and_sorts_parser_annotations_can_handle_blank_values(self):
+        """Blank or whitespace-only extra data strings, including tabs, line breaks and
+        no-break spaces, should be treated as null when cast to non-text column types (GH #5064)
+        """
+        # -- Setup
+        # data_type: (column name, value of the one non-blank record, filter that matches only that record)
+        columns_by_type = {
+            "integer": ("test_integer", "5", "__gt=1"),
+            "number": ("test_number", "5.5", "__gt=1"),
+            "date": ("test_date", "2000-03-01", "__gt=2000-02-01"),
+            "boolean": ("test_boolean", "true", "=true"),
+        }
+        created = {}
+        for data_type, (column_name, _, _) in columns_by_type.items():
+            created[data_type] = Column.objects.create(
+                column_name=column_name,
+                data_type=data_type,
+                is_extra_data=True,
+                table_name="PropertyState",
+                organization=self.fake_org,
+            )
+
+        blanks = ("", " ", "   ", "\t", "\n", " \t\r\n ", "\u00a0")
+        for blank in blanks:
+            self.property_view_factory.get_property_view(extra_data={name: blank for name, _, _ in columns_by_type.values()})
+        self.property_view_factory.get_property_view(extra_data={name: value for name, value, _ in columns_by_type.values()})
+
+        columns = Column.retrieve_all(self.fake_org, "property", only_used=False, include_related=False)
+        for data_type, (column_name, _, column_filter) in columns_by_type.items():
+            column_key = f"{column_name}_{created[data_type].id}"
+
+            # -- Act
+            filters, annotations, order_by = build_view_filters_and_sorts(
+                QueryDict(f"{column_key}{column_filter}&order_by={column_key}"), columns, "property"
+            )
+            property_views = list(PropertyView.objects.annotate(**annotations).filter(filters).order_by(*order_by))
+
+            # -- Assert
+            self.assertEqual(len(property_views), 1, f"Failed for {data_type}")
+
+            # sorting alone should also evaluate without raising
+            _, annotations, order_by = build_view_filters_and_sorts(QueryDict(f"order_by={column_key}"), columns, "property")
+            self.assertEqual(len(list(PropertyView.objects.annotate(**annotations).order_by(*order_by))), len(blanks) + 1)
 
     def test_filter_extra_dates(self):
         extra_date = Column.objects.create(
