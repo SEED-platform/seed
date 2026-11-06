@@ -127,7 +127,6 @@ create the database tables and migrations:
 
 .. code-block:: console
 
-    python manage.py syncdb
     python manage.py migrate
 
 
