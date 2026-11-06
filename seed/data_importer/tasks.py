@@ -804,7 +804,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
         chord(tasks)(finish_mapping.si(import_file_id, mark_as_done, progress_data.key))
     else:
         _log.debug("Not creating finish_mapping chord, calling directly")
-        finish_mapping.si(import_file_id, mark_as_done, progress_data.key)
+        finish_mapping(import_file_id, mark_as_done, progress_data.key)
 
     return progress_data.result()
 

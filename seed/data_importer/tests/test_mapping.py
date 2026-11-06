@@ -12,9 +12,11 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from quantityfield.units import ureg
 
 from seed.data_importer import tasks
+from seed.data_importer.models import STATUS_READY_TO_MERGE
 from seed.data_importer.tests.util import FAKE_MAPPINGS
 from seed.lib.mcm import mapper
-from seed.models import ASSESSED_RAW, DATA_STATE_IMPORT, DATA_STATE_MAPPING, Column, PropertyState
+from seed.lib.progress_data.progress_data import ProgressData
+from seed.models import ASSESSED_RAW, DATA_STATE_IMPORT, DATA_STATE_MAPPING, PORTFOLIO_RAW, Column, PropertyState
 from seed.models.column_mappings import get_column_mapping
 from seed.test_helpers.fake import FakePropertyFactory, FakePropertyStateFactory, FakePropertyViewFactory
 from seed.tests.util import DataMappingBaseTestCase
@@ -254,6 +256,67 @@ class TestMapping(DataMappingBaseTestCase):
 
         self.assertAlmostEqual(state.site_eui, (100 * ureg("kWh/m**2/year")).to("kBtu/ft**2/year"))
         self.assertAlmostEqual(state.gross_floor_area, (100 * ureg("m**2")).to("ft**2"))
+
+    def _create_ineligible_raw_states(self):
+        """Create raw PropertyStates that map_data must skip.
+
+        map_data only maps this import file's states that have its source type and are still in
+        DATA_STATE_IMPORT, so none of these states create a mapping task.
+        """
+        _, other_import_file = self.create_import_file(self.user, self.org, self.cycle)
+        for import_file, source_type, data_state in (
+            (self.import_file, ASSESSED_RAW, DATA_STATE_MAPPING),  # Already mapped
+            (self.import_file, PORTFOLIO_RAW, DATA_STATE_IMPORT),  # A different source type than the import file
+            (other_import_file, ASSESSED_RAW, DATA_STATE_IMPORT),  # Eligible, but belongs to another import file
+        ):
+            self.property_state_factory.get_property_state_as_extra_data(
+                import_file_id=import_file.id, source_type=source_type, data_state=data_state
+            )
+
+    def _assert_mapping_finished(self, result, mapping_done):
+        """Check that an empty mapping still finished, both in the returned and in the cached progress (#5376)"""
+        for progress in (result, ProgressData.from_key(result["progress_key"]).result()):
+            # No map_row_chunk tasks were created, so map_data took the branch without a chord
+            assert progress["total"] == 0
+            assert progress["status"] == "success"
+            assert progress["progress"] == 100
+        self.import_file.refresh_from_db()
+        assert self.import_file.mapping_done is mapping_done
+        self.import_record.refresh_from_db()
+        assert self.import_record.status == STATUS_READY_TO_MERGE
+        assert self.import_record.finish_time is not None
+
+    def test_map_data_finishes_when_there_are_no_rows_to_map(self):
+        """map_data should still run finish_mapping when the file has no rows to map (#5376)"""
+        assert not PropertyState.objects.filter(import_file=self.import_file).exists()
+        assert not self.import_file.mapping_done
+
+        result = tasks.map_data(self.import_file.id)
+
+        self._assert_mapping_finished(result, mapping_done=True)
+
+    def test_map_data_finishes_when_no_raw_rows_are_eligible(self):
+        """map_data should still run finish_mapping when every raw row is skipped (#5376)"""
+        self._create_ineligible_raw_states()
+        assert not self.import_file.mapping_done
+
+        result = tasks.map_data(self.import_file.id)
+
+        self._assert_mapping_finished(result, mapping_done=True)
+
+    def test_map_data_without_rows_respects_mark_as_done(self):
+        """Without mark_as_done, an empty mapping finishes but leaves mapping_done unset (#5376)"""
+        result = tasks.map_data(self.import_file.id, mark_as_done=False)
+
+        self._assert_mapping_finished(result, mapping_done=False)
+
+    def test_map_data_without_eligible_rows_respects_mark_as_done(self):
+        """Without mark_as_done, a mapping with only skipped rows finishes but leaves mapping_done unset (#5376)"""
+        self._create_ineligible_raw_states()
+
+        result = tasks.map_data(self.import_file.id, mark_as_done=False)
+
+        self._assert_mapping_finished(result, mapping_done=False)
 
 
 class TestMappingAccessLevelInstance(DataMappingBaseTestCase):
