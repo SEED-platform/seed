@@ -72,7 +72,6 @@ MIDDLEWARE = (
     "django.middleware.common.CommonMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.BrokenLinkEmailsMiddleware",
-    "seed.utils.api.APIBypassCSRFMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",

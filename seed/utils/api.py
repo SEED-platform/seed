@@ -12,8 +12,6 @@ from typing import Any
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, PermissionDenied, ValidationError
-from django.http import JsonResponse
-from rest_framework import exceptions, status
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
@@ -132,34 +130,6 @@ def get_api_request_user(request):
         return False
 
     return User.process_header_request(request)
-
-
-# pylint: disable=too-few-public-methods
-class APIBypassCSRFMiddleware:
-    """
-    This middleware turns off CSRF protection for API clients.
-
-    It must come before CsrfViewMiddleware in settings.MIDDLEWARE.
-    """
-
-    def __init__(self, get_response):
-        self.get_response = get_response
-
-    def __call__(self, request):
-        response = self.get_response(request)
-
-        try:
-            if get_api_request_user(request):
-                request.csrf_processing_done = True
-        except exceptions.AuthenticationFailed as e:
-            return JsonResponse(
-                {
-                    "status": "error",
-                    "message": str(e),
-                },
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-        return response
 
 
 def rgetattr(obj, lst):
