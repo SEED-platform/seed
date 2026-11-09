@@ -3567,6 +3567,32 @@ div.table_list_container.matching_detail {
   }
 }
 
+// Keep the column header labels visible while scrolling through long mapping profiles
+#column-mapping-table > thead:nth-of-type(2) th {
+  // !important is required to override the inline `position: relative` set by the sdResizable directive
+  position: sticky !important;
+  top: 0;
+  z-index: 1;
+
+  // This is necessary for sticky headers, https://stackoverflow.com/a/45042852
+  // Kept inside the cell because the resizable columns clip overflow
+  &::after {
+    border-bottom: 1px solid darken($gray_lighter, 10%);
+    border-right: 1px solid darken($gray_lighter, 10%);
+    bottom: 0;
+    content: '';
+    height: 100%;
+    left: 0;
+    pointer-events: none;
+    position: absolute;
+    width: 100%;
+  }
+
+  &:last-child::after {
+    border-right: 0 none;
+  }
+}
+
 .no-click {
   pointer-events: none;
 }

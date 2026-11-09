@@ -236,6 +236,60 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
       });
     };
 
+    // Rename and Delete act on the profile selected in the dropdown (the placeholder and BuildingSync Default can't be changed)
+    $scope.selected_profile_editable = () => Boolean($scope.dropdown_selected_profile?.id) &&
+      $scope.dropdown_selected_profile.profile_type !== COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT;
+
+    $scope.rename_profile = () => {
+      const profile = $scope.dropdown_selected_profile;
+      const old_name = profile.name;
+
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/column_mapping_profile_modal.html`,
+        controller: 'column_mapping_profile_modal_controller',
+        resolve: {
+          action: () => 'rename',
+          data: () => profile,
+          org_id: () => $scope.organization.id
+        }
+      });
+
+      modalInstance.result.then((new_name) => {
+        const profile_index = _.findIndex($scope.profiles, ['id', profile.id]);
+        $scope.profiles[profile_index].name = new_name;
+
+        Notification.primary(`Renamed ${old_name} to ${new_name}`);
+      });
+    };
+
+    $scope.remove_profile = () => {
+      const profile = $scope.dropdown_selected_profile;
+
+      const modalInstance = $uibModal.open({
+        templateUrl: `${urls.static_url}seed/partials/column_mapping_profile_modal.html`,
+        controller: 'column_mapping_profile_modal_controller',
+        resolve: {
+          action: () => 'remove',
+          data: () => profile,
+          org_id: () => $scope.organization.id
+        }
+      });
+
+      modalInstance.result.then(() => {
+        _.remove($scope.profiles, { id: profile.id });
+        // Keep the working mappings, but the deleted profile can no longer be the applied one
+        if ($scope.current_profile.id === profile.id) {
+          $scope.current_profile = $scope.profiles[0];
+          // The kept mappings are no longer saved in any profile, so warn before another profile replaces them
+          $scope.mappings_change_possible = true;
+        }
+        $scope.dropdown_selected_profile = $scope.current_profile;
+        $scope.profile_change_possible = false;
+
+        Notification.primary(`Deleted ${profile.name}`);
+      });
+    };
+
     // let angular-translate be in charge ... need to feed the language-only part of its $translate setting into
     // ui-grid's i18nService
     const stripRegion = (languageTag) => _.first(languageTag.split('_'));
@@ -633,6 +687,13 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
 
       return intersections > 0;
     };
+
+    /*
+     * year_ending_unmapped: a Multiple Cycle Upload assigns properties to cycles by 'year_ending', so warn when it
+     *   isn't mapped (all properties would fall back to the default cycle)
+     */
+    $scope.year_ending_unmapped = () => Boolean($scope.import_file.multiple_cycle_upload) &&
+      !_.some($scope.mappings, (m) => !m.is_omitted && m.suggestion_table_name === 'PropertyState' && m.suggestion_column_name === 'year_ending');
 
     /**
      * empty_fields_present: used to disable or enable the 'show & review
