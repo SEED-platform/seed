@@ -410,5 +410,8 @@ GOOGLE_RECAPTCHA_SECRET_KEY = os.environ.get("GOOGLE_RECAPTCHA_SECRET_KEY")
 # GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION=5 * 365
 GREEN_ASSESSMENT_DEFAULT_VALIDITY_DURATION = None
 
+# Number of seconds an emailed two-factor authentication code remains valid
+OTP_EMAIL_TOKEN_VALIDITY = int(os.environ.get("OTP_EMAIL_TOKEN_VALIDITY", "1800"))
+
 # Config self registration
 INCLUDE_ACCT_REG = os.environ.get("INCLUDE_ACCT_REG", "true").lower() == "true"
