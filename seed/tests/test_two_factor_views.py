@@ -4,9 +4,12 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+from datetime import timedelta
 
 import pyotp
+from django.test import override_settings
 from django.urls import reverse
+from django.utils import timezone
 from django_otp.plugins.otp_email.models import EmailDevice
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
@@ -84,3 +87,26 @@ class TwoFactorViewsTests(AccessLevelBaseTestCase):
 
         self.assertEqual(response.json(), {"message": "Invalid request. Missing secret key"})
         self.assertFalse(TOTPDevice.objects.filter(user=self.child_member_user).exists())
+
+    @override_settings(OTP_EMAIL_TOKEN_VALIDITY=1800)
+    def test_emailed_token_uses_configured_validity(self):
+        min_valid_until = timezone.now() + timedelta(seconds=1700)
+
+        # resending the token from the account security page
+        self.login_as_root_owner()
+        response = self._post("resend-token-email", {"user_email": self.root_owner_user.email})
+        self.assertEqual(response.json(), {"message": "Token email sent"})
+        self.owner_device.refresh_from_db()
+        self.assertGreater(self.owner_device.valid_until, min_valid_until)
+
+        # the token emailed by the JWT login flow
+        self.owner_device.valid_until = timezone.now()
+        self.owner_device.save()
+        self.client.logout()
+        response = self.client.post(
+            reverse("token_obtain_pair"),
+            data={"username": self.root_owner_user_details["username"], "password": self.root_owner_user_details["password"]},
+        )
+        self.assertEqual(response.json(), {"two_factor_required": True, "two_factor_method": "email"})
+        self.owner_device.refresh_from_db()
+        self.assertGreater(self.owner_device.valid_until, min_valid_until)

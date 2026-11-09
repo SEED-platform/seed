@@ -7,10 +7,11 @@ import base64
 import io
 
 import qrcode
+from django.conf import settings
 
 
 def send_token_email(email_device):
-    email_device.generate_token()
+    email_device.generate_token(valid_secs=settings.OTP_EMAIL_TOKEN_VALIDITY)
     message = f"Your Token for SEED-Platform login is: {email_device.token}"
 
     return email_device.send_mail(message)
