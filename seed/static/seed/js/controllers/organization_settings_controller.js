@@ -32,6 +32,7 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
   'facilities_plan_service',
   'Notification',
   '$translate',
+  'naturalSort',
   // eslint-disable-next-line func-names
   function (
     $scope,
@@ -62,7 +63,8 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     facilities_plans,
     facilities_plan_service,
     Notification,
-    $translate
+    $translate,
+    naturalSort
   ) {
     $scope.org = organization_payload.organization;
 
@@ -384,14 +386,16 @@ angular.module('SEED.controller.organization_settings', []).controller('organiza
     };
 
     const acceptable_column_types = ['area', 'eui', 'float', 'integer', 'number'];
+    // Sort the report axis options by display name so derived and extra data columns are not out of place
+    const sorted_columns = [...$scope.columns].sort((a, b) => naturalSort(a.displayName, b.displayName));
     // filtered columns should include derived columns
-    const filtered_columns = _.filter($scope.columns, (column) => column.derived_column || _.includes(acceptable_column_types, column.data_type));
+    const filtered_columns = _.filter(sorted_columns, (column) => column.derived_column || _.includes(acceptable_column_types, column.data_type));
     $scope.eui_columns = $scope.columns.filter((column) => column.derived_column || column.data_type === 'eui');
     $scope.boolean_columns = $scope.columns.filter((column) => column.derived_column || column.data_type === 'boolean');
     $scope.numeric_columns = $scope.columns.filter((column) => column.derived_column || ['float', 'integer', 'number'].includes(column.data_type));
 
     $scope.selected_x_columns = $scope.org.default_reports_x_axis_options.map((c) => c.id);
-    $scope.available_x_columns = () => $scope.columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
+    $scope.available_x_columns = () => sorted_columns.filter(({ id }) => !$scope.selected_x_columns.includes(id));
     $scope.add_x_column = (x_column_id) => {
       $scope.selected_x_columns.push(x_column_id);
     };
