@@ -10,7 +10,33 @@ from django.test import TestCase
 from lxml import etree
 
 from seed.building_sync.building_sync import BuildingSync
-from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES, build_path, children_sorter_factory, find_last_in_xpath, update_tree
+from seed.building_sync.mappings import (
+    BUILDINGSYNC_URI,
+    NAMESPACES,
+    build_path,
+    children_sorter_factory,
+    find_last_in_xpath,
+    to_bsync_state,
+    update_tree,
+)
+
+
+class TestToBsyncState(TestCase):
+    def test_converts_state_names_to_codes(self):
+        self.assertEqual("CO", to_bsync_state("Colorado"))
+        self.assertEqual("NY", to_bsync_state("  new   york "))
+        self.assertEqual("DC", to_bsync_state("District of Columbia"))
+        self.assertEqual("ON", to_bsync_state("Ontario"))
+
+    def test_normalizes_codes(self):
+        self.assertEqual("CO", to_bsync_state("CO"))
+        self.assertEqual("CO", to_bsync_state(" co "))
+
+    def test_leaves_unrecognized_values_unchanged(self):
+        self.assertEqual("Bavaria", to_bsync_state("Bavaria"))
+        self.assertEqual("XX", to_bsync_state("XX"))
+        self.assertEqual("", to_bsync_state(""))
+        self.assertIsNone(to_bsync_state(None))
 
 
 class TestXMLHelpers(TestCase):

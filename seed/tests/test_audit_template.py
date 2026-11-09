@@ -332,6 +332,34 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual("error", messages[0])
         self.assertEqual(exp_error, messages[1])
 
+    def test_build_xml_converts_state_name_to_code(self):
+        """BuildingSync's auc:State only allows 2-letter codes"""
+        self.state1.state = "Colorado"
+        self.state1.save()
+
+        at = AuditTemplate(self.org.id)
+        xml, messages = at.build_xml(self.state1, "Demo City Report", self.state1.pm_property_id)
+
+        self.assertEqual([], messages)
+        tree = etree.XML(xml.encode())
+        states = tree.xpath("//auc:Address/auc:State", namespaces={"auc": "http://buildingsync.net/schemas/bedes-auc/2019"})
+        self.assertEqual(["CO"], [s.text for s in states])
+
+    def test_build_xml_keeps_state_code(self):
+        """Orgs that already store 2-letter codes still export a valid auc:State"""
+        at = AuditTemplate(self.org.id)
+        for value in ["CO", "co"]:
+            with self.subTest(state=value):
+                self.state1.state = value
+                self.state1.save()
+
+                xml, messages = at.build_xml(self.state1, "Demo City Report", self.state1.pm_property_id)
+
+                self.assertEqual([], messages)
+                tree = etree.XML(xml.encode())
+                states = tree.xpath("//auc:Address/auc:State", namespaces={"auc": "http://buildingsync.net/schemas/bedes-auc/2019"})
+                self.assertEqual(["CO"], [s.text for s in states])
+
     def test_build_xml_from_property_with_meter_readings(self):
         # Set Up
         self.meter = Meter.objects.create(property_id=self.view1.property_id, type=Meter.ELECTRICITY_GRID)

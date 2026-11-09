@@ -54,6 +54,33 @@ class InventoryViewTests(DeleteModelsTestCase):
         response = self.client.get(url, params)
         self.assertIn(f"<auc:FloorAreaValue>{state.gross_floor_area}.0</auc:FloorAreaValue>", response.content.decode("utf-8"))
 
+    def test_get_building_sync_converts_state_name_to_code(self):
+        state = self.property_state_factory.get_property_state(state="Colorado")
+        prprty = self.property_factory.get_property()
+        pv = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
+
+        params = {"organization_id": self.org.pk, "profile_id": self.default_bsync_profile.id}
+        url = reverse("api:v3:properties-building-sync", args=[pv.id])
+        response = self.client.get(url, params)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode("utf-8")
+        self.assertIn("<auc:State>CO</auc:State>", content)
+        self.assertNotIn("Colorado", content)
+
+    def test_get_building_sync_keeps_state_code(self):
+        """Orgs that already store 2-letter codes still export a valid auc:State"""
+        params = {"organization_id": self.org.pk, "profile_id": self.default_bsync_profile.id}
+        for value in ["CO", "co"]:
+            with self.subTest(state=value):
+                state = self.property_state_factory.get_property_state(state=value)
+                prprty = self.property_factory.get_property()
+                pv = PropertyView.objects.create(property=prprty, cycle=self.cycle, state=state)
+
+                url = reverse("api:v3:properties-building-sync", args=[pv.id])
+                response = self.client.get(url, params)
+                self.assertEqual(response.status_code, 200)
+                self.assertIn("<auc:State>CO</auc:State>", response.content.decode("utf-8"))
+
     def test_upload_and_get_building_sync(self):
         filename = path.join(path.dirname(__file__), "data", "ex_1.xml")
 

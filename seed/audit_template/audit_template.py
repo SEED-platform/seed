@@ -21,7 +21,7 @@ from tkbl import bsync_by_uniformat_code
 
 from seed.analysis_pipelines.better.buildingsync import SEED_TO_BSYNC_RESOURCE_TYPE
 from seed.building_sync import validation_client
-from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
+from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES, to_bsync_state
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
@@ -432,7 +432,7 @@ def _build_address(em, state):
         address_elements.append(em.City(state.city))
 
     if state.state:
-        address_elements.append(em.State(state.state))
+        address_elements.append(em.State(to_bsync_state(state.state)))
 
     if state.postal_code:
         # add postal code truncated to 5 first digits

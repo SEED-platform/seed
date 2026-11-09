@@ -901,6 +901,25 @@ class TestBETTERPipeline(TestCase):
 
         self.assertEqual(self.meter_elec.meter_readings.count() + self.meter_nat.meter_readings.count(), len(ts_elems))
 
+    def test_build_better_input_uses_state_codes(self):
+        """BuildingSync's auc:State only allows 2-letter codes; names are converted and codes are kept"""
+        meters = [
+            {"meter_type": self.meter_nat.type, "readings": self.meter_nat.meter_readings.all()},
+            {"meter_type": self.meter_elec.type, "readings": self.meter_elec.meter_readings.all()},
+        ]
+        property_state = self.analysis_property_view.property_state
+        for value in ["Colorado", "CO", "co"]:
+            with self.subTest(state=value):
+                property_state.state = value
+                property_state.save()
+
+                doc, errors = _build_better_input(self.analysis_property_view, meters)
+
+                self.assertEqual(0, len(errors))
+                tree = etree.parse(BytesIO(doc))
+                states = tree.xpath("//auc:Address/auc:State", namespaces=NAMESPACES)
+                self.assertEqual(["CO"], [s.text for s in states])
+
     def test_build_better_input_returns_errors_if_state_missing_info(self):
         # remove some required fields
         property_state = self.analysis_property_view.property_state
