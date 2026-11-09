@@ -28,6 +28,7 @@ from seed.building_sync.mappings import (
     apply_mapping,
     merge_mappings,
     table_mapping_to_buildingsync_mapping,
+    to_bsync_state,
     update_tree,
 )
 from seed.models.meters import Meter
@@ -193,6 +194,9 @@ class BuildingSync:
                 continue
             if isinstance(seed_value, ureg.Quantity):
                 seed_value = seed_value.magnitude
+            if xml_element_xpath.endswith("/auc:State"):
+                # BuildingSync only allows 2-letter state codes
+                seed_value = to_bsync_state(str(seed_value))
 
             update_tree(schema, self.element_tree, xml_element_xpath, xml_element_value, str(seed_value), NAMESPACES)
 

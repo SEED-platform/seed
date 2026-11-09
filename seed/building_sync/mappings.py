@@ -12,6 +12,105 @@ BUILDINGSYNC_URI = "http://buildingsync.net/schemas/bedes-auc/2019"
 NAMESPACES = {"auc": BUILDINGSYNC_URI}
 etree.register_namespace("auc", BUILDINGSYNC_URI)
 
+# Names of the regions that BuildingSync's auc:State element allows (2-letter codes), keyed by code
+BSYNC_STATE_NAMES = {
+    "AA": "Armed Forces Americas",
+    "AE": "Armed Forces Europe",
+    "AP": "Armed Forces Pacific",
+    "AL": "Alabama",
+    "AK": "Alaska",
+    "AS": "American Samoa",
+    "AZ": "Arizona",
+    "AR": "Arkansas",
+    "CA": "California",
+    "CO": "Colorado",
+    "CT": "Connecticut",
+    "DE": "Delaware",
+    "DC": "District of Columbia",
+    "FM": "Federated States of Micronesia",
+    "FL": "Florida",
+    "GA": "Georgia",
+    "GU": "Guam",
+    "HI": "Hawaii",
+    "ID": "Idaho",
+    "IL": "Illinois",
+    "IN": "Indiana",
+    "IA": "Iowa",
+    "KS": "Kansas",
+    "KY": "Kentucky",
+    "LA": "Louisiana",
+    "ME": "Maine",
+    "MH": "Marshall Islands",
+    "MD": "Maryland",
+    "MA": "Massachusetts",
+    "MI": "Michigan",
+    "MN": "Minnesota",
+    "MS": "Mississippi",
+    "MO": "Missouri",
+    "MT": "Montana",
+    "NE": "Nebraska",
+    "NV": "Nevada",
+    "NH": "New Hampshire",
+    "NJ": "New Jersey",
+    "NM": "New Mexico",
+    "NY": "New York",
+    "NC": "North Carolina",
+    "ND": "North Dakota",
+    "MP": "Northern Mariana Islands",
+    "OH": "Ohio",
+    "OK": "Oklahoma",
+    "OR": "Oregon",
+    "PW": "Palau",
+    "PA": "Pennsylvania",
+    "PR": "Puerto Rico",
+    "RI": "Rhode Island",
+    "SC": "South Carolina",
+    "SD": "South Dakota",
+    "TN": "Tennessee",
+    "TX": "Texas",
+    "UT": "Utah",
+    "VT": "Vermont",
+    "VI": "U.S. Virgin Islands",
+    "VA": "Virginia",
+    "WA": "Washington",
+    "WV": "West Virginia",
+    "WI": "Wisconsin",
+    "WY": "Wyoming",
+    # Canada
+    "AB": "Alberta",
+    "BC": "British Columbia",
+    "MB": "Manitoba",
+    "NB": "New Brunswick",
+    "NL": "Newfoundland and Labrador",
+    "NS": "Nova Scotia",
+    "ON": "Ontario",
+    "PE": "Prince Edward Island",
+    "QC": "Quebec",
+    "SK": "Saskatchewan",
+    "NT": "Northwest Territories",
+    "NU": "Nunavut",
+    "YT": "Yukon",
+}
+BSYNC_STATE_CODES = {name.lower(): code for code, name in BSYNC_STATE_NAMES.items()}
+BSYNC_STATE_CODES.update({"virgin islands": "VI", "washington dc": "DC", "washington d.c.": "DC"})
+
+
+def to_bsync_state(value):
+    """Convert a state name (e.g., 'Colorado') to the 2-letter code that BuildingSync's auc:State requires.
+
+    Codes are uppercased. A value that is not recognized is returned unchanged.
+
+    :param value: str | None
+    :return: str | None
+    """
+    if not isinstance(value, str):
+        return value
+    normalized = " ".join(value.split())
+    if normalized.upper() in BSYNC_STATE_NAMES:
+        return normalized.upper()
+    return BSYNC_STATE_CODES.get(normalized.lower(), value)
+
+
 """
 A BuildingSync mapping is expected to be structured like this
     {

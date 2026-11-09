@@ -9,7 +9,7 @@ from lxml.builder import ElementMaker
 from quantityfield.units import ureg
 
 from seed.analysis_pipelines.pipeline import AnalysisPipelineError
-from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES
+from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES, to_bsync_state
 from seed.models import Meter
 
 # PREMISES_ID_NAME is the name of the custom ID used within a BuildingSync document
@@ -167,7 +167,9 @@ def _build_better_input(analysis_property_view, meters_and_readings):
                                     )
                                 ),
                                 E.Address(
-                                    E.City(property_state.city), E.State(property_state.state), E.PostalCode(property_state.postal_code)
+                                    E.City(property_state.city),
+                                    E.State(to_bsync_state(property_state.state)),
+                                    E.PostalCode(property_state.postal_code),
                                 ),
                                 E.eGRIDRegionCode(eGRIDRegion),
                                 E.Longitude(str(analysis_property_view.property_state.longitude)),
