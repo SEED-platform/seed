@@ -28,8 +28,25 @@ describe('controller: organization_settings_controller', () => {
     });
   });
 
+  const default_property_columns = [
+    {
+      id: 500,
+      name: 'test',
+      organization_id: 4,
+      table_name: 'TaxLotState',
+      column_name: 'test'
+    },
+    {
+      id: 501,
+      name: 'test',
+      organization_id: 4,
+      table_name: 'PropertyState',
+      column_name: 'test'
+    }
+  ];
+
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_settings_controller() {
+  function create_settings_controller(property_columns = default_property_columns) {
     controller('organization_settings_controller', {
       $scope: ctrl_scope,
       all_columns: {
@@ -101,22 +118,7 @@ describe('controller: organization_settings_controller', () => {
       audit_template_configs_payload: [],
       property_column_names: { column_name: 'test', display_name: 'test' },
       taxlot_column_names: { column_name: 'test', display_name: 'test' },
-      property_columns: [
-        {
-          id: 500,
-          name: 'test',
-          organization_id: 4,
-          table_name: 'TaxLotState',
-          column_name: 'test'
-        },
-        {
-          id: 501,
-          name: 'test',
-          organization_id: 4,
-          table_name: 'PropertyState',
-          column_name: 'test'
-        }
-      ],
+      property_columns,
       facilities_plans: []
     });
   }
@@ -149,6 +151,36 @@ describe('controller: organization_settings_controller', () => {
     // expect(ctrl_scope.fields[0].checked).toEqual(true);
     // expect(ctrl_scope.fields[1].checked).toEqual(false);
     // expect(ctrl_scope.fields[0].title).toEqual('PM Property ID');
+  });
+
+  it('should sort the report axis column options by display name', () => {
+    // arrange: server order is non-extra-data (including derived) first, then extra data
+    create_settings_controller([
+      {
+        id: 1, displayName: 'Year Built', data_type: 'integer', is_extra_data: false
+      },
+      {
+        id: 2, displayName: 'TotalSiteEnergy', data_type: 'string', derived_column: 3, is_extra_data: false
+      },
+      {
+        id: 3, displayName: 'Address Line 1', data_type: 'string', is_extra_data: false
+      },
+      {
+        id: 4, displayName: 'Building Count', data_type: 'integer', is_extra_data: true
+      },
+      {
+        id: 5, displayName: 'area', data_type: 'area', is_extra_data: true
+      }
+    ]);
+
+    // act
+    ctrl_scope.$digest();
+
+    // assertions
+    expect(ctrl_scope.available_x_columns().map((c) => c.displayName)).toEqual(['Address Line 1', 'area', 'Building Count', 'TotalSiteEnergy', 'Year Built']);
+    expect(ctrl_scope.available_y_columns().map((c) => c.displayName)).toEqual(['area', 'Building Count', 'TotalSiteEnergy', 'Year Built']);
+    // the original column order is left unchanged
+    expect(ctrl_scope.columns.map((c) => c.id)).toEqual([1, 2, 3, 4, 5]);
   });
   // it('should select all', function() {
   //     // arrange
