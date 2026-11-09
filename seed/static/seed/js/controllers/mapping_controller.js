@@ -280,6 +280,8 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         // Keep the working mappings, but the deleted profile can no longer be the applied one
         if ($scope.current_profile.id === profile.id) {
           $scope.current_profile = $scope.profiles[0];
+          // The kept mappings are no longer saved in any profile, so warn before another profile replaces them
+          $scope.mappings_change_possible = true;
         }
         $scope.dropdown_selected_profile = $scope.current_profile;
         $scope.profile_change_possible = false;

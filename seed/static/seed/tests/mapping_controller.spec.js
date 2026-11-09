@@ -32,7 +32,7 @@ describe('controller: mapping_controller', () => {
   });
 
   // this is outside the beforeEach so it can be configured by each unit test
-  function create_mapping_controller() {
+  function create_mapping_controller(column_mapping_profiles_payload = []) {
     const mock_datasets = [
       {
         name: 'DC 2013 data',
@@ -254,7 +254,7 @@ describe('controller: mapping_controller', () => {
       raw_columns_payload,
       first_five_rows_payload,
       matching_criteria_columns_payload: mock_matching_criteria_columns_payload,
-      column_mapping_profiles_payload: [],
+      column_mapping_profiles_payload,
       cycles: mock_cycles,
       inventory_service: mock_inventory_service,
       organization_payload: fake_organization_payload,
@@ -354,5 +354,141 @@ describe('controller: mapping_controller', () => {
     expect(duplicates_found).toBe(true);
     expect(mock_geocode_service.check_org_has_api_key).toHaveBeenCalled();
     expect(mock_organization_service.geocoding_columns).toHaveBeenCalled();
+  });
+
+  it('should list canonical columns before extra data columns in the 20-item typeahead (#4175)', () => {
+    // arrange: 25 extra data columns that sort alphabetically before the canonical column
+    const columns = [];
+    for (let i = 0; i < 25; i++) {
+      columns.push({ display_name: `${String.fromCharCode(65 + (i % 6))}${i} - Gross Floor Area (ft2)`, is_extra_data: true });
+    }
+    columns.push({ display_name: 'Gross Floor Area', is_extra_data: false });
+    columns.push({ display_name: 'Zz - Gross Floor Area (ft2)', is_extra_data: true });
+    mapping_controller_scope.mappable_property_columns = columns;
+    mapping_controller_scope.view_value = 'Gross Floor Area';
+
+    // act: same filter chain as the mapping.html typeahead
+    const matches = mapping_controller_scope.$eval("mappable_property_columns | filter:{display_name:view_value} | orderBy:'is_extra_data' | limitTo:20");
+
+    // assertions
+    expect(matches.length).toBe(20);
+    expect(matches[0].display_name).toBe('Gross Floor Area');
+    // extra data columns keep their original (alphabetical) order
+    expect(matches.slice(1).map((c) => c.display_name)).toEqual(columns.slice(0, 19).map((c) => c.display_name));
+  });
+
+  it('should warn when a Multiple Cycle Upload does not map year_ending (#4052)', () => {
+    create_mapping_controller();
+    mapping_controller_scope.$digest();
+    const col = mapping_controller_scope.mappings[0];
+    col.suggestion_table_name = 'PropertyState';
+    col.suggestion_column_name = 'pm_property_id';
+    col.is_omitted = false;
+
+    // not a multiple cycle upload: no warning
+    mapping_controller_scope.import_file.multiple_cycle_upload = false;
+    expect(mapping_controller_scope.year_ending_unmapped()).toBe(false);
+
+    // multiple cycle upload without a year_ending mapping: warn
+    mapping_controller_scope.import_file.multiple_cycle_upload = true;
+    expect(mapping_controller_scope.year_ending_unmapped()).toBe(true);
+
+    // year_ending mapped on a tax lot or omitted doesn't count
+    col.suggestion_column_name = 'year_ending';
+    col.suggestion_table_name = 'TaxLotState';
+    expect(mapping_controller_scope.year_ending_unmapped()).toBe(true);
+    col.suggestion_table_name = 'PropertyState';
+    col.is_omitted = true;
+    expect(mapping_controller_scope.year_ending_unmapped()).toBe(true);
+
+    // year_ending mapped on a property: no warning
+    col.is_omitted = false;
+    expect(mapping_controller_scope.year_ending_unmapped()).toBe(false);
+  });
+
+  describe('renaming and deleting column mapping profiles (#4974)', () => {
+    let mock_uib_modal;
+    let modal_result;
+
+    const fake_profiles = () => [
+      {
+        id: 11, name: 'Profile A', mappings: [], profile_type: 'Normal'
+      },
+      {
+        id: 12, name: 'Profile B', mappings: [], profile_type: 'Normal'
+      },
+      {
+        id: 13, name: 'BuildingSync Default', mappings: [], profile_type: 'BuildingSync Default'
+      }
+    ];
+
+    beforeEach(inject(($uibModal, $q) => {
+      mock_uib_modal = $uibModal;
+      spyOn(mock_uib_modal, 'open').and.callFake(() => ({ result: $q.resolve(modal_result) }));
+    }));
+
+    it('should only allow saved, non-BuildingSync Default profiles to be renamed or deleted', () => {
+      create_mapping_controller(fake_profiles());
+      const scope = mapping_controller_scope;
+
+      expect(scope.selected_profile_editable()).toBe(false);
+      scope.dropdown_selected_profile = scope.profiles[1];
+      expect(scope.selected_profile_editable()).toBe(true);
+      scope.dropdown_selected_profile = scope.profiles[3];
+      expect(scope.selected_profile_editable()).toBe(false);
+    });
+
+    it('should rename the profile selected in the dropdown', () => {
+      create_mapping_controller(fake_profiles());
+      const scope = mapping_controller_scope;
+      scope.dropdown_selected_profile = scope.profiles[2];
+      modal_result = 'Profile B renamed';
+
+      scope.rename_profile();
+      scope.$digest();
+
+      const modal_resolve = mock_uib_modal.open.calls.mostRecent().args[0].resolve;
+      expect(modal_resolve.action()).toBe('rename');
+      expect(modal_resolve.data().id).toBe(12);
+      expect(modal_resolve.org_id()).toBe(1);
+      expect(scope.profiles.map((p) => p.name)).toEqual(['<None selected>', 'Profile A', 'Profile B renamed', 'BuildingSync Default']);
+    });
+
+    it('should delete the selected profile and keep the applied profile', () => {
+      create_mapping_controller(fake_profiles());
+      const scope = mapping_controller_scope;
+      scope.current_profile = scope.profiles[1];
+      scope.dropdown_selected_profile = scope.profiles[2];
+      scope.profile_change_possible = true;
+      modal_result = undefined;
+
+      scope.remove_profile();
+      scope.$digest();
+
+      expect(mock_uib_modal.open.calls.mostRecent().args[0].resolve.action()).toBe('remove');
+      expect(scope.profiles.map((p) => p.id)).toEqual([0, 11, 13]);
+      expect(scope.current_profile.id).toBe(11);
+      expect(scope.dropdown_selected_profile.id).toBe(11);
+      expect(scope.profile_change_possible).toBe(false);
+      // the applied profile still holds the mappings, so they aren't unsaved
+      expect(scope.mappings_change_possible).toBeFalsy();
+    });
+
+    it('should reset the applied profile when it is deleted', () => {
+      create_mapping_controller(fake_profiles());
+      const scope = mapping_controller_scope;
+      scope.current_profile = scope.profiles[1];
+      scope.dropdown_selected_profile = scope.profiles[1];
+      modal_result = undefined;
+
+      scope.remove_profile();
+      scope.$digest();
+
+      expect(scope.profiles.map((p) => p.id)).toEqual([0, 12, 13]);
+      expect(scope.current_profile.id).toBe(0);
+      expect(scope.dropdown_selected_profile.id).toBe(0);
+      // the kept mappings are no longer saved in a profile, so applying another profile must warn first
+      expect(scope.mappings_change_possible).toBe(true);
+    });
   });
 });

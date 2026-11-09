@@ -158,10 +158,26 @@
         >
           <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
         </button>
-        <button class="btn btn-primary" type="button" ng-click="rename_profile()" ng-disabled="!selected_profile_editable()" tooltip-placement="bottom" uib-tooltip="Rename">
+        <button
+          class="btn btn-primary"
+          type="button"
+          ng-click="rename_profile()"
+          ng-disabled="!selected_profile_editable()"
+          tooltip-placement="bottom"
+          uib-tooltip="Rename"
+          aria-label="{$:: 'Rename' | translate $}"
+        >
           <i class="fa-solid fa-eraser" aria-hidden="true"></i>
         </button>
-        <button class="btn btn-danger" type="button" ng-click="remove_profile()" ng-disabled="!selected_profile_editable()" tooltip-placement="bottom" uib-tooltip="Delete">
+        <button
+          class="btn btn-danger"
+          type="button"
+          ng-click="remove_profile()"
+          ng-disabled="!selected_profile_editable()"
+          tooltip-placement="bottom"
+          uib-tooltip="Delete"
+          aria-label="{$:: 'Delete' | translate $}"
+        >
           <i class="fa-solid fa-xmark" aria-hidden="true"></i>
         </button>
         <button class="btn btn-info" type="button" ng-click="new_profile()" tooltip-placement="bottom" uib-tooltip="New">
