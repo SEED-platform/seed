@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import copy
+import math
 from typing import Any
 
 from django.core.exceptions import ValidationError
@@ -303,7 +304,7 @@ class DerivedColumn(models.Model):
             return None
 
         try:
-            return self._cached_evaluator.evaluate(merged_parameters)
+            result = self._cached_evaluator.evaluate(merged_parameters)
         except KeyError:
             # was missing one or more parameters
             return None
@@ -319,6 +320,15 @@ class DerivedColumn(models.Model):
                 f"    expression: {self.expression}\n"
                 f"    exception: {e}"
             ) from e
+
+        # Remove binary floating point noise (e.g. 0.1 + 0.2 == 0.30000000000000004)
+        # by rounding to 15 significant digits, the precision a float can represent exactly.
+        # Rounding can overflow values near the float limit to inf, so keep those unchanged
+        if isinstance(result, float) and math.isfinite(result):
+            rounded = float(f"{result:.15g}")
+            if math.isfinite(rounded):
+                return rounded
+        return result
 
     def check_for_source_columns_derived(self, inventory_state=None, merged_parameters=None):
         if merged_parameters is None:
