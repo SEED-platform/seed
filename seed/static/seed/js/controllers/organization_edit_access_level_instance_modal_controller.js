@@ -31,7 +31,8 @@ angular.module('SEED.controller.organization_edit_access_level_instance_modal', 
 
         organization_service.edit_organization_access_level_instance(org_id, $scope.instance_id, $scope.level_instance_name)
           .then(() => $uibModalInstance.close())
-          .catch((err) => { Notification.error(err); });
+          // Notification.error needs a string: an object is read as notification options and shows an empty message
+          .catch((err) => { Notification.error(err.data?.message || err.statusText || 'Failed to rename the access level instance'); });
       };
 
       $scope.cancel = () => {

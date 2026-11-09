@@ -48,7 +48,8 @@ angular.module('SEED.controller.organization_add_access_level_instance_modal', [
       $scope.create_new_level_instance = () => {
         organization_service.create_organization_access_level_instance(org_id, $scope.parent.id, $scope.new_level_instance_name)
           .then(() => $uibModalInstance.close())
-          .catch((err) => { Notification.error(err); });
+          // Notification.error needs a string: an object is read as notification options and shows an empty message
+          .catch((err) => { Notification.error(err.data?.message || err.statusText || 'Failed to add the access level instance'); });
       };
 
       $scope.cancel = () => {
