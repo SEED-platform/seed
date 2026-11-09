@@ -10,6 +10,7 @@ from pathlib import Path
 import xlrd
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_spectacular.utils import OpenApiResponse, extend_schema
@@ -64,6 +65,12 @@ access_level_tree_schema = {
         },
     },
 }
+
+
+def _lock_access_level_tree(org):
+    """Lock the organization's row until the end of the current transaction, so concurrent requests that add or
+    rename access level instances run their sibling-name check and write one at a time"""
+    Organization.objects.select_for_update().only("pk").get(pk=org.pk)
 
 
 @extend_schema(parameters=[AutoSchemaHelper.path_id_field("Organization ID", name="organization_pk")])
@@ -219,8 +226,21 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 {"status": "error", "message": "orgs `access_level_names` is not long enough"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # create
-        org.add_new_access_level_instance(parent_id, name)
+        with transaction.atomic():
+            _lock_access_level_tree(org)
+            # re-read the parent under the lock: get_children() uses its nested-set bounds, which a request that just
+            # added a child may have changed
+            parent.refresh_from_db()
+
+            # siblings share a hierarchical path, so their names must be unique
+            if AccessLevelInstance.objects.get_children(parent).filter(organization=org, name=name).exists():
+                return JsonResponse(
+                    {"status": "error", "message": "An access level instance with this name already exists under this parent"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            # create
+            org.add_new_access_level_instance(parent_id, name)
         result = {
             "access_level_names": org.access_level_names,
             "access_level_tree": org.get_access_tree(from_ali=org.root),  # root as requires owner.
@@ -480,8 +500,21 @@ class AccessLevelViewSet(viewsets.ViewSet):
                 {"status": "error", "message": "must pass name to edit the access level instance name"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        instance.name = name
-        instance.save()
+        with transaction.atomic():
+            _lock_access_level_tree(org)
+            # re-read the instance under the lock, so saving it can't write back a tree position changed meanwhile
+            instance.refresh_from_db()
+
+            # siblings share a hierarchical path, so their names must be unique. treebeard treats every organization's
+            # root as a sibling of the others, so only compare instances in this organization
+            if AccessLevelInstance.objects.get_siblings(instance).filter(organization=org, name=name).exclude(pk=instance.pk).exists():
+                return JsonResponse(
+                    {"status": "error", "message": "An access level instance with this name already exists under this parent"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            instance.name = name
+            instance.save()
         return JsonResponse({"status": "success"})
 
     @extend_schema(

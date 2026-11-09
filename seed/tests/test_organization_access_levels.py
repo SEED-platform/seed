@@ -7,13 +7,17 @@ import json
 import os
 import shutil
 import time
+from unittest.mock import patch
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse_lazy
 
 from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Organization, Property, TaxLot
 from seed.test_helpers.fake import FakePropertyFactory, FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase
+from seed.views.v3 import access_levels
 from seed.views.v3.access_levels import _uploads_subdir
 from seed.views.v3.uploads import get_upload_path
 
@@ -454,6 +458,90 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         result = self.client.post(url, data=json.dumps({"parent_id": self.org.root.pk, "name": "aunt"}), content_type="application/json")
         assert result.status_code == 201
         assert AccessLevelInstance.objects.filter(organization=self.org, name="aunt").exists()
+
+    def test_add_instance_rejects_duplicate_sibling_name(self):
+        self.org.access_level_names = ["root", "child", "grandchild"]
+        self.org.save()
+        url = reverse_lazy("api:v3:organization-access_levels-add-instance", args=[self.org.id])
+
+        result = self.client.post(url, data=json.dumps({"parent_id": self.org.root.pk, "name": "child"}), content_type="application/json")
+        assert result.status_code == 400
+        assert "already exists" in result.json()["message"]
+        assert AccessLevelInstance.objects.filter(organization=self.org, name="child").count() == 1
+
+        # the same name under a different parent is accepted
+        result = self.client.post(
+            url, data=json.dumps({"parent_id": self.child_level_instance.pk, "name": "child"}), content_type="application/json"
+        )
+        assert result.status_code == 201
+        assert AccessLevelInstance.objects.filter(organization=self.org, name="child").count() == 2
+
+    def test_edit_instance_rejects_duplicate_sibling_name(self):
+        sibling = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+
+        url = reverse_lazy("api:v3:organization-access_levels-edit-instance", args=[self.org.id, sibling.pk])
+        result = self.client.put(url, data=json.dumps({"name": "child"}), content_type="application/json")
+        assert result.status_code == 400
+        assert "already exists" in result.json()["message"]
+        sibling.refresh_from_db()
+        assert sibling.name == "sibling"
+
+        # saving an instance with its own name is still accepted
+        url = reverse_lazy("api:v3:organization-access_levels-edit-instance", args=[self.org.id, self.child_level_instance.pk])
+        result = self.client.put(url, data=json.dumps({"name": "child"}), content_type="application/json")
+        assert result.status_code == 200
+
+        # roots of other organizations are not siblings
+        other_org = Organization.objects.create(name="other org")
+        url = reverse_lazy("api:v3:organization-access_levels-edit-instance", args=[self.org.id, self.org.root.pk])
+        result = self.client.put(url, data=json.dumps({"name": other_org.root.name}), content_type="application/json")
+        assert result.status_code == 200
+        assert AccessLevelInstance.objects.get(pk=self.org.root.pk).name == other_org.root.name
+
+    def test_add_instance_rejects_duplicate_added_while_waiting_for_lock(self):
+        """A request that read the parent before another request added a child with the same name must still see
+        that child once it holds the lock"""
+        self.org.access_level_names = ["root", "child", "grandchild"]
+        self.org.save()
+        parent = self.child_level_instance  # has no children, so its nested-set range is empty until one is added
+        lock = access_levels._lock_access_level_tree
+
+        def lock_after_concurrent_add(org):
+            lock(org)
+            # the competing request committed its child after this request read the parent
+            self.org.add_new_access_level_instance(parent.pk, "grandchild")
+
+        url = reverse_lazy("api:v3:organization-access_levels-add-instance", args=[self.org.id])
+        with patch.object(access_levels, "_lock_access_level_tree", side_effect=lock_after_concurrent_add):
+            result = self.client.post(url, data=json.dumps({"parent_id": parent.pk, "name": "grandchild"}), content_type="application/json")
+        assert result.status_code == 400
+        assert "already exists" in result.json()["message"]
+        assert AccessLevelInstance.objects.filter(organization=self.org, name="grandchild").count() == 1
+
+    def test_add_and_edit_instance_lock_the_organization(self):
+        """Adding and renaming instances lock the organization's row, so concurrent requests can't both pass the
+        sibling-name check"""
+        org_table = Organization._meta.db_table
+
+        def locks_organization(queries):
+            return any("FOR UPDATE" in query["sql"] and f'"{org_table}"' in query["sql"] for query in queries)
+
+        url = reverse_lazy("api:v3:organization-access_levels-add-instance", args=[self.org.id])
+        with CaptureQueriesContext(connection) as context:
+            result = self.client.post(
+                url, data=json.dumps({"parent_id": self.org.root.pk, "name": "locked"}), content_type="application/json"
+            )
+        assert result.status_code == 201
+        assert locks_organization(context.captured_queries)
+
+        instance = AccessLevelInstance.objects.get(organization=self.org, name="locked")
+        url = reverse_lazy("api:v3:organization-access_levels-edit-instance", args=[self.org.id, instance.pk])
+        with CaptureQueriesContext(connection) as context:
+            result = self.client.put(url, data=json.dumps({"name": "renamed"}), content_type="application/json")
+        assert result.status_code == 200
+        assert locks_organization(context.captured_queries)
+        instance.refresh_from_db()
+        assert instance.name == "renamed"
 
     def test_add_alis_from_file_rejects_files_outside_uploads(self):
         self.org.access_level_names = ["top level", "Sector", "Sub Sector", "Partner"]
