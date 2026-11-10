@@ -13,7 +13,8 @@ from collections.abc import Callable
 from typing import Any, Literal
 
 from django.apps import apps
-from django.core.exceptions import ValidationError
+from django.contrib.gis.db.models import GeometryField
+from django.core.exceptions import FieldDoesNotExist, ValidationError
 from django.db import IntegrityError, connection, models, transaction
 from django.db.models import Count, Q
 from django.db.models.signals import pre_save
@@ -889,6 +890,17 @@ class Column(models.Model):
         """
         return Column.cast_column_value(self.data_type, value)
 
+    @property
+    def is_geometry(self) -> bool:
+        """Whether the column is a canonical PostGIS geography field, such as a footprint"""
+        if self.is_extra_data or self.table_name not in {"PropertyState", "TaxLotState"}:
+            return False
+        try:
+            field = apps.get_model("seed", self.table_name)._meta.get_field(self.column_name)
+        except FieldDoesNotExist:
+            return False
+        return isinstance(field, GeometryField)
+
     def save(self, *args, **kwargs):
         if self.column_name and not self.column_description:
             self.column_description = self.column_name
@@ -1730,6 +1742,8 @@ def validate_model(sender, **kwargs):
     instance = kwargs["instance"]
     if instance.is_extra_data and instance.is_matching_criteria:
         raise IntegrityError("Extra data columns can't be matching criteria.")
+    if instance.is_matching_criteria and instance.is_geometry:
+        raise IntegrityError("Geometry columns can't be matching criteria.")
 
     if "raw" in kwargs and not kwargs["raw"]:
         instance.full_clean()

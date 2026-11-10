@@ -213,6 +213,19 @@ class TestColumns(TestCase):
         self.assertTrue(rextra_data_column.is_extra_data)
         self.assertFalse(rextra_data_column.is_matching_criteria)
 
+    def test_geometry_column_cant_be_matching_criteria(self):
+        # Geometry columns (footprints) can't be matching criteria (#4358)
+        footprint_column = Column.objects.get(organization=self.fake_org, table_name="TaxLotState", column_name="taxlot_footprint")
+        self.assertTrue(footprint_column.is_geometry)
+        self.assertFalse(Column.objects.get(organization=self.fake_org, table_name="TaxLotState", column_name="address_line_1").is_geometry)
+
+        footprint_column.is_matching_criteria = True
+        with pytest.raises(IntegrityError):
+            footprint_column.save()
+
+        footprint_column.refresh_from_db()
+        self.assertFalse(footprint_column.is_matching_criteria)
+
     def test_column_has_description(self):
         org1 = Organization.objects.create(name="org1")
         # Raw columns don't have a table name!

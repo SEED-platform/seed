@@ -527,6 +527,13 @@ class TestOrganizationPreviewViews(DataMappingBaseTestCase):
         raw_result = self.client.post(url, post_params, content_type="application/json")
         self.assertEqual(404, raw_result.status_code)
 
+    def test_whole_org_match_merge_link_preview_endpoint_rejects_geometry_columns(self):
+        url = reverse("api:v3:organizations-match-merge-link-preview", args=[self.org.id])
+        post_params = json.dumps({"inventory_type": "properties", "add": ["property_footprint"], "remove": []})
+        raw_result = self.client.post(url, post_params, content_type="application/json")
+        self.assertEqual(400, raw_result.status_code)
+        self.assertEqual("Geometry columns can't be matching criteria", raw_result.json()["message"])
+
     def test_whole_org_match_merge_link_preview_endpoint_properties(self):
         # Cycle 1 / ImportFile 1 - Create 1 property
         base_property_details = {

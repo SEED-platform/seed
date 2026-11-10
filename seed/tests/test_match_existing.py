@@ -631,6 +631,46 @@ class TestMatchMergeLink(DataMappingBaseTestCase):
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
         self.taxlot_state_factory = FakeTaxLotStateFactory(organization=self.org)
 
+    def test_match_merge_link_with_geometry_matching_criteria(self):
+        """A footprint saved as matching criteria before that was disallowed matches without a PostGIS error (#4358)"""
+        footprint_1 = "POLYGON ((-105.1 39.7, -105.0 39.7, -105.0 39.8, -105.1 39.8, -105.1 39.7))"
+        footprint_2 = "POLYGON ((-104.1 38.7, -104.0 38.7, -104.0 38.8, -104.1 38.8, -104.1 38.7))"
+        Column.objects.filter(organization=self.org, table_name="PropertyState").update(is_matching_criteria=False)
+        Column.objects.filter(organization=self.org, table_name="PropertyState", column_name="property_footprint").update(
+            is_matching_criteria=True
+        )
+
+        base_property_details = {
+            "import_file_id": self.import_file_1.id,
+            "data_state": DATA_STATE_MAPPING,
+            "no_default_data": False,
+            "raw_access_level_instance_id": self.org.root.id,
+        }
+        ps_1 = self.property_state_factory.get_property_state(**base_property_details, city="City 1", property_footprint=footprint_1)
+        ps_2 = self.property_state_factory.get_property_state(**base_property_details, city="City 2", property_footprint=footprint_2)
+        self.import_file_1.mapping_done = True
+        self.import_file_1.save()
+        geocode_and_match_buildings_task(self.import_file_1.id)
+
+        base_property_details["import_file_id"] = self.import_file_2.id
+        ps_3 = self.property_state_factory.get_property_state(**base_property_details, city="City 3", property_footprint=footprint_1)
+        self.import_file_2.mapping_done = True
+        self.import_file_2.save()
+        geocode_and_match_buildings_task(self.import_file_2.id)
+
+        # Importing links only the records with the same footprint
+        view_1, view_2, view_3 = (PropertyView.objects.get(state_id=ps.id) for ps in (ps_1, ps_2, ps_3))
+        self.assertEqual(view_1.property_id, view_3.property_id)
+        self.assertNotEqual(view_1.property_id, view_2.property_id)
+
+        # Matching an existing record compares footprints too, rather than raising a PostGIS ValueError
+        match_merge_link(view_2.state, self.org.root, view_2.cycle)
+        _, link_count, _ = match_merge_link(view_1.state, self.org.root, view_1.cycle)
+        self.assertEqual(link_count, 1)
+        view_1, view_2, view_3 = (PropertyView.objects.get(pk=view.pk) for view in (view_1, view_2, view_3))
+        self.assertEqual(view_1.property_id, view_3.property_id)
+        self.assertNotEqual(view_1.property_id, view_2.property_id)
+
     def test_match_merge_link_for_properties(self):
         """
         In this context, a "set" includes a -State, -View, and canonical record.

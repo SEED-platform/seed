@@ -1259,6 +1259,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         provided_columns = Column.objects.filter(column_name__in=add.union(remove), organization_id=org.id, table_name=state_class_name)
         if provided_columns.count() != (len(add) + len(remove)):
             return JsonResponse({"status": "error", "message": "Invalid column names provided."}, status=status.HTTP_404_NOT_FOUND)
+        if any(column.is_geometry for column in provided_columns if column.column_name in add):
+            return JsonResponse(
+                {"status": "error", "message": "Geometry columns can't be matching criteria"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         proposed_columns = current_columns.union(add).difference(remove)
 
