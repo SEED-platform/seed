@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import sys
 from json import dumps
 from string import Template, ascii_letters, digits
 
@@ -591,6 +592,29 @@ class TestDerivedColumns(TestCase):
 
         # -- Assert
         self.assertEqual(200, result)
+
+    def test_derived_column_evaluate_removes_floating_point_noise(self):
+        """Test that `evaluate` does not return binary floating point artifacts (#4865)"""
+        # -- Setup
+        expression = "$a + 0.2"
+        column_parameters = {
+            "a": {
+                "source_column": self.col_factory("foo", is_extra_data=True),
+                "value": 0.1,
+            },
+        }
+
+        models = self._derived_column_for_property_factory(expression, column_parameters)
+        derived_column = models["derived_column"]
+        property_state = models["property_state"]
+
+        # -- Act / Assert
+        # the raw float result is 0.30000000000000004
+        self.assertEqual(0.3, derived_column.evaluate(property_state))
+        self.assertEqual(0.3, derived_column.evaluate(parameters={"a": 0.1}))
+        self.assertEqual(1.43456789012, derived_column.evaluate(parameters={"a": 1.23456789012}))
+        # values that rounding would overflow to infinity are returned unchanged
+        self.assertEqual(sys.float_info.max, derived_column.evaluate(parameters={"a": sys.float_info.max}))
 
     def test_derived_column_evaluation_with_derived_column_as_source_column(self):
         """
