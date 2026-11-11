@@ -10,13 +10,21 @@ intercepted/mocked by VCR. To execute an actual HTTP request/response
 (and not use mocked data), delete the vcr_cassette files.
 """
 
+from unittest import mock
+
 import pytest
+import requests
 import vcr
 from django.conf import settings
 from django.contrib.gis.geos import Point, Polygon
 from django.test import TestCase
+from django.utils.translation import gettext
 
+from seed.data_importer.models import ImportFile, ImportRecord
+from seed.data_importer.tasks import _geocode_properties_or_tax_lots
 from seed.landing.models import SEEDUser as User
+from seed.lib.progress_data.progress_data import ProgressData
+from seed.models import DATA_STATE_MAPPING
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
@@ -457,6 +465,61 @@ class GeocodeAddresses(TestCase):
 
             with pytest.raises(MapQuestAPIKeyError):
                 geocode_buildings(properties)
+
+    def _geocodable_property(self, **kwargs):
+        property_details = self.property_state_factory.get_details()
+        property_details["organization_id"] = self.org.id
+        property_details["address_line_1"] = "3001 Brighton Blvd"
+        property_details["address_line_2"] = "suite 2693"
+        property_details["city"] = "Denver"
+        property_details["state"] = "Colorado"
+        property_details["postal_code"] = "80216"
+        property_details.update(kwargs)
+        return PropertyState.objects.create(**property_details)
+
+    @staticmethod
+    def _mapquest_response(status_code, body, content_type="text/html"):
+        response = requests.Response()
+        response.status_code = status_code
+        response._content = body.encode("utf-8")
+        response.headers["Content-Type"] = content_type
+        return response
+
+    def test_geocode_buildings_raises_api_key_error_for_unexpected_mapquest_responses(self):
+        properties = PropertyState.objects.filter(pk=self._geocodable_property().id)
+        unexpected_responses = [
+            self._mapquest_response(200, "<html><body>The AppKey submitted with this request is invalid.</body></html>"),
+            self._mapquest_response(400, "Bad Request"),
+            self._mapquest_response(500, "Internal Server Error"),
+            self._mapquest_response(200, '{"info": {"statuscode": 403}}', content_type="application/json"),
+            self._mapquest_response(200, "[]", content_type="application/json"),
+        ]
+        for response in unexpected_responses:
+            with (
+                self.subTest(status_code=response.status_code, body=response.text),
+                mock.patch("seed.utils.geocode.requests.get", return_value=response),
+                pytest.raises(MapQuestAPIKeyError) as error,
+            ):
+                geocode_buildings(properties)
+            self.assertEqual(str(error.value), gettext("FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"))
+
+    def test_geocoding_during_matching_finishes_progress_with_error_for_non_json_mapquest_response(self):
+        cycle = self.org.cycles.first()
+        import_record = ImportRecord.objects.create(
+            owner=self.user, last_modified_by=self.user, super_organization=self.org, access_level_instance=self.org.root
+        )
+        import_file = ImportFile.objects.create(import_record=import_record, cycle=cycle)
+        self._geocodable_property(import_file=import_file, data_state=DATA_STATE_MAPPING)
+        progress_data = ProgressData(func_name="match_buildings", unique_id=import_file.id)
+
+        response = self._mapquest_response(200, "<html><body>The AppKey submitted with this request is invalid.</body></html>")
+        with mock.patch("seed.utils.geocode.requests.get", return_value=response), pytest.raises(MapQuestAPIKeyError):
+            _geocode_properties_or_tax_lots(import_file.id, progress_data.key)
+
+        result = ProgressData.from_key(progress_data.key).result()
+        self.assertEqual(result["status"], "error")
+        self.assertEqual(result["progress"], 100)
+        self.assertEqual(result["message"], gettext("FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"))
 
     def test_geocode_buildings_doesnt_run_an_api_request_when_an_api_key_is_not_provided(self):
         self.org_no_key, _, _ = create_organization(self.user)
