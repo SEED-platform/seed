@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import logging
 
+from django.contrib.auth import SESSION_KEY, update_session_auth_hash
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
@@ -547,6 +548,9 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             return JsonResponse({"status": "error", "message": e.messages[0]}, status=status.HTTP_400_BAD_REQUEST)
         user.set_password(p1)
         user.save()
+        # Keep the user logged in to their current session (JWT and API key callers have no session to update)
+        if request.session.get(SESSION_KEY) == str(user.pk):
+            update_session_auth_hash(request, user)
         return JsonResponse({"status": "success"})
 
     @method_decorator(

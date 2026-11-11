@@ -3,13 +3,18 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import base64
 import contextlib
 import json
 from datetime import date
+from unittest import mock
 
 import pytest
+from django.conf import settings
+from django.contrib.auth import update_session_auth_hash
 from django.test import TestCase
 from django.urls import NoReverseMatch, reverse_lazy
+from rest_framework_simplejwt.tokens import AccessToken
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.exceptions import InsufficientPermissionError
@@ -806,6 +811,55 @@ class AccountsViewTests(TestCase):
                 "status": "success",
             },
         )
+
+    def test_set_password_keeps_session(self):
+        """changing the password does not log the user out of their current session"""
+        password_payload = {"current_password": "test_pass", "password_1": "new passwordD3", "password_2": "new passwordD3"}
+        resp = self.client.put(
+            reverse_lazy("api:v3:user-set-password", args=[self.user.pk]),
+            json.dumps(password_payload),
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+        resp = self.client.get(reverse_lazy("api:v3:user-current"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.json()["id"], self.user.pk)
+
+    def test_set_password_without_a_matching_session_leaves_sessions_alone(self):
+        """JWT and API key callers have no session to update, and must not update another user's session"""
+        other_user_details = {"username": "other_user@demo.com", "password": "test_pass", "email": "other_user@demo.com"}
+        other_user = User.objects.create_user(**other_user_details)
+        self.user.generate_key()
+        api_key = base64.urlsafe_b64encode(f"{self.user.username}:{self.user.api_key}".encode()).decode()
+        cases = (
+            ("API key, no session", {"Authorization": f"Basic {api_key}"}, False),
+            ("Bearer token, no session", {"Authorization": f"Bearer {AccessToken.for_user(self.user)}"}, False),
+            ("Bearer token, another user's session", {"Authorization": f"Bearer {AccessToken.for_user(self.user)}"}, True),
+        )
+        url = reverse_lazy("api:v3:user-set-password", args=[self.user.pk])
+        current_password = "test_pass"
+        for i, (description, headers, other_session) in enumerate(cases):
+            with self.subTest(description):
+                self.client.logout()
+                if other_session:
+                    self.client.login(**other_user_details)
+                new_password = f"new passwordD3{i}"
+                payload = {"current_password": current_password, "password_1": new_password, "password_2": new_password}
+                with mock.patch("seed.views.v3.users.update_session_auth_hash", wraps=update_session_auth_hash) as update_hash:
+                    resp = self.client.put(url, json.dumps(payload), content_type="application/json", headers=headers)
+                self.assertEqual(resp.status_code, 200, resp.content)
+                self.user.refresh_from_db()
+                self.assertTrue(self.user.check_password(new_password))
+                current_password = new_password
+
+                update_hash.assert_not_called()
+                self.assertNotIn(settings.SESSION_COOKIE_NAME, resp.cookies)
+                if other_session:
+                    # the other user's session is still valid
+                    resp = self.client.get(reverse_lazy("api:v3:user-current"))
+                    self.assertEqual(resp.status_code, 200)
+                    self.assertEqual(resp.json()["id"], other_user.pk)
 
     def test_set_password_only_put(self):
         """test for set_password only allowing put"""
