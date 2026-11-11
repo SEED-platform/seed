@@ -255,18 +255,22 @@ def _address_geocoding_results(id_addresses, mapquest_api_key):
         request_url = f"https://www.mapquestapi.com/geocoding/v1/batch?&inFormat=json&outFormat=json&thumbMaps=false&maxResults=2&json={locations_json}&key={mapquest_api_key}"
 
         response = requests.get(request_url, timeout=300)
+        # Catch the invalid API key error before parsing the response
+        if response.status_code == 401:
+            raise MapQuestAPIKeyError(_("FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"))
+
+        # Invalid, expired, or over-limit keys can return a non-JSON body (with a 403 or another status) or JSON
+        # without results.
         try:
-            # Catch the invalid API key error before parsing the response
-            if response.status_code == 401:
-                raise MapQuestAPIKeyError(_("FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"))
+            payload = response.json()
+        except ValueError as e:
+            raise MapQuestAPIKeyError(_("FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR")) from e
 
-            results += response.json().get("results")
+        batch_results = payload.get("results") if isinstance(payload, dict) else None
+        if not isinstance(batch_results, list):
+            raise MapQuestAPIKeyError(_("FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR"))
 
-        except Exception as e:
-            if response.status_code == 403:
-                raise MapQuestAPIKeyError(_("FAILED_GEOCODE_MAPQUEST_API_KEY_ERROR")) from e
-            else:
-                raise
+        results += batch_results
 
     return {_response_address(result): _analyze_location(result) for result in results}
 
