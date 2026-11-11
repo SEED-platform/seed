@@ -410,6 +410,26 @@ class ColumnsViewPermissionsTests(AccessLevelBaseTestCase, DeleteModelsTestCase)
         self.column.refresh_from_db()
         assert self.column.display_name == "changed"
 
+    def test_column_update_multiple_geometry_matching_criteria(self):
+        footprint = Column.objects.get(organization=self.org, table_name="PropertyState", column_name="property_footprint")
+        url = reverse_lazy("api:v3:columns-update-multiple") + "?organization_id=" + str(self.org.id)
+        self.login_as_root_member()
+
+        # geometry columns (footprints) can't be matching criteria
+        payload = {"table_name": "PropertyState", "changes": {footprint.id: {"is_matching_criteria": True}}}
+        response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 400
+        footprint.refresh_from_db()
+        assert not footprint.is_matching_criteria
+
+        # one saved as matching criteria before this check can be cleared
+        Column.objects.filter(pk=footprint.pk).update(is_matching_criteria=True)
+        payload = {"table_name": "PropertyState", "changes": {footprint.id: {"is_matching_criteria": False}}}
+        response = self.client.post(url, data=json.dumps(payload), content_type="application/json")
+        assert response.status_code == 200
+        footprint.refresh_from_db()
+        assert not footprint.is_matching_criteria
+
     def test_column_mappable_invalid_inventory_type(self):
         url = reverse_lazy("api:v3:columns-mappable")
         self.login_as_child_member()

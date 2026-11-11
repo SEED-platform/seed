@@ -129,6 +129,8 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
 
     $scope.matching_status = (column) => {
       if (column.is_extra_data) return 'ineligible';
+      // Geometry columns can't be matching criteria; still allow clearing one saved before that was disallowed
+      if (column.data_type === 'geometry' && !initial_matching_ids.includes(column.id)) return 'ineligible';
       if ($scope.org.access_level_names.length > 1 && $scope.org.inventory_count && initial_matching_ids.includes(column.id)) return 'locked';
       return 'eligible';
     };
@@ -140,7 +142,7 @@ angular.module('SEED.controller.column_settings', []).controller('column_setting
       if (($scope.matching_status(column) === 'eligible') && (!column.is_matching_criteria)) {
         return true;
       }
-      if ($scope.matching_status(column) === 'ineligible' && column.is_extra_data) {
+      if ($scope.matching_status(column) === 'ineligible') {
         return true;
       }
       return false;

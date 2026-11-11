@@ -340,6 +340,15 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
                 {"status": "error", "message": f"Column changes must be objects that do not change {sorted(PROTECTED_COLUMN_ATTRIBUTES)}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        # Columns are saved in a background task, so reject geometry matching criteria up front
+        columns = Column.objects.filter(organization_id=org_id, pk__in=changes).in_bulk()
+        if any(
+            attributes.get("is_matching_criteria", columns[int(pk)].is_matching_criteria) and columns[int(pk)].is_geometry
+            for pk, attributes in changes.items()
+        ):
+            return JsonResponse(
+                {"status": "error", "message": "Geometry columns can't be matching criteria"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         key = "".join(str(x) for x in changes)
         result = tasks.update_multiple_columns(key, table_name, org_id, changes)

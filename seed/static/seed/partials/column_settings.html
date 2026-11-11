@@ -272,7 +272,7 @@
                 <input type="checkbox" ng-checked="column.is_matching_criteria" class="no-click" ng-disabled="true" />
               </td>
               <td class="text-center" ng-if="::matching_status(column) == 'ineligible'">
-                <span ng-if="column.is_extra_data" translate>Ineligible</span>
+                <span translate>Ineligible</span>
               </td>
               <td class="text-center" ng-if="::org.comstock_enabled">
                 <select class="form-control input-sm" ng-model="column.comstock_mapping" ng-options="type.id as type.label for type in ::comstock_types" ng-change="comstockModified(column)"></select>
