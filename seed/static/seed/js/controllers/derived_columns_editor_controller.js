@@ -139,17 +139,23 @@ angular.module('SEED.controller.derived_columns_editor', []).controller('derived
     // Recursion exists when the source column (the definition) contains a reference to itself
     // a = b
     // b = a ----> b = b
+    const inventory_columns_payload = () => ($scope.derived_column.inventory_type === 'Property' ? property_columns_payload : taxlot_columns_payload);
+
     const check_for_circular_definition = (source_column) => {
-      if (!source_column.derived_column) {
+      // a derived column that hasn't been created yet can't be referenced by other columns, so it can't be circular
+      if (!source_column || !source_column.derived_column || !$scope.derived_column.id) {
         return false;
       }
       if (source_column.derived_column === $scope.derived_column.id) {
         return true;
       }
       const source_derived_column = $scope.derived_columns.find((dc) => dc.id === source_column.derived_column);
+      const current_column = inventory_columns_payload().find((col) => col.derived_column === $scope.derived_column.id);
+      if (!source_derived_column || !current_column) {
+        return false;
+      }
       const nested_derived_columns = check_parameters_for_nested_derived_columns(source_derived_column.parameters);
 
-      const current_column = property_columns_payload.find((col) => col.derived_column === $scope.derived_column.id);
       // if the current column has been found in the definition of any of the source_column's nested derived columns, recursion has occurred.
       return nested_derived_columns.includes(current_column.id);
     };
@@ -158,9 +164,9 @@ angular.module('SEED.controller.derived_columns_editor', []).controller('derived
         if (!param.source_column) {
           return;
         }
-        const source_col = property_columns_payload.find((col) => col.id === param.source_column);
+        const source_col = inventory_columns_payload().find((col) => col.id === param.source_column);
         // is source col a derived col?
-        if (source_col.derived_column) {
+        if (source_col && source_col.derived_column) {
           if (nested_derived_column_ids.includes(source_col.id)) {
             return nested_derived_column_ids;
           }
@@ -169,7 +175,9 @@ angular.module('SEED.controller.derived_columns_editor', []).controller('derived
 
           const child_derived_col = $scope.derived_columns.find((dc) => dc.id === source_col.derived_column);
           // use recursion to find all nested (related) derived columns
-          check_parameters_for_nested_derived_columns(child_derived_col.parameters, nested_derived_column_ids);
+          if (child_derived_col) {
+            check_parameters_for_nested_derived_columns(child_derived_col.parameters, nested_derived_column_ids);
+          }
         }
       });
       return nested_derived_column_ids;
