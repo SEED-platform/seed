@@ -14,7 +14,7 @@ from django.test.utils import CaptureQueriesContext
 from django.urls import reverse_lazy
 
 from seed.lib.superperms.orgs.models import AccessLevelInstance
-from seed.models import Organization, Property, TaxLot
+from seed.models import Column, Organization, Property, TaxLot
 from seed.test_helpers.fake import FakePropertyFactory, FakePropertyViewFactory
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.views.v3 import access_levels
@@ -173,6 +173,24 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         assert raw_result.status_code == 400
         assert "pm_property_id" in json.loads(raw_result.content)["message"]
         assert Organization.objects.get(pk=self.org.id).access_level_names == ["root", "child"]
+
+    def test_edit_access_level_names_rejected_names_keep_deleted_levels(self):
+        # removing a level deletes its instances, but not when the new names are rejected
+        url = reverse_lazy("api:v3:organization-access_levels-access-level-names", args=[self.org.id])
+        raw_result = self.client.post(url, data=json.dumps({"access_level_names": ["pm_property_id"]}), content_type="application/json")
+        assert raw_result.status_code == 400
+        assert Organization.objects.get(pk=self.org.id).access_level_names == ["root", "child"]
+        assert AccessLevelInstance.objects.filter(pk=self.child_level_instance.pk).exists()
+
+    def test_edit_access_level_names_ignores_access_level_mapping_columns(self):
+        # importing access level data creates a mapping column named after the access level, with a blank table_name
+        Column.objects.create(organization=self.org, table_name="", column_name="child", is_extra_data=False)
+        url = reverse_lazy("api:v3:organization-access_levels-access-level-names", args=[self.org.id])
+        raw_result = self.client.post(
+            url, data=json.dumps({"access_level_names": ["root", "child", "grandchild"]}), content_type="application/json"
+        )
+        assert raw_result.status_code == 200
+        assert Organization.objects.get(pk=self.org.id).access_level_names == ["root", "child", "grandchild"]
 
     def test_add_new_access_level_instance(self):
         url = reverse_lazy("api:v3:organization-access_levels-add-instance", args=[self.org.id])
@@ -554,6 +572,18 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         assert locks_organization(context.captured_queries)
         instance.refresh_from_db()
         assert instance.name == "renamed"
+
+        # removing a level locks the organization before deleting its instances
+        url = reverse_lazy("api:v3:organization-access_levels-access-level-names", args=[self.org.id])
+        with CaptureQueriesContext(connection) as context:
+            result = self.client.post(url, data=json.dumps({"access_level_names": ["root"]}), content_type="application/json")
+        assert result.status_code == 200
+        ali_table = AccessLevelInstance._meta.db_table
+        sqls = [query["sql"] for query in context.captured_queries]
+        lock = next(i for i, sql in enumerate(sqls) if "FOR UPDATE" in sql and f'"{org_table}"' in sql)
+        delete = next(i for i, sql in enumerate(sqls) if sql.startswith("DELETE") and f'"{ali_table}"' in sql)
+        assert lock < delete
+        assert not AccessLevelInstance.objects.filter(organization=self.org, depth__gt=1).exists()
 
     def test_add_alis_from_file_rejects_files_outside_uploads(self):
         self.org.access_level_names = ["top level", "Sector", "Sub Sector", "Partner"]

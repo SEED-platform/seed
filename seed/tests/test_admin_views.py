@@ -9,6 +9,8 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
+from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.test import TestCase
 from django.urls import reverse, reverse_lazy
 from django.utils.encoding import force_bytes
@@ -188,6 +190,11 @@ class AdminViewsTest(TestCase):
         res = self._post_json(reverse_lazy("api:v3:organizations-sub-org", args=[org.pk]), payload)
         self.assertEqual(res.body, {"status": "error", "message": "Organization name cannot match a SEED column name"})
 
+        self.assertEqual(list(Organization.objects.values_list("name", flat=True)), ["Parent Org"])
+
+        # the create_suborg_user command reports the rejection instead of claiming success
+        with pytest.raises(CommandError, match="Organization name cannot match a SEED column name"):
+            call_command("create_suborg_user", username=self.admin_user.username, parent_org="Parent Org", suborg="State")
         self.assertEqual(list(Organization.objects.values_list("name", flat=True)), ["Parent Org"])
 
     def test_signup_process(self):

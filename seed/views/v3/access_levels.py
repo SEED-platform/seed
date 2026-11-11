@@ -292,14 +292,16 @@ class AccessLevelViewSet(viewsets.ViewSet):
         if any(n == "" for n in new_access_level_names):
             return JsonResponse({"status": "error", "message": 'Access Level Instance may not be ""'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # delete alis at deleted depths
+        # delete alis at deleted depths and save the names together, so rejected names don't delete any alis
         depth = len(new_access_level_names)
-        AccessLevelInstance.objects.filter(organization=org, depth__gt=depth).delete()
-
-        # save names
-        org.access_level_names = new_access_level_names
         try:
-            org.save()
+            with transaction.atomic():
+                # lock the tree before deleting in the same order as adding and renaming instances so they can't deadlock
+                _lock_access_level_tree(org)
+                org.refresh_from_db()
+                AccessLevelInstance.objects.filter(organization=org, depth__gt=depth).delete()
+                org.access_level_names = new_access_level_names
+                org.save()
         except ValueError as e:
             return JsonResponse(
                 {
