@@ -162,6 +162,18 @@ class TestOrganizationViews(AccessLevelBaseTestCase):
         )
         assert raw_result.status_code == 400
 
+    def test_edit_access_level_names_column_name_collision_with_column_name(self):
+        # Imports map to the underlying column name, so it cannot be an access level name either
+        url = reverse_lazy("api:v3:organization-access_levels-access-level-names", args=[self.org.id])
+        raw_result = self.client.post(
+            url,
+            data=json.dumps({"access_level_names": ["root", "pm_property_id"]}),
+            content_type="application/json",
+        )
+        assert raw_result.status_code == 400
+        assert "pm_property_id" in json.loads(raw_result.content)["message"]
+        assert Organization.objects.get(pk=self.org.id).access_level_names == ["root", "child"]
+
     def test_add_new_access_level_instance(self):
         url = reverse_lazy("api:v3:organization-access_levels-add-instance", args=[self.org.id])
         raw_result = self.client.post(

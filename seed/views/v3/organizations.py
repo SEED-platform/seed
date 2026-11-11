@@ -78,7 +78,7 @@ from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import get_matching_criteria_column_names, match_merge_link, whole_org_match_merge_link
 from seed.utils.merge import merge_properties
-from seed.utils.organizations import create_organization, create_suborganization, set_default_2fa_method
+from seed.utils.organizations import create_organization, create_suborganization, org_name_conflicts_with_columns, set_default_2fa_method
 from seed.utils.properties import pair_unpair_property_taxlot
 from seed.utils.public import public_feed
 from seed.utils.salesforce import toggle_salesforce_sync
@@ -710,6 +710,11 @@ class OrganizationViewSet(viewsets.ViewSet):
 
         if Organization.objects.filter(name=org_name).exists():
             return JsonResponse({"status": "error", "message": "Organization name already exists"}, status=status.HTTP_409_CONFLICT)
+
+        if org_name_conflicts_with_columns(org_name):
+            return JsonResponse(
+                {"status": "error", "message": "Organization name cannot match a SEED column name"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         org, _, _ = create_organization(user, org_name, org_name)
         return JsonResponse({"status": "success", "message": "Organization created", "organization": _dict_org(request, [org])[0]})

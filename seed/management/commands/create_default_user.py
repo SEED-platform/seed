@@ -5,11 +5,11 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import os
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import ROLE_OWNER, Organization
-from seed.utils.organizations import create_organization
+from seed.utils.organizations import create_organization, org_name_conflicts_with_columns
 
 
 class Command(BaseCommand):
@@ -45,6 +45,11 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        if not Organization.objects.filter(name=options["organization"]).exists() and org_name_conflicts_with_columns(
+            options["organization"]
+        ):
+            raise CommandError(f"Organization name cannot match a SEED column name: {options['organization']}")
+
         if User.objects.filter(username=options["username"]).exists():
             self.stdout.write(f"User <{options['username']}> already exists", ending="\n")
             u = User.objects.get(username=options["username"])

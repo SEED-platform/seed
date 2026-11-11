@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.core import mail
@@ -156,6 +157,38 @@ class AdminViewsTest(TestCase):
 
         self.assertFalse(User.objects.filter(username=data["email"]).exists())
         self.assertFalse(User.objects.filter(email=data["email"]).exists())
+
+    def test_add_org_column_name(self):
+        """
+        An org's first access level is named after the org, so naming an org after a column is rejected, not a 500
+        """
+        for org_name in ["UBID", "City", "pm_property_id"]:
+            res = self._post_json(self.add_org_url, {"user_id": self.admin_user.pk, "organization_name": org_name})
+            self.assertEqual(res.status_code, 400)
+            self.assertEqual(res.body, {"status": "error", "message": "Organization name cannot match a SEED column name"})
+
+        self.assertEqual(Organization.objects.count(), 0)
+
+        with pytest.raises(ValueError, match="cannot match a SEED column name"):
+            create_organization(self.admin_user, "UBID")
+        self.assertEqual(Organization.objects.count(), 0)
+
+    def test_add_user_new_org_column_name(self):
+        data = {"org_name": "UBID", "first_name": "New", "last_name": "Owner", "email": "new_owner@testserver"}
+        res = self._post_json(self.add_user_url, data)
+        self.assertEqual(res.status_code, 400)
+        self.assertEqual(res.body["message"], "Organization name cannot match a SEED column name")
+
+        self.assertFalse(User.objects.filter(username=data["email"]).exists())
+        self.assertEqual(Organization.objects.count(), 0)
+
+    def test_add_sub_org_column_name(self):
+        org, _, _ = create_organization(self.admin_user, "Parent Org")
+        payload = {"sub_org_name": "State", "sub_org_owner_email": self.admin_user.email}
+        res = self._post_json(reverse_lazy("api:v3:organizations-sub-org", args=[org.pk]), payload)
+        self.assertEqual(res.body, {"status": "error", "message": "Organization name cannot match a SEED column name"})
+
+        self.assertEqual(list(Organization.objects.values_list("name", flat=True)), ["Parent Org"])
 
     def test_signup_process(self):
         """

@@ -117,6 +117,17 @@ def _create_default_columns(organization_id):
         Column.objects.create(**details)
 
 
+def org_name_conflicts_with_columns(org_name):
+    """
+    A new organization's first access level is named after the organization, and access level names cannot match the
+    display name or column name of a default column (e.g. `UBID`, `City`, or `pm_property_id`)
+
+    :param org_name: str, name of the Organization to be created
+    :return: bool, True if the name cannot be used for a new organization
+    """
+    return any(org_name in (column["display_name"], column["column_name"]) for column in Column.DATABASE_COLUMNS)
+
+
 def create_organization(user=None, org_name="test_org", *args, **kwargs):
     """
     Helper script to create a user/org relationship from scratch. This is heavily used and
@@ -127,6 +138,9 @@ def create_organization(user=None, org_name="test_org", *args, **kwargs):
     :param (optional) kwargs: 'role', int; 'status', str.
     """
     from seed.models import StatusLabel as Label
+
+    if org_name_conflicts_with_columns(org_name):
+        raise ValueError(f"Organization name cannot match a SEED column name: {org_name}")
 
     organization_user = None
     user_added = False
@@ -171,6 +185,8 @@ def create_suborganization(user, current_org, suborg_name="", user_role=ROLE_MEM
 
     if Organization.objects.filter(name=suborg_name, parent_org=current_org).exists():
         sub_org = Organization.objects.filter(name=suborg_name, parent_org=current_org).first()
+    elif org_name_conflicts_with_columns(suborg_name):
+        return False, "Organization name cannot match a SEED column name", None
     else:
         sub_org = Organization.objects.create(name=suborg_name)
 

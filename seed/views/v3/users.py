@@ -26,7 +26,7 @@ from seed.models.data_quality import Rule
 from seed.tasks import invite_to_seed
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
-from seed.utils.organizations import create_organization
+from seed.utils.organizations import create_organization, org_name_conflicts_with_columns
 from seed.utils.users import get_role_from_js
 
 _log = logging.getLogger(__name__)
@@ -226,6 +226,10 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
                 )
             if not AccessLevelInstance.objects.filter(organization=org, pk=access_level_instance_id).exists():
                 return JsonResponse({"status": "error", "message": "No such access_level_instance"}, status=status.HTTP_400_BAD_REQUEST)
+        elif org_name_conflicts_with_columns(org_name):
+            return JsonResponse(
+                {"status": "error", "message": "Organization name cannot match a SEED column name"}, status=status.HTTP_400_BAD_REQUEST
+            )
 
         user, created = User.objects.get_or_create(username=username.lower())
 
