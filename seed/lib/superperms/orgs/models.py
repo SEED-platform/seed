@@ -546,10 +546,15 @@ def _assert_alns_are_valid(org):
     if len(set(alns)) != len(alns):  # if not unique
         raise ValueError("Organization's access_level_names must be unique.")
 
-    columns_with_same_names = Column.objects.filter(organization=org, display_name__in=alns)
-    if columns_with_same_names.count() > 0:
-        repeated_names = set(columns_with_same_names.values_list("display_name", flat=True))
-        raise ValueError(f"Access level names cannot match SEED column names: {list(repeated_names)}")
+    # Imports map to an inventory column's `column_name`, so an access level named after one would capture that column's
+    # data. Raw header and access level mapping columns (blank table_name) use access level names as their `column_name`
+    org_columns = Column.objects.filter(organization=org)
+    repeated_names = set(org_columns.filter(display_name__in=alns).values_list("display_name", flat=True))
+    repeated_names |= set(
+        org_columns.filter(column_name__in=alns, table_name__in=["PropertyState", "TaxLotState"]).values_list("column_name", flat=True)
+    )
+    if repeated_names:
+        raise ValueError(f"Access level names cannot match SEED column names: {sorted(repeated_names)}")
 
 
 def _update_alis_path_keys(org, previous_access_level_names):

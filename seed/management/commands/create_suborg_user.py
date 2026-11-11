@@ -5,7 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import sys
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, Organization
@@ -47,5 +47,7 @@ class Command(BaseCommand):
         else:
             raise ValueError("Invalid role for suborg user. Expecting owner, member, or viewer.")
 
-        create_suborganization(u, org, options["suborg"], suborg_role)
+        created, message, _ = create_suborganization(u, org, options["suborg"], suborg_role)
+        if not created:
+            raise CommandError(message)
         self.stdout.write("Sub-organization created!", ending="\n")
