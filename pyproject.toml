@@ -12,7 +12,7 @@ dependencies = [
     # Persistence (database)
     "psycopg[binary]~=3.3.6",
     # Background jobs / scheduling / caching
-    "celery==5.6.3",
+    "celery[redis]==5.6.3",
     "django-celery-beat==2.9.0",
     "django-redis==7.0.0",
     "hiredis==3.5.0",
