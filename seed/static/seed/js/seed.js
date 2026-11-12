@@ -118,6 +118,7 @@
     'SEED.controller.inventory_plots',
     'SEED.controller.inventory_reports',
     'SEED.controller.inventory_summary',
+    'SEED.controller.join_organization_modal',
     'SEED.controller.label_admin',
     'SEED.controller.mapping',
     'SEED.controller.members',

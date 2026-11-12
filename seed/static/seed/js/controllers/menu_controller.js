@@ -184,6 +184,25 @@ angular.module('SEED.controller.menu', []).controller('menu_controller', [
      */
     $scope.set_user_org = async (org) => {
       $scope.mouseout_org();
+      // Only superusers see organizations they aren't a member of; offer to add them so they can access it
+      if (!org.user_role) {
+        try {
+          await $uibModal.open({
+            templateUrl: `${urls.static_url}seed/partials/join_organization_modal.html`,
+            controller: 'join_organization_modal_controller',
+            // don't let the modal be dismissed while it's adding them
+            backdrop: 'static',
+            keyboard: false,
+            resolve: {
+              organization: () => org
+            }
+          }).result;
+        } catch {
+          return;
+        }
+        // join_organization_modal_controller added them as an owner
+        org = { ...org, user_role: 'owner' };
+      }
       await user_service.set_organization(org);
       $scope.menu.user.organization = org;
       if ($stateParams.organization_id && $stateParams.organization_id !== org.id) {
