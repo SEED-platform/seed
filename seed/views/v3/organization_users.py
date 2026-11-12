@@ -129,8 +129,9 @@ class OrganizationUserViewSet(viewsets.ViewSet):
         except IntegrityError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Send an email if a new user has been added to the organization
-        if created:
+        # Send an email if a new user has been added to the organization, unless they added themselves (e.g. a
+        # superuser joining an organization they are not a member of)
+        if created and user != request.user:
             try:
                 domain = request.get_host()
             except Exception:

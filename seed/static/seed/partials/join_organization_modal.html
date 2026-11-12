@@ -1,0 +1,12 @@
+<div class="modal-header">
+  <h4 class="modal-title" translate>Join Organization</h4>
+</div>
+<div class="modal-body">
+  <p><span translate>Your superuser account isn't a member of this organization:</span> <strong>{$ organization.name $}</strong></p>
+  <p translate>Would you like to add yourself as an owner so you can access it?</p>
+  <div class="alert alert-danger" ng-show="error_message">{$ error_message $}</div>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-default" ng-click="cancel()" ng-disabled="joining" translate>Cancel</button>
+  <button type="button" class="btn btn-primary" ng-click="join()" ng-disabled="joining" translate>Add Me as an Owner</button>
+</div>
