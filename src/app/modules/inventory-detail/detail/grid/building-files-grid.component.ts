@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core
 import { AgGridAngular } from 'ag-grid-angular'
 import type { CellClickedEvent, ColDef, GridApi, GridReadyEvent } from 'ag-grid-community'
 import { map } from 'rxjs'
+import { MediaService } from '@seed/api'
 import { MaterialImports } from '@seed/materials'
 import { ConfigService } from '@seed/services'
 import type { InventoryType, ViewResponse } from 'app/modules/inventory/inventory.types'
@@ -18,6 +19,7 @@ export class BuildingFilesGridComponent implements OnInit {
   @Input() view: ViewResponse
   @Input() type: InventoryType
   private _configService = inject(ConfigService)
+  private _mediaService = inject(MediaService)
   gridApi: GridApi
   gridTheme$ = this._configService.gridTheme$.pipe(map((t) => t.withParams({ oddRowBackgroundColor: 'rgba(0,0,0,0.04)' })))
   columnDefs: ColDef[] = []
@@ -49,7 +51,7 @@ export class BuildingFilesGridComponent implements OnInit {
 
   actionRenderer = () => {
     return `
-      <div class="flex gap-2 mt-2 align-center"">
+      <div class="flex gap-2 mt-2 align-center">
         <span class="material-icons cursor-pointer text-secondary" data-action="download">cloud_download</span>
       </div>
     `
@@ -57,8 +59,8 @@ export class BuildingFilesGridComponent implements OnInit {
 
   setRowData() {
     const files = this.view.state.files
-    for (const { created, file_type, filename } of files) {
-      this.rowData.push({ created, file_type, filename })
+    for (const { created, file, file_type, filename } of files) {
+      this.rowData.push({ created, file, file_type, filename })
     }
   }
 
@@ -69,12 +71,7 @@ export class BuildingFilesGridComponent implements OnInit {
 
   downloadDocument(data: unknown) {
     const { file, filename } = data as { file: string; filename: string }
-
-    const a = document.createElement('a')
-    const url = file
-    a.href = url
-    a.download = filename
-    a.click()
+    this._mediaService.download(file, filename).subscribe()
   }
 
   get gridHeight() {

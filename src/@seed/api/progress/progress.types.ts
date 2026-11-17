@@ -10,7 +10,7 @@ export type ProgressResponse = {
   status_message: string;
   summary: string | null;
   total: number | null;
-  unique_id: number;
+  unique_id: number | string;
   total_records?: number;
   completed_records?: number;
 }

@@ -75,7 +75,8 @@ export class SaveMappingsComponent implements OnChanges, OnDestroy {
           })
         }),
         tap(({ unique_id }) => {
-          this.dqcId = unique_id
+          // data quality run IDs are integers (other tasks' IDs can be strings)
+          this.dqcId = Number(unique_id)
         }),
       )
       .subscribe()

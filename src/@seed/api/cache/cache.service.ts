@@ -10,7 +10,7 @@ export class CacheService {
   private _errorService = inject(ErrorService)
   private _httpClient = inject(HttpClient)
 
-  getCacheEntry(orgId: number, uniqueId: number): Observable<unknown> {
+  getCacheEntry(orgId: number, uniqueId: number | string): Observable<unknown> {
     const url = `/api/v3/cache_entries/${uniqueId}/?organization_id=${orgId}`
     return this._httpClient.get<unknown>(url).pipe(
       catchError((error: HttpErrorResponse) => {

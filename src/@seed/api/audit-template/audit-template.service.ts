@@ -94,7 +94,7 @@ export class AuditTemplateService {
 
   batchGetCitySubmissionXml(orgId: number, viewIds: number[], defaultCycle: number | null): Observable<ProgressResponse> {
     const url = `/api/v3/audit_template/batch_get_city_submission_xml/?organization_id=${orgId}`
-    return this._httpClient.post<ProgressResponse>(url, { view_ids: viewIds, default_cycle: defaultCycle }).pipe(
+    return this._httpClient.put<ProgressResponse>(url, { view_ids: viewIds, default_cycle: defaultCycle }).pipe(
       catchError((error: HttpErrorResponse) => {
         return this._errorService.handleError(error, 'Error importing Audit Template submissions')
       }),

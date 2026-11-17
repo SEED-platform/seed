@@ -8,7 +8,7 @@ import type { CellClickedEvent, ColDef, GridApi, GridReadyEvent } from 'ag-grid-
 import type { Observable } from 'rxjs'
 import { filter, of, Subject, switchMap, tap } from 'rxjs'
 import type { Cycle, Dataset, ImportFile } from '@seed/api'
-import { CycleService, DatasetService, UserService } from '@seed/api'
+import { CycleService, DatasetService, MediaService, UserService } from '@seed/api'
 import { DeleteModalComponent, PageComponent } from '@seed/components'
 import { ConfigService } from '@seed/services'
 import { DataUploadModalComponent } from '../data-upload/data-upload-modal.component'
@@ -25,6 +25,7 @@ export class DatasetComponent implements OnDestroy, OnInit {
   private _cycleService = inject(CycleService)
   private _datasetService = inject(DatasetService)
   private _dialog = inject(MatDialog)
+  private _mediaService = inject(MediaService)
   private _route = inject(ActivatedRoute)
   private _router = inject(Router)
   private _userService = inject(UserService)
@@ -196,14 +197,9 @@ export class DatasetComponent implements OnDestroy, OnInit {
       .subscribe()
   }
 
+  // `file` is the import file's path on the server, which the media service maps to the media endpoint
   downloadDocument(file: string, filename: string) {
-    const a = document.createElement('a')
-    // NOTE: downloads failing after a recent change. Requires further investigation
-    // const url = file.replace('/seed/', '/')
-    const url = file
-    a.href = url
-    a.download = filename
-    a.click()
+    this._mediaService.download(file, filename).subscribe()
   }
 
   ngOnDestroy(): void {

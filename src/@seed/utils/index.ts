@@ -1,5 +1,7 @@
 export * from './arrays-equal'
+export * from './blob-to-data-url'
 export * from './csv-download'
+export * from './download-blob'
 export * from './exact-match-options'
 export * from './natural-sort'
 export * from './open-in-new-tab'

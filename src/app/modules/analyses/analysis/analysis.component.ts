@@ -8,7 +8,7 @@ import { AgGridAngular } from 'ag-grid-angular'
 import type { CellClickedEvent, ColDef, GridApi, GridReadyEvent } from 'ag-grid-community'
 import { combineLatest, filter, Subject, switchMap, takeUntil, tap } from 'rxjs'
 import type { AnalysesMessage, Analysis, AnalysisOutputFile, CurrentUser, Cycle, View } from '@seed/api'
-import { AnalysisService, CycleService, OrganizationService, UserService } from '@seed/api'
+import { AnalysisService, CycleService, MediaService, OrganizationService, UserService } from '@seed/api'
 import { PageComponent } from '@seed/components'
 import { SharedImports } from '@seed/directives'
 import { MaterialImports } from '@seed/materials/material.module'
@@ -28,6 +28,7 @@ export class AnalysisComponent implements OnDestroy, OnInit {
   private _configService = inject(ConfigService)
   private _cycleService = inject(CycleService)
   private _dialog = inject(MatDialog)
+  private _mediaService = inject(MediaService)
   private _organizationService = inject(OrganizationService)
   private _snackBar = inject(SnackBarService)
   private _userService = inject(UserService)
@@ -84,7 +85,9 @@ export class AnalysisComponent implements OnDestroy, OnInit {
       this._analysisService.originalViews$,
     ])
       .pipe(
-        filter(([analysis, views]) => !!analysis && views.length && analysis.id === this.analysisId),
+        // Don't wait for views: an analysis that failed or is still being created can have none.
+        // `formatViews` skips views from another analysis
+        filter(([analysis]) => analysis?.id === this.analysisId),
         takeUntil(this._unsubscribeAll$),
         tap(([analysis, views, messages, originalViews]) => {
           this.analysis = analysis
@@ -238,13 +241,7 @@ export class AnalysisComponent implements OnDestroy, OnInit {
   }
 
   downloadResult(output_files: AnalysisOutputFile[]) {
-    const file = output_files[0]?.file
-    const name = file.split('/').pop()?.split('.html')[0]
-    const a = document.createElement('a')
-    const url = file
-    a.href = url
-    a.download = name
-    a.click()
+    this._mediaService.download(output_files[0]?.file).subscribe()
   }
 
   meterConfig(item: KeyValue<string, unknown>) {

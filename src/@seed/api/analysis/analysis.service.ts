@@ -68,15 +68,14 @@ export class AnalysisService {
   }
 
   getAnalyses(orgId: number) {
-    const url = `/api/v3/analyses/?organization_id=${orgId}`
+    // Views come from `getAnalysisViews` instead: the list endpoint's output files are server paths rather than URLs,
+    // and pushing its views into `views$` could replace an analysis's views (e.g., while polling statuses)
+    const url = `/api/v3/analyses/?organization_id=${orgId}&include_views=false`
     this._httpClient
       .get<ListAnalysesResponse>(url)
       .pipe(
-        map((response) => response),
         tap((response) => {
           this._analyses.next(response.analyses)
-          this._views.next(response.views)
-          this._originalViews.next(response.original_views)
         }),
         catchError((error: HttpErrorResponse) => {
           return this._errorService.handleError(error, 'Error fetching analyses')

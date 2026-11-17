@@ -91,7 +91,7 @@ export class MoreActionsModalComponent implements OnDestroy {
           })
         }),
         tap(({ unique_id }) => {
-          this.openDataQualityResultsModal(unique_id)
+          this.openDataQualityResultsModal(Number(unique_id))
         }),
         finalize(() => {
           this.showProgress = false

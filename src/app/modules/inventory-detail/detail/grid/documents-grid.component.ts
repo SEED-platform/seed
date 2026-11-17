@@ -6,7 +6,7 @@ import { AgGridAngular } from 'ag-grid-angular'
 import type { CellClickedEvent, ColDef, GridApi, GridReadyEvent } from 'ag-grid-community'
 import { map, Subject, takeUntil, tap } from 'rxjs'
 import type { Organization } from '@seed/api'
-import { InventoryService } from '@seed/api'
+import { InventoryService, MediaService } from '@seed/api'
 import { MaterialImports } from '@seed/materials'
 import { ConfigService } from '@seed/services'
 import type { InventoryDocument, InventoryType, ViewResponse } from 'app/modules/inventory/inventory.types'
@@ -27,6 +27,7 @@ export class DocumentsGridComponent implements OnChanges, OnDestroy {
   private _configService = inject(ConfigService)
   private _dialog = inject(MatDialog)
   private _inventoryService = inject(InventoryService)
+  private _mediaService = inject(MediaService)
   private readonly _unsubscribeAll$ = new Subject<void>()
   gridApi: GridApi
   gridTheme$ = this._configService.gridTheme$.pipe(map((t) => t.withParams({ oddRowBackgroundColor: 'rgba(0,0,0,0.04)' })))
@@ -103,11 +104,7 @@ export class DocumentsGridComponent implements OnChanges, OnDestroy {
   }
 
   downloadDocument(file: string, filename: string) {
-    const a = document.createElement('a')
-    const url = file
-    a.href = url
-    a.download = filename
-    a.click()
+    this._mediaService.download(file, filename).subscribe()
   }
 
   deleteDocument(id: string) {

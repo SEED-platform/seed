@@ -194,7 +194,7 @@ export type ViewResponse = {
 
 type History = {
   date_edited: number;
-  file: string;
+  file: string | null; // null if the user can't download the file
   filename: string;
   source: string;
   state: State;

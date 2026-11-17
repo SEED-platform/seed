@@ -66,19 +66,15 @@
       } @else if (view.output_files?.length) {
         <mat-divider></mat-divider>
 
-        @for (file of view.output_files; track $index) {
+        @for (file of outputFiles; track file.id) {
           <!--Display HTML-->
-          @if (file.content_type === 'html') {
-            <ng-container>
-              <iframe class="" [src]="file.file | safeUrl" (load)="resizeIframe($event)" scrolling="no"></iframe>
-            </ng-container>
+          @if (file.kind === 'html') {
+            <iframe class="h-screen w-full" [srcdoc]="file.html" sandbox="allow-scripts allow-popups" title="Analysis report"></iframe>
           }
 
           <!--Display Image-->
-          @if (file.content_type === 'PNG') {
-            <ng-container>
-              <img [src]="file.file" style="width: 100%; min-width: 200px; max-width: 50%" alt="Analysis result image" />
-            </ng-container>
+          @if (file.kind === 'image') {
+            <img [src]="file.src" style="width: 100%; min-width: 200px; max-width: 50%" alt="Analysis result image" />
           }
         }
       } @else {

@@ -40,7 +40,8 @@ export class DQCStartModalComponent implements OnDestroy, OnInit {
           return this._uploaderService.checkProgressLoop({
             progressKey: progress_key,
             successFn: ({ unique_id }) => {
-              this.openDataQualityResultsModal(unique_id)
+              // data quality run IDs are integers (other tasks' IDs can be strings)
+              this.openDataQualityResultsModal(Number(unique_id))
             },
             progressBarObj: this.progressBarObj,
           })

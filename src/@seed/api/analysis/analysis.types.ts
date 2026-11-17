@@ -59,8 +59,9 @@ export type AnalysisOutputFile = {
 export type ListAnalysesResponse = {
   status: 'success';
   analyses: Analysis[];
-  views: View[];
-  original_views: Record<number, number>;
+  // Omitted if there are no analyses or with `include_views=false`
+  views?: View[];
+  original_views?: Record<number, number>;
 }
 
 export type AnalysisResponse = {
