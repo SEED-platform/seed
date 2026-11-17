@@ -6,7 +6,6 @@ import type { MatDialogRef } from '@angular/material/dialog'
 import { MatDialog } from '@angular/material/dialog'
 import { MatPaginator } from '@angular/material/paginator'
 import { MatTableDataSource } from '@angular/material/table'
-import { ActivatedRoute } from '@angular/router'
 import { combineLatest, filter, Subject, switchMap, takeUntil, tap } from 'rxjs'
 import type { Rule } from '@seed/api'
 import { ColumnService, DataQualityService, LabelService, OrganizationService } from '@seed/api'
@@ -24,9 +23,10 @@ import { FormModalComponent } from './modal/form-modal.component'
 })
 export class DataQualityInventoryTableComponent implements AfterViewInit, OnChanges, OnDestroy, OnInit {
   @Input() currentRules: Rule[]
+  // Passed from the parent: the route component is reused across tabs, so a route snapshot here goes stale
+  @Input() type: InventoryTypeGoal
   @Output() getRules = new EventEmitter<void>()
   @ViewChild(MatPaginator) paginator!: MatPaginator
-  private _route = inject(ActivatedRoute)
   private _organizationService = inject(OrganizationService)
   private _dataQualityService = inject(DataQualityService)
   private _columnService = inject(ColumnService)
@@ -37,7 +37,6 @@ export class DataQualityInventoryTableComponent implements AfterViewInit, OnChan
   private _orgId: number
   rulesDataSource = new MatTableDataSource<Rule>([])
   rulesColumns = ['enabled', 'field', 'severity', 'criteria', 'label', 'actions']
-  type = this._route.snapshot.paramMap.get('type') as InventoryTypeGoal
   propertyColumnsLookup: Record<string, string> = {}
   taxlotColumnsLookup: Record<string, string> = {}
   isOverflowing = false
@@ -69,10 +68,11 @@ export class DataQualityInventoryTableComponent implements AfterViewInit, OnChan
       .pipe(takeUntil(this._unsubscribeAll$))
       .subscribe(([organization, propertyColumns, taxLotColumns, labels]) => {
         this._orgId = organization.id
-        for (const col of propertyColumns) {
+        // The columns endpoint also returns related columns; skip them so they don't overwrite same-named fields
+        for (const col of propertyColumns.filter((c) => c.table_name === 'PropertyState')) {
           this.propertyColumnsLookup[col.column_name] = col.display_name
         }
-        for (const col of taxLotColumns) {
+        for (const col of taxLotColumns.filter((c) => c.table_name === 'TaxLotState')) {
           this.taxlotColumnsLookup[col.column_name] = col.display_name
         }
         for (const label of labels) {

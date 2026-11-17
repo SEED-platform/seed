@@ -49,7 +49,7 @@ export class FormModalComponent implements OnDestroy, OnInit {
       data_type: new FormControl<number | null>(null, Validators.required),
       enabled: new FormControl(true),
       field: new FormControl<string | null>(null, Validators.required),
-      for_derived_column: new FormControl(false), // unused
+      for_derived_column: new FormControl(false), // hidden, set from the selected column on submit
       id: new FormControl<number | null>(null), // hidden
       max: new FormControl<number | null>(null),
       min: new FormControl<number | null>(null),
@@ -76,7 +76,8 @@ export class FormModalComponent implements OnDestroy, OnInit {
     this.watchForm()
 
     combineLatest([this.data.columns$, this._labelsService.labels$]).subscribe(([columns, labels]) => {
-      this.columns = columns
+      // Only offer columns that belong to this rule's table (the columns endpoint also returns related columns)
+      this.columns = columns.filter((column) => column.table_name === this.data.tableName)
       this.labels = labels
       for (const label of labels) {
         this.labelLookup[label.id] = label
@@ -130,10 +131,22 @@ export class FormModalComponent implements OnDestroy, OnInit {
     return this.form.errors ? (Object.values(this.form.errors) as string[]) : null
   }
 
+  /*
+   * The backend only evaluates a derived column's formula when the rule is flagged `for_derived_column`;
+   * otherwise it looks the field up in extra_data, finds nothing, and the rule never fires.
+   * Keep the saved flag when the field isn't in the column list (e.g. columns not loaded yet).
+   */
+  isDerivedField(field: string): boolean {
+    const column = this.columns?.find((c) => c.column_name === field)
+    if (!column) return this.form.value.for_derived_column ?? false
+    return Boolean(column.derived_column)
+  }
+
   onSubmit() {
+    const rule = { ...this.form.value, for_derived_column: this.isDerivedField(this.form.value.field) } as Rule
     const fn = this.create
-      ? this._dataQualityService.postRule({ rule: this.form.value as Rule, orgId: this.data.orgId })
-      : this._dataQualityService.putRule({ rule: this.form.value as Rule, id: this.data.rule.id, orgId: this.data.orgId })
+      ? this._dataQualityService.postRule({ rule, orgId: this.data.orgId })
+      : this._dataQualityService.putRule({ rule, id: this.data.rule.id, orgId: this.data.orgId })
 
     fn.subscribe(() => {
       this.close()

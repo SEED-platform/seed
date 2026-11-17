@@ -4,7 +4,11 @@
     @if (type === 'goal') {
       <seed-data-quality-goal-table [currentRules]="currentRules" (getRules)="getRules()"></seed-data-quality-goal-table>
     } @else {
-      <seed-data-quality-inventory-table [currentRules]="currentRules" (getRules)="getRules()"></seed-data-quality-inventory-table>
+      <seed-data-quality-inventory-table
+        [currentRules]="currentRules"
+        [type]="type"
+        (getRules)="getRules()"
+      ></seed-data-quality-inventory-table>
     }
   </seed-page-table-container>
 </seed-page>
