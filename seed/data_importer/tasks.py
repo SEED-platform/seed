@@ -9,8 +9,8 @@ import hashlib
 import json
 import locale
 import os
+import secrets
 import tempfile
-import time
 import traceback
 import zipfile
 from _csv import Error
@@ -89,7 +89,7 @@ from seed.models.auditlog import AUDIT_IMPORT
 from seed.models.data_quality import DataQualityCheck, Rule
 from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences
 from seed.utils.buildings import get_source_type
-from seed.utils.cache import set_cache_raw
+from seed.utils.cache import set_task_result
 from seed.utils.geocode import MapQuestAPIKeyError, create_geocoded_additional_columns, geocode_buildings
 from seed.utils.goals import get_state_pairs
 from seed.utils.import_file import get_import_file_table_mappings
@@ -124,6 +124,22 @@ def _is_occupied_at_timestamp(occupied_timestamps, occupied_states, timestamp):
     return occupied_states[last_state_index]
 
 
+def import_file_progress_tags(import_file_pk):
+    """
+    Return the organization and access level instance of an import file's record as `ProgressData` arguments, so that
+    only users who can access the import file can read its tasks' progress (no tags if the import file does not exist)
+    """
+    import_record = (
+        ImportFile.objects.filter(pk=import_file_pk)
+        .values("import_record__super_organization_id", "import_record__access_level_instance_id")
+        .first()
+    ) or {}
+    return {
+        "organization_id": import_record.get("import_record__super_organization_id"),
+        "access_level_instance_id": import_record.get("import_record__access_level_instance_id"),
+    }
+
+
 @shared_task(ignore_result=True)
 def check_data_chunk(org_id, model, ids, dq_id, cycle_goal_id=None, chunk_identifier=None, chunk_index=None):
     try:
@@ -153,22 +169,24 @@ def check_data_chunk(org_id, model, ids, dq_id, cycle_goal_id=None, chunk_identi
 
 
 @shared_task(ignore_result=True)
-def finish_checking(progress_key, organization_id=None, dq_id=None, chunk_identifier=None, chunk_count=None):
+def finish_checking(progress_key, organization_id=None, dq_id=None, chunk_identifier=None, chunk_count=None, access_level_instance_id=None):
     """
     Chord that is called after the data quality check is complete
 
     :param progress_key: import file primary key
+    :param access_level_instance_id: int, ID of the access level instance that the checked records are limited to (see
+        `do_checks`). It defaults to None for tasks queued without it, whose results then cannot be read.
     :return: dict, results from queue
     """
     if organization_id is not None and dq_id is not None and chunk_identifier is not None and chunk_count is not None:
-        DataQualityCheck.combine_cached_chunks(chunk_identifier, dq_id, organization_id, chunk_count)
+        DataQualityCheck.combine_cached_chunks(chunk_identifier, dq_id, organization_id, chunk_count, access_level_instance_id)
 
     progress_data = ProgressData.from_key(progress_key)
     progress_data.finish_with_success()
     return progress_data.result()
 
 
-def do_checks(org_id, propertystate_ids, taxlotstate_ids, goal_id, import_file_id=None):
+def do_checks(org_id, propertystate_ids, taxlotstate_ids, goal_id, import_file_id=None, *, access_level_instance_id):
     """
     Run the dq checks on the data
 
@@ -177,13 +195,17 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, goal_id, import_file_i
     :param taxlotstate_ids:
     :param goal_id:
     :param import_file_id: int, if present, find the data to check by the import file id
+    :param access_level_instance_id: int, ID of the access level instance that the checked records (or goal) are
+        limited to, so that only users of it or its ancestors can read the results
     :return:
     """
     # If import_file_id, then use that as the identifier, otherwise, initialize_cache will
     # create a new random id
-    _cache_key, dq_id = DataQualityCheck.initialize_cache(import_file_id, org_id)
+    _cache_key, dq_id = DataQualityCheck.initialize_cache(import_file_id, org_id, access_level_instance_id)
 
-    progress_data = ProgressData(func_name="check_data", unique_id=dq_id)
+    progress_data = ProgressData(
+        func_name="check_data", unique_id=dq_id, organization_id=int(org_id), access_level_instance_id=access_level_instance_id
+    )
     progress_data.delete()
     chunk_identifier = uuid4().hex
 
@@ -204,7 +226,11 @@ def do_checks(org_id, propertystate_ids, taxlotstate_ids, goal_id, import_file_i
     progress_data.save()
     if tasks:
         # specify the chord as an immutable with .si
-        chord(tasks, interval=15)(finish_checking.si(progress_data.key, org_id, dq_id, chunk_identifier, len(tasks)))
+        chord(tasks, interval=15)(
+            finish_checking.si(
+                progress_data.key, org_id, dq_id, chunk_identifier, len(tasks), access_level_instance_id=access_level_instance_id
+            )
+        )
     else:
         progress_data.finish_with_success()
 
@@ -711,7 +737,7 @@ def map_data_synchronous(import_file_id: int) -> dict:
     import_file = ImportFile.objects.get(pk=import_file_id)
 
     # create a key, but this is just used to communicate the result
-    progress_data = ProgressData(func_name="map_data_only", unique_id=import_file_id)
+    progress_data = ProgressData(func_name="map_data_only", unique_id=import_file_id, **import_file_progress_tags(import_file_id))
     progress_data.delete()
 
     # Check for duplicate column headers
@@ -757,8 +783,11 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
     """
     import_file = ImportFile.objects.get(pk=import_file_id)
 
-    # Clear out the previously mapped data
-    DataQualityCheck.initialize_cache(import_file_id, import_file.import_record.super_organization.id)
+    # Clear out the previously mapped data, limiting the results to the import file's access level instance (as in
+    # `start_data_quality_checks`)
+    DataQualityCheck.initialize_cache(
+        import_file_id, import_file.import_record.super_organization.id, import_file.import_record.access_level_instance_id
+    )
 
     # Check for duplicate column headers
     column_headers = import_file.first_row_columns or []
@@ -796,7 +825,7 @@ def map_data(import_file_id, remap=False, mark_as_done=True):
         import_file.save()
 
     # delete the prog key -- in case it exists
-    progress_data = ProgressData(func_name="map_data", unique_id=import_file_id)
+    progress_data = ProgressData(func_name="map_data", unique_id=import_file_id, **import_file_progress_tags(import_file_id))
     progress_data.delete()
 
     tasks = _map_data_create_tasks(import_file_id, progress_data.key)
@@ -1503,7 +1532,7 @@ def _save_raw_data_create_tasks(file_pk, progress_key):
 
 def save_raw_access_level_instances_data(filename, org_id):
     """save data and keep progress"""
-    progress_data = ProgressData(func_name="save_raw_access_level_instances_data", unique_id=int(time.time()))
+    progress_data = ProgressData.for_organization("save_raw_access_level_instances_data", secrets.token_hex(16), int(org_id))
     try:
         # queue up the tasks and immediately return. This is needed in the case of large hierarchy files
         # causing the website to timeout due to inactivity.
@@ -1531,7 +1560,7 @@ def save_raw_espm_data_synchronous(file_pk: int) -> dict:
     Returns:
         dict: returns the result of the progress data
     """
-    progress_data = ProgressData(func_name="save_raw_data_synchronous", unique_id=file_pk)
+    progress_data = ProgressData(func_name="save_raw_data_synchronous", unique_id=file_pk, **import_file_progress_tags(file_pk))
     try:
         # Go get the tasks that need to be created, then call them in the chord here.
         import_file = ImportFile.objects.get(pk=file_pk)
@@ -1592,7 +1621,7 @@ def save_raw_data(file_pk):
     :param file_pk: ImportFile Primary Key
     :return: Dict, from cache, containing the progress key to track
     """
-    progress_data = ProgressData(func_name="save_raw_data", unique_id=file_pk)
+    progress_data = ProgressData(func_name="save_raw_data", unique_id=file_pk, **import_file_progress_tags(file_pk))
     try:
         # Go get the tasks that need to be created, then call them in the chord here.
         import_file = ImportFile.objects.get(pk=file_pk)
@@ -1629,9 +1658,10 @@ def geocode_and_match_buildings_task(file_pk):
     import_file = ImportFile.objects.get(pk=file_pk)
     org = import_file.import_record.super_organization
 
-    progress_data = ProgressData(func_name="match_buildings", unique_id=file_pk)
+    progress_tags = import_file_progress_tags(file_pk)
+    progress_data = ProgressData(func_name="match_buildings", unique_id=file_pk, **progress_tags)
     progress_data.delete()
-    sub_progress_data = ProgressData(func_name="match_sub_progress", unique_id=file_pk)
+    sub_progress_data = ProgressData(func_name="match_sub_progress", unique_id=file_pk, **progress_tags)
     sub_progress_data.delete()
 
     if import_file.matching_done:
@@ -2071,7 +2101,7 @@ def validate_use_cases(file_pk):
     :param file_pk: ImportFile Primary Key
     :return:
     """
-    progress_data = ProgressData(func_name="validate_use_cases", unique_id=file_pk)
+    progress_data = ProgressData(func_name="validate_use_cases", unique_id=file_pk, **import_file_progress_tags(file_pk))
     # break progress into two steps:
     # 1. started job
     # 2. finished request
@@ -2097,7 +2127,8 @@ def mapping_results_task(args):
     try:
         import_file = ImportFile.objects.get(pk=import_file_id, import_record__super_organization_id=org_id)
     except ImportFile.DoesNotExist:
-        progress_data.return_with_error("Could not find import file with pk=" + str(import_file_id))
+        # e.g., deleted after the task was started
+        return progress_data.finish_with_error("Could not find import file with pk=" + str(import_file_id))
 
     # List of the only fields to show
     field_names = import_file.get_cached_mapped_columns
@@ -2200,6 +2231,6 @@ def mapping_results_task(args):
 
         result["tax_lots"] = tax_lot_results
 
-    set_cache_raw(progress_data.unique_id, result, 1800)  # 30 mins
+    set_task_result(progress_data.unique_id, result, args.get("access_level_instance_id"), 1800)  # 30 mins
 
     progress_data.finish_with_success()

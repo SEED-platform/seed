@@ -4,6 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import re
 from datetime import UTC, datetime
 from unittest import mock
 
@@ -357,6 +358,32 @@ class TestOrganizationPermissions(AccessLevelBaseTestCase):
         resp = self.client.get(other_result_url)
         assert resp.status_code == 200
         assert resp.json() is None
+
+    def test_whole_org_match_merge_link_ids_are_unguessable(self):
+        self.login_as_root_member()
+        url = reverse("api:v3:organizations-match-merge-link", args=[self.org.pk])
+        identifiers = []
+        for _ in range(2):
+            resp = self.client.post(url, json.dumps({"inventory_type": "properties"}), content_type="application/json")
+            assert resp.status_code == 200
+            identifiers.append(ProgressData.from_key(resp.json()["progress_key"]).data["unique_id"])
+
+        # progress keys are not specific to an organization, so each run's ID cannot be guessed (e.g., by another
+        # organization's run, which would then share and retag its progress data)
+        assert identifiers[0] != identifiers[1]
+        for identifier in identifiers:
+            assert re.fullmatch(r"[0-9a-f]{32}", identifier)
+
+        # and the (string) ID retrieves the result
+        result_url = reverse("api:v3:organizations-match-merge-link-result", args=[self.org.pk])
+        resp = self.client.get(result_url, {"match_merge_link_id": identifiers[0]})
+        assert resp.status_code == 200
+        assert set(resp.json().keys()) == {"PropertyState", "TaxLotState"}
+
+        # which is required
+        resp = self.client.get(result_url)
+        assert resp.status_code == 400
+        assert resp.json() == {"status": "error", "message": "match_merge_link_id is required"}
 
 
 class TestOrganizationSampleData(AccessLevelBaseTestCase):

@@ -8,9 +8,10 @@ import logging
 import re
 from collections import defaultdict
 from datetime import date, datetime
-from random import randint
+from secrets import randbelow
 
 from django.apps import apps
+from django.core.cache.backends.base import DEFAULT_TIMEOUT
 from django.db import IntegrityError, models
 from django.utils.timezone import get_current_timezone, make_naive
 from pint.errors import DimensionalityError
@@ -19,7 +20,7 @@ from quantityfield.units import ureg
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import Column, DerivedColumn, GoalNote, PropertyView, PropertyViewLabel, StatusLabel, TaxLotView, obj_to_dict
 from seed.serializers.pint import pretty_units
-from seed.utils.cache import delete_cache, get_cache_raw, set_cache_raw
+from seed.utils.cache import delete_cache, get_cache_raw, get_task_result, set_cache_raw, set_task_result
 from seed.utils.goals import percentage_difference
 from seed.utils.time_utils import convert_datestr
 
@@ -717,7 +718,7 @@ class DataQualityCheck(models.Model):
         super().__init__(*args, **kwargs)
 
     @staticmethod
-    def initialize_cache(identifier, organization_id):
+    def initialize_cache(identifier, organization_id, access_level_instance_id):
         """
         Initialize the cache for storing the results. This is called before the
         celery tasks are chunked up.
@@ -727,13 +728,31 @@ class DataQualityCheck(models.Model):
         value that is used to identifier both the progress and the data storage
 
         :param identifier: Identifier for cache, if None, then creates a random one
+        :param access_level_instance_id: int, ID of the access level instance that the checked records are limited
+            to. It is stored with the results, since the identifier can be guessed, so that only users of that access
+            level instance or one of its ancestors can read them (see `get_cached_results`).
         :return: list, [cache_key and the identifier]
         """
         if identifier is None:
-            identifier = randint(100, 100000)
+            # Checks of an import file use the import file's ID as their identifier, so other checks get one above the
+            # largest import file ID (a 32-bit primary key) to avoid replacing their results and progress, and below
+            # 2**53, so that JavaScript clients read it exactly
+            identifier = randbelow(2**53 - 2**31) + 2**31
         cache_key = DataQualityCheck.cache_key(identifier, organization_id)
-        set_cache_raw(cache_key, [])
+        set_task_result(cache_key, [], access_level_instance_id, DEFAULT_TIMEOUT)
         return cache_key, identifier
+
+    @staticmethod
+    def get_cached_results(identifier, organization_id):
+        """
+        Return the cached results of a data quality run and the ID of the access level instance that its records are
+        limited to (None if it was not given), or (None, None) if they are not found or are in another format (e.g.,
+        cached before results had access level instances)
+
+        :param identifier: Import file primary key, or the identifier returned by `initialize_cache`
+        :return: tuple, (list of results, access level instance ID)
+        """
+        return get_task_result(DataQualityCheck.cache_key(identifier, organization_id))
 
     @staticmethod
     def cache_key(identifier, organization_id):
@@ -753,14 +772,14 @@ class DataQualityCheck(models.Model):
         set_cache_raw(self.chunk_cache_key(identifier, organization_id, chunk_index), list(self.results.values()), 86400)
 
     @classmethod
-    def combine_cached_chunks(cls, chunk_identifier, identifier, organization_id, chunk_count):
+    def combine_cached_chunks(cls, chunk_identifier, identifier, organization_id, chunk_count, access_level_instance_id):
         chunk_keys = [cls.chunk_cache_key(chunk_identifier, organization_id, index) for index in range(chunk_count)]
         results = []
         for chunk_key in chunk_keys:
             results.extend(get_cache_raw(chunk_key) or [])
 
         results.sort(key=lambda result: result["id"])
-        set_cache_raw(cls.cache_key(identifier, organization_id), results, 86400)
+        set_task_result(cls.cache_key(identifier, organization_id), results, access_level_instance_id, 86400)
         for chunk_key in chunk_keys:
             delete_cache(chunk_key)
 
@@ -1105,14 +1124,17 @@ class DataQualityCheck(models.Model):
         """
         # change the format of the data in the cache. Make this a list of
         # objects instead of object of objects.
-        existing_results = get_cache_raw(DataQualityCheck.cache_key(identifier, organization_id)) or []
+        cache_key = DataQualityCheck.cache_key(identifier, organization_id)
+        # keep the access level instance that `initialize_cache` stored with the results
+        existing_results, access_level_instance_id = get_task_result(cache_key)
+        existing_results = existing_results or []
 
         results = list(self.results.values())
 
         existing_results += results
 
         z = sorted(existing_results, key=lambda k: k["id"])
-        set_cache_raw(DataQualityCheck.cache_key(identifier, organization_id), z, 86400)  # 24 hours
+        set_task_result(cache_key, z, access_level_instance_id, 86400)  # 24 hours
 
     def initialize_rules(self):
         """

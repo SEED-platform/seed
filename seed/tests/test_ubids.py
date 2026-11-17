@@ -14,6 +14,7 @@ from seed.models import UbidModel
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.test_helpers.fake import (
+    FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
@@ -378,6 +379,19 @@ class UbidViewCrudTests(TestCase):
         data = response.json()
         self.assertEqual("error", data["status"])
         self.assertEqual("No such resource.", data["message"])
+
+    def test_create_endpoint_for_a_state_shared_by_several_views(self):
+        # e.g., the views of a property in two cycles can share a state
+        other_cycle = FakeCycleFactory(organization=self.org, user=self.user).get_cycle(name="other cycle")
+        self.property_view_factory.get_property_view(prprty=self.property, state=self.property_state, cycle=other_cycle)
+
+        response = self.client.post(
+            reverse("api:v3:ubid-list") + "?organization_id=" + str(self.org.id),
+            data=json.dumps({"ubid": "A+A-2-2-2-2", "preferred": True, "property": self.property_state.id}),
+            content_type="application/json",
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(self.property_state.id, response.json()["data"]["property"])
 
     def test_create_endpoint(self):
         self.assertEqual(3, UbidModel.objects.count())
@@ -764,6 +778,28 @@ class UbidViewPermissionTests(AccessLevelBaseTestCase, DeleteModelsTestCase):
             response = self.client.delete(url, content_type="application/json")
             assert response.status_code == 404
             assert UbidModel.objects.filter(pk=ubid.pk).exists()
+
+    def test_ubids_of_a_state_shared_with_an_inaccessible_view(self):
+        # e.g., older data, in which the child property's state is also used by a root property's view in another cycle
+        other_cycle = self.cycle_factory.get_cycle(name="other cycle")
+        self.property_view_factory.get_property_view(prprty=self.root_property, state=self.child_property_state, cycle=other_cycle)
+        detail_url = reverse_lazy("api:v3:ubid-detail", args=[self.child_ubid.pk]) + f"?organization_id={self.org.id}"
+        list_url = reverse_lazy("api:v3:ubid-list") + f"?organization_id={self.org.id}"
+        body = json.dumps({"ubid": "C+C-9-9-9-9", "property": self.child_property_state.id})
+
+        # a request about the state must have access to all of its views
+        self.login_as_child_member()
+        assert self.client.get(detail_url).status_code == 404
+        assert self.client.put(detail_url, json.dumps({"ubid": "X+X-9-9-9-9"}), content_type="application/json").status_code == 404
+        assert self.client.delete(detail_url).status_code == 404
+        assert self.client.post(list_url, body, content_type="application/json").status_code == 404
+        self.child_ubid.refresh_from_db()
+        assert self.child_ubid.ubid == "B+B-1-1-1-1"
+        assert not UbidModel.objects.filter(ubid="C+C-9-9-9-9").exists()
+
+        self.login_as_root_member()
+        assert self.client.get(detail_url).status_code == 200
+        assert self.client.post(list_url, body, content_type="application/json").status_code == 201
 
     def test_ubids_create(self):
         url = reverse_lazy("api:v3:ubid-list") + "?organization_id=" + str(self.org.id)

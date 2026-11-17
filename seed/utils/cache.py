@@ -3,6 +3,9 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
+import re
+import secrets
+
 from django.core.cache import cache as django_cache
 from django.core.cache.backends.base import DEFAULT_TIMEOUT
 
@@ -17,6 +20,39 @@ def set_cache_raw(key, data, timeout=DEFAULT_TIMEOUT):
 
 def get_cache_raw(key, default=None):
     return django_cache.get(key, default)
+
+
+def new_task_result_id(organization_id):
+    """
+    Return a new `unique_id` for a background task whose result is read by `GET /api/v3/cache_entries/{unique_id}/`
+    (e.g., an export): the organization's ID, so that it can only be read through that organization, and a random token,
+    so that it can neither be guessed nor match another task's (which would mix up their progress and results)
+    """
+    return f"{int(organization_id)}-{secrets.token_hex(16)}"
+
+
+def is_task_result_id(unique_id, organization_id):
+    """Whether `unique_id` was made by `new_task_result_id` for the organization"""
+    return re.fullmatch(rf"{int(organization_id)}-[0-9a-f]{{32}}", str(unique_id)) is not None
+
+
+def set_task_result(unique_id, result, access_level_instance_id, timeout):
+    """
+    Cache a background task's result with the ID of the access level instance that its data is limited to, so that only
+    users of that access level instance or one of its ancestors can read it. Export and mapping results (limited to the
+    access level instance of the user who started the task) are read by `GET /api/v3/cache_entries/{unique_id}/`, and
+    data quality results (limited to that of the user, or of the import file for an import file's checks) by
+    `GET /api/v3/data_quality_checks/results/` and `results_csv/`.
+    """
+    set_cache_raw(unique_id, {"access_level_instance_id": access_level_instance_id, "result": result}, timeout)
+
+
+def get_task_result(unique_id):
+    """Return a background task's cached result (see `set_task_result`) and the ID of its access level instance"""
+    entry = get_cache_raw(unique_id)
+    if not isinstance(entry, dict) or "result" not in entry:
+        return None, None
+    return entry["result"], entry.get("access_level_instance_id")
 
 
 def set_cache(progress_key, status, data):

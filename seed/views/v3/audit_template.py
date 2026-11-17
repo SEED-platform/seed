@@ -26,7 +26,7 @@ PROGRESS_RESPONSE = AutoSchemaHelper.schema_factory(
         "progress": "number",
         "progress_key": "string",
         "total": "integer",
-        "unique_id": "integer",
+        "unique_id": "string",
         "func_name": "string",
     },
     description="Progress data of the started background task. Poll `/api/v3/progress/{progress_key}/` for its result.",
@@ -54,8 +54,23 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
     @action(detail=True, methods=["GET"])
     def get_submission(self, request, pk):
         """
-        Fetches a Report Submission (JSON, XML, or PDF) from Audit Template (only)
+        Fetches a Report Submission (JSON, XML, or PDF) from Audit Template (only). Only users of the organization's
+        root access level can fetch them.
         """
+        # The organization's token can fetch any of its submissions, whose buildings are not matched to properties (and
+        # their access level instances) here, so only users with access to all of the organization's properties can
+        if not AccessLevelInstance.objects.get(pk=request.access_level_instance_id).is_root():
+            return JsonResponse(
+                {"success": False, "message": "Only users of the root access level can fetch Audit Template submissions"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        try:
+            # an integer, since it is in Audit Template's URL and the filename
+            submission_id = int(pk)
+        except ValueError:
+            return JsonResponse({"success": False, "message": "The submission ID must be an integer"}, status=400)
+
         # get report format or default to pdf
         default_report_format = "pdf"
         report_format = request.query_params.get("report_format", default_report_format)
@@ -67,7 +82,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
 
         # retrieve report
         at = AuditTemplate(self.get_organization(self.request))
-        response, message = at.get_submission(pk, report_format)
+        response, message = at.get_submission(submission_id, report_format)
 
         # error
         if response is None:
@@ -75,13 +90,16 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
         # json
         if report_format.lower() == "json":
             return JsonResponse(json.loads(response.content))
+        # Audit Template's reports are downloaded rather than displayed from SEED's origin
         # xml
         if report_format.lower() == "xml":
-            return HttpResponse(response.text, content_type="application/xml")
+            response2 = HttpResponse(response.text, content_type="application/xml")
+            response2.headers["Content-Disposition"] = f'attachment; filename="at_submission_{submission_id}.xml"'
+            return response2
         # pdf
         response2 = HttpResponse(response.content)
         response2.headers["Content-Type"] = "application/pdf"
-        response2.headers["Content-Disposition"] = f'attachment; filename="at_submission_{pk}.pdf"'
+        response2.headers["Content-Disposition"] = f'attachment; filename="at_submission_{submission_id}.pdf"'
         return response2
 
     def validate_properties(self, properties):
@@ -135,7 +153,7 @@ class AuditTemplateViewSet(viewsets.ViewSet, OrgMixin):
 
         at = AuditTemplate(org_id)
 
-        progress_data, message = at.batch_export_to_audit_template(property_view_ids)
+        progress_data, message = at.batch_export_to_audit_template(property_view_ids, access_level_instance_id=access_level_instance.id)
         if progress_data is None:
             return JsonResponse({"success": False, "message": message or "Unexpected Error"}, status=400)
         return JsonResponse(progress_data)

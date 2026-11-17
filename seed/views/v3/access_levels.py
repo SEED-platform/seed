@@ -419,7 +419,7 @@ class AccessLevelViewSet(viewsets.ViewSet):
                     "status_message": "string",
                     "progress": "number",
                     "progress_key": "string",
-                    "unique_id": "integer",
+                    "unique_id": "string",
                     "func_name": "string",
                     "message": "string",
                     "stacktrace": "string",

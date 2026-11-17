@@ -34,6 +34,7 @@ from seed.models import (
     PORTFOLIO_METER_USAGE,
     PORTFOLIO_RAW,
     SEED_DATA_SOURCES,
+    Analysis,
     BuildingFile,
     Column,
     ColumnMappingProfile,
@@ -54,6 +55,8 @@ from seed.models import (
 )
 from seed.serializers.properties import PropertyStatePromoteWritableSerializer, PropertyStateSerializer
 from seed.test_helpers.fake import (
+    FakeAnalysisFactory,
+    FakeAnalysisPropertyViewFactory,
     FakeColumnFactory,
     FakeColumnListProfileFactory,
     FakeCycleFactory,
@@ -1456,6 +1459,41 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         resp = self.client.get(url, content_type="application/json")
         assert resp.status_code == 404
 
+    def test_property_analyses_are_limited_to_the_users_access_level(self):
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        other_cycle = self.cycle_factory.get_cycle(name="other cycle")
+        analysis_factory = FakeAnalysisFactory(organization=self.org, user=self.root_owner_user)
+        # a root user's (portfolio) analysis that includes the child property, and the child's analysis of it in two cycles
+        root_analysis = analysis_factory.get_analysis(name="root analysis", service=Analysis.EEEJ)
+        child_analysis = analysis_factory.get_analysis(
+            name="child analysis", service=Analysis.EEEJ, access_level_instance=self.child_level_instance
+        )
+        for analysis, cycles in ((root_analysis, [self.cycle]), (child_analysis, [self.cycle, other_cycle])):
+            analysis.status = Analysis.COMPLETED
+            analysis.save()
+            for cycle in cycles:
+                analysis_property_view = FakeAnalysisPropertyViewFactory(
+                    organization=self.org, analysis=analysis
+                ).get_analysis_property_view(property_obj=child_property, cycle=cycle)
+                analysis_property_view.parsed_results = {"2010 Census Tract": cycle.name}
+                analysis_property_view.save()
+        url = reverse("api:v3:properties-analyses", args=[child_property.id]) + f"?organization_id={self.org.pk}"
+
+        def get_tracts(query=""):
+            resp = self.client.get(url + query, content_type="application/json")
+            assert resp.status_code == 200
+            return {analysis["name"]: analysis["highlights"][0]["value"] for analysis in resp.json()["analyses"]}
+
+        self.login_as_child_member()
+        # the property's results in its first cycle, or in the given one, although it is in the analysis twice
+        assert get_tracts() == {"child analysis": self.cycle.name}
+        assert get_tracts(f"&cycle_id={other_cycle.id}") == {"child analysis": "other cycle"}
+
+        self.login_as_root_member()
+        assert get_tracts() == {"child analysis": self.cycle.name, "root analysis": self.cycle.name}
+        assert get_tracts(f"&cycle_id={other_cycle.id}") == {"child analysis": "other cycle"}
+        assert self.client.get(url + "&cycle_id=abc", content_type="application/json").status_code == 400
+
     def test_update_property_view_with_espm(self):
         """Simple test to verify that the property state is merged with an updated
         ESPM download XLSX file."""
@@ -1484,6 +1522,60 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
                 content_type=MULTIPART_CONTENT,
             )
             assert resp.status_code == 404
+
+    def test_update_property_view_with_espm_only_adds_meters_to_that_property(self):
+        pm_property_id = "22482007"
+        child_view = self.property_view_factory.get_property_view(
+            prprty=self.property_factory.get_property(access_level_instance=self.child_level_instance),
+            cycle=self.cycle,
+            pm_property_id=pm_property_id,
+        )
+        # a root property with the same Portfolio Manager ID, which the child member cannot access
+        root_view = self.property_view_factory.get_property_view(
+            prprty=self.property_factory.get_property(access_level_instance=self.root_level_instance),
+            cycle=self.cycle,
+            pm_property_id=pm_property_id,
+        )
+        mapping_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "mappings", "espm-single-mapping.csv")
+        mapping_profile = ColumnMappingProfile.create_from_file(mapping_filepath, self.org, "ESPM", overwrite_if_exists=True)
+        # child members cannot create the profile's new columns, so create them first
+        Column.create_mappings(mapping_profile.mappings, self.org, self.root_owner_user)
+        test_filepath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", f"portfolio-manager-single-{pm_property_id}.xlsx")
+        url = reverse("api:v3:properties-update-with-espm", args=[child_view.id])
+        url += f"?organization_id={self.org.id}&cycle_id={self.cycle.id}&mapping_profile_id={mapping_profile.id}"
+
+        self.login_as_child_member()
+        with open(test_filepath, "rb") as doc:
+            resp = self.client.put(
+                path=url,
+                data=encode_multipart(data={"file": doc, "file_type": "XLSX", "name": doc.name}, boundary=BOUNDARY),
+                content_type=MULTIPART_CONTENT,
+            )
+        assert resp.status_code == 200
+        assert child_view.property.meters.count() == 2
+        assert not root_view.property.meters.exists()
+
+    def test_inventory_document_and_building_file_endpoints_reject_malformed_input(self):
+        self.login_as_root_member()
+        url = reverse("api:v3:properties-delete-inventory-document", args=[self.view.id])
+        resp = self.client.delete(url + f"?organization_id={self.org.pk}&file_id=abc")
+        assert resp.status_code == 400
+
+        # a file sent under another name than `file`
+        data = encode_multipart(data={"document": SimpleUploadedFile("document.pdf", b"%PDF")}, boundary=BOUNDARY)
+        for url in (
+            reverse("api:v3:properties-upload-inventory-document", args=[self.view.id]),
+            reverse("api:v3:properties-update-with-building-sync", args=[self.view.id]),
+        ):
+            resp = self.client.put(
+                url + f"?organization_id={self.org.pk}&cycle_id={self.cycle.pk}", data=data, content_type=MULTIPART_CONTENT
+            )
+            assert resp.status_code == 200, url
+            assert resp.json()["success"] is False
+        url = reverse("api:v3:building_files-list") + f"?organization_id={self.org.pk}&cycle_id={self.cycle.pk}"
+        resp = self.client.post(url, data={"document": SimpleUploadedFile("building.xml", b"<x/>")})
+        assert resp.status_code == 200
+        assert resp.json()["success"] is False
 
     def test_properties_can_move_between_alis(self):
         self.property.access_level_instance = self.child_level_instance

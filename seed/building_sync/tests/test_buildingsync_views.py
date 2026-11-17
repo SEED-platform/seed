@@ -53,6 +53,8 @@ class InventoryViewTests(DeleteModelsTestCase):
         url = reverse("api:v3:properties-building-sync", args=[pv.id])
         response = self.client.get(url, params)
         self.assertIn(f"<auc:FloorAreaValue>{state.gross_floor_area}.0</auc:FloorAreaValue>", response.content.decode("utf-8"))
+        # the XML includes uploaded files' elements, so it is downloaded rather than shown in the browser
+        self.assertEqual(response["Content-Disposition"], f'attachment; filename="buildingsync_property_{pv.id}.xml"')
 
     def test_get_building_sync_converts_state_name_to_code(self):
         state = self.property_state_factory.get_property_state(state="Colorado")

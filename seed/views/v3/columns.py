@@ -350,7 +350,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
                 {"status": "error", "message": "Geometry columns can't be matching criteria"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        key = "".join(str(x) for x in changes)
+        key = f"{org_id}-" + "-".join(str(x) for x in changes)
         result = tasks.update_multiple_columns(key, table_name, org_id, changes)
         return JsonResponse(result)
 

@@ -330,6 +330,17 @@ class TestBuildingFilesPermission(AccessLevelBaseTestCase):
             file=simple_uploaded_file, filename=self.filename, file_type=BuildingFile.BUILDINGSYNC, property_state=self.child_property_state
         )
 
+    def test_list_and_get_files_of_a_state_shared_by_views_in_several_cycles(self):
+        # a second view of the root property, in another cycle, sharing the state that has the building file
+        self.property_view_factory.get_property_view(prprty=self.root_property, cycle=self.cycle, state=self.root_property_state)
+
+        self.login_as_root_member()
+        result = self.client.get(reverse("api:v3:building_files-list") + f"?organization_id={self.org.id}")
+        # each file is listed once
+        assert sorted(d["id"] for d in result.json()["data"]) == sorted([self.root_bf.id, self.child_bf.id])
+        url = reverse("api:v3:building_files-detail", args=[self.root_bf.id]) + f"?organization_id={self.org.id}"
+        assert self.client.get(url).status_code == 200
+
     def test_list(self):
         url = reverse("api:v3:building_files-list") + f"?organization_id={self.org.id}"
 

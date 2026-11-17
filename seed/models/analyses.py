@@ -88,12 +88,14 @@ class Analysis(models.Model):
             "cycles": list(analysis_property_views.values_list("cycle", flat=True).distinct()),
         }
 
-    def get_highlights(self, property_id=None):
+    def get_highlights(self, property_id=None, cycle_id=None):
         """Get analysis highlights for the overall analysis or for a specific property
 
         :param property_id: int | None, if provided property-specific highlights
             from the analysis results are returned. Otherwise highlights from the
             overall analysis are returned.
+        :param cycle_id: int | None, the cycle of the property's results, since a property
+            can be in an analysis once per cycle (defaults to its first)
         :return: list[dict{}], a list of highlights as dictionaries, each including
             a `name` and `value`
         """
@@ -102,10 +104,13 @@ class Analysis(models.Model):
 
         results = {}
         if property_id is not None:
-            try:
-                results = self.analysispropertyview_set.get(property=property_id).parsed_results
-            except models.Model.DoesNotExist:
+            analysis_property_views = self.analysispropertyview_set.filter(property=property_id)
+            if cycle_id is not None:
+                analysis_property_views = analysis_property_views.filter(cycle_id=cycle_id)
+            analysis_property_view = analysis_property_views.order_by("id").first()
+            if analysis_property_view is None:
                 return []
+            results = analysis_property_view.parsed_results
         else:
             results = self.parsed_results
 

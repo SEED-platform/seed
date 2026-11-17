@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 from datetime import datetime
+from unittest import mock
 
 from django.test import TestCase
 from django.urls import reverse, reverse_lazy
@@ -14,7 +15,7 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
 from seed.lib.progress_data.progress_data import ProgressData
-from seed.lib.superperms.orgs.models import OrganizationUser
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_OWNER, ROLE_VIEWER, Organization, OrganizationUser
 from seed.models import VIEW_LIST_TAXLOT, Column, ColumnMapping, PropertyView, StatusLabel, TaxLot, TaxLotProperty, TaxLotView, Unit
 from seed.test_helpers.fake import (
     FakeColumnFactory,
@@ -26,7 +27,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, AssertDictSubsetMixin, DeleteModelsTestCase
-from seed.utils.cache import set_cache_raw
+from seed.utils.cache import delete_cache, get_cache, set_cache_raw
 from seed.utils.organizations import create_organization
 
 DEFAULT_CUSTOM_COLUMNS = [
@@ -451,7 +452,9 @@ class TestMCMViews(TestCase):
 
     def test_progress(self):
         """Make sure we retrieve data from cache properly."""
-        progress_data = ProgressData(func_name="fun_func", unique_id=23)
+        progress_data = ProgressData(
+            func_name="fun_func", unique_id=23, organization_id=self.org.id, access_level_instance_id=self.org.root.id
+        )
         progress_data.total = 2
         progress_data.save()
         progress_data.step("Some Status Message")  # bump to 50%
@@ -535,6 +538,177 @@ class TestMCMViews(TestCase):
         self.assertEqual(import_record.app, "seed")
         self.assertEqual(import_record.name, DATASET_NAME_1)
         self.assertEqual(self.org, import_record.super_organization)
+
+
+class ProgressViewAccessTests(AccessLevelBaseTestCase):
+    """Only users of a task's organization, and of its access level instance or an ancestor, can read its progress"""
+
+    def setUp(self):
+        super().setUp()
+        self.sibling_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+        self.sibling_member_user_details = {"username": "sibling_member@demo.com", "password": "test_pass"}
+        self.sibling_member_user = User.objects.create_user(**self.sibling_member_user_details)
+        self.org.add_member(self.sibling_member_user, self.sibling_level_instance.pk, ROLE_MEMBER)
+        self.root_viewer_user_details = {"username": "root_viewer@demo.com", "password": "test_pass"}
+        self.root_viewer_user = User.objects.create_user(**self.root_viewer_user_details)
+        self.org.add_member(self.root_viewer_user, self.org.root.id, ROLE_VIEWER)
+        self.other_owner_details = {"username": "other_owner@demo.com", "password": "test_pass"}
+        self.other_owner = User.objects.create_user(**self.other_owner_details)
+        self.other_org, _, _ = create_organization(self.other_owner, "other-organization")
+
+    def _login(self, user_details):
+        self.client.logout()
+        self.client.login(**user_details)
+
+    def _get(self, user_details, progress_key):
+        self._login(user_details)
+        return self.client.get(reverse("api:v3:progress-detail", args=[progress_key]))
+
+    def _progress_data(self, unique_id, func_name="test_func", **tags):
+        progress_data = ProgressData(func_name=func_name, unique_id=unique_id, **tags)
+        progress_data.total = 2
+        progress_data.save()
+        progress_data.step("Checking records", new_summary={"records": ["123 Main St"]})
+        progress_data.add_file_info("building.xml", {"warnings": ["Missing gross floor area"]})
+        return progress_data
+
+    def _assert_readable(self, response):
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["progress"], 50)
+        self.assertEqual(body["status_message"], "Checking records")
+        self.assertEqual(body["summary"], {"records": ["123 Main St"]})
+        self.assertEqual(body["file_info"], {"building.xml": {"warnings": ["Missing gross floor area"]}})
+
+    def _assert_waiting(self, response, progress_key):
+        # the same response as for an unknown key, so that it does not reveal that the task exists
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"progress_key": progress_key, "progress": 0, "status": "waiting"})
+
+    def test_unknown_key(self):
+        progress_key = ProgressData(func_name="test_func", unique_id="unknown").key
+        delete_cache(progress_key)
+
+        self._assert_waiting(self._get(self.root_owner_user_details, progress_key), progress_key)
+
+    def test_root_task_is_only_readable_by_root_users(self):
+        progress_data = self._progress_data("root", organization_id=self.org.id, access_level_instance_id=self.root_level_instance.id)
+
+        # any role can read it, e.g., viewers, who can poll the progress of the analyses they can view
+        for user_details in (
+            self.superuser_details,
+            self.root_owner_user_details,
+            self.root_member_user_details,
+            self.root_viewer_user_details,
+        ):
+            self._assert_readable(self._get(user_details, progress_data.key))
+
+        for user_details in (self.child_member_user_details, self.sibling_member_user_details, self.other_owner_details):
+            self._assert_waiting(self._get(user_details, progress_data.key), progress_data.key)
+
+    def test_child_task_is_readable_by_its_and_ancestor_users(self):
+        progress_data = self._progress_data("child", organization_id=self.org.id, access_level_instance_id=self.child_level_instance.id)
+
+        for user_details in (self.superuser_details, self.root_member_user_details, self.child_member_user_details):
+            self._assert_readable(self._get(user_details, progress_data.key))
+
+        for user_details in (self.sibling_member_user_details, self.other_owner_details):
+            self._assert_waiting(self._get(user_details, progress_data.key), progress_data.key)
+
+    def test_organization_task_is_readable_by_organization_users(self):
+        # a task that is not limited to an access level instance
+        progress_data = self._progress_data("organization", organization_id=self.org.id)
+
+        for user_details in (self.root_viewer_user_details, self.child_member_user_details, self.sibling_member_user_details):
+            self._assert_readable(self._get(user_details, progress_data.key))
+
+        self._assert_waiting(self._get(self.other_owner_details, progress_data.key), progress_data.key)
+
+    def test_parent_organization_owners_can_read_sub_organization_owner_tasks(self):
+        # a parent organization's owner who is a member of a sub-organization's child access level instance can start the
+        # org-wide tasks that require an owner (see `requires_owner`), e.g., deleting a cycle
+        sub_org, _, _ = create_organization(self.other_owner, "sub organization")
+        sub_org.parent_org = self.other_org
+        sub_org.access_level_names = ["root", "child"]
+        sub_org.save()
+        sub_child_level_instance = sub_org.add_new_access_level_instance(sub_org.root.id, "child")
+        sub_org.add_member(self.child_member_user, sub_child_level_instance.pk, ROLE_MEMBER)
+        self.other_org.add_member(self.child_member_user, self.other_org.root.id, ROLE_OWNER)
+        root_tags = {"organization_id": sub_org.id, "access_level_instance_id": sub_org.root.id}
+        owner_tasks = [
+            self._progress_data(f"sub {func_name}", func_name=func_name, **root_tags)
+            for func_name in ("delete_organization_and_inventory", "delete_organization_cycle", "save_raw_access_level_instances_data")
+        ]
+        # e.g., an import of the root's records, which they cannot access
+        root_import_task = self._progress_data("sub root import", func_name="save_raw_data", **root_tags)
+        child_task = self._progress_data("sub child", organization_id=sub_org.id, access_level_instance_id=sub_child_level_instance.id)
+        sibling_task = self._progress_data(
+            "sub sibling",
+            organization_id=sub_org.id,
+            access_level_instance_id=sub_org.add_new_access_level_instance(sub_org.root.id, "sibling").id,
+        )
+
+        for progress_data in [*owner_tasks, child_task]:
+            self._assert_readable(self._get(self.child_member_user_details, progress_data.key))
+        # but not the root's other tasks, or the tasks of other access level instances
+        for progress_data in (root_import_task, sibling_task):
+            self._assert_waiting(self._get(self.child_member_user_details, progress_data.key), progress_data.key)
+
+    def test_task_with_access_level_instance_of_another_organization_is_denied(self):
+        # nested-set bounds overlap between organizations, so another organization's root must not match
+        progress_data = self._progress_data("mismatch", organization_id=self.org.id, access_level_instance_id=self.other_org.root.id)
+
+        for user_details in (self.root_owner_user_details, self.child_member_user_details, self.other_owner_details):
+            self._assert_waiting(self._get(user_details, progress_data.key), progress_data.key)
+
+    def test_denied_reads_do_not_refresh_the_timeout(self):
+        progress_data = self._progress_data("root", organization_id=self.org.id, access_level_instance_id=self.root_level_instance.id)
+
+        with mock.patch("seed.views.v3.progress.get_cache", wraps=get_cache) as mock_get_cache:
+            self._get(self.sibling_member_user_details, progress_data.key)
+            mock_get_cache.assert_not_called()
+
+            self._get(self.root_member_user_details, progress_data.key)
+            mock_get_cache.assert_called_once_with(progress_data.key)
+
+    def test_untagged_progress_only_includes_the_progress(self):
+        # e.g., progress data cached before it was tagged with an organization
+        progress_data = self._progress_data("untagged")
+        progress_data.finish_with_error("Could not find 123 Main St", "Traceback")
+
+        for user_details in (self.root_owner_user_details, self.other_owner_details):
+            response = self._get(user_details, progress_data.key)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(
+                response.json(),
+                {"progress_key": progress_data.key, "progress": 100, "status": "error", "func_name": "test_func", "total": 2},
+            )
+
+    def test_started_task_is_tagged(self):
+        self._login(self.child_member_user_details)
+        url = reverse("api:v3:tax_lot_properties-start-set-update-to-now") + f"?organization_id={self.org.id}"
+        progress_key = self.client.get(url).json()["progress_key"]
+
+        for user_details in (self.child_member_user_details, self.root_member_user_details):
+            response = self._get(user_details, progress_key)
+            self.assertEqual(response.json()["status"], "not-started")
+            self.assertEqual(response.json()["access_level_instance_id"], self.child_level_instance.id)
+
+        for user_details in (self.sibling_member_user_details, self.other_owner_details):
+            self._assert_waiting(self._get(user_details, progress_key), progress_key)
+
+    def test_progress_of_organization_deletion_remains_readable(self):
+        self._login(self.root_owner_user_details)
+        response = self.client.delete(reverse("api:v3:organizations-detail", args=[self.org.id]))
+        self.assertEqual(response.status_code, 200)
+        progress_key = response.json()["progress_key"]
+        self.assertFalse(Organization.objects.filter(pk=self.org.id).exists())
+
+        # its users can no longer be checked against the deleted organization, but can still see that it finished
+        response = self._get(self.root_owner_user_details, progress_key)
+        self.assertEqual(response.json()["progress"], 100)
+        self.assertEqual(response.json()["status"], "success")
+        self.assertNotIn("message", response.json())
 
 
 class InventoryViewTests(AssertDictSubsetMixin, DeleteModelsTestCase):

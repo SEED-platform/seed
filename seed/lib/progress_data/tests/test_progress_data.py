@@ -8,7 +8,9 @@ import logging
 import pytest
 from django.test import TestCase
 
+from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
+from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)
 
@@ -94,3 +96,49 @@ class TestProgressData(TestCase):
 
         pd.step(new_summary=4815162342)
         self.assertEqual(pd.summary(), 4815162342)
+
+    def test_tags(self):
+        pd = ProgressData(func_name="test_func_7", unique_id="tagged", organization_id=1, access_level_instance_id=2)
+        self.assertEqual((pd.data["organization_id"], pd.data["access_level_instance_id"]), (1, 2))
+
+        # the tags are kept by progress data read from the cache, and when it is saved, deleted (which reinitializes it),
+        # stepped, and finished
+        pd2 = ProgressData.from_key(pd.key)
+        self.assertEqual((pd2.organization_id, pd2.access_level_instance_id), (1, 2))
+        pd2.total = 2
+        pd2.save()
+        pd2.delete()
+        pd2.step("Stepping", new_summary={"Values": ["A"]})
+        pd2.add_file_info("file.xml", {"warnings": []})
+        pd2.finish_with_error("Error", "Traceback")
+
+        pd.load()
+        for data in (pd.data, ProgressData.from_key(pd.key).result()):
+            self.assertEqual((data["organization_id"], data["access_level_instance_id"]), (1, 2))
+            self.assertEqual(data["status"], "error")
+
+    def test_tags_are_optional(self):
+        # e.g., the progress of a task that is not limited to an access level instance
+        pd = ProgressData(func_name="test_func_8", unique_id="organization", organization_id=1)
+        self.assertEqual(pd.data["organization_id"], 1)
+        self.assertNotIn("access_level_instance_id", pd.data)
+
+        pd = ProgressData(func_name="test_func_8", unique_id="untagged")
+        self.assertNotIn("organization_id", ProgressData.from_key(pd.key).data)
+
+    def test_untag(self):
+        pd = ProgressData(func_name="test_func_9", unique_id="untag", organization_id=1, access_level_instance_id=2)
+        pd.untag()
+        pd.finish_with_success()
+
+        data = ProgressData.from_key(pd.key).data
+        self.assertNotIn("organization_id", data)
+        self.assertNotIn("access_level_instance_id", data)
+        self.assertEqual(data["status"], "success")
+
+    def test_for_organization(self):
+        user = User.objects.create_user(username="test_user@demo.com", password="test_pass")
+        org, _, _ = create_organization(user)
+
+        pd = ProgressData.for_organization("test_func_10", "organization", org.id)
+        self.assertEqual((pd.data["organization_id"], pd.data["access_level_instance_id"]), (org.id, org.root.id))

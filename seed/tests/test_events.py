@@ -9,8 +9,14 @@ from django.test import TransactionTestCase
 from django.urls import reverse
 
 from seed.landing.models import SEEDUser as User
-from seed.models import AnalysisEvent, ATEvent, BuildingFile, NoteEvent
-from seed.test_helpers.fake import FakeAnalysisFactory, FakeCycleFactory, FakeNoteFactory, FakePropertyFactory
+from seed.models import Analysis, AnalysisEvent, ATEvent, BuildingFile, NoteEvent
+from seed.test_helpers.fake import (
+    FakeAnalysisFactory,
+    FakeAnalysisPropertyViewFactory,
+    FakeCycleFactory,
+    FakeNoteFactory,
+    FakePropertyFactory,
+)
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
 
@@ -114,3 +120,46 @@ class EventPermissionsTests(AccessLevelBaseTestCase):
         self.login_as_child_member()
         resp = self.client.get(url, content_type="application/json")
         assert resp.status_code == 404
+
+    def test_analysis_events_show_the_highlights_of_their_cycle(self):
+        # a property can be in an analysis once per cycle
+        cycles = [self.cycle_factory.get_cycle(name=name) for name in ("first cycle", "second cycle")]
+        analysis = FakeAnalysisFactory(organization=self.org, user=self.root_owner_user).get_analysis(service=Analysis.EEEJ)
+        analysis.status = Analysis.COMPLETED
+        analysis.save()
+        for cycle in cycles:
+            analysis_property_view = FakeAnalysisPropertyViewFactory(organization=self.org, analysis=analysis).get_analysis_property_view(
+                property_obj=self.property, cycle=cycle
+            )
+            analysis_property_view.parsed_results = {"2010 Census Tract": cycle.name}
+            analysis_property_view.save()
+            AnalysisEvent.objects.create(property=self.property, cycle=cycle, analysis=analysis)
+        url = reverse("api:v3:property-events-list", kwargs={"property_pk": self.property.id}) + f"?organization_id={self.org.pk}"
+
+        self.login_as_root_member()
+        resp = self.client.get(url, content_type="application/json")
+        assert resp.status_code == 200
+        tracts = {event["cycle"]: event["analysis"]["highlights"][0]["value"] for event in resp.json()["data"]}
+        assert tracts == {cycle.id: cycle.name for cycle in cycles}
+
+    def test_list_leaves_out_analyses_outside_the_users_access_level(self):
+        child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        cycle = self.cycle_factory.get_cycle()
+        analysis_factory = FakeAnalysisFactory(organization=self.org, user=self.root_owner_user)
+        # a root user's (portfolio) analysis that includes the child property, the child's own analysis, and a note
+        root_analysis = analysis_factory.get_analysis(name="root analysis")
+        child_analysis = analysis_factory.get_analysis(name="child analysis", access_level_instance=self.child_level_instance)
+        root_event = AnalysisEvent.objects.create(property=child_property, cycle=cycle, analysis=root_analysis)
+        child_event = AnalysisEvent.objects.create(property=child_property, cycle=cycle, analysis=child_analysis)
+        note = self.note_factory.get_note()
+        note_event = NoteEvent.objects.create(property=child_property, cycle=cycle, note=note)
+        url = reverse("api:v3:property-events-list", kwargs={"property_pk": child_property.id}) + f"?organization_id={self.org.pk}"
+
+        for login, event_ids in (
+            (self.login_as_child_member, {child_event.id, note_event.id}),
+            (self.login_as_root_member, {root_event.id, child_event.id, note_event.id}),
+        ):
+            login()
+            resp = self.client.get(url, content_type="application/json")
+            assert resp.status_code == 200
+            assert {event["id"] for event in resp.json()["data"]} == event_ids

@@ -310,10 +310,7 @@ class AnalysisPipeline(abc.ABC):
             if locked_analysis.status == Analysis.PENDING_CREATION:
                 locked_analysis.status = Analysis.CREATING
                 locked_analysis.save()
-                progress_data = ProgressData(
-                    self._get_progress_data_key_prefix(locked_analysis),
-                    self._analysis_id,
-                )
+                progress_data = self._new_progress_data(locked_analysis)
             else:
                 raise AnalysisPipelineError("Analysis has already been prepared or is currently being prepared")
 
@@ -330,10 +327,7 @@ class AnalysisPipeline(abc.ABC):
             if locked_analysis.status == Analysis.READY:
                 locked_analysis.status = Analysis.QUEUED
                 locked_analysis.save()
-                progress_data = ProgressData(
-                    self._get_progress_data_key_prefix(locked_analysis),
-                    self._analysis_id,
-                )
+                progress_data = self._new_progress_data(locked_analysis)
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
                 raise AnalysisPipelineError(
@@ -456,7 +450,7 @@ class AnalysisPipeline(abc.ABC):
                 locked_analysis.start_time = tz.now()
                 locked_analysis.save()
 
-                return ProgressData(self._get_progress_data_key_prefix(locked_analysis), locked_analysis.id)
+                return self._new_progress_data(locked_analysis)
             else:
                 statuses = dict(Analysis.STATUS_TYPES)
                 valid_statuses_str = " or ".join([statuses[s] for s in valid_statuses])
@@ -495,6 +489,18 @@ class AnalysisPipeline(abc.ABC):
     def _get_progress_data_key_prefix(self, analysis):
         statuses = dict(Analysis.STATUS_TYPES)
         return f"analysis-{statuses[analysis.status]}"
+
+    def _new_progress_data(self, analysis):
+        """
+        Create the ProgressData for the analysis's current status, which only users who can access the analysis (of its
+        access level instance or an ancestor) can read
+        """
+        return ProgressData(
+            self._get_progress_data_key_prefix(analysis),
+            analysis.id,
+            organization_id=analysis.organization_id,
+            access_level_instance_id=analysis.access_level_instance_id,
+        )
 
     def get_progress_data(self, analysis=None):
         """Get the ProgressData for the current task. If the analysis doesn't currently

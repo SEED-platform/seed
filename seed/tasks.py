@@ -5,9 +5,9 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import itertools
 import math
+import secrets
 import sys
 from datetime import UTC, datetime
-from random import randint
 
 from celery import chord, shared_task
 from celery.utils.log import get_task_logger
@@ -166,7 +166,9 @@ def delete_organization_and_inventory(org_pk, prog_key=None):
     """Deletes all associated inventory and the containing org"""
 
     progress_data = (
-        ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="delete_organization_and_inventory", unique_id=org_pk)
+        ProgressData.from_key(prog_key)
+        if prog_key
+        else ProgressData.for_organization("delete_organization_and_inventory", org_pk, int(org_pk))
     )
     _evaluate_delete_organization_and_inventory.subtask((progress_data.key, org_pk, True)).apply_async()
     return progress_data.result()
@@ -208,6 +210,9 @@ def _evaluate_delete_organization_and_inventory(prog_key, org_pk, delete_org=Fal
     if delete_org:
         DerivedColumn.objects.filter(organization_id=org_pk).delete()
         Organization.objects.get(pk=org_pk).delete()
+        # Its users can no longer be checked against the deleted organization, so leave only the progress itself
+        # readable to let them see that the deletion finished
+        progress_data.untag()
         # TODO: Delete measures in BRICR branch
 
     progress_data.finish_with_success()
@@ -237,7 +242,7 @@ def delete_organization_inventory(org_pk, prog_key=None, chunk_size=100, *args, 
     """Deletes all properties & taxlots within an organization."""
     sys.setrecursionlimit(5000)  # default is 1000
     progress_data = (
-        ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="delete_organization_inventory", unique_id=org_pk)
+        ProgressData.from_key(prog_key) if prog_key else ProgressData.for_organization("delete_organization_inventory", org_pk, int(org_pk))
     )
     _evaluate_delete_organization_and_inventory.subtask((progress_data.key, org_pk, False)).apply_async()
     sys.setrecursionlimit(1000)  # default is 1000
@@ -257,7 +262,11 @@ def delete_organization_cycle(cycle_pk, organization_pk, prog_key=None, chunk_si
     :param chunk_size: int
     :return: dict, from ProgressData.result()
     """
-    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="delete_organization_cycle", unique_id=cycle_pk)
+    progress_data = (
+        ProgressData.from_key(prog_key)
+        if prog_key
+        else ProgressData.for_organization("delete_organization_cycle", cycle_pk, int(organization_pk))
+    )
 
     has_inventory = PropertyView.objects.filter(cycle_id=cycle_pk).exists() or TaxLotView.objects.filter(cycle_id=cycle_pk).exists()
     if has_inventory:
@@ -295,7 +304,7 @@ def _finish_delete_cycle(cycle_id, prog_key):
 def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100, *args, **kwargs):
     """Deletes an extra_data column from all merged property/taxlot states."""
     progress_data = (
-        ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="delete_organization_column", unique_id=column_pk)
+        ProgressData.from_key(prog_key) if prog_key else ProgressData.for_organization("delete_organization_column", column_pk, int(org_pk))
     )
 
     _evaluate_delete_organization_column.subtask((column_pk, org_pk, progress_data.key, chunk_size)).apply_async()
@@ -308,7 +317,9 @@ def delete_organization_column(column_pk, org_pk, prog_key=None, chunk_size=100,
 def update_multiple_columns(key, table_name, org_pk, changes, prog_key=None):
     """Updates several columns and optionally rehashes if need be."""
 
-    progress_data = ProgressData.from_key(prog_key) if prog_key else ProgressData(func_name="update_multiple_columns", unique_id=key)
+    progress_data = (
+        ProgressData.from_key(prog_key) if prog_key else ProgressData.for_organization("update_multiple_columns", key, int(org_pk))
+    )
     _evaluate_update_multiple_columns.subtask((progress_data.key, table_name, org_pk, changes)).apply_async()
     return progress_data.result()
 
@@ -546,8 +557,17 @@ def set_update_to_now(property_view_ids, taxlot_view_ids, progress_key):
 
 
 @shared_task
-def copy_properties_to_cycle(property_view_ids, cycle_id, column_ids, org_id):
-    progress_data = ProgressData(func_name="copy_properties_to_cycle", unique_id=randint(10000, 99999))
+def copy_properties_to_cycle(property_view_ids, cycle_id, column_ids, org_id, access_level_instance_id=None):
+    """
+    :param access_level_instance_id: int, ID of the access level instance of the user who started the copy (which the
+        views were limited to), so that only users of it or its ancestors can read the progress
+    """
+    progress_data = ProgressData(
+        func_name="copy_properties_to_cycle",
+        unique_id=secrets.token_hex(16),
+        organization_id=int(org_id),
+        access_level_instance_id=access_level_instance_id,
+    )
     progress_data.data["num_created"] = 0
     progress_data.save()
     progress_key = progress_data.key
@@ -558,7 +578,7 @@ def copy_properties_to_cycle(property_view_ids, cycle_id, column_ids, org_id):
     for chunk_ids in batch(property_view_ids, chunk_size):
         tasks.append(_copy_property_to_cycle_chunk.si(progress_key, chunk_ids, cycle_id, column_ids))
 
-    chord(tasks, interval=15)(_finish_copy_property_to_cycle.s(progress_data.key, org_id))
+    chord(tasks, interval=15)(_finish_copy_property_to_cycle.s(progress_data.key, org_id, access_level_instance_id))
 
     return progress_data.result()
 
@@ -588,33 +608,51 @@ def _copy_property_to_cycle_chunk(progress_key, property_view_ids, cycle_id, col
 
 
 @shared_task
-def _finish_copy_property_to_cycle(property_view_ids, progress_key, org_id):
+def _finish_copy_property_to_cycle(property_view_ids, progress_key, org_id, access_level_instance_id=None):
     derived_columns = DerivedColumn.objects.filter(organization_id=org_id)
     Column.objects.filter(derived_column__in=derived_columns).update(is_updating=True)
     derived_column_ids = list(derived_columns.values_list("id", flat=True))
     views = PropertyView.objects.filter(id__in=[x for xs in property_view_ids for x in xs])
-    update_state_derived_data(property_state_ids=views.values_list("state_id", flat=True), derived_column_ids=derived_column_ids)
+    update_state_derived_data(
+        property_state_ids=views.values_list("state_id", flat=True),
+        derived_column_ids=derived_column_ids,
+        access_level_instance_id=access_level_instance_id,
+    )
 
     progress_data = ProgressData.from_key(progress_key)
     progress_data.finish_with_success("Updated Derived Data")
 
 
 @shared_task
-def update_state_derived_data(property_state_ids=None, taxlot_state_ids=None, derived_column_ids=None):
+def update_state_derived_data(property_state_ids=None, taxlot_state_ids=None, derived_column_ids=None, access_level_instance_id=None):
+    """
+    :param access_level_instance_id: int, ID of the access level instance of the user who started the update (which the
+        states were limited to), so that only users of it or its ancestors can read the progress. Otherwise, e.g.,
+        after imports and edits, whose progress is not read, only users of the organization's root can read it.
+    """
     if derived_column_ids is None:
         derived_column_ids = []
     if taxlot_state_ids is None:
         taxlot_state_ids = []
     if property_state_ids is None:
         property_state_ids = []
-    progress_data = ProgressData(func_name="update_derived_data", unique_id=randint(10000, 99999))
+
+    derived_columns = DerivedColumn.objects.filter(id__in=derived_column_ids)
+    # the derived columns' organization (none if there are no derived columns, leaving the progress untagged)
+    organization_id = derived_columns.values_list("organization_id", flat=True).first()
+    unique_id = secrets.token_hex(16)
+    if access_level_instance_id is None:
+        progress_data = ProgressData.for_organization("update_derived_data", unique_id, organization_id)
+    else:
+        progress_data = ProgressData(
+            "update_derived_data", unique_id, organization_id=organization_id, access_level_instance_id=access_level_instance_id
+        )
     progress_data.total = len(property_state_ids) + len(taxlot_state_ids)
     progress_data.save()
     progress_key = progress_data.key
 
     chunk_size = 100
 
-    derived_columns = DerivedColumn.objects.filter(id__in=derived_column_ids)
     property_derived_column_ids = list(derived_columns.filter(inventory_type=DerivedColumn.PROPERTY_TYPE).values_list("id", flat=True))
     taxlot_derived_column_ids = list(derived_columns.filter(inventory_type=DerivedColumn.TAXLOT_TYPE).values_list("id", flat=True))
 

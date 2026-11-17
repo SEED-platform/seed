@@ -38,11 +38,13 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
     def get_queryset(self):
         if hasattr(self.request, "access_level_instance_id"):
             access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
+            # a state can be shared by several views (e.g., of a property in several cycles), which would otherwise
+            # duplicate its files (and make retrieving one fail)
             return BuildingFile.objects.filter(
                 property_state__organization_id=self.get_organization(self.request),
                 property_state__propertyview__property__access_level_instance__lft__gte=access_level_instance.lft,
                 property_state__propertyview__property__access_level_instance__rgt__lte=access_level_instance.rgt,
-            )
+            ).distinct()
 
         else:
             return BuildingFile.objects.none()
@@ -86,7 +88,7 @@ class BuildingFileViewSet(SEEDOrgReadOnlyModelViewSet):
         """
         access_level_instance = AccessLevelInstance.objects.get(pk=self.request.access_level_instance_id)
 
-        if len(request.FILES) == 0:
+        if "file" not in request.FILES:
             return JsonResponse({"success": False, "message": "Must pass file in as a Multipart/Form post"})
 
         the_file = request.data["file"]

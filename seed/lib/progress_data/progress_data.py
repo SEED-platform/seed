@@ -6,18 +6,32 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import logging
 
 from seed.decorators import get_prog_key
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.utils.cache import delete_cache, get_cache, set_cache
 
 _log = logging.getLogger(__name__)
 
 
 class ProgressData:
-    def __init__(self, func_name, unique_id: str | int, init_data=None):
+    def __init__(
+        self,
+        func_name,
+        unique_id: str | int,
+        init_data=None,
+        organization_id: int | None = None,
+        access_level_instance_id: int | None = None,
+    ):
+        """
+        :param organization_id: int, ID of the organization whose data the task handles.
+        :param access_level_instance_id: int, ID of the access level instance that the task's data is limited to.
+        """
         self.func_name = func_name
         self.unique_id = unique_id
         self.key = get_prog_key(func_name, unique_id)
         self.total: int | None = None
         self.increment_by = None
+        self.organization_id = organization_id
+        self.access_level_instance_id = access_level_instance_id
 
         # Load in the initialized data, some of this may be overloaded based
         # on the contents in the cache
@@ -26,9 +40,20 @@ class ProgressData:
         # read the data from the cache, if there is any
         self.load()
 
+    @classmethod
+    def for_organization(cls, func_name, unique_id: str | int, organization_id: int | None):
+        """
+        Return progress data for a task on the whole organization (e.g., a deletion or a nightly sync), which only users
+        of the organization's root access level instance can read
+        """
+        root_id = AccessLevelInstance.objects.filter(organization_id=organization_id, depth=1).values_list("id", flat=True).first()
+        return cls(func_name, unique_id, organization_id=organization_id, access_level_instance_id=root_id)
+
     def initialize(self, init_data=None):
         if init_data:
             self.data = init_data
+            # e.g., from `from_key`, so that saving and deleting (which reinitializes the data) keep the cached tags
+            self._load_tags()
         else:
             self.data = {
                 "status": "not-started",
@@ -41,6 +66,10 @@ class ProgressData:
                 "stacktrace": None,
                 "summary": None,
             }
+            if self.organization_id is not None:
+                self.data["organization_id"] = self.organization_id
+            if self.access_level_instance_id is not None:
+                self.data["access_level_instance_id"] = self.access_level_instance_id
             self.total = None
             self.increment_by = None
 
@@ -125,6 +154,25 @@ class ProgressData:
 
         if self.data["total"]:
             self.total = self.data["total"]
+
+        self._load_tags()
+
+    def _load_tags(self):
+        """Set the organization and access level instance from the data, if it has them"""
+        self.organization_id = self.data.get("organization_id", self.organization_id)
+        self.access_level_instance_id = self.data.get("access_level_instance_id", self.access_level_instance_id)
+
+    def untag(self):
+        """
+        Remove the organization and access level instance, e.g., once the organization is deleted and its users can no
+        longer be checked, so that only the progress itself (without messages, see `ProgressViewSet`) can be read
+        """
+        self.load()
+        self.organization_id = None
+        self.access_level_instance_id = None
+        self.data.pop("organization_id", None)
+        self.data.pop("access_level_instance_id", None)
+        self.save()
 
     def step(self, status_message=None, new_summary=None):
         """Step the function by increment_value and save back to the cache"""

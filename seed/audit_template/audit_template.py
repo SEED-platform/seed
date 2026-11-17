@@ -6,6 +6,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 import json
 import logging
 import re
+import secrets
 from functools import wraps
 
 import requests
@@ -20,7 +21,6 @@ from quantityfield.units import ureg
 from tkbl import bsync_by_uniformat_code
 
 from seed.analysis_pipelines.better.buildingsync import SEED_TO_BSYNC_RESOURCE_TYPE
-from seed.building_sync import validation_client
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES, to_bsync_state
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.lib.progress_data.progress_data import ProgressData
@@ -112,6 +112,30 @@ def schedule_sync(data, org_id):
             CrontabSchedule.objects.exclude(id__in=PeriodicTask.objects.values_list("crontab_id", flat=True)).delete()
 
 
+def _request_error_message(request_name, error):
+    """
+    Log a failed Audit Template request and return a message for users (and progress data) with only the response's
+    status. The text of request exceptions (e.g., `HTTPError` and `ConnectionError`) includes the URL, whose query has
+    the organization's token, so neither the message nor the log includes it.
+    """
+    response = getattr(error, "response", None)
+    if response is None:
+        message = "Unexpected error from Audit Template"
+        _log.warning(f"{message} {request_name}: {type(error).__name__}")
+        return message
+    return _unexpected_status_message(request_name, response)
+
+
+def _unexpected_status_message(request_name, response):
+    """
+    Log an unexpected Audit Template response and return a message for users (and progress data) with only its status,
+    since its body may describe the request, which has the organization's token
+    """
+    message = f"Expected 200 response from Audit Template {request_name} but got {response.status_code} {response.reason}"
+    _log.warning(message)
+    return message
+
+
 def toggle_audit_template_sync(audit_template_sync_enabled, org_id):
     """when audit_template_sync_enabled value is toggled, also toggle the auto sync
     task status if it exists
@@ -132,6 +156,19 @@ class AuditTemplate:
         self.org_id = org_id
         self.org = Organization.objects.get(id=self.org_id)
 
+    def _new_progress_data(self, func_name, access_level_instance_id=None):
+        """
+        Create progress data for a run of a task, which only users of the access level instance whose properties it
+        handles (the organization's root if it handles all of them, e.g., for the scheduled sync) or its ancestors can
+        read.
+        """
+        return ProgressData(
+            func_name=func_name,
+            unique_id=secrets.token_hex(16),
+            organization_id=self.org.id,
+            access_level_instance_id=access_level_instance_id if access_level_instance_id is not None else self.org.root.id,
+        )
+
     def batch_get_city_submission_xml(self, view_ids, default_cycle=None, access_level_instance_id=None):
         """
         1. get city_cubmissions
@@ -143,7 +180,7 @@ class AuditTemplate:
         if param view_ids is empty [], all SEED properties will be used to determine the correct PropertyView
         if param access_level_instance_id is given, only properties within that access level instance subtree are updated
         """
-        progress_data = ProgressData(func_name="batch_get_city_submission_xml", unique_id=self.org_id)
+        progress_data = self._new_progress_data("batch_get_city_submission_xml", access_level_instance_id)
 
         _batch_get_city_submission_xml.delay(
             self.org_id, self.org.audit_template_city_id, view_ids, default_cycle, progress_data.key, access_level_instance_id
@@ -152,7 +189,7 @@ class AuditTemplate:
         return progress_data.result(), ""
 
     def get_city_submission_xml(self, custom_id_1, access_level_instance_id=None):
-        progress_data = ProgressData(func_name="get_city_submission_xml", unique_id=self.org_id)
+        progress_data = self._new_progress_data("get_city_submission_xml", access_level_instance_id)
 
         _get_city_submission_xml.delay(
             self.org_id, self.org.audit_template_city_id, custom_id_1, progress_data.key, access_level_instance_id
@@ -180,17 +217,14 @@ class AuditTemplate:
         accept_type = "application/" + report_format.lower()
         headers = {"accept": accept_type}
 
-        url = f"{self.API_URL}/rp/submissions/{audit_template_submission_id}.{report_format}?token={self.token}"
+        url = f"{self.API_URL}/rp/submissions/{audit_template_submission_id}.{report_format}"
         try:
-            response = requests.request("GET", url, headers=headers, timeout=60)
+            response = requests.request("GET", url, headers=headers, params={"token": self.token}, timeout=60)
 
             if response.status_code != 200:
-                return (
-                    None,
-                    f"Expected 200 response from Audit Template get_submission but got {response.status_code!r}: {response.content!r}",
-                )
+                return None, _unexpected_status_message("get_submission", response)
         except Exception as e:
-            return None, f"Unexpected error from Audit Template: {e}"
+            return None, _request_error_message("get_submission", e)
 
         return response, ""
 
@@ -199,11 +233,11 @@ class AuditTemplate:
         """Return all submissions for a city"""
 
         headers = {"accept": "application/xml"}
-        url = f"{self.API_URL}/rp/cities/{city_id}?token={self.token}"
+        url = f"{self.API_URL}/rp/cities/{city_id}"
         per_page = 100
         idx = 1
         submissions = []
-        params = {"per_page": per_page}
+        params = {"token": self.token, "per_page": per_page}
         valid_statuses = ["Complies", "Pending", "Received", "Rejected"]
         # return all submissions for all selected status types
         for status_type in status_types.split(","):
@@ -226,7 +260,7 @@ class AuditTemplate:
                     idx += 1
 
             except Exception as e:
-                return None, f"Unexpected error from Audit Template: {e}"
+                return None, _request_error_message("get_city_submissions", e)
 
         return submissions, ""
 
@@ -250,26 +284,40 @@ class AuditTemplate:
         try:
             response = requests.request("POST", url, headers=headers, files=form_data, timeout=60)
             if response.status_code != 200:
-                return None, f"Expected 200 response from Audit Template get_api_token but got {response.status_code}: {response.content}"
+                return None, _unexpected_status_message("get_api_token", response)
         except Exception as e:
-            return None, f"Unexpected error from Audit Template: {e}"
+            return None, _request_error_message("get_api_token", e)
 
+        # Return failures like the others, rather than raising, so that callers report them (e.g., a background task
+        # finishes its progress with the error, instead of leaving clients polling it forever). The messages don't include
+        # the response body, which can describe the request (e.g., the organization token and password).
         try:
             response_body = response.json()
-        except ValueError as e:
-            raise validation_client.ValidationClientError(f"Expected JSON response from Audit Template: {response.text}") from e
+        except ValueError:
+            message = "Expected a JSON response from Audit Template get_api_token"
+            _log.warning(message)
+            return None, message
 
         # instead of pinging AT for tokens every time, use existing token.
-        self.token = response_body.get("token")
+        self.token = response_body.get("token") if isinstance(response_body, dict) else None
+        if not self.token:
+            message = "Expected a token from Audit Template get_api_token"
+            _log.warning(message)
+            return None, message
         return self.token, ""
 
     @require_token
-    def batch_export_to_audit_template(self, view_ids):
-        progress_data = ProgressData(func_name="batch_export_to_audit_template", unique_id=self.org_id)
+    def batch_export_to_audit_template(self, view_ids, access_level_instance_id=None):
+        """
+        :param access_level_instance_id: int, ID of the access level instance that the views were limited to (see
+            `_new_progress_data`)
+        """
+        progress_data = self._new_progress_data("batch_export_to_audit_template", access_level_instance_id)
         progress_data.total = len(view_ids)
         progress_data.save()
 
-        _batch_export_to_audit_template.delay(self.org_id, view_ids, self.token, progress_data.key)
+        # the task gets its own token, since task arguments are stored by the broker and included in error reports
+        _batch_export_to_audit_template.delay(self.org_id, view_ids, progress_data.key)
 
         return progress_data.result(), []
 
@@ -295,12 +343,9 @@ class AuditTemplate:
             body = {"token": token}
             response = requests.request("POST", url, data=body, files=files, timeout=60)
             if response.status_code != 200:
-                return None, [
-                    "error",
-                    f"{display_field}: Expected 200 response from Audit Template upload but got {response.status_code}: {response.content}",
-                ]
+                return None, ["error", f"{display_field}: {_unexpected_status_message('upload', response)}"]
         except Exception as e:
-            return None, ["error", f"{display_field}: Unexpected error from Audit Template: {e}"]
+            return None, ["error", f"{display_field}: {_request_error_message('upload', e)}"]
 
         return response, []
 
@@ -877,7 +922,8 @@ def _batch_get_city_submission_xml(org_id, city_id, view_ids, default_cycle, pro
             combined_results["failure"] += results["failure"]
             combined_results["data"].extend(results["data"])
     except Exception:
-        progress_data.finish_with_error("Unexepected Error")
+        _log.exception("Failed to update properties from Audit Template submissions")
+        return progress_data.finish_with_error("Unexpected Error")
 
     progress_data.finish_with_success(combined_results)
 
@@ -938,15 +984,20 @@ def _get_city_submission_xml(org_id, city_id, custom_id_1, progress_key, access_
         else:
             message = {"message": "Failed to update property"}
     except Exception:
-        return progress_data.finish_with_error("Unexepected Error")
+        _log.exception("Failed to update a property from an Audit Template submission")
+        return progress_data.finish_with_error("Unexpected Error")
 
     progress_data.finish_with_success(message)
 
 
 @shared_task
-def _batch_export_to_audit_template(org_id, view_ids, token, progress_key):
+def _batch_export_to_audit_template(org_id, view_ids, progress_key):
     audit_template = AuditTemplate(org_id)
     progress_data = ProgressData.from_key(progress_key)
+    token, message = audit_template.get_api_token()
+    if not token:
+        progress_data.finish_with_error(message)
+        return
     views = PropertyView.objects.filter(id__in=view_ids, state__organization_id=org_id).select_related("state")
     results = {}
 
