@@ -21,7 +21,6 @@ from quantityfield.units import ureg
 from tkbl import bsync_by_uniformat_code
 
 from seed.analysis_pipelines.better.buildingsync import SEED_TO_BSYNC_RESOURCE_TYPE
-from seed.building_sync import validation_client
 from seed.building_sync.mappings import BUILDINGSYNC_URI, NAMESPACES, to_bsync_state
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.lib.progress_data.progress_data import ProgressData
@@ -289,14 +288,22 @@ class AuditTemplate:
         except Exception as e:
             return None, _request_error_message("get_api_token", e)
 
+        # Return failures like the others, rather than raising, so that callers report them (e.g., a background task
+        # finishes its progress with the error, instead of leaving clients polling it forever). The messages don't include
+        # the response body, which can describe the request (e.g., the organization token and password).
         try:
             response_body = response.json()
-        except ValueError as e:
-            # not the response body, which can describe the request (e.g., the organization token and password)
-            raise validation_client.ValidationClientError("Expected JSON response from Audit Template get_api_token") from e
+        except ValueError:
+            message = "Expected a JSON response from Audit Template get_api_token"
+            _log.warning(message)
+            return None, message
 
         # instead of pinging AT for tokens every time, use existing token.
-        self.token = response_body.get("token")
+        self.token = response_body.get("token") if isinstance(response_body, dict) else None
+        if not self.token:
+            message = "Expected a token from Audit Template get_api_token"
+            _log.warning(message)
+            return None, message
         return self.token, ""
 
     @require_token

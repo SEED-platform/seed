@@ -142,37 +142,43 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
                 {"status": "error", "message": "property_id, cycle_id, and state_id must be integers"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        # The property is checked by has_hierarchy_access; the cycle and state must also be in the organization, and a
-        # state already used by other property views must only be shared from views within the user's access level. A
-        # state without a view (e.g., an import's, or a merged-away or edited record's) has no access level instance
-        # to check, so only users of the root access level instance, who can access the whole organization, may use it.
-        state_views = PropertyView.objects.filter(state_id=state_id)
-        if (
-            not Cycle.objects.filter(pk=cycle_id, organization_id=org_id).exists()
-            or not PropertyState.objects.filter(pk=state_id, organization_id=org_id).exists()
-            or state_views.exclude(pk__in=self.get_queryset()).exists()
-            or (not state_views.exists() and not AccessLevelInstance.objects.get(pk=request.access_level_instance_id).is_root())
-        ):
-            return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
-
-        # A state may only be shared by views of the same property, which share its access level instance. Otherwise
-        # users of one property's access level instance could edit (in place) or delete (deleting a view's state
-        # deletes all of its views) another's view, e.g., an ancestor sharing a state between sibling access levels.
-        if state_views.exclude(property_id=property_id).exists():
-            return JsonResponse(
-                {"status": "error", "message": "The state belongs to another property's view."}, status=status.HTTP_400_BAD_REQUEST
-            )
-
         duplicate_message = "The property already has a view in this cycle."
-        if PropertyView.objects.filter(property_id=property_id, cycle_id=cycle_id).exists():
-            return JsonResponse({"status": "error", "message": duplicate_message}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Saving the view also saves its property, which can fail validation after the insert, so roll the insert back
         try:
+            # Lock the state while checking the views that use it and creating the view, so that concurrent requests
+            # can't both find it unused and attach it to different properties. Saving the view also saves its property,
+            # which can fail validation after the insert, which is then rolled back.
             with transaction.atomic():
+                state = PropertyState.objects.select_for_update().filter(pk=state_id, organization_id=org_id).first()
+                # The property is checked by has_hierarchy_access; the cycle and state must also be in the organization,
+                # and a state already used by other property views must only be shared from views within the user's
+                # access level. A state without a view (e.g., an import's, or a merged-away or edited record's) has no
+                # access level instance to check, so only users of the root access level instance, who can access the
+                # whole organization, may use it.
+                state_views = PropertyView.objects.filter(state_id=state_id)
+                if (
+                    state is None
+                    or not Cycle.objects.filter(pk=cycle_id, organization_id=org_id).exists()
+                    or state_views.exclude(pk__in=self.get_queryset()).exists()
+                    or (not state_views.exists() and not AccessLevelInstance.objects.get(pk=request.access_level_instance_id).is_root())
+                ):
+                    return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
+
+                # A state may only be shared by views of the same property, which share its access level instance.
+                # Otherwise users of one property's access level instance could edit (in place) or delete (deleting a
+                # view's state deletes all of its views) another's view, e.g., an ancestor sharing a state between
+                # sibling access levels.
+                if state_views.exclude(property_id=property_id).exists():
+                    return JsonResponse(
+                        {"status": "error", "message": "The state belongs to another property's view."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                if PropertyView.objects.filter(property_id=property_id, cycle_id=cycle_id).exists():
+                    return JsonResponse({"status": "error", "message": duplicate_message}, status=status.HTTP_400_BAD_REQUEST)
+
                 new_view = PropertyView.objects.create(property_id=property_id, cycle_id=cycle_id, state_id=state_id)
         except IntegrityError:
-            # e.g., a concurrent request created a view of the property in the cycle after the check above
+            # e.g., a concurrent request created a view of the property in the cycle with another state
             return JsonResponse({"status": "error", "message": duplicate_message}, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)

@@ -5,6 +5,8 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import json
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse_lazy
 
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -195,6 +197,22 @@ class PropertyViewsTests(AccessLevelBaseTestCase):
             self.cycle.pk,
             self.root_view.state_id,
         )
+
+    def test_property_views_create_locks_the_state(self):
+        # so that concurrent requests can't both find a state unused and attach it to different properties
+        url = reverse_lazy("api:v3:property_views-list") + f"?organization_id={self.org.id}"
+        body = {"cycle_id": self.cycle.pk, "property_id": self.root_property.pk, "state_id": self.root_view.state_id}
+
+        self.login_as_root_member()
+        with CaptureQueriesContext(connection) as queries:
+            resp = self.client.post(url, json.dumps(body), content_type="application/json")
+        assert resp.status_code == 201
+        sql = [query["sql"] for query in queries.captured_queries]
+        lock_index = next(i for i, q in enumerate(sql) if 'FROM "seed_propertystate"' in q and "FOR UPDATE" in q)
+        insert_index = next(i for i, q in enumerate(sql) if q.startswith('INSERT INTO "seed_propertyview"'))
+        # the state is locked before the views that use it are checked
+        check_index = next(i for i, q in enumerate(sql) if 'FROM "seed_propertyview"' in q and '"state_id" =' in q)
+        assert lock_index < check_index < insert_index
 
     def test_property_views_create_only_shares_states_within_a_property(self):
         url = reverse_lazy("api:v3:property_views-list") + f"?organization_id={self.org.id}"

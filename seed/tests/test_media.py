@@ -11,7 +11,9 @@ import pytest
 from django.conf import settings
 from django.contrib.auth.models import AnonymousUser
 from django.core.files.base import ContentFile
+from django.db import connection
 from django.test import RequestFactory, TestCase, override_settings
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from config.views import debug_media_serve
@@ -517,6 +519,22 @@ class TestMediaAccessLevels(AccessLevelBaseTestCase):
 
         self._assert_allowed(filepath, b"earlier bsync", self.root_member_user_details, self.child_member_user_details)
         self._assert_denied(filepath, b"earlier bsync", self.sibling_member_user_details)
+
+    def test_buildingsync_file_ownership_takes_the_same_queries_however_many_states_follow_it(self):
+        # e.g., a property's history, whose files are each checked, can follow many edits
+        def query_count(generations):
+            view = self.property_view_factory.get_property_view(prprty=self.child_property, cycle=self.cycle_factory.get_cycle())
+            states = [self.property_state_factory.get_property_state() for _ in range(generations)]
+            for parent_state, state in zip(states, [*states[1:], view.state], strict=True):
+                PropertyAuditLog.objects.create(
+                    organization=self.org, parent_state1=parent_state, state=state, name="Manual Edit", record_type=AUDIT_USER_EDIT
+                )
+            filepath = self._create_building_file(f"edited_{generations}.xml", states[0], b"edited bsync")
+            with CaptureQueriesContext(connection) as queries:
+                self.assertTrue(check_file_permission(self.child_member_user, filepath))
+            return len(queries)
+
+        self.assertEqual(query_count(1), query_count(8))
 
     def test_buildingsync_file_on_state_without_view_is_root_only(self):
         filepath = self._create_building_file("no_view.xml", self.property_state_factory.get_property_state(), b"no view bsync")

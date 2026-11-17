@@ -24,6 +24,11 @@ _log = logging.getLogger(__name__)
 # one), since its other fields (e.g., messages, summaries, and stack traces) can describe the organization's data
 UNTAGGED_PROGRESS_FIELDS = ("progress_key", "progress", "status", "func_name", "total")
 
+# The org-wide tasks whose endpoints only require an owner (`requires_owner`), which includes owners of a parent
+# organization with any membership in the organization: deleting the organization or a cycle, and importing its access
+# levels (see `_can_read_progress`)
+OWNER_TASK_FUNC_NAMES = {"delete_organization_and_inventory", "delete_organization_cycle", "save_raw_access_level_instances_data"}
+
 
 def _is_progress_key(key):
     """Whether `key` was made by `get_prog_key`, i.e., is like '<cache key prefix>SEED:<func_name>:PROG:<unique_id>'"""
@@ -59,9 +64,10 @@ def _can_read_progress(user, data):
     user_ali = org_user.access_level_instance
     if task_ali == user_ali or task_ali.is_descendant_of(user_ali):
         return True
-    # Owners of a parent organization can start a sub-organization's org-wide tasks (e.g., deleting a cycle) from any
-    # of its access level instances (see `requires_owner`), so they can read the progress of its root's tasks
-    return task_ali.is_root() and requires_owner(org_user)
+    # Owners of a parent organization can start these org-wide tasks from any of a sub-organization's access level
+    # instances (see `requires_owner`), so they can read their progress, but not that of its root's other tasks (e.g.,
+    # imports and analyses)
+    return task_ali.is_root() and data.get("func_name") in OWNER_TASK_FUNC_NAMES and requires_owner(org_user)
 
 
 class ProgressViewSet(viewsets.ViewSet):

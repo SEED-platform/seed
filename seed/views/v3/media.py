@@ -8,7 +8,7 @@ import mimetypes
 import os
 
 from django.conf import settings
-from django.db.models import Q
+from django.db.models.expressions import RawSQL
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.utils.text import get_valid_filename
@@ -18,7 +18,7 @@ from rest_framework import generics
 
 from seed.lib.superperms.orgs.decorators import ALLOW_SUPER_USER_PERMS
 from seed.lib.superperms.orgs.models import OrganizationUser
-from seed.models import Analysis, BuildingFile, ImportFile, InventoryDocument, PropertyAuditLog, PropertyView
+from seed.models import Analysis, BuildingFile, ImportFile, InventoryDocument, PropertyView
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, EmptySerializer
 
@@ -70,17 +70,23 @@ def _get_property_state_owners(property_state):
     :param property_state: PropertyState
     """
     organization = property_state.organization
-    state_ids = {property_state.id}
-    new_state_ids = {property_state.id}
-    while new_state_ids:
-        child_state_ids = PropertyAuditLog.objects.filter(
-            Q(parent_state1_id__in=new_state_ids) | Q(parent_state2_id__in=new_state_ids)
-        ).values_list("state_id", flat=True)
-        # skip states already visited in case the audit log has a cycle
-        new_state_ids = set(child_state_ids) - state_ids
-        state_ids |= new_state_ids
-
-    views = PropertyView.objects.filter(state_id__in=state_ids, property__organization=organization).select_related(
+    # The state and its descendants in the audit log, in one query however many edits and merges follow it (e.g., for
+    # each file in a property's history). UNION, unlike UNION ALL, skips states already found, so a cycle in the audit
+    # log ends the recursion.
+    descendant_state_ids = RawSQL(
+        """
+        WITH RECURSIVE descendants(state_id) AS (
+            SELECT %s
+            UNION
+            SELECT log.state_id
+            FROM seed_propertyauditlog log
+            JOIN descendants ON log.parent_state1_id = descendants.state_id OR log.parent_state2_id = descendants.state_id
+        )
+        SELECT state_id FROM descendants
+        """,
+        [property_state.id],
+    )
+    views = PropertyView.objects.filter(state_id__in=descendant_state_ids, property__organization=organization).select_related(
         "property__access_level_instance"
     )
     owners = [(organization, view.property.access_level_instance) for view in views]

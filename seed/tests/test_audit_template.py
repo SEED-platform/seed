@@ -885,6 +885,34 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual("4444", self.state4.audit_template_building_id)
 
     @mock.patch("requests.request")
+    def test_batch_export_to_audit_template_reports_failed_authentication(self, mock_request):
+        # the export authenticates before starting the task, which authenticates again
+        authenticate_response = mock.Mock(status_code=200, json=mock.Mock(return_value={"token": AT_TOKEN}))
+        for failed_response, message in (
+            # e.g., a proxy's error page
+            (
+                mock.Mock(status_code=200, json=mock.Mock(side_effect=ValueError("not JSON")), text=f"<html>{AT_TOKEN}</html>"),
+                "Expected a JSON response from Audit Template get_api_token",
+            ),
+            (
+                mock.Mock(status_code=200, json=mock.Mock(return_value={"error": "no token"})),
+                "Expected a token from Audit Template get_api_token",
+            ),
+        ):
+            with self.subTest(message=message):
+                mock_request.reset_mock()
+                mock_request.side_effect = [authenticate_response, failed_response]
+                with self.assertLogs("seed.audit_template.audit_template", level="WARNING"):
+                    results, _ = AuditTemplate(self.org.id).batch_export_to_audit_template([self.view1.id])
+
+                # the task finishes its progress with the error, rather than leaving clients polling it forever
+                progress = ProgressData.from_key(results["progress_key"]).result()
+                self.assertEqual((progress["status"], progress["message"]), ("error", message))
+                self.assertNotIn(AT_TOKEN, json.dumps(progress))
+                # and nothing was uploaded
+                self.assertEqual(mock_request.call_count, 2)
+
+    @mock.patch("requests.request")
     def test_batch_export_to_audit_template_errors_do_not_include_the_token(self, mock_request):
         authenticate_response = mock.Mock(status_code=200, json=mock.Mock(return_value={"token": AT_TOKEN}))
         # a rejected upload, whose body describes the request

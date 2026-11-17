@@ -564,8 +564,8 @@ class ProgressViewAccessTests(AccessLevelBaseTestCase):
         self._login(user_details)
         return self.client.get(reverse("api:v3:progress-detail", args=[progress_key]))
 
-    def _progress_data(self, unique_id, **tags):
-        progress_data = ProgressData(func_name="test_func", unique_id=unique_id, **tags)
+    def _progress_data(self, unique_id, func_name="test_func", **tags):
+        progress_data = ProgressData(func_name=func_name, unique_id=unique_id, **tags)
         progress_data.total = 2
         progress_data.save()
         progress_data.step("Checking records", new_summary={"records": ["123 Main St"]})
@@ -624,9 +624,9 @@ class ProgressViewAccessTests(AccessLevelBaseTestCase):
 
         self._assert_waiting(self._get(self.other_owner_details, progress_data.key), progress_data.key)
 
-    def test_parent_organization_owners_can_read_sub_organization_root_tasks(self):
-        # a parent organization's owner who is a member of a sub-organization's child access level instance can start its
-        # org-wide tasks (see `requires_owner`), e.g., deleting a cycle
+    def test_parent_organization_owners_can_read_sub_organization_owner_tasks(self):
+        # a parent organization's owner who is a member of a sub-organization's child access level instance can start the
+        # org-wide tasks that require an owner (see `requires_owner`), e.g., deleting a cycle
         sub_org, _, _ = create_organization(self.other_owner, "sub organization")
         sub_org.parent_org = self.other_org
         sub_org.access_level_names = ["root", "child"]
@@ -634,7 +634,13 @@ class ProgressViewAccessTests(AccessLevelBaseTestCase):
         sub_child_level_instance = sub_org.add_new_access_level_instance(sub_org.root.id, "child")
         sub_org.add_member(self.child_member_user, sub_child_level_instance.pk, ROLE_MEMBER)
         self.other_org.add_member(self.child_member_user, self.other_org.root.id, ROLE_OWNER)
-        root_task = self._progress_data("sub root", organization_id=sub_org.id, access_level_instance_id=sub_org.root.id)
+        root_tags = {"organization_id": sub_org.id, "access_level_instance_id": sub_org.root.id}
+        owner_tasks = [
+            self._progress_data(f"sub {func_name}", func_name=func_name, **root_tags)
+            for func_name in ("delete_organization_and_inventory", "delete_organization_cycle", "save_raw_access_level_instances_data")
+        ]
+        # e.g., an import of the root's records, which they cannot access
+        root_import_task = self._progress_data("sub root import", func_name="save_raw_data", **root_tags)
         child_task = self._progress_data("sub child", organization_id=sub_org.id, access_level_instance_id=sub_child_level_instance.id)
         sibling_task = self._progress_data(
             "sub sibling",
@@ -642,10 +648,11 @@ class ProgressViewAccessTests(AccessLevelBaseTestCase):
             access_level_instance_id=sub_org.add_new_access_level_instance(sub_org.root.id, "sibling").id,
         )
 
-        self._assert_readable(self._get(self.child_member_user_details, root_task.key))
-        self._assert_readable(self._get(self.child_member_user_details, child_task.key))
-        # but not the tasks of other access level instances
-        self._assert_waiting(self._get(self.child_member_user_details, sibling_task.key), sibling_task.key)
+        for progress_data in [*owner_tasks, child_task]:
+            self._assert_readable(self._get(self.child_member_user_details, progress_data.key))
+        # but not the root's other tasks, or the tasks of other access level instances
+        for progress_data in (root_import_task, sibling_task):
+            self._assert_waiting(self._get(self.child_member_user_details, progress_data.key), progress_data.key)
 
     def test_task_with_access_level_instance_of_another_organization_is_denied(self):
         # nested-set bounds overlap between organizations, so another organization's root must not match
