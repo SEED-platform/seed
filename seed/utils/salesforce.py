@@ -19,7 +19,7 @@ from seed.models.columns import Column
 from seed.models.salesforce_configs import SalesforceConfig
 from seed.models.salesforce_mappings import SalesforceMapping
 from seed.serializers.properties import PropertyViewSerializer
-from seed.utils.encrypt import decrypt
+from seed.utils.encrypt import decrypt_secret
 
 logger = logging.getLogger(__name__)
 
@@ -107,8 +107,15 @@ def retrieve_connection_params(org_id):
         config = config.first()
         params["instance"] = config.url
         params["username"] = config.username
-        params["password"] = decrypt(config.password)[0] if config.password else None
-        params["security_token"] = config.security_token
+        # a password or token that can't be decrypted is omitted so that no login is attempted with it
+        params["password"] = decrypt_secret(config.password, context=f"organization {org_id} Salesforce password") or None
+        if config.security_token:
+            params["security_token"] = (
+                decrypt_secret(config.security_token, context=f"organization {org_id} Salesforce security_token") or None
+            )
+        else:
+            # an empty token is valid (e.g., for trusted IP ranges)
+            params["security_token"] = config.security_token
         if config.domain == "test":
             params["domain"] = config.domain
 

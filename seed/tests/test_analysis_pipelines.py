@@ -62,6 +62,7 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakePropertyViewFactory,
 )
+from seed.utils.encrypt import encrypt_secret
 from seed.utils.organizations import create_organization
 
 logger = logging.getLogger(__name__)
@@ -198,6 +199,76 @@ class TestAnalysisPipeline(TestCase):
         client.assert_not_called()
         self.analysis.refresh_from_db()
         self.assertEqual(Analysis.FAILED, self.analysis.status)
+
+    def test_better_prepare_uses_the_decrypted_api_key(self):
+        self.org.better_analysis_api_key = encrypt_secret("better-key")
+        self.org.save()
+        self.analysis.service = Analysis.BETTER
+        self.analysis.status = Analysis.CREATING
+        self.analysis.save()
+
+        with patch("seed.analysis_pipelines.better.pipeline.BETTERClient") as client:
+            client.return_value.token_is_valid.return_value = (False, "invalid token")
+            with pytest.raises(AnalysisPipelineError, match="invalid token"):
+                BETTERPipeline(self.analysis.id)._prepare_analysis([])
+
+        client.assert_called_once_with("better-key")
+
+    def test_better_prepare_fails_when_the_api_key_cannot_be_decrypted(self):
+        with override_settings(SECRET_KEY="another-secret-key"):
+            self.org.better_analysis_api_key = encrypt_secret("better-key")
+        self.org.save()
+        self.analysis.service = Analysis.BETTER
+        self.analysis.status = Analysis.CREATING
+        self.analysis.save()
+
+        with (
+            patch("seed.analysis_pipelines.better.pipeline.BETTERClient") as client,
+            pytest.raises(AnalysisPipelineError, match="can't be decrypted"),
+        ):
+            BETTERPipeline(self.analysis.id)._prepare_analysis([])
+
+        client.assert_not_called()
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.FAILED, self.analysis.status)
+
+    @override_settings(SEED_BETTER_ENABLED=True)
+    def test_better_task_uses_the_decrypted_api_key(self):
+        from seed.analysis_pipelines.better.pipeline import _start_analysis
+
+        self.org.better_analysis_api_key = encrypt_secret("better-key")
+        self.org.save()
+        self.analysis.service = Analysis.BETTER
+        self.analysis.status = Analysis.QUEUED
+        self.analysis.save()
+
+        # stop the task once the client is created
+        with (
+            patch("seed.analysis_pipelines.better.pipeline.BETTERClient", side_effect=RuntimeError("stop")) as client,
+            pytest.raises(RuntimeError, match="stop"),
+        ):
+            _start_analysis.run(self.analysis.id)
+
+        client.assert_called_once_with("better-key")
+
+    @override_settings(SEED_BETTER_ENABLED=True)
+    def test_better_task_fails_when_the_api_key_cannot_be_decrypted(self):
+        from seed.analysis_pipelines.better.pipeline import _start_analysis
+
+        with override_settings(SECRET_KEY="another-secret-key"):
+            self.org.better_analysis_api_key = encrypt_secret("better-key")
+        self.org.save()
+        self.analysis.service = Analysis.BETTER
+        self.analysis.status = Analysis.QUEUED
+        self.analysis.save()
+
+        with patch("seed.analysis_pipelines.better.pipeline.BETTERClient") as client:
+            _start_analysis.run(self.analysis.id)
+
+        client.assert_not_called()
+        self.analysis.refresh_from_db()
+        self.assertEqual(Analysis.FAILED, self.analysis.status)
+        self.assertIn("can't be decrypted", AnalysisMessage.objects.get(analysis=self.analysis).user_message)
 
     def test_fail_sets_status_to_failed_when_not_already_in_terminal_state(self):
         # Setup

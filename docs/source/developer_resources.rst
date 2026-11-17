@@ -327,7 +327,7 @@ Restoring a Database Dump
 
 If restoring a production backup to a different deployment update the site settings for password reset emails, and disable celerybeat Salesforce updates/emails.
 
-Also, when copying a database between environments, preserve the source ``SECRET_KEY`` in the target application's web and Celery containers. SEED uses this key to sign encrypted passwords stored in the database (Salesforce and Audit Template). If the keys differ, the database will restore successfully but those passwords cannot be decrypted.
+Also, when copying a database between environments, preserve the source ``SECRET_KEY`` in the target application's web and Celery containers, or re-encrypt the stored credentials as described in `Changing the Secret Key`_. SEED derives the key that encrypts the third-party credentials stored in the database (the Audit Template, Salesforce, BETTER, and MapQuest passwords, tokens, and keys) from it. If the keys differ, the database will restore successfully but those credentials cannot be decrypted.
 
 .. code-block:: bash
 
@@ -345,6 +345,19 @@ Also, when copying a database between environments, preserve the source ``SECRET
     from django_celery_beat.models import PeriodicTask, PeriodicTasks
     PeriodicTask.objects.filter(enabled=True, name__startswith='salesforce_sync_org-').update(enabled=False)
     PeriodicTasks.update_changed()
+
+
+Changing the Secret Key
+-----------------------
+
+The third-party credentials stored in the database are encrypted with a key derived from ``SECRET_KEY`` (not ``SECRET_KEY_FALLBACKS``), so after ``SECRET_KEY`` changes they cannot be decrypted until they are re-encrypted with the new key. Set the new ``SECRET_KEY`` for the web and Celery containers and redeploy them (restarting a container doesn't change its environment). Then turn on maintenance mode (see `NGINX Notes`_), run the ``reencrypt_credentials`` command in the web container, and turn maintenance mode off. Only run the command in maintenance mode while the API is inaccessible: a request that loaded a credential before the command re-encrypted it could otherwise save the old value back. Redeploying the web container turns maintenance mode off so turn it on after redeploying. The command prompts for the old key (or reads it from the ``OLD_SECRET_KEY`` environment variable), re-encrypts every credential that the old key decrypts, and lists the records whose credentials neither key decrypts, which must be re-entered. Add ``--dry-run`` to report what would change without saving it.
+
+.. code-block:: bash
+
+    docker exec seed_web ./docker/maintenance.sh on
+    docker exec -it seed_web ./manage.py reencrypt_credentials --dry-run
+    docker exec -it seed_web ./manage.py reencrypt_credentials
+    docker exec seed_web ./docker/maintenance.sh off
 
 
 Migrating the Database

@@ -35,6 +35,7 @@ from seed.analysis_pipelines.pipeline import (
 )
 from seed.analysis_pipelines.utils import calendarize_and_extrapolate_meter_readings, get_json_path
 from seed.models import Analysis, AnalysisInputFile, AnalysisMessage, AnalysisPropertyView, Column, Cycle, Meter
+from seed.utils.encrypt import decrypt_secret
 
 logger = logging.getLogger(__name__)
 
@@ -80,6 +81,13 @@ def _validate_better_config(analysis):
     ]
 
 
+def _undecryptable_api_key_message(organization):
+    return (
+        f'The BETTER Analysis API Key of organization "{organization.name}" can\'t be decrypted. '
+        "Please re-enter it in your organization's settings or contact your organization administrator."
+    )
+
+
 class BETTERPipeline(AnalysisPipeline):
     """
     BETTERPipeline is a class for preparing, running, and post-processing
@@ -98,9 +106,14 @@ class BETTERPipeline(AnalysisPipeline):
             )
             self.fail(message, logger)
             raise AnalysisPipelineError(message)
+        api_key = decrypt_secret(organization.better_analysis_api_key, context=f"organization {organization.id} better_analysis_api_key")
+        if not api_key:
+            message = _undecryptable_api_key_message(organization)
+            self.fail(message, logger)
+            raise AnalysisPipelineError(message)
 
         # ping BETTER to verify the token is valid
-        client = BETTERClient(organization.better_analysis_api_key)
+        client = BETTERClient(api_key)
         validity, message = client.token_is_valid()
         if not validity:
             self.fail(message, logger)
@@ -311,7 +324,13 @@ def _start_analysis(self, analysis_id):
     progress_data = pipeline.set_analysis_status_to_running()
     progress_data.step("Sending requests to BETTER service")
     analysis = Analysis.objects.get(id=analysis_id)
-    client = BETTERClient(analysis.organization.better_analysis_api_key)
+    organization = analysis.organization
+    api_key = decrypt_secret(organization.better_analysis_api_key, context=f"organization {organization.id} better_analysis_api_key")
+    if not api_key:
+        message = _undecryptable_api_key_message(organization)
+        pipeline.fail(message, logger)
+        raise AnalysisPipelineError(message)
+    client = BETTERClient(api_key)
     context = BETTERPipelineContext(analysis, progress_data, client)
 
     better_portfolio_id = None

@@ -26,6 +26,7 @@ from seed.models import AccessLevelInstance, Goal
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
 from seed.utils.cache import get_cache_raw, set_cache_raw
+from seed.utils.encrypt import decrypt_secret
 
 logger = logging.getLogger(__name__)
 
@@ -193,6 +194,16 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
 
         redirect_uri = _get_redirect_uri()  # Get the redirect URI dynamically
 
+        client_secret = decrypt_secret(bb_salesforce_config.client_secret, context=f"organization {org_id} BB Salesforce client_secret")
+        if not client_secret:
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "response": "The Portfolio Salesforce client secret can't be decrypted. Re-enter it on the Org Settings page.",
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         # request a token
         response = requests.post(
             f"{bb_salesforce_config.salesforce_url}/oauth2/token",
@@ -200,7 +211,7 @@ class BBSalesforceViewSet(viewsets.ViewSet, OrgMixin):
                 "grant_type": "authorization_code",
                 "code": code,
                 "client_id": bb_salesforce_config.client_id,
-                "client_secret": bb_salesforce_config.client_secret,
+                "client_secret": client_secret,
                 "redirect_uri": redirect_uri + _get_redirect_uri_ending(),
                 "code_verifier": code_verifier,
             },

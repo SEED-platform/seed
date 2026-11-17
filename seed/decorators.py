@@ -208,7 +208,8 @@ def get_bb_salesforce_config(func):
         elif (
             bb_salesforce_config.salesforce_url is None
             or bb_salesforce_config.client_id is None
-            or bb_salesforce_config.client_secret is None
+            # the secret is stored encrypted, and is only decrypted where it is used
+            or not bb_salesforce_config.client_secret
         ):
             return JsonResponse(
                 {

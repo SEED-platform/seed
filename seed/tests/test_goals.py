@@ -22,6 +22,7 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.cache import set_cache_raw
+from seed.utils.encrypt import encrypt_secret
 from seed.utils.organizations import create_organization
 
 
@@ -738,7 +739,9 @@ class GoalViewTests(AccessLevelBaseTestCase):
     @mock.patch("seed.views.v3.goals.Salesforce")
     def test_salesforce_update_uses_org_salesforce_url(self, mock_salesforce):
         salesforce_url = "https://example.my.salesforce.com/services"
-        BBSalesforceConfig.objects.create(organization=self.org, salesforce_url=salesforce_url, client_id="id", client_secret="secret")
+        BBSalesforceConfig.objects.create(
+            organization=self.org, salesforce_url=salesforce_url, client_id="id", client_secret=encrypt_secret("secret")
+        )
         set_cache_raw(f"access_token_{self.org.id}", "example_token")
         self.child_cycle_goal.salesforce_annual_report_id = "example_annual_report_id"
         self.child_cycle_goal.save()

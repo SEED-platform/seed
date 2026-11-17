@@ -6,10 +6,13 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from rest_framework import serializers
 
 from seed.models.salesforce_configs import SalesforceConfig
+from seed.serializers.base import EncryptedSecretField
 
 
 class SalesforceConfigSerializer(serializers.ModelSerializer):
     organization_id = serializers.IntegerField(required=True)
+    password = EncryptedSecretField(required=False, allow_blank=True, allow_null=True)
+    security_token = EncryptedSecretField(required=False, allow_blank=True, allow_null=True, trim_whitespace=True)
 
     class Meta:
         model = SalesforceConfig

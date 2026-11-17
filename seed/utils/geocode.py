@@ -15,6 +15,7 @@ from shapely import geometry, wkt
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
+from seed.utils.encrypt import decrypt_secret
 
 
 class MapQuestAPIKeyError(Exception):
@@ -106,10 +107,9 @@ def geocode_buildings(buildings):
         return
 
     org = buildings_to_geocode[0].organization
-    mapquest_api_key = org.mapquest_api_key
 
     # Don't continue if the mapquest_api_key for this org is ''
-    if not mapquest_api_key:
+    if not org.mapquest_api_key:
         return
 
     # Don't continue if geocoding is disabled on this org
@@ -122,6 +122,11 @@ def geocode_buildings(buildings):
     # number of geocoding columns for all individual buildings or the whole org
     if not id_addresses:
         return
+
+    # A key that can't be decrypted (e.g., after SECRET_KEY changed) is unusable, like an invalid key
+    mapquest_api_key = decrypt_secret(org.mapquest_api_key, context=f"organization {org.id} mapquest_api_key")
+    if not mapquest_api_key:
+        raise MapQuestAPIKeyError(_("FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"))
 
     address_geocoding_results = _address_geocoding_results(id_addresses, mapquest_api_key)
 

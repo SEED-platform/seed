@@ -13,6 +13,7 @@ from responses import matchers
 from seed.models import BBSalesforceConfig, Goal
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.cache import get_cache_raw, set_cache_raw
+from seed.utils.encrypt import encrypt_secret
 from seed.utils.organizations import create_organization
 from seed.views.v3.bb_salesforce import REDIRECT_URI_ENDING
 
@@ -26,7 +27,7 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
             organization=self.org,
             salesforce_url=self.salesforce_url,
             client_id=1,
-            client_secret=1,
+            client_secret=encrypt_secret("1"),
         )
 
         self.example_salesforce_goal_id = "example_salesforce_goal_id"
@@ -101,7 +102,7 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
                         "grant_type": "authorization_code",
                         "code": example_code,
                         "client_id": self.org.bb_salesforce_config.client_id,
-                        "client_secret": self.org.bb_salesforce_config.client_secret,
+                        "client_secret": "1",
                         "redirect_uri": "https://127.0.0.1:8000/ng-app/salesforce-login",
                         "code_verifier": example_code_verifier,
                     }
@@ -130,6 +131,36 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
         #  Assertion
         assert response.status_code == 200
         assert response.json()["response"] == "Org has no portfolio Salesforce connection."
+
+    def test_login_url_blank_client_secret(self):
+        # Set Up
+        self.bb_salesforce_config.client_secret = ""
+        self.bb_salesforce_config.save()
+
+        # Action
+        url = reverse_lazy("api:v3:bb_salesforce-login-url") + "?organization_id=" + str(self.org.id)
+        response = self.client.get(url, content_type="application/json")
+
+        #  Assertion
+        assert response.status_code == 200
+        assert response.json()["valid"] is False
+        assert "not properly configured" in response.json()["response"]
+
+    @responses.activate
+    def test_get_token_with_undecryptable_client_secret(self):
+        # Set Up
+        with override_settings(SECRET_KEY="another-secret-key"):
+            self.bb_salesforce_config.client_secret = encrypt_secret("1")
+        self.bb_salesforce_config.save()
+
+        # Action
+        url = reverse_lazy("api:v3:bb_salesforce-get-token")
+        response = self.client.get(url, {"organization_id": str(self.org.id), "code": "example code"}, content_type="application/json")
+
+        #  Assertion - Salesforce isn't sent a blank secret
+        assert response.status_code == 400
+        assert "can't be decrypted" in response.json()["response"]
+        assert len(responses.calls) == 0
 
     def test_login_url_invalid_url(self):
         # Set Up
@@ -174,7 +205,7 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
                         "grant_type": "authorization_code",
                         "code": example_code,
                         "client_id": self.org.bb_salesforce_config.client_id,
-                        "client_secret": self.org.bb_salesforce_config.client_secret,
+                        "client_secret": "1",
                         "redirect_uri": "https://127.0.0.1:8000" + REDIRECT_URI_ENDING,
                         "code_verifier": example_code_verifier,
                     }
@@ -212,7 +243,7 @@ class BBSalesforceViewSetTests(AccessLevelBaseTestCase):
                         "grant_type": "authorization_code",
                         "code": example_code,
                         "client_id": self.org.bb_salesforce_config.client_id,
-                        "client_secret": self.org.bb_salesforce_config.client_secret,
+                        "client_secret": "1",
                         "redirect_uri": "https://127.0.0.1:8000" + REDIRECT_URI_ENDING,
                         "code_verifier": example_code_verifier,
                     }
