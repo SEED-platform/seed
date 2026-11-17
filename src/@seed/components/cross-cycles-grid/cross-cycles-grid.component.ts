@@ -32,6 +32,8 @@ const NUMERIC_DATA_TYPES = new Set<Column['data_type']>([
   'water_use',
 ])
 const DECIMAL_DATA_TYPES = new Set<Column['data_type']>(['number', 'float', 'area', 'eui'])
+// Coordinates keep full precision instead of the org's display_decimal_places
+const UNROUNDED_COLUMN_NAMES = new Set(['latitude', 'longitude'])
 
 // new Date('YYYY-MM-DD') is UTC midnight (the previous day in US time zones), so read date-only strings as local dates
 const parseDate = (value: string): Date => {
@@ -279,7 +281,7 @@ export class CrossCyclesGridComponent implements OnChanges, OnDestroy {
       width: 150,
     }
 
-    this.applyDataTypeFormatting(colDef, column.data_type)
+    this.applyDataTypeFormatting(colDef, column.data_type, column.column_name)
     return colDef
   }
 
@@ -357,7 +359,7 @@ export class CrossCyclesGridComponent implements OnChanges, OnDestroy {
     }
   }
 
-  applyDataTypeFormatting(colDef: ColDef, dataType?: Column['data_type']): void {
+  applyDataTypeFormatting(colDef: ColDef, dataType?: Column['data_type'], columnName?: string): void {
     if (dataType === 'datetime' || dataType === 'date') {
       colDef.filter = 'agDateColumnFilter'
       colDef.filterParams = { comparator: this.dateComparator }
@@ -373,7 +375,7 @@ export class CrossCyclesGridComponent implements OnChanges, OnDestroy {
     }
     if (dataType && NUMERIC_DATA_TYPES.has(dataType)) {
       colDef.filter = 'agNumberColumnFilter'
-      if (DECIMAL_DATA_TYPES.has(dataType)) {
+      if (DECIMAL_DATA_TYPES.has(dataType) && !UNROUNDED_COLUMN_NAMES.has(columnName)) {
         colDef.valueFormatter = ({ value }: { value: number }) =>
           typeof value === 'number' ? value.toFixed(this.org.display_decimal_places) : ''
       }

@@ -131,6 +131,18 @@ describe('CrossCyclesGridComponent', () => {
     ])
   })
 
+  it('shows latitude and longitude at full precision while rounding other decimals to the org setting', () => {
+    for (const [id, column_name] of [[57, 'latitude'], [58, 'longitude']] as const) {
+      component.columnMap.set(id, { id, column_name, name: `${column_name}_${id}`, data_type: 'number', related: false } as Column)
+      const colDef = component.buildColumnDef({ id, display_name: column_name })
+      expect(colDef.valueFormatter).toBeUndefined()
+      expect(colDef.filter).toBe('agNumberColumnFilter')
+    }
+
+    const formatEui = component.buildColumnDef({ id: 56, display_name: 'Site EUI' }).valueFormatter as (p: { value: number }) => string
+    expect(formatEui({ value: 141.8123 })).toBe('141.81')
+  })
+
   // Only catches the bug outside UTC (CI runs in UTC): TZ=America/Denver pnpm ng test
   it('displays and filters date-only values as local calendar dates', () => {
     const jan1 = new Date(2022, 0, 1)
