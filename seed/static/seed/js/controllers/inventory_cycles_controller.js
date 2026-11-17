@@ -176,6 +176,9 @@ angular.module('SEED.controller.inventory_cycles', []).controller('inventory_cyc
         if (col.data_type === 'datetime') {
           options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
           options.filter = inventory_service.dateFilter();
+        } else if (['longitude', 'latitude'].includes(col.column_name)) {
+          options.cellFilter = 'floatingPoint';
+          options.filter = inventory_service.combinedFilter();
         } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
           options.cellFilter = `number: ${$scope.organization.display_decimal_places}`;
           options.filter = inventory_service.combinedFilter();

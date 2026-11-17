@@ -491,4 +491,30 @@ describe('controller: mapping_controller', () => {
       expect(scope.mappings_change_possible).toBe(true);
     });
   });
+
+  it('shows latitude and longitude at full precision in the mapped buildings review (#4132)', inject(($q, data_quality_service) => {
+    create_mapping_controller();
+    mapping_controller_scope.$digest();
+    spyOn(data_quality_service, 'start_data_quality_checks_for_import_file').and.returnValue($q.defer().promise);
+    mapping_controller_scope.property_columns = [
+      { name: 'latitude', column_name: 'latitude', data_type: 'number' },
+      { name: 'longitude', column_name: 'longitude', data_type: 'number' },
+      { name: 'site_eui', column_name: 'site_eui', data_type: 'eui' }
+    ];
+    mapping_controller_scope.taxlot_columns = [];
+
+    mapping_controller_scope.set_mapped_buildings({
+      properties: [
+        {
+          latitude: 39.7392358, longitude: -104.990251, site_eui: 12.3456, extra_data: {}
+        }
+      ],
+      tax_lots: []
+    });
+
+    const column = (name) => _.find(mapping_controller_scope.propertiesGridOptions.columnDefs, { name });
+    expect(column('latitude').cellFilter).toBe('floatingPoint');
+    expect(column('longitude').cellFilter).toBe('floatingPoint');
+    expect(column('site_eui').cellFilter).toBe('number: 2');
+  }));
 });
