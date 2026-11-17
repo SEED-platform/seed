@@ -873,6 +873,9 @@ angular.module('SEED.controller.mapping', []).controller('mapping_controller', [
         } else if (col.data_type === 'datetime') {
           options.cellFilter = "date:'yyyy-MM-dd h:mm a'";
           options.filter = inventory_service.dateFilter();
+        } else if (['longitude', 'latitude'].includes(col.column_name)) {
+          options.cellFilter = 'floatingPoint';
+          options.sortingAlgorithm = naturalSort;
         } else if (['area', 'eui', 'float', 'number'].includes(col.data_type)) {
           options.cellFilter = `number: ${$scope.organization.display_decimal_places}`;
           options.sortingAlgorithm = naturalSort;

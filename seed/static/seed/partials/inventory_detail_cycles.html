@@ -70,7 +70,7 @@
                 popover-animation="false"
                 uib-popover="{$:: state[col.column_description] $}"
               >
-                <span>{$:: displayValue(col.data_type, state[col.column_name]) $}</span>
+                <span>{$:: displayValue(col, state[col.column_name]) $}</span>
               </span>
               <span
                 ng-if="::col.is_extra_data"
@@ -80,7 +80,7 @@
                 popover-animation="false"
                 uib-popover="{$:: state.extra_data[col.column_description] $}"
               >
-                <span>{$:: displayValue(col.data_type, state.extra_data[col.column_name]) $}</span>
+                <span>{$:: displayValue(col, state.extra_data[col.column_name]) $}</span>
               </span>
             </td>
           </tr>

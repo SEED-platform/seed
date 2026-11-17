@@ -87,11 +87,14 @@ angular.module('SEED.controller.inventory_detail_cycles', []).controller('invent
 
     $scope.inventory_display_name = organization_service.get_inventory_display_value($scope.organization, $scope.inventory_type === 'properties' ? 'property' : 'taxlot', $scope.item_state);
 
-    $scope.displayValue = (dataType, value) => {
-      if (dataType === 'datetime') {
+    $scope.displayValue = ({ column_name, data_type }, value) => {
+      if (data_type === 'datetime') {
         return $filter('date')(value, 'yyyy-MM-dd h:mm a');
       }
-      if (['area', 'eui', 'float', 'number'].includes(dataType)) {
+      if (['longitude', 'latitude'].includes(column_name)) {
+        return $filter('floatingPoint')(value);
+      }
+      if (['area', 'eui', 'float', 'number'].includes(data_type)) {
         return $filter('number')(value, $scope.organization.display_decimal_places);
       }
       return value;
