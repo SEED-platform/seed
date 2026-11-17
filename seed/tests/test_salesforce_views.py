@@ -11,6 +11,7 @@ from unittest.mock import Mock, patch
 import pytest
 from django.conf import settings
 from django.db import IntegrityError, transaction
+from django.test import override_settings
 from django.urls import reverse
 from django.utils.timezone import get_current_timezone
 from django_celery_beat.models import PeriodicTask
@@ -29,9 +30,9 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
-from seed.utils.encrypt import encrypt
+from seed.utils.encrypt import decrypt_secret, encrypt_secret, is_encrypted
 from seed.utils.organizations import create_organization
-from seed.utils.salesforce import update_salesforce_property
+from seed.utils.salesforce import retrieve_connection_params, update_salesforce_property
 from seed.views.v3.label_inventories import LabelInventoryViewSet
 
 HAS_LIVE_SALESFORCE_CREDENTIALS = all(
@@ -159,6 +160,86 @@ class SalesforceViewTests(DataMappingBaseTestCase):
 
         self.assertEqual(tmp_sf_config.contact_rec_type, tmp_contact_rec_type)
 
+    def test_salesforce_config_password_is_encrypted(self):
+        # use new org b/c can only have 1 config record on an org
+        temp_org, _, _ = create_organization(self.user)
+        list_url = reverse("api:v3:salesforce_configs-list") + f"?organization_id={temp_org.id}"
+
+        response = self.client.post(
+            list_url, data=json.dumps({"password": "  sf:password$ ", "status_fieldname": "Status__c"}), content_type="application/json"
+        )
+        assert response.status_code == 200, response.content
+        config_data = response.json()["salesforce_config"]
+        assert config_data["password"] == "  sf:password$ "
+        config = SalesforceConfig.objects.get(pk=config_data["id"])
+        token = config.password
+        assert is_encrypted(token)
+        assert "sf:password" not in token
+        assert retrieve_connection_params(temp_org.id)["password"] == "  sf:password$ "
+
+        detail_url = reverse("api:v3:salesforce_configs-detail", args=[config.id]) + f"?organization_id={temp_org.id}"
+        assert self.client.get(list_url).json()["salesforce_configs"][0]["password"] == "  sf:password$ "
+        assert self.client.get(detail_url).json()["salesforce_config"]["password"] == "  sf:password$ "
+
+        def update(payload):
+            response = self.client.put(detail_url, data=json.dumps(payload), content_type="application/json")
+            config.refresh_from_db()
+            return response
+
+        # omitting the password, or submitting the same one, keeps the stored value
+        response = update({"status_fieldname": "Changed__c"})
+        assert response.json()["salesforce_config"]["password"] == "  sf:password$ "
+        assert config.password == token
+        assert update({"password": "  sf:password$ "}).status_code == 200
+        assert config.password == token
+
+        # passwords are validated in plaintext
+        assert update({"password": "x" * 128}).status_code == 200
+        assert decrypt_secret(config.password) == "x" * 128
+        assert update({"password": "x" * 129}).status_code == 400
+        assert decrypt_secret(config.password) == "x" * 128
+
+        # submitting "" (what is shown for a password that can't be decrypted) keeps it, and null clears it
+        with override_settings(SECRET_KEY="another-secret-key"):
+            undecryptable_token = encrypt_secret("sf-password")
+        SalesforceConfig.objects.filter(pk=config.pk).update(password=undecryptable_token)
+        response = update({"password": ""})
+        assert response.status_code == 200
+        assert response.json()["salesforce_config"]["password"] == ""
+        assert config.password == undecryptable_token
+        assert retrieve_connection_params(temp_org.id)["password"] is None
+        assert update({"password": None}).status_code == 200
+        assert config.password is None
+
+    def test_salesforce_config_security_token_is_encrypted(self):
+        # use new org b/c can only have 1 config record on an org
+        temp_org, _, _ = create_organization(self.user)
+        list_url = reverse("api:v3:salesforce_configs-list") + f"?organization_id={temp_org.id}"
+
+        # the token is trimmed, encrypted, and returned in plaintext
+        response = self.client.post(list_url, data=json.dumps({"security_token": " sf-token "}), content_type="application/json")
+        assert response.status_code == 200, response.content
+        assert response.json()["salesforce_config"]["security_token"] == "sf-token"
+        config = SalesforceConfig.objects.get(pk=response.json()["salesforce_config"]["id"])
+        assert is_encrypted(config.security_token)
+        assert "sf-token" not in config.security_token
+        assert retrieve_connection_params(temp_org.id)["security_token"] == "sf-token"
+
+        # an empty token (e.g., for trusted IP ranges) and a missing token stay distinct
+        detail_url = reverse("api:v3:salesforce_configs-detail", args=[config.id]) + f"?organization_id={temp_org.id}"
+        response = self.client.put(detail_url, data=json.dumps({"security_token": ""}), content_type="application/json")
+        assert response.status_code == 200
+        assert retrieve_connection_params(temp_org.id)["security_token"] == ""
+        response = self.client.put(detail_url, data=json.dumps({"security_token": None}), content_type="application/json")
+        assert response.status_code == 200
+        assert retrieve_connection_params(temp_org.id)["security_token"] is None
+
+        # a token that can't be decrypted isn't sent, so no login is attempted with the password alone
+        with override_settings(SECRET_KEY="another-secret-key"):
+            undecryptable_token = encrypt_secret("sf-token")
+        SalesforceConfig.objects.filter(pk=config.pk).update(security_token=undecryptable_token)
+        assert retrieve_connection_params(temp_org.id)["security_token"] is None
+
     def test_save_salesforce_mapping(self):
         # test saving salesforce mappings
 
@@ -266,8 +347,8 @@ class SalesforceViewTests(DataMappingBaseTestCase):
         # enable sf
         self.sf_config.url = settings.SF_INSTANCE
         self.sf_config.username = settings.SF_USERNAME
-        self.sf_config.password = encrypt(settings.SF_PASSWORD)
-        self.sf_config.security_token = settings.SF_SECURITY_TOKEN
+        self.sf_config.password = encrypt_secret(settings.SF_PASSWORD)
+        self.sf_config.security_token = encrypt_secret(settings.SF_SECURITY_TOKEN)
         if settings.SF_DOMAIN == "test":
             self.sf_config.domain = settings.SF_DOMAIN
         self.sf_config.save()
@@ -778,8 +859,8 @@ class SalesforceViewTestPermissions(AccessLevelBaseTestCase):
             # enable sf
             self.sf_config.url = settings.SF_INSTANCE
             self.sf_config.username = settings.SF_USERNAME
-            self.sf_config.password = encrypt(settings.SF_PASSWORD)
-            self.sf_config.security_token = settings.SF_SECURITY_TOKEN
+            self.sf_config.password = encrypt_secret(settings.SF_PASSWORD)
+            self.sf_config.security_token = encrypt_secret(settings.SF_SECURITY_TOKEN)
             if settings.SF_DOMAIN == "test":
                 self.sf_config.domain = settings.SF_DOMAIN
             self.sf_config.save()

@@ -27,8 +27,9 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
-from rest_framework import status, viewsets
+from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from xlsxwriter import Workbook
 
@@ -74,7 +75,7 @@ from seed.serializers.report_configurations import ReportConfigurationSerializer
 from seed.utils.api import api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
 from seed.utils.cache import get_cache_raw, set_cache_raw
-from seed.utils.encrypt import decrypt, encrypt
+from seed.utils.encrypt import MAX_SECRET_LENGTH, decrypt_secret, encrypt_if_changed
 from seed.utils.geocode import geocode_buildings
 from seed.utils.match import get_matching_criteria_column_names, match_merge_link, whole_org_match_merge_link
 from seed.utils.merge import merge_properties
@@ -95,6 +96,21 @@ _ORGANIZATION_CREDENTIAL_FIELDS = (
     "audit_template_user",
     "audit_template_password",
 )
+
+# Organization credentials, which are stored encrypted, and the fields that validate their posted values
+_ORGANIZATION_SECRET_FIELDS = {
+    "mapquest_api_key": serializers.CharField(allow_blank=True, allow_null=True, max_length=MAX_SECRET_LENGTH),
+    "better_analysis_api_key": serializers.CharField(allow_blank=True, allow_null=True, max_length=MAX_SECRET_LENGTH),
+    "at_organization_token": serializers.CharField(allow_blank=True, allow_null=True, max_length=MAX_SECRET_LENGTH),
+    # whitespace is significant in a password
+    "audit_template_password": serializers.CharField(
+        allow_blank=True, allow_null=True, trim_whitespace=False, max_length=MAX_SECRET_LENGTH
+    ),
+}
+
+
+def _decrypt_org_secret(org, field_name):
+    return decrypt_secret(getattr(org, field_name), context=f"organization {org.id} {field_name}")
 
 
 def _dict_org(request, organizations):
@@ -167,9 +183,9 @@ def _dict_org(request, organizations):
             "display_decimal_places": o.display_decimal_places,
             "cycles": cycles,
             "created": o.created.strftime("%Y-%m-%d") if o.created else "",
-            "mapquest_api_key": o.mapquest_api_key or "",
+            "mapquest_api_key": _decrypt_org_secret(o, "mapquest_api_key"),
             "geocoding_enabled": o.geocoding_enabled,
-            "better_analysis_api_key": o.better_analysis_api_key or "",
+            "better_analysis_api_key": _decrypt_org_secret(o, "better_analysis_api_key"),
             "better_host_url": settings.BETTER_HOST,
             "property_display_field": o.property_display_field,
             "taxlot_display_field": o.taxlot_display_field,
@@ -181,10 +197,10 @@ def _dict_org(request, organizations):
             "new_user_email_subject": o.new_user_email_subject,
             "new_user_email_content": o.new_user_email_content,
             "new_user_email_signature": o.new_user_email_signature,
-            "at_organization_token": o.at_organization_token,
+            "at_organization_token": _decrypt_org_secret(o, "at_organization_token"),
             "at_host_url": settings.AUDIT_TEMPLATE_HOST,
             "audit_template_user": o.audit_template_user,
-            "audit_template_password": decrypt(o.audit_template_password)[0] if o.audit_template_password else "",
+            "audit_template_password": _decrypt_org_secret(o, "audit_template_password"),
             "audit_template_city_id": o.audit_template_city_id,
             "audit_template_export_meters": o.audit_template_export_meters,
             "audit_template_export_measures": o.audit_template_export_measures,
@@ -379,11 +395,14 @@ _organization_settings_schema = AutoSchemaHelper.schema_factory(
         "default_reports_y_axis_options": ["integer"],
         "public_fields": [{"id": "integer"}],
     },
-    description="Many omitted settings (e.g., API keys and feature toggles) are reset to their defaults, so send the organization's "
-    "complete settings. Invalid display units are ignored. `default_reports_*_axis_options` are PropertyState column IDs and `public_fields` are the columns to share publicly.",
+    description="Many omitted settings (e.g., feature toggles and the Audit Template user) are reset to their defaults, so send "
+    "the organization's complete settings. Omitted API keys and the Audit Template token and password are unchanged, and null "
+    "clears them (they are validated before anything is saved, with keys and tokens trimmed, and are stored encrypted). Invalid display units are "
+    "ignored. `default_reports_*_axis_options` are PropertyState column IDs and `public_fields` are the columns to share publicly.",
 )
 _organization_settings_schema["properties"].update(
     {
+        **{field_name: {"type": "string", "nullable": True, "maxLength": MAX_SECRET_LENGTH} for field_name in _ORGANIZATION_SECRET_FIELDS},
         "display_units_eui": _choice_values_schema(Organization.MEASUREMENT_CHOICES_EUI),
         "display_units_ghg": _choice_values_schema(Organization.MEASUREMENT_CHOICES_GHG),
         "display_units_ghg_intensity": _choice_values_schema(Organization.MEASUREMENT_CHOICES_GHG_INTENSITY),
@@ -763,6 +782,18 @@ class OrganizationViewSet(viewsets.ViewSet):
         if posted_org is None:
             return JsonResponse({"status": "error", "message": "malformed request"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # validate the posted credentials before saving anything (an omitted credential is unchanged)
+        posted_secrets = {}
+        for field_name, field in _ORGANIZATION_SECRET_FIELDS.items():
+            if field_name in posted_org:
+                try:
+                    posted_secrets[field_name] = field.run_validation(posted_org[field_name])
+                except ValidationError as e:
+                    return JsonResponse(
+                        {"status": "error", "message": f"{field_name}: {' '.join(str(detail) for detail in e.detail)}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
         desired_threshold = posted_org.get("query_threshold", None)
         if desired_threshold is not None:
             org.query_threshold = desired_threshold
@@ -836,11 +867,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         if is_valid_choice(Organization.THERMAL_CONVERSION_ASSUMPTION_CHOICES, desired_thermal_conversion_assumption):
             org.thermal_conversion_assumption = desired_thermal_conversion_assumption
 
-        # Update MapQuest API Key if it's been changed
-        mapquest_api_key = posted_org.get("mapquest_api_key", "")
-        if mapquest_api_key != org.mapquest_api_key:
-            org.mapquest_api_key = mapquest_api_key
-
         # Update geocoding_enabled option
         geocoding_enabled = posted_org.get("geocoding_enabled", True)
         if geocoding_enabled != org.geocoding_enabled:
@@ -864,11 +890,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         public_geojson_enabled = posted_org.get("public_geojson_enabled", False)
         if public_feed_enabled and public_geojson_enabled != org.public_geojson_enabled:
             org.public_geojson_enabled = public_geojson_enabled
-
-        # Update BETTER Analysis API Key if it's been changed
-        better_analysis_api_key = posted_org.get("better_analysis_api_key", "").strip()
-        if better_analysis_api_key != org.better_analysis_api_key:
-            org.better_analysis_api_key = better_analysis_api_key
 
         # Update property_display_field option
         property_display_field = posted_org.get("property_display_field", "address_line_1")
@@ -932,10 +953,6 @@ class OrganizationViewSet(viewsets.ViewSet):
         if comstock_enabled != org.comstock_enabled:
             org.comstock_enabled = comstock_enabled
 
-        at_organization_token = posted_org.get("at_organization_token", False)
-        if at_organization_token != org.at_organization_token:
-            org.at_organization_token = at_organization_token
-
         audit_template_user = posted_org.get("audit_template_user", False)
         if audit_template_user != org.audit_template_user:
             org.audit_template_user = audit_template_user
@@ -948,9 +965,13 @@ class OrganizationViewSet(viewsets.ViewSet):
         if audit_template_tracking_id_field != org.audit_template_tracking_id_field:
             org.audit_template_tracking_id_field = audit_template_tracking_id_field
 
-        audit_template_password = posted_org.get("audit_template_password", False)
-        if audit_template_password != org.audit_template_password:
-            org.audit_template_password = encrypt(audit_template_password)
+        # null clears a credential, and submitting the returned value (which is "" if it can't be decrypted) keeps the
+        # stored value
+        for field_name, value in posted_secrets.items():
+            stored = getattr(org, field_name)
+            setattr(
+                org, field_name, "" if value is None else encrypt_if_changed(stored, value, context=f"organization {org.id} {field_name}")
+            )
 
         audit_template_report_type = posted_org.get("audit_template_report_type", False)
         if audit_template_report_type != org.audit_template_report_type:
@@ -1920,7 +1941,8 @@ class OrganizationViewSet(viewsets.ViewSet):
         """
         org = Organization.objects.get(id=pk)
 
-        return bool(org.mapquest_api_key)
+        # a key that can't be decrypted can't be used
+        return bool(_decrypt_org_secret(org, "mapquest_api_key"))
 
     @extend_schema(responses={200: OpenApiTypes.BOOL})
     @method_decorator(

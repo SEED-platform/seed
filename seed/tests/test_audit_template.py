@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from unittest import mock
 
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from lxml import etree
@@ -28,9 +28,8 @@ from seed.test_helpers.fake import (
     FakePropertyViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase
+from seed.utils.encrypt import _warn_once, encrypt_secret
 from seed.utils.organizations import create_organization
-
-# from seed.utils.encrypt import encrypt
 
 
 class AuditTemplateViewTests(TestCase):
@@ -41,11 +40,9 @@ class AuditTemplateViewTests(TestCase):
         }
         self.user = User.objects.create_superuser(email="test_user@demo.com", **self.user_details)
         self.org, _, _ = create_organization(self.user)
-        self.org.at_organization_token = "fake at_api_token"
+        self.org.at_organization_token = encrypt_secret("fake at_api_token")
         self.org.audit_template_user = "fake at user"
-        self.org.audit_template_password = "fake at password"
-        # 'password' encrypted
-        self.org.audit_template_password = "InBhc3N3b3JkIg:xIgRoZurgtGDvmVEUL5Tx1vGbAQe-Iepsct5hiQx29Q"
+        self.org.audit_template_password = encrypt_secret("password")
         self.org.audit_template_export_meters = True
         self.org.audit_template_export_measures = True
         self.org.save()
@@ -76,6 +73,31 @@ class AuditTemplateViewTests(TestCase):
         # -- Assert
         self.assertEqual(200, response.status_code, response.content)
         self.assertEqual(response.content, b"submission response")
+        # the decrypted organization token and password are sent to authenticate
+        form_data = mock_request.call_args_list[0].kwargs["files"]
+        self.assertEqual(form_data["organization_token"], (None, "fake at_api_token"))
+        self.assertEqual(form_data["password"], (None, "password"))
+
+    @mock.patch("requests.request")
+    def test_get_submission_with_undecryptable_credentials(self, mock_request):
+        for field_name in ["at_organization_token", "audit_template_password"]:
+            with self.subTest(field_name=field_name):
+                original = getattr(self.org, field_name)
+                with override_settings(SECRET_KEY="another-secret-key"):
+                    setattr(self.org, field_name, encrypt_secret("undecryptable"))
+                self.org.save()
+
+                _warn_once.cache_clear()
+                with self.assertLogs("seed.utils.encrypt", "WARNING") as logs:
+                    response = self.client.get(self.get_submission_url, data={"organization_id": self.org.id})
+
+                self.assertEqual(400, response.status_code, response.content)
+                self.assertIn("can't be decrypted", response.json()["message"])
+                self.assertIn(f"organization {self.org.id} {field_name}", logs.output[0])
+                mock_request.assert_not_called()
+
+                setattr(self.org, field_name, original)
+                self.org.save()
 
     @mock.patch("requests.request")
     def test_get_submission_xml_from_audit_template(self, mock_request):
@@ -242,9 +264,9 @@ class ExportToAuditTemplate(TestCase):
         }
         self.user = User.objects.create_superuser(email="test_user@demo.com", **self.user_details)
         self.org, _, _ = create_organization(self.user)
-        self.org.at_organization_token = "fake"
+        self.org.at_organization_token = encrypt_secret("fake")
         self.org.audit_template_user = "fake@.com"
-        self.org.audit_template_password = "InBhc3N3b3JkIg:xIgRoZurgtGDvmVEUL5Tx1vGbAQe-Iepsct5hiQx29Q"
+        self.org.audit_template_password = encrypt_secret("password")
         self.org.audit_template_export_meters = True
         self.org.audit_template_export_measures = True
         self.org.property_display_field = "pm_property_id"
@@ -625,10 +647,10 @@ class AuditTemplateSubmissionImport(TestCase):
         }
         self.user = User.objects.create_superuser(email="test_user@demo.com", **self.user_details)
         self.org, _, _ = create_organization(self.user)
-        # To run test, enter valid audit template credentials
+        # To run test, enter valid audit template credentials (the token and password encrypted, e.g., encrypt_secret("password"))
         self.org.at_organization_token = False
         self.org.audit_template_user = False
-        self.org.audit_template_password = False  # password must be encrypted: encrypt('password')
+        self.org.audit_template_password = False
         self.skip_test = (
             not self.org.at_organization_token
             or not self.org.audit_template_user

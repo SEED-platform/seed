@@ -12,7 +12,7 @@ from unittest import mock
 import pytest
 from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import NoReverseMatch, reverse_lazy
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -25,7 +25,7 @@ from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.test_helpers.fake import FakePropertyFactory, FakePropertyViewFactory, FakeTaxLotFactory, FakeTaxLotViewFactory
 from seed.tests.util import AccessLevelBaseTestCase, FakeRequest
-from seed.utils.encrypt import encrypt
+from seed.utils.encrypt import _warn_once, encrypt_secret, is_encrypted
 from seed.utils.organizations import create_organization
 from seed.utils.users import get_js_role, get_role_from_js
 from seed.views.main import _get_default_org
@@ -439,11 +439,11 @@ class AccountsViewTests(TestCase):
         sub_org_owner = User.objects.create(username="sub@be.com", email="sub@be.com")
         sub_org, _, _ = create_organization(sub_org_owner, "sub")
         sub_org.parent_org = self.org
-        sub_org.mapquest_api_key = "mapquest-key"
-        sub_org.better_analysis_api_key = "better-key"
-        sub_org.at_organization_token = "at-token"
+        sub_org.mapquest_api_key = encrypt_secret("mapquest-key")
+        sub_org.better_analysis_api_key = encrypt_secret("better-key")
+        sub_org.at_organization_token = encrypt_secret("at-token")
         sub_org.audit_template_user = "at-user"
-        sub_org.audit_template_password = encrypt("at-password")
+        sub_org.audit_template_password = encrypt_secret("at-password")
         sub_org.save()
         credentials = [
             "mapquest_api_key",
@@ -600,6 +600,110 @@ class AccountsViewTests(TestCase):
         # reload org
         org = Organization.objects.get(pk=self.org.pk)
         self.assertEqual(org.query_threshold, 27)
+
+    def test_save_settings_encrypts_audit_template_password(self):
+        url = reverse_lazy("api:v3:organizations-save-settings", args=[self.org.id])
+
+        def save(status_code=200, **posted_org):
+            res = self.client.put(url, data=json.dumps({"organization": posted_org}), content_type="application/json")
+            self.assertEqual(res.status_code, status_code, res.content)
+            return res
+
+        def stored():
+            return Organization.objects.get(pk=self.org.pk).audit_template_password
+
+        save(audit_template_password="  at:password$ ")
+        token = stored()
+        self.assertTrue(is_encrypted(token))
+        self.assertNotIn("at:password", token)
+        self.assertEqual(
+            _dict_org(self.fake_request, [Organization.objects.get(pk=self.org.pk)])[0]["audit_template_password"], "  at:password$ "
+        )
+
+        # omitting the password, or submitting the same one, keeps the stored value
+        save(query_threshold=5)
+        self.assertEqual(stored(), token)
+        save(audit_template_password="  at:password$ ")
+        self.assertEqual(stored(), token)
+
+        # invalid passwords are rejected before anything is saved
+        for invalid in ["x" * 129, True, {"a": 1}, "\ud800"]:
+            with self.subTest(invalid=invalid):
+                res = save(400, audit_template_password=invalid, query_threshold=6)
+                self.assertIn("audit_template_password", res.json()["message"])
+                self.assertEqual(stored(), token)
+                self.assertNotEqual(Organization.objects.get(pk=self.org.pk).query_threshold, 6)
+
+        # "" and null clear the password
+        save(audit_template_password="")
+        self.assertEqual(stored(), "")
+        save(audit_template_password="at-password")
+        save(audit_template_password=None)
+        self.assertEqual(stored(), "")
+
+    def test_save_settings_keeps_undecryptable_audit_template_password(self):
+        url = reverse_lazy("api:v3:organizations-save-settings", args=[self.org.id])
+        with override_settings(SECRET_KEY="another-secret-key"):
+            token = encrypt_secret("at-password")
+        Organization.objects.filter(pk=self.org.pk).update(audit_template_password=token)
+
+        _warn_once.cache_clear()
+        with self.assertLogs("seed.utils.encrypt", "WARNING"):
+            payload = _dict_org(self.fake_request, [Organization.objects.get(pk=self.org.pk)])[0]
+        self.assertEqual(payload["audit_template_password"], "")
+
+        # re-saving the settings that were returned keeps the value (in case its key is restored)
+        post_data = {"organization": {"audit_template_password": payload["audit_template_password"], "query_threshold": 5}}
+        res = self.client.put(url, data=json.dumps(post_data), content_type="application/json")
+        self.assertEqual(res.status_code, 200, res.content)
+        self.assertEqual(Organization.objects.get(pk=self.org.pk).audit_template_password, token)
+
+        # null clears it
+        post_data = {"organization": {"audit_template_password": None}}
+        res = self.client.put(url, data=json.dumps(post_data), content_type="application/json")
+        self.assertEqual(res.status_code, 200, res.content)
+        self.assertEqual(Organization.objects.get(pk=self.org.pk).audit_template_password, "")
+
+    def test_save_settings_encrypts_api_keys_and_tokens(self):
+        url = reverse_lazy("api:v3:organizations-save-settings", args=[self.org.id])
+        fields = ["mapquest_api_key", "better_analysis_api_key", "at_organization_token"]
+
+        def save(status_code=200, **posted_org):
+            res = self.client.put(url, data=json.dumps({"organization": posted_org}), content_type="application/json")
+            self.assertEqual(res.status_code, status_code, res.content)
+            return res
+
+        def stored():
+            org = Organization.objects.get(pk=self.org.pk)
+            return {field: getattr(org, field) for field in fields}
+
+        # keys and tokens are trimmed, encrypted, and returned in plaintext
+        save(**{field: f" {field}-value " for field in fields})
+        tokens = stored()
+        for field in fields:
+            self.assertTrue(is_encrypted(tokens[field]), field)
+            self.assertNotIn(f"{field}-value", tokens[field])
+        payload = _dict_org(self.fake_request, [Organization.objects.get(pk=self.org.pk)])[0]
+        self.assertEqual({field: payload[field] for field in fields}, {field: f"{field}-value" for field in fields})
+
+        # omitting them (which previously cleared the keys and stored the token as "False"), or submitting the same
+        # values, keeps the stored values
+        save(query_threshold=5)
+        self.assertEqual(stored(), tokens)
+        save(**{field: f"{field}-value" for field in fields})
+        self.assertEqual(stored(), tokens)
+
+        # invalid values are rejected before anything is saved
+        for field in fields:
+            with self.subTest(field=field):
+                res = save(400, **{field: "x" * 129, "query_threshold": 6})
+                self.assertIn(field, res.json()["message"])
+                self.assertEqual(stored(), tokens)
+                self.assertNotEqual(Organization.objects.get(pk=self.org.pk).query_threshold, 6)
+
+        # "" and null clear them
+        save(mapquest_api_key="", better_analysis_api_key=None, at_organization_token="  ")
+        self.assertEqual(stored(), dict.fromkeys(fields, ""))
 
     def test_get_shared_fields_none(self):
         url = reverse_lazy("api:v3:organizations-shared-fields", args=[self.org.pk])

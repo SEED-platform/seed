@@ -11,13 +11,14 @@ intercepted/mocked by VCR. To execute an actual HTTP request/response
 """
 
 from unittest import mock
+from urllib.parse import parse_qs, urlparse
 
 import pytest
 import requests
 import vcr
 from django.conf import settings
 from django.contrib.gis.geos import Point, Polygon
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.utils.translation import gettext
 
 from seed.data_importer.models import ImportFile, ImportRecord
@@ -28,6 +29,7 @@ from seed.models import DATA_STATE_MAPPING
 from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.test_helpers.fake import FakePropertyStateFactory, FakeTaxLotStateFactory
+from seed.utils.encrypt import encrypt_secret
 from seed.utils.geocode import MapQuestAPIKeyError, bounding_box_wkt, geocode_buildings, long_lat_wkt
 from seed.utils.organizations import create_organization
 
@@ -114,7 +116,7 @@ class GeocodeAddresses(TestCase):
         }
         self.user = User.objects.create_superuser(email="test_user@demo.com", **user_details)
         self.org, _, _ = create_organization(self.user)
-        self.org.mapquest_api_key = test_key
+        self.org.mapquest_api_key = encrypt_secret(test_key)
         self.org.save()
 
         self.property_state_factory = FakePropertyStateFactory(organization=self.org)
@@ -445,7 +447,7 @@ class GeocodeAddresses(TestCase):
     def test_geocode_buildings_is_unsuccessful_when_the_api_key_is_invalid_or_expired(self):
         with base_vcr.use_cassette("seed/tests/data/vcr_cassettes/geocode_invalid_or_expired_key.yaml"):
             self.org_fake_key, _, _ = create_organization(self.user)
-            self.org_fake_key.mapquest_api_key = "fakeapikey"
+            self.org_fake_key.mapquest_api_key = encrypt_secret("fakeapikey")
             self.org_fake_key.save()
 
             self.property_state_factory_fake_key = FakePropertyStateFactory(organization=self.org_fake_key)
@@ -484,6 +486,36 @@ class GeocodeAddresses(TestCase):
         response._content = body.encode("utf-8")
         response.headers["Content-Type"] = content_type
         return response
+
+    def test_geocode_buildings_sends_the_decrypted_api_key(self):
+        self.org.mapquest_api_key = encrypt_secret("plain-key")
+        self.org.save()
+        properties = PropertyState.objects.filter(pk=self._geocodable_property().id)
+
+        # the cassettes filter out the key, so check the request directly
+        response = self._mapquest_response(200, '{"info": {"statuscode": 403}}', content_type="application/json")
+        with mock.patch("seed.utils.geocode.requests.get", return_value=response) as get, pytest.raises(MapQuestAPIKeyError):
+            geocode_buildings(properties)
+        assert parse_qs(urlparse(get.call_args.args[0]).query)["key"] == ["plain-key"]
+
+    def test_geocode_buildings_raises_api_key_error_when_the_api_key_cannot_be_decrypted(self):
+        with override_settings(SECRET_KEY="another-secret-key"):
+            self.org.mapquest_api_key = encrypt_secret("plain-key")
+        self.org.save()
+        properties = PropertyState.objects.filter(pk=self._geocodable_property().id)
+
+        # like an invalid key, and without sending a request
+        with mock.patch("seed.utils.geocode.requests.get") as get, pytest.raises(MapQuestAPIKeyError) as error:
+            geocode_buildings(properties)
+        get.assert_not_called()
+        self.assertEqual(str(error.value), gettext("FAILED_GEOCODE_INVALID_MAPQUEST_API_KEY"))
+
+        # but not when geocoding is disabled
+        self.org.geocoding_enabled = False
+        self.org.save()
+        with mock.patch("seed.utils.geocode.requests.get") as get:
+            self.assertIsNone(geocode_buildings(properties))
+        get.assert_not_called()
 
     def test_geocode_buildings_raises_api_key_error_for_unexpected_mapquest_responses(self):
         properties = PropertyState.objects.filter(pk=self._geocodable_property().id)

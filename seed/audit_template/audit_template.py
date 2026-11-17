@@ -27,7 +27,7 @@ from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
 from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.models import Element, Measure, Meter, MeterReading, PropertyView
-from seed.utils.encrypt import decrypt
+from seed.utils.encrypt import decrypt_secret
 
 _log = logging.getLogger(__name__)
 
@@ -233,13 +233,17 @@ class AuditTemplate:
     def get_api_token(self):
         if not self.org.at_organization_token or not self.org.audit_template_user or not self.org.audit_template_password:
             return None, "An Audit Template organization token, user email and password are required!"
+        token = decrypt_secret(self.org.at_organization_token, context=f"organization {self.org.id} at_organization_token")
+        password = decrypt_secret(self.org.audit_template_password, context=f"organization {self.org.id} audit_template_password")
+        if not token or not password:
+            return None, "The Audit Template credentials can't be decrypted. Please re-enter them in the organization settings."
 
         url = f"{self.API_URL}/users/authenticate"
         # Send data as form-data to handle special characters like '%'
         form_data = {
-            "organization_token": (None, self.org.at_organization_token),
+            "organization_token": (None, token),
             "email": (None, self.org.audit_template_user),
-            "password": (None, decrypt(self.org.audit_template_password)[0]),
+            "password": (None, password),
         }
         headers = {"Accept": "application/xml"}
 

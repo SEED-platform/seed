@@ -26,8 +26,8 @@ class SalesforceConfig(models.Model):
     seed_benchmark_id_column = models.ForeignKey(Column, related_name="benchmark_id_column", null=True, on_delete=models.CASCADE)
     url = models.CharField(blank=True, max_length=200, null=True)
     username = models.CharField(blank=True, max_length=128, null=True)
-    password = models.CharField(blank=True, max_length=128, null=True)
-    security_token = models.CharField(blank=True, max_length=128, null=True)
+    password = models.TextField(blank=True, null=True)  # Encrypted
+    security_token = models.TextField(blank=True, null=True)  # Encrypted
     domain = models.CharField(blank=True, max_length=50, null=True)
     cycle_fieldname = models.CharField(blank=True, max_length=128, null=True)
     status_fieldname = models.CharField(blank=True, max_length=128, null=True)

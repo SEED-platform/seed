@@ -276,7 +276,7 @@ class Organization(models.Model):
     query_threshold = models.IntegerField(blank=True, null=True)
 
     # geolocation
-    mapquest_api_key = models.CharField(blank=True, max_length=128, default="")
+    mapquest_api_key = models.TextField(blank=True, default="")  # Encrypted
     geocoding_enabled = models.BooleanField(default=True)
 
     # new user email fields
@@ -298,10 +298,10 @@ class Organization(models.Model):
     comstock_enabled = models.BooleanField(default=False)
 
     # API Tokens
-    better_analysis_api_key = models.CharField(blank=True, max_length=128, default="")
-    at_organization_token = models.CharField(blank=True, max_length=128, default="")
+    better_analysis_api_key = models.TextField(blank=True, default="")  # Encrypted
+    at_organization_token = models.TextField(blank=True, default="")  # Encrypted
     audit_template_user = models.EmailField(blank=True, max_length=128, default="")
-    audit_template_password = models.CharField(blank=True, max_length=128, default="")
+    audit_template_password = models.TextField(blank=True, default="")  # Encrypted
     audit_template_report_type = models.CharField(blank=True, max_length=128, default="Demo City Report")
     audit_template_status_types = models.CharField(blank=True, max_length=34, default="Complies")
     audit_template_city_id = models.IntegerField(blank=True, null=True)

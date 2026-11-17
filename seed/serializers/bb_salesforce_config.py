@@ -6,10 +6,11 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 from rest_framework import serializers
 
 from seed.models import BBSalesforceConfig
+from seed.serializers.base import EncryptedSecretField
 
 
 class BBSalesforceConfigSerializer(serializers.ModelSerializer):
-    # organization_id = serializers.PrimaryKeyRelatedField(source="organization", read_only=True)
+    client_secret = EncryptedSecretField(required=False, allow_blank=True, allow_null=True, trim_whitespace=True)
 
     class Meta:
         model = BBSalesforceConfig

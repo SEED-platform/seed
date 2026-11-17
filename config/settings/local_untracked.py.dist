@@ -32,6 +32,7 @@ MAPQUEST_API_KEY = os.environ.get("MAPQUEST_API_KEY", "a-mapquest-api-key")
 # SECRET_KEY is set here (or in your env variable)
 # You can create a key from https://www.miniwebtool.com/django-secret-key-generator/
 # SECRET_KEY = 'default-your-secret-key-here'
+# After changing SECRET_KEY, run `manage.py reencrypt_credentials` to re-encrypt the stored third-party credentials
 
 # MapQuest API key for testing only - A valid key is only needed when refreshing VCR cassettes.
 # Keys for app users are attached to each organization.

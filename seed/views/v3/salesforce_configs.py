@@ -24,7 +24,6 @@ from seed.models.salesforce_configs import SalesforceConfig
 from seed.serializers.salesforce_configs import SalesforceConfigSerializer
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, extend_schema_org_query_param
-from seed.utils.encrypt import decrypt, encrypt
 from seed.utils.salesforce import auto_sync_salesforce_properties, schedule_sync, test_connection
 
 
@@ -142,9 +141,6 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         salesforce_configs = SalesforceConfig.objects.filter(organization=organization_id)
 
         s_data = SalesforceConfigSerializer(salesforce_configs, many=True).data
-        for item in s_data:
-            if "password" in item and item["password"] is not None:
-                item["password"] = decrypt(item["password"])[0]
 
         return JsonResponse({"status": "success", "salesforce_configs": s_data}, status=status.HTTP_200_OK)
 
@@ -262,8 +258,6 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         else:
             try:
                 data = SalesforceConfigSerializer(SalesforceConfig.objects.get(id=pk, organization=organization)).data
-                if "password" in data and data["password"] is not None:
-                    data["password"] = decrypt(data["password"])[0]
                 return JsonResponse({"status": "success", "salesforce_config": data}, status=status.HTTP_200_OK)
             except SalesforceConfig.DoesNotExist:
                 return JsonResponse(
@@ -317,10 +311,6 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
         data = deepcopy(request.data)
         data.update({"organization_id": org_id})
 
-        # encrypt pwd
-        if data.get("password"):
-            data["password"] = encrypt(data["password"])
-
         error, msgs = _validate_data(data, org_id)
         if error is True:
             return JsonResponse({"status": "error", "message": ",".join(msgs)}, status=status.HTTP_400_BAD_REQUEST)
@@ -373,8 +363,6 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
 
         data = deepcopy(request.data)
         data.update({"organization_id": org_id})
-        if data.get("password"):
-            data["password"] = encrypt(data["password"])
         error, msgs = _validate_data(data, org_id)
         if error is True:
             return JsonResponse({"status": "error", "message": ",".join(msgs)}, status=status.HTTP_400_BAD_REQUEST)
@@ -395,15 +383,11 @@ class SalesforceConfigViewSet(viewsets.ViewSet, OrgMixin):
 
         try:
             serializer.save()
-            # decrypt pwd in response
-            return_data = serializer.data
-            if "password" in return_data and return_data["password"] is not None:
-                return_data["password"] = decrypt(return_data["password"])[0]
 
             return JsonResponse(
                 {
                     "status": "success",
-                    "salesforce_config": return_data,
+                    "salesforce_config": serializer.data,
                 },
                 status=status.HTTP_200_OK,
             )

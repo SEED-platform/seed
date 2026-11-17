@@ -7,7 +7,7 @@ import ast
 
 import vcr
 from django.conf import settings
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils.translation import gettext
 from rest_framework import status
@@ -17,6 +17,7 @@ from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.test_helpers.fake import FakePropertyStateFactory, FakePropertyViewFactory, FakeTaxLotStateFactory, FakeTaxLotViewFactory
 from seed.tests.util import AccessLevelBaseTestCase
+from seed.utils.encrypt import encrypt_secret
 from seed.utils.geocode import long_lat_wkt
 from seed.utils.organizations import create_organization
 
@@ -80,7 +81,7 @@ class GeocodeViewTests(TestCase):
             property_details["city"] = "Denver"
             property_details["state"] = "Colorado"
             property_details["postal_code"] = "80216"
-            self.org.mapquest_api_key = test_key
+            self.org.mapquest_api_key = encrypt_secret(test_key)
             self.org.save()
 
             property = PropertyState(**property_details)
@@ -103,7 +104,7 @@ class GeocodeViewTests(TestCase):
             property_details["city"] = "Denver"
             property_details["state"] = "Colorado"
             property_details["postal_code"] = "80216"
-            self.org.mapquest_api_key = "placeholder"
+            self.org.mapquest_api_key = encrypt_secret("placeholder")
             self.org.save()
 
             property = PropertyState(**property_details)
@@ -256,7 +257,7 @@ class GeocodeViewTests(TestCase):
         self.assertEqual(b"false", false_result.content)
 
         org_with_key, _, _ = create_organization(self.user)
-        org_with_key.mapquest_api_key = "somekey"
+        org_with_key.mapquest_api_key = encrypt_secret("somekey")
         org_with_key.save()
 
         url = reverse("api:v3:organizations-geocode-api-key-exists", args=[org_with_key.id])
@@ -264,6 +265,12 @@ class GeocodeViewTests(TestCase):
         true_result = self.client.get(url, post_params_true)
 
         self.assertEqual(b"true", true_result.content)
+
+        # a key that can't be decrypted can't be used
+        with override_settings(SECRET_KEY="another-secret-key"):
+            org_with_key.mapquest_api_key = encrypt_secret("somekey")
+        org_with_key.save()
+        self.assertEqual(b"false", self.client.get(url, post_params_true).content)
 
     def test_geocode_enabled_endpoint(self):
         # try with geocoding turned on
@@ -317,7 +324,7 @@ class GeocodeViewPermissionsTest(AccessLevelBaseTestCase):
             "taxlot_view_ids": [self.root_taxlot_view.pk, self.child_taxlot_view.pk],
         }
 
-        self.org.mapquest_api_key = "somekey"
+        self.org.mapquest_api_key = encrypt_secret("somekey")
         self.org.geocoding_enabled = True
         self.org.save()
 

@@ -7,6 +7,7 @@ from django.urls import reverse_lazy
 
 from seed.models import BBSalesforceConfig
 from seed.tests.util import AccessLevelBaseTestCase
+from seed.utils.encrypt import decrypt_secret, encrypt_secret, is_encrypted
 from seed.utils.organizations import create_organization
 
 
@@ -20,7 +21,7 @@ class BBSalesforceConfigViewSetTests(AccessLevelBaseTestCase):
             organization=self.org,
             salesforce_url=self.salesforce_url,
             client_id="1",
-            client_secret="1",
+            client_secret=encrypt_secret("1"),
         )
 
     def test_list(self):
@@ -38,7 +39,7 @@ class BBSalesforceConfigViewSetTests(AccessLevelBaseTestCase):
                     "organization": self.bb_salesforce_config.organization.id,
                     "salesforce_url": self.bb_salesforce_config.salesforce_url,
                     "client_id": self.bb_salesforce_config.client_id,
-                    "client_secret": self.bb_salesforce_config.client_secret,
+                    "client_secret": "1",
                 },
             },
         )
@@ -64,7 +65,8 @@ class BBSalesforceConfigViewSetTests(AccessLevelBaseTestCase):
         )
         updated_bb_config = BBSalesforceConfig.objects.get(id=self.bb_salesforce_config.id)
         assert updated_bb_config.client_id == "2"
-        assert updated_bb_config.client_secret == "2"
+        assert is_encrypted(updated_bb_config.client_secret)
+        assert decrypt_secret(updated_bb_config.client_secret) == "2"
 
     def test_delete(self):
         # Action
@@ -130,7 +132,7 @@ class BBSalesforceConfigViewSetTests(AccessLevelBaseTestCase):
         self.login_as_root_owner()
         response = self.client.get(own_url + own_org_params)
         assert response.status_code == 200
-        assert response.json()["client_secret"] == self.bb_salesforce_config.client_secret
+        assert response.json()["client_secret"] == "1"
 
     def test_create_uses_the_query_organization(self):
         # Set Up
