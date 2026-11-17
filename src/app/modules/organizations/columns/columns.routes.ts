@@ -14,6 +14,12 @@ import { MatchingCriteriaTaxlotsComponent } from './matching-criteria/matching-c
 
 export default [
   {
+    // Angular won't chain relative redirects on one level, so target the leaf route directly
+    path: '',
+    pathMatch: 'full',
+    redirectTo: 'list/properties',
+  },
+  {
     path: 'list',
     pathMatch: 'full',
     redirectTo: 'list/properties',

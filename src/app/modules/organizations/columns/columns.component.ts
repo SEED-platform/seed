@@ -140,10 +140,11 @@ export class ColumnsComponent implements AfterViewInit, OnInit {
     return type === 'properties' ? 'taxlots' : 'properties'
   }
 
-  setPageInfo(n: ColumnNavigationItem) {
-    this.pageTitle = n.title
-    this.useTabs = n.useTabs
-    this.helpComponent = n.helpComponent
+  setPageInfo(n?: ColumnNavigationItem) {
+    // No matching child route (e.g. mid-redirect): fall back to the generic section title
+    this.pageTitle = n?.title ?? 'Columns'
+    this.useTabs = n?.useTabs ?? false
+    this.helpComponent = n?.helpComponent ?? null
   }
 
   setTitle() {
