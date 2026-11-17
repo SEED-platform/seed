@@ -21,6 +21,7 @@ from seed.data_importer.models import ImportFile, ImportRecord
 from seed.data_importer.tests.util import FAKE_EXTRA_DATA, FAKE_MAPPINGS, FAKE_ROW
 from seed.landing.models import SEEDUser as User
 from seed.lib.mcm.reader import ROW_DELIMITER
+from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     ASSESSED_RAW,
@@ -44,7 +45,7 @@ from seed.models import (
 from seed.models.data_quality import DataQualityCheck
 from seed.test_helpers.fake import FakeCycleFactory, FakePropertyFactory, FakePropertyStateFactory
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
-from seed.utils.cache import get_cache_raw
+from seed.utils.cache import get_cache_raw, get_task_result, new_task_result_id
 from seed.utils.organizations import create_organization
 from seed.views.v3.import_files import ImportFileViewSet, convert_first_five_rows_to_list
 
@@ -908,7 +909,7 @@ class TestViewsMatching(DataMappingBaseTestCase):
 
         self.assertEqual(200, resp.status_code)
         unique_id = json.loads(resp.content)["unique_id"]
-        mapped_property = get_cache_raw(unique_id)
+        mapped_property, _ = get_task_result(unique_id)
 
         unitted_column_names = ["gross_floor_area", "site_eui"]
         for column_name, val in mapped_property.items():
@@ -1181,6 +1182,16 @@ class TestImportFileViewSetPermissions(AccessLevelBaseTestCase, DataMappingBaseT
         response = self.client.get(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 404
 
+    def test_mapping_results_task_without_the_import_file(self):
+        # e.g., an import file deleted after the task was started
+        progress_data = ProgressData(func_name="mapping_results", unique_id=new_task_result_id(self.org.id), organization_id=self.org.id)
+        args = {"import_file_id": -1, "inventory_type": "all", "org_id": self.org.id, "progress_key": progress_data.key}
+
+        tasks.mapping_results_task(args)
+
+        result = ProgressData.from_key(progress_data.key).result()
+        assert (result["status"], result["progress"], result["message"]) == ("error", 100, "Could not find import file with pk=-1")
+
     def test_import_file_mapping_results(self):
         url = reverse_lazy("api:v3:import_files-mapping-results", args=[self.import_file.pk])
 
@@ -1188,10 +1199,16 @@ class TestImportFileViewSetPermissions(AccessLevelBaseTestCase, DataMappingBaseT
         self.login_as_root_member()
         response = self.client.post(url, {"organization_id": self.org.id}, content_type="application/json")
         assert response.status_code == 200
+        cache_entry_url = reverse("api:v3:cache_entries-detail", args=[response.json()["unique_id"]]) + f"?organization_id={self.org.id}"
+        response = self.client.get(cache_entry_url)
+        assert response.status_code == 200
+        assert set(response.json()) == {"status", "properties", "tax_lots"}
 
-        # child user cannot
+        # child user cannot, including the root user's results
         self.login_as_child_member()
         response = self.client.post(url, {"organization_id": self.org.id}, content_type="application/json")
+        assert response.status_code == 404
+        response = self.client.get(cache_entry_url)
         assert response.status_code == 404
 
     def test_import_file_pm_meters_preview(self):
@@ -1350,6 +1367,56 @@ class TestImportFileViewSetPermissions(AccessLevelBaseTestCase, DataMappingBaseT
         self.login_as_child_member()
         response = self.client.post(url, data, content_type="application/json")
         assert response.status_code == 404
+
+    def test_import_file_data_quality_results(self):
+        url = reverse_lazy("api:v3:import_files-start-data-quality-checks", args=[self.import_file.pk])
+        data = json.dumps({"organization_id": self.org.id})
+        # the state has no custom_id_1, so it fails a default rule and is in the results
+        self.state.import_file = self.import_file
+        self.state.data_state = DATA_STATE_MAPPING
+        self.state.save(update_fields=["import_file", "data_state"])
+
+        self.login_as_root_member()
+        response = self.client.post(url, data, content_type="application/json")
+        assert response.status_code == 200
+        # the results are limited to the import file's access level instance
+        _, results_ali_id = DataQualityCheck.get_cached_results(self.import_file.pk, self.org.id)
+        assert results_ali_id == self.import_record.access_level_instance_id
+
+        # root users can read the results by the import file ID
+        results_url = reverse("api:v3:data_quality_checks-results") + f"?organization_id={self.org.id}&run_id={self.import_file.pk}"
+        response = self.client.get(results_url)
+        assert response.status_code == 200
+        assert [result["id"] for result in response.json()["data"]] == [self.state.id]
+
+        # child user cannot, although the import file ID can be guessed
+        self.login_as_child_member()
+        response = self.client.get(results_url)
+        assert response.status_code == 200
+        assert response.json() == {"data": None}
+
+    def test_import_file_data_quality_results_are_limited_to_the_import_files_access_level(self):
+        # a root user checks a child user's import file
+        self.import_record.access_level_instance = self.child_level_instance
+        self.import_record.save(update_fields=["access_level_instance"])
+        self.state.import_file = self.import_file
+        self.state.data_state = DATA_STATE_MAPPING
+        self.state.save(update_fields=["import_file", "data_state"])
+
+        self.login_as_root_member()
+        url = reverse_lazy("api:v3:import_files-start-data-quality-checks", args=[self.import_file.pk])
+        response = self.client.post(url, json.dumps({"organization_id": self.org.id}), content_type="application/json")
+        assert response.status_code == 200
+        # the results are limited to the import file's access level instance, not to the root user's
+        _, results_ali_id = DataQualityCheck.get_cached_results(self.import_file.pk, self.org.id)
+        assert results_ali_id == self.child_level_instance.id
+
+        # so the child user can read them
+        self.login_as_child_member()
+        results_url = reverse("api:v3:data_quality_checks-results") + f"?organization_id={self.org.id}&run_id={self.import_file.pk}"
+        response = self.client.get(results_url)
+        assert response.status_code == 200
+        assert [result["id"] for result in response.json()["data"]] == [self.state.id]
 
     def test_import_file_start_system_matching_and_geocoding(self):
         url = reverse_lazy("api:v3:import_files-start-system-matching-and-geocoding", args=[self.import_file.pk])

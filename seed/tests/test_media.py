@@ -9,14 +9,29 @@ import tempfile
 
 import pytest
 from django.conf import settings
+from django.contrib.auth.models import AnonymousUser
 from django.core.files.base import ContentFile
-from django.test import TestCase
+from django.test import RequestFactory, TestCase, override_settings
+from django.urls import reverse
 
+from config.views import debug_media_serve
 from seed.data_importer.models import ImportRecord
 from seed.landing.models import SEEDUser as User
-from seed.lib.superperms.orgs.models import AccessLevelInstance, OrganizationUser
-from seed.models import AnalysisInputFile, AnalysisOutputFile, BuildingFile, ImportFile, InventoryDocument, Organization
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, AccessLevelInstance, OrganizationUser
+from seed.models import (
+    AUDIT_IMPORT,
+    AUDIT_USER_EDIT,
+    AnalysisInputFile,
+    AnalysisOutputFile,
+    BuildingFile,
+    ImportFile,
+    InventoryDocument,
+    Organization,
+    PropertyAuditLog,
+)
 from seed.test_helpers.fake import FakeAnalysisFactory, FakeAnalysisPropertyViewFactory, FakePropertyFactory, FakePropertyStateFactory
+from seed.tests.util import AccessLevelBaseTestCase
+from seed.utils.organizations import create_organization
 from seed.views.v3.media import ModelForFileNotFoundError, check_file_permission
 from seed.views.v3.uploads import get_upload_path
 
@@ -109,7 +124,7 @@ class TestMeasures(TestCase):
             last_modified_by=self.user_a,
             # use suborg of org_a
             super_organization=self.org_a_sub,
-            access_level_instance=self.org_a.root,
+            access_level_instance=self.org_a_sub.root,
         )
         ImportFile.objects.create(
             import_record=import_record, uploaded_filename=os.path.basename(self.uploads_file), file=self.absolute_uploads_file
@@ -387,3 +402,254 @@ class TestMeasures(TestCase):
         response = self.client.get("/api/v3/media/uploads/nonexistent.txt")
 
         self.assertEqual(response.status_code, 404)
+
+
+class TestMediaAccessLevels(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.sibling_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+        self.sibling_member_user_details = {"username": "sibling_member@demo.com", "password": "test_pass"}
+        self.sibling_member_user = User.objects.create_user(**self.sibling_member_user_details)
+        self.org.add_member(self.sibling_member_user, self.sibling_level_instance.pk, ROLE_MEMBER)
+
+        # keep the files written by these tests out of the real media root
+        self.media_root = self.enterContext(tempfile.TemporaryDirectory())
+        self.enterContext(override_settings(MEDIA_ROOT=self.media_root))
+
+        self.cycle = self.cycle_factory.get_cycle()
+        self.child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        self.sibling_property = self.property_factory.get_property(access_level_instance=self.sibling_level_instance)
+
+    def _write_file(self, filepath, content):
+        """Write a file to the media root and return its path relative to the media root"""
+        absolute_filepath = os.path.join(self.media_root, os.path.normpath(filepath))
+        os.makedirs(os.path.dirname(absolute_filepath), exist_ok=True)
+        with open(absolute_filepath, "wb") as f:
+            f.write(content)
+        return filepath
+
+    def _create_import_file(self, filename, organization, access_level_instance, content):
+        filepath = self._write_file(f"uploads/{filename}", content)
+        import_record = ImportRecord.objects.create(
+            owner=self.root_owner_user,
+            last_modified_by=self.root_owner_user,
+            super_organization=organization,
+            access_level_instance=access_level_instance,
+        )
+        # like the uploads API, store the absolute path
+        ImportFile.objects.create(
+            import_record=import_record, uploaded_filename=filename, file=os.path.join(self.media_root, os.path.normpath(filepath))
+        )
+        return filepath
+
+    def _create_building_file(self, filename, property_state, content):
+        filepath = self._write_file(f"buildingsync_files/{filename}", content)
+        BuildingFile.objects.create(file=filepath, filename=filename, file_type=BuildingFile.BUILDINGSYNC, property_state=property_state)
+        return filepath
+
+    def _get(self, user_details, filepath):
+        self.client.logout()
+        self.client.login(**user_details)
+        return self.client.get(f"/api/v3/media/{filepath}")
+
+    def _assert_allowed(self, filepath, content, *users_details):
+        for user_details in users_details:
+            with self.subTest(filepath=filepath, user=user_details["username"]):
+                response = self._get(user_details, filepath)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.content, content)
+
+    def _assert_denied(self, filepath, content, *users_details):
+        for user_details in users_details:
+            with self.subTest(filepath=filepath, user=user_details["username"]):
+                response = self._get(user_details, filepath)
+                self.assertEqual(response.status_code, 404)
+                self.assertNotIn(content, response.content)
+
+    def test_root_import_file_is_denied_to_child_and_sibling_members(self):
+        filepath = self._create_import_file("root.csv", self.org, self.root_level_instance, b"root import")
+
+        self._assert_allowed(filepath, b"root import", self.superuser_details, self.root_owner_user_details, self.root_member_user_details)
+        self._assert_denied(filepath, b"root import", self.child_member_user_details, self.sibling_member_user_details)
+
+    def test_child_import_file_is_available_to_ancestors_only(self):
+        filepath = self._create_import_file("child.csv", self.org, self.child_level_instance, b"child import")
+
+        self._assert_allowed(filepath, b"child import", self.root_member_user_details, self.child_member_user_details)
+        self._assert_denied(filepath, b"child import", self.sibling_member_user_details)
+
+    def test_other_organizations_import_file_is_available_to_superusers_only(self):
+        other_org, _, _ = create_organization(User.objects.create_user(username="other_user@demo.com"), "other org")
+        filepath = self._create_import_file("other_org.csv", other_org, other_org.root, b"other org import")
+
+        # the superuser isn't a member of the other organization
+        self._assert_allowed(filepath, b"other org import", self.superuser_details)
+        self._assert_denied(filepath, b"other org import", self.root_owner_user_details, self.root_member_user_details)
+
+    def test_buildingsync_file_on_current_view_is_available_to_ancestors_only(self):
+        view = self.property_view_factory.get_property_view(prprty=self.child_property, cycle=self.cycle)
+        filepath = self._create_building_file("current.xml", view.state, b"current bsync")
+
+        self._assert_allowed(filepath, b"current bsync", self.root_member_user_details, self.child_member_user_details)
+        self._assert_denied(filepath, b"current bsync", self.sibling_member_user_details)
+
+    def test_buildingsync_file_on_earlier_state_belongs_to_the_property_it_was_merged_into(self):
+        view = self.property_view_factory.get_property_view(prprty=self.child_property, cycle=self.cycle)
+        earlier_state = self.property_state_factory.get_property_state()
+        edited_state = self.property_state_factory.get_property_state()
+        # the file's state was edited, and the edited state was then merged into the view's current state
+        PropertyAuditLog.objects.create(
+            organization=self.org, parent_state1=earlier_state, state=edited_state, name="Manual Edit", record_type=AUDIT_USER_EDIT
+        )
+        PropertyAuditLog.objects.create(
+            organization=self.org,
+            parent_state1=self.property_state_factory.get_property_state(),
+            parent_state2=edited_state,
+            state=view.state,
+            name="System Match",
+            record_type=AUDIT_IMPORT,
+        )
+        # a cycle in the audit log must not loop forever
+        PropertyAuditLog.objects.create(
+            organization=self.org, parent_state1=view.state, state=earlier_state, name="Manual Edit", record_type=AUDIT_USER_EDIT
+        )
+        filepath = self._create_building_file("earlier.xml", earlier_state, b"earlier bsync")
+
+        self._assert_allowed(filepath, b"earlier bsync", self.root_member_user_details, self.child_member_user_details)
+        self._assert_denied(filepath, b"earlier bsync", self.sibling_member_user_details)
+
+    def test_buildingsync_file_on_state_without_view_is_root_only(self):
+        filepath = self._create_building_file("no_view.xml", self.property_state_factory.get_property_state(), b"no view bsync")
+
+        self._assert_allowed(filepath, b"no view bsync", self.root_member_user_details)
+        self._assert_denied(filepath, b"no view bsync", self.child_member_user_details, self.sibling_member_user_details)
+
+    def test_analysis_files_are_available_to_ancestors_only(self):
+        analysis = FakeAnalysisFactory(organization=self.org, user=self.root_owner_user).get_analysis(
+            access_level_instance=self.child_level_instance
+        )
+        input_file = AnalysisInputFile.objects.create(analysis=analysis, content_type=AnalysisInputFile.BUILDINGSYNC)
+        input_file.file.save("input.xml", ContentFile(b"analysis input"))
+        analysis_property_view = FakeAnalysisPropertyViewFactory(organization=self.org, analysis=analysis).get_analysis_property_view(
+            property_obj=self.child_property, cycle=self.cycle
+        )
+        output_file = AnalysisOutputFile.objects.create(
+            content_type=AnalysisOutputFile.BUILDINGSYNC, file=self._write_file("analysis_output_files/output.xml", b"analysis output")
+        )
+        output_file.analysis_property_views.add(analysis_property_view)
+
+        for filepath, content in ((input_file.file.name, b"analysis input"), (output_file.file.name, b"analysis output")):
+            self._assert_allowed(filepath, content, self.root_member_user_details, self.child_member_user_details)
+            self._assert_denied(filepath, content, self.sibling_member_user_details)
+
+    def test_inventory_document_is_available_to_its_property_ancestors_only(self):
+        filepath = self._write_file("inventory_documents/sibling.osm", b"sibling document")
+        InventoryDocument.objects.create(
+            file=filepath, filename="sibling.osm", file_type=InventoryDocument.OSM, property=self.sibling_property
+        )
+
+        self._assert_allowed(filepath, b"sibling document", self.root_member_user_details, self.sibling_member_user_details)
+        self._assert_denied(filepath, b"sibling document", self.child_member_user_details)
+
+    def test_only_html_analysis_reports_are_shown_in_the_browser(self):
+        # members can upload these, so they are downloaded instead of shown, which could run their scripts
+        document_filepath = self._write_file("inventory_documents/page.html", b"<script>document</script>")
+        InventoryDocument.objects.create(file=document_filepath, filename="page.html", property=self.child_property)
+        uploaded_filepaths = [
+            self._create_import_file("page.html", self.org, self.child_level_instance, b"<script>import</script>"),
+            self._create_import_file("image.svg", self.org, self.child_level_instance, b"<svg><script>import</script></svg>"),
+            document_filepath,
+        ]
+        # HTML analysis reports, which analysis pipelines (e.g., BETTER's) store and members cannot upload, are shown in an iframe
+        analysis = FakeAnalysisFactory(organization=self.org, user=self.root_owner_user).get_analysis(
+            access_level_instance=self.child_level_instance
+        )
+        analysis_property_view = FakeAnalysisPropertyViewFactory(organization=self.org, analysis=analysis).get_analysis_property_view(
+            property_obj=self.child_property, cycle=self.cycle
+        )
+        report = AnalysisOutputFile.objects.create(
+            content_type=AnalysisOutputFile.HTML, file=self._write_file("analysis_output_files/report.html", b"<html>report</html>")
+        )
+        report.analysis_property_views.add(analysis_property_view)
+
+        for filepath in uploaded_filepaths:
+            with self.subTest(filepath=filepath):
+                response = self._get(self.child_member_user_details, filepath)
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response["Content-Disposition"], f'attachment; filename="{os.path.basename(filepath)}"')
+
+        response = self._get(self.child_member_user_details, report.file.name)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/html")
+        self.assertNotIn("Content-Disposition", response)
+
+    def test_development_media_route_checks_access(self):
+        # when DEBUG is on, files are also served at MEDIA_URL (e.g., /media/) for development
+        filepath = self._create_import_file("root.csv", self.org, self.root_level_instance, b"root import")
+
+        for user, status_code in [
+            # as for the API, since `SEEDAuthentication` always "succeeds" (with no user), DRF denies permission
+            (AnonymousUser(), 403),
+            (self.child_member_user, 404),
+            (self.sibling_member_user, 404),
+            (self.root_member_user, 200),
+        ]:
+            with self.subTest(user=str(user)):
+                request = RequestFactory().get(f"/media/{filepath}")
+                request.user = user
+                response = debug_media_serve(request, filepath)
+                # Django renders DRF's responses (e.g., for denied permissions) when the URL resolver calls the view
+                if hasattr(response, "render"):
+                    response.render()
+                self.assertEqual(response.status_code, status_code)
+                if status_code == 200:
+                    self.assertEqual(response.content, b"root import")
+                    self.assertEqual(response["Content-Disposition"], 'attachment; filename="root.csv"')
+                else:
+                    self.assertNotIn(b"root import", response.content)
+
+    def test_files_without_an_owning_record_are_not_found(self):
+        # these records' references to their state, property, organization, or property views are optional
+        document_filepath = self._write_file("inventory_documents/orphan.osm", b"orphan document")
+        InventoryDocument.objects.create(file=document_filepath, filename="orphan.osm", file_type=InventoryDocument.OSM, property=None)
+        output_file = AnalysisOutputFile.objects.create(
+            content_type=AnalysisOutputFile.BUILDINGSYNC, file=self._write_file("analysis_output_files/orphan.xml", b"orphan output")
+        )
+        files = (
+            (self._create_building_file("orphan.xml", None, b"orphan bsync"), b"orphan bsync"),
+            (document_filepath, b"orphan document"),
+            (self._create_import_file("orphan.csv", None, self.root_level_instance, b"orphan import"), b"orphan import"),
+            (output_file.file.name, b"orphan output"),
+        )
+
+        for filepath, content in files:
+            with self.subTest(filepath=filepath), pytest.raises(ModelForFileNotFoundError):
+                check_file_permission(self.root_member_user, filepath)
+            self._assert_denied(filepath, content, self.superuser_details, self.root_member_user_details)
+
+    def test_sub_organization_files_are_limited_to_parent_root_members(self):
+        sub_org = Organization.objects.create(name="sub-organization", parent_org=self.org)
+        filepath = self._create_import_file("sub_org.csv", sub_org, sub_org.root, b"sub-organization import")
+
+        self.assertTrue(check_file_permission(self.root_member_user, filepath))
+        self.assertFalse(check_file_permission(self.child_member_user, filepath))
+        self.assertFalse(check_file_permission(self.sibling_member_user, filepath))
+
+    def test_property_history_only_links_files_the_user_can_download(self):
+        # a root user's import created the child property's state, but its file also holds other access levels' records
+        filepath = self._create_import_file("root.csv", self.org, self.root_level_instance, b"root import")
+        view = self.property_view_factory.get_property_view(prprty=self.child_property, cycle=self.cycle)
+        PropertyAuditLog.objects.filter(state=view.state).update(import_filename=f"{self.media_root}/{filepath}".replace("\\", "/"))
+        url = reverse("api:v3:properties-detail", args=[view.pk]) + f"?organization_id={self.org.id}"
+
+        for user_details, file in [
+            (self.root_member_user_details, f"{settings.MEDIA_URL}{filepath}"),
+            (self.child_member_user_details, None),
+        ]:
+            with self.subTest(user=user_details["username"]):
+                self.client.logout()
+                self.client.login(**user_details)
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, 200)
+                # the file name is still shown
+                self.assertEqual([(h["filename"], h["file"]) for h in response.json()["history"]], [("root.csv", file)])

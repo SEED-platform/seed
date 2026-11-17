@@ -48,3 +48,5 @@ class InventoryViewTests(DeleteModelsTestCase):
         url = reverse("api:v3:properties-hpxml", args=[pv.id])
         response = self.client.get(url, params)
         self.assertIn(f"<GrossFloorArea>{state.gross_floor_area}.0</GrossFloorArea>", response.content.decode("utf-8"))
+        # the XML includes uploaded files' elements, so it is downloaded rather than shown in the browser
+        self.assertEqual(response["Content-Disposition"], f'attachment; filename="hpxml_property_{pv.id}.xml"')

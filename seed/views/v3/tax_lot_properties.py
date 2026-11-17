@@ -4,16 +4,17 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import logging
-from random import randint
+import secrets
 
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_spectacular.utils import OpenApiResponse, extend_schema
+from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
-from seed.decorators import ajax_request
+from seed.decorators import ajax_request, get_prog_key
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_perm
 from seed.lib.superperms.orgs.permissions import get_org_id
@@ -22,6 +23,7 @@ from seed.serializers.tax_lot_properties import TaxLotPropertySerializer
 from seed.tasks import export_data_task, set_update_to_now
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper
+from seed.utils.cache import get_cache_raw, new_task_result_id
 from seed.utils.match import update_sub_progress_total
 
 _log = logging.getLogger(__name__)
@@ -40,6 +42,22 @@ PROGRESS_FIELDS = {
 }
 PROGRESS_DESCRIPTION = "Progress data of the background task. Poll `/api/v3/progress/{progress_key}/` for its status."
 PROGRESS_RESPONSE = AutoSchemaHelper.schema_factory(PROGRESS_FIELDS, description=PROGRESS_DESCRIPTION)
+
+
+def _is_set_update_to_now_key(progress_key, org_id, access_level_instance):
+    """
+    Whether `progress_key` is the key of progress data that `start_set_update_to_now` created for the organization and
+    the access level instance or one of its descendants
+    """
+    data = get_cache_raw(progress_key) if isinstance(progress_key, str) else None
+    if not isinstance(data, dict) or data.get("func_name") != "set_update_to_now" or data.get("organization_id") != org_id:
+        return False
+    # other cache entries are not progress data, even if they look like it
+    if progress_key != get_prog_key("set_update_to_now", data.get("unique_id")):
+        return False
+    # nested-set bounds overlap between organizations, so the task's access level instance must be in the organization
+    task_ali = AccessLevelInstance.objects.filter(pk=data.get("access_level_instance_id"), organization_id=org_id).first()
+    return task_ali is not None and (task_ali == access_level_instance or task_ali.is_descendant_of(access_level_instance))
 
 
 class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
@@ -94,19 +112,25 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         """
         Download a collection of the TaxLot and Properties in multiple formats via a background task.
         """
-        # the organization that `has_perm` authorized
-        org_id = get_org_id(request)
+        # the organization that `has_perm` authorized (as an integer, since it prefixes the result's `unique_id`)
+        org_id = int(get_org_id(request))
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
         ali_lft = access_level_instance.lft
         ali_rgt = access_level_instance.rgt
         request_data = request.data
         query_params = request.query_params
 
-        progress_data = ProgressData(func_name="export_inventory", unique_id=f"{org_id}{randint(10000, 99999)}")
+        progress_data = ProgressData(
+            func_name="export_inventory",
+            unique_id=new_task_result_id(org_id),
+            organization_id=org_id,
+            access_level_instance_id=access_level_instance.id,
+        )
         progress_key = progress_data.key
         progress_data = update_sub_progress_total(100, progress_key)
 
         args = {
+            "access_level_instance_id": access_level_instance.id,
             "ali_lft": ali_lft,
             "ali_rgt": ali_rgt,
             "request_data": request_data,
@@ -157,7 +181,12 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         Generate a ProgressData object that will be used to monitor the set "update" of selected
         properties and tax lots to now
         """
-        progress_data = ProgressData(func_name="set_update_to_now", unique_id=f"metadata{randint(10000, 99999)}")
+        progress_data = ProgressData(
+            func_name="set_update_to_now",
+            unique_id=f"metadata{secrets.token_hex(16)}",
+            organization_id=int(get_org_id(request)),
+            access_level_instance_id=request.access_level_instance_id,
+        )
         return progress_data.result()
 
     @extend_schema(
@@ -187,8 +216,16 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
         taxlot_view_ids = request.data.get("taxlot_views")
         progress_key = request.data.get("progress_key")
 
-        org_id = get_org_id(request)
+        org_id = int(get_org_id(request))
         access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        # The task overwrites the key's progress data, so the key must be one that `start_set_update_to_now` created
+        # for this organization and the user's access level instance (or one of its descendants)
+        if not _is_set_update_to_now_key(progress_key, org_id, access_level_instance):
+            return JsonResponse(
+                {"status": "error", "message": "progress_key must be one returned by start_set_update_to_now"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         property_view_ids = list(
             PropertyView.objects.filter(
                 id__in=property_view_ids,
@@ -214,7 +251,7 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
             {"property_view_ids": ["integer"], "taxlot_view_ids": ["integer"]},
             description="IDs of the property views and tax lot views whose derived column values are recalculated",
         ),
-        responses={200: AutoSchemaHelper.schema_factory({**PROGRESS_FIELDS, "unique_id": "integer"}, description=PROGRESS_DESCRIPTION)},
+        responses={200: AutoSchemaHelper.schema_factory(PROGRESS_FIELDS, description=PROGRESS_DESCRIPTION)},
     )
     @method_decorator(
         [
@@ -256,7 +293,10 @@ class TaxLotPropertyViewSet(GenericViewSet, OrgMixin):
 
         # update
         result = update_state_derived_data(
-            property_state_ids=property_state_ids, taxlot_state_ids=taxlot_state_ids, derived_column_ids=derived_column_ids
+            property_state_ids=property_state_ids,
+            taxlot_state_ids=taxlot_state_ids,
+            derived_column_ids=derived_column_ids,
+            access_level_instance_id=ali.id,
         )
 
         return JsonResponse(result)

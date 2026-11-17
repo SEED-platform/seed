@@ -5,7 +5,6 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import logging
 from datetime import datetime
-from random import randint
 
 import xlrd
 from django.core.exceptions import ObjectDoesNotExist
@@ -57,6 +56,7 @@ from seed.models import (
 )
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import PROGRESS_DATA_SCHEMA, AutoSchemaHelper
+from seed.utils.cache import new_task_result_id
 from seed.utils.import_file import verify_data_types
 from seed.utils.time_utils import localize_datetime_with_dst_fallbacks
 
@@ -391,12 +391,20 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         `GET /api/v3/cache_entries/{unique_id}/`, using the `unique_id` of the returned progress data.
         """
         import_file_id = pk
-        org_id = self.get_organization(request)
+        # as an integer, since it prefixes the result's `unique_id` (see `CacheEntryViewSet.retrieve`)
+        org_id = int(self.get_organization(request))
         inventory_type = request.data.get("inventory_type", "all")
 
-        progress_data = ProgressData(func_name="mapping_results", unique_id=f"{org_id}{randint(10000, 99999)}")
+        progress_data = ProgressData(
+            func_name="mapping_results",
+            unique_id=new_task_result_id(org_id),
+            organization_id=org_id,
+            access_level_instance_id=request.access_level_instance_id,
+        )
         progress_key = progress_data.key
         args = {
+            # `has_hierarchy_access` checked that the import file is within the user's access level instance
+            "access_level_instance_id": request.access_level_instance_id,
             "import_file_id": import_file_id,
             "inventory_type": inventory_type,
             "org_id": org_id,
@@ -556,7 +564,11 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
                 {"status": "error", "message": "Could not find import file with pk=" + str(pk)}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        return_value = do_checks(org_id, None, None, None, import_file.pk)
+        # The results are read by the import file ID, so limit them to the import file's access level instance (which
+        # `has_hierarchy_access` checked), not to the user's
+        return_value = do_checks(
+            org_id, None, None, None, import_file.pk, access_level_instance_id=import_file.import_record.access_level_instance_id
+        )
         # step 5: create a new model instance
         return JsonResponse(
             {

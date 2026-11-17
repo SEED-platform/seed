@@ -44,7 +44,8 @@ class TaxlotViewViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
                         }
                     ],
                 }
-            )
+            ),
+            400: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"}, description="`taxlot` is not an integer"),
         },
     )
     @method_decorator(
@@ -75,6 +76,9 @@ class TaxlotViewViewSet(viewsets.ViewSet, OrgMixin, ProfileIdMixin):
 
         taxlot = request.query_params.get("taxlot")
         if taxlot is not None:
-            views = views.filter(taxlot_id=taxlot)
+            try:
+                views = views.filter(taxlot_id=int(taxlot))
+            except ValueError:
+                return JsonResponse({"status": "error", "message": "taxlot must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
 
         return {"status": "success", "taxlot_views": [BriefTaxlotViewSerializer(view).data for view in views]}

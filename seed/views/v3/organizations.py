@@ -9,10 +9,10 @@ import json
 import locale
 import logging
 import operator
+import secrets
 from io import BytesIO
 from numbers import Number
 from pathlib import Path
-from random import randint
 
 import numpy as np
 from celery import shared_task
@@ -88,7 +88,8 @@ from seed.utils.users import get_js_role
 _log = logging.getLogger(__name__)
 
 
-# Organization details that are only returned to the organization's members and superusers
+# Organization details that only superusers and users of the organization's root access level instance can change (see
+# `_can_access_credentials`)
 _ORGANIZATION_CREDENTIAL_FIELDS = (
     "mapquest_api_key",
     "better_analysis_api_key",
@@ -96,8 +97,10 @@ _ORGANIZATION_CREDENTIAL_FIELDS = (
     "audit_template_user",
     "audit_template_password",
 )
-
-# Organization credentials, which are stored encrypted, and the fields that validate their posted values
+# The secret credentials, which are stored encrypted and only returned to those users, and the fields that validate their
+# posted values. The Audit Template user is not secret, and clients use it to tell whether Audit Template is set up (e.g.,
+# to enable exporting the properties of a user's access level instance to it), so it is also returned to the
+# organization's other users.
 _ORGANIZATION_SECRET_FIELDS = {
     "mapquest_api_key": serializers.CharField(allow_blank=True, allow_null=True, max_length=MAX_SECRET_LENGTH),
     "better_analysis_api_key": serializers.CharField(allow_blank=True, allow_null=True, max_length=MAX_SECRET_LENGTH),
@@ -107,6 +110,19 @@ _ORGANIZATION_SECRET_FIELDS = {
         allow_blank=True, allow_null=True, trim_whitespace=False, max_length=MAX_SECRET_LENGTH
     ),
 }
+
+
+def _can_access_credentials(user, organization, access_level_instance):
+    """
+    Return whether a user can read and change an organization's credentials (`_ORGANIZATION_CREDENTIAL_FIELDS`). They
+    reach all of the organization's data in other services (e.g., the Audit Template token can fetch any of its
+    submissions), so only superusers and users of its root access level instance (of any role) can.
+
+    :param access_level_instance: AccessLevelInstance of the user's membership in the organization, or None
+    """
+    return user.is_superuser or (
+        access_level_instance is not None and access_level_instance.organization_id == organization.id and access_level_instance.is_root()
+    )
 
 
 def _decrypt_org_secret(org, field_name):
@@ -231,9 +247,10 @@ def _dict_org(request, organizations):
             "require_2fa": o.require_2fa,
             "max_data_charted": o.max_data_charted,
         }
-        # e.g., members of a parent organization who do not belong to this sub-organization
-        if ali is None and not request.user.is_superuser:
-            org.update(dict.fromkeys(_ORGANIZATION_CREDENTIAL_FIELDS, ""))
+        # Users of a child access level instance only receive the Audit Template user, and members of a parent organization
+        # who do not belong to this sub-organization receive none of its credentials
+        if not _can_access_credentials(request.user, o, ali):
+            org.update(dict.fromkeys(_ORGANIZATION_SECRET_FIELDS if ali is not None else _ORGANIZATION_CREDENTIAL_FIELDS, ""))
         orgs.append(org)
 
     return orgs
@@ -381,8 +398,9 @@ _organization_schema = AutoSchemaHelper.schema_factory(
         "default_reports_x_axis_options": ["object"],
         "default_reports_y_axis_options": ["object"],
     },
-    description="Organization details (`sub_orgs` contains child organizations in the same format, with blank API keys and Audit "
-    "Template credentials for sub-organizations the user does not belong to). With `brief=true`, only name, "
+    description="Organization details (`sub_orgs` contains child organizations in the same format). API keys and the Audit "
+    "Template token and password are blank unless the user is a superuser or belongs to the organization's root access level instance "
+    "(e.g., they are blank for sub-organizations the user does not belong to). With `brief=true`, only name, "
     "org_id, id, parent_id, is_parent, user_role, display_decimal_places, salesforce_enabled, bb_salesforce_enabled, "
     "access_level_names, audit_template_conditional_import, property_display_field, and taxlot_display_field are returned.",
 )
@@ -397,8 +415,10 @@ _organization_settings_schema = AutoSchemaHelper.schema_factory(
     },
     description="Many omitted settings (e.g., feature toggles and the Audit Template user) are reset to their defaults, so send "
     "the organization's complete settings. Omitted API keys and the Audit Template token and password are unchanged, and null "
-    "clears them (they are validated before anything is saved, with keys and tokens trimmed, and are stored encrypted). Invalid display units are "
-    "ignored. `default_reports_*_axis_options` are PropertyState column IDs and `public_fields` are the columns to share publicly.",
+    "clears them (they are validated before anything is saved, with keys and tokens trimmed, and are stored encrypted). Only "
+    "superusers and users of the organization's root access level instance can change the API keys and Audit Template "
+    "credentials; others get a 403 if they try. Invalid display units are ignored. `default_reports_*_axis_options` are "
+    "PropertyState column IDs and `public_fields` are the columns to share publicly.",
 )
 _organization_settings_schema["properties"].update(
     {
@@ -536,11 +556,11 @@ class OrganizationViewSet(viewsets.ViewSet):
     def _start_whole_org_match_merge_link(self, org_id, state_class_name, proposed_columns=None):
         if proposed_columns is None:
             proposed_columns = []
-        identifier = randint(100, 100000)
+        identifier = secrets.token_hex(16)
         result_key = _get_match_merge_link_key(org_id, identifier)
         set_cache_raw(result_key, {})
 
-        progress_data = ProgressData(func_name="org_match_merge_link", unique_id=identifier)
+        progress_data = ProgressData.for_organization("org_match_merge_link", identifier, int(org_id))
         progress_data.delete()
 
         whole_org_match_merge_link.apply_async(
@@ -794,6 +814,25 @@ class OrganizationViewSet(viewsets.ViewSet):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
+        # Only superusers and users of the root access level instance receive the secret credentials (see `_dict_org`), so
+        # only they can change them. Others (e.g., an owner of the parent organization who belongs to a child access
+        # level instance of this one) can save their other settings with the blank values that they receive, but are told
+        # (before anything is saved) if they try to change or clear (with null) the credentials.
+        can_change_credentials = _can_access_credentials(
+            request.user, org, AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        )
+        if not can_change_credentials and (
+            any(value != "" for value in posted_secrets.values())
+            or posted_org.get("audit_template_user", org.audit_template_user) != org.audit_template_user
+        ):
+            return JsonResponse(
+                {
+                    "status": "error",
+                    "message": "Only users of the organization's root access level can change its API keys and Audit Template credentials",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         desired_threshold = posted_org.get("query_threshold", None)
         if desired_threshold is not None:
             org.query_threshold = desired_threshold
@@ -953,9 +992,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         if comstock_enabled != org.comstock_enabled:
             org.comstock_enabled = comstock_enabled
 
-        audit_template_user = posted_org.get("audit_template_user", False)
-        if audit_template_user != org.audit_template_user:
-            org.audit_template_user = audit_template_user
+        # others do not change the credentials (see above)
+        if can_change_credentials:
+            audit_template_user = posted_org.get("audit_template_user", False)
+            if audit_template_user != org.audit_template_user:
+                org.audit_template_user = audit_template_user
 
         audit_template_tracking_id_name = posted_org.get("audit_template_tracking_id_name", False)
         if audit_template_tracking_id_name != org.audit_template_tracking_id_name:
@@ -966,12 +1007,15 @@ class OrganizationViewSet(viewsets.ViewSet):
             org.audit_template_tracking_id_field = audit_template_tracking_id_field
 
         # null clears a credential, and submitting the returned value (which is "" if it can't be decrypted) keeps the
-        # stored value
-        for field_name, value in posted_secrets.items():
-            stored = getattr(org, field_name)
-            setattr(
-                org, field_name, "" if value is None else encrypt_if_changed(stored, value, context=f"organization {org.id} {field_name}")
-            )
+        # stored value. Others submit blanks for the values that they do not receive (see above), which would replace them.
+        if can_change_credentials:
+            for field_name, value in posted_secrets.items():
+                stored = getattr(org, field_name)
+                setattr(
+                    org,
+                    field_name,
+                    "" if value is None else encrypt_if_changed(stored, value, context=f"organization {org.id} {field_name}"),
+                )
 
         audit_template_report_type = posted_org.get("audit_template_report_type", False)
         if audit_template_report_type != org.audit_template_report_type:
@@ -1298,7 +1342,7 @@ class OrganizationViewSet(viewsets.ViewSet):
 
     @extend_schema(
         parameters=[
-            AutoSchemaHelper.query_integer_field(
+            AutoSchemaHelper.query_string_field(
                 "match_merge_link_id", required=True, description="ID of match merge link (the `unique_id` of its progress data)"
             )
         ],
@@ -1327,7 +1371,9 @@ class OrganizationViewSet(viewsets.ViewSet):
                 {"status": "error", "message": "Could not retrieve organization at pk = " + str(pk)}, status=status.HTTP_404_NOT_FOUND
             )
 
-        identifier = request.query_params["match_merge_link_id"]
+        identifier = request.query_params.get("match_merge_link_id")
+        if not identifier:
+            return JsonResponse({"status": "error", "message": "match_merge_link_id is required"}, status=status.HTTP_400_BAD_REQUEST)
         result_key = _get_match_merge_link_key(pk, identifier)
 
         # using unsafe serialization b/c the result might not be a dict

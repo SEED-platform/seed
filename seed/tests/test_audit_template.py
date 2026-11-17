@@ -7,6 +7,7 @@ import json
 from datetime import UTC, datetime
 from unittest import mock
 
+import requests
 from django.conf import settings
 from django.test import TestCase, override_settings
 from django.urls import reverse
@@ -17,6 +18,8 @@ from lxml import etree
 from seed.audit_template.audit_template import AuditTemplate
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.landing.models import SEEDUser as User
+from seed.lib.progress_data.progress_data import ProgressData
+from seed.lib.superperms.orgs.models import ROLE_VIEWER
 from seed.lib.tkbl.tkbl import EISA432_CODES
 from seed.models import Meter, MeterReading, Uniformat
 from seed.tasks import sync_audit_template
@@ -30,6 +33,15 @@ from seed.test_helpers.fake import (
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.encrypt import _warn_once, encrypt_secret
 from seed.utils.organizations import create_organization
+
+# The organization's Audit Template API token, which must not appear in messages, progress data, or logs
+AT_TOKEN = "secret-audit-template-token"
+
+
+def token_echoing_response(status_code, reason, **echoed_request):
+    """A failed Audit Template response whose body describes the request, including the token (and `echoed_request`)"""
+    body = json.dumps({"error": reason, "request": {"token": AT_TOKEN, **echoed_request}})
+    return mock.Mock(status_code=status_code, reason=reason, content=body.encode(), text=body)
 
 
 class AuditTemplateViewTests(TestCase):
@@ -63,6 +75,10 @@ class AuditTemplateViewTests(TestCase):
         self.good_get_submission_response.status_code = 200
         self.good_get_submission_response.text = "submission response"
         self.good_get_submission_response.content = "submission response"
+
+        self.secret_authenticate_response = mock.Mock()
+        self.secret_authenticate_response.status_code = 200
+        self.secret_authenticate_response.json = mock.Mock(return_value={"token": AT_TOKEN})
 
     @mock.patch("requests.request")
     def test_get_submission_from_audit_template(self, mock_request):
@@ -108,7 +124,134 @@ class AuditTemplateViewTests(TestCase):
         # -- Assert
         self.assertEqual(200, response.status_code, response.content)
         self.assertEqual(response["Content-Type"], "application/xml")
+        # downloaded rather than displayed from SEED's origin
+        self.assertEqual(response["Content-Disposition"], 'attachment; filename="at_submission_1.xml"')
         self.assertEqual(response.content, b"submission response")
+
+    @mock.patch("requests.request")
+    def test_get_submission_requires_integer_id(self, mock_request):
+        response = self.client.get(reverse("api:v3:audit_template-get-submission", args=["abc"]), data={"organization_id": self.org.id})
+
+        self.assertEqual(response.status_code, 400)
+        mock_request.assert_not_called()
+
+    def _http_error(self, url):
+        """An HTTPError like `raise_for_status`'s, whose text includes the URL"""
+        response = requests.Response()
+        response.status_code = 500
+        response.reason = "Internal Server Error"
+        response.url = url
+        return requests.HTTPError(f"500 Server Error: Internal Server Error for url: {url}", response=response)
+
+    @mock.patch("requests.request")
+    def test_get_city_submissions_errors_do_not_include_the_token(self, mock_request):
+        failed_response = mock.Mock()
+        failed_response.raise_for_status.side_effect = self._http_error(
+            f"{settings.AUDIT_TEMPLATE_HOST}/api/v2/rp/cities/36?token={AT_TOKEN}&per_page=100&status=Complies&page=1"
+        )
+        mock_request.side_effect = [self.secret_authenticate_response, failed_response]
+
+        with self.assertLogs("seed.audit_template.audit_template", level="WARNING") as logs:
+            submissions, message = AuditTemplate(self.org.id).get_city_submissions(36, "Complies")
+
+        self.assertIsNone(submissions)
+        self.assertEqual(message, "Expected 200 response from Audit Template get_city_submissions but got 500 Internal Server Error")
+        self.assertNotIn(AT_TOKEN, "".join(logs.output))
+        # the token is a parameter, not part of the URL
+        _method, url = mock_request.call_args.args
+        self.assertNotIn(AT_TOKEN, url)
+        self.assertEqual(mock_request.call_args.kwargs["params"]["token"], AT_TOKEN)
+
+    @mock.patch("requests.request")
+    def test_get_submission_errors_do_not_include_the_token(self, mock_request):
+        url = f"{settings.AUDIT_TEMPLATE_HOST}/api/v2/rp/submissions/1.pdf?token={AT_TOKEN}"
+        for name, failure, expected_message in (
+            # a failed response, whose body describes the request
+            (
+                "non-200 response",
+                token_echoing_response(500, "Internal Server Error"),
+                "Expected 200 response from Audit Template get_submission but got 500 Internal Server Error",
+            ),
+            # an exception, whose text includes the URL
+            (
+                "request exception",
+                requests.ConnectionError(f"Max retries exceeded with url: {url}"),
+                "Unexpected error from Audit Template",
+            ),
+        ):
+            with self.subTest(name):
+                mock_request.reset_mock()
+                mock_request.side_effect = [self.secret_authenticate_response, failure]
+
+                with self.assertLogs("seed.audit_template.audit_template", level="WARNING") as logs:
+                    response = self.client.get(self.get_submission_url, data={"organization_id": self.org.id})
+
+                self.assertEqual(response.status_code, 400)
+                self.assertEqual(response.json(), {"success": False, "message": expected_message})
+                self.assertNotIn(AT_TOKEN, response.content.decode())
+                self.assertIn(expected_message, "".join(logs.output))
+                self.assertNotIn(AT_TOKEN, "".join(logs.output))
+                _method, request_url = mock_request.call_args.args
+                self.assertNotIn(AT_TOKEN, request_url)
+                self.assertEqual(mock_request.call_args.kwargs["params"], {"token": AT_TOKEN})
+
+    @mock.patch("seed.audit_template.audit_template._batch_export_to_audit_template.delay")
+    @mock.patch("requests.request")
+    def test_get_api_token_errors_do_not_include_the_credentials(self, mock_request, mock_delay):
+        # a rejected authentication, whose body describes the request (e.g., the organization token)
+        # (the decrypted organization token, as `setUp` stores it)
+        organization_token = "fake at_api_token"
+        mock_request.return_value = token_echoing_response(401, "Unauthorized", organization_token=organization_token)
+        expected_message = "Expected 200 response from Audit Template get_api_token but got 401 Unauthorized"
+
+        with self.assertLogs("seed.audit_template.audit_template", level="WARNING") as logs:
+            response = self.client.post(
+                reverse("api:v3:audit_template-batch-export-to-audit-template") + f"?organization_id={self.org.id}",
+                {"property_view_ids": []},
+                content_type="application/json",
+            )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {"success": False, "message": expected_message})
+        self.assertIn(expected_message, "".join(logs.output))
+        for secret in (AT_TOKEN, organization_token):
+            self.assertNotIn(secret, response.content.decode())
+            self.assertNotIn(secret, "".join(logs.output))
+        # only the authentication was requested, so no export started
+        mock_request.assert_called_once()
+        _method, request_url = mock_request.call_args.args
+        self.assertTrue(request_url.endswith("/users/authenticate"))
+        mock_delay.assert_not_called()
+
+    @mock.patch("requests.request")
+    def test_sync_progress_does_not_include_the_token(self, mock_request):
+        self.org.audit_template_city_id = 36
+        self.org.audit_template_status_types = "Complies"
+        self.org.save()
+        url = f"{settings.AUDIT_TEMPLATE_HOST}/api/v2/rp/cities/36?token={AT_TOKEN}&per_page=100&status=Complies&page=1"
+        mock_request.side_effect = [self.secret_authenticate_response, requests.ConnectionError(f"Max retries exceeded with url: {url}")]
+
+        # the task runs eagerly, so the progress data is finished
+        progress, _ = AuditTemplate(self.org.id).batch_get_city_submission_xml([])
+
+        self.assertEqual(progress["status"], "error")
+        self.assertEqual(progress["message"], "Unexpected error from Audit Template")
+        self.assertNotIn(AT_TOKEN, json.dumps(progress))
+        self.assertNotIn(AT_TOKEN, json.dumps(ProgressData.from_key(progress["progress_key"]).result()))
+        # the scheduled sync handles all of the organization's properties, so only its root users can read the progress
+        self.assertEqual((progress["organization_id"], progress["access_level_instance_id"]), (self.org.id, self.org.root.id))
+
+    @mock.patch("seed.audit_template.audit_template._batch_get_city_submission_xml.delay")
+    def test_progress_keys_are_unique_per_run(self, mock_delay):
+        at = AuditTemplate(self.org.id)
+
+        progress_keys = [at.batch_get_city_submission_xml([])[0]["progress_key"] for _ in range(2)]
+
+        # concurrent runs do not share progress data, whose key cannot be guessed from the organization
+        self.assertNotEqual(progress_keys[0], progress_keys[1])
+        for progress_key in progress_keys:
+            self.assertFalse(progress_key.endswith(f":{self.org.id}"))
+        self.assertEqual(mock_delay.call_count, 2)
 
     @mock.patch("seed.audit_template.audit_template._batch_get_city_submission_xml.delay")
     def test_sync_audit_template(self, mock_delay):
@@ -176,7 +319,8 @@ class AuditTemplateAccessLevelTests(AccessLevelBaseTestCase):
         response = self.client.post(url, body, content_type="application/json")
         assert response.status_code == 200
         assert response.json() == {"progress_key": "fake key"}
-        mock_batch_export.assert_called_once_with([self.child_view.id])
+        # and its progress is limited to the user's access level instance
+        mock_batch_export.assert_called_once_with([self.child_view.id], access_level_instance_id=self.child_level_instance.id)
 
         mock_batch_export.reset_mock()
         self.login_as_root_member()
@@ -184,6 +328,96 @@ class AuditTemplateAccessLevelTests(AccessLevelBaseTestCase):
         assert response.status_code == 200
         mock_batch_export.assert_called_once()
         assert sorted(mock_batch_export.call_args.args[0]) == sorted([self.root_view.id, self.child_view.id])
+        assert mock_batch_export.call_args.kwargs == {"access_level_instance_id": self.root_level_instance.id}
+
+    def _set_audit_template_credentials(self):
+        self.org.at_organization_token = encrypt_secret("fake at_api_token")
+        self.org.audit_template_user = "fake at user"
+        self.org.audit_template_password = encrypt_secret("password")
+        self.org.save()
+
+    @mock.patch("requests.request")
+    def test_get_submission_is_restricted_to_root_users(self, mock_request):
+        self._set_audit_template_credentials()
+        authenticate_response = mock.Mock(status_code=200, json=mock.Mock(return_value={"token": "fake token"}))
+        submission_response = mock.Mock(status_code=200, content=b"%PDF-1.4", text="<xml/>")
+        mock_request.side_effect = lambda _method, url, **_kwargs: (
+            authenticate_response if url.endswith("/users/authenticate") else submission_response
+        )
+        url = reverse("api:v3:audit_template-get-submission", args=["1"])
+        root_viewer_user_details = {"username": "root_viewer@demo.com", "password": "test_pass"}
+        self.org.add_member(User.objects.create_user(**root_viewer_user_details), self.org.root.id, ROLE_VIEWER)
+        other_user_details = {"username": "other_owner@demo.com", "password": "test_pass"}
+        create_organization(User.objects.create_user(**other_user_details), "other-organization")
+
+        # the organization's token can fetch any of its submissions, including those of properties outside of the
+        # user's access level instance subtree
+        self.login_as_child_member()
+        response = self.client.get(url, {"organization_id": self.org.id})
+        assert response.status_code == 403
+        assert response.json()["success"] is False
+
+        self.client.login(**other_user_details)
+        response = self.client.get(url, {"organization_id": self.org.id})
+        assert response.status_code == 403
+        mock_request.assert_not_called()
+
+        # any role of the root access level instance can, and the reports are downloaded
+        self.client.login(**root_viewer_user_details)
+        response = self.client.get(url, {"organization_id": self.org.id})
+        assert response.status_code == 200
+        assert response.content == b"%PDF-1.4"
+        assert response["Content-Disposition"] == 'attachment; filename="at_submission_1.pdf"'
+
+        response = self.client.get(url, {"organization_id": self.org.id, "report_format": "xml"})
+        assert response.status_code == 200
+        assert response.content == b"<xml/>"
+        assert response["Content-Disposition"] == 'attachment; filename="at_submission_1.xml"'
+
+    @mock.patch("seed.audit_template.audit_template._batch_export_to_audit_template.delay")
+    @mock.patch("seed.audit_template.audit_template._get_city_submission_xml.delay")
+    @mock.patch("seed.audit_template.audit_template._batch_get_city_submission_xml.delay")
+    def test_progress_data_is_tagged(self, mock_batch_get, mock_get, mock_batch_export):
+        self._set_audit_template_credentials()
+        self.enterContext(mock.patch("seed.audit_template.audit_template.AuditTemplate.get_api_token", return_value=("fake token", "")))
+        requests_by_name = {
+            "batch_get_city_submission_xml": lambda: self.client.put(
+                reverse("api:v3:audit_template-batch-get-city-submission-xml") + f"?organization_id={self.org.id}",
+                {"view_ids": []},
+                content_type="application/json",
+            ),
+            "get_city_submission_xml": lambda: self.client.put(
+                reverse("api:v3:audit_template-get-city-submission-xml") + f"?organization_id={self.org.id}",
+                {"city_id": 1, "custom_id_1": "child"},
+                content_type="application/json",
+            ),
+            "batch_export_to_audit_template": lambda: self.client.post(
+                reverse("api:v3:audit_template-batch-export-to-audit-template") + f"?organization_id={self.org.id}",
+                {"property_view_ids": [self.child_view.id]},
+                content_type="application/json",
+            ),
+        }
+
+        for user_login, access_level_instance in (
+            (self.login_as_child_member, self.child_level_instance),
+            (self.login_as_root_member, self.root_level_instance),
+        ):
+            user_login()
+            progress_keys = set()
+            for func_name, make_request in requests_by_name.items():
+                for _ in range(2):
+                    response = make_request()
+                    assert response.status_code == 200
+                    progress = response.json()
+                    assert progress["func_name"] == func_name
+                    # only users of the user's access level instance or its ancestors can read it
+                    assert (progress["organization_id"], progress["access_level_instance_id"]) == (self.org.id, access_level_instance.id)
+                    progress_keys.add(progress["progress_key"])
+            # each run has its own progress data
+            assert len(progress_keys) == 6
+        # the export task gets its own token, since task arguments are stored by the broker and included in error reports
+        for call in mock_batch_export.call_args_list:
+            assert "fake token" not in call.args
 
     def _mock_city_submissions(self):
         """Match a city submission to each of the root and child properties, returning the mocked property update"""
@@ -209,6 +443,19 @@ class AuditTemplateAccessLevelTests(AccessLevelBaseTestCase):
                 return_value={"success": 1, "failure": 0, "data": []},
             )
         )
+
+    def test_batch_get_city_submission_xml_reports_update_errors(self):
+        mock_update = self._mock_city_submissions()
+        mock_update.side_effect = RuntimeError("Could not update 123 Main St")
+        url = reverse("api:v3:audit_template-batch-get-city-submission-xml") + f"?organization_id={self.org.id}"
+
+        self.login_as_root_member()
+        with self.assertLogs("seed.audit_template.audit_template", "ERROR"):
+            response = self.client.put(url, {"view_ids": []}, content_type="application/json")
+        assert response.status_code == 200
+        progress = self.client.get(reverse("api:v3:progress-detail", args=[response.json()["progress_key"]])).json()
+        # the error is not replaced by a success, and doesn't describe the properties
+        assert (progress["status"], progress["message"]) == ("error", "Unexpected Error")
 
     def test_batch_get_city_submission_xml_is_restricted_to_access_level(self):
         mock_update = self._mock_city_submissions()
@@ -590,7 +837,8 @@ class ExportToAuditTemplate(TestCase):
             "rp_buildings": {"Building-1": "https://fake.gov/rp/buildings/2222"},
             "rp_nyc_properties": {},
         }
-        mock_request.side_effect = [mock_authenticate_response, mock_export1_response, mock_export2_response]
+        # the export authenticates before starting the task, which authenticates itself
+        mock_request.side_effect = [mock_authenticate_response, mock_authenticate_response, mock_export1_response, mock_export2_response]
 
         # check status of audit_template_building_ids
         self.assertIsNone(self.state1.audit_template_building_id)
@@ -635,6 +883,30 @@ class ExportToAuditTemplate(TestCase):
         self.assertEqual(self.view4.id, details[0]["view_id"])
         self.assertEqual(exp, details[0]["message"])
         self.assertEqual("4444", self.state4.audit_template_building_id)
+
+    @mock.patch("requests.request")
+    def test_batch_export_to_audit_template_errors_do_not_include_the_token(self, mock_request):
+        authenticate_response = mock.Mock(status_code=200, json=mock.Mock(return_value={"token": AT_TOKEN}))
+        # a rejected upload, whose body describes the request
+        mock_request.side_effect = [authenticate_response, authenticate_response, token_echoing_response(422, "Unprocessable Entity")]
+
+        # the task runs eagerly, so the progress data is finished
+        with self.assertLogs("seed.audit_template.audit_template", level="WARNING") as logs:
+            results, _ = AuditTemplate(self.org.id).batch_export_to_audit_template([self.view1.id])
+
+        expected_message = "Expected 200 response from Audit Template upload but got 422 Unprocessable Entity"
+        expected_details = [{"view_id": self.view1.id, "message": f"{self.state1.pm_property_id}: {expected_message}"}]
+        self.assertEqual(results["message"], {"error": {"count": 1, "details": expected_details}})
+        self.assertNotIn(AT_TOKEN, json.dumps(results))
+        self.assertNotIn(AT_TOKEN, json.dumps(ProgressData.from_key(results["progress_key"]).result()))
+        self.assertIn(expected_message, "".join(logs.output))
+        self.assertNotIn(AT_TOKEN, "".join(logs.output))
+        # the token was sent in the upload's body
+        _method, upload_url = mock_request.call_args.args
+        self.assertEqual(upload_url, self.upload_url)
+        self.assertEqual(mock_request.call_args.kwargs["data"], {"token": AT_TOKEN})
+        self.state1.refresh_from_db()
+        self.assertIsNone(self.state1.audit_template_building_id)
 
 
 # For developer use only. Must be run with live submission data.

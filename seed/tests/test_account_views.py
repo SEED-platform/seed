@@ -25,12 +25,24 @@ from seed.models.properties import PropertyState
 from seed.models.tax_lots import TaxLotState
 from seed.test_helpers.fake import FakePropertyFactory, FakePropertyViewFactory, FakeTaxLotFactory, FakeTaxLotViewFactory
 from seed.tests.util import AccessLevelBaseTestCase, FakeRequest
-from seed.utils.encrypt import _warn_once, encrypt_secret, is_encrypted
+from seed.utils.encrypt import _warn_once, decrypt_secret, encrypt_secret, is_encrypted
 from seed.utils.organizations import create_organization
 from seed.utils.users import get_js_role, get_role_from_js
 from seed.views.main import _get_default_org
 from seed.views.main import _get_default_org as get_default_org_for_user
 from seed.views.v3.organizations import _dict_org
+
+# Organization credentials, which only superusers and users of the organization's root access level instance can change
+ORGANIZATION_CREDENTIALS = {
+    "mapquest_api_key": "mapquest-key",
+    "better_analysis_api_key": "better-key",
+    "at_organization_token": "at-token",
+    "audit_template_user": "at-user@demo.com",
+    "audit_template_password": "at-password",
+}
+# The credentials that others receive: the secrets are blank, but the Audit Template user tells clients that Audit Template
+# is set up (e.g., to enable exporting the properties of the user's access level instance to it)
+BLANK_ORGANIZATION_CREDENTIALS = {**dict.fromkeys(ORGANIZATION_CREDENTIALS, ""), "audit_template_user": "at-user@demo.com"}
 
 
 class AccountsViewTests(TestCase):
@@ -1191,6 +1203,133 @@ class AccountsViewAHTests(AccessLevelBaseTestCase):
         cycle_data = data["cycles"][0]
         self.assertEqual(cycle_data["num_properties"], 5)
         self.assertEqual(cycle_data["num_taxlots"], 3)
+
+    def _set_credentials(self, org, credentials):
+        # the secrets (all but the Audit Template user) are stored encrypted
+        for key, value in credentials.items():
+            setattr(org, key, value if key == "audit_template_user" else encrypt_secret(value))
+        org.save()
+
+    def _get_stored_credentials(self, org):
+        """Return the organization's saved credentials, with the secrets decrypted"""
+        org.refresh_from_db()
+        return {
+            key: getattr(org, key) if key == "audit_template_user" else decrypt_secret(getattr(org, key))
+            for key in ORGANIZATION_CREDENTIALS
+        }
+
+    def _get_organizations(self):
+        """Return the organizations of the list endpoint (for the logged-in user) by ID"""
+        response = self.client.get(reverse_lazy("api:v3:organizations-list"))
+        self.assertEqual(response.status_code, 200)
+        return {org["id"]: org for org in response.json()["organizations"]}
+
+    def _get_organization(self, org):
+        response = self.client.get(reverse_lazy("api:v3:organizations-detail", args=[org.pk]))
+        self.assertEqual(response.status_code, 200)
+        return response.json()["organization"]
+
+    def _create_sub_org(self):
+        """
+        Create a sub-organization with credentials, of which the parent organization's root owner is a member of a child
+        access level instance (and, as an owner of the parent organization, can save its settings)
+        """
+        sub_org_owner_details = {"username": "sub_org_owner@demo.com", "password": "test_pass"}
+        sub_org, _, _ = create_organization(User.objects.create_user(**sub_org_owner_details), "sub")
+        sub_org.parent_org = self.org
+        sub_org.access_level_names = ["root", "child"]
+        sub_org.save()
+        sub_org_child_level_instance = sub_org.add_new_access_level_instance(sub_org.root.id, "sub child")
+        sub_org.add_member(self.root_owner_user, sub_org_child_level_instance.id, ROLE_MEMBER)
+        self._set_credentials(sub_org, ORGANIZATION_CREDENTIALS)
+        return sub_org, sub_org_owner_details
+
+    def test_credentials_are_only_returned_to_root_users(self):
+        self._set_credentials(self.org, ORGANIZATION_CREDENTIALS)
+        root_viewer_user_details = {"username": "root_viewer@demo.com", "password": "test_pass"}
+        self.org.add_member(User.objects.create_user(**root_viewer_user_details), self.org.root.id, ROLE_VIEWER)
+        outside_superuser_details = {"username": "outside_superuser@demo.com", "password": "test_pass"}
+        User.objects.create_superuser(email="outside_superuser@demo.com", **outside_superuser_details)
+
+        for user_details, expected_credentials in (
+            # the credentials reach all of the organization's data in other services (e.g., any of its Audit Template
+            # submissions), so users of a child access level instance, of any role, do not receive them
+            (self.child_viewer_user_details, BLANK_ORGANIZATION_CREDENTIALS),
+            (self.child_member_user_details, BLANK_ORGANIZATION_CREDENTIALS),
+            # users of the root access level instance, of any role, and superusers (even of other organizations) do
+            (root_viewer_user_details, ORGANIZATION_CREDENTIALS),
+            (self.root_member_user_details, ORGANIZATION_CREDENTIALS),
+            (self.root_owner_user_details, ORGANIZATION_CREDENTIALS),
+            (outside_superuser_details, ORGANIZATION_CREDENTIALS),
+        ):
+            with self.subTest(user=user_details["username"]):
+                self.client.login(**user_details)
+                for org in (self._get_organization(self.org), self._get_organizations()[self.org.pk]):
+                    self.assertEqual({key: org[key] for key in ORGANIZATION_CREDENTIALS}, expected_credentials)
+
+    def test_credentials_of_sub_orgs_are_only_returned_to_their_root_users(self):
+        sub_org, sub_org_owner_details = self._create_sub_org()
+        self._set_credentials(self.org, ORGANIZATION_CREDENTIALS)
+
+        # an owner of the parent organization who is a member of a child access level instance of the sub-organization
+        # receives the parent organization's credentials, but not the sub-organization's, in either of its listings
+        self.login_as_root_owner()
+        organizations = self._get_organizations()
+        parent_org = organizations[self.org.pk]
+        self.assertEqual({key: parent_org[key] for key in ORGANIZATION_CREDENTIALS}, ORGANIZATION_CREDENTIALS)
+        for org in (parent_org["sub_orgs"][0], organizations[sub_org.pk], self._get_organization(sub_org)):
+            self.assertEqual(org["id"], sub_org.pk)
+            self.assertEqual({key: org[key] for key in ORGANIZATION_CREDENTIALS}, BLANK_ORGANIZATION_CREDENTIALS)
+
+        # the sub-organization's root owner does
+        self.client.login(**sub_org_owner_details)
+        for org in (self._get_organizations()[sub_org.pk], self._get_organization(sub_org)):
+            self.assertEqual({key: org[key] for key in ORGANIZATION_CREDENTIALS}, ORGANIZATION_CREDENTIALS)
+
+    def test_save_settings_only_changes_credentials_for_root_users(self):
+        sub_org, sub_org_owner_details = self._create_sub_org()
+        url = reverse_lazy("api:v3:organizations-save-settings", args=[sub_org.pk])
+        stored_password = sub_org.audit_template_password
+        new_credentials = {key: f"new-{value}" for key, value in ORGANIZATION_CREDENTIALS.items()}
+
+        def save_settings(settings, status_code=200):
+            response = self.client.put(url, json.dumps({"organization": settings}), content_type="application/json")
+            self.assertEqual(response.status_code, status_code)
+
+        # an owner of the parent organization who is a member of a child access level instance can save the
+        # sub-organization's other settings with the blank credentials that they receive, without saving those
+        self.login_as_root_owner()
+        received_credentials = {key: self._get_organization(sub_org)[key] for key in ORGANIZATION_CREDENTIALS}
+        self.assertEqual(received_credentials, BLANK_ORGANIZATION_CREDENTIALS)
+        save_settings({"display_decimal_places": 3, **received_credentials})
+        self.assertEqual(self._get_stored_credentials(sub_org), ORGANIZATION_CREDENTIALS)
+        self.assertEqual(sub_org.audit_template_password, stored_password)
+        self.assertEqual(sub_org.display_decimal_places, 3)
+        # but is told that they cannot change or clear (with null) the credentials, and nothing is saved
+        cleared_credentials = [(key, None) for key in ORGANIZATION_CREDENTIALS if key != "audit_template_user"]
+        for changed_credential in [*new_credentials.items(), *cleared_credentials]:
+            save_settings({"display_decimal_places": 4, **received_credentials, **dict([changed_credential])}, status_code=403)
+            self.assertEqual(self._get_stored_credentials(sub_org), ORGANIZATION_CREDENTIALS)
+            self.assertEqual(sub_org.display_decimal_places, 3)
+
+        # the sub-organization's root owner can change them
+        self.client.login(**sub_org_owner_details)
+        received_credentials = {key: self._get_organization(sub_org)[key] for key in ORGANIZATION_CREDENTIALS}
+        self.assertEqual(received_credentials, ORGANIZATION_CREDENTIALS)
+        save_settings(new_credentials)
+        self.assertEqual(self._get_stored_credentials(sub_org), new_credentials)
+
+        # unchanged (decrypted) or omitted secrets are not encrypted again
+        stored_secrets = {key: getattr(sub_org, key) for key in ORGANIZATION_CREDENTIALS if key != "audit_template_user"}
+        save_settings(new_credentials)
+        save_settings({key: value for key, value in new_credentials.items() if key != "audit_template_password"})
+        self.assertEqual(self._get_stored_credentials(sub_org), new_credentials)
+        self.assertEqual({key: getattr(sub_org, key) for key in stored_secrets}, stored_secrets)
+
+        # and a blank password clears it
+        save_settings({**new_credentials, "audit_template_password": ""})
+        sub_org.refresh_from_db()
+        self.assertEqual(sub_org.audit_template_password, "")
 
 
 class AuthViewTests(TestCase):

@@ -13,6 +13,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from quantityfield.units import ureg
 
+from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_VIEWER
 from seed.models import Column, CycleGoal, DerivedColumnParameter, Goal, PropertyView, PropertyViewLabel
 from seed.models.data_quality import DataQualityCheck, DataQualityTypeCastError, Rule, StatusLabel, UnitMismatchError
 from seed.models.derived_columns import DerivedColumn
@@ -27,8 +29,9 @@ from seed.test_helpers.fake import (
     FakeTaxLotStateFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, AssertDictSubsetMixin, DataMappingBaseTestCase
-from seed.utils.cache import delete_cache, get_cache_raw, set_cache_raw
+from seed.utils.cache import delete_cache, get_cache_raw, set_cache_raw, set_task_result
 from seed.utils.goals import get_state_pairs
+from seed.utils.organizations import create_organization
 
 
 class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
@@ -70,15 +73,63 @@ class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
         set_cache_raw(second_chunk_key, [{"id": 4, "data_quality_results": []}], 86400)
 
         try:
-            DataQualityCheck.combine_cached_chunks(chunk_identifier, identifier, self.org.id, 2)
+            DataQualityCheck.combine_cached_chunks(chunk_identifier, identifier, self.org.id, 2, self.org.root.id)
 
-            self.assertEqual([result["id"] for result in get_cache_raw(result_key)], [4, 12])
+            results, access_level_instance_id = DataQualityCheck.get_cached_results(identifier, self.org.id)
+            self.assertEqual([result["id"] for result in results], [4, 12])
+            self.assertEqual(access_level_instance_id, self.org.root.id)
             self.assertIsNone(get_cache_raw(first_chunk_key))
             self.assertIsNone(get_cache_raw(second_chunk_key))
         finally:
             delete_cache(result_key)
             delete_cache(first_chunk_key)
             delete_cache(second_chunk_key)
+
+    def test_initialize_cache_identifiers_do_not_collide_with_import_file_ids(self):
+        # an import file's checks are identified by its ID, a 32-bit primary key, so give the largest one results that
+        # other checks (which initialize theirs as empty) would replace if their identifiers collided with it
+        import_file_results = [{"id": 1, "data_quality_results": []}]
+        import_file_cache_key = DataQualityCheck.cache_key(2**31 - 1, self.org.id)
+        set_task_result(import_file_cache_key, import_file_results, self.org.root.id, 86400)
+        cache_keys = {import_file_cache_key}
+        try:
+            identifiers = set()
+            for _ in range(20):
+                cache_key, identifier = DataQualityCheck.initialize_cache(None, self.org.id, self.org.root.id)
+                cache_keys.add(cache_key)
+                identifiers.add(identifier)
+                # above any import file ID, and exactly representable in JavaScript
+                self.assertGreaterEqual(identifier, 2**31)
+                self.assertLess(identifier, 2**53)
+            self.assertEqual(len(identifiers), 20)
+            # the import file's results are untouched
+            self.assertEqual(DataQualityCheck.get_cached_results(2**31 - 1, self.org.id), (import_file_results, self.org.root.id))
+        finally:
+            for cache_key in cache_keys:
+                delete_cache(cache_key)
+
+    def test_save_to_cache_keeps_access_level_instance(self):
+        identifier = uuid4().hex
+        result_key, _ = DataQualityCheck.initialize_cache(identifier, self.org.id, self.org.root.id)
+        dq = DataQualityCheck.retrieve(self.org.id)
+
+        try:
+            dq.results = {12: {"id": 12, "data_quality_results": []}}
+            dq.save_to_cache(identifier, self.org.id)
+            dq.results = {4: {"id": 4, "data_quality_results": []}}
+            dq.save_to_cache(identifier, self.org.id)
+
+            results, access_level_instance_id = DataQualityCheck.get_cached_results(identifier, self.org.id)
+            self.assertEqual([result["id"] for result in results], [4, 12])
+            self.assertEqual(access_level_instance_id, self.org.root.id)
+
+            # results cached without an access level instance (e.g., before they were limited to one) do not gain one
+            set_cache_raw(result_key, [{"id": 4, "data_quality_results": []}], 86400)
+            dq.save_to_cache(identifier, self.org.id)
+            _, access_level_instance_id = DataQualityCheck.get_cached_results(identifier, self.org.id)
+            self.assertIsNone(access_level_instance_id)
+        finally:
+            delete_cache(result_key)
 
     def test_remove_rules(self):
         dq = DataQualityCheck.retrieve(self.org.id)
@@ -746,7 +797,7 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
     def test_results_requires_run_id(self):
         url = reverse_lazy("api:v3:data_quality_checks-results") + f"?organization_id={self.org.id}"
         cache_key = DataQualityCheck.cache_key("12345", self.org.id)
-        set_cache_raw(cache_key, [{"id": 1, "data_quality_results": []}], 86400)
+        set_task_result(cache_key, [{"id": 1, "data_quality_results": []}], self.org.root.id, 86400)
         self.login_as_root_member()
 
         try:
@@ -757,5 +808,120 @@ class DataQualityCrossCycleTests(AccessLevelBaseTestCase):
             response = self.client.get(url + "&run_id=12345")
             assert response.status_code == 200
             assert response.json()["data"] == [{"id": 1, "data_quality_results": []}]
+        finally:
+            delete_cache(cache_key)
+
+
+class DataQualityResultsAccessTests(AccessLevelBaseTestCase):
+    def setUp(self):
+        super().setUp()
+        self.sibling_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+        self.sibling_member_user_details = {"username": "sibling_member@demo.com", "password": "test_pass"}
+        self.sibling_member_user = User.objects.create_user(**self.sibling_member_user_details)
+        self.org.add_member(self.sibling_member_user, self.sibling_level_instance.pk, ROLE_MEMBER)
+        self.root_viewer_user_details = {"username": "root_viewer@demo.com", "password": "test_pass"}
+        self.root_viewer_user = User.objects.create_user(**self.root_viewer_user_details)
+        self.org.add_member(self.root_viewer_user, self.org.root.id, ROLE_VIEWER)
+
+        # the states have no custom_id_1 or pm_property_id, so they fail the default "not null" rules and are in the results
+        cycle = self.cycle_factory.get_cycle()
+        self.root_view = self.property_view_factory.get_property_view(
+            prprty=self.property_factory.get_property(access_level_instance=self.root_level_instance),
+            cycle=cycle,
+            address_line_1="123 Root St",
+        )
+        self.child_view = self.property_view_factory.get_property_view(
+            prprty=self.property_factory.get_property(access_level_instance=self.child_level_instance),
+            cycle=cycle,
+            address_line_1="456 Child St",
+        )
+
+    def _login(self, user_details):
+        self.client.logout()
+        self.client.login(**user_details)
+
+    def _start(self, user_details):
+        self._login(user_details)
+        url = reverse_lazy("api:v3:data_quality_checks-start", args=[self.org.id])
+        # views outside the user's access level instance are not checked
+        body = {"property_view_ids": [self.root_view.id, self.child_view.id], "taxlot_view_ids": []}
+        response = self.client.post(url, body, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        return response.json()["progress"]["unique_id"]
+
+    def _get_results(self, user_details, run_id):
+        """Return the responses of the results and results_csv endpoints"""
+        self._login(user_details)
+        query = f"?organization_id={self.org.id}&run_id={run_id}"
+        return (
+            self.client.get(reverse_lazy("api:v3:data_quality_checks-results") + query),
+            self.client.get(reverse_lazy("api:v3:data_quality_checks-results-csv") + query),
+        )
+
+    def _assert_found(self, user_details, run_id, addresses):
+        results, results_csv = self._get_results(user_details, run_id)
+        self.assertEqual(results.status_code, 200)
+        self.assertEqual({row["address_line_1"] for row in results.json()["data"]}, addresses)
+        self.assertEqual(results_csv.status_code, 200)
+        csv_content = results_csv.content.decode()
+        for address in ("123 Root St", "456 Child St"):
+            if address in addresses:
+                self.assertIn(address, csv_content)
+            else:
+                self.assertNotIn(address, csv_content)
+
+    def _assert_not_found(self, user_details, run_id):
+        # results outside the user's access level instance are indistinguishable from missing results
+        results, results_csv = self._get_results(user_details, run_id)
+        self.assertEqual(results.status_code, 200)
+        self.assertEqual(results.json(), {"data": None})
+        self.assertEqual(results_csv.status_code, 200)
+        self.assertEqual(results_csv.content.decode().splitlines(), ["Error", "data quality results not found"])
+        for response in (results, results_csv):
+            self.assertNotIn("123 Root St", response.content.decode())
+
+    def test_results_are_limited_to_the_access_level_instance_of_the_run(self):
+        root_run_id = self._start(self.root_member_user_details)
+        child_run_id = self._start(self.child_member_user_details)
+        self.assertNotEqual(root_run_id, child_run_id)
+
+        # root member can read both runs
+        self._assert_found(self.root_member_user_details, root_run_id, {"123 Root St", "456 Child St"})
+        self._assert_found(self.root_member_user_details, child_run_id, {"456 Child St"})
+
+        # child member can read its own run (which excludes the root view), but not the root run
+        self._assert_found(self.child_member_user_details, child_run_id, {"456 Child St"})
+        self._assert_not_found(self.child_member_user_details, root_run_id)
+
+        # sibling member can read neither
+        self._assert_not_found(self.sibling_member_user_details, root_run_id)
+        self._assert_not_found(self.sibling_member_user_details, child_run_id)
+
+        # viewers cannot read results at all
+        for response in self._get_results(self.root_viewer_user_details, root_run_id):
+            self.assertEqual(response.status_code, 403)
+            self.assertNotIn("123 Root St", response.content.decode())
+
+    def test_non_integer_run_id_is_bad_request(self):
+        # including run IDs that would otherwise select another cache key (e.g., a chunk of results)
+        for run_id in ("abc", "1.5", "", "1000__chunk__0"):
+            for response in self._get_results(self.root_member_user_details, run_id):
+                self.assertEqual(response.status_code, 400)
+
+    def test_results_without_access_level_instance_of_the_organization_are_not_found(self):
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+        cache_key = DataQualityCheck.cache_key(12345, self.org.id)
+        rows = [{"id": 1, "address_line_1": "123 Root St", "custom_id_1": None, "data_quality_results": []}]
+
+        try:
+            for set_results in (
+                # e.g., results cached before they were limited to an access level instance
+                lambda: set_cache_raw(cache_key, rows, 86400),
+                lambda: set_task_result(cache_key, rows, None, 86400),
+                # nested-set bounds overlap between organizations, so another organization's root must not match
+                lambda: set_task_result(cache_key, rows, other_org.root.id, 86400),
+            ):
+                set_results()
+                self._assert_not_found(self.root_member_user_details, 12345)
         finally:
             delete_cache(cache_key)

@@ -22,7 +22,6 @@ from seed.models import Goal, PropertyView, TaxLotView
 from seed.models.data_quality import DataQualityCheck
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import PROGRESS_DATA_SCHEMA, AutoSchemaHelper
-from seed.utils.cache import get_cache_raw
 
 logger = get_task_logger(__name__)
 
@@ -113,8 +112,11 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
             taxlot__access_level_instance__rgt__lte=access_level_instance.rgt,
         ).values_list("state_id", flat=True)
 
-        # For now, organization_id is the only key currently used to identify DataQualityChecks
-        return_value = do_checks(organization_id, property_state_ids, taxlot_state_ids, goal_id)
+        # For now, organization_id is the only key currently used to identify DataQualityChecks.
+        # The views and goal were limited to the user's access level instance, so limit the results to it too
+        return_value = do_checks(
+            organization_id, property_state_ids, taxlot_state_ids, goal_id, access_level_instance_id=access_level_instance.id
+        )
 
         return JsonResponse(
             {
@@ -126,11 +128,41 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
             }
         )
 
+    def _get_run_results(self, request):
+        """
+        Return the cached results of the data quality run given by the `run_id` query parameter, as a tuple of an error
+        response (if `run_id` is missing or not an integer) and the results. The results are None if they are not found
+        or are outside the user's access level instance, so that the two cases are indistinguishable.
+        """
+        try:
+            run_id = int(request.query_params["run_id"])
+        except (KeyError, ValueError):
+            return JsonResponse(
+                {"status": "error", "message": "must include Import file ID or cache key as an integer run_id"},
+                status=status.HTTP_400_BAD_REQUEST,
+            ), None
+
+        org_id = self.get_organization(request)
+        results, results_ali_id = DataQualityCheck.get_cached_results(run_id, org_id)
+        if results is None or results_ali_id is None:
+            return None, None
+
+        # Run IDs can be guessed, so only users of the access level instance that the run's records are limited to (see
+        # `do_checks`), or of one of its ancestors, can read its results
+        results_ali = AccessLevelInstance.objects.filter(pk=results_ali_id, organization_id=org_id).first()
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        if results_ali is None or not (user_ali == results_ali or results_ali.is_descendant_of(user_ali)):
+            return None, None
+
+        return None, results
+
     @extend_schema(
         parameters=[AutoSchemaHelper.query_org_id_field(), run_id_field],
         responses={
             (200, "text/csv"): OpenApiTypes.BINARY,
-            400: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"}, description="`run_id` is missing"),
+            400: AutoSchemaHelper.schema_factory(
+                {"status": "string", "message": "string"}, description="`run_id` is missing or not an integer"
+            ),
         },
     )
     @method_decorator(
@@ -149,13 +181,10 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
         Note that it is not related to objects in the database, since the results
         are stored in redis!
         """
-        run_id = request.query_params.get("run_id")
-        if run_id is None:
-            return JsonResponse(
-                {"status": "error", "message": "must include Import file ID or cache key as run_id"}, status=status.HTTP_400_BAD_REQUEST
-            )
+        error_response, data_quality_results = self._get_run_results(request)
+        if error_response is not None:
+            return error_response
 
-        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(run_id, self.get_organization(request)))
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = 'attachment; filename="Data Quality Check Results.csv"'
 
@@ -207,9 +236,11 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
             200: AutoSchemaHelper.schema_factory(
                 {"data": ["object"]},
                 description="`data` is the list of checked records with their `data_quality_results`, or null if no"
-                " results are found for `run_id`",
+                " results are found for `run_id` or they are outside the user's access level",
             ),
-            400: AutoSchemaHelper.schema_factory({"status": "string", "message": "string"}, description="`run_id` is missing"),
+            400: AutoSchemaHelper.schema_factory(
+                {"status": "string", "message": "string"}, description="`run_id` is missing or not an integer"
+            ),
         },
     )
     @method_decorator(
@@ -228,11 +259,8 @@ class DataQualityCheckViewSet(viewsets.ViewSet, OrgMixin):
         Note that it is not related to objects in the database, since the results
         are stored in redis!
         """
-        data_quality_id = request.query_params.get("run_id")
-        if data_quality_id is None:
-            return JsonResponse(
-                {"status": "error", "message": "must include Import file ID or cache key as run_id"}, status=status.HTTP_400_BAD_REQUEST
-            )
+        error_response, data_quality_results = self._get_run_results(request)
+        if error_response is not None:
+            return error_response
 
-        data_quality_results = get_cache_raw(DataQualityCheck.cache_key(data_quality_id, self.get_organization(request)))
         return JsonResponse({"data": data_quality_results})

@@ -424,6 +424,13 @@ class GoalViewTests(AccessLevelBaseTestCase):
         assert errors["eui_column1"] == ['Invalid pk "-1" - object does not exist.']
         assert errors["baseline_cycle"] == ['Invalid pk "-1" - object does not exist.']
 
+    def test_goal_update_rejects_a_body_that_is_not_an_object(self):
+        self.login_as_root_member()
+        url = reverse_lazy("api:v3:goals-detail", args=[self.root_goal.id]) + "?organization_id=" + str(self.org.id)
+        for body in ([], "goal"):
+            response = self.client.put(url, data=json.dumps(body), content_type="application/json")
+            assert response.status_code == 400, body
+
     def test_partner_approval_always_stores_user(self):
         """Partner approval must always record the approving user — never null."""
         from seed.lib.superperms.orgs.models import OrganizationUser

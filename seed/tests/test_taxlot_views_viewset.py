@@ -33,6 +33,21 @@ class TaxlotViewsTests(AccessLevelBaseTestCase):
         resp = self.client.get(url, content_type="application/json")
         assert len(resp.json()["taxlot_views"]) == 2
 
+    def test_taxlot_views_list_by_taxlot(self):
+        url = reverse_lazy("api:v3:taxlot_views-list") + f"?organization_id={self.org.id}"
+
+        self.login_as_child_member()
+        resp = self.client.get(url + f"&taxlot={self.child_taxlot.id}", content_type="application/json")
+        assert [view["id"] for view in resp.json()["taxlot_views"]] == [self.child_view.id]
+        # a tax lot outside the user's access level has no views for them
+        resp = self.client.get(url + f"&taxlot={self.root_taxlot.id}", content_type="application/json")
+        assert resp.json()["taxlot_views"] == []
+
+        for taxlot in ("abc", "1.5", ""):
+            resp = self.client.get(url + f"&taxlot={taxlot}", content_type="application/json")
+            assert resp.status_code == 400, taxlot
+            assert resp.json() == {"status": "error", "message": "taxlot must be an integer"}
+
     def test_taxlot_views_list_rejects_conflicting_organization_ids(self):
         other_org, _, _ = create_organization(self.superuser, "other-organization")
         FakeTaxLotViewFactory(organization=other_org).get_taxlot_view()

@@ -207,6 +207,21 @@ def has_perm(perm_name: str, requires_org: bool = True):
     return decorator
 
 
+def _get_state_view_alis(inventory, state_id, model):
+    """
+    Return the access level instances of the views of a property or tax lot state, all of which a request about the
+    state must have access to: a state can be shared by several views (e.g., of a property in several cycles). Raises
+    `model.DoesNotExist` if the state has no view (e.g., an import's or a merged-away record's), and so no access level
+    instance.
+
+    :param inventory: "properties" or "taxlots"
+    """
+    alis = list(AccessLevelInstance.objects.filter(**{f"{inventory}__views__state_id": state_id}).distinct())
+    if not alis:
+        raise model.DoesNotExist
+    return alis
+
+
 def assert_hierarchy_access(
     request,
     property_id_kwarg=None,
@@ -247,13 +262,12 @@ def assert_hierarchy_access(
             requests_ali = property.access_level_instance
 
         elif body_property_state_id and body_property_state_id in body:
-            # there should only be one property_view with a specific property state
-            property_view = PropertyView.objects.get(state_id=body[body_property_state_id])
-            requests_ali = property_view.property.access_level_instance
+            requests_ali, *more_alis = _get_state_view_alis("properties", body[body_property_state_id], PropertyView)
+            other_requests_alis.extend(more_alis)
 
         elif body_taxlot_state_id and body_taxlot_state_id in body:
-            taxlot_view = TaxLotView.objects.get(state_id=body[body_taxlot_state_id])
-            requests_ali = taxlot_view.taxlot.access_level_instance
+            requests_ali, *more_alis = _get_state_view_alis("taxlots", body[body_taxlot_state_id], TaxLotView)
+            other_requests_alis.extend(more_alis)
 
         elif property_view_id_kwarg and property_view_id_kwarg in kwargs:
             property_view = PropertyView.objects.get(pk=kwargs[property_view_id_kwarg])
@@ -303,20 +317,20 @@ def assert_hierarchy_access(
 
         elif ubid_id_kwarg and ubid_id_kwarg in kwargs:
             ubid = UbidModel.objects.get(pk=kwargs[ubid_id_kwarg])
-            requests_ali = None
             if ubid.property_id:
-                requests_ali = AccessLevelInstance.objects.filter(properties__views__state_id=ubid.property_id).first()
+                requests_ali, *more_alis = _get_state_view_alis("properties", ubid.property_id, UbidModel)
             elif ubid.taxlot_id:
-                requests_ali = AccessLevelInstance.objects.filter(taxlots__views__state_id=ubid.taxlot_id).first()
-            # e.g., the states of imports and of merged-away records have no view, so no access level instance
-            if requests_ali is None:
+                requests_ali, *more_alis = _get_state_view_alis("taxlots", ubid.taxlot_id, UbidModel)
+            else:
                 raise UbidModel.DoesNotExist
+            other_requests_alis.extend(more_alis)
 
         elif goal_id_kwarg and goal_id_kwarg in kwargs:
             goal = Goal.objects.get(pk=kwargs[goal_id_kwarg])
             requests_ali = goal.access_level_instance
-            # a goal being moved must be accessible both where it is and where it's going
-            body_ali_id = body.get("access_level_instance")
+            # a goal being moved must be accessible both where it is and where it's going (a body that is not an object,
+            # e.g., a list, is left to the serializer to reject)
+            body_ali_id = body.get("access_level_instance") if isinstance(body, dict) else None
             if body_ali_id:
                 other_requests_alis.append(AccessLevelInstance.objects.get(pk=body_ali_id))
 
@@ -336,7 +350,7 @@ def assert_hierarchy_access(
             property_view = PropertyView.objects.get(pk=request.GET["property_view_id"])
             requests_ali = property_view.property.access_level_instance
 
-    except (ObjectDoesNotExist, MultiValueDictKeyError):
+    except (ObjectDoesNotExist, MultiValueDictKeyError, TypeError, ValueError, OverflowError):
         return JsonResponse({"status": "error", "message": "No such resource."}, status=status.HTTP_404_NOT_FOUND)
 
     user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)

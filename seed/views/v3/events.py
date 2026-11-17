@@ -10,6 +10,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_serializer
 from rest_framework import serializers, status, viewsets
 
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.models import Event
 from seed.serializers.events import EventSerializer
 from seed.utils.api import OrgMixin
@@ -57,8 +58,17 @@ class EventViewSet(viewsets.ViewSet, OrgMixin):
         page = request.query_params.get("page", 1)
         per_page = request.query_params.get("per_page", 100000)
 
-        # Tie-break on id so event ordering is deterministic on created ties.
-        events = Event.objects.filter(property_id=property_pk).order_by("-created", "-id").select_subclasses()
+        # Exclude the events of analyses outside the user's access level instance (as in `PropertyViewSet.analyses`),
+        # e.g., an ancestor's portfolio analysis that includes this property. Other events have no analysis, so they are
+        # kept. Tie-break on id so event ordering is deterministic on created ties.
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        events = (
+            Event.objects.filter(property_id=property_pk)
+            .exclude(analysisevent__analysis__access_level_instance__lft__lt=access_level_instance.lft)
+            .exclude(analysisevent__analysis__access_level_instance__rgt__gt=access_level_instance.rgt)
+            .order_by("-created", "-id")
+            .select_subclasses()
+        )
 
         paginator = Paginator(events, per_page)
         try:

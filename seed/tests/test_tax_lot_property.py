@@ -5,9 +5,9 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import base64
 import json
+import secrets
 import time
 from datetime import UTC, datetime
-from random import randint
 
 import pytest
 from django.core.exceptions import ValidationError
@@ -17,6 +17,7 @@ from xlrd import open_workbook
 
 from seed.landing.models import SEEDUser as User
 from seed.lib.progress_data.progress_data import ProgressData
+from seed.lib.superperms.orgs.models import ROLE_MEMBER, ROLE_VIEWER
 from seed.models import (
     Column,
     Cycle,
@@ -39,7 +40,7 @@ from seed.test_helpers.fake import (
     FakeTaxLotViewFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
-from seed.utils.cache import get_cache_raw
+from seed.utils.cache import get_task_result
 from seed.utils.organizations import create_organization
 from seed.utils.tax_lot_properties import _serialized_coordinates, _serialized_point
 
@@ -166,7 +167,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         # parse the content as array
         unique_id = json.loads(response.content)["unique_id"]
-        data = get_cache_raw(unique_id)["data"].split("\n")
+        data = get_task_result(unique_id)[0]["data"].split("\n")
 
         self.assertTrue("Address Line 1" in data[0])
         self.assertTrue("Property Labels" in data[0])
@@ -212,7 +213,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         data = json.dumps({"columns": col_names, "export_type": "csv", "ids": pv_ids})
         response = self.client.post(url, data=data, content_type="application/json")
         unique_id = json.loads(response.content)["unique_id"]
-        data = get_cache_raw(unique_id)["data"].split("\n")
+        data = get_task_result(unique_id)[0]["data"].split("\n")
         headers = data[0].split(",")
         idx_adr = headers.index("Address Line 1 (Tax Lot)")
         idx_jtl = headers.index("Jurisdiction Tax Lot ID (Tax Lot)")
@@ -227,7 +228,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
         data = json.dumps({"columns": col_names, "export_type": "csv", "ids": tv_ids})
         response = self.client.post(url, data=data, content_type="application/json")
         unique_id = json.loads(response.content)["unique_id"]
-        data = get_cache_raw(unique_id)["data"].split("\n")
+        data = get_task_result(unique_id)[0]["data"].split("\n")
         headers = data[0].split(",")
         idx_adr = headers.index("Address Line 1 (Property)")
         row1 = data[1].split(",")
@@ -254,7 +255,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         # parse the content as array
         unique_id = json.loads(response.content)["unique_id"]
-        data = get_cache_raw(unique_id)["data"].split("\r\n")
+        data = get_task_result(unique_id)[0]["data"].split("\r\n")
         notes_string = (
             multi_line_note.created.astimezone().strftime("%Y-%m-%d %I:%M:%S %p")
             + "\n"
@@ -289,7 +290,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         # parse & decode the content as array
         unique_id = json.loads(response.content)["unique_id"]
-        data = get_cache_raw(unique_id)["data"]
+        data = get_task_result(unique_id)[0]["data"]
 
         xlsx_bytes = base64.b64decode(data)
         wb = open_workbook(file_contents=xlsx_bytes)
@@ -321,7 +322,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         # parse the content as dictionary
         unique_id = json.loads(response.content)["unique_id"]
-        features = get_cache_raw(unique_id)["data"]["features"]
+        features = get_task_result(unique_id)[0]["data"]["features"]
         record_level_keys = list(features[0]["properties"].keys())
 
         self.assertIn("Address Line 1", record_level_keys)
@@ -337,7 +338,7 @@ class TestTaxLotProperty(DataMappingBaseTestCase):
 
         time.sleep(1)
 
-        progress_data = ProgressData(func_name="set_update_to_now", unique_id=f"metadata{randint(10000, 99999)}")
+        progress_data = ProgressData(func_name="set_update_to_now", unique_id=f"metadata{secrets.token_hex(16)}")
         set_update_to_now(property_view_ids, taxlot_view_ids, progress_data.key)
 
         for pv in PropertyView.objects.filter(id__in=property_view_ids):
@@ -438,13 +439,13 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
         self.login_as_root_member()
         response = self.client.post(url, data=params, content_type="application/json")
         unique_id = json.loads(response.content)["unique_id"]
-        data = get_cache_raw(unique_id)["data"].split("\n")
+        data = get_task_result(unique_id)[0]["data"].split("\n")
         assert len(data) == 3
 
         self.login_as_child_member()
         response = self.client.post(url, data=params, content_type="application/json")
         unique_id = json.loads(response.content)["unique_id"]
-        data = get_cache_raw(unique_id)["data"].split("\n")
+        data = get_task_result(unique_id)[0]["data"].split("\n")
         assert len(data) == 2
 
     def test_taxlot_export(self):
@@ -455,35 +456,45 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
         self.login_as_root_member()
         response = self.client.post(url, data=params, content_type="application/json")
         unique_id = json.loads(response.content)["unique_id"]
-        data = get_cache_raw(unique_id)["data"].split("\n")
+        data = get_task_result(unique_id)[0]["data"].split("\n")
         assert len(data) == 3
 
         self.login_as_child_member()
         response = self.client.post(url, data=params, content_type="application/json")
         unique_id = json.loads(response.content)["unique_id"]
-        data = get_cache_raw(unique_id)["data"].split("\n")
+        data = get_task_result(unique_id)[0]["data"].split("\n")
         assert len(data) == 2
+
+    def _start_set_update_to_now(self, org=None):
+        """Return the progress key of `start_set_update_to_now` for the logged-in user"""
+        url = reverse_lazy("api:v3:tax_lot_properties-start-set-update-to-now") + f"?organization_id={(org or self.org).pk}"
+        response = self.client.get(url)
+        assert response.status_code == 200
+        return response.json()["progress_key"]
 
     def test_set_update_to_now(self):
         start_of_test = datetime.now(UTC)
         time.sleep(1)
 
-        progress_data = ProgressData(func_name="set_update_to_now", unique_id=f"metadata{randint(10000, 99999)}")
         url = reverse_lazy("api:v3:tax_lot_properties-set-update-to-now")
         url += f"?organization_id={self.org.pk}"
-        params = json.dumps(
-            {"property_views": [self.root_property_view.pk], "taxlot_views": [self.root_taxlot_view.pk], "progress_key": progress_data.key}
-        )
+        views = {"property_views": [self.root_property_view.pk], "taxlot_views": [self.root_taxlot_view.pk]}
 
         self.login_as_child_member()
-        self.client.post(url, data=params, content_type="application/json")
+        params = json.dumps({**views, "progress_key": self._start_set_update_to_now()})
+        response = self.client.post(url, data=params, content_type="application/json")
+        assert response.status_code == 200
         assert PropertyView.objects.get(pk=self.root_property_view.pk).state.updated < start_of_test
         assert PropertyView.objects.get(pk=self.root_property_view.pk).property.updated < start_of_test
         assert TaxLotView.objects.get(pk=self.root_taxlot_view.pk).taxlot.updated < start_of_test
         assert TaxLotView.objects.get(pk=self.root_taxlot_view.pk).state.updated < start_of_test
 
         self.login_as_root_member()
-        self.client.post(url, data=params, content_type="application/json")
+        progress_key = self._start_set_update_to_now()
+        params = json.dumps({**views, "progress_key": progress_key})
+        response = self.client.post(url, data=params, content_type="application/json")
+        assert response.status_code == 200
+        assert ProgressData.from_key(progress_key).data["status"] == "success"
         assert PropertyView.objects.get(pk=self.root_property_view.pk).state.updated > start_of_test
         assert PropertyView.objects.get(pk=self.root_property_view.pk).property.updated > start_of_test
         assert TaxLotView.objects.get(pk=self.root_taxlot_view.pk).taxlot.updated > start_of_test
@@ -496,25 +507,94 @@ class TestTaxLotPropertyAccessLevel(AccessLevelBaseTestCase):
         start_of_test = datetime.now(UTC)
         time.sleep(1)
 
-        progress_data = ProgressData(func_name="set_update_to_now", unique_id=f"metadata{randint(10000, 99999)}")
+        self.login_as_root_member()
         url = reverse_lazy("api:v3:tax_lot_properties-set-update-to-now") + f"?organization_id={self.org.pk}"
         params = json.dumps(
             {
                 "property_views": [self.root_property_view.pk, other_property_view.pk],
                 "taxlot_views": [self.root_taxlot_view.pk, other_taxlot_view.pk],
-                "progress_key": progress_data.key,
+                "progress_key": self._start_set_update_to_now(),
             }
         )
 
         # records of another organization are not updated, even though their access level instances have overlapping bounds
-        self.login_as_root_member()
-        self.client.post(url, data=params, content_type="application/json")
+        response = self.client.post(url, data=params, content_type="application/json")
+        assert response.status_code == 200
         assert PropertyView.objects.get(pk=self.root_property_view.pk).state.updated > start_of_test
         assert TaxLotView.objects.get(pk=self.root_taxlot_view.pk).state.updated > start_of_test
         assert PropertyView.objects.get(pk=other_property_view.pk).state.updated < start_of_test
         assert PropertyView.objects.get(pk=other_property_view.pk).property.updated < start_of_test
         assert TaxLotView.objects.get(pk=other_taxlot_view.pk).state.updated < start_of_test
         assert TaxLotView.objects.get(pk=other_taxlot_view.pk).taxlot.updated < start_of_test
+
+    def test_set_update_to_now_rejects_other_progress_keys(self):
+        """The task overwrites the progress data of the key, so it must be one created for the user's refresh"""
+        sibling_level_instance = self.org.add_new_access_level_instance(self.org.root.id, "sibling")
+        sibling_member_user_details = {"username": "sibling_member@demo.com", "password": "test_pass"}
+        self.org.add_member(User.objects.create_user(**sibling_member_user_details), sibling_level_instance.pk, ROLE_MEMBER)
+        child_property_view = self.property_view_factory.get_property_view(
+            prprty=self.property_factory.get_property(access_level_instance=self.child_level_instance)
+        )
+        other_org, _, _ = create_organization(self.superuser, "other-organization")
+
+        # the superuser can start refreshes in any organization
+        other_org_key = self._start_set_update_to_now(other_org)
+        self.login_as_root_member()
+        root_key = self._start_set_update_to_now()
+        export_key = ProgressData(
+            func_name="export_inventory", unique_id="12345", organization_id=self.org.id, access_level_instance_id=self.org.root.id
+        ).key
+        # e.g., progress data cached before it was tagged with an organization
+        untagged_key = ProgressData(func_name="set_update_to_now", unique_id="metadata12345").key
+        self.client.login(**sibling_member_user_details)
+        sibling_key = self._start_set_update_to_now()
+
+        start_of_test = datetime.now(UTC)
+        time.sleep(1)
+        url = reverse_lazy("api:v3:tax_lot_properties-set-update-to-now") + f"?organization_id={self.org.pk}"
+        views = {"property_views": [self.root_property_view.pk, child_property_view.pk], "taxlot_views": []}
+
+        self.login_as_child_member()
+        # a key of another organization, of an ancestor or sibling access level instance, of another task, untagged,
+        # unknown, or not a string
+        for progress_key in (other_org_key, root_key, sibling_key, export_key, untagged_key, "unknown", ["unknown"], None):
+            response = self.client.post(url, data=json.dumps({**views, "progress_key": progress_key}), content_type="application/json")
+            assert response.status_code == 400
+            assert response.json()["status"] == "error"
+
+        assert PropertyView.objects.get(pk=child_property_view.pk).state.updated < start_of_test
+        for progress_key in (other_org_key, root_key, sibling_key):
+            assert ProgressData.from_key(progress_key).data["status"] == "not-started"
+
+        # a key of the user's access level instance, or of a descendant
+        child_key = self._start_set_update_to_now()
+        response = self.client.post(url, data=json.dumps({**views, "progress_key": child_key}), content_type="application/json")
+        assert response.status_code == 200
+        assert ProgressData.from_key(child_key).data["status"] == "success"
+        assert PropertyView.objects.get(pk=child_property_view.pk).state.updated > start_of_test
+
+        other_child_key = self._start_set_update_to_now()
+        self.login_as_root_member()
+        response = self.client.post(url, data=json.dumps({**views, "progress_key": other_child_key}), content_type="application/json")
+        assert response.status_code == 200
+        assert ProgressData.from_key(other_child_key).data["status"] == "success"
+
+    def test_set_update_to_now_requires_member(self):
+        root_viewer_user_details = {"username": "root_viewer@demo.com", "password": "test_pass"}
+        self.org.add_member(User.objects.create_user(**root_viewer_user_details), self.org.root.id, ROLE_VIEWER)
+        self.login_as_root_member()
+        progress_key = self._start_set_update_to_now()
+        start_of_test = datetime.now(UTC)
+        time.sleep(1)
+
+        self.client.login(**root_viewer_user_details)
+        url = reverse_lazy("api:v3:tax_lot_properties-start-set-update-to-now") + f"?organization_id={self.org.pk}"
+        assert self.client.get(url).status_code == 403
+        url = reverse_lazy("api:v3:tax_lot_properties-set-update-to-now") + f"?organization_id={self.org.pk}"
+        params = json.dumps({"property_views": [self.root_property_view.pk], "taxlot_views": [], "progress_key": progress_key})
+        assert self.client.post(url, data=params, content_type="application/json").status_code == 403
+        assert PropertyView.objects.get(pk=self.root_property_view.pk).state.updated < start_of_test
+        assert ProgressData.from_key(progress_key).data["status"] == "not-started"
 
     def test_taxlot_export_rejects_conflicting_organization_ids(self):
         other_org, _, _ = create_organization(self.superuser, "other-organization")

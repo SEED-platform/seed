@@ -30,7 +30,7 @@ from seed.models.scenarios import Scenario
 from seed.serializers.columns import ColumnSerializer
 from seed.serializers.meter_readings import MeterReadingSerializer
 from seed.serializers.meters import MeterSerializer
-from seed.utils.cache import set_cache_raw
+from seed.utils.cache import set_task_result
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +179,7 @@ def export_data(args):
         data = _spreadsheet_response(data, column_name_mappings)
 
     timeout = 60 * 30  # 30 minutes
-    set_cache_raw(progress_data.unique_id, {"data": data}, timeout)
+    set_task_result(progress_data.unique_id, {"data": data}, args.get("access_level_instance_id"), timeout)
 
 
 def _csv_response(data, column_name_mappings):

@@ -41,6 +41,7 @@ from seed.data_importer.tasks import _save_pm_meter_usage_data_task
 from seed.data_importer.utils import kbtu_thermal_conversion_factors, kgal_water_conversion_factors
 from seed.decorators import ajax_request
 from seed.hpxml.hpxml import HPXML
+from seed.lib.mcm.reader import SheetDoesNotExistError
 from seed.lib.progress_data.progress_data import ProgressData
 from seed.lib.superperms.orgs.decorators import has_hierarchy_access, has_perm
 from seed.lib.superperms.orgs.models import AccessLevelInstance
@@ -98,10 +99,21 @@ from seed.utils.merge import merge_properties
 from seed.utils.meters import PropertyMeterReadingsExporter
 from seed.utils.properties import get_changed_fields, pair_unpair_property_taxlot, properties_across_cycles, update_result_with_master
 from seed.utils.salesforce import update_salesforce_properties
+from seed.views.v3.media import ModelForFileNotFoundError, check_file_permission
 
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(format="%(asctime)s %(levelname)-8s %(message)s", level=logging.ERROR, datefmt="%Y-%m-%d %H:%M:%S")
+
+
+def _xml_attachment(xml, filename):
+    """
+    Send exported XML as a download: it includes the elements of uploaded BuildingSync/HPXML files, so displaying it
+    in the browser from SEED's origin could run scripts in it (e.g., an XHTML-namespaced script element)
+    """
+    response = HttpResponse(xml, content_type="application/xml")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
 
 
 # Global toggle that controls whether or not to display the raw extra
@@ -424,8 +436,21 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def analyses(self, request, pk):
         organization_id = self.get_organization(request)
         cycle_id = request.query_params.get("cycle_id")
+        if cycle_id is not None:
+            try:
+                cycle_id = int(cycle_id)
+            except ValueError:
+                return JsonResponse({"status": "error", "message": "cycle_id must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
 
-        analyses_queryset = Analysis.objects.filter(organization=organization_id, analysispropertyview__property=pk)
+        # As for the analyses endpoints, only analyses within the user's access level instance are listed, e.g., not an
+        # ancestor's portfolio analysis that includes this property (whose results cover the rest of its portfolio)
+        access_level_instance = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        analyses_queryset = Analysis.objects.filter(
+            organization=organization_id,
+            analysispropertyview__property=pk,
+            access_level_instance__lft__gte=access_level_instance.lft,
+            access_level_instance__rgt__lte=access_level_instance.rgt,
+        )
         if cycle_id is not None:
             analyses_queryset = analyses_queryset.filter(analysispropertyview__cycle_id=cycle_id)
 
@@ -433,7 +458,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         for analysis in analyses_queryset.distinct().order_by("-id"):
             serialized_analysis = AnalysisSerializer(analysis).data
             serialized_analysis.update(analysis.get_property_view_info(pk))
-            serialized_analysis.update({"highlights": analysis.get_highlights(pk)})
+            serialized_analysis.update({"highlights": analysis.get_highlights(pk, cycle_id)})
             analyses.append(serialized_analysis)
 
         return {"status": "success", "analyses": analyses}
@@ -1062,7 +1087,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             lots.append(TaxLotViewSerializer(lot).data)
         return lots
 
-    def get_history(self, property_view):
+    def get_history(self, property_view, user):
         """Return history in reverse order"""
 
         # access the history from the property state
@@ -1077,8 +1102,22 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             h["state"] = PropertyStateSerializer(h["state_data"]).data
             del h["state_data"]
             del h["state_id"]
+            # e.g., the file of an import by a user of an ancestor access level instance holds other access level
+            # instances' records, so the user cannot download it (see `check_file_permission`)
+            if h["file"] and not self._can_download_media_file(user, h["file"]):
+                h["file"] = None
 
         return history, master
+
+    @staticmethod
+    def _can_download_media_file(user, media_url):
+        """Whether the user can download a media file by its URL (see `MediaViewSet`)"""
+        if not media_url.startswith(settings.MEDIA_URL):
+            return False
+        try:
+            return check_file_permission(user, media_url.removeprefix(settings.MEDIA_URL))
+        except ModelForFileNotFoundError:
+            return False
 
     @extend_schema(
         parameters=[AutoSchemaHelper.query_org_id_field()],
@@ -1128,7 +1167,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
             result["state"] = PropertyStateSerializer(property_view.state, all_extra_data_columns=all_extra_data_columns).data
             result["taxlots"] = self._get_taxlots(property_view.pk)
-            result["history"], master = self.get_history(property_view)
+            result["history"], master = self.get_history(property_view, request.user)
             result = update_result_with_master(result, master)
             return JsonResponse(result, encoder=PintJSONEncoder, status=status.HTTP_200_OK)
         else:
@@ -1152,7 +1191,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         ),
         responses={
             200: AutoSchemaHelper.schema_factory(
-                {"status": "string", "progress": "number", "progress_key": "string", "unique_id": "integer", "func_name": "string"},
+                {"status": "string", "progress": "number", "progress_key": "string", "unique_id": "string", "func_name": "string"},
                 description="Progress data of the background copy. Poll `/api/v3/progress/{progress_key}/` for its result.",
             )
         },
@@ -1198,7 +1237,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             ).values_list("id", flat=True)
         )
 
-        result = copy_properties_to_cycle(view_ids, cycle_pk, column_ids, org_id)
+        result = copy_properties_to_cycle(view_ids, cycle_pk, column_ids, org_id, access_level_instance_id=ali.id)
         return JsonResponse(result)
 
     @extend_schema(
@@ -1655,7 +1694,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         try:
             xml = bs.export_using_profile(property_view.state, column_mapping_profile.mappings)
-            return HttpResponse(xml, content_type="application/xml")
+            return _xml_attachment(xml, f"buildingsync_property_{property_view.id}.xml")
         except Exception as e:
             return JsonResponse({"success": False, "message": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -1684,14 +1723,10 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         # Check if there is an existing BuildingSync XML file to merge
         # Tie-break on id so "latest" selection is deterministic on created ties.
         hpxml_file = property_view.state.building_files.filter(file_type=BuildingFile.HPXML).order_by("-created", "-id").first()
+        # otherwise, create a new XML from the record
         if hpxml_file is not None and os.path.exists(hpxml_file.file.path):
             hpxml.import_file(hpxml_file.file.path)
-            xml = hpxml.export(property_view.state)
-            return HttpResponse(xml, content_type="application/xml")
-        else:
-            # create a new XML from the record, do not import existing XML
-            xml = hpxml.export(property_view.state)
-            return HttpResponse(xml, content_type="application/xml")
+        return _xml_attachment(hpxml.export(property_view.state), f"hpxml_property_{property_view.id}.xml")
 
     @extend_schema(
         parameters=[
@@ -1717,7 +1752,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Update an existing PropertyView with a building file. Currently only supports BuildingSync.
         """
-        if len(request.FILES) == 0:
+        if "file" not in request.FILES:
             return JsonResponse({"success": False, "message": "Must pass file in as a Multipart/Form post"})
 
         the_file = request.data["file"]
@@ -1849,7 +1884,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @action(detail=True, methods=["PUT"], parser_classes=(MultiPartParser,))
     def update_with_espm(self, request, pk):
         """Update an existing PropertyView with an exported singular ESPM file."""
-        if len(request.FILES) == 0:
+        if "file" not in request.FILES:
             return JsonResponse(
                 {"success": False, "message": "Must pass file in as a multipart/form-data request"}, status=status.HTTP_400_BAD_REQUEST
             )
@@ -1973,12 +2008,23 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         # now save the meters, need a progress_data object to pass to the tasks, although
         # not used.
-        progress_data = ProgressData(func_name="meter_import", unique_id=import_file.pk)
+        progress_data = ProgressData(
+            func_name="meter_import",
+            unique_id=import_file.pk,
+            organization_id=org_id,
+            access_level_instance_id=import_file.access_level_instance.id,
+        )
         # -- Start --
         # For now, we are duplicating the methods that are called in the tasks in order
         # to circumvent the celery background task management (i.e., run in foreground)
-        meters_parser = MetersParser.factory(import_file.local_file, org_id)
-        meters_and_readings = meters_parser.meter_and_reading_objs
+        try:
+            # Portfolio Manager IDs in the file must only link to properties in the user's access level instance (as for
+            # other meter imports), and this endpoint only updates the one property
+            meters_parser = MetersParser.factory(import_file.local_file, org_id, access_level_instance=import_file.access_level_instance)
+            meters_and_readings = [m for m in meters_parser.meter_and_reading_objs if m.get("property_id") == property_view.property_id]
+        except SheetDoesNotExistError:
+            # the file has no meter sheets
+            meters_and_readings = []
         for meter_readings in meters_and_readings:
             _save_pm_meter_usage_data_task(meter_readings, import_file.id, progress_data.key)
         # -- End -- of duplicate (and simplified) meter import methods
@@ -2022,7 +2068,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         """
         Upload an inventory document on a property. Currently only supports PDFs.
         """
-        if len(request.FILES) == 0:
+        if "file" not in request.FILES:
             return JsonResponse({"success": False, "message": "Must pass file in as a Multipart/Form post"})
 
         the_file = request.data["file"]
@@ -2149,7 +2195,8 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         try:
             doc_file = InventoryDocument.objects.get(pk=file_id, property_id=property_id)
 
-        except InventoryDocument.DoesNotExist:
+        # e.g., a file_id that is not an integer
+        except (InventoryDocument.DoesNotExist, ValueError):
             return JsonResponse(
                 {"status": "error", "message": "Could not find inventory document with pk=" + str(file_id)},
                 status=status.HTTP_400_BAD_REQUEST,

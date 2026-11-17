@@ -3,8 +3,6 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import re
-
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_spectacular.utils import extend_schema
@@ -12,10 +10,11 @@ from rest_framework.viewsets import GenericViewSet
 
 from seed.decorators import ajax_request
 from seed.lib.superperms.orgs.decorators import has_perm
+from seed.lib.superperms.orgs.models import AccessLevelInstance
 from seed.lib.superperms.orgs.permissions import get_org_id
 from seed.utils.api import OrgMixin, api_endpoint
 from seed.utils.api_schema import AutoSchemaHelper, EmptySerializer
-from seed.utils.cache import get_cache_raw
+from seed.utils.cache import get_task_result, is_task_result_id
 
 
 class CacheEntryViewSet(GenericViewSet, OrgMixin):
@@ -45,12 +44,21 @@ class CacheEntryViewSet(GenericViewSet, OrgMixin):
         Retrieve cached data based on unique_id.
         """
         unique_id = pk
-        # Only the authorized organization's task results (keyed by the organization ID and a 5-digit random number,
-        # see `start_export` and `mapping_results`) can be retrieved, since other cache entries may hold other
-        # organizations' data or credentials
-        if not re.fullmatch(rf"{get_org_id(request)}\d{{5}}", str(unique_id)):
-            return JsonResponse({"error": "No data found for the provided unique_id"}, status=404)
-        data = get_cache_raw(unique_id)
+        org_id = int(get_org_id(request))
+        not_found = JsonResponse({"error": "No data found for the provided unique_id"}, status=404)
+        # Only the authorized organization's task results (see `new_task_result_id`, used by `start_export` and
+        # `mapping_results`) can be retrieved, since other cache entries may hold other organizations' data or credentials
+        if not is_task_result_id(unique_id, org_id):
+            return not_found
+        data, result_ali_id = get_task_result(unique_id)
         if not data:
-            return JsonResponse({"error": "No data found for the provided unique_id"}, status=404)
+            return not_found
+
+        # A task's result is limited to the inventory of the access level instance of the user who started it, so only
+        # users of that access level instance or one of its ancestors can retrieve it. Results without an access level
+        # instance are denied.
+        result_ali = AccessLevelInstance.objects.filter(pk=result_ali_id, organization_id=org_id).first() if result_ali_id else None
+        user_ali = AccessLevelInstance.objects.get(pk=request.access_level_instance_id)
+        if result_ali is None or not (user_ali == result_ali or result_ali.is_descendant_of(user_ali)):
+            return not_found
         return JsonResponse(data)

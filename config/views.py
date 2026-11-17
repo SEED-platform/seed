@@ -10,9 +10,10 @@ from pathlib import Path
 from django.conf import settings
 from django.contrib.staticfiles import finders
 from django.http import Http404, HttpResponse, HttpResponseNotModified
-from django.utils._os import safe_join
 from django.utils.http import http_date
 from django.views.static import was_modified_since
+
+from seed.views.v3.media import MediaViewSet
 
 
 def robots_txt(request, allow=False):
@@ -55,5 +56,5 @@ def debug_static_serve(request, path):
 
 
 def debug_media_serve(request, path):
-    normalized_path = posixpath.normpath(path).lstrip("/")
-    return _serve_file_bytes(request, Path(safe_join(settings.MEDIA_ROOT, normalized_path)))
+    # Media files hold organization data, so serve them with the same access checks and headers as the API
+    return MediaViewSet.as_view()(request, filepath=path)
