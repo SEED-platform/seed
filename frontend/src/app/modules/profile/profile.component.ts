@@ -1,5 +1,8 @@
-import { ChangeDetectionStrategy, Component, ViewEncapsulation } from '@angular/core'
+import { ChangeDetectionStrategy, Component, inject, ViewEncapsulation } from '@angular/core'
+import { toSignal } from '@angular/core/rxjs-interop'
 import { RouterOutlet } from '@angular/router'
+import { map } from 'rxjs'
+import { UserService } from '@seed/api'
 import type { NavigationItem } from '@seed/components'
 import { HorizontalNavigationComponent } from '@seed/components/navigation/horizontal/horizontal.component'
 import { SharedImports } from '@seed/directives'
@@ -12,6 +15,8 @@ import { SharedImports } from '@seed/directives'
   imports: [HorizontalNavigationComponent, SharedImports, RouterOutlet],
 })
 export class ProfileComponent {
+  private _isSuperuser = toSignal(inject(UserService).currentUser$.pipe(map((user) => user.is_superuser)), { initialValue: false })
+
   tabs = ['Profile Info', 'Security', 'Two Factor Profile', 'Developer', 'Admin', 'Display']
 
   readonly navigation: NavigationItem[] = [
@@ -49,6 +54,8 @@ export class ProfileComponent {
       type: 'basic',
       icon: 'fa-solid:user-gear',
       link: '/profile/admin',
+      // Superuser-only, like the legacy profile nav
+      hidden: () => !this._isSuperuser(),
     },
     {
       id: 'display',

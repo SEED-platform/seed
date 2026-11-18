@@ -6,6 +6,7 @@ import { catchError, distinctUntilChanged, map, ReplaySubject, switchMap, take, 
 import type {
   Action,
   CreateUserRequest,
+  CreateUserResponse,
   CurrentUser,
   GenerateApiKeyResponse,
   PasswordUpdateRequest,
@@ -77,8 +78,12 @@ export class UserService {
   /*
    * Create user
    */
-  createUser(orgId: number, params: CreateUserRequest): Observable<CurrentUser> {
-    return this._httpClient.post<CurrentUser>(`/api/v3/users/?organization_id=${orgId}`, params).pipe(
+  /**
+   * Create a user in an existing org, or (superusers only) pass a null orgId with `org_name` to create a new org owned by the user
+   */
+  createUser(orgId: number | null, params: CreateUserRequest): Observable<CreateUserResponse> {
+    const url = orgId == null ? '/api/v3/users/' : `/api/v3/users/?organization_id=${orgId}`
+    return this._httpClient.post<CreateUserResponse>(url, params).pipe(
       catchError((error: HttpErrorResponse) => {
         return this._errorService.handleError(error, 'Error creating user')
       }),

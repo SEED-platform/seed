@@ -43,6 +43,15 @@ export type CreateUserRequest = {
   access_level_instance_id: number;
 }
 
+export type CreateUserResponse = {
+  status: string;
+  message: string;
+  org: string;
+  org_created: boolean;
+  username: string;
+  user_id: number;
+}
+
 export type PasswordUpdateRequest = {
   current_password: string;
   password_1: string;

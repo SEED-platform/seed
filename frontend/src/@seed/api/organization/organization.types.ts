@@ -265,14 +265,23 @@ export type FilterByViewsResponse = {
   status: string;
 }
 
+export type AdminOrganizationCycle = {
+  name: string;
+  cycle_id: number;
+  num_properties: number;
+  num_taxlots: number;
+}
+
 export type AdminOrganization = {
   id: number;
   name: string;
   created: string;
   number_of_users: number;
-  user_count?: number;
-  property_count?: number;
-  taxlot_count?: number;
+  parent_id: number | null;
+  is_parent: boolean;
+  user_role: UserRole | null;
+  // Only populated for orgs the requesting user belongs to (counts are scoped to their access level)
+  cycles: AdminOrganizationCycle[];
 }
 
 export type AdminOrganizationsResponse = {

@@ -1,6 +1,7 @@
 import type { OnDestroy, OnInit } from '@angular/core'
 import { booleanAttribute, ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, ViewEncapsulation } from '@angular/core'
 import { Router } from '@angular/router'
+import { TranslocoPipe } from '@jsverse/transloco'
 import { Subject, takeUntil } from 'rxjs'
 import type { CurrentUser } from '@seed/api'
 import { UserService } from '@seed/api'
@@ -14,7 +15,7 @@ import { AuthService } from 'app/core/auth/auth.service'
   encapsulation: ViewEncapsulation.None,
   changeDetection: ChangeDetectionStrategy.OnPush,
   exportAs: 'user',
-  imports: [MaterialImports],
+  imports: [MaterialImports, TranslocoPipe],
 })
 export class UserComponent implements OnInit, OnDestroy {
   private _authService = inject(AuthService)
@@ -54,5 +55,9 @@ export class UserComponent implements OnInit, OnDestroy {
 
   goToSettings(): void {
     void this._router.navigate(['/profile/display'])
+  }
+
+  goToAdmin(): void {
+    void this._router.navigate(['/profile/admin'])
   }
 }
