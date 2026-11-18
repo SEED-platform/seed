@@ -3,8 +3,8 @@
     <div class="flex-auto p-6 sm:p-10" *transloco="let t">
       <div class="max-w-2xl">
         <div class="prose">
-          Customizes the email sent when a new user is invited to SEED. The body can accept placeholders {{"{{first_name}}"}} and
-          {{"{{sign_up_link}}"}}, including the braces.
+          Customizes the email sent when a new user is invited to SEED. The body can accept placeholders {{ '{{first_name}}' }} and
+          {{ '{{sign_up_link}}' }}, including the braces.
         </div>
         <form class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow" [formGroup]="emailForm" (ngSubmit)="submit()">
           <div class="flex flex-col">

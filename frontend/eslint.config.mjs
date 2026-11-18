@@ -151,6 +151,9 @@ export default tseslint.config(
       '@typescript-eslint/prefer-nullish-coalescing': 'off',
       // TODO
       '@typescript-eslint/unbound-method': 'off',
+      // Added to strictTypeChecked in typescript-eslint 8.73. It flags the object literals that Angular
+      // Material, CDK, forms, and ag-grid APIs document (e.g., `dialog.open(Component, { data })`).
+      '@typescript-eslint/no-unsafe-class-instance-assignment': 'off',
       'camelcase': 'off',
       'import/no-cycle': 'off',
     },
@@ -169,9 +172,19 @@ export default tseslint.config(
     // animate.enter/animate.leave migration is scheduled.
     files: [
       'src/@seed/animations/**/*.ts',
+      'src/@seed/components/alert/alert.component.ts',
+      'src/@seed/components/card/card.component.ts',
       'src/@seed/components/drawer/drawer.component.ts',
+      'src/@seed/components/masonry/masonry.component.ts',
+      'src/@seed/components/navigation/horizontal/horizontal.component.ts',
+      'src/@seed/components/navigation/vertical/components/collapsible/collapsible.component.ts',
       'src/@seed/components/navigation/vertical/vertical.component.ts',
       'src/app/app.config.ts',
+      'src/app/modules/auth/confirmation-required/confirmation-required.component.ts',
+      'src/app/modules/auth/forgot-password/forgot-password.component.ts',
+      'src/app/modules/auth/reset-password/reset-password.component.ts',
+      'src/app/modules/auth/sign-in/sign-in.component.ts',
+      'src/app/modules/auth/sign-up/sign-up.component.ts',
     ],
     rules: {
       '@typescript-eslint/no-deprecated': 'off',
