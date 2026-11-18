@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core'
+import { TranslocoDirective } from '@jsverse/transloco'
 import type { ICellRenderer, ICellRendererParams, IRowNode } from 'ag-grid-community'
 import type { ColumnMapping } from '@seed/api'
 import { MaterialImports } from '@seed/materials'
@@ -8,7 +9,7 @@ import { MaterialImports } from '@seed/materials'
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './action-buttons.component.html',
-  imports: [MaterialImports],
+  imports: [MaterialImports, TranslocoDirective],
 })
 export class ActionButtonsComponent implements ICellRenderer {
   data: ColumnMapping

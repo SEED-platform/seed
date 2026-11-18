@@ -1,3 +1,9 @@
-<div class="w-1/1 flex h-full" id="map">
-  <mat-icon class="scale-75 cursor-pointer" (click)="initMap()" svgIcon="fa-solid:arrows-rotate" matTooltip="Reset map"></mat-icon>
+<div class="w-1/1 flex h-full">
+  <ng-container *transloco="let t">
+    <button [attr.aria-label]="t('Reset map')" [matTooltip]="t('Reset map')" (click)="initMap()" mat-icon-button type="button">
+      <mat-icon class="scale-75" svgIcon="fa-solid:arrows-rotate"></mat-icon>
+    </button>
+  </ng-container>
+  <!-- OpenLayers sizes the map to this element, so it must not contain anything else -->
+  <div class="h-full min-w-0 flex-1" id="map"></div>
 </div>

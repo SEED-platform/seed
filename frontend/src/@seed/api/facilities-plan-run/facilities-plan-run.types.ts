@@ -1,4 +1,4 @@
-import type { Column } from '../column'
+import type { SerializedColumn } from '../column'
 import type { FacilitiesPlanRunColumns } from '../facilities-plan'
 
 export type FacilitiesPlanRun = {
@@ -10,9 +10,9 @@ export type FacilitiesPlanRun = {
   ali_level: string;
   name: string | null;
   run_at: string | null;
-  display_columns: Column[];
+  display_columns: SerializedColumn[];
   columns: FacilitiesPlanRunColumns;
-  property_display_field: Column;
+  property_display_field: SerializedColumn;
 }
 
 export type FacilitiesPlanRunCreatePayload = {

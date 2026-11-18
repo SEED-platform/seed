@@ -4,7 +4,8 @@ export type Column = {
   organization_id: number;
   table_name: 'PropertyState' | 'TaxLotState';
   merge_protection: 'Favor New' | 'Favor Existing';
-  shared_field_type: 'None' | 'Public';
+  // The column list endpoints rename the serializer's `shared_field_type` (see SerializedColumn)
+  sharedFieldType: 'None' | 'Public';
   column_name: string;
   is_extra_data: boolean;
   unit_name: null;
@@ -40,6 +41,15 @@ export type Column = {
 export type ColumnsResponse = {
   status: string;
   columns: Column[];
+}
+
+// A column as the backend's ColumnSerializer returns it, without the list endpoints' renames and additions. Creating
+// a column returns this shape, and organizations and facilities plan runs embed it
+export type SerializedColumn = Omit<Column, 'sharedFieldType' | 'related' | 'pinnedLeft'> & { shared_field_type: Column['sharedFieldType'] }
+
+export type CreateColumnResponse = {
+  status: string;
+  column: SerializedColumn;
 }
 
 export type RenameColumnResponse = {

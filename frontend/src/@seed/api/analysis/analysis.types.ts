@@ -121,8 +121,7 @@ export type AnalysisSummaryStats = {
 }
 
 // Column (with data) used by an organization's properties/tax lots, as returned by the
-// `used_columns` endpoint. Note the backend renames `shared_field_type` to `sharedFieldType`
-// on this response only (unlike the standard Column shape returned elsewhere).
+// `used_columns` endpoint. Like the column list endpoints, it renames `shared_field_type` to `sharedFieldType`.
 export type UsedColumn = {
   id: number;
   name: string;

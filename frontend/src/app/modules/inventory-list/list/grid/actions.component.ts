@@ -1,13 +1,14 @@
 import type { OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core'
-import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output } from '@angular/core'
+import { ChangeDetectionStrategy, Component, DOCUMENT, EventEmitter, inject, Input, Output, ViewChild } from '@angular/core'
 import type { MatDialogRef } from '@angular/material/dialog'
 import { MatDialog } from '@angular/material/dialog'
+import { MatMenuTrigger } from '@angular/material/menu'
 import { TranslocoDirective } from '@jsverse/transloco'
 import type { GridApi } from 'ag-grid-community'
 import { filter, Subject, switchMap, takeUntil, tap } from 'rxjs'
 import type { Cycle, Organization } from '@seed/api'
 import { AuditTemplateService, InventoryService, OrganizationService } from '@seed/api'
-import { DeleteModalComponent, MenuItemComponent } from '@seed/components'
+import { DeleteModalComponent } from '@seed/components'
 import { MaterialImports } from '@seed/materials'
 import { SnackBarService } from 'app/core/snack-bar/snack-bar.service'
 import { ModalComponent } from 'app/modules/column-list-profile/modal/modal.component'
@@ -39,7 +40,7 @@ import {
   selector: 'seed-inventory-grid-actions',
   templateUrl: './actions.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [MenuItemComponent, MaterialImports, TranslocoDirective],
+  imports: [MaterialImports, TranslocoDirective],
 })
 export class ActionsComponent implements OnDestroy, OnChanges, OnInit {
   @Input() cycleId: number
@@ -56,7 +57,9 @@ export class ActionsComponent implements OnDestroy, OnChanges, OnInit {
   @Output() refreshInventory = new EventEmitter<number | null>()
   @Output() selectedAll = new EventEmitter<void>()
   @Output() toggleAccessLevels = new EventEmitter<void>()
+  @ViewChild(MatMenuTrigger) private _menuTrigger: MatMenuTrigger
   private _auditTemplateService = inject(AuditTemplateService)
+  private _document = inject(DOCUMENT)
   private _inventoryService = inject(InventoryService)
   private _organizationService = inject(OrganizationService)
   private _dialog = inject(MatDialog)
@@ -145,6 +148,9 @@ export class ActionsComponent implements OnDestroy, OnChanges, OnInit {
       .afterClosed()
       .pipe(
         takeUntil(this._unsubscribeAll$),
+        tap(() => {
+          this._restoreFocus()
+        }),
         filter(Boolean),
         switchMap(() => {
           return this.type === 'taxlots'
@@ -316,6 +322,9 @@ export class ActionsComponent implements OnDestroy, OnChanges, OnInit {
     dialogRef
       .afterClosed()
       .pipe(
+        tap(() => {
+          this._restoreFocus()
+        }),
         filter(Boolean),
         tap((result) => {
           this.refreshInventory.emit(typeof result === 'number' ? result : null)
@@ -327,5 +336,12 @@ export class ActionsComponent implements OnDestroy, OnChanges, OnInit {
   ngOnDestroy(): void {
     this._unsubscribeAll$.next()
     this._unsubscribeAll$.complete()
+  }
+
+  // The menu item that opened a dialog is gone once the dialog closes, so send focus back to the menu's trigger
+  private _restoreFocus() {
+    if (this._document.activeElement === this._document.body) {
+      this._menuTrigger.focus()
+    }
   }
 }

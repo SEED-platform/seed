@@ -393,8 +393,25 @@ seed-page.portfolio-summary-compact-buttons {
   max-height: 60vh;
   overflow-y: auto;
 
-  .menu-option {
-    padding: 0.25rem !important;
+  // Compact items. Items without an icon get leading space for one (0.25rem padding + 1.5rem icon +
+  // 1rem spacing) so every label lines up
+  --mat-menu-item-spacing: 1rem;
+  --mat-menu-item-leading-spacing: 2.75rem;
+  --mat-menu-item-trailing-spacing: 0.25rem;
+  --mat-menu-item-with-icon-leading-spacing: 0.25rem;
+  --mat-menu-item-with-icon-trailing-spacing: 0.25rem;
+
+  .mat-mdc-menu-item {
+    min-height: 0;
+    padding-block: 0.25rem;
+    border-radius: 0.25rem;
+
+    // Keep disabled items readable, as they were before: grey them like secondary text instead of fading them or using
+    // the dimmer [disabled] color from @seed/styles/tailwind.scss, which is hard to read on dark backgrounds
+    &[disabled] {
+      opacity: 1;
+      color: rgb(var(--seed-text-secondary-rgb)) !important;
+    }
   }
 }
 

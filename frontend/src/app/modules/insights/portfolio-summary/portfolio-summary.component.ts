@@ -37,6 +37,7 @@ import { NotFoundComponent, PageComponent } from '@seed/components'
 import { SharedImports } from '@seed/directives'
 import { MaterialImports } from '@seed/materials'
 import { ConfigService } from '@seed/services'
+import { csvDownload } from '@seed/utils'
 import { SnackBarService } from 'app/core/snack-bar/snack-bar.service'
 import { DQCStartModalComponent } from 'app/modules/data-quality/start-modal.component'
 import { LabelsModalComponent } from 'app/modules/inventory/actions'
@@ -693,24 +694,16 @@ export class PortfolioSummaryComponent implements OnInit, OnDestroy {
   }
 
   exportTable(): void {
-    if (!this.goalSummaryData.length) return
-    const headers = ['Cycle Name', 'Baseline?', 'EUI', 'Goal', 'Annual % Imp', 'Cumulative % Imp']
-    const rows = this.goalSummaryData.map((row) => [
-      row['Cycle Name'],
-      row['Baseline?'],
-      row.EUI,
-      row.Goal,
-      row['Annual % Imp'],
-      row['Cumulative % Imp'],
-    ])
-    const csv = [headers, ...rows].map((r) => r.join(',')).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'portfolio_summary_table.csv'
-    a.click()
-    URL.revokeObjectURL(url)
+    // List the columns explicitly so the export has exactly these, in this order
+    const records = this.goalSummaryData.map((row) => ({
+      'Cycle Name': row['Cycle Name'],
+      'Baseline?': row['Baseline?'],
+      EUI: row.EUI,
+      Goal: row.Goal,
+      'Annual % Imp': row['Annual % Imp'],
+      'Cumulative % Imp': row['Cumulative % Imp'],
+    }))
+    csvDownload('portfolio_summary_table', records)
   }
 
   // ─── Private ─────────────────────────────────────────────────────────

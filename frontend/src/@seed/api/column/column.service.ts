@@ -6,7 +6,7 @@ import { catchError, map, ReplaySubject } from 'rxjs'
 import type { ProgressResponse } from '@seed/api'
 import { ErrorService } from '@seed/services/error/error.service'
 import { UserService } from '../user'
-import type { Column, ColumnsResponse, RenameColumnResponse } from './column.types'
+import type { Column, ColumnsResponse, CreateColumnResponse, RenameColumnResponse } from './column.types'
 
 @Injectable({ providedIn: 'root' })
 export class ColumnService {
@@ -96,9 +96,9 @@ export class ColumnService {
     )
   }
 
-  createColumn(orgId: number, columnName: string, tableName: string): Observable<Column> {
+  createColumn(orgId: number, columnName: string, tableName: string): Observable<CreateColumnResponse> {
     return this._httpClient
-      .post<Column>('/api/v3/columns/', { organization_id: orgId, column_name: columnName, table_name: tableName })
+      .post<CreateColumnResponse>('/api/v3/columns/', { organization_id: orgId, column_name: columnName, table_name: tableName })
       .pipe(
         catchError((error: HttpErrorResponse) => {
           return this._errorService.handleError(error, 'Error creating column')

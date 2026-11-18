@@ -5,14 +5,14 @@ import { TestBed } from '@angular/core/testing'
 import { MatDialog } from '@angular/material/dialog'
 import type { RowClassParams } from 'ag-grid-community'
 import { BehaviorSubject, of, ReplaySubject } from 'rxjs'
-import type { Column, FacilitiesPlan, FacilitiesPlanRun, FacilitiesPlanRunProperty } from '@seed/api'
+import type { Column, FacilitiesPlan, FacilitiesPlanRun, FacilitiesPlanRunProperty, SerializedColumn } from '@seed/api'
 import { ColumnService, FacilitiesPlanRunService, FacilitiesPlanService, UserService } from '@seed/api'
 import { ConfigService } from '@seed/services'
 import { FacilitiesPlanComponent } from './facilities-plan.component'
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
-const mockColumn: Column = {
+const mockColumn: SerializedColumn = {
   id: 1,
   name: 'address',
   organization_id: 1,
@@ -35,7 +35,7 @@ const mockColumn: Column = {
   is_excluded_from_hash: false,
 }
 
-const mockBooleanColumn: Column = {
+const mockBooleanColumn: SerializedColumn = {
   ...mockColumn,
   id: 2,
   column_name: 'include_in_denominator',
@@ -43,7 +43,7 @@ const mockBooleanColumn: Column = {
   data_type: 'boolean',
 }
 
-const mockNumberColumn: Column = {
+const mockNumberColumn: SerializedColumn = {
   ...mockColumn,
   id: 3,
   column_name: 'electric_energy',
