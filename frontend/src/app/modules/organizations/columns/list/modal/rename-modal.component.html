@@ -1,0 +1,68 @@
+<div class="mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:copy"></mat-icon>
+  <div class="text-2xl font-medium leading-6">Rename Column</div>
+</div>
+<mat-divider class="mb-8"></mat-divider>
+
+@if (step === 1) {
+  <mat-dialog-content class="flex flex-col gap-4">
+    <mat-form-field>
+      <mat-label>Current Name</mat-label>
+      <input [value]="data.column.column_name" matInput disabled />
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>New Name</mat-label>
+      <input [(ngModel)]="newName" (ngModelChange)="checkNameExists()" matInput />
+    </mat-form-field>
+
+    @if (nameExists) {
+      <seed-alert type="warning">A column with the name "{{ newName }}" already exists. Data will be merged if you proceed.</seed-alert>
+    }
+
+    @if (newName === data.column.column_name) {
+      <seed-alert type="error">The new name must be different from the current name.</seed-alert>
+    }
+
+    <seed-alert type="error">
+      <ul class="list-disc pl-4">
+        <li>This operation is irreversible.</li>
+        <li>The new column will replace the original column's data.</li>
+        <li>Default units will be applied to the renamed column.</li>
+        <li>This operation may take a long time for large datasets.</li>
+      </ul>
+    </seed-alert>
+
+    @if (nameExists) {
+      <mat-checkbox [(ngModel)]="overwritePreference">Overwrite existing column data with this column's data?</mat-checkbox>
+    }
+
+    <mat-checkbox [(ngModel)]="userAcknowledgement">I acknowledge the above warnings</mat-checkbox>
+
+    @if (inProgress) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+  </mat-dialog-content>
+
+  <div class="flex justify-end" mat-dialog-actions>
+    <button (click)="close()" mat-stroked-button>Cancel</button>
+    <button [disabled]="!isValid() || inProgress" (click)="onSubmit()" mat-raised-button color="primary">Rename</button>
+  </div>
+} @else {
+  <mat-dialog-content class="flex flex-col gap-4">
+    @if (result?.success) {
+      <seed-alert type="success">{{ result.message }}</seed-alert>
+    } @else {
+      <seed-alert type="error">{{ result?.message || 'An error occurred' }}</seed-alert>
+    }
+
+    <mat-form-field>
+      <mat-label>New Name</mat-label>
+      <input [value]="newName" matInput disabled />
+    </mat-form-field>
+  </mat-dialog-content>
+
+  <div class="flex justify-end" mat-dialog-actions>
+    <button (click)="close(!!result?.success)" mat-raised-button color="primary">Done</button>
+  </div>
+}

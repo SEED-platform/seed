@@ -1,0 +1,39 @@
+<ng-container *transloco="let t">
+  <seed-modal-header [close]="close.bind(this)" [title]="t('Copy Inventory to New Cycle')" titleIcon="fa-solid:copy"></seed-modal-header>
+
+  <div class="flex flex-col gap-4">
+    <mat-form-field class="w-full">
+      <mat-label>{{ t('Target Cycle') }}</mat-label>
+      <mat-select [(ngModel)]="selectedCycleId">
+        @for (cycle of availableCycles; track cycle.id) {
+          <mat-option [value]="cycle.id">{{ cycle.name }}</mat-option>
+        }
+      </mat-select>
+      @if (availableCycles.length === 0) {
+        <mat-hint>{{ t('No other cycles available.') }}</mat-hint>
+      }
+    </mat-form-field>
+
+    <mat-form-field class="w-full">
+      <mat-label>{{ t('Column List Profile') }}</mat-label>
+      <mat-select [(ngModel)]="selectedProfileId">
+        @for (profile of listViewProfiles; track profile.id) {
+          <mat-option [value]="profile.id">{{ profile.name }}</mat-option>
+        }
+      </mat-select>
+      @if (listViewProfiles.length === 0) {
+        <mat-hint>{{ t('No List View Profiles found. Dismiss this modal and create one first.') }}</mat-hint>
+      }
+    </mat-form-field>
+
+    @if (inProgress) {
+      <seed-progress-bar [total]="progressBarObj.total" [progress]="progressBarObj.progress" [title]="t('Copying Inventory')">
+      </seed-progress-bar>
+    }
+
+    <div class="flex justify-end gap-2">
+      <button [disabled]="inProgress" (click)="close()" mat-stroked-button>{{ t('Cancel') }}</button>
+      <button [disabled]="!canSubmit" (click)="onSubmit()" mat-flat-button color="primary">{{ t('Copy Inventory') }}</button>
+    </div>
+  </div>
+</ng-container>

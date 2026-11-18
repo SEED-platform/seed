@@ -1,0 +1,28 @@
+<seed-page [config]="{ titleIcon: 'fa-solid:gears', title: 'UBID', breadcrumbs: ['Organization Settings'], sideNavToggle: true }">
+  @if (organization) {
+    <div class="flex-auto p-6 sm:p-10" *transloco="let t">
+      <div class="max-w-2xl">
+        <div class="prose">
+          The UBID Threshold defines the minimum Jaccard Index value required for a UBID Comparison to be considered acceptable. When the
+          threshold is satisfied, the incoming property can be merged with the existing property.
+        </div>
+        <form class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow" [formGroup]="ubidForm" (ngSubmit)="submit()">
+          <div class="my-6 flex flex-col">
+            <mat-form-field appearance="outline">
+              <mat-label>UBID Threshold</mat-label>
+              <input matInput formControlName="ubid_threshold" type="number" max="1" min="0" step="0.001" />
+              @if (ubidForm.controls.ubid_threshold.touched && !ubidForm.controls.ubid_threshold.valid) {
+                <mat-error>UBID Threshold must be a number between 0 and 1</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div>
+            <button [disabled]="ubidForm.invalid || ubidForm.pending" mat-flat-button color="primary">
+              <span class="">{{ t('Save Changes') }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</seed-page>

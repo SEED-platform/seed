@@ -1,0 +1,68 @@
+<div class="ml-4 mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:plug"></mat-icon>
+  <div class="text-2xl font-medium leading-6">Add Properties</div>
+</div>
+<mat-divider></mat-divider>
+
+<mat-dialog-content class="m-4 flex flex-col gap-4">
+  <!-- Type -->
+  <mat-form-field class="w-full">
+    <mat-label>Type</mat-label>
+    <mat-select [formControl]="form.controls.type">
+      @for (t of meterTypes; track t) {
+        <mat-option [value]="t">{{ t }}</mat-option>
+      }
+    </mat-select>
+    <mat-hint>Select the meter type from the list</mat-hint>
+  </mat-form-field>
+
+  <!-- Direction -->
+  <mat-form-field class="w-full">
+    <mat-label>Flow Direction</mat-label>
+    <mat-select [formControl]="form.controls.direction">
+      @for (opt of directionOptions; track opt.value) {
+        <mat-option [value]="opt.value">{{ opt.display }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <!-- Properties selection -->
+  <div class="flex flex-col gap-2">
+    <div class="text-sm font-semibold">Properties</div>
+
+    <!-- Selected properties -->
+    @for (prop of selectedProperties; track prop.property_id) {
+      <div class="flex items-center justify-between rounded border border-gray-200 px-3 py-1.5 text-sm">
+        <span>{{ prop.property_display_name || 'Property ' + prop.property_id }}</span>
+        <button class="scale-75" (click)="removeProperty(prop)" mat-icon-button matTooltip="Remove">
+          <mat-icon class="text-red-600" svgIcon="fa-solid:xmark"></mat-icon>
+        </button>
+      </div>
+    }
+
+    <!-- Property selector -->
+    <mat-form-field class="w-full">
+      <mat-label>Select a property...</mat-label>
+      <mat-select (selectionChange)="selectProperty($event.value)">
+        @for (prop of availableProperties; track prop.property_id) {
+          <mat-option [value]="prop.property_id">
+            {{ prop.property_display_name || 'Property ' + prop.property_id }}
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  @if (errorMessage) {
+    <div class="rounded bg-red-100 p-3 text-sm text-red-700">{{ errorMessage }}</div>
+  }
+</mat-dialog-content>
+
+<mat-divider></mat-divider>
+
+<mat-dialog-actions class="flex justify-end gap-2 p-4">
+  <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+  <button [disabled]="form.invalid || selectedProperties.length === 0 || submitted" (click)="onSubmit()" mat-raised-button color="primary">
+    Create Meters
+  </button>
+</mat-dialog-actions>

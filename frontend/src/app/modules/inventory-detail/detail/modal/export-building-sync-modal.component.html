@@ -1,0 +1,24 @@
+<seed-modal-header [close]="close.bind(this)" title="Export BuildingSync" titleIcon="fa-solid:download"></seed-modal-header>
+
+<div class="flex flex-col gap-4">
+  @if (errorMessage) {
+    <seed-alert type="error">{{ errorMessage }}</seed-alert>
+  }
+
+  <mat-form-field class="w-full">
+    <mat-label>Column Mapping Profile</mat-label>
+    <mat-select [(ngModel)]="selectedProfileId">
+      @for (profile of profiles; track profile.id) {
+        <mat-option [value]="profile.id">{{ profile.name }}</mat-option>
+      }
+    </mat-select>
+    @if (profiles.length === 0) {
+      <mat-hint>No BuildingSync profiles found for this organization.</mat-hint>
+    }
+  </mat-form-field>
+</div>
+
+<div class="mt-4 flex justify-end gap-2">
+  <button [disabled]="downloading" (click)="close()" mat-stroked-button>Cancel</button>
+  <button [disabled]="!selectedProfileId || downloading" (click)="download()" mat-flat-button color="primary">Download</button>
+</div>

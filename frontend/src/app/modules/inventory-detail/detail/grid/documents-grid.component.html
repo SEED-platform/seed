@@ -1,0 +1,21 @@
+<div class="mb-5 flex flex-col gap-4">
+  <div class="flex justify-between">
+    <div class="ml-4 flex items-center text-lg font-medium">
+      <mat-icon svgIcon="fa-solid:paperclip"></mat-icon>
+      <span class="ml-4">Inventory Documents</span>
+    </div>
+    <button class="w-fit" (click)="addDocument()" mat-stroked-button>
+      <mat-icon class="scale-75" svgIcon="fa-solid:plus"></mat-icon> <span class="ml-2 text-sm">Document</span>
+    </button>
+  </div>
+
+  @if (rowData.length) {
+    <ag-grid-angular
+      [columnDefs]="columnDefs"
+      [rowData]="rowData"
+      [theme]="gridTheme$ | async"
+      [style.height.px]="gridHeight"
+      (gridReady)="onGridReady($event)"
+    ></ag-grid-angular>
+  }
+</div>

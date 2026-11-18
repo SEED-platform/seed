@@ -1,0 +1,11 @@
+<seed-page
+  [config]="{
+    title: 'Column List Profiles',
+    titleIcon: 'fa-solid:sliders',
+    action: onSave,
+    actionText: 'Save Profile',
+    tabs: ['properties', 'taxlots'],
+  }"
+>
+  <seed-column-profiles #columnProfiles [profileType]="'list'" [type]="type"></seed-column-profiles>
+</seed-page>

@@ -1,0 +1,24 @@
+<div class="flex w-full justify-between">
+  <div class="m-2 flex items-center sm:flex-row sm:items-center">
+    <div
+      class="flex h-10 w-10 flex-0 items-center justify-center rounded-full bg-primary-100 text-primary-600 sm:mr-4 dark:bg-primary-600 dark:text-primary-50"
+    >
+      <mat-icon class="text-current icon-size-5" [svgIcon]="titleIcon"></mat-icon>
+    </div>
+
+    <div class="text-left sm:items-center">
+      <div class="text-xl font-medium leading-6">{{ title }}</div>
+    </div>
+  </div>
+
+  @if (close) {
+    <div
+      class="flex h-10 w-10 flex-0 cursor-pointer items-center justify-center rounded-full border hover:bg-gray-100 dark:hover:bg-gray-900"
+      (click)="close()"
+    >
+      <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:xmark"></mat-icon>
+    </div>
+  }
+</div>
+
+<mat-divider class="my-5"></mat-divider>

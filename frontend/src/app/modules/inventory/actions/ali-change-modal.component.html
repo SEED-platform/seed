@@ -1,0 +1,29 @@
+<seed-modal-header [close]="close.bind(this)" title="Change Inventory Access Level" titleIcon="fa-solid:wrench"></seed-modal-header>
+
+<div class="text-secondary m-4">
+  Please select an Access Level and Access Level Instance to move {{ data.viewIds.length }}
+  {{ data.viewIds.length === 1 ? 'property' : 'properties' }} to.
+</div>
+<form class="flex flex-col gap-4" [formGroup]="form">
+  <mat-form-field>
+    <mat-label>Access Level</mat-label>
+    <mat-select formControlName="access_level">
+      @for (level of accessLevelNames; track level) {
+        <mat-option [value]="level">{{ level }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Access Level Instance</mat-label>
+    <mat-select formControlName="access_level_instance">
+      @for (ali of accessLevelInstances; track ali.id) {
+        <mat-option [value]="ali.id">{{ ali.name }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</form>
+
+<div class="mt-4 flex justify-end gap-2">
+  <button [disabled]="form.invalid" (click)="onSubmit()" mat-raised-button color="primary">Move Properties</button>
+</div>

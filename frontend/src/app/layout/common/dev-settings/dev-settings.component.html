@@ -1,0 +1,112 @@
+<div
+  class="settings-cog fixed right-0 z-90 flex h-10 w-10 cursor-pointer items-center justify-center rounded-l-lg bg-red-600 bg-opacity-90 shadow-lg print:hidden"
+  [class.lg:right-0]="config.layout === 'centered' || config.layout === 'material'"
+  (click)="settingsDrawer.toggle()"
+  style="top: 275px"
+>
+  <mat-icon class="animate-spin-slow text-white icon-size-5" svgIcon="heroicons-solid:cog-8-tooth"></mat-icon>
+</div>
+
+<seed-drawer
+  class="z-999 w-screen min-w-screen sm:w-100 sm:min-w-100"
+  #settingsDrawer
+  fixed
+  mode="over"
+  name="settingsDrawer"
+  position="right"
+>
+  <div class="bg-card flex w-full flex-col overflow-auto">
+    <div class="flex h-20 min-h-20 flex-row items-center bg-primary px-6 text-white">
+      <mat-icon class="text-current icon-size-7" svgIcon="heroicons-solid:cog-8-tooth"></mat-icon>
+      <div class="ml-3 text-2xl font-semibold tracking-tight">Dev Settings</div>
+      <button class="ml-auto" (click)="settingsDrawer.close()" mat-icon-button>
+        <mat-icon class="text-current" svgIcon="heroicons-outline:x-mark"></mat-icon>
+      </button>
+    </div>
+
+    <div class="flex flex-col p-6">
+      <!-- Language -->
+      <div class="text-secondary text-md font-semibold">LANGUAGE</div>
+      <div class="mt-6 grid grid-cols-3 justify-items-stretch gap-3">
+        <!-- English -->
+        <div
+          class="bg-hover flex cursor-pointer justify-center rounded-full px-5 py-2 ring-inset ring-primary"
+          [class.ring-2]="activeLang === 'en_US'"
+          (click)="setActiveLang('en_US')"
+          matTooltip="English"
+        >
+          <div class="flex items-center overflow-hidden rounded-md">
+            <mat-icon class="icon-size-7" svgIcon="flag:us"></mat-icon>
+          </div>
+        </div>
+
+        <!-- French -->
+        <div
+          class="bg-hover flex cursor-pointer justify-center rounded-full px-5 py-2 ring-inset ring-primary"
+          [class.ring-2]="activeLang === 'fr_CA'"
+          (click)="setActiveLang('fr_CA')"
+          matTooltip="French"
+        >
+          <div class="flex items-center overflow-hidden rounded-md">
+            <mat-icon class="icon-size-7" svgIcon="flag:ca"></mat-icon>
+          </div>
+        </div>
+
+        <!-- Spanish -->
+        <div
+          class="bg-hover flex cursor-pointer justify-center rounded-full px-5 py-2 ring-inset ring-primary"
+          [class.ring-2]="activeLang === 'es'"
+          (click)="setActiveLang('es')"
+          matTooltip="Spanish"
+        >
+          <div class="flex items-center overflow-hidden rounded-md">
+            <mat-icon class="icon-size-7" svgIcon="flag:mx"></mat-icon>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="my-8" />
+
+    <div class="flex flex-col p-6">
+      <!-- Scheme -->
+      <div class="text-secondary text-md font-semibold">SCHEME</div>
+      <div class="mt-6 grid grid-cols-3 justify-items-stretch gap-3">
+        <!-- Auto -->
+        <div
+          class="bg-hover flex cursor-pointer justify-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
+          [class.ring-2]="config.scheme === 'auto'"
+          (click)="setScheme('auto')"
+          matTooltip="Automatically sets the scheme based on user's operating system's color scheme preference using 'prefer-color-scheme' media query."
+        >
+          <div class="flex items-center overflow-hidden rounded-full">
+            <mat-icon class="icon-size-5" svgIcon="heroicons-solid:bolt"></mat-icon>
+          </div>
+          <div class="ml-2 flex items-center font-medium leading-5" [class.text-secondary]="config.scheme !== 'auto'">Auto</div>
+        </div>
+        <!-- Dark -->
+        <div
+          class="bg-hover flex cursor-pointer justify-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
+          [class.ring-2]="config.scheme === 'dark'"
+          (click)="setScheme('dark')"
+        >
+          <div class="flex items-center overflow-hidden rounded-full">
+            <mat-icon class="icon-size-5" svgIcon="heroicons-solid:moon"></mat-icon>
+          </div>
+          <div class="ml-2 flex items-center font-medium leading-5" [class.text-secondary]="config.scheme !== 'dark'">Dark</div>
+        </div>
+        <!-- Light -->
+        <div
+          class="bg-hover flex cursor-pointer justify-center rounded-full py-3 pl-5 pr-6 ring-inset ring-primary"
+          [class.ring-2]="config.scheme === 'light'"
+          (click)="setScheme('light')"
+        >
+          <div class="flex items-center overflow-hidden rounded-full">
+            <mat-icon class="icon-size-5" svgIcon="heroicons-solid:sun"></mat-icon>
+          </div>
+          <div class="ml-2 flex items-center font-medium leading-5" [class.text-secondary]="config.scheme !== 'light'">Light</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</seed-drawer>

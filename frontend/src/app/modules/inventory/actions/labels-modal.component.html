@@ -1,0 +1,42 @@
+<seed-modal-header [close]="close.bind(this)" title="Add / Remove Labels" titleIcon="fa-solid:tags"></seed-modal-header>
+
+<ag-grid-angular
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [style.height.px]="gridHeight"
+  [style.--ag-spacing.px]="6"
+  [theme]="gridTheme$ | async"
+  (cellValueChanged)="onCellValueChanged($event)"
+></ag-grid-angular>
+
+<div class="mt-4">
+  <mat-divider class="my-4"></mat-divider>
+  <div class="text-secondary px-2 pb-4 italic">Not seeing the right Label? Create a new one.</div>
+  <form class="flex items-center gap-2" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-form-field class="no-sub flex-1 items-center" appearance="outline">
+      <mat-label>Label Name</mat-label>
+      <input matInput formControlName="name" />
+    </mat-form-field>
+
+    <mat-form-field class="no-sub flex-1" appearance="outline">
+      <mat-label>Color</mat-label>
+      <mat-select formControlName="color">
+        <mat-select-trigger>
+          <div class="label compact {{ form.controls.color?.value }}">{{ form.controls.color?.value }}</div>
+        </mat-select-trigger>
+        @for (c of colors; track c) {
+          <mat-option [value]="c">
+            <div class="label compact {{ c }}">{{ c }}</div>
+          </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-checkbox formControlName="show_in_list">Show in list</mat-checkbox>
+    <button [disabled]="!form.value.name || form.invalid" mat-raised-button color="primary">Create</button>
+  </form>
+</div>
+
+<div class="mt-4 flex justify-end gap-2">
+  <button (click)="done()" mat-raised-button color="primary">Done</button>
+</div>

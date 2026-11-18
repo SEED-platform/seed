@@ -1,0 +1,60 @@
+<seed-page [config]="{ titleIcon: 'fa-solid:gears', title: 'Email', breadcrumbs: ['Organization Settings'], sideNavToggle: true }">
+  @if (organization) {
+    <div class="flex-auto p-6 sm:p-10" *transloco="let t">
+      <div class="max-w-2xl">
+        <div class="prose">
+          Customizes the email sent when a new user is invited to SEED. The body can accept placeholders {{"{{first_name}}"}} and
+          {{"{{sign_up_link}}"}}, including the braces.
+        </div>
+        <form class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow" [formGroup]="emailForm" (ngSubmit)="submit()">
+          <div class="flex flex-col">
+            <mat-form-field class="mb-6">
+              <mat-label>From Email</mat-label>
+              <input type="email" matInput formControlName="new_user_email_from" placeholder="Ex. pat@example.com" />
+              @if (
+                emailForm.controls['new_user_email_from'].hasError('email') &&
+                !emailForm.controls['new_user_email_from'].hasError('required')
+              ) {
+                <mat-error>Please enter a valid email address</mat-error>
+              }
+              @if (emailForm.controls['new_user_email_from'].hasError('required')) {
+                <mat-error>From Email is a required field</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="flex flex-col">
+            <mat-form-field class="mb-6">
+              <mat-label>Subject</mat-label>
+              <input type="text" matInput formControlName="new_user_email_subject" placeholder="Welcome to SEED" />
+              @if (emailForm.controls['new_user_email_subject'].hasError('required')) {
+                <mat-error>Subject is a required field</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="flex flex-col">
+            <mat-form-field class="mb-6">
+              <mat-label>Body</mat-label>
+              <textarea matInput formControlName="new_user_email_content" rows="12"></textarea>
+              @if (emailForm.controls['new_user_email_content'].hasError('required')) {
+                <mat-error>Body is a required field</mat-error>
+              }
+            </mat-form-field>
+          </div>
+          <div class="flex flex-col">
+            <mat-form-field class="mb-6">
+              <mat-label>Signature</mat-label>
+              <input type="text" matInput formControlName="new_user_email_signature" placeholder="The SEED Team" />
+            </mat-form-field>
+          </div>
+          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+
+          <div>
+            <button [disabled]="emailForm.invalid || emailForm.pending" mat-flat-button color="primary">
+              <span class="">{{ t('Save Changes') }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</seed-page>

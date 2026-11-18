@@ -1,0 +1,81 @@
+<div class="flex-auto p-6 sm:p-10" *transloco="let t">
+  <div class="max-w-2xl">
+    <h2 class="mb-6 flex items-center text-center text-2xl">
+      <mat-icon class="mr-2 text-primary-900 dark:text-primary-300" svgIcon="fa-solid:user-shield"></mat-icon
+      >{{ t('Two-Factor Authentication') }}
+    </h2>
+
+    @if (loading) {
+      <div class="flex justify-center p-10">
+        <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
+      </div>
+    } @else {
+      <div class="bg-card flex flex-col overflow-hidden rounded-2xl p-8 pb-6 shadow">
+        <h3 class="mb-4 text-lg font-medium">{{ t('TWO_FACTOR_ENABLE') }}</h3>
+
+        <div class="mb-4 flex flex-wrap items-center gap-2">
+          <span class="text-secondary">{{ t('Current Method') }}</span>
+          <span
+            class="rounded-full px-3 py-1 text-xs font-medium uppercase"
+            [class.bg-primary-100]="user.two_factor_method !== 'disabled'"
+            [class.text-primary-700]="user.two_factor_method !== 'disabled'"
+            [class.dark:bg-primary-600]="user.two_factor_method !== 'disabled'"
+            [class.dark:text-primary-50]="user.two_factor_method !== 'disabled'"
+            [class.bg-gray-200]="user.two_factor_method === 'disabled'"
+            [class.text-gray-700]="user.two_factor_method === 'disabled'"
+            [class.dark:bg-gray-700]="user.two_factor_method === 'disabled'"
+            [class.dark:text-gray-100]="user.two_factor_method === 'disabled'"
+            >{{ user.two_factor_method }}</span
+          >
+        </div>
+
+        <p class="text-secondary mb-4">{{ t('TWO_FACTOR_SELECT') }}</p>
+
+        @if (requiresOrg2fa) {
+          <seed-alert class="mb-4" type="info" appearance="outline">
+            {{ t('TWO_FACTOR_REQUIRED') }} <em>{{ orgsRequiring2fa }}</em>
+          </seed-alert>
+        }
+
+        <form [formGroup]="methodForm">
+          <mat-radio-group class="flex flex-col gap-4" formControlName="method">
+            <div>
+              <mat-radio-button [disabled]="requiresOrg2fa" value="disabled">{{ t('Disabled') }}</mat-radio-button>
+              <p class="text-secondary ml-8 text-sm">{{ t('TWO_FACTOR_DISABLED_TEXT') }}</p>
+            </div>
+            <div>
+              <mat-radio-button value="email">{{ t('Email') }}</mat-radio-button>
+              <p class="text-secondary ml-8 text-sm">{{ emailHelpText }}</p>
+            </div>
+            <div>
+              <mat-radio-button value="token">{{ t('Token Generator') }}</mat-radio-button>
+              <p class="text-secondary ml-8 text-sm">{{ t('TWO_FACTOR_TOKEN_SELECTED_TEXT') }}</p>
+            </div>
+          </mat-radio-group>
+        </form>
+
+        <div class="mt-6 flex flex-wrap items-center gap-4">
+          <button [disabled]="methodUnchanged || saving" (click)="save()" mat-flat-button color="primary">
+            @if (saving) {
+              <mat-progress-spinner class="align-middle mr-2 inline-block" diameter="18" mode="indeterminate"></mat-progress-spinner>
+            }
+            <span>{{ t('Save Changes') }}</span>
+          </button>
+
+          @if (user.two_factor_method === 'email') {
+            <button (click)="resendTokenEmail()" mat-stroked-button>{{ t('Resend Test Email Token') }}</button>
+          }
+          @if (user.two_factor_method === 'token') {
+            <button (click)="regenerateQrCode()" mat-stroked-button>{{ t('Re-Generate Token') }}</button>
+          }
+        </div>
+
+        @if (emailSent) {
+          <seed-alert class="mt-4" [showIcon]="false" type="success" appearance="outline">
+            {{ t('A sample token has been sent to {{email}}', { email: user.email }) }}
+          </seed-alert>
+        }
+      </div>
+    }
+  </div>
+</div>

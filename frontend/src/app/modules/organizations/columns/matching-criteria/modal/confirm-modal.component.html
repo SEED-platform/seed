@@ -1,0 +1,39 @@
+<div class="mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
+  <div class="text-2xl font-medium leading-6">Confirm Changes to Matching Criteria</div>
+</div>
+<mat-divider class="mb-8"></mat-divider>
+
+<div class="mb-4 mt-4">
+  @if (inProgress) {
+    <mat-progress-bar [value]="progressBarObj.progress" mode="determinate"></mat-progress-bar>
+  }
+  @if (!inProgress) {
+    <div class="mx-10">
+      <ul class="list-disc">
+        @for (c of data.columns; track $index) {
+          <li>{{ c.display_name }}</li>
+        }
+      </ul>
+
+      @if (!errorMessage) {
+        <div class="mt-5 flex justify-center gap-4 rounded-lg border border-red-500 p-4">
+          <mat-icon class="text-red-500" svgIcon="fa-solid:triangle-exclamation"></mat-icon>
+          <div class="italic text-red-500">These changes cannot be undone</div>
+        </div>
+      }
+    </div>
+  }
+  @if (errorMessage) {
+    <seed-alert class="mt-4" type="error">{{ errorMessage }}</seed-alert>
+  }
+</div>
+
+<div class="flex justify-end">
+  <mat-dialog-actions>
+    <button [disabled]="errorMessage || inProgress" (click)="onSubmit()" mat-raised-button color="warn">Confirm Changes</button>
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+  </mat-dialog-actions>
+</div>

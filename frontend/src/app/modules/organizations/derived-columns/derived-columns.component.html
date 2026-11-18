@@ -1,0 +1,45 @@
+<seed-page
+  *transloco="let t"
+  [config]="{
+    title: 'Derived Columns',
+    titleIcon: 'fa-solid:calculator',
+    action: createDerivedColumn,
+    actionIcon: 'fa-solid:plus',
+    actionText: 'Create a Derived Column',
+  }"
+>
+  <seed-page-inventory-tab [config]="{ tabs, action: toggleInventoryType.bind(this) }"></seed-page-inventory-tab>
+
+  <seed-page-table-container>
+    <table class="mat-elevation-z8 w-full bg-transparent" [dataSource]="derivedColumnDataSource" [trackBy]="trackByFn" mat-table matSort>
+      <ng-container matColumnDef="name">
+        <th *matHeaderCellDef mat-header-cell>Name</th>
+        <td *matCellDef="let dc" mat-cell>{{ dc.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="expression">
+        <th *matHeaderCellDef mat-header-cell>Expression</th>
+        <td *matCellDef="let dc" mat-cell>{{ dc.expression }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th class="select-none pr-24 text-right" *matHeaderCellDef mat-header-cell>Actions</th>
+        <td class="w-50 text-right" *matCellDef="let dc" mat-cell>
+          <button class="mr-2" (click)="editDerivedColumn(dc)" mat-icon-button>
+            <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil"></mat-icon>
+          </button>
+          <button (click)="deleteDerivedColumn(dc)" mat-icon-button>
+            <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <thead>
+        <tr *matHeaderRowDef="derivedColumnColumns" mat-header-row></tr>
+      </thead>
+      <tbody>
+        <tr *matRowDef="let row; columns: derivedColumnColumns" mat-row></tr>
+      </tbody>
+    </table>
+  </seed-page-table-container>
+</seed-page>

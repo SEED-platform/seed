@@ -1,0 +1,47 @@
+<div class="ml-4 mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:bolt"></mat-icon>
+  <div class="text-2xl font-medium leading-6">Create Meter</div>
+</div>
+<mat-divider></mat-divider>
+
+<mat-dialog-content class="m-4 flex flex-col gap-4">
+  <!-- System -->
+  <mat-form-field class="w-full">
+    <mat-label>What system is this meter associated with?</mat-label>
+    <mat-select [formControl]="form.controls.system_id">
+      @for (system of systems; track system.id) {
+        <mat-option [value]="system.id">{{ system.name }}</mat-option>
+      }
+    </mat-select>
+    <mat-hint>Select the system associated with the meter</mat-hint>
+  </mat-form-field>
+
+  <!-- Type -->
+  <mat-form-field class="w-full">
+    <mat-label>Type</mat-label>
+    <mat-select [formControl]="form.controls.type">
+      @for (t of meterTypes; track t) {
+        <mat-option [value]="t">{{ t }}</mat-option>
+      }
+    </mat-select>
+    <mat-hint>Select the meter type from the list</mat-hint>
+  </mat-form-field>
+
+  <!-- Alias -->
+  <mat-form-field class="w-full">
+    <mat-label>Alias</mat-label>
+    <input [formControl]="form.controls.alias" matInput placeholder="Enter an identifying name" />
+    <mat-hint>Enter an identifying name for this meter</mat-hint>
+  </mat-form-field>
+
+  @if (errorMessage) {
+    <div class="rounded bg-red-100 p-3 text-sm text-red-700">{{ errorMessage }}</div>
+  }
+</mat-dialog-content>
+
+<mat-divider></mat-divider>
+
+<mat-dialog-actions class="flex justify-end gap-2 p-4">
+  <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+  <button [disabled]="form.invalid || submitted" (click)="onSubmit()" mat-raised-button color="primary">Create</button>
+</mat-dialog-actions>

@@ -1,0 +1,53 @@
+<seed-page
+  [config]="{
+    title: 'Property',
+    subTitle: viewDisplayField$ | async,
+    titleIcon: 'fa-solid:temperature-half',
+    breadcrumbs: [{ label: 'Properties', link: '/properties' }, 'Sensors'],
+    sideNavToggle: true,
+    action: createDataLogger,
+    actionIcon: 'fa-solid:plus',
+    actionText: 'Create Data Logger',
+  }"
+>
+  <div class="h-full-page-tabs p-5" id="content">
+    @if (dataLoggers.length) {
+      <!-- DATA LOGGERS -->
+      <seed-inventory-detail-sensors-data-loggers-grid
+        [cycleId]="cycleId"
+        [dataLoggers]="dataLoggers"
+        [datasetId]="datasetId"
+        [gridTheme$]="gridTheme$"
+        [orgId]="orgId"
+        [viewId]="viewId"
+        (excludedIdsChange)="onDataLoggerExcludedIdsChange($event)"
+      >
+      </seed-inventory-detail-sensors-data-loggers-grid>
+
+      <!-- SENSORS -->
+      <seed-inventory-detail-sensors-grid
+        [sensors]="sensors"
+        [gridTheme$]="gridTheme$"
+        [orgId]="orgId"
+        [viewId]="viewId"
+        [excludedDataLoggerIds]="excludedDataLoggerIds"
+        (excludedIdsChange)="onSensorExcludedIdsChange($event)"
+      >
+      </seed-inventory-detail-sensors-grid>
+
+      <!-- SENSOR READINGS -->
+      <seed-inventory-detail-sensor-readings-grid
+        [usage]="usage"
+        [gridTheme$]="gridTheme$"
+        [excludedSensorIds]="excludedSensorIds"
+        [orgId]="orgId"
+        [viewId]="viewId"
+        (occupiedHoursOnlyChange)="onOccupiedOnlyChanged($event)"
+        (intervalChange)="intervalChanged($event)"
+      >
+      </seed-inventory-detail-sensor-readings-grid>
+    } @else {
+      <seed-not-found message="No Data Loggers" icon="fa-solid:triangle-exclamation"></seed-not-found>
+    }
+  </div>
+</seed-page>

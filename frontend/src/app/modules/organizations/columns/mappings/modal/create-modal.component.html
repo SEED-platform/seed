@@ -1,0 +1,79 @@
+<div class="mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:folder-plus"></mat-icon>
+  <div class="text-2xl font-medium leading-6">Create New Column Mapping Profile</div>
+</div>
+<mat-divider class="mb-8"></mat-divider>
+
+<div class="max-h-[75vh-300px] overflow-y-auto">
+  <form class="flex flex-col gap-2" [formGroup]="form">
+    <mat-form-field>
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="name" placeholder="Profile Name" />
+      @if (form.controls.name?.hasError('required')) {
+        <mat-error>Name is a required field</mat-error>
+      }
+    </mat-form-field>
+    <div class="flex w-full flex-row items-center">
+      <div class="w-75 flex flex-1 flex-row items-center">
+        <span class="flex flex-1 text-lg">File Headers: </span>
+      </div>
+      <div class="flex justify-self-end"></div>
+    </div>
+
+    <div class="" id="mappings" formArrayName="mappings">
+      @for (mappingForm of mappings.controls; track $index; let i = $index) {
+        <div class="flex w-full flex-row items-center gap-x-2" [formGroupName]="i">
+          <mat-form-field class="flex w-10 flex-1">
+            <mat-label>Inventory Type {{ i + 1 }}</mat-label>
+            <mat-select formControlName="to_table_name">
+              <mat-option value="PropertyState">Property</mat-option>
+              <mat-option value="TaxLotState">Taxlot</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div class="flex w-30 flex-1">
+            <seed-header-autocomplete
+              class="w-full"
+              [formControl]="getToField(i)"
+              [columns]="columns"
+              label="SEED Header {{ i + 1 }}"
+              tableName="{{ getTableName(i) }}"
+            />
+          </div>
+          <mat-form-field class="flex w-10 flex-1">
+            <mat-label>Units {{ i + 1 }}</mat-label>
+            <mat-select formControlName="from_units">
+              @for (option of unitSelections(i); track option.id) {
+                <mat-option [value]="option.id">{{ option.value }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="flex w-10 flex-1">
+            <mat-label>File Header {{ i + 1 }}</mat-label>
+            <input formControlName="from_field" matInput placeholder="File Header {{ i + 1 }}" />
+          </mat-form-field>
+          <button class="flex flex-0" (click)="removeMapping(i)" mat-icon-button matTooltip="Remove">
+            <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  </form>
+</div>
+
+<div class="flex w-full flex-row">
+  <div class="flex flex-1">
+    <mat-dialog-actions>
+      <button (click)="addMapping()" mat-stroked-button matTooltip="Add File Header">
+        <mat-icon class="fill-primary-700 icon-size-4" svgIcon="fa-solid:plus"></mat-icon><span class="ml-2">Add Row</span>
+      </button>
+    </mat-dialog-actions>
+  </div>
+  <div class="flex justify-self-end">
+    <mat-dialog-actions>
+      <button [disabled]="form.invalid" (click)="onSubmit()" mat-raised-button color="primary">Create Profile</button>
+    </mat-dialog-actions>
+    <mat-dialog-actions>
+      <button (click)="close()" mat-stroked-button>Cancel</button>
+    </mat-dialog-actions>
+  </div>
+</div>

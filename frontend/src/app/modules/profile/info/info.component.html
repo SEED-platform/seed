@@ -1,0 +1,51 @@
+<div class="flex-auto p-6 sm:p-10" *transloco="let t">
+  <div class="max-w-2xl">
+    <h2 class="mb-6 flex items-center text-center text-2xl">
+      <mat-icon class="mr-2 text-primary-900 dark:text-primary-300" svgIcon="fa-solid:user"></mat-icon>Profile Information
+    </h2>
+
+    <form class="bg-card flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow" [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+      <div class="flex flex-col gap-x-4 sm:flex-row">
+        <mat-form-field class="flex-auto">
+          <mat-label>{{ t('First Name') }}</mat-label>
+          <input matInput formControlName="firstName" autocomplete="given-name" maxlength="30" />
+          <mat-icon class="icon-size-5" matPrefix svgIcon="fa-solid:circle-user"></mat-icon>
+          @if (profileForm.controls['firstName']?.invalid) {
+            <mat-error>{{ t('First Name required') }}</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field class="flex-auto">
+          <mat-label>{{ t('Last Name') }}</mat-label>
+          <input matInput formControlName="lastName" autocomplete="family-name" maxlength="30" />
+          <mat-icon class="icon-size-5" matPrefix svgIcon="fa-solid:circle-user"></mat-icon>
+          @if (profileForm.controls['lastName']?.invalid) {
+            <mat-error>{{ t('Last Name required') }}</mat-error>
+          }
+        </mat-form-field>
+      </div>
+      <div class="flex">
+        <mat-form-field class="flex-auto">
+          <mat-label>Email</mat-label>
+          <mat-icon class="icon-size-5" svgIcon="fa-solid:envelope" matPrefix></mat-icon>
+          <input formControlName="email" matInput autocomplete="email" maxlength="254" type="email" />
+          @if (profileForm.controls['email']?.invalid) {
+            <mat-error>{{ t('Invalid email address') }}</mat-error>
+          }
+        </mat-form-field>
+      </div>
+      <div class="flex justify-center">
+        <button [disabled]="profileForm.invalid" mat-flat-button color="primary">
+          <span>{{ t('Update') }}</span>
+        </button>
+      </div>
+      <!-- Alert -->
+      @if (showAlert) {
+        <div class="mb-4 mt-0">
+          <seed-alert class="-mb-4 mt-8" [showIcon]="false" [type]="alert.type" appearance="outline">
+            {{ alert.message }}
+          </seed-alert>
+        </div>
+      }
+    </form>
+  </div>
+</div>

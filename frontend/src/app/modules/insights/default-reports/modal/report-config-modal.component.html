@@ -1,0 +1,27 @@
+<seed-modal-header [close]="close.bind(this)" [title]="title" titleIcon="fa-solid:chart-column"></seed-modal-header>
+
+<div class="p-6">
+  @if (data.action === 'delete') {
+    <p class="text-secondary">
+      Are you sure you want to delete <strong>{{ data.config.name }}</strong
+      >?
+    </p>
+  } @else {
+    <mat-form-field class="w-full">
+      <mat-label>Configuration Name</mat-label>
+      <input [formControl]="nameControl" (keydown.enter)="isDisabled ? null : onSubmit()" matInput />
+    </mat-form-field>
+  }
+</div>
+
+<mat-divider></mat-divider>
+<div class="flex justify-end gap-2 p-4">
+  <button (click)="close()" mat-stroked-button>Cancel</button>
+  @if (data.action === 'delete') {
+    <button [disabled]="isDisabled" (click)="onSubmit()" mat-raised-button color="warn">Delete</button>
+  } @else {
+    <button [disabled]="isDisabled" (click)="onSubmit()" mat-raised-button color="primary">
+      {{ data.action === 'new' ? 'Create' : 'Rename' }}
+    </button>
+  }
+</div>

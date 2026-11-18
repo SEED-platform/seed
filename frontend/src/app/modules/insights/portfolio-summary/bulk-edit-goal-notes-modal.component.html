@@ -1,0 +1,77 @@
+<seed-modal-header [close]="close.bind(this)" title="Edit Fields for Selected" titleIcon="fa-solid:pen-to-square"></seed-modal-header>
+
+<form class="flex flex-col gap-4" [formGroup]="form">
+  <div class="text-secondary text-sm">
+    Check a field to update it for all {{ data.viewIds.length }} selected {{ data.viewIds.length === 1 ? 'property' : 'properties' }}.
+    Unchecked fields will remain unchanged.
+  </div>
+
+  <!-- Question -->
+  <div class="flex items-start gap-3">
+    <mat-checkbox class="mt-1" formControlName="question_selected"></mat-checkbox>
+    <div class="flex flex-1 flex-col gap-1" [class.opacity-40]="!form.value.question_selected">
+      <div class="text-sm font-medium">Question</div>
+      <mat-select (click)="form.get('question_selected')!.setValue(true)" formControlName="question">
+        @for (option of questionOptions; track $index) {
+          <mat-option [value]="option">{{ option || '(none)' }}</mat-option>
+        }
+      </mat-select>
+    </div>
+  </div>
+
+  <!-- Resolution -->
+  <div class="flex items-start gap-3">
+    <mat-checkbox class="mt-1" formControlName="resolution_selected"></mat-checkbox>
+    <div class="flex flex-1 flex-col gap-1" [class.opacity-40]="!form.value.resolution_selected">
+      <div class="text-sm font-medium">Resolution</div>
+      <mat-form-field class="w-full">
+        <textarea (focus)="form.get('resolution_selected')!.setValue(true)" formControlName="resolution" matInput rows="2"></textarea>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Historical Note -->
+  <div class="flex items-start gap-3">
+    <mat-checkbox class="mt-1" formControlName="historical_note_selected"></mat-checkbox>
+    <div class="flex flex-1 flex-col gap-1" [class.opacity-40]="!form.value.historical_note_selected">
+      <div class="text-sm font-medium">Historical Note</div>
+      <mat-form-field class="w-full">
+        <textarea
+          (focus)="form.get('historical_note_selected')!.setValue(true)"
+          formControlName="historical_note"
+          matInput
+          rows="2"
+        ></textarea>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Passed Checks -->
+  <div class="flex items-start gap-3">
+    <mat-checkbox class="mt-1" formControlName="passed_checks_selected"></mat-checkbox>
+    <div class="flex flex-1 flex-col gap-1" [class.opacity-40]="!form.value.passed_checks_selected">
+      <div class="text-sm font-medium">Passed Checks</div>
+      <mat-select (click)="form.get('passed_checks_selected')!.setValue(true)" formControlName="passed_checks">
+        <mat-option [value]="true">true</mat-option>
+        <mat-option [value]="false">false</mat-option>
+      </mat-select>
+    </div>
+  </div>
+
+  <!-- New Build or Acquisition -->
+  <div class="flex items-start gap-3">
+    <mat-checkbox class="mt-1" formControlName="new_or_acquired_selected"></mat-checkbox>
+    <div class="flex flex-1 flex-col gap-1" [class.opacity-40]="!form.value.new_or_acquired_selected">
+      <div class="text-sm font-medium">New Build or Acquisition</div>
+      <mat-select (click)="form.get('new_or_acquired_selected')!.setValue(true)" formControlName="new_or_acquired">
+        <mat-option [value]="true">true</mat-option>
+        <mat-option [value]="false">false</mat-option>
+      </mat-select>
+    </div>
+  </div>
+</form>
+
+<div class="mt-4 flex justify-end gap-2">
+  <button (click)="close()" mat-stroked-button>Cancel</button>
+  <button [disabled]="isSaveDisabled" (click)="onSubmit()" mat-flat-button color="primary">Save</button>
+</div>

@@ -1,0 +1,189 @@
+<seed-page
+  [config]="{
+    titleIcon: 'fa-solid:building-circle-check',
+    title: 'Facilities Plan',
+    breadcrumbs: ['Organization Settings'],
+    sideNavToggle: true,
+  }"
+>
+  <div class="flex-auto p-6 sm:p-10" *transloco="let t">
+    <div class="prose mb-6 max-w-none dark:prose-invert">
+      <p>
+        {{ t('FACILITIES_PLAN_INTRO') }}
+      </p>
+    </div>
+    <div class="flex gap-6">
+      <!-- Left: plan list -->
+      <div class="w-56 shrink-0">
+        <div class="bg-card overflow-hidden rounded-2xl shadow">
+          <div class="border-b border-gray-200 px-4 py-3 dark:border-gray-700">
+            <p class="text-sm font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+              {{ t('Facilities Plan Templates') }}
+            </p>
+          </div>
+
+          @if (facilitiesPlans.length === 0) {
+            <p class="px-4 py-3 text-sm text-gray-400 dark:text-gray-500">{{ t('No plans yet') }}</p>
+          }
+
+          <ul>
+            @for (plan of facilitiesPlans; track plan.id) {
+              <li
+                class="flex cursor-pointer items-center justify-between px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-800"
+                [class.bg-primary-50]="selectedPlan?.id === plan.id"
+                [class.dark:bg-primary-900]="selectedPlan?.id === plan.id"
+                (click)="selectPlan(plan)"
+              >
+                <span class="truncate text-sm font-medium">{{ plan.name }}</span>
+                <button
+                  class="ml-2 shrink-0 text-gray-400 hover:text-red-500"
+                  (click)="$event.stopPropagation(); deletePlan(plan)"
+                  mat-icon-button
+                  type="button"
+                >
+                  <mat-icon class="icon-size-4" svgIcon="fa-solid:xmark"></mat-icon>
+                </button>
+              </li>
+            }
+          </ul>
+
+          <div class="border-t border-gray-200 p-2 dark:border-gray-700">
+            <button class="w-full" (click)="createNew()" color="primary" mat-flat-button>
+              <mat-icon class="icon-size-4" svgIcon="fa-solid:circle-plus"></mat-icon>
+              <span class="ml-2">{{ t('New Facilities Plan') }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: form -->
+      @if (showForm) {
+        <div class="min-w-0 flex-1">
+          <form [formGroup]="form" (ngSubmit)="save()">
+            <!-- General -->
+            <div class="bg-card mb-6 overflow-hidden rounded-2xl shadow">
+              <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                <h3 class="text-base font-semibold">{{ t('General Configuration') }}</h3>
+              </div>
+              <div class="flex flex-col gap-4 p-6">
+                <mat-form-field>
+                  <mat-label>{{ t('Name') }}</mat-label>
+                  <input matInput formControlName="name" />
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>{{ t('Energy Running Sum Percentage') }}</mat-label>
+                  <input matInput formControlName="energy_running_sum_percentage" type="number" min="0" max="1" step="0.01" />
+                  <mat-hint>{{ t('Fraction (0–1) of total energy usage that triggers plan compliance') }}</mat-hint>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Compliance columns -->
+            <div class="bg-card mb-6 overflow-hidden rounded-2xl shadow">
+              <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                <h3 class="text-base font-semibold">{{ t('Compliance Columns') }}</h3>
+              </div>
+              <div class="flex flex-col gap-4 p-6">
+                <mat-form-field>
+                  <mat-label>{{ t('Compliance Cycle Year Column') }}</mat-label>
+                  <mat-select formControlName="compliance_cycle_year_column">
+                    <mat-option [value]="null">— {{ t('none') }} —</mat-option>
+                    @for (col of allColumns; track col.id) {
+                      <mat-option [value]="col.id">{{ columnName(col) }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>{{ t('Column storing the compliance cycle year for each property') }}</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>{{ t('Include In Total Denominator Column') }}</mat-label>
+                  <mat-select formControlName="include_in_total_denominator_column">
+                    <mat-option [value]="null">— {{ t('none') }} —</mat-option>
+                    @for (col of booleanColumns; track col.id) {
+                      <mat-option [value]="col.id">{{ columnName(col) }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>{{ t('Boolean column indicating if a property counts toward the total denominator') }}</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>{{ t('Exclude From Plan Column') }}</mat-label>
+                  <mat-select formControlName="exclude_from_plan_column">
+                    <mat-option [value]="null">— {{ t('none') }} —</mat-option>
+                    @for (col of booleanColumns; track col.id) {
+                      <mat-option [value]="col.id">{{ columnName(col) }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>{{ t('Boolean column to exclude a property from this plan') }}</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>{{ t('Require In Plan Column') }}</mat-label>
+                  <mat-select formControlName="require_in_plan_column">
+                    <mat-option [value]="null">— {{ t('none') }} —</mat-option>
+                    @for (col of booleanColumns; track col.id) {
+                      <mat-option [value]="col.id">{{ columnName(col) }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>{{ t('Boolean column to always include a property in this plan') }}</mat-hint>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <!-- Energy usage columns -->
+            <div class="bg-card mb-6 overflow-hidden rounded-2xl shadow">
+              <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                <h3 class="text-base font-semibold">{{ t('Energy Usage Columns') }}</h3>
+              </div>
+              <div class="flex flex-col gap-4 p-6">
+                <mat-form-field>
+                  <mat-label>{{ t('Electric Energy Usage Column') }}</mat-label>
+                  <mat-select formControlName="electric_energy_usage_column">
+                    <mat-option [value]="null">— {{ t('none') }} —</mat-option>
+                    @for (col of numericColumns; track col.id) {
+                      <mat-option [value]="col.id">{{ columnName(col) }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>{{ t('Numeric column with electric energy consumption values') }}</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>{{ t('Gas Energy Usage Column') }}</mat-label>
+                  <mat-select formControlName="gas_energy_usage_column">
+                    <mat-option [value]="null">— {{ t('none') }} —</mat-option>
+                    @for (col of numericColumns; track col.id) {
+                      <mat-option [value]="col.id">{{ columnName(col) }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>{{ t('Numeric column with natural gas consumption values') }}</mat-hint>
+                </mat-form-field>
+
+                <mat-form-field>
+                  <mat-label>{{ t('Steam Energy Usage Column') }}</mat-label>
+                  <mat-select formControlName="steam_energy_usage_column">
+                    <mat-option [value]="null">— {{ t('none') }} —</mat-option>
+                    @for (col of numericColumns; track col.id) {
+                      <mat-option [value]="col.id">{{ columnName(col) }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-hint>{{ t('Numeric column with steam energy consumption values') }}</mat-hint>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <button [disabled]="form.invalid || isSaving" color="primary" mat-flat-button type="submit">
+                {{ isSaving ? t('Saving…') : t('Save Facilities Plan') }}
+              </button>
+            </div>
+          </form>
+        </div>
+      } @else {
+        <div class="text-secondary flex flex-1 items-center justify-center text-sm">
+          {{ t('Select a plan to edit or create a new one') }}
+        </div>
+      }
+    </div>
+  </div>
+</seed-page>

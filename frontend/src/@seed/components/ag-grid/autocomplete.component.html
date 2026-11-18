@@ -1,0 +1,10 @@
+<mat-form-field class="w-full">
+  <input #input [formControl]="inputCtrl" [matAutocomplete]="auto" matInput />
+  <mat-autocomplete #auto="matAutocomplete">
+    @for (option of filteredOptions; track $index) {
+      <mat-option [value]="option">
+        {{ option }}
+      </mat-option>
+    }
+  </mat-autocomplete>
+</mat-form-field>

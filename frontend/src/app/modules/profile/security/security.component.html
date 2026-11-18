@@ -1,0 +1,79 @@
+<div class="flex-auto p-6 sm:p-10" *transloco="let t">
+  <div class="max-w-2xl">
+    <h2 class="mb-6 flex items-center text-center text-2xl">
+      <mat-icon class="mr-2 text-primary-900 dark:text-primary-300" svgIcon="fa-solid:lock"></mat-icon>Security
+    </h2>
+
+    <form class="bg-card flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow" [formGroup]="passwordForm" (ngSubmit)="onSubmit()">
+      <div class="flex flex-col">
+        <mat-form-field class="flex-auto">
+          <mat-label>{{ t('Current Password') }} </mat-label>
+          <input
+            [formControlName]="'currentPassword'"
+            [type]="hide() ? 'password' : 'text'"
+            type="password"
+            autocomplete="current-password"
+            matInput
+          />
+          <button [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide()" (click)="clickEvent($event)" mat-icon-button matSuffix>
+            <mat-icon class="icon-size-5" [svgIcon]="hide() ? 'fa-solid:eye-slash' : 'fa-solid:eye'"></mat-icon>
+          </button>
+        </mat-form-field>
+
+        <mat-form-field class="flex-auto">
+          <mat-label>{{ t('New Password') }}</mat-label>
+          <input
+            [formControlName]="'newPassword'"
+            [type]="hide() ? 'password' : 'text'"
+            type="password"
+            autocomplete="new-password"
+            matInput
+          />
+          <button [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide()" (click)="clickEvent($event)" mat-icon-button matSuffix>
+            <mat-icon class="icon-size-5" [svgIcon]="hide() ? 'fa-solid:eye-slash' : 'fa-solid:eye'"></mat-icon>
+          </button>
+          @if (passwordForm.get('newPassword').hasError('required')) {
+            <mat-error>Password is required</mat-error>
+          } @else if (passwordForm.get('newPassword').hasError('minlength')) {
+            <mat-error>Password must be at least 8 characters</mat-error>
+          } @else if (passwordForm.get('newPassword').hasError('pattern')) {
+            <mat-error>Passwords must contain an uppercase letter, a lowercase letter, and a number</mat-error>
+          }
+        </mat-form-field>
+      </div>
+      <div class="flex">
+        <mat-form-field class="flex-auto">
+          <mat-label>{{ t('Confirm New Password') }}</mat-label>
+          <input
+            [formControlName]="'confirmNewPassword'"
+            [type]="hide() ? 'password' : 'text'"
+            type="password"
+            autocomplete="new-password"
+            matInput
+          />
+          <button [attr.aria-label]="'Hide password'" [attr.aria-pressed]="hide()" (click)="clickEvent($event)" mat-icon-button matSuffix>
+            <mat-icon class="icon-size-5" [svgIcon]="hide() ? 'fa-solid:eye-slash' : 'fa-solid:eye'"></mat-icon>
+          </button>
+          @if (passwordForm.get('confirmNewPassword').hasError('required')) {
+            <mat-error>Password confirmation is required</mat-error>
+          } @else if (passwordForm.get('confirmNewPassword').hasError('mustMatch')) {
+            <mat-error>Passwords must match</mat-error>
+          }
+        </mat-form-field>
+      </div>
+      <div class="flex justify-center">
+        <button [disabled]="passwordForm.invalid" mat-flat-button color="primary">
+          <span>{{ t('Update Password') }}</span>
+        </button>
+      </div>
+      <!-- Alert -->
+      @if (showAlert) {
+        <div class="mb-4 mt-0">
+          <seed-alert class="-mb-4 mt-8" [showIcon]="false" [type]="alert.type" appearance="outline">
+            {{ alert.message }}
+          </seed-alert>
+        </div>
+      }
+    </form>
+  </div>
+</div>

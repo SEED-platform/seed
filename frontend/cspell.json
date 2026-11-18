@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/@cspell/cspell-types/cspell.schema.json",
+  "version": "0.2",
+  "dictionaryDefinitions": [
+    {
+      "name": "workspace",
+      "path": "./.spelling.dic",
+      "addWords": true
+    }
+  ],
+  "dictionaries": ["workspace"],
+  "ignorePaths": [
+    "node_modules/",
+    "*.svg",
+    "/dist/",
+    "/public/i18n/",
+    "/src/app/mock-api/ui/icons/data.ts",
+    "/.spelling.dic",
+    "/pnpm-lock.yaml"
+  ],
+  "useGitignore": true
+}

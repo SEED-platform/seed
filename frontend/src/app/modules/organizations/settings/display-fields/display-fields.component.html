@@ -1,0 +1,80 @@
+<seed-page [config]="{ titleIcon: 'fa-solid:gears', title: 'Display Fields', breadcrumbs: ['Organization Settings'], sideNavToggle: true }">
+  @if (organization) {
+    <div class="flex-auto p-6 sm:p-10" *transloco="let t">
+      <div class="max-w-2xl">
+        <form
+          class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow"
+          [formGroup]="defaultDisplayFieldsForm"
+          (ngSubmit)="submit()"
+        >
+          <div class="flex flex-col">
+            <div class="text-lg font-medium">Property Display Field</div>
+            <div class="text-secondary prose mb-6">
+              <p>Determines which column field is used when displaying and identifying a property. Defaults to "Address Line 1".</p>
+            </div>
+            <mat-form-field class="mb-6">
+              <mat-label>Property Display Field</mat-label>
+              <mat-select formControlName="property_display_field">
+                <mat-option value="">None</mat-option>
+                @for (col of propertyColumns; track col.name) {
+                  <mat-option [value]="col.column_name">{{ col.display_name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <div class="flex flex-col">
+            <div class="text-lg font-medium">TaxLot Display Field</div>
+            <div class="text-secondary prose mb-6">
+              <p>Determines which column field is used when displaying and identifying a taxlot. Defaults to "Address Line 1".</p>
+            </div>
+            <mat-form-field class="mb-6">
+              <mat-label>TaxLot Display Field</mat-label>
+              <mat-select formControlName="property_display_field">
+                <mat-option value="">None</mat-option>
+                @for (col of taxLotColumns; track col.name) {
+                  <mat-option [value]="col.column_name">{{ col.display_name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <div class="flex flex-col">
+            <div class="text-lg font-medium">Columns to Include in Reports x axis Options</div>
+
+            <mat-form-field class="mb-6">
+              <mat-label>X Axis Columns </mat-label>
+              <mat-select formControlName="default_reports_x_axis_options" multiple>
+                <mat-option value="">None</mat-option>
+                @for (col of xAxisColumns; track col.id) {
+                  <mat-option [value]="col.id">{{ col.display_name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <div class="flex flex-col">
+            <div class="text-lg font-medium">Columns to Include in Reports Y Axis Options</div>
+
+            <mat-form-field class="mb-6">
+              <mat-label>Y Axis Columns </mat-label>
+              <mat-select formControlName="default_reports_y_axis_options" multiple>
+                <mat-option value="">None</mat-option>
+                @for (col of yAxisColumns; track col.id) {
+                  <mat-option [value]="col.id">{{ col.display_name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+
+          <div>
+            <button [disabled]="defaultDisplayFieldsForm.invalid || defaultDisplayFieldsForm.pending" mat-flat-button color="primary">
+              <span class="">{{ t('Save Changes') }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</seed-page>

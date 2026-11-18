@@ -1,0 +1,35 @@
+<seed-modal-header [close]="close.bind(this)" title="FEMP CTS Reporting Export" titleIcon="fa-solid:download"></seed-modal-header>
+
+<div class="flex flex-col gap-6">
+  <div class="mx-5 flex gap-2">
+    <mat-icon class="m-4" svgIcon="fa-solid:circle-info"></mat-icon>
+    <div class="text-secondary">
+      Select a reporting template to export for the Federal Energy Management Program (FEMP) Energy Independence and Security Act of 2007
+      (EISA) Compliance Tracking System (CTS)
+    </div>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <mat-button-toggle-group
+    class="pb-4flex border-button-toggle-group-vertical w-full flex-col gap-2"
+    [(ngModel)]="exportType"
+    [disabled]="inProgress"
+  >
+    <mat-button-toggle value="evaluation">CTS Comprehensive Evaluation Upload Template</mat-button-toggle>
+    <mat-button-toggle value="facility">CTS Facility Upload Template for BPS</mat-button-toggle>
+  </mat-button-toggle-group>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Export File Name</mat-label>
+    <input [(ngModel)]="filename" [disabled]="inProgress" matInput />
+  </mat-form-field>
+
+  @if (inProgress) {
+    <seed-progress-bar title="Exporting..."></seed-progress-bar>
+  }
+</div>
+
+<div class="mt-4 flex justify-end gap-2">
+  <button [disabled]="!filename.trim() || inProgress" (click)="onSubmit()" mat-raised-button color="primary">Export</button>
+</div>

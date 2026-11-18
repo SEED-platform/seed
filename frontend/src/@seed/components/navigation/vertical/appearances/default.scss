@@ -1,0 +1,523 @@
+// Variables
+:root {
+  --seed-vertical-navigation-width: 280px;
+}
+
+seed-vertical-navigation {
+  @apply h-svh max-h-svh min-h-svh;
+
+  position: sticky;
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+  top: 0;
+  width: var(--seed-vertical-navigation-width);
+  min-width: var(--seed-vertical-navigation-width);
+  max-width: var(--seed-vertical-navigation-width);
+  z-index: 200;
+
+  // Navigation Drawer
+  // Animations
+  &.seed-vertical-navigation-animations-enabled {
+    transition-duration: 400ms;
+    transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition-property: visibility, margin-left, margin-right, transform, width, max-width, min-width;
+
+    // Wrapper
+    .seed-vertical-navigation-wrapper {
+      transition-duration: 400ms;
+      transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+      transition-property: width, max-width, min-width;
+    }
+  }
+
+  // Over mode
+  &.seed-vertical-navigation-mode-over {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+  }
+
+  // Left position
+  &.seed-vertical-navigation-position-left {
+    // Side mode
+    &.seed-vertical-navigation-mode-side {
+      margin-left: calc(var(--seed-vertical-navigation-width) * -1);
+
+
+      &.seed-vertical-navigation-opened {
+        margin-left: 0;
+      }
+    }
+
+    // Over mode
+    &.seed-vertical-navigation-mode-over {
+      left: 0;
+      transform: translate3d(-100%, 0, 0);
+
+      &.seed-vertical-navigation-opened {
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    // Wrapper
+    .seed-vertical-navigation-wrapper {
+      left: 0;
+    }
+  }
+
+  // Right position
+  &.seed-vertical-navigation-position-right {
+    // Side mode
+    &.seed-vertical-navigation-mode-side {
+      margin-right: calc(var(--seed-vertical-navigation-width) * -1);
+
+      &.seed-vertical-navigation-opened {
+        margin-right: 0;
+      }
+    }
+
+    // Over mode
+    &.seed-vertical-navigation-mode-over {
+      right: 0;
+      transform: translate3d(100%, 0, 0);
+
+      &.seed-vertical-navigation-opened {
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    // Wrapper
+    .seed-vertical-navigation-wrapper {
+      right: 0;
+    }
+
+    .seed-vertical-navigation-aside-wrapper {
+      left: auto;
+      right: var(--seed-vertical-navigation-width);
+    }
+  }
+
+  // Inner mode
+  &.seed-vertical-navigation-inner {
+    position: relative;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    box-shadow: none;
+
+    .seed-vertical-navigation-wrapper {
+      position: relative;
+      overflow: visible;
+      height: auto;
+
+      .seed-vertical-navigation-content {
+        overflow: visible !important;
+      }
+    }
+  }
+
+  // Wrapper
+  .seed-vertical-navigation-wrapper {
+    @apply h-svh max-h-svh;
+
+    position: absolute;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    top: 0;
+    bottom: 0;
+    width: 100%;
+    overflow: hidden;
+    z-index: 10;
+    background: inherit;
+    box-shadow: inset -1px 0 0 var(--seed-border);
+
+    // Content
+    .seed-vertical-navigation-content {
+      flex: 1 1 auto;
+      overflow: hidden auto;
+      overscroll-behavior: contain;
+
+      // Divider
+      > seed-vertical-navigation-divider-item {
+        margin: 24px 0;
+      }
+
+      // Group
+      > seed-vertical-navigation-group-item {
+        margin-top: 24px;
+      }
+    }
+  }
+
+  // Aside wrapper
+  .seed-vertical-navigation-aside-wrapper {
+    position: absolute;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    top: 0;
+    bottom: 0;
+    left: var(--seed-vertical-navigation-width);
+    width: var(--seed-vertical-navigation-width);
+    height: 100%;
+    z-index: 5;
+    overflow: hidden auto;
+    -webkit-overflow-scrolling: touch;
+    transition-duration: 400ms;
+    transition-property: left, right;
+    transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+    background: inherit;
+
+    > seed-vertical-navigation-aside-item {
+      padding: 24px 0;
+
+      // First item of the aside
+      > .seed-vertical-navigation-item-wrapper {
+        display: none !important;
+      }
+    }
+  }
+
+  // Navigation Items
+  // Navigation items common
+  seed-vertical-navigation-aside-item,
+  seed-vertical-navigation-basic-item,
+  seed-vertical-navigation-collapsible-item,
+  seed-vertical-navigation-divider-item,
+  seed-vertical-navigation-group-item,
+  seed-vertical-navigation-spacer-item {
+    display: flex;
+    flex-direction: column;
+    flex: 1 0 auto;
+    user-select: none;
+
+    .seed-vertical-navigation-item-wrapper {
+      .seed-vertical-navigation-item {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 20px;
+        text-decoration: none;
+        border-radius: 6px;
+
+        // Disabled state
+        &.seed-vertical-navigation-item-disabled {
+          cursor: default;
+          opacity: 0.4;
+        }
+
+        .seed-vertical-navigation-item-icon {
+          margin-right: 16px;
+        }
+
+        .seed-vertical-navigation-item-title-wrapper {
+          .seed-vertical-navigation-item-subtitle {
+            font-size: 11px;
+            line-height: 1.5;
+          }
+        }
+
+        .seed-vertical-navigation-item-badge {
+          margin-left: auto;
+
+          .seed-vertical-navigation-item-badge-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+            height: 20px;
+          }
+        }
+      }
+    }
+  }
+
+  // Aside, Basic, Collapsible, Group
+  seed-vertical-navigation-aside-item,
+  seed-vertical-navigation-basic-item,
+  seed-vertical-navigation-collapsible-item,
+  seed-vertical-navigation-group-item {
+    > .seed-vertical-navigation-item-wrapper {
+      margin: 0 12px;
+    }
+  }
+
+  // Aside, Basic, Collapsible
+  seed-vertical-navigation-aside-item,
+  seed-vertical-navigation-basic-item,
+  seed-vertical-navigation-collapsible-item {
+    margin-bottom: 4px;
+
+    // Remove margin if the next sibling is seed-vertical-navigation-divider-item
+    &:has(+ seed-vertical-navigation-divider-item) {
+      margin-bottom: 0;
+    }
+
+    .seed-vertical-navigation-item {
+      cursor: pointer;
+    }
+  }
+
+  // Collapsible
+  seed-vertical-navigation-collapsible-item {
+    > .seed-vertical-navigation-item-wrapper {
+      .seed-vertical-navigation-item {
+        .seed-vertical-navigation-item-badge {
+          + .seed-vertical-navigation-item-arrow {
+            margin-left: 8px;
+          }
+        }
+
+        .seed-vertical-navigation-item-arrow {
+          height: 20px;
+          line-height: 20px;
+          margin-left: auto;
+          transition:
+            transform 300ms cubic-bezier(0.25, 0.8, 0.25, 1),
+            color 375ms cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+      }
+    }
+
+    &.seed-vertical-navigation-item-expanded {
+      > .seed-vertical-navigation-item-wrapper {
+        .seed-vertical-navigation-item {
+          .seed-vertical-navigation-item-arrow {
+            transform: rotate(90deg);
+          }
+        }
+      }
+    }
+
+    > .seed-vertical-navigation-item-children {
+      > *:first-child {
+        margin-top: 6px;
+      }
+
+      > *:last-child {
+        padding-bottom: 6px;
+
+        > .seed-vertical-navigation-item-children {
+          > *:last-child {
+            padding-bottom: 0;
+          }
+        }
+      }
+
+      .seed-vertical-navigation-item {
+        padding: 10px 16px;
+      }
+    }
+
+    // 1st level
+    .seed-vertical-navigation-item-children {
+      overflow: hidden;
+
+      .seed-vertical-navigation-item {
+        padding-left: 56px;
+      }
+
+      // 2nd level
+      .seed-vertical-navigation-item-children {
+        .seed-vertical-navigation-item {
+          padding-left: 72px;
+        }
+
+        // 3rd level
+        .seed-vertical-navigation-item-children {
+          .seed-vertical-navigation-item {
+            padding-left: 88px;
+          }
+
+          // 4th level
+          .seed-vertical-navigation-item-children {
+            .seed-vertical-navigation-item {
+              padding-left: 104px;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Divider
+  seed-vertical-navigation-divider-item {
+    margin: 12px 0;
+
+    .seed-vertical-navigation-item-wrapper {
+      height: 1px;
+      box-shadow: 0 1px 0 0;
+    }
+  }
+
+  // Group
+  seed-vertical-navigation-group-item {
+    > .seed-vertical-navigation-item-wrapper {
+      .seed-vertical-navigation-item {
+        .seed-vertical-navigation-item-badge,
+        .seed-vertical-navigation-item-icon {
+          display: none !important;
+        }
+
+        .seed-vertical-navigation-item-title-wrapper {
+          .seed-vertical-navigation-item-title {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+          }
+        }
+      }
+    }
+  }
+
+  // Spacer
+  seed-vertical-navigation-spacer-item {
+    margin: 6px 0;
+  }
+}
+
+// Overlay
+.seed-vertical-navigation-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 170;
+  opacity: 0;
+  background-color: rgb(0 0 0 / 60%);
+
+  + .seed-vertical-navigation-aside-overlay {
+    background-color: transparent;
+  }
+}
+
+// Aside overlay
+.seed-vertical-navigation-aside-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 169;
+  opacity: 0;
+  background-color: rgb(0 0 0 / 30%);
+}
+
+// Navigation Items Colors
+// Navigation items common
+seed-vertical-navigation-aside-item,
+seed-vertical-navigation-basic-item,
+seed-vertical-navigation-collapsible-item,
+seed-vertical-navigation-group-item {
+  .seed-vertical-navigation-item-wrapper {
+    .seed-vertical-navigation-item {
+      color: currentColor;
+
+      .seed-vertical-navigation-item-icon {
+        @apply text-current opacity-60;
+      }
+
+      .seed-vertical-navigation-item-title-wrapper {
+        .seed-vertical-navigation-item-title {
+          @apply text-current opacity-80;
+        }
+
+        .seed-vertical-navigation-item-subtitle {
+          @apply text-current opacity-50;
+        }
+      }
+    }
+  }
+}
+
+// Aside, Basic, Collapsible
+seed-vertical-navigation-aside-item,
+seed-vertical-navigation-basic-item,
+seed-vertical-navigation-collapsible-item {
+  > .seed-vertical-navigation-item-wrapper {
+    .seed-vertical-navigation-item {
+      // Active state
+      &:not(.seed-vertical-navigation-item-disabled) {
+        &.seed-vertical-navigation-item-active,
+        &.seed-vertical-navigation-item-active-forced {
+          @apply bg-gray-800 bg-opacity-5 dark:bg-white dark:bg-opacity-12;
+
+          .seed-vertical-navigation-item-icon {
+            @apply opacity-100;
+          }
+
+          .seed-vertical-navigation-item-title {
+            @apply opacity-100;
+          }
+
+          .seed-vertical-navigation-item-subtitle {
+            @apply opacity-100;
+          }
+        }
+      }
+
+      // Hover state
+      &:not(.seed-vertical-navigation-item-active-forced, .seed-vertical-navigation-item-active, .seed-vertical-navigation-item-disabled) {
+        &:hover {
+          @apply bg-gray-800 bg-opacity-5 dark:bg-white dark:bg-opacity-12;
+
+          .seed-vertical-navigation-item-icon {
+            @apply opacity-100;
+          }
+
+          .seed-vertical-navigation-item-title,
+          .seed-vertical-navigation-item-arrow {
+            @apply opacity-100;
+          }
+
+          .seed-vertical-navigation-item-subtitle {
+            @apply opacity-100;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Collapsible
+seed-vertical-navigation-collapsible-item {
+  // Expanded state
+  &.seed-vertical-navigation-item-expanded {
+    > .seed-vertical-navigation-item-wrapper {
+      .seed-vertical-navigation-item {
+        .seed-vertical-navigation-item-icon {
+          @apply opacity-100;
+        }
+
+        .seed-vertical-navigation-item-title,
+        .seed-vertical-navigation-item-arrow {
+          @apply opacity-100;
+        }
+
+        .seed-vertical-navigation-item-subtitle {
+          @apply opacity-100;
+        }
+      }
+    }
+  }
+}
+
+// Group
+seed-vertical-navigation-group-item {
+  > .seed-vertical-navigation-item-wrapper {
+    .seed-vertical-navigation-item {
+      .seed-vertical-navigation-item-title-wrapper {
+        .seed-vertical-navigation-item-title {
+          @apply text-primary-600 opacity-100 dark:text-primary-400;
+        }
+      }
+    }
+  }
+}

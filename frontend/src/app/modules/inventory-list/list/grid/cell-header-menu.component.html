@@ -1,0 +1,72 @@
+<!-- TRIGGER -->
+<div class="flex w-full justify-between gap-4 overflow-hidden" #trigger *transloco="let t">
+  <div class="flex gap-4">
+    <span class="my-auto">{{ params.displayName }}</span>
+    @if (sortIcon) {
+      <mat-icon class="scale-50" [svgIcon]="sortIcon"></mat-icon>
+    }
+  </div>
+  <!-- ag-grid owns header focus (Tab moves between headers), so keyboard users open this with Alt+Down instead -->
+  <button
+    class="flex cursor-pointer items-center rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+    [attr.aria-expanded]="isOpen"
+    [attr.aria-label]="t('Column menu')"
+    (click)="toggleMenu()"
+    aria-haspopup="menu"
+    tabindex="-1"
+    type="button"
+  >
+    <mat-icon class="scale-50" svgIcon="fa-solid:ellipsis-vertical"></mat-icon>
+  </button>
+</div>
+
+<!-- MENU -->
+<ng-template #menu>
+  <div
+    class="w-60 rounded border p-2 text-sm"
+    [class.bg-[#2A3341]]="scheme === 'dark'"
+    [class.bg-white]="scheme === 'light'"
+    (keydown)="onMenuKeyDown($event)"
+    role="menu"
+  >
+    <button class="menu-option text-left" (click)="sortCol('asc')" role="menuitem" type="button">
+      <mat-icon class="scale-50" svgIcon="fa-solid:arrow-up"></mat-icon>
+      <span>Sort Ascending</span>
+    </button>
+
+    <button class="menu-option text-left" (click)="sortCol('desc')" role="menuitem" type="button">
+      <mat-icon class="scale-50" svgIcon="fa-solid:arrow-down"></mat-icon>
+      <span>Sort Descending</span>
+    </button>
+
+    @if (sortIcon) {
+      <button class="menu-option text-left" (click)="sortCol(null)" role="menuitem" type="button">
+        <mat-icon class="scale-50" svgIcon="fa-solid:minus"></mat-icon>
+        <span>Clear Sort</span>
+      </button>
+    }
+
+    <mat-divider></mat-divider>
+
+    <button class="menu-option text-left" (click)="pinCol('left')" role="menuitem" type="button">
+      <mat-icon class="scale-50" [svgIcon]="'fa-solid:thumbtack'"></mat-icon>
+      <span>Pin Left</span>
+    </button>
+    <button class="menu-option text-left" (click)="pinCol('right')" role="menuitem" type="button">
+      <mat-icon class="scale-50" svgIcon="fa-solid:thumbtack"></mat-icon>
+      <span>Pin right</span>
+    </button>
+    @if (pinState) {
+      <button class="menu-option text-left" (click)="pinCol(null)" role="menuitem" type="button">
+        <mat-icon class="scale-50" svgIcon="fa-solid:minus"></mat-icon>
+        <span>Unpin</span>
+      </button>
+    }
+
+    <mat-divider></mat-divider>
+    <button class="menu-option text-left" (click)="hideCol()" role="menuitem" type="button">
+      <mat-icon class="scale-50" svgIcon="fa-solid:eye-slash"></mat-icon>
+      <span>Hide Column</span>
+    </button>
+  </div>
+</ng-template>

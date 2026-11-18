@@ -1,0 +1,31 @@
+<seed-page
+  [config]="{
+    titleIcon: 'fa-solid:gears',
+    title: 'Two-Factor Authentication',
+    breadcrumbs: ['Organization Settings'],
+    sideNavToggle: true,
+  }"
+>
+  @if (organization) {
+    <div class="flex-auto p-6 sm:p-10" *transloco="let t">
+      <div class="max-w-2xl">
+        <div class="prose">
+          Checking this box requires all organization users to use Two-Factor Authentication (2FA). If a user does not already have a 2FA
+          method configured, an email-based authentication method will be set as the default.
+        </div>
+        <form class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow" [formGroup]="twoFactorForm" (ngSubmit)="submit()">
+          <div class="my-6 flex flex-col">
+            <mat-slide-toggle formControlName="require_2fa"
+              ><mat-label>{{ t('Require Two Factor Authentication') }}</mat-label></mat-slide-toggle
+            >
+          </div>
+          <div>
+            <button [disabled]="twoFactorForm.invalid || twoFactorForm.pending" mat-flat-button color="primary">
+              <span class="">{{ t('Save Changes') }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</seed-page>

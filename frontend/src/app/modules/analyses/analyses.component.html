@@ -1,0 +1,14 @@
+<seed-page
+  [config]="{
+    title: 'Analyses',
+    titleIcon: 'fa-solid:chart-bar',
+  }"
+>
+  <div class="h-full-page p-5" id="content" #parentDiv>
+    @if (analyses.length) {
+      <seed-analyses-grid [analyses]="analyses" [cycles]="cycles" [parentRef]="parentDiv" [orgId]="orgId"></seed-analyses-grid>
+    } @else {
+      <seed-not-found message="No Analyses Found" icon="fa-solid:triangle-exclamation"></seed-not-found>
+    }
+  </div>
+</seed-page>

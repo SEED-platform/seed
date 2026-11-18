@@ -1,0 +1,20 @@
+<seed-modal-header [title]="create ? 'Create Dataset' : 'Edit Dataset'" titleIcon="fa-solid:pen-to-square"></seed-modal-header>
+
+<form class="flex flex-col gap-4" [formGroup]="form">
+  <mat-form-field>
+    <mat-label>Dataset Name</mat-label>
+    <input matInput formControlName="name" placeholder="Dataset Name" />
+    @if (form.controls.name?.hasError('valueExists')) {
+      <mat-error>This name already exists.</mat-error>
+    }
+  </mat-form-field>
+</form>
+
+<div class="flex justify-end">
+  <mat-dialog-actions>
+    <button [disabled]="form.invalid" (click)="onSubmit()" mat-raised-button color="primary">Submit</button>
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+  </mat-dialog-actions>
+</div>

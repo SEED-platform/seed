@@ -1,0 +1,81 @@
+<!-- Current -->
+<div class="mb-4 ml-4 flex items-center text-lg font-medium">
+  <mat-icon svgIcon="fa-solid:layer-group"></mat-icon>
+  <span class="ml-4">Current Criteria</span>
+  @if (isLocked) {
+    <span class="text-secondary ml-2 text-sm">(Locked — org has access levels and inventory data)</span>
+  }
+</div>
+
+<div class="mb-10">
+  @if (rowDataCurrent.length) {
+    <ag-grid-angular
+      [columnDefs]="columnDefsCurrent"
+      [defaultColDef]="defaultColDef"
+      [rowData]="rowDataCurrent"
+      [style.height.px]="gridHeightCurrent"
+      [theme]="gridTheme$ | async"
+      (gridReady)="onCurrentReady($event)"
+    ></ag-grid-angular>
+  }
+</div>
+
+<mat-divider></mat-divider>
+
+<!-- Pending Changes -->
+@if (rowDataPending.length || pendingRemovals.length) {
+  <div class="mt-2 flex justify-between">
+    <div class="my-4 ml-4 flex items-center text-lg font-medium">
+      <mat-icon svgIcon="fa-solid:pen-to-square"></mat-icon>
+      <span class="ml-4">Pending Changes</span>
+    </div>
+
+    <button class="my-2" (click)="save()" color="primary" mat-raised-button>Save Changes</button>
+  </div>
+
+  @if (rowDataPending.length) {
+    <div class="text-secondary mb-4 ml-4 text-sm font-medium">Adding</div>
+    <div class="mb-4">
+      <ag-grid-angular
+        [columnDefs]="columnDefsPending"
+        [defaultColDef]="defaultColDef"
+        [rowData]="rowDataPending"
+        [style.height.px]="gridHeightPending"
+        [theme]="gridTheme$ | async"
+        (gridReady)="onPendingReady($event)"
+      ></ag-grid-angular>
+    </div>
+  }
+
+  @if (pendingRemovals.length) {
+    <div class="text-secondary mb-4 ml-4 text-sm font-medium">Removing</div>
+    <div class="mb-4">
+      @for (col of pendingRemovals; track col.id) {
+        <div class="ml-4 flex items-center gap-2 py-1">
+          <mat-icon class="scale-75 text-red-600 dark:text-red-400">remove_circle</mat-icon>
+          <span>{{ col.display_name }}</span>
+          <button (click)="undoRemoval(col)" mat-icon-button matTooltip="Undo removal">
+            <mat-icon class="scale-75">undo</mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <mat-divider></mat-divider>
+}
+
+<form class="mt-4 flex w-1/2 flex-col" [formGroup]="addForm" (ngSubmit)="addColumn()">
+  <div class="flex gap-4">
+    <mat-form-field class="w-full" hideRequiredMarker>
+      <mat-label>Add Column</mat-label>
+      <mat-select formControlName="columnToAdd">
+        @for (c of availableColumns; track c.id) {
+          <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <button class="my-auto flex" [disabled]="!addForm.get('columnToAdd').value" mat-stroked-button>Add</button>
+  </div>
+</form>

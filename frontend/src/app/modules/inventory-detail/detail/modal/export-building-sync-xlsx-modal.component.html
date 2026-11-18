@@ -1,0 +1,11 @@
+<seed-modal-header [close]="close.bind(this)" title="Export BuildingSync (Excel)" titleIcon="fa-solid:download"></seed-modal-header>
+
+<mat-horizontal-stepper class="no-header" #stepper [linear]="true">
+  <mat-step editable="false">
+    <div>Preparing export…</div>
+  </mat-step>
+  <mat-step>
+    <seed-progress-bar [progress]="progressBarObj.progress" [total]="progressBarObj.total" title="Exporting BuildingSync Excel">
+    </seed-progress-bar>
+  </mat-step>
+</mat-horizontal-stepper>

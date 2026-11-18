@@ -1,0 +1,33 @@
+<seed-page
+  [config]="{
+    title: 'Property',
+    subTitle: viewDisplayField$ | async,
+    titleIcon: 'fa-solid:building',
+    breadcrumbs: [{ label: type === 'taxlots' ? 'Tax Lots' : 'Properties', link: '/' + type }, 'UBIDs'],
+    sideNavToggle: true,
+    action: createUbid,
+    actionIcon: 'fa-solid:plus',
+    actionText: 'Create Ubid',
+  }"
+>
+  @if (enableMap) {
+    <div class="my-5 mr-5 h-80">
+      <seed-inventory-detail-map [state]="view.state" [type]="type"></seed-inventory-detail-map>
+    </div>
+  }
+
+  @if (rowData.length) {
+    <div class="ml-6 mr-5">
+      <ag-grid-angular
+        [columnDefs]="columnDefs"
+        [getRowClass]="getRowClass"
+        [rowData]="rowData"
+        [style.height.px]="gridHeight"
+        [theme]="gridTheme$ | async"
+        (gridReady)="onGridReady($event)"
+      ></ag-grid-angular>
+    </div>
+  } @else {
+    <seed-not-found message="No UBIDs Found" icon="fa-solid:triangle-exclamation"></seed-not-found>
+  }
+</seed-page>

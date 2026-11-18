@@ -1,0 +1,35 @@
+<!-- BUR: Building Upgrade Recommendation -->
+<form class="compact-form" [formGroup]="form">
+  <div class="text-secondary my-4 text-sm">
+    The Building Upgrade Recommendation analysis implements a workflow to identify buildings that may need a deep energy retrofit, equipment
+    replaced or re-tuning based on building attributes such as energy use, year built, and square footage. If your organization contains
+    elements, the Element Statistics Analysis should be run prior to running this analysis.
+    <mat-divider class="mt-2"></mat-divider>
+  </div>
+
+  @for (field of fields; track field.name) {
+    <mat-form-field
+      class="mb-4 w-full"
+      [ngClass]="{
+        'no-sub': !field.hint,
+        'mb-8': field.hint && field.type === 'select',
+      }"
+    >
+      <mat-label>{{ field.label }}</mat-label>
+
+      @if (field.type === 'select') {
+        <mat-select [formControl]="field.control">
+          @for (col of field.options; track $index) {
+            <mat-option class="compact-form" [value]="col.id">{{ col.display_name }}</mat-option>
+          }
+        </mat-select>
+      } @else {
+        <input [type]="field.type" [formControl]="field.control" matInput />
+      }
+
+      @if (field.hint) {
+        <mat-hint>{{ field.hint }}</mat-hint>
+      }
+    </mat-form-field>
+  }
+</form>

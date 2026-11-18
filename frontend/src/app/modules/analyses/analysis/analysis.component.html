@@ -1,0 +1,66 @@
+<seed-page
+  [config]="{
+    title: 'Analysis',
+    titleIcon: 'fa-solid:chart-bar',
+    subTitle: analysis?.name,
+    breadcrumbs: [
+      { label: 'Analyses', link: '/analyses' },
+      { label: analysis?.name, translate: false },
+    ],
+  }"
+>
+  <div class="h-full-page m-5" id="content">
+    <div class="my-5 flex gap-4">
+      <div class="bold min-w-40 whitespace-nowrap text-lg">{{ analysis?.service }} Analysis</div>
+      <div class="text-secondary max-w-160">{{ analysisDescription }}</div>
+    </div>
+    <mat-divider></mat-divider>
+
+    <div class="my-5">
+      @if (analysis) {
+        <ag-grid-angular
+          [columnDefs]="columnDefs.analysis"
+          [rowData]="[analysis]"
+          [theme]="gridTheme$ | async"
+          [style.height.px]="93"
+        ></ag-grid-angular>
+      }
+    </div>
+    <mat-divider></mat-divider>
+
+    <div class="my-5 flex gap-4">
+      <div class="bold w-40 whitespace-nowrap text-lg">Configuration</div>
+      <ul class="text-secondary list-disc pl-5">
+        @for (item of analysis?.configuration | keyvalue; track $index) {
+          @if (item.key === 'meter') {
+            <div [innerHTML]="meterConfig(item)"></div>
+          } @else {
+            <li>{{ item.key }}: {{ item.value | json }}</li>
+          }
+        }
+      </ul>
+    </div>
+
+    <mat-divider></mat-divider>
+    <div class="my-5 flex gap-4">
+      <div class="bold w-40 whitespace-nowrap text-lg">Latest Message</div>
+      <div class="text-secondary max-w-160">
+        {{ latestMessage }}
+      </div>
+    </div>
+    <mat-divider></mat-divider>
+
+    <div class="my-5">
+      @if (gridViews.length) {
+        <ag-grid-angular
+          [columnDefs]="columnDefs.views"
+          [rowData]="gridViews"
+          [style.height.px]="gridHeight"
+          [theme]="gridTheme$ | async"
+          [getRowHeight]="getRowHeight"
+          (gridReady)="onGridReady($event)"
+        ></ag-grid-angular>
+      }
+    </div>
+  </div>
+</seed-page>

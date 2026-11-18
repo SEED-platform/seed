@@ -1,0 +1,80 @@
+<div class="flex w-full flex-col items-center gap-5 border-t">
+  <span class="mt-4 text-xl font-medium">Upload Complete</span>
+  @if (matchingResults) {
+    <div class="flex justify-center gap-2">
+      <a routerLink="/data">
+        <button mat-stroked-button color="primary">Add Another File</button>
+      </a>
+      <a [routerLink]="['/' + inventoryType]">
+        <button mat-raised-button color="primary">View {{ inventoryType | titlecase }}</button>
+      </a>
+      @if (showMeterButton) {
+        <button
+          [ngClass]="{ 'animate-pulse': checkingMeterTab }"
+          [disabled]="checkingMeterTab"
+          (click)="importMeters()"
+          mat-raised-button
+          color="primary"
+        >
+          Import meters
+        </button>
+      }
+    </div>
+
+    <div class="text-lg font-bold">
+      <span class="text-secondary">Records found: </span><span>{{ matchingResults?.import_file_records }}</span>
+    </div>
+  } @else {
+    <div class="m-10">
+      <div class="mb-5 flex items-center space-x-2">
+        <mat-icon class="text-primary-600" svgIcon="fa-solid:hourglass-half"></mat-icon>
+        <div class="text-secondary text-xl font-medium leading-6">Getting Results...</div>
+      </div>
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </div>
+  }
+
+  @if (hasPropertyData) {
+    <div class="w-full">
+      <mat-divider></mat-divider>
+    </div>
+
+    <div>
+      <div class="mb-4 ml-4 flex items-center justify-center font-medium">
+        <mat-icon svgIcon="fa-solid:layer-group"></mat-icon>
+        <span class="ml-4">Properties</span>
+      </div>
+
+      <ag-grid-angular
+        [rowData]="propertyData"
+        [columnDefs]="inventoryColDefs"
+        [theme]="gridTheme$ | async"
+        [domLayout]="'autoHeight'"
+        [style.width.px]="400"
+      >
+      </ag-grid-angular>
+    </div>
+  }
+
+  @if (hasTaxlotData) {
+    <div class="w-full">
+      <mat-divider></mat-divider>
+    </div>
+
+    <div>
+      <div class="mb-4 ml-4 flex items-center justify-center font-medium">
+        <mat-icon svgIcon="fa-solid:layer-group"></mat-icon>
+        <span class="ml-4">Tax Lots</span>
+      </div>
+
+      <ag-grid-angular
+        [rowData]="taxlotData"
+        [columnDefs]="inventoryColDefs"
+        [theme]="gridTheme$ | async"
+        [domLayout]="'autoHeight'"
+        [style.width.px]="400"
+      >
+      </ag-grid-angular>
+    </div>
+  }
+</div>

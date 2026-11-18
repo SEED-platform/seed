@@ -1,0 +1,52 @@
+<div *transloco="let t">
+  <seed-modal-header [close]="close.bind(this)" [title]="title" titleIcon="fa-solid:rotate"></seed-modal-header>
+
+  <mat-dialog-content>
+    <p class="text-secondary mb-4 text-sm">
+      {{
+        t(
+          'Add a new cycle to compare against the baseline. The latest cycle added will be the "current" cycle for comparison. Older cycles remain available for historical reference.'
+        )
+      }}
+    </p>
+
+    <div class="flex flex-col gap-4">
+      <mat-form-field>
+        <mat-label>{{ t('Current Cycle') }}</mat-label>
+        <mat-select [value]="selectedCycle?.id" (selectionChange)="onCycleChange($event.value)">
+          @for (cycle of cycles; track cycle.id) {
+            <mat-option [value]="cycle.id">{{ cycle.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (isLoggedIntoBbSalesforce) {
+        <mat-form-field>
+          <mat-label>{{ t('Annual Report') }}</mat-label>
+          <mat-select [value]="selectedAnnualReport?.id" (selectionChange)="onAnnualReportChange($event.value)">
+            <mat-option [value]="null">--</mat-option>
+            @for (report of annualReports; track report.id) {
+              <mat-option [value]="report.id">{{ report.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      } @else {
+        <div class="flex items-center gap-2 text-sm">
+          <mat-icon class="text-amber-600 icon-size-4 dark:text-amber-400" svgIcon="heroicons-solid:exclamation-triangle"></mat-icon>
+          <span class="text-amber-700 dark:text-amber-400">
+            {{ t('Not connected to Salesforce.') }}
+            <a class="cursor-pointer underline" (click)="goToSalesforceSettings()">{{ t('Log in via Organization Settings') }}</a>
+            {{ t('to associate an Annual Report.') }}
+          </span>
+        </div>
+      }
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button (click)="close()" mat-button>{{ t('Cancel') }}</button>
+    <button [disabled]="!selectedCycle || isSaving" (click)="submit()" color="primary" mat-flat-button>
+      {{ isSaving ? t('Saving\u2026') : isEditing ? t('Save') : t('Add Cycle') }}
+    </button>
+  </mat-dialog-actions>
+</div>

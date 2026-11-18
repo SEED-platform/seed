@@ -1,0 +1,13 @@
+<mat-form-field class="w-full">
+  @if (label) {
+    <mat-label>{{ label }}</mat-label>
+  }
+  <input [formControl]="formControl" [matAutocomplete]="auto" type="text" matInput />
+  <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn">
+    @for (option of filteredColumns | async; track option.id) {
+      <mat-option class="{{ option.is_extra_data ? '' : 'bg-green-300' }}" [value]="option.column_name">
+        {{ option.display_name }}
+      </mat-option>
+    }
+  </mat-autocomplete>
+</mat-form-field>

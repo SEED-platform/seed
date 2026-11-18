@@ -1,0 +1,21 @@
+@if (sensors.length) {
+  <div>
+    <mat-divider></mat-divider>
+    <div class="my-5 flex items-center text-lg font-medium">
+      <mat-icon svgIcon="fa-solid:temperature-half"></mat-icon>
+      <span class="ml-4">Sensors</span>
+    </div>
+    <div class="my-5">
+      <ag-grid-angular
+        [columnDefs]="columnDefs"
+        [gridOptions]="gridOptions"
+        [rowData]="sensors"
+        [theme]="gridTheme$ | async"
+        [style.height.px]="gridHeight"
+        [style.width]="'100%'"
+        [style.--ag-spacing.px]="6"
+        (gridReady)="onGridReady($event)"
+      ></ag-grid-angular>
+    </div>
+  </div>
+}

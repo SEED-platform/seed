@@ -1,0 +1,54 @@
+<div *transloco="let t">
+  <seed-modal-header [close]="close.bind(this)" [title]="t('Authenticator QR Code')" titleIcon="fa-solid:qrcode"></seed-modal-header>
+
+  <div class="flex flex-col gap-4">
+    <p class="text-sm">
+      <strong>{{ t('Important') }}</strong> -
+      {{
+        t(
+          'Scan the QR code below using your authenticator app of choice (ex: Google Authenticator, Microsoft Authenticator, Authy, etc...)'
+        )
+      }}
+    </p>
+
+    <div class="flex justify-center">
+      <img class="h-48 w-48" [src]="qrCodeImg" alt="QR Code" />
+    </div>
+
+    <form class="flex flex-wrap items-end gap-4" [formGroup]="codeForm" (ngSubmit)="verify()">
+      <mat-form-field class="flex-auto">
+        <mat-label>{{ t('Verification Code') }}</mat-label>
+        <input matInput formControlName="code" inputmode="numeric" maxlength="6" autocomplete="one-time-code" />
+        @if (codeForm.controls.code.hasError('required')) {
+          <mat-error>{{ t('Verification Code') }} {{ t('Required') }}</mat-error>
+        } @else if (codeForm.controls.code.hasError('pattern')) {
+          <mat-error>{{ t('Enter the 6-digit code from your authenticator app') }}</mat-error>
+        } @else if (codeForm.controls.code.hasError('serverError')) {
+          <mat-error>{{ codeForm.controls.code.getError('serverError') }}</mat-error>
+        }
+      </mat-form-field>
+      <button [disabled]="codeForm.invalid || verifying" mat-flat-button color="primary" type="submit">
+        @if (verifying) {
+          <mat-progress-spinner class="align-middle mr-2 inline-block" diameter="18" mode="indeterminate"></mat-progress-spinner>
+        }
+        <span>{{ t('Verify') }}</span>
+      </button>
+    </form>
+
+    <p class="text-secondary text-sm">
+      {{ t('If you are unable to scan the QR code, select a different method below.') }}
+    </p>
+  </div>
+
+  <div class="mt-6 flex flex-wrap justify-end gap-2">
+    <mat-dialog-actions>
+      <button [disabled]="regenerating" (click)="regenerate()" mat-stroked-button>{{ t('Re-Generate Token') }}</button>
+    </mat-dialog-actions>
+    <mat-dialog-actions>
+      <button (click)="close(false)" mat-stroked-button>{{ t('Select a Different Method') }}</button>
+    </mat-dialog-actions>
+    <mat-dialog-actions>
+      <button (click)="close(false)" mat-raised-button color="warn">{{ t('Cancel') }}</button>
+    </mat-dialog-actions>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<div>
+  @if (inProgress) {
+    <seed-progress-bar
+      [progress]="progressBarObj.progress"
+      [total]="progressBarObj.total"
+      [title]="progressBarObj.statusMessage"
+      [showSubProgress]="true"
+      [subProgress]="subProgressBarObj.progress"
+      [subTitle]="subProgressBarObj.statusMessage"
+      [subTotal]="subProgressBarObj.total"
+    ></seed-progress-bar>
+  } @else {
+    <seed-match-merge-results
+      [cycleId]="cycleId"
+      [datasetId]="datasetId"
+      [inProgress]="inProgress"
+      [inventoryType]="inventoryType"
+      [importFileId]="importFileId"
+      [orgId]="orgId"
+    ></seed-match-merge-results>
+  }
+</div>

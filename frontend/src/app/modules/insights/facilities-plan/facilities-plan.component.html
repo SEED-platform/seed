@@ -1,0 +1,115 @@
+<seed-page *transloco="let t" [config]="{ title: 'Facilities Plan', titleIcon: 'fa-solid:building-circle-check' }">
+  <div class="h-full-page flex flex-col">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center gap-2 border-b border-gray-200 p-4 dark:border-gray-700">
+      <h2 class="mr-4 text-lg font-semibold">{{ t('Facilities Plan') }}</h2>
+
+      @if (facilitiesPlanRuns.length > 0) {
+        <!-- Run selector -->
+        <mat-form-field class="min-w-48" subscriptSizing="dynamic">
+          <mat-label>{{ t('Facilities Plan Run') }}</mat-label>
+          <mat-select [value]="currentRunId$ | async" (selectionChange)="onRunChange($event.value)">
+            @for (run of facilitiesPlanRuns; track run.id) {
+              <mat-option [value]="run.id">{{ run.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Edit / Delete icon buttons -->
+        @if (currentRun) {
+          <button [title]="t('Edit Plan Run')" (click)="openEditModal()" mat-icon-button color="primary">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button [title]="t('Delete Plan Run')" (click)="openDeleteModal()" mat-icon-button color="warn">
+            <mat-icon>delete</mat-icon>
+          </button>
+        }
+      }
+
+      <!-- Create new run button -->
+      <button (click)="openCreateModal()" color="primary" mat-flat-button>
+        <mat-icon>add</mat-icon>
+        {{ t('New Plan Run') }}
+      </button>
+    </div>
+
+    @if (currentRun) {
+      <!-- Action bar -->
+      <div class="flex flex-wrap items-center gap-3 border-b border-gray-200 px-4 py-2 dark:border-gray-700">
+        <!-- Actions dropdown -->
+        <button [matMenuTriggerFor]="actionsMenu" mat-stroked-button>
+          {{ t('Actions') }}
+          <mat-icon iconPositionEnd>expand_more</mat-icon>
+        </button>
+        <mat-menu #actionsMenu="matMenu">
+          <button (click)="selectAll()" mat-menu-item>{{ t('Select All') }}</button>
+          <button (click)="selectNone()" mat-menu-item>{{ t('Select None') }}</button>
+          <button [disabled]="!selectedViewIds.length" (click)="openBulkEditModal()" mat-menu-item>
+            {{ t('Bulk Edit') }}
+          </button>
+        </mat-menu>
+
+        @if (selectedViewIds.length > 0) {
+          <span class="text-sm text-gray-500 dark:text-gray-400"> {{ selectedViewIds.length }} {{ t('selected') }} </span>
+        }
+
+        <!-- ALI info -->
+        <span class="text-sm">
+          <span class="text-gray-500 dark:text-gray-400">{{ t('Access Level Instance') }}: </span>
+          {{ currentRun.ali_name }}
+        </span>
+
+        <!-- Last run info -->
+        <span class="text-sm">
+          @if (currentRun.run_at) {
+            <span class="text-gray-500 dark:text-gray-400">{{ t('Last Run') }}: </span>{{ currentRun.run_at }}
+          } @else {
+            <span class="italic text-gray-500 dark:text-gray-400">{{ t('This plan has not yet been run') }}</span>
+          }
+        </span>
+
+        <span class="flex-1"></span>
+
+        <!-- Calculate + Export -->
+        <button [disabled]="isLoading" (click)="calculatePlan()" color="primary" mat-flat-button>
+          @if (isLoading) {
+            <mat-spinner class="mr-2" diameter="18"></mat-spinner>
+          }
+          {{ t('Calculate the Plan') }}
+        </button>
+        <button (click)="exportPlan()" mat-stroked-button>
+          <mat-icon>download</mat-icon>
+          {{ t('Export') }}
+        </button>
+
+        <!-- Pagination -->
+        @if (totalCount > 0) {
+          <span class="text-sm text-gray-500 dark:text-gray-400"> {{ rowData.length }} / {{ totalCount }} </span>
+        }
+      </div>
+
+      <!-- Grid -->
+      <div class="flex-auto" style="min-height: 0">
+        <ag-grid-angular
+          class="h-full w-full"
+          [columnDefs]="columnDefs"
+          [defaultColDef]="defaultColDef"
+          [gridOptions]="gridOptions"
+          [rowData]="rowData"
+          [theme]="gridTheme$ | async"
+          (gridReady)="onGridReady($event)"
+        />
+      </div>
+    } @else if (facilitiesPlanRuns.length === 0) {
+      <!-- Empty state -->
+      <div class="flex flex-auto flex-col items-center justify-center p-8 text-center">
+        <mat-icon class="mb-4 text-6xl text-gray-300">assignment</mat-icon>
+        <p class="mb-4 text-gray-500 dark:text-gray-400">{{ t('No Facilities Plan Runs found') }}</p>
+        <button (click)="openCreateModal()" color="primary" mat-flat-button>
+          <mat-icon>add</mat-icon>
+          {{ t('Create New Plan Run') }}
+        </button>
+      </div>
+    }
+  </div>
+</seed-page>

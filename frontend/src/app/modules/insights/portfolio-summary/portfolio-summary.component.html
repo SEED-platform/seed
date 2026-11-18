@@ -1,0 +1,370 @@
+<seed-page
+  class="portfolio-summary-compact-buttons flex flex-auto flex-col"
+  *transloco="let t"
+  [config]="{
+    title: 'Portfolio Summary',
+    titleIcon: 'fa-solid:square-poll-horizontal',
+    compactHeader: true,
+    action: openConfigureGoals.bind(this),
+    actionIcon: 'fa-solid:gear',
+    actionText: 'Configure Goals',
+  }"
+>
+  <div class="mx-5 my-1 flex flex-col gap-3">
+    <!-- Intro text -->
+    <p class="text-secondary text-sm">
+      {{
+        t(
+          'The portfolio summary page compares 2 cycles to calculate progress toward an Energy Use Intensity reduction goal. Cycle selection and goal details can be customized by clicking Configure Goals.'
+        )
+      }}
+    </p>
+
+    <!-- Goal selector -->
+    <div class="flex flex-wrap items-center gap-3">
+      <div class="flex items-center gap-3">
+        <mat-label class="text-secondary shrink-0 text-sm">{{ t('Goal') }}:</mat-label>
+        <mat-form-field class="w-72" subscriptSizing="dynamic">
+          <mat-select
+            [value]="currentGoal?.id"
+            [placeholder]="t('(select a goal)')"
+            (selectionChange)="selectGoal($event)"
+            (openedChange)="onGoalDropdownOpened($event)"
+          >
+            <mat-select-trigger>{{ currentGoal?.name ?? t('(select a goal)') }}</mat-select-trigger>
+            <!-- Search input pinned at top of dropdown -->
+            <div class="px-4 py-1">
+              <input
+                class="h-8 w-full bg-transparent outline-none"
+                [formControl]="goalSearchCtrl"
+                [placeholder]="t('Search\u2026')"
+                (click)="$event.stopPropagation()"
+                (keydown)="$event.stopPropagation()"
+              />
+            </div>
+            @for (goal of filteredGoals; track goal.id) {
+              <mat-option [value]="goal.id">{{ goal.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      @if (salesforceEnabled && organization && organization.bb_salesforce_enabled) {
+        <div class="flex flex-wrap items-center gap-2 rounded border px-3 py-1 text-sm">
+          <span class="text-secondary">{{ t('Salesforce') }}</span>
+          <a class="cursor-pointer text-primary-600 underline dark:text-primary-400" (click)="toSettings()">{{ t('Settings') }}</a>
+          <div class="flex items-center gap-2">
+            <span class="text-secondary">{{ t('Connection:') }}</span>
+            @if (isLoggedIntoBbSalesforce) {
+              <mat-icon class="text-green-500 icon-size-4">check_circle</mat-icon>
+              <button (click)="loginToSalesforce()" mat-stroked-button>{{ t('Logout') }}</button>
+            } @else {
+              <mat-icon class="text-red-500 icon-size-4">cancel</mat-icon>
+              <button (click)="loginToSalesforce()" mat-flat-button color="primary">{{ t('Login') }}</button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (currentGoal) {
+      <div class="-mx-5 -mb-4 flex flex-col gap-3 bg-white px-5 pb-4 pt-2 dark:bg-gray-900">
+        <div class="flex flex-wrap gap-4">
+          <!-- Goal details card: 2 true side-by-side columns -->
+          <div class="flex-1 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+            <div class="flex gap-6 text-sm">
+              <dl class="grid flex-1 grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                <dt>{{ t('Type') }}</dt>
+                <dd class="font-semibold">{{ currentGoal.type }}</dd>
+                <dt>{{ t('Baseline Cycle') }}</dt>
+                <dd class="font-semibold">{{ currentGoal.baseline_cycle_name }}</dd>
+                <dt>{{ currentGoal.level_name }}</dt>
+                <dd class="font-semibold">{{ currentGoal.access_level_instance_name || t('Root') }}</dd>
+              </dl>
+              <dl class="grid flex-1 grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                <dt>{{ t('Portfolio Target') }}</dt>
+                <dd class="font-semibold">{{ currentGoal.target_percentage }}%</dd>
+                <dt>{{ t('Area Column') }}</dt>
+                <dd class="font-semibold">{{ currentGoal.area_column_name }}</dd>
+                <dt>{{ t('Primary EUI') }}</dt>
+                <dd class="font-semibold">{{ currentGoal.eui_column1_name }}</dd>
+              </dl>
+            </div>
+          </div>
+
+          <!-- Cycle stats card (always shown once goal is selected; values fill in once a cycle is picked) -->
+          <div class="flex-1 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
+            <div class="flex gap-6 text-sm">
+              <dl class="grid flex-1 grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                <dt>{{ t('Commitment (Sq Ft)') }}</dt>
+                <dd class="font-semibold">{{ currentGoal.commitment_sqft ?? '—' }}</dd>
+                <dt>{{ t('Shared (Sq Ft)') }}</dt>
+                <dd class="font-semibold">{{ portfolioSummary?.shared_sqft ?? '—' }}</dd>
+                <dt>{{ t('Passing Checks (Sq Ft)') }}</dt>
+                <dd class="font-semibold">{{ portfolioSummary?.current_total_sqft ?? '—' }}</dd>
+                <dt>{{ t('Passing (% of committed)') }}</dt>
+                <dd class="font-semibold">{{ portfolioSummary?.passing_committed ?? '—' }}</dd>
+              </dl>
+              <dl class="grid flex-1 grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                <dt>{{ t('Passing (% of shared)') }}</dt>
+                <dd class="font-semibold">{{ portfolioSummary?.passing_shared ?? '—' }}</dd>
+                <dt>{{ t('Total Passing Checks') }}</dt>
+                <dd class="font-semibold">{{ portfolioSummary?.total_passing ?? '—' }}</dd>
+                <dt>{{ t('Total New or Acquired') }}</dt>
+                <dd class="font-semibold">{{ portfolioSummary?.total_new_or_acquired ?? '—' }}</dd>
+              </dl>
+            </div>
+          </div>
+        </div>
+
+        <!-- Go to chart button + cycle selector grouped tightly -->
+        <div class="-mt-1 flex flex-col gap-2">
+          <!-- Cycle goal selector row -->
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex flex-wrap gap-1">
+              @for (cycleGoal of currentGoal.cycle_goals; track cycleGoal.id) {
+                <button
+                  class="rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
+                  [class.bg-primary-700]="currentCycleGoal?.id === cycleGoal.id"
+                  [class.text-white]="currentCycleGoal?.id === cycleGoal.id"
+                  [class.bg-gray-100]="currentCycleGoal?.id !== cycleGoal.id"
+                  [class.text-gray-700]="currentCycleGoal?.id !== cycleGoal.id"
+                  [class.dark:bg-gray-700]="currentCycleGoal?.id !== cycleGoal.id"
+                  [class.dark:text-gray-200]="currentCycleGoal?.id !== cycleGoal.id"
+                  (click)="selectCycleGoal(cycleGoal)"
+                >
+                  {{ cycleGoal.current_cycle.name }}
+                </button>
+              }
+            </div>
+            <button (click)="openAddCycle()" color="primary" mat-flat-button>
+              <mat-icon class="icon-size-4" svgIcon="fa-solid:plus"></mat-icon>
+              <span class="ml-2">{{ t('Add Cycle') }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Currently viewing + edit/delete cycle goal -->
+        @if (currentCycleGoal) {
+          <div class="-mt-1 flex items-center gap-1 text-sm">
+            <span class="text-secondary mr-1">{{ t('Currently Viewing:') }}</span>
+            <span class="font-semibold">{{ currentCycleGoal.current_cycle.name }}</span>
+            <button [title]="t('Edit cycle')" (click)="openEditCycleGoal()" mat-icon-button>
+              <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil"></mat-icon>
+            </button>
+            <button [title]="t('Delete cycle')" (click)="openDeleteCycleGoal()" mat-icon-button>
+              <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
+            </button>
+          </div>
+
+          <!-- Page section header -->
+          <div class="-mt-2.5 flex items-center justify-between">
+            <div class="text-lg font-semibold">{{ t('Portfolio Summary') }}</div>
+            <button (click)="scrollToChart()" color="primary" mat-flat-button>
+              <mat-icon class="icon-size-4" svgIcon="fa-solid:chart-bar"></mat-icon>
+              <span class="ml-2">{{ t('Go to Overview Chart') }}</span>
+            </button>
+          </div>
+
+          <!-- Dismissible DQ info banner -->
+          @if (showDQBanner) {
+            <div
+              class="-mt-1 flex items-start gap-3 rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm dark:border-yellow-700 dark:bg-yellow-950"
+            >
+              <mat-icon class="mt-0.5 shrink-0 text-yellow-600 icon-size-4 dark:text-yellow-400">info</mat-icon>
+              <div class="flex-1">
+                <p class="font-medium text-yellow-900 dark:text-yellow-100">
+                  {{ t('Unexpected Portfolio Summary Calculations?') }}
+                  <button class="ml-2" (click)="runDataQualityChecks()" mat-stroked-button>{{ t('Run Data Quality Checks') }}</button>
+                </p>
+                <p class="text-secondary mt-1">
+                  {{
+                    t(
+                      'Portfolio Summary calculations only include properties that have "Passed Checks" and are not "New Build or Acquired".'
+                    )
+                  }}
+                </p>
+                <p class="text-secondary mt-1">
+                  {{ t('Run Data Quality Check (in the Actions menu below) to auto-populate the "Passed Checks" column.') }}
+                  <a
+                    class="ml-1 text-primary-600 hover:underline dark:text-primary-400"
+                    [routerLink]="['/organizations/data-quality/properties']"
+                    >{{ t('Data Quality Settings') }}</a
+                  >
+                </p>
+              </div>
+              <button class="shrink-0" [title]="t('Dismiss')" (click)="showDQBanner = false" mat-icon-button>
+                <mat-icon class="icon-size-4">close</mat-icon>
+              </button>
+            </div>
+          }
+
+          <!-- Cycle goal summary 1-row grid -->
+          <div class="h-24">
+            <ag-grid-angular
+              class="h-full w-full"
+              [theme]="gridTheme$ | async"
+              [rowData]="cycleGoalSummaryData"
+              [columnDefs]="cycleGoalSummaryColumnDefs"
+              [defaultColDef]="cycleGoalSummaryDefaultColDef"
+            />
+          </div>
+
+          <!-- Actions row + property grid -->
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- Actions menu -->
+                <button [matMenuTriggerFor]="actionsMenu" mat-stroked-button>
+                  <mat-icon class="icon-size-4" svgIcon="fa-solid:chevron-down"></mat-icon>
+                  <span class="ml-1">{{ t('Actions') }}</span>
+                </button>
+                <mat-menu #actionsMenu="matMenu">
+                  <button [disabled]="isSelectingAllProperties" (click)="selectAllProperties()" mat-menu-item>
+                    {{ t('Select All') }}
+                  </button>
+                  <button (click)="selectNoProperties()" mat-menu-item>{{ t('Select None') }}</button>
+                  <mat-divider></mat-divider>
+                  <button (click)="runDataQualityChecks()" mat-menu-item>{{ t('Data Quality Check') }}</button>
+                  <mat-divider></mat-divider>
+                  <button [disabled]="!selectedPropertyViewIds.length" (click)="openLabelsModal()" mat-menu-item>
+                    {{ t('Add / Remove Labels') }}
+                  </button>
+                  <button [disabled]="!selectedPropertyViewIds.length" (click)="openBulkEditGoalNotesModal()" mat-menu-item>
+                    {{ t('Edit Fields for Selected') }}
+                  </button>
+                  <mat-divider></mat-divider>
+                  <button [disabled]="!(organization?.access_level_names?.length > 1)" (click)="toggleAccessLevelInstances()" mat-menu-item>
+                    {{ showAccessLevelInstances ? t('Hide Access Levels') : t('Show Access Levels') }}
+                  </button>
+                </mat-menu>
+                <span class="text-secondary text-xs">
+                  {{ t('Only cross-cycle labels for the selected goal are shown here; other property labels are omitted.') }}
+                </span>
+
+                @if (salesforceEnabled && isLoggedIntoBbSalesforce) {
+                  <button (click)="reviewAndSyncToSalesforce()" mat-stroked-button>{{ t('Review and Sync to Salesforce') }}</button>
+                }
+              </div>
+
+              <!-- Pagination -->
+              @if (propertiesPagination && propertiesPagination.total > 0) {
+                <div class="text-secondary flex items-center gap-2 text-sm">
+                  @if (isSelectingAllProperties) {
+                    <span aria-live="polite">{{ t('Loading...') }}</span>
+                  } @else if (selectedPropertyViewIds.length) {
+                    <span aria-live="polite"
+                      >{{ t('Selected') }}: {{ selectedPropertyViewIds.length }} / {{ propertiesPagination.total }}</span
+                    >
+                  }
+                  <span>{{ propertiesPagination.start }}–{{ propertiesPagination.end }} of {{ propertiesPagination.total }}</span>
+                  <button [disabled]="!propertiesPagination.has_previous" (click)="changePage(propertyPage - 1)" mat-icon-button>
+                    <mat-icon class="icon-size-4" svgIcon="fa-solid:chevron-left"></mat-icon>
+                  </button>
+                  <button [disabled]="!propertiesPagination.has_next" (click)="changePage(propertyPage + 1)" mat-icon-button>
+                    <mat-icon class="icon-size-4" svgIcon="fa-solid:chevron-right"></mat-icon>
+                  </button>
+                </div>
+              }
+            </div>
+
+            <!-- Property grid -->
+            <div class="h-full-page">
+              <ag-grid-angular
+                class="h-full w-full"
+                [theme]="gridTheme$ | async"
+                [rowData]="goalProperties"
+                [columnDefs]="propertyColumnDefs"
+                [defaultColDef]="defaultColDef"
+                [context]="propertyGridContext"
+                [rowSelection]="{ mode: 'multiRow', checkboxes: true, headerCheckbox: true }"
+                [selectionColumnDef]="{ pinned: 'left', lockPinned: true }"
+                (gridReady)="onPropertyGridReady($event)"
+                (modelUpdated)="onPropertyGridModelUpdated()"
+                (cellValueChanged)="onPropertyCellValueChanged($event)"
+                (selectionChanged)="onPropertySelectionChanged($event)"
+              />
+            </div>
+          </div>
+        }
+
+        <!-- Chart + Export -->
+        <div class="flex flex-col gap-2 border-t pt-4">
+          <div class="flex items-center justify-between">
+            <div class="text-base font-semibold">{{ t('Performance Data') }}</div>
+            <button [disabled]="!chart" (click)="exportChart()" mat-stroked-button>
+              <mat-icon class="icon-size-4" svgIcon="fa-solid:share-from-square"></mat-icon>
+              <span class="ml-2">{{ t('Export Chart') }}</span>
+            </button>
+          </div>
+          <div class="w-full max-w-2xl">
+            <canvas id="canvas" #canvas></canvas>
+          </div>
+        </div>
+
+        <!-- Partner notes -->
+        <div class="flex flex-col gap-3 border-t pt-4">
+          <div class="text-base font-semibold">{{ t('Partner Notes') }}</div>
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div class="flex min-w-0 flex-col gap-2">
+              <form [formGroup]="partnerNoteForm">
+                <mat-form-field class="w-full">
+                  <mat-label>{{ t('Note') }}</mat-label>
+                  <textarea matInput formControlName="text" placeholder="{{ t('Partner notes…') }}" rows="4"></textarea>
+                </mat-form-field>
+              </form>
+              @if (partnerNoteForm.disabled) {
+                <div>
+                  <button (click)="setEditingPartnerNote(true)" color="primary" mat-flat-button>{{ t('Edit Note') }}</button>
+                </div>
+              } @else {
+                <div>
+                  <button (click)="savePartnerNote()" color="primary" mat-flat-button>{{ t('Save Note') }}</button>
+                </div>
+              }
+            </div>
+            <div class="flex min-w-0 flex-col gap-3">
+              <p class="text-secondary text-sm">
+                {{
+                  t(
+                    'If your organization requires partner approval for notes, please ensure that the appropriate stakeholders are notified. Partner: once you have reviewed and edited the note above, please check the box below to indicate your approval.'
+                  )
+                }}
+              </p>
+              <mat-checkbox
+                [checked]="currentGoal.partner_note_approval"
+                (change)="changePartnerNoteApproval($event.checked)"
+                color="primary"
+              >
+                {{ t('Partner Approval') }}
+              </mat-checkbox>
+              @if (currentGoal.partner_note_approval) {
+                <div class="text-secondary text-sm">{{ partnerNoteApprovalLabel }}</div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Goal summary table + Export -->
+        <div class="flex flex-col gap-2 border-t pt-4">
+          <div class="flex items-center justify-between">
+            <div class="text-base font-semibold">{{ t('Goal Summary') }}</div>
+            <button [disabled]="!goalSummaryData.length" (click)="exportTable()" mat-stroked-button>
+              <mat-icon class="icon-size-4" svgIcon="fa-solid:share-from-square"></mat-icon>
+              <span class="ml-2">{{ t('Export Table') }}</span>
+            </button>
+          </div>
+          <ag-grid-angular
+            [theme]="gridTheme$ | async"
+            [rowData]="goalSummaryData"
+            [columnDefs]="goalSummaryColumnDefs"
+            [defaultColDef]="defaultColDef"
+            [domLayout]="'autoHeight'"
+          />
+        </div>
+      </div>
+    } @else {
+      <seed-not-found icon="fa-solid:square-poll-horizontal" message="No Goal Selected"></seed-not-found>
+    }
+  </div>
+</seed-page>

@@ -1,0 +1,100 @@
+@if (!groupId) {
+  <seed-page
+    [config]="{
+      title: pageTitle,
+      titleIcon: 'fa-solid:building',
+      tabs: ['properties', 'taxlots'],
+      dense: true,
+      switchLink: true,
+    }"
+  >
+  </seed-page>
+}
+
+<div class="flex min-w-0 flex-auto flex-col" *transloco="let t">
+  <!-- Main -->
+  <div class="z-1 -mt-px flex min-h-0 flex-auto flex-col border-t">
+    <!-- GRID CONFIG -->
+    <div class="relative mx-2 mb-1 mt-1 flex items-start">
+      <!-- Actions -->
+      <seed-inventory-grid-actions
+        [cycleId]="cycleId"
+        [cycles]="cycles"
+        [gridApi]="gridApi"
+        [groupMode]="!!groupId"
+        [inventory]="inventory"
+        [orgId]="orgId"
+        [profile]="profile"
+        [profiles]="profiles"
+        [selectedStateIds]="selectedStateIds"
+        [selectedViewIds]="selectedViewIds"
+        [type]="type"
+        (refreshInventory)="onRefreshInventory($event)"
+        (selectedAll)="selectAllMatching()"
+        (toggleAccessLevels)="onToggleAccessLevelInstances()"
+      ></seed-inventory-grid-actions>
+
+      <!-- Cycles -->
+      <seed-inventory-grid-config-selector [items]="cycles" [selectedId]="cycleId" (selectionChange)="onCycleChange($event)" label="Cycle">
+      </seed-inventory-grid-config-selector>
+
+      <!-- Profiles -->
+      <seed-inventory-grid-config-selector
+        [items]="profiles"
+        [selectedId]="profileId"
+        (selectionChange)="onProfileChange($event)"
+        label="Profile"
+      >
+      </seed-inventory-grid-config-selector>
+
+      <!-- Filter Groups -->
+      @if (gridApi) {
+        <seed-filter-group-selector
+          [currentUser]="currentUser"
+          [gridApi]="gridApi"
+          [inventoryType]="filterGroupInventoryType"
+          [labels]="labels"
+          [orgId]="orgId"
+          (filterGroupApplied)="onFilterGroupApplied($event)"
+          (labelSelectionsChanged)="onLabelSelectionsChanged($event)"
+        ></seed-filter-group-selector>
+      }
+    </div>
+
+    <!-- INVENTORY GRID -->
+    <seed-inventory-grid
+      #grid
+      [accessLevelNames]="accessLevelNames"
+      [columnDefs]="columnDefs"
+      [currentUser]="currentUser"
+      [inventoryType]="type"
+      [labelMap]="labelMap"
+      [orgId]="orgId"
+      [orgUserId]="orgUserId"
+      [pagination]="pagination"
+      [rowData]="rowData"
+      [selectedViewIds]="selectedViewIds"
+      [type]="type"
+      [userSettings]="userSettings"
+      (pageChange)="onPageChange($event)"
+      (filterSortChange)="onFilterSortChange($event)"
+      (gridReady)="onGridReady($event)"
+      (selectionChanged)="onSelectionChanged()"
+      (selectAllMatching)="selectAllMatching()"
+    >
+      <!-- Filter, label, and sort badges (rendered next to the reset grid icon) -->
+      @if (gridApi && columnDefs) {
+        <seed-inventory-filter-sort-chips
+          [columns]="columns"
+          [columnDefs]="columnDefs"
+          [gridApi]="gridApi"
+          [labels]="labels"
+          [labelSelections]="labelSelections"
+          [type]="type"
+          [userSettings]="userSettings"
+          (labelRemoved)="onLabelChipRemoved($event)"
+        ></seed-inventory-filter-sort-chips>
+      }
+    </seed-inventory-grid>
+  </div>
+</div>

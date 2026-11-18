@@ -1,0 +1,158 @@
+<seed-page
+  [config]="{
+    title: 'Systems & Services',
+    breadcrumbs: [
+      { label: 'Groups', link: layout.groupsLink },
+      { label: layout.group?.name, link: layout.groupLink, translate: false },
+      'Systems & Services',
+    ],
+    titleIcon: 'fa-solid:gears',
+  }"
+>
+</seed-page>
+
+<div class="bg-card flex flex-col gap-6 p-2.5">
+  <!-- Add System Button -->
+  <div>
+    <button (click)="createSystem()" mat-flat-button color="primary">
+      <mat-icon svgIcon="fa-solid:plus"></mat-icon>
+      Add System
+    </button>
+  </div>
+
+  @if (loading) {
+    <div class="text-secondary text-sm">Loading...</div>
+  } @else if (systemTypeKeys.length === 0) {
+    <div class="text-secondary text-sm">No systems defined for this group</div>
+  } @else {
+    @for (typeKey of systemTypeKeys; track typeKey) {
+      <div>
+        <div class="text-secondary mb-3 text-sm font-semibold uppercase tracking-wide">{{ typeKey }}</div>
+
+        <!-- Systems Table -->
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="text-secondary bg-default border-b text-left text-xs font-semibold uppercase tracking-wide">
+              <th class="w-8 px-1 py-2"></th>
+              <th class="px-3 py-2">Name</th>
+              @if (getBaseType(typeKey) === 'DES') {
+                <th class="px-3 py-2">DES Type</th>
+                <th class="px-3 py-2">Heating Capacity (MMBtu)</th>
+                <th class="px-3 py-2">Cooling Capacity (Ton)</th>
+                <th class="px-3 py-2">Count</th>
+              }
+              @if (getBaseType(typeKey) === 'EVSE') {
+                <th class="px-3 py-2">EVSE Type</th>
+                <th class="px-3 py-2">Power (kW)</th>
+                <th class="px-3 py-2">Voltage (V)</th>
+                <th class="px-3 py-2">Count</th>
+              }
+              @if (getBaseType(typeKey) === 'Battery') {
+                <th class="px-3 py-2">Efficiency (%)</th>
+                <th class="px-3 py-2">Power Capacity (kW)</th>
+                <th class="px-3 py-2">Energy Capacity (kWh)</th>
+                <th class="px-3 py-2">Voltage (V)</th>
+              }
+              @if (getBaseType(typeKey) === 'Aggregate Meter') {
+                <th class="px-3 py-2">Mode</th>
+              }
+              <th class="px-3 py-2 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (system of systemsByType[typeKey]; track system.id) {
+              <!-- System row -->
+              <tr class="border-b hover:bg-default">
+                <td class="w-8 px-1 py-2 text-center">
+                  @if (system.services?.length) {
+                    <button class="scale-75" (click)="toggleServices(system.id)" mat-icon-button matTooltip="Toggle Services">
+                      <mat-icon
+                        class="text-secondary transition-transform"
+                        [class.rotate-180]="expandedSystems.has(system.id)"
+                        svgIcon="fa-solid:chevron-down"
+                      ></mat-icon>
+                    </button>
+                  }
+                </td>
+                <td class="px-3 py-2 font-medium">{{ system.name }}</td>
+                @if (getBaseType(typeKey) === 'DES') {
+                  <td class="px-3 py-2">{{ system.des_type || '—' }}</td>
+                  <td class="px-3 py-2">{{ system.heating_capacity ?? '—' }}</td>
+                  <td class="px-3 py-2">{{ system.cooling_capacity ?? '—' }}</td>
+                  <td class="px-3 py-2">{{ system.count }}</td>
+                }
+                @if (getBaseType(typeKey) === 'EVSE') {
+                  <td class="px-3 py-2">{{ system.evse_type || '—' }}</td>
+                  <td class="px-3 py-2">{{ system.power ?? '—' }}</td>
+                  <td class="px-3 py-2">{{ system.voltage ?? '—' }}</td>
+                  <td class="px-3 py-2">{{ system.count }}</td>
+                }
+                @if (getBaseType(typeKey) === 'Battery') {
+                  <td class="px-3 py-2">{{ system.efficiency ?? '—' }}</td>
+                  <td class="px-3 py-2">{{ system.power_capacity ?? '—' }}</td>
+                  <td class="px-3 py-2">{{ system.energy_capacity ?? '—' }}</td>
+                  <td class="px-3 py-2">{{ system.voltage ?? '—' }}</td>
+                }
+                @if (getBaseType(typeKey) === 'Aggregate Meter') {
+                  <td class="px-3 py-2">{{ system.mode || '—' }}</td>
+                }
+                <td class="px-3 py-2 text-right">
+                  <div class="flex items-center justify-end gap-1">
+                    <!-- Services indicator -->
+                    <span class="mr-1 rounded-full bg-gray-200 px-2 py-0.5 text-xs text-gray-600">
+                      {{ system.services?.length ?? 0 }} {{ (system.services?.length ?? 0) === 1 ? 'service' : 'services' }}
+                    </span>
+                    <button class="scale-75" (click)="createService(system)" mat-icon-button matTooltip="Add Service">
+                      <mat-icon class="fill-primary-700" svgIcon="fa-solid:plus"></mat-icon>
+                    </button>
+                    <button class="scale-75" (click)="editSystem(system)" mat-icon-button matTooltip="Edit System">
+                      <mat-icon class="fill-cyan-600" svgIcon="fa-solid:pencil"></mat-icon>
+                    </button>
+                    <button class="scale-75" (click)="deleteSystem(system)" mat-icon-button matTooltip="Delete System">
+                      <mat-icon class="fill-red-700" svgIcon="fa-solid:trash"></mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <!-- Services expandable row -->
+              @if (expandedSystems.has(system.id) && system.services?.length) {
+                <tr>
+                  <td class="bg-default px-6 py-3" [attr.colspan]="getColspan(typeKey)">
+                    <table class="w-full border-collapse text-sm">
+                      <thead>
+                        <tr class="border-b text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
+                          <th class="px-3 py-2">Name</th>
+                          <th class="px-3 py-2">Emission Factor</th>
+                          <th class="px-3 py-2 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (service of system.services; track service.id) {
+                          <tr class="border-b hover:bg-default">
+                            <td class="px-3 py-2">{{ service.name }}</td>
+                            <td class="px-3 py-2">{{ service.emission_factor ?? '—' }}</td>
+                            <td class="px-3 py-2 text-right">
+                              <button class="h-7 text-xs" (click)="viewServiceDetail(system, service)" mat-stroked-button>
+                                View Details
+                              </button>
+                              <button class="scale-75" (click)="editService(system, service)" mat-icon-button matTooltip="Edit Service">
+                                <mat-icon class="fill-cyan-600" svgIcon="fa-solid:pencil"></mat-icon>
+                              </button>
+                              <button class="scale-75" (click)="deleteService(system, service)" mat-icon-button matTooltip="Delete Service">
+                                <mat-icon class="fill-red-700" svgIcon="fa-solid:trash"></mat-icon>
+                              </button>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  }
+</div>

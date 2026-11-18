@@ -1,0 +1,18 @@
+// Main Tailwind file for injecting utilities
+
+@tailwind utilities;
+
+.vertical-stripe {
+  th {
+    @apply bg-gray-100 !important;
+  }
+
+  td,
+  th {
+    @apply border border-gray-200 border-collapse;
+  }
+}
+
+.mat-select-panel {
+  @apply max-w-50;
+}

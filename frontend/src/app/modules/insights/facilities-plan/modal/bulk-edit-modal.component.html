@@ -1,0 +1,61 @@
+<div *transloco="let t">
+  <div class="mt-4 flex gap-4" mat-dialog-title>
+    <mat-icon class="text-primary-600 icon-size-5 dark:text-primary-400" svgIcon="fa-solid:pen-to-square"></mat-icon>
+    <div class="text-2xl font-medium leading-6">{{ t('Bulk Edit Properties') }}</div>
+  </div>
+  <mat-divider class="mb-2"></mat-divider>
+  <p class="px-6 text-sm text-gray-500 dark:text-gray-400">
+    {{ t('Editing') }} {{ data.propertyViewIds.length }} {{ t('selected') }}
+    {{ data.propertyViewIds.length === 1 ? t('property') : t('properties') }}.
+    {{ t('Leave a field blank to leave it unchanged') }}
+  </p>
+
+  <mat-dialog-content class="flex flex-col gap-4 pt-2">
+    @if (complianceCycleYearColumn) {
+      <mat-form-field>
+        <mat-label>{{ complianceCycleYearColumn.display_name || complianceCycleYearColumn.column_name }}</mat-label>
+        <input [(ngModel)]="complianceCycleYear" [placeholder]="t('e.g. 2025')" matInput />
+      </mat-form-field>
+    }
+
+    @if (includeInTotalDenominatorColumn) {
+      <mat-form-field>
+        <mat-label>{{ includeInTotalDenominatorColumn.display_name || includeInTotalDenominatorColumn.column_name }}</mat-label>
+        <mat-select [(ngModel)]="includeInTotalDenominator">
+          <mat-option [value]="null">{{ t('— no change —') }}</mat-option>
+          <mat-option [value]="true">{{ t('Yes') }}</mat-option>
+          <mat-option [value]="false">{{ t('No') }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    }
+
+    @if (excludeFromPlanColumn) {
+      <mat-form-field>
+        <mat-label>{{ excludeFromPlanColumn.display_name || excludeFromPlanColumn.column_name }}</mat-label>
+        <mat-select [(ngModel)]="excludeFromPlan">
+          <mat-option [value]="null">{{ t('— no change —') }}</mat-option>
+          <mat-option [value]="true">{{ t('Yes') }}</mat-option>
+          <mat-option [value]="false">{{ t('No') }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    }
+
+    @if (requireInPlanColumn) {
+      <mat-form-field>
+        <mat-label>{{ requireInPlanColumn.display_name || requireInPlanColumn.column_name }}</mat-label>
+        <mat-select [(ngModel)]="requireInPlan">
+          <mat-option [value]="null">{{ t('— no change —') }}</mat-option>
+          <mat-option [value]="true">{{ t('Yes') }}</mat-option>
+          <mat-option [value]="false">{{ t('No') }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button (click)="close()" mat-button>{{ t('Cancel') }}</button>
+    <button [disabled]="isSaving" (click)="save()" color="primary" mat-flat-button>
+      {{ isSaving ? t('Saving…') : t('Update Properties') }}
+    </button>
+  </mat-dialog-actions>
+</div>

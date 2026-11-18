@@ -1,0 +1,202 @@
+<seed-modal-header [close]="dismiss.bind(this)" title="Sync to Salesforce" titleIcon="fa-solid:arrows-rotate" />
+
+<ng-container *transloco="let t">
+  <mat-dialog-content>
+    @if (isLoading) {
+      <div class="flex justify-center p-10">
+        <mat-spinner diameter="40" />
+      </div>
+    } @else if (hasError) {
+      <div class="flex flex-col items-center gap-3 p-8 text-center">
+        <mat-icon class="text-warn icon-size-10" svgIcon="heroicons-solid:exclamation-triangle" />
+        <p class="text-secondary">
+          {{ t('Unable to retrieve Salesforce data. Ensure annual reports are linked for each cycle in the goal configuration.') }}
+        </p>
+      </div>
+    } @else {
+      <!-- Goal Details -->
+      <section class="mb-6">
+        <h3 class="text-secondary mb-2 text-sm font-semibold uppercase tracking-wide">{{ t('Goal Details') }}</h3>
+        <div class="border-divider bg-card rounded border p-3">
+          @for (detail of goalDetails; track detail.label) {
+            <div class="flex gap-3 py-1">
+              <span class="text-secondary w-40 font-semibold">{{ t(detail.label) }}</span>
+              <span>{{ detail.value }}</span>
+            </div>
+          }
+        </div>
+      </section>
+
+      @if (latestEntry) {
+        <!-- Baseline -->
+        <section class="mb-6">
+          <h3 class="text-secondary mb-2 text-sm font-semibold uppercase tracking-wide">{{ t('Baseline') }}</h3>
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-divider border-b">
+                <th class="w-1/2 pb-1 text-left font-semibold"></th>
+                <th class="w-1/4 pb-1 text-right font-semibold">{{ t('SEED') }}</th>
+                <th class="w-1/4 pb-1 text-right font-semibold">{{ t('Salesforce') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of baselineRows; track row.label) {
+                <tr class="border-divider/50 border-b">
+                  <td class="py-1.5 font-medium">{{ t(row.label) }}</td>
+                  <td class="py-1.5 text-right">{{ row.seed }}</td>
+                  <td
+                    class="py-1.5 text-right"
+                    [class.bg-red-100]="isMismatch(row.seed, row.salesforce)"
+                    [class.dark:bg-red-900]="isMismatch(row.seed, row.salesforce)"
+                    [class.bg-green-100]="isMatch(row.seed, row.salesforce)"
+                    [class.dark:bg-green-900]="isMatch(row.seed, row.salesforce)"
+                  >
+                    {{ row.salesforce }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Current Year Annual Report -->
+        <section class="mb-6">
+          <h3 class="text-secondary mb-2 text-sm font-semibold uppercase tracking-wide">{{ t('Current Year Annual Report') }}</h3>
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-divider border-b">
+                <th class="w-1/2 pb-1 text-left font-semibold"></th>
+                <th class="w-1/4 pb-1 text-right font-semibold">{{ t('SEED') }}</th>
+                <th class="w-1/4 pb-1 text-right font-semibold">{{ t('Salesforce') }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of currentYearRows; track row.label) {
+                <tr class="border-divider/50 border-b">
+                  <td class="py-1.5 font-medium">{{ t(row.label) }}</td>
+                  <td class="py-1.5 text-right">{{ row.seed }}</td>
+                  <td
+                    class="py-1.5 text-right"
+                    [class.bg-red-100]="isMismatch(row.seed, row.salesforce)"
+                    [class.dark:bg-red-900]="isMismatch(row.seed, row.salesforce)"
+                    [class.bg-green-100]="isMatch(row.seed, row.salesforce)"
+                    [class.dark:bg-green-900]="isMatch(row.seed, row.salesforce)"
+                  >
+                    {{ row.salesforce }}
+                  </td>
+                </tr>
+              }
+              <!-- Report Status -->
+              <tr class="border-divider/50 border-b">
+                <td class="py-1.5 font-medium">{{ t('Report Status') }}</td>
+                <td class="py-1.5 pr-2 text-right">
+                  <mat-select class="w-full text-sm" [(ngModel)]="reportStatus">
+                    <mat-option [value]="null">—</mat-option>
+                    @for (opt of reportStatusOptions; track opt) {
+                      <mat-option [value]="opt">{{ opt }}</mat-option>
+                    }
+                  </mat-select>
+                </td>
+                <td class="text-secondary py-1.5 text-right">{{ reportStatus }}</td>
+              </tr>
+              <!-- Review Status -->
+              <tr class="border-divider/50 border-b">
+                <td class="py-1.5 font-medium">{{ t('Review Status') }}</td>
+                <td class="py-1.5 pr-2 text-right">
+                  <mat-select class="w-full text-sm" [(ngModel)]="reviewStatus">
+                    <mat-option [value]="null">—</mat-option>
+                    @for (opt of reviewStatusOptions; track opt) {
+                      <mat-option [value]="opt">{{ opt }}</mat-option>
+                    }
+                  </mat-select>
+                </td>
+                <td class="text-secondary py-1.5 text-right">{{ reviewStatus }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="mt-3 flex justify-end">
+            <button (click)="syncCurrent()" mat-flat-button color="primary">{{ t('Sync Baseline and Current Report') }}</button>
+          </div>
+        </section>
+
+        <!-- Historical Annual Reports -->
+        @if (pastCycleRows.length) {
+          <section>
+            <h3 class="text-secondary mb-2 text-sm font-semibold uppercase tracking-wide">{{ t('Historical Annual Reports') }}</h3>
+            <div class="overflow-x-auto">
+              <table class="w-full min-w-[700px] text-sm">
+                <thead>
+                  <tr class="border-divider border-b">
+                    <th class="pb-1 text-left font-semibold">{{ t('Cycle') }}</th>
+                    <th class="pb-1 text-right font-semibold">{{ t('EI Annual Imp.') }}</th>
+                    <th class="pb-1 text-right font-semibold">{{ t('SF EI Annual Imp.') }}</th>
+                    <th class="pb-1 text-right font-semibold">{{ t('Portfolio Avg EUI') }}</th>
+                    <th class="pb-1 text-right font-semibold">{{ t('SF Portfolio Avg EUI') }}</th>
+                    <th class="pb-1 text-right font-semibold">{{ t('New Energy Savings') }}</th>
+                    <th class="pb-1 text-right font-semibold">{{ t('SF New Energy Savings') }}</th>
+                    <th class="pb-1 text-right font-semibold">{{ t('Portfolio kBtu') }}</th>
+                    <th class="pb-1 text-right font-semibold">{{ t('SF Portfolio kBtu') }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of pastCycleRows; track row.cycleName) {
+                    <tr class="border-divider/50 border-b">
+                      <td class="py-1.5 font-medium">{{ row.cycleName }}</td>
+                      <td class="py-1.5 text-right">{{ row.seedEiAnnual | number: '1.0-4' }}</td>
+                      <td
+                        class="py-1.5 text-right"
+                        [class.bg-red-100]="isMismatch(row.seedEiAnnual, row.sfEiAnnual)"
+                        [class.dark:bg-red-900]="isMismatch(row.seedEiAnnual, row.sfEiAnnual)"
+                        [class.bg-green-100]="isMatch(row.seedEiAnnual, row.sfEiAnnual)"
+                        [class.dark:bg-green-900]="isMatch(row.seedEiAnnual, row.sfEiAnnual)"
+                      >
+                        {{ row.sfEiAnnual | number: '1.0-4' }}
+                      </td>
+                      <td class="py-1.5 text-right">{{ row.seedPortfolioEui | number: '1.0-4' }}</td>
+                      <td
+                        class="py-1.5 text-right"
+                        [class.bg-red-100]="isMismatch(row.seedPortfolioEui, row.sfPortfolioEui)"
+                        [class.dark:bg-red-900]="isMismatch(row.seedPortfolioEui, row.sfPortfolioEui)"
+                        [class.bg-green-100]="isMatch(row.seedPortfolioEui, row.sfPortfolioEui)"
+                        [class.dark:bg-green-900]="isMatch(row.seedPortfolioEui, row.sfPortfolioEui)"
+                      >
+                        {{ row.sfPortfolioEui | number: '1.0-4' }}
+                      </td>
+                      <td class="py-1.5 text-right">{{ row.seedNewEnergySavings | number: '1.0-0' }}</td>
+                      <td
+                        class="py-1.5 text-right"
+                        [class.bg-red-100]="isMismatch(row.seedNewEnergySavings, row.sfNewEnergySavings)"
+                        [class.dark:bg-red-900]="isMismatch(row.seedNewEnergySavings, row.sfNewEnergySavings)"
+                        [class.bg-green-100]="isMatch(row.seedNewEnergySavings, row.sfNewEnergySavings)"
+                        [class.dark:bg-green-900]="isMatch(row.seedNewEnergySavings, row.sfNewEnergySavings)"
+                      >
+                        {{ row.sfNewEnergySavings | number: '1.0-0' }}
+                      </td>
+                      <td class="py-1.5 text-right">{{ row.seedPortfolioKbtu | number: '1.0-0' }}</td>
+                      <td
+                        class="py-1.5 text-right"
+                        [class.bg-red-100]="isMismatch(row.seedPortfolioKbtu, row.sfPortfolioKbtu)"
+                        [class.dark:bg-red-900]="isMismatch(row.seedPortfolioKbtu, row.sfPortfolioKbtu)"
+                        [class.bg-green-100]="isMatch(row.seedPortfolioKbtu, row.sfPortfolioKbtu)"
+                        [class.dark:bg-green-900]="isMatch(row.seedPortfolioKbtu, row.sfPortfolioKbtu)"
+                      >
+                        {{ row.sfPortfolioKbtu | number: '1.0-0' }}
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="mt-3 flex justify-end">
+              <button (click)="syncHistorical()" mat-flat-button color="primary">{{ t('Sync Historical Reports') }}</button>
+            </div>
+          </section>
+        }
+      }
+    }
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button (click)="dismiss()" mat-stroked-button>{{ t('Dismiss') }}</button>
+  </mat-dialog-actions>
+</ng-container>

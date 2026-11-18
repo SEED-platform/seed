@@ -1,0 +1,32 @@
+<seed-page
+  [config]="{
+    title: 'Dataset',
+    subTitle: datasetName$ | async,
+    titleIcon: 'fa-solid:sitemap',
+    breadcrumbs: [
+      { label: 'Data', link: '/data' },
+      { label: dataset?.name, translate: false },
+    ],
+    action: addDataFile,
+    actionIcon: 'fa-solid:plus',
+    actionText: 'Data File',
+    action2: addMeterData,
+    action2Icon: 'fa-solid:plus',
+    action2Text: 'Meter Data',
+  }"
+>
+  <div class="h-full-page-tabs p-5" id="content">
+    @if (importFiles.length) {
+      <ag-grid-angular
+        [columnDefs]="columnDefs"
+        [rowData]="importFiles"
+        [theme]="gridTheme$ | async"
+        [domLayout]="'autoHeight'"
+        [pagination]="true"
+        [paginationPageSizeSelector]="[10, 20, 50, 100]"
+        [paginationPageSize]="20"
+        (gridReady)="onGridReady($event)"
+      ></ag-grid-angular>
+    }
+  </div>
+</seed-page>

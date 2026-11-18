@@ -1,0 +1,6 @@
+# Enforce LF line endings for all recognized text files
+* text=auto eol=lf
+
+# Explicit binary file types
+*.png  binary
+*.webp binary

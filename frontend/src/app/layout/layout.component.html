@@ -1,0 +1,11 @@
+@if (layout === 'main') {
+  <layout-main></layout-main>
+} @else if (layout === 'landing') {
+  <layout-landing></layout-landing>
+} @else if (layout === 'empty') {
+  <layout-empty></layout-empty>
+}
+
+@if (isDevMode) {
+  <seed-dev-settings></seed-dev-settings>
+}

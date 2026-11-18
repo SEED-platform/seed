@@ -1,0 +1,80 @@
+<div class="flex flex-col gap-2" *transloco="let t" [class.h-full-page-tabs]="mode === 'list'" [class.h-full-page]="mode === 'detail'">
+  <div class="m-5 mb-2 flex flex-wrap items-start justify-between gap-4">
+    <div class="flex flex-wrap items-end gap-4">
+      @if (mode === 'list') {
+        <div class="flex flex-col">
+          <mat-label class="text-secondary text-sm">{{ t('Cycle') }}</mat-label>
+          <mat-select
+            class="h-8 w-60 rounded border border-gray-500 p-3 text-sm"
+            [(value)]="selectedCycleIds"
+            [placeholder]="t('Select Cycles')"
+            (closed)="onSelectCycleClosed()"
+            multiple
+          >
+            @for (cycle of cycles; track cycle.id) {
+              <mat-option [value]="cycle.id">{{ cycle.name }}</mat-option>
+            }
+          </mat-select>
+        </div>
+      }
+
+      <div class="flex flex-col">
+        <mat-label class="text-secondary text-sm">{{ t('Column List Profile') }}</mat-label>
+        <mat-select
+          class="h-8 w-60 rounded border border-gray-500 p-3 text-sm"
+          [(value)]="selectedProfileId"
+          [placeholder]="profiles.length ? t('Select Profile') : t('(no profiles)')"
+          (selectionChange)="onSelectProfile()"
+        >
+          @for (profile of profiles; track profile.id) {
+            <mat-option [value]="profile.id">{{ profile.name }}</mat-option>
+          }
+        </mat-select>
+      </div>
+
+      <div class="text-secondary self-end pb-2 text-xs font-medium italic">{{ t('MATCHING_COLUMN_SORT_PRIORITY') }}</div>
+      <div class="text-secondary self-end pb-2 text-xs font-medium italic">
+        {{ t('The list is automatically sorted by Linking ID, then Cycle Start at page load.') }}
+      </div>
+    </div>
+
+    <button (click)="onClearFilters()" type="button" mat-stroked-button>
+      {{ t('Clear Filters') }}
+    </button>
+  </div>
+
+  @if (loading) {
+    <mat-progress-bar class="mx-5" mode="indeterminate"></mat-progress-bar>
+  }
+
+  <div class="mx-5 flex flex-1 flex-col">
+    @if (!cycles.length) {
+      <seed-not-found [message]="t('No cycles found for this organization')" icon="fa-solid:triangle-exclamation"></seed-not-found>
+    } @else if (error) {
+      <seed-not-found [message]="t('There was a problem loading cross cycle data')" icon="fa-solid:triangle-exclamation"></seed-not-found>
+    } @else if (!loading && !rowData.length) {
+      <seed-not-found [message]="t('No data found for the selected cycles')" icon="fa-solid:triangle-exclamation"></seed-not-found>
+    } @else {
+      @if (filterChips.length) {
+        <!-- Active filter badges; each X clears only that filter -->
+        <div class="mb-2 flex min-w-0 flex-wrap items-center gap-1 text-xs">
+          <seed-filter-chips [chips]="filterChips" (removed)="onRemoveFilter($event)"></seed-filter-chips>
+        </div>
+      }
+      <ag-grid-angular
+        class="filter-border w-full flex-1"
+        [columnDefs]="columnDefs"
+        [defaultColDef]="defaultColDef"
+        [gridOptions]="gridOptions"
+        [rowData]="rowData"
+        [theme]="gridTheme$ | async"
+        (filterChanged)="setFilterChips()"
+        (gridReady)="onGridReady($event)"
+        (filterChanged)="onFilterOrSortChanged()"
+        (sortChanged)="onFilterOrSortChanged()"
+        (newColumnsLoaded)="setFilterChips()"
+        style="width: 100%; height: 100%"
+      ></ag-grid-angular>
+    }
+  </div>
+</div>

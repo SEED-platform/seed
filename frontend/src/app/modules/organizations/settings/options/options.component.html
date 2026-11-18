@@ -1,0 +1,29 @@
+<seed-page [config]="{ titleIcon: 'fa-solid:gears', title: 'Options', breadcrumbs: ['Organization Settings'], sideNavToggle: true }">
+  @if (organization) {
+    <div class="flex-auto p-6 sm:p-10" *transloco="let t">
+      <div class="max-w-2xl">
+        <form
+          class="bg-card flex flex-col gap-y-6 overflow-hidden rounded-2xl p-2 pb-4 shadow"
+          [formGroup]="optionsForm"
+          (ngSubmit)="submit()"
+        >
+          <mat-form-field appearance="outline">
+            <mat-label>Organization Name</mat-label>
+            <input [formControlName]="'name'" matInput />
+          </mat-form-field>
+          <div class="flex">
+            <mat-slide-toggle formControlName="geocoding_enabled">{{ t('Enable Geocoding') }}</mat-slide-toggle>
+          </div>
+          <div class="flex">
+            <mat-slide-toggle formControlName="comstock_enabled">{{ t('Enable ComStock Functionality') }}</mat-slide-toggle>
+          </div>
+          <div class="flex justify-center">
+            <button mat-flat-button color="primary">
+              <span>{{ t('Save Changes') }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</seed-page>

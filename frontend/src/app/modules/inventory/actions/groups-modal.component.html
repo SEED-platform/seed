@@ -1,0 +1,46 @@
+<seed-modal-header [close]="close.bind(this)" title="Add / Remove Groups" titleIcon="fa-solid:share-nodes"></seed-modal-header>
+@if (loading) {
+  <div class="m-10">
+    <mat-progress-bar class="w-full" mode="indeterminate"></mat-progress-bar>
+  </div>
+} @else if (allSameAli) {
+  <!-- Group grid -->
+  <ag-grid-angular
+    [columnDefs]="columnDefs"
+    [domLayout]="'autoHeight'"
+    [pagination]="true"
+    [paginationPageSize]="10"
+    [paginationPageSizeSelector]="false"
+    [rowData]="aliGroups"
+    [rowSelection]="'multiple'"
+    [theme]="gridTheme$ | async"
+    (gridReady)="onGridReady($event)"
+    (cellValueChanged)="onCellValueChanged($event)"
+  ></ag-grid-angular>
+
+  <!-- Create Group -->
+  <div>
+    <mat-divider class="my-4"></mat-divider>
+    <div class="text-secondary px-2 pb-4 italic">Not seeing the right group? Create a new one.</div>
+    <form class="flex justify-between gap-4" [formGroup]="form" (ngSubmit)="onSubmit()">
+      <mat-form-field class="flex-1" appearance="outline">
+        <mat-label>Group Name</mat-label>
+        <input matInput formControlName="name" tabindex="-1" />
+        @if (form.controls.name?.hasError('valueExists')) {
+          <mat-error>This name already exists.</mat-error>
+        }
+      </mat-form-field>
+      <button class="mt-1.5 w-30" [disabled]="form.invalid" mat-raised-button color="primary">Create Group</button>
+    </form>
+  </div>
+} @else {
+  <!-- Warning -->
+  <seed-alert class="mt-4" type="warning"
+    >Selection includes multiple Access Level Instances. To update or create a group, all properties must be in the same access level
+    instance. Modify selection and try again.</seed-alert
+  >
+}
+
+<div class="mt-4 flex justify-end gap-2">
+  <button (click)="done()" mat-raised-button color="primary">Done</button>
+</div>

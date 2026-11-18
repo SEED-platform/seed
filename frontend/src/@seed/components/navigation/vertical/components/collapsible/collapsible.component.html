@@ -1,0 +1,71 @@
+<div
+  class="seed-vertical-navigation-item-wrapper"
+  [class.seed-vertical-navigation-item-has-subtitle]="!!item().subtitle"
+  [ngClass]="item().classes?.wrapper"
+>
+  <div
+    class="seed-vertical-navigation-item"
+    [class.seed-vertical-navigation-item-disabled]="item().disabled"
+    [matTooltip]="item().tooltip || ''"
+    (click)="toggleCollapsible()"
+  >
+    <!-- Icon -->
+    @if (item().icon) {
+      <mat-icon class="seed-vertical-navigation-item-icon" [ngClass]="item().classes?.icon" [svgIcon]="item().icon"></mat-icon>
+    }
+
+    <!-- Title & Subtitle -->
+    <div class="seed-vertical-navigation-item-title-wrapper">
+      <div class="seed-vertical-navigation-item-title">
+        <span [ngClass]="item().classes?.title">
+          {{ item().title }}
+        </span>
+      </div>
+      @if (item().subtitle) {
+        <div class="seed-vertical-navigation-item-subtitle">
+          <span [ngClass]="item().classes?.subtitle">
+            {{ item().subtitle }}
+          </span>
+        </div>
+      }
+    </div>
+
+    <!-- Badge -->
+    @if (item().badge) {
+      <div class="seed-vertical-navigation-item-badge">
+        <div class="seed-vertical-navigation-item-badge-content" [ngClass]="item().badge.classes">
+          {{ item().badge.title }}
+        </div>
+      </div>
+    }
+
+    <!-- Arrow -->
+    <mat-icon class="seed-vertical-navigation-item-arrow icon-size-4" svgIcon="heroicons-solid:chevron-right"></mat-icon>
+  </div>
+</div>
+
+@if (!isCollapsed) {
+  <div class="seed-vertical-navigation-item-children" @expandCollapse>
+    @for (item of item().children; track item.id || $index) {
+      <!-- Skip hidden items -->
+      @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
+        <!-- Basic -->
+        @if (item.type === 'basic') {
+          <seed-vertical-navigation-basic-item [item]="item" [name]="name()"></seed-vertical-navigation-basic-item>
+        } @else if (item.type === 'collapsible') {
+          <seed-vertical-navigation-collapsible-item
+            [item]="item"
+            [name]="name()"
+            [autoCollapse]="autoCollapse()"
+          ></seed-vertical-navigation-collapsible-item>
+        } @else if (item.type === 'divider') {
+          <seed-vertical-navigation-divider-item [item]="item" [name]="name()"></seed-vertical-navigation-divider-item>
+        } @else if (item.type === 'group') {
+          <seed-vertical-navigation-group-item [item]="item" [name]="name()"></seed-vertical-navigation-group-item>
+        } @else if (item.type === 'spacer') {
+          <seed-vertical-navigation-spacer-item [item]="item" [name]="name()"></seed-vertical-navigation-spacer-item>
+        }
+      }
+    }
+  </div>
+}

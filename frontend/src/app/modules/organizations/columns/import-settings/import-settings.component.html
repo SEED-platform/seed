@@ -1,0 +1,123 @@
+<div class="my-4 flex flex-col pl-2.5">
+  <div class="my-4 flex flex-col py-2">
+    <div class="text-xl font-bold">Exclude Columns From Uniqueness</div>
+    <div class="prose">
+      Adding a field here will remove the field from the hash that uniquely represents each record. Incoming data will not be imported into
+      SEED if the only fields changed are marked as excluded from the uniqueness calculations. The incoming data will instead be calculated
+      to be a duplicate of the existing data and will therefore be ignored.
+    </div>
+    <ul>
+      @for (c of excludedColumns; track c.id) {
+        <li class="space-between align-items-center my-4 flex w-1/2 flex-row border-b-2 py-2">
+          <div class="flex self-center">{{ c.display_name }}</div>
+          <div class="ml-auto flex justify-self-end">
+            <button (click)="removeExcluded(c)" mat-icon-button>
+              <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+    @if (columns && availableExcludedColumns) {
+      <form class="flex w-1/2 flex-col" [formGroup]="addExcludeForm" (ngSubmit)="addExcluded()">
+        <mat-form-field>
+          <mat-label>Add Column</mat-label>
+          <mat-select formControlName="column">
+            @for (c of availableExcludedColumns(); track c.id) {
+              <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <div>
+          <button [disabled]="addExcludeForm.invalid || addExcludeForm.pending" mat-stroked-button>
+            <span class="">Exclude Column</span>
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+
+  <div class="my-4 flex flex-col py-2">
+    <div class="text-xl font-bold">Recognize Empty</div>
+    <div class="prose">
+      Adding a column here will affect how empty or blank values are treated during merges. Specifically, empty values will be able to
+      replace non-empty values per the "Merge Protection" setting.
+    </div>
+    <ul>
+      @for (c of emptyColumns; track c.id) {
+        <li class="space-between align-items-center my-4 flex w-1/2 flex-row border-b-2 py-2">
+          <div class="flex self-center">{{ c.display_name }}</div>
+          <div class="ml-auto flex justify-self-end">
+            <button (click)="removeEmpty(c)" mat-icon-button>
+              <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+    @if (columns && availableEmptyColumns) {
+      <form class="flex w-1/2 flex-col" [formGroup]="addEmptyForm" (ngSubmit)="addEmpty()">
+        <mat-form-field>
+          <mat-label>Add Column</mat-label>
+          <mat-select formControlName="column">
+            @for (c of availableEmptyColumns(); track c.id) {
+              <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <div>
+          <button [disabled]="addEmptyForm.invalid || addEmptyForm.pending" mat-stroked-button>
+            <span class="">Recognize Column as Empty</span>
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+
+  <div class="my-4 flex flex-col py-2">
+    <div class="text-xl font-bold">Merge Protection</div>
+    <div class="prose">
+      Normally when an imported record is merged into another record the newest value overwrites an older one. Merge protection prevents
+      this, and is particularly useful for columns where you have manually edited values that you want to persist even after importing and
+      merging new data.
+    </div>
+    <ul>
+      @for (c of mergeProtectedColumns; track c.id) {
+        <li class="space-between align-items-center my-4 flex w-1/2 flex-row border-b-2 py-2">
+          <div class="flex self-center">{{ c.display_name }}</div>
+          <div class="ml-auto flex justify-self-end">
+            <button (click)="removeMergeProtected(c)" mat-icon-button>
+              <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
+            </button>
+          </div>
+        </li>
+      }
+    </ul>
+    @if (columns && removeMergeProtected) {
+      <form class="flex w-1/2 flex-col" [formGroup]="addMergeProtectedForm" (ngSubmit)="addMerge()">
+        <mat-form-field>
+          <mat-label>Add Column</mat-label>
+          <mat-select formControlName="column">
+            @for (c of availableMergeProtectionColumns(); track c.id) {
+              <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <div>
+          <button [disabled]="addMergeProtectedForm.invalid || addMergeProtectedForm.pending" mat-stroked-button>
+            <span class="">Add Merge Protection</span>
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>
+
+<div>
+  <button (click)="save()" mat-flat-button color="primary">
+    <span class="">Save Changes</span>
+  </button>
+  <button (click)="cancel()" mat-stroked-button>
+    <span class="">Cancel</span>
+  </button>
+</div>

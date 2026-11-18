@@ -1,0 +1,27 @@
+<div class="ml-4 mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:trash-can"></mat-icon>
+  <div class="text-2xl font-medium leading-6">Delete Cycle</div>
+</div>
+<mat-divider></mat-divider>
+
+<div class="mb-4 mt-4">
+  @if (inProgress) {
+    <mat-progress-bar [value]="progressBarObj.progress" mode="determinate"></mat-progress-bar>
+  }
+  <div class="mx-4 my-10 flex justify-evenly">
+    Are you sure you want to delete cycle {{ data.cycle.name }}? This action cannot be undone.
+  </div>
+  @if (errorMessage) {
+    <seed-alert type="error">{{ errorMessage }}</seed-alert>
+  }
+</div>
+<mat-divider></mat-divider>
+
+<div class="flex justify-end">
+  <mat-dialog-actions>
+    <button [disabled]="errorMessage" (click)="onSubmit()" mat-raised-button color="warn">Delete</button>
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+  </mat-dialog-actions>
+</div>

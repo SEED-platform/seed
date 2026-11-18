@@ -1,0 +1,74 @@
+<div class="flex min-w-0 flex-auto flex-col" *transloco="let t">
+  @if (config$ | async; as config) {
+    @if (config.branding.home_content_mode === 'custom') {
+      @if (config.branding.home_hero_image_url) {
+        <img class="block h-auto w-full" [src]="config.branding.home_hero_image_url" alt="" />
+      }
+      <div class="prose p-6 sm:p-10">
+        <h1>{{ config.branding.home_heading || t('The SEED Platform™') }}</h1>
+        <p class="whitespace-pre-line">{{ config.branding.home_text }}</p>
+      </div>
+    } @else {
+      <!-- Hero -->
+      <div
+        class="relative m-6 flex flex-col items-center overflow-hidden rounded-2xl bg-cover bg-center bg-no-repeat p-6 shadow sm:m-10 sm:p-10"
+        style="background-image: url('images/kc_2.webp')"
+      >
+        <div class="w-full max-w-5xl rounded-xl bg-gray-900/60 p-6 text-white shadow-lg backdrop-blur-sm sm:p-10">
+          <h1 class="text-3xl font-bold sm:text-4xl">{{ t('The SEED Platform™') }}</h1>
+          <p class="mt-4 text-base leading-6 sm:text-lg">{{ t('SEED_SUMMARY') }}</p>
+
+          <div class="mt-8 grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div>
+              <div class="flex items-center gap-3">
+                <mat-icon class="text-blue-400 icon-size-8" svgIcon="fa-solid:cloud-arrow-up"></mat-icon>
+                <h3 class="text-lg font-bold">{{ t('Upload your data') }}</h3>
+              </div>
+              <p class="mt-2 text-sm leading-5">{{ t('MARKETING_BULLET_1') }}</p>
+            </div>
+
+            <div>
+              <div class="flex items-center gap-3">
+                <mat-icon class="text-purple-300 icon-size-8" svgIcon="fa-solid:arrow-right-arrow-left"></mat-icon>
+                <h3 class="text-lg font-bold">{{ t('Match your data') }}</h3>
+              </div>
+              <p class="mt-2 text-sm leading-5">{{ t('MARKETING_BULLET_2') }}</p>
+            </div>
+
+            <div>
+              <div class="flex items-center gap-3">
+                <mat-icon class="text-green-300 icon-size-8" svgIcon="fa-solid:square-check"></mat-icon>
+                <h3 class="text-lg font-bold">{{ t('Manage compliance') }}</h3>
+              </div>
+              <p class="mt-2 text-sm leading-5">{{ t('MARKETING_BULLET_3') }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Getting started -->
+      <div class="px-6 pb-10 sm:px-10">
+        <h2 class="text-center text-2xl font-bold">{{ t('Getting Started') }}</h2>
+
+        <div class="mt-6 flex flex-col place-content-center gap-4 sm:flex-row">
+          <a href="/static/seed/pdf/SEED_Platform_V2_18_Getting_Started_Guide.pdf" mat-stroked-button>
+            <mat-icon class="icon-size-4" svgIcon="fa-solid:file-lines"></mat-icon>
+            <span class="ml-2">{{ t('Getting Started Guide') }}</span>
+          </a>
+
+          <a href="/static/seed/sample-data/seed-sample-data.zip" mat-stroked-button>
+            <mat-icon class="icon-size-4" svgIcon="fa-solid:cloud-arrow-down"></mat-icon>
+            <span class="ml-2">{{ t('Download Sample Data') }}</span>
+          </a>
+
+          @if (currentUser?.org_role !== 'viewer') {
+            <a [routerLink]="['/data']" [queryParams]="{ create: true }" mat-flat-button color="primary">
+              <mat-icon class="icon-size-4" svgIcon="fa-solid:cloud-arrow-up"></mat-icon>
+              <span class="ml-2">{{ t('Upload your Buildings List') }}</span>
+            </a>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>

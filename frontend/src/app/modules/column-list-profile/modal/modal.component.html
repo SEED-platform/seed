@@ -1,0 +1,94 @@
+<!-- header -->
+<div class="ml-4 mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
+  <div class="text-2xl font-medium leading-6">
+    @if (populateMode) {
+      Only Show Populated Data?
+    }
+    @if (createMode) {
+      Create Column List Profile?
+    }
+    @if (data.mode === 'delete') {
+      Delete Column List Profile?
+    }
+    @if (data.mode === 'rename') {
+      Rename Column List Profile?
+    }
+  </div>
+</div>
+<mat-divider></mat-divider>
+
+<!-- content -->
+@if (inProgress) {
+  <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+}
+
+<!-- POPULATE -->
+@if (populateMode) {
+  <div class="mx-4 my-10 flex justify-evenly">
+    This will reset your visible columns and column order to show only columns that contain data. Are you sure you want to continue?
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="flex justify-end">
+    <mat-dialog-actions>
+      <button (click)="onPopulated()" color="primary" mat-raised-button>Start</button>
+    </mat-dialog-actions>
+    <mat-dialog-actions>
+      <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+    </mat-dialog-actions>
+  </div>
+}
+
+<!-- CREATE -->
+@if (createMode) {
+  <div class="m-4">
+    <form class="flex flex-col gap-4" [formGroup]="form">
+      <mat-form-field class="w-full">
+        <mat-label>Profile Name</mat-label>
+        <input matInput formControlName="name" placeholder="Profile Name" />
+        @if (form.controls.name?.hasError('valueExists')) {
+          <mat-error>This name already exists.</mat-error>
+        }
+      </mat-form-field>
+    </form>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="flex justify-end">
+    <mat-dialog-actions>
+      <button [disabled]="form.invalid" (click)="onCreate()" color="primary" mat-raised-button>Create</button>
+    </mat-dialog-actions>
+    <mat-dialog-actions>
+      <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+    </mat-dialog-actions>
+  </div>
+}
+
+<!-- RENAME -->
+@if (data.mode === 'rename') {
+  <div class="m-4">
+    <form class="flex flex-col gap-4" [formGroup]="form">
+      <mat-form-field class="w-full">
+        <mat-label>Profile Name</mat-label>
+        <input matInput formControlName="name" placeholder="Profile Name" />
+        @if (form.controls.name?.hasError('valueExists')) {
+          <mat-error>This name already exists.</mat-error>
+        }
+      </mat-form-field>
+    </form>
+  </div>
+
+  <mat-divider></mat-divider>
+
+  <div class="flex justify-end">
+    <mat-dialog-actions>
+      <button [disabled]="form.invalid" (click)="onRename()" color="primary" mat-raised-button>Rename</button>
+    </mat-dialog-actions>
+    <mat-dialog-actions>
+      <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+    </mat-dialog-actions>
+  </div>
+}

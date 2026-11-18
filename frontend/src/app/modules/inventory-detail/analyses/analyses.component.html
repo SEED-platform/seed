@@ -1,0 +1,26 @@
+<seed-page
+  [config]="{
+    title: 'Property',
+    subTitle: viewDisplayField$ | async,
+    titleIcon: 'fa-solid:chart-simple',
+    breadcrumbs: [{ label: type === 'taxlots' ? 'Tax Lots' : 'Properties', link: '/' + type }, 'Analyses'],
+    sideNavToggle: true,
+    action: isViewer ? undefined : createAnalysis,
+    actionIcon: isViewer ? undefined : 'fa-solid:plus',
+    actionText: isViewer ? undefined : 'Create Analysis',
+  }"
+>
+  <div class="h-full-page-tabs p-5" id="content" #parentDiv>
+    @if (analyses.length) {
+      <seed-analyses-grid
+        [analyses]="analyses"
+        [cycles]="cycles"
+        [parentRef]="parentDiv"
+        [orgId]="orgId"
+        [highlights]="true"
+      ></seed-analyses-grid>
+    } @else {
+      <seed-not-found message="No Analyses Found" icon="fa-solid:triangle-exclamation"></seed-not-found>
+    }
+  </div>
+</seed-page>

@@ -1,0 +1,56 @@
+<div class="mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
+  <div class="text-2xl font-medium leading-6">{{ profile.name }} - Edit Mapping</div>
+</div>
+<mat-divider class="mb-8"></mat-divider>
+<form class="flex flex-col gap-4" [formGroup]="form">
+  <div class="flex">
+    <mat-slide-toggle formControlName="is_omitted"><mat-label>Omit From Import?</mat-label></mat-slide-toggle>
+  </div>
+
+  <mat-form-field>
+    <mat-label>Inventory Type</mat-label>
+    <mat-select formControlName="to_table_name">
+      <mat-option value="PropertyState">Property</mat-option>
+      <mat-option value="TaxLotState">Taxlot</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="flex">
+    <seed-header-autocomplete
+      class="w-full"
+      [formControl]="form.controls['to_field']"
+      [columns]="columns"
+      label="SEED Header"
+      tableName="{{ form.controls['to_table_name'].value }}"
+    />
+  </div>
+
+  <mat-form-field>
+    <mat-label>From Field</mat-label>
+    <input matInput formControlName="from_field" />
+    @if (form.controls.from_field?.hasError('required')) {
+      <mat-error>From Field is a required field</mat-error>
+    }
+    @if (form.controls.from_field?.hasError('valueExists')) {
+      <mat-error>Duplicate From Field Name</mat-error>
+    }
+  </mat-form-field>
+  <mat-form-field>
+    <mat-label>Measurement Units</mat-label>
+    <mat-select formControlName="from_units">
+      @for (option of unitSelections(); track option.id) {
+        <mat-option [value]="option.id">{{ option.value }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</form>
+
+<div class="flex justify-end">
+  <mat-dialog-actions>
+    <button [disabled]="form.invalid" (click)="onSubmit()" mat-raised-button color="primary">Finish Editing</button>
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="close()" mat-stroked-button>Cancel</button>
+  </mat-dialog-actions>
+</div>

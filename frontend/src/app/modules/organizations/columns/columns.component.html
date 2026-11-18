@@ -1,0 +1,51 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
+  <mat-drawer-container class="h-full flex-auto">
+    <mat-drawer class="flex w-60 min-w-60 dark:bg-gray-900" #drawer [autoFocus]="false" mode="side" opened>
+      <seed-vertical-navigation [inner]="true" [navigation]="columnsNavigationMenu" [opened]="true" mode="side" name="columnsNavigation">
+        <!-- Navigation header hook -->
+        <ng-container verticalNavigationContentHeader>
+          <div class="static mt-[24px] flex p-4 pl-6">
+            <h3 class="text-sm font-semibold uppercase tracking-wider text-primary-400">Columns</h3>
+          </div>
+        </ng-container>
+      </seed-vertical-navigation>
+    </mat-drawer>
+    <mat-drawer-content class="h-full">
+      <seed-page
+        [config]="{
+          title: pageTitle,
+          titleIcon: 'fa-solid:sliders',
+          action: toggleHelp,
+          actionIcon: 'fa-solid:circle-question',
+          breadcrumbs: ['Organization Columns'],
+          sideNavToggle: true,
+        }"
+      >
+        @if (useTabs) {
+          <seed-page-inventory-tab
+            [config]="{ tabs: ['properties', 'taxlots'], action: navigateTo.bind(this) }"
+            [inputType]="currentType()"
+          ></seed-page-inventory-tab>
+        }
+
+        <mat-tab-nav-panel class="p-4" #tabPanel>
+          <router-outlet></router-outlet>
+        </mat-tab-nav-panel>
+      </seed-page>
+    </mat-drawer-content>
+    <mat-drawer [(opened)]="helpOpened" mode="over" position="end">
+      @if (!helpComponent) {
+        <div class="prose px-4" *transloco="let t">
+          <h2 class="mt-6 flex items-center border-b-2 font-extrabold tracking-tight">
+            {{ t('Help') }}<mat-icon class="mx-2 text-current icon-size-3" svgIcon="fa-solid:chevron-right"></mat-icon
+            >{{ t('No Help Available Yet') }}
+          </h2>
+          <p>Available Help Text will appear in this space.</p>
+        </div>
+      }
+      @if (helpComponent) {
+        <ng-container *ngComponentOutlet="helpComponent" />
+      }
+    </mat-drawer>
+  </mat-drawer-container>
+</div>

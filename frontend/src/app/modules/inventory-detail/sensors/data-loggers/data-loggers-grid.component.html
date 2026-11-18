@@ -1,0 +1,18 @@
+@if (dataLoggers.length) {
+  <div>
+    <div class="my-5 flex items-center text-lg font-medium">
+      <mat-icon svgIcon="fa-solid:chart-simple"></mat-icon>
+      <span class="ml-4">Data Loggers</span>
+    </div>
+    <div class="my-5">
+      <ag-grid-angular
+        [columnDefs]="columnDefs"
+        [gridOptions]="gridOptions"
+        [rowData]="dataLoggers"
+        [style.height.px]="gridHeight"
+        [theme]="gridTheme$ | async"
+        (gridReady)="onGridReady($event)"
+      ></ag-grid-angular>
+    </div>
+  </div>
+}

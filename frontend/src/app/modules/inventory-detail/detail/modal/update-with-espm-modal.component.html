@@ -1,0 +1,74 @@
+<ng-container *transloco="let t">
+  <seed-modal-header
+    [close]="close.bind(this)"
+    [title]="t('Update with ESPM')"
+    titleIcon="fa-solid:arrow-up-from-bracket"
+  ></seed-modal-header>
+
+  <div class="flex flex-col gap-4">
+    <mat-form-field class="w-full">
+      <mat-label>{{ t('Column Mapping Profile') }}</mat-label>
+      <mat-select [(ngModel)]="selectedProfileId" [disabled]="busy">
+        @for (profile of profiles; track profile.id) {
+          <mat-option [value]="profile.id">{{ profile.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    @if (errorMessage) {
+      <seed-alert type="error">{{ errorMessage }}</seed-alert>
+    }
+
+    <div class="text-secondary text-sm">{{ t('ESPM_IMPORT_TEXT') }}</div>
+
+    <div class="flex items-center gap-3">
+      <input
+        [disabled]="busy"
+        (change)="onFileChange($event)"
+        accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        type="file"
+      />
+      <button [disabled]="!xlsxFile || !selectedProfileId || busy" (click)="uploadFile()" mat-flat-button color="primary">
+        {{ t('Upload Single ESPM Property') }}
+      </button>
+    </div>
+
+    <div class="my-1 flex items-center gap-3">
+      <mat-divider class="flex-1"></mat-divider>
+      <span class="text-secondary text-sm font-medium">{{ t('OR') }}</span>
+      <mat-divider class="flex-1"></mat-divider>
+    </div>
+
+    <mat-form-field class="w-full">
+      <mat-label>{{ t('ESPM Property ID') }}</mat-label>
+      <input [(ngModel)]="pmPropertyId" [disabled]="busy" matInput />
+    </mat-form-field>
+
+    <mat-form-field class="w-full">
+      <mat-label>{{ t('ESPM Username') }}</mat-label>
+      <input [(ngModel)]="username" [disabled]="busy" matInput autocomplete="off" />
+    </mat-form-field>
+
+    <mat-form-field class="w-full">
+      <mat-label>{{ t('ESPM Password') }}</mat-label>
+      <input [(ngModel)]="password" [type]="showPassword ? 'text' : 'password'" [disabled]="busy" matInput autocomplete="new-password" />
+      <button (click)="showPassword = !showPassword" mat-icon-button matSuffix type="button">
+        <mat-icon [svgIcon]="showPassword ? 'fa-solid:eye-slash' : 'fa-solid:eye'"></mat-icon>
+      </button>
+    </mat-form-field>
+
+    <button
+      class="w-full"
+      [disabled]="!pmPropertyId || !username || !password || !selectedProfileId || busy"
+      (click)="importFromEspm()"
+      mat-flat-button
+      color="primary"
+    >
+      {{ t('Import directly from ESPM') }}
+    </button>
+  </div>
+
+  <div class="mt-4 flex justify-end">
+    <button [disabled]="busy" (click)="close()" mat-stroked-button>{{ t('Close') }}</button>
+  </div>
+</ng-container>

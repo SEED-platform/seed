@@ -1,0 +1,209 @@
+<seed-modal-header [close]="close.bind(this)" title="Program Configuration" titleIcon="fa-solid:chart-simple"></seed-modal-header>
+
+<div class="relative max-h-[70vh] overflow-y-auto">
+  <div class="flex flex-col">
+    <div class="compact-form flex items-center justify-between gap-10">
+      <mat-form-field class="flex-1">
+        <mat-label class="text-secondary">Select a program to edit or create new</mat-label>
+        <mat-select [value]="program" (selectionChange)="selectProgram($event.value)">
+          @for (program of data.programs; track $index) {
+            <mat-option [value]="program">{{ program.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      @if (program) {
+        <button class="text-secondary px-5" [disabled]="!program" (click)="removeProgram()" mat-stroked-button title="Delete Program">
+          <mat-icon class="scale-50" svgIcon="fa-solid:xmark"></mat-icon>
+          Delete
+        </button>
+
+        <div class="vertical-divider h-10"></div>
+        <button class="px-5" (click)="newProgram()" mat-stroked-button>
+          <mat-icon class="scale-50" svgIcon="fa-solid:plus"></mat-icon>
+          Create Program
+        </button>
+      }
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <form class="compact-form flex flex-col" [formGroup]="form">
+      <div class="my-5">
+        <div class="flex items-center text-lg">
+          <mat-icon class="scale-50" svgIcon="fa-solid:gears"></mat-icon>
+          General Settings
+        </div>
+        <div class="text-secondary ml-10 text-sm">
+          Configure your program metric to enable visualizations on the
+          <a class="text-primary underline dark:text-primary-400" (click)="close()" routerLink="/insights/program-overview"
+            >program overview</a
+          >
+          page.
+        </div>
+      </div>
+
+      <!-- NAME -->
+      <mat-form-field class="flex-1">
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name" />
+      </mat-form-field>
+
+      <!-- CYCLES -->
+
+      <div class="flex items-center gap-4">
+        <div class="w-1/4">
+          <mat-form-field class="w-full">
+            <mat-label>Cycles</mat-label>
+            <mat-select formControlName="cycles" multiple panelClass="wide-select">
+              <mat-select-trigger class="text-secondary">Cycles</mat-select-trigger>
+
+              @for (cycle of data.cycles; track $index) {
+                <mat-option [value]="cycle.id">{{ cycle.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-chip-set class="w-3/4">
+          @for (cycle of form.value.cycles; track $index) {
+            <mat-chip [removable]="true" (removed)="removeItem(cycle, 'cycles')">
+              {{ getCycle(cycle) }}
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip>
+          }
+        </mat-chip-set>
+      </div>
+
+      <mat-form-field class="w-1/4">
+        <mat-label>Filter Group</mat-label>
+        <mat-select formControlName="filter_group" panelClass="wide-select">
+          <mat-option [value]="null"></mat-option>
+          @for (group of data.filterGroups; track $index) {
+            <mat-option class="compact-form" [value]="group.id">{{ group.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <div class="my-5">
+        <div class="flex items-center text-lg">
+          <mat-icon class="scale-50" svgIcon="fa-solid:gears"></mat-icon>
+          Metric Settings
+        </div>
+        <div class="text-secondary ml-10 text-sm">
+          The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if
+          two are defined, then both metrics must be met for compliance.
+        </div>
+      </div>
+
+      <!-- ENERGY -->
+      <div class="flex flex-col rounded-lg border p-4">
+        <div class="text-secondary w-full text-center">Energy Metric</div>
+
+        <mat-form-field class="flex-1">
+          <mat-label>Actual Field</mat-label>
+          <mat-select formControlName="actual_energy_column" panelClass="wide-select-lg">
+            <mat-option [value]="null"></mat-option>
+            @for (column of metricColumns; track $index) {
+              <mat-option class="compact-form" [value]="column.id">{{ column.display_name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="flex-1">
+          <mat-label>Target Field</mat-label>
+          <mat-select formControlName="target_energy_column">
+            <mat-option [value]="null"></mat-option>
+            @for (column of metricColumns; track $index) {
+              <mat-option class="compact-form" [value]="column.id">{{ column.display_name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="flex-1">
+          <mat-label>Compliance Type</mat-label>
+          <mat-select formControlName="energy_metric_type">
+            <mat-option [value]="''"></mat-option>
+            @for (metricType of metricTypes; track $index) {
+              <mat-option class="compact-form" [value]="metricType.value">{{ metricType.key }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- EMISSION -->
+      <div class="mt-4 flex flex-col rounded-lg border p-4">
+        <div class="text-secondary w-full text-center">Emission Metric</div>
+        <mat-form-field class="flex-1">
+          <mat-label>Actual Field</mat-label>
+          <mat-select formControlName="actual_emission_column">
+            <mat-option [value]="null"></mat-option>
+            @for (column of metricColumns; track $index) {
+              <mat-option class="compact-form" [value]="column.id">{{ column.display_name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="flex-1">
+          <mat-label>Target Field</mat-label>
+          <mat-select formControlName="target_emission_column">
+            <mat-option [value]="null"></mat-option>
+            @for (column of metricColumns; track $index) {
+              <mat-option class="compact-form" [value]="column.id">{{ column.display_name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field class="flex-1">
+          <mat-label>Compliance Type</mat-label>
+          <mat-select formControlName="emission_metric_type">
+            <mat-option [value]="''"></mat-option>
+            @for (metricType of metricTypes; track $index) {
+              <mat-option class="compact-form" [value]="metricType.value">{{ metricType.key }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- VISUALIZATION -->
+
+      <div class="my-5">
+        <div class="flex items-center text-lg">
+          <mat-icon class="scale-50" svgIcon="fa-solid:gears"></mat-icon>
+          Visualization Settings
+        </div>
+        <div class="text-secondary ml-10 text-sm">
+          Select at least one field which will serve as the x-axis for visualizations on the
+          <a class="text-primary underline dark:text-primary-400" (click)="close()" routerLink="/insights/property-insights"
+            >property insights</a
+          >
+          page. Multiple fields can be selected.
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="w-1/4">
+          <mat-form-field class="w-full">
+            <mat-label>X-Axis Field Options</mat-label>
+            <mat-select formControlName="x_axis_columns" multiple panelClass="wide-select-lg">
+              <mat-select-trigger class="text-secondary">Columns</mat-select-trigger>
+              @for (column of data.xAxisColumns; track $index) {
+                <mat-option class="compact-form" [value]="column.id">{{ column.display_name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-chip-set class="w-3/4">
+          @for (column of form.value.x_axis_columns; track $index) {
+            <mat-chip [removable]="true" (removed)="removeItem(column, 'x_axis_columns')">
+              {{ getColumn(column) }}
+              <mat-icon matChipRemove>cancel</mat-icon>
+            </mat-chip>
+          }
+        </mat-chip-set>
+      </div>
+    </form>
+  </div>
+  <div class="h-6"></div>
+  <div class="pointer-events-none sticky bottom-0 left-0 h-12 w-full bg-gradient-to-t from-white to-transparent dark:from-slate-800"></div>
+</div>
+<mat-divider></mat-divider>
+<div class="mt-4 flex justify-end gap-2">
+  <button [disabled]="form.invalid" (click)="onSubmit()" mat-raised-button color="primary">Save</button>
+</div>

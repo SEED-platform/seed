@@ -1,0 +1,52 @@
+<div class="mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
+  <div class="text-2xl font-medium leading-6">Edit Sensor</div>
+</div>
+<mat-divider class="mb-8"></mat-divider>
+
+<form class="flex flex-col gap-4" [formGroup]="form">
+  <mat-form-field>
+    <mat-label>Display Name</mat-label>
+    <input matInput formControlName="display_name" />
+    @if (form.get('display_name')?.hasError('valueExists')) {
+      <mat-error>Display name must be unique.</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Location</mat-label>
+    <input matInput formControlName="location_description" />
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Description</mat-label>
+    <input matInput formControlName="description" />
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Sensor Type</mat-label>
+    <input matInput formControlName="sensor_type" />
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Units</mat-label>
+    <input matInput formControlName="units" />
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Column Name</mat-label>
+    <input matInput formControlName="column_name" />
+    @if (form.get('column_name')?.hasError('valueExists')) {
+      <mat-error>Column name must be unique.</mat-error>
+    }
+  </mat-form-field>
+</form>
+
+<div class="flex justify-end">
+  <mat-dialog-actions>
+    <button (click)="onSubmit()" mat-raised-button color="primary">Submit</button>
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="close()" mat-stroked-button>Dismiss</button>
+  </mat-dialog-actions>
+</div>

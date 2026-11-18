@@ -1,0 +1,82 @@
+<seed-loading-bar></seed-loading-bar>
+
+<seed-vertical-navigation
+  class="dark bg-gray-900 print:hidden"
+  [appearance]="navigationAppearance"
+  [mode]="isScreenSmall ? 'over' : 'side'"
+  [navigation]="navigation"
+  [opened]="!isScreenSmall"
+  name="mainNavigation"
+>
+  <!-- Navigation header hook -->
+  <ng-container verticalNavigationContentHeader>
+    <div class="flex h-20 cursor-pointer items-center justify-center" [routerLink]="['/']" aria-label="Dashboard" role="button">
+      <div
+        class="rounded-md bg-white p-0.5"
+        [class.w-14]="!brandingLogoUrl || navigationAppearance === 'dense'"
+        [class.w-40]="brandingLogoUrl && navigationAppearance === 'default'"
+      >
+        <img
+          class="pointer-events-none max-h-14 w-full select-none object-contain"
+          [src]="brandingLogoUrl || 'images/logo.svg'"
+          [alt]="brandingLogoUrl ? '' : 'SEED Platform logo'"
+        />
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Navigation footer hook -->
+  <ng-container verticalNavigationFooter>
+    <div class="hidden p-5 md:flex">
+      <button
+        [attr.aria-label]="navigationAppearance === 'default' ? 'Collapse navigation' : 'Expand navigation'"
+        [title]="navigationAppearance === 'default' ? 'Collapse navigation' : 'Expand navigation'"
+        (click)="toggleNavigationAppearance()"
+        mat-icon-button
+      >
+        <mat-icon svgIcon="heroicons-outline:arrows-right-left"></mat-icon>
+      </button>
+    </div>
+  </ng-container>
+</seed-vertical-navigation>
+
+<!-- Wrapper -->
+<div class="flex w-full min-w-0 flex-auto flex-col">
+  <!-- Header -->
+  <div
+    class="bg-card relative z-49 flex h-12 w-full flex-0 items-center px-4 shadow md:px-6 dark:border-b dark:bg-transparent dark:shadow-none print:hidden"
+  >
+    <div class="flex items-center space-x-2 pr-2">
+      <!-- Navigation toggle button -->
+      <button class="inline-flex md:hidden" (click)="toggleNavigation('mainNavigation')" mat-icon-button>
+        <mat-icon svgIcon="heroicons-outline:bars-3"></mat-icon>
+      </button>
+
+      <div class="hidden text-3xl font-bold uppercase leading-none tracking-tighter md:inline-flex">
+        <a [routerLink]="['/']"><span class="font-extrabold">SEED</span><span> Platform™</span></a>
+      </div>
+    </div>
+    <!-- Components -->
+    <div class="ml-auto flex items-center space-x-0.5 pl-2 sm:space-x-2">
+      <!--<seed-languages></seed-languages>-->
+      <seed-organization-selector></seed-organization-selector>
+      <seed-user></seed-user>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="relative flex flex-auto flex-col">
+    <div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div
+    class="bg-card relative z-49 flex h-10 w-full flex-0 items-center justify-start border-t px-4 md:px-6 dark:bg-transparent print:hidden"
+  >
+    <span class="text-secondary font-medium"
+      >SEED Platform™ <span [title]="'SHA ' + sha">v{{ version }}</span></span
+    >
+  </div>
+</div>

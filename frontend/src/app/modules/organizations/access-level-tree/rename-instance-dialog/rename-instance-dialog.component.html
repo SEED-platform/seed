@@ -1,0 +1,35 @@
+<div *transloco="let t">
+  <div class="mt-4 flex gap-4" mat-dialog-title>
+    <mat-icon class="text-primary-600 icon-size-5 dark:text-primary-400" svgIcon="fa-solid:pen"></mat-icon>
+    <div class="text-2xl font-medium leading-6">{{ t('Rename Access Level Instance') }}</div>
+  </div>
+  <mat-divider class="mb-4"></mat-divider>
+
+  <mat-dialog-content>
+    <mat-form-field class="w-full" [cdkTrapFocusAutoCapture]="true" subscriptSizing="fixed" cdkTrapFocus>
+      <mat-label>{{ t('Name') }}</mat-label>
+      <input
+        #renameInput
+        [formControl]="nameValidator"
+        (keydown.enter)="rename(renameInput.value)"
+        matInput
+        cdkFocusInitial
+        autocomplete="off"
+      />
+      @if (nameValidator.hasError('siblingName')) {
+        <mat-error>{{ t('Name must not match any of its siblings') }}</mat-error>
+      }
+    </mat-form-field>
+
+    @if (submitted) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+  </mat-dialog-content>
+
+  <div class="flex justify-end pb-4" mat-dialog-actions>
+    <button [disabled]="submitted" mat-stroked-button matDialogClose="canceled">{{ t('Cancel') }}</button>
+    <button [disabled]="submitted || !isValid(renameInput.value)" (click)="rename(renameInput.value)" mat-raised-button color="primary">
+      {{ t('Rename') }}
+    </button>
+  </div>
+</div>

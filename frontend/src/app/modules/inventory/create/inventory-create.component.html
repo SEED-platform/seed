@@ -1,0 +1,129 @@
+<seed-page *transloco="let t" [config]="{ title: t(titleKey), titleIcon: 'fa-solid:building' }">
+  <div class="flex flex-col gap-6 p-6 sm:p-10">
+    <!-- Errors + Save -->
+    <div class="flex items-start justify-between gap-4">
+      <div class="flex-1">
+        @if (formErrors.length) {
+          <seed-alert [showIcon]="false" type="error" appearance="outline">
+            <ul class="list-disc">
+              @for (message of formErrors; track $index) {
+                <li class="ml-6">{{ message }}</li>
+              }
+            </ul>
+          </seed-alert>
+        }
+      </div>
+      <button [disabled]="!loaded || !valid || formErrors.length > 0 || creating" (click)="save()" mat-flat-button color="primary">
+        <mat-icon class="icon-size-4" svgIcon="fa-solid:floppy-disk"></mat-icon>
+        <span class="ml-2">{{ t('Save') }}</span>
+      </button>
+    </div>
+
+    <!-- Config selects -->
+    <form class="flex flex-wrap gap-4" [formGroup]="configForm">
+      <mat-form-field class="w-64" subscriptSizing="dynamic">
+        <mat-label>{{ t('Access Level') }}</mat-label>
+        <mat-select formControlName="access_level">
+          @for (level of accessLevelNames; track level) {
+            <mat-option [value]="level">{{ level }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="w-64" subscriptSizing="dynamic">
+        <mat-label>{{ t('Level Instance') }}</mat-label>
+        <mat-select formControlName="access_level_instance">
+          @for (ali of accessLevelInstances; track ali.id) {
+            <mat-option [value]="ali.id">{{ ali.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="w-64" subscriptSizing="dynamic">
+        <mat-label>{{ t('Cycle') }}</mat-label>
+        <mat-select formControlName="cycle">
+          @for (cycle of cycles; track cycle.id) {
+            <mat-option [value]="cycle.id">{{ cycle.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </form>
+
+    <!-- Profile + column set buttons -->
+    <div class="flex flex-wrap items-center gap-4 border-t pt-4">
+      <mat-form-field class="w-64" subscriptSizing="dynamic">
+        <mat-label>{{ t('Column List Profile') }}</mat-label>
+        <mat-select [value]="selectedProfileId" (selectionChange)="changeProfile($event.value)">
+          @for (profile of profiles; track profile.id) {
+            <mat-option [value]="profile.id">{{ profile.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <button (click)="setColumns('canonical')" mat-stroked-button>{{ t('All Canonical Fields') }}</button>
+      <button (click)="setColumns('extra')" mat-stroked-button>{{ t('All Extra Data Fields') }}</button>
+      <button (click)="setColumns('reset')" mat-stroked-button>{{ t('Reset') }}</button>
+    </div>
+
+    <!-- Column rows -->
+    <div class="border-t pt-4">
+      <table class="w-full">
+        <thead>
+          <tr class="text-secondary border-b text-left text-sm">
+            <th class="p-2">{{ t('Inventory Type') }}</th>
+            <th class="p-2">{{ t('Column') }}</th>
+            <th class="p-2">{{ t('Value') }}</th>
+            <th class="p-2 text-center">{{ t('Matching Criteria') }}</th>
+            <th class="p-2 text-center">{{ t('Extra Data') }}</th>
+            <th class="p-2">{{ t('Data Type') }}</th>
+            <th class="p-2"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of rows; track row.id; let i = $index) {
+            <tr [class.bg-red-100]="row.is_duplicate" [class.dark:bg-red-900]="row.is_duplicate">
+              <td class="align-middle p-2">{{ row.table_name.slice(0, -5) }}</td>
+              <td class="min-w-48 p-2">
+                <mat-form-field class="w-full" subscriptSizing="dynamic">
+                  <input
+                    [formControl]="row.ctrl"
+                    [matAutocomplete]="auto"
+                    [placeholder]="t('Column name')"
+                    [attr.aria-label]="t('Column name')"
+                    matInput
+                    autocomplete="off"
+                  />
+                  <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayColumn">
+                    @for (option of row.filtered; track option.id) {
+                      <mat-option [value]="option">{{ option.display_name }}</mat-option>
+                    }
+                  </mat-autocomplete>
+                </mat-form-field>
+              </td>
+              <td class="min-w-48 p-2">
+                <mat-form-field class="w-full" subscriptSizing="dynamic">
+                  <input [(ngModel)]="row.value" [attr.aria-label]="t('Value')" (ngModelChange)="validate()" matInput />
+                </mat-form-field>
+              </td>
+              <td class="p-2 text-center">
+                <mat-checkbox [checked]="row.is_matching_criteria" disabled></mat-checkbox>
+              </td>
+              <td class="p-2 text-center">
+                <mat-checkbox [checked]="row.is_extra_data" disabled></mat-checkbox>
+              </td>
+              <td class="align-middle p-2">{{ row.data_type }}</td>
+              <td class="p-2 text-center">
+                <button [attr.aria-label]="t('Remove column')" (click)="removeColumn(i)" mat-icon-button color="warn">
+                  <mat-icon svgIcon="fa-solid:xmark"></mat-icon>
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <button class="mt-4" (click)="addColumn()" mat-stroked-button>
+        <mat-icon class="icon-size-4" svgIcon="fa-solid:plus"></mat-icon>
+        <span class="ml-2">{{ t('Add Column') }}</span>
+      </button>
+    </div>
+  </div>
+</seed-page>

@@ -1,0 +1,15 @@
+<seed-modal-header [title]="data.title" [close]="close.bind(this)" titleIcon="fa-solid:building"></seed-modal-header>
+
+<div class="mx-4 my-5">{{ data.body }}</div>
+
+<div class="flex justify-end gap-2">
+  <mat-dialog-actions>
+    <button (click)="onSubmit()" mat-raised-button color="primary">
+      <mat-icon class="icon-size-4" [svgIcon]="data.confirmIcon"></mat-icon>
+      {{ data.confirmText }}
+    </button>
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="close()" mat-stroked-button>{{ 'Cancel' | transloco }}</button>
+  </mat-dialog-actions>
+</div>

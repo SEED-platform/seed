@@ -1,0 +1,42 @@
+<seed-page
+  [config]="{ title: 'Labels', titleIcon: 'fa-solid:tags', action: create, actionIcon: 'fa-solid:plus', actionText: 'Create Label' }"
+>
+  <seed-page-table-container>
+    <table [dataSource]="labelsDataSource" mat-table>
+      <ng-container matColumnDef="label">
+        <th *matHeaderCellDef mat-header-cell>Label</th>
+        <td *matCellDef="let label" mat-cell><seed-label [label]="label"></seed-label></td>
+      </ng-container>
+
+      <ng-container matColumnDef="shown in list">
+        <th *matHeaderCellDef mat-header-cell>
+          <div>Shown In List?</div>
+          <mat-slide-toggle [checked]="allVisible" (click)="toggleAllShown()">{{ allVisible ? 'Hide All' : 'Show All' }}</mat-slide-toggle>
+        </th>
+        <td *matCellDef="let label" mat-cell>
+          @if (label.show_in_list) {
+            <mat-icon class="icon-size-4" svgIcon="fa-solid:check"></mat-icon>
+          }
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th *matHeaderCellDef mat-header-cell>Actions</th>
+        <td class="w-50" *matCellDef="let label" mat-cell>
+          <button (click)="edit(label)" mat-icon-button>
+            <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil"></mat-icon>
+          </button>
+          <button (click)="delete(label)" mat-icon-button>
+            <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
+          </button>
+        </td>
+      </ng-container>
+      <thead>
+        <tr *matHeaderRowDef="labelColumns" mat-header-row></tr>
+      </thead>
+      <tbody>
+        <tr *matRowDef="let row; columns: labelColumns" mat-row></tr>
+      </tbody>
+    </table>
+  </seed-page-table-container>
+</seed-page>

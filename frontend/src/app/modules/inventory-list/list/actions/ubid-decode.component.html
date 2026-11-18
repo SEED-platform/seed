@@ -1,0 +1,20 @@
+<seed-modal-header [close]="close.bind(this)" title="Decode Inventory UBID" titleIcon="fa-solid:map"></seed-modal-header>
+
+<div>
+  @if (status === 'error') {
+    <seed-alert type="error">{{ errorMessage }}</seed-alert>
+  } @else if (status === 'inProgress') {
+    <seed-progress-bar></seed-progress-bar>
+  } @else {
+    <ag-grid-angular [columnDefs]="colDefs" [rowData]="rowData" [style.height.px]="gridHeight" [theme]="gridTheme$ | async">
+    </ag-grid-angular>
+  }
+</div>
+
+<div class="mt-4 flex justify-end gap-2">
+  @if (status === 'review') {
+    <button (click)="onSubmit()" mat-raised-button color="primary">Decode</button>
+  } @else if (status === 'complete') {
+    <button (click)="close(true)" mat-raised-button color="primary">Close</button>
+  }
+</div>

@@ -1,0 +1,58 @@
+<div class="mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:gear"></mat-icon>
+  <div class="text-2xl font-medium leading-6">Apply Action to Selection ({{ data.viewIds.length }})</div>
+</div>
+<mat-divider></mat-divider>
+
+<!-- CONTENT -->
+<div>
+  <div class="mb-4 mt-4 flex justify-evenly">
+    <ul>
+      @for (item of actionsColumn1; track $index) {
+        <li>
+          <button
+            class="cursor-pointer transition-colors hover:text-blue-700 dark:hover:text-blue-500"
+            [disabled]="item.disabled"
+            (click)="item.action()"
+            mat-button
+          >
+            {{ item.name }}
+          </button>
+        </li>
+      }
+    </ul>
+    <ul>
+      @for (item of actionsColumn2; track $index) {
+        <li>
+          <button
+            class="cursor-pointer transition-colors hover:text-blue-700 dark:hover:text-blue-500"
+            [disabled]="item.disabled"
+            (click)="item.action()"
+            mat-button
+          >
+            {{ item.name }}
+          </button>
+        </li>
+      }
+    </ul>
+  </div>
+
+  <!-- Progress Overlay -->
+  @if (showProgress) {
+    <div class="absolute left-0 top-0 z-10 flex h-full w-full items-center justify-center bg-gray-900 bg-opacity-95">
+      <seed-progress-bar
+        class="w-full"
+        [progress]="progressBarObj.progress"
+        [total]="progressBarObj.total"
+        [title]="progressBarObj.statusMessage || 'In Progress...'"
+      >
+      </seed-progress-bar>
+    </div>
+  }
+</div>
+
+<div class="flex justify-end">
+  <mat-dialog-actions>
+    <button (click)="close()" mat-stroked-button>Dismiss</button>
+  </mat-dialog-actions>
+</div>

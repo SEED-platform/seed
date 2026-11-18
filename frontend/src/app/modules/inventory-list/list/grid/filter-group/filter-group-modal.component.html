@@ -1,0 +1,33 @@
+<seed-modal-header [title]="title" titleIcon="fa-solid:filter"></seed-modal-header>
+
+@if (data.action === 'delete') {
+  <div class="mx-4 my-5">
+    Are you sure you want to delete filter group <strong>{{ data.name }}</strong
+    >? This action cannot be undone.
+  </div>
+  <div class="flex justify-end">
+    <mat-dialog-actions>
+      <button (click)="onSubmit()" mat-raised-button color="warn">Yes, Delete</button>
+    </mat-dialog-actions>
+    <mat-dialog-actions>
+      <button (click)="close()" mat-stroked-button>Cancel</button>
+    </mat-dialog-actions>
+  </div>
+} @else {
+  <div class="mx-4 my-5">
+    <mat-form-field class="w-full" appearance="outline">
+      <mat-label>Filter Group Name</mat-label>
+      <input [(ngModel)]="name" [placeholder]="data.action === 'rename' ? data.name : 'Enter a name'" (keyup.enter)="onSubmit()" matInput />
+    </mat-form-field>
+  </div>
+  <div class="flex justify-end">
+    <mat-dialog-actions>
+      <button [disabled]="!isValid" (click)="onSubmit()" mat-raised-button color="primary">
+        {{ data.action === 'new' ? 'Create' : 'Rename' }}
+      </button>
+    </mat-dialog-actions>
+    <mat-dialog-actions>
+      <button (click)="close()" mat-stroked-button>Cancel</button>
+    </mat-dialog-actions>
+  </div>
+}

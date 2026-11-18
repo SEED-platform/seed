@@ -1,0 +1,120 @@
+<div class="mx-2 flex items-center justify-between gap-4" *transloco="let t">
+  <div class="flex min-w-0 flex-1 items-center gap-2">
+    <button
+      class="flex shrink-0 items-center rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+      [attr.aria-label]="t('Reset Grid')"
+      [matTooltip]="t('Reset Grid')"
+      (click)="resetGrid()"
+      type="button"
+    >
+      <mat-icon class="scale-75" svgIcon="fa-solid:arrows-rotate"></mat-icon>
+    </button>
+    <!-- Filter, label, and sort badges projected from the inventory page -->
+    <ng-content></ng-content>
+  </div>
+
+  <!--  POTENTIAL RESET MENU FOR MORE CONTROL -->
+
+  <!-- <mat-icon
+    class="scale-75 cursor-pointer"
+    [matMenuTriggerFor]="menu"
+    svgIcon="fa-solid:arrows-rotate"
+    matTooltip="Reset Grid Menu"
+  ></mat-icon> -->
+
+  <!-- <mat-menu #menu="matMenu">
+    <div class="px-0">
+      @if (gridApi) {
+        <div class="menu-option" [ngClass]="{ '': scheme === 'dark' }" (click)="resetGrid()">
+          <mat-icon class="scale-50" svgIcon="fa-solid:rotate"></mat-icon>
+          <span class="w-200">Reset Grid</span>
+        </div>
+        <mat-divider class="mx-3 my-1"></mat-divider>
+
+        <div class="menu-option"
+          [ngClass]="{'': scheme === 'dark'}" (click)="resetColumns()">
+          <div class="w-6"></div>
+          <span>Reset Columns</span>
+        </div>
+        <div class="menu-option"
+          [ngClass]="{'': scheme === 'dark'}" (click)="resetFilters()">
+          <div class="w-6"></div>
+          <span>Reset Filters</span>
+        </div>
+        <div class="menu-option"
+          [ngClass]="{'': scheme === 'dark'}" (click)="resetSorts()">
+          <div class="w-6"></div>
+          <span>Reset Sorts</span>
+        </div>
+        <mat-divider class="mx-3 my-1"></mat-divider>
+      }
+
+      <div class="menu-option" [ngClass]="{ '': scheme === 'dark' }" (click)="resetUserSettings()">
+        <div class="w-6"></div>
+        <span>Reset User Settings</span>
+      </div>
+    </div>
+  </mat-menu> -->
+
+  <div class="my-auto flex shrink-0 justify-end">
+    @if (selectedViewIds.length > 0) {
+      <span class="my-auto mr-10 flex items-center gap-2">
+        @if (allMatchingSelected) {
+          <span>({{ pagination.total }} {{ t('selected') }})</span>
+          <button class="text-primary underline" (click)="clearSelection()" type="button">{{ t('Select None') }}</button>
+        } @else {
+          <span>({{ selectedViewIds.length }} {{ t('selected') }})</span>
+          @if (canSelectAllMatching) {
+            <button class="text-primary underline" (click)="selectAllMatching.emit()" type="button">
+              {{ t('Select All') }} {{ pagination.total }}
+            </button>
+          }
+        }
+      </span>
+    }
+    @if (pagination) {
+      <span class="my-auto mr-10">{{ pagination.start }} - {{ pagination.end }} of {{ pagination.total }}</span>
+      <button
+        class="m-1 flex h-[25px] items-center rounded hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
+        [attr.aria-label]="t('First page')"
+        [disabled]="isPageButtonDisabled('first')"
+        [matTooltip]="t('First page')"
+        (click)="onPageChange('first')"
+        type="button"
+      >
+        <mat-icon class="scale-50" svgIcon="fa-solid:angles-left"></mat-icon>
+      </button>
+      <button
+        class="m-1 flex h-[25px] items-center rounded hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
+        [attr.aria-label]="t('Previous page')"
+        [disabled]="isPageButtonDisabled('previous')"
+        [matTooltip]="t('Previous page')"
+        (click)="onPageChange('previous')"
+        type="button"
+      >
+        <mat-icon class="scale-50" svgIcon="fa-solid:chevron-left"></mat-icon>
+      </button>
+      <span class="my-auto">Page {{ pagination.page }} of {{ pagination.num_pages }}</span>
+      <button
+        class="m-1 flex h-[25px] items-center rounded hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
+        [attr.aria-label]="t('Next page')"
+        [disabled]="isPageButtonDisabled('next')"
+        [matTooltip]="t('Next page')"
+        (click)="onPageChange('next')"
+        type="button"
+      >
+        <mat-icon class="scale-50" svgIcon="fa-solid:chevron-right"></mat-icon>
+      </button>
+      <button
+        class="m-1 flex h-[25px] items-center rounded hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
+        [attr.aria-label]="t('Last page')"
+        [disabled]="isPageButtonDisabled('last')"
+        [matTooltip]="t('Last page')"
+        (click)="onPageChange('last')"
+        type="button"
+      >
+        <mat-icon class="scale-50" svgIcon="fa-solid:angles-right"></mat-icon>
+      </button>
+    }
+  </div>
+</div>

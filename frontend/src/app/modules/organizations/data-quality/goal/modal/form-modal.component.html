@@ -1,0 +1,105 @@
+<div class="overflow-x-none">
+  <div class="mt-4 flex gap-4" mat-dialog-title>
+    <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
+    <div class="text-2xl font-medium leading-6">Edit Rule</div>
+  </div>
+  <mat-divider></mat-divider>
+  <div class="h-150 mt-2 overflow-y-auto">
+    <form class="flex flex-col gap-4" [formGroup]="form">
+      <!-- enabled -->
+      <div class="mt-4 flex">
+        <mat-label class="mr-4 font-medium" required>Enabled</mat-label>
+        <mat-slide-toggle formControlName="enabled"></mat-slide-toggle>
+      </div>
+
+      <div class="flex">
+        <!-- data type -->
+        <mat-form-field class="mr-1 w-1/3">
+          <mat-label>Data Type</mat-label>
+          <input [value]="constants.dataTypeLookup[data.rule.data_type]" matInput disabled />
+        </mat-form-field>
+        <!-- condition -->
+        <mat-form-field class="mr-1 w-1/3">
+          <mat-label>Condition</mat-label>
+          <input [value]="data.rule.condition === 'range' ? 'Range' : 'Not Null'" matInput disabled />
+        </mat-form-field>
+        <!-- cross cycle -->
+        <mat-form-field class="mr-1 w-1/3">
+          <mat-label>Range</mat-label>
+          <input [value]="data.rule.cross_cycle ? 'Across Cycles' : 'Within Cycle'" matInput disabled />
+        </mat-form-field>
+      </div>
+
+      <!-- range -->
+      <div class="flex">
+        @if (data.rule.condition === 'range') {
+          <!-- max -->
+          <mat-form-field class="mr-1 w-1/2">
+            <mat-label>Min</mat-label>
+            <input matInput formControlName="min" type="number" />
+            @if (form.get('min').value === null) {
+              <mat-hint>No minimum</mat-hint>
+            }
+          </mat-form-field>
+
+          <!-- min -->
+          <mat-form-field class="mr-1 w-1/2">
+            <mat-label>Max</mat-label>
+            <input matInput formControlName="max" type="number" />
+            @if (form.get('max').value === null) {
+              <mat-hint>No maximum</mat-hint>
+            }
+          </mat-form-field>
+        }
+      </div>
+
+      <div class="flex">
+        <!-- severity -->
+        <mat-form-field class="mr-1 w-1/2">
+          <mat-label>Severity</mat-label>
+          <mat-select formControlName="severity">
+            @for (item of constants.severities; track item) {
+              <mat-option [value]="item.key">{{ item.value }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- labels -->
+        <mat-form-field class="w-1/2">
+          <mat-label>Labels</mat-label>
+          <mat-select formControlName="status_label">
+            <mat-select-trigger>
+              @if (form.value.status_label) {
+                <seed-label [label]="labelLookup[form.value.status_label]"></seed-label>
+              }
+            </mat-select-trigger>
+            <mat-option [value]="null"></mat-option>
+            @for (item of labels; track item) {
+              <mat-option [value]="item.id">
+                <seed-label [label]="item"></seed-label>
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+
+  @if (formErrors) {
+    <ul class="rounded border border-red-400 bg-red-100 p-2">
+      @for (error of formErrors; track error) {
+        <li class="text-red-900">* {{ error }}</li>
+      }
+    </ul>
+  }
+
+  <!-- Actions -->
+  <div class="flex justify-end">
+    <mat-dialog-actions>
+      <button [disabled]="form.invalid" (click)="onSubmit()" mat-raised-button color="primary">Submit</button>
+    </mat-dialog-actions>
+    <mat-dialog-actions>
+      <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+    </mat-dialog-actions>
+  </div>
+</div>

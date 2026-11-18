@@ -1,0 +1,43 @@
+<seed-modal-header [close]="close.bind(this)" title="Export Data" titleIcon="fa-solid:download"> </seed-modal-header>
+
+<div class="m-5">
+  <mat-stepper class="no-header" #stepper>
+    <!-- STEP 1: FORM -->
+    <mat-step>
+      <form class="compact-form flex flex-col gap-2" [formGroup]="form">
+        <mat-form-field class="mt-1 w-full">
+          <mat-label>Name</mat-label>
+          <input matInput formControlName="name" />
+        </mat-form-field>
+
+        <mat-button-toggle-group class="border-button-toggle-group mt-2 flex w-full" formControlName="export_type">
+          <mat-button-toggle class="flex-1" value="csv">CSV</mat-button-toggle>
+          <mat-button-toggle class="flex-1" value="xlsx">BuildingSync (Excel)</mat-button-toggle>
+          <mat-button-toggle class="flex-1" value="geojson">GeoJSON</mat-button-toggle>
+        </mat-button-toggle-group>
+
+        <mat-checkbox formControlName="include_notes">Include Notes</mat-checkbox>
+        @if (form.value.export_type === 'geojson') {
+          <mat-checkbox formControlName="include_meter_readings"
+            >Include Meter Readings <span class="text-secondary"> (Only recommended for small exports)</span>
+          </mat-checkbox>
+        } @else {
+          <div class="h-10"></div>
+        }
+      </form>
+
+      <div class="mt-4 flex justify-end gap-2">
+        <button [disabled]="form.invalid" (click)="export()" mat-raised-button color="primary">Export</button>
+      </div>
+    </mat-step>
+
+    <!-- STEP 2: PROGRESS -->
+    <mat-step>
+      <seed-progress-bar
+        [progress]="progressBarObj.progress"
+        [title]="progressBarObj.statusMessage"
+        [total]="progressBarObj.total"
+      ></seed-progress-bar>
+    </mat-step>
+  </mat-stepper>
+</div>

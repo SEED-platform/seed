@@ -1,0 +1,21 @@
+<seed-modal-header [close]="close.bind(this)" title="Export Report Data" titleIcon="fa-solid:file-export"></seed-modal-header>
+
+<div class="p-6">
+  <mat-form-field class="w-full">
+    <mat-label>Export Name</mat-label>
+    <input [formControl]="nameControl" (keydown.enter)="nameControl.valid ? exportData() : null" matInput placeholder="File Name" />
+    <mat-hint>.xlsx will be appended automatically</mat-hint>
+  </mat-form-field>
+</div>
+
+<mat-divider></mat-divider>
+<div class="flex justify-end gap-2 p-4">
+  <button (click)="close()" mat-stroked-button>Cancel</button>
+  <button [disabled]="nameControl.invalid || exporting" (click)="exportData()" mat-raised-button color="primary">
+    @if (exporting) {
+      Exporting...
+    } @else {
+      Export
+    }
+  </button>
+</div>

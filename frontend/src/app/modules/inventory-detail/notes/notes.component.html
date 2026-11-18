@@ -1,0 +1,28 @@
+<seed-page
+  [config]="{
+    title: displayName,
+    subTitle: viewDisplayField$ | async,
+    titleIcon: 'fa-solid:note-sticky',
+    breadcrumbs: [{ label: type === 'taxlots' ? 'Tax Lots' : 'Properties', link: '/' + type }, 'Notes'],
+    sideNavToggle: true,
+    actionIcon: 'fa-solid:plus',
+    actionText: 'Create a Note',
+    action: createNote,
+  }"
+>
+  <div class="h-full-page-tabs p-5" id="content">
+    @if (rowData.length) {
+      <ag-grid-angular
+        [rowData]="rowData"
+        [columnDefs]="columnDefs"
+        [theme]="gridTheme$ | async"
+        [style.height.px]="gridHeight"
+        [getRowHeight]="getRowHeight"
+        (gridReady)="onGridReady($event)"
+      >
+      </ag-grid-angular>
+    } @else {
+      <seed-not-found message="No Notes Found" icon="fa-solid:triangle-exclamation"></seed-not-found>
+    }
+  </div>
+</seed-page>

@@ -1,0 +1,60 @@
+<div class="mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
+  <div class="text-2xl font-medium leading-6">Edit Column</div>
+</div>
+<mat-divider class="mb-8"></mat-divider>
+<form class="flex flex-col gap-4" *transloco="let t" [formGroup]="form">
+  <mat-form-field>
+    <mat-label>Display Name</mat-label>
+    <input matInput formControlName="display_name" placeholder="Display Name" />
+    @if (form.controls.display_name?.hasError('required')) {
+      <mat-error>Display Name is a required field</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Column Description</mat-label>
+    <input matInput formControlName="column_description" placeholder="Description" />
+    @if (form.controls.display_name?.hasError('required')) {
+      <mat-error>Column Description is a required field</mat-error>
+    }
+  </mat-form-field>
+  @if (data.organization.comstock_enabled) {
+    <mat-form-field>
+      <mat-label>Comstock Mapping</mat-label>
+      <mat-select formControlName="comstock_mapping">
+        <mat-option value=""></mat-option>
+        <mat-option value="division">{{ t('comstock.division') }}</mat-option>
+        <mat-option value="hvac_system_type">{{ t('comstock.hvac_system_type') }}</mat-option>
+        <mat-option value="rentable_area">{{ t('comstock.rentable_area') }}</mat-option>
+        <mat-option value="number_of_stories">{{ t('comstock.number_of_stories') }}</mat-option>
+        <mat-option value="year_built">{{ t('comstock.year_built') }}</mat-option>
+        <mat-option value="weekend_start_time">{{ t('comstock.weekend_start_time') }}</mat-option>
+        <mat-option value="weekend_duration">{{ t('comstock.weekend_duration') }}</mat-option>
+        <mat-option value="weekday_start_time">{{ t('comstock.weekday_start_time') }}</mat-option>
+        <mat-option value="weekday_duration">{{ t('comstock.weekday_duration') }}</mat-option>
+        <mat-option value="building_shape">{{ t('comstock.building_shape') }}</mat-option>
+        <mat-option value="built_code">{{ t('comstock.built_code') }}</mat-option>
+        <mat-option value="rotation">{{ t('comstock.rotation') }}</mat-option>
+        <mat-option value="aspect_ratio">{{ t('comstock.aspect_ratio') }}</mat-option>
+        <mat-option value="building_type">{{ t('comstock.building_type') }}</mat-option>
+        <mat-option value="state">{{ t('comstock.state') }}</mat-option>
+        <mat-option value="county">{{ t('comstock.county') }}</mat-option>
+        <mat-option value="climate_zone">{{ t('comstock.climate_zone') }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  }
+  @if (inProgress) {
+    <mat-progress-bar [value]="progressBarObj.progress" mode="determinate"></mat-progress-bar>
+  }
+  @if (!inProgress) {
+    <div class="flex justify-end">
+      <mat-dialog-actions>
+        <button [disabled]="form.invalid" (click)="onSubmit()" mat-raised-button color="primary">Save</button>
+      </mat-dialog-actions>
+      <mat-dialog-actions>
+        <button (click)="close()" mat-stroked-button>Cancel</button>
+      </mat-dialog-actions>
+    </div>
+  }
+</form>

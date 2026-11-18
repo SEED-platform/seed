@@ -1,0 +1,53 @@
+<div class="h-full-page-tabs flex flex-col gap-2">
+  <div class="m-5 flex flex-wrap items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
+      <mat-label class="text-secondary mr-4 text-sm">Column List Profile</mat-label>
+      <mat-select
+        class="h-10 w-60 rounded border border-gray-500 p-3 text-sm"
+        [value]="currentProfile?.id"
+        (selectionChange)="selectProfile($event)"
+        placeholder="(no profiles)"
+      >
+        @for (profile of profiles; track profile.id) {
+          <mat-option [value]="profile.id">{{ profile.name }}</mat-option>
+        }
+      </mat-select>
+    </div>
+    <button (click)="openProfileModal('create')" mat-icon-button matTooltip="Create New Profile">
+      <mat-icon class="scale-75 fill-primary-700" svgIcon="fa-solid:plus"></mat-icon>
+    </button>
+    <button [disabled]="!currentProfile" (click)="openProfileModal('rename')" mat-icon-button matTooltip="Rename this Profile">
+      <mat-icon class="scale-75 fill-cyan-600" svgIcon="fa-solid:pencil"></mat-icon>
+    </button>
+    <button [disabled]="!currentProfile" (click)="openDeleteModal()" mat-icon-button matTooltip="Delete this Profile">
+      <mat-icon class="scale-75 fill-red-700" svgIcon="fa-solid:trash"></mat-icon>
+    </button>
+    <button
+      [disabled]="!currentProfile"
+      (click)="openProfileModal('create', currentProfile.columns)"
+      mat-icon-button
+      matTooltip="Copy This Profile"
+    >
+      <mat-icon class="scale-75 fill-cyan-600" svgIcon="fa-solid:copy"></mat-icon>
+    </button>
+  </div>
+
+  @if (rowData.length) {
+    <ag-grid-angular
+      class="filter-border"
+      [columnDefs]="columnDefs"
+      [defaultColDef]="defaultColDef"
+      [gridOptions]="gridOptions"
+      [rowData]="rowData"
+      [theme]="gridTheme$ | async"
+      (gridReady)="onGridReady($event)"
+      style="width: 100%; height: 100%"
+    ></ag-grid-angular>
+  }
+
+  <!-- legend -->
+  <div class="ml-4 text-sm italic text-gray-500">
+    <span class="mr-4"><span class="material-icons align-middle ml-1 text-md text-gray-500">emergency</span>Extra Data Column</span>
+    <span><span class="material-icons align-middle ml-1 text-lg text-gray-500">link</span>Derived Column</span>
+  </div>
+</div>

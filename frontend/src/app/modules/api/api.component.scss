@@ -1,0 +1,17 @@
+@use 'swagger-ui-dist/swagger-ui.css';
+
+#swagger-ui {
+  * {
+    @apply font-sans;
+  }
+
+  pre, .model, .opblock-summary-path {
+    &, * {
+      @apply font-mono;
+    }
+  }
+
+  .information-container, .scheme-container, .authorization__btn {
+    @apply hidden;
+  }
+}

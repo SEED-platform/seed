@@ -1,0 +1,25 @@
+<div class="mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:trash-can"></mat-icon>
+  <div class="text-2xl font-medium leading-6">Delete Column {{ data.column.display_name }}?</div>
+</div>
+<mat-divider></mat-divider>
+
+<div class="mb-4 mt-4">
+  @if (inProgress) {
+    <mat-progress-bar [value]="progressBarObj.progress" mode="determinate"></mat-progress-bar>
+  }
+  @if (errorMessage) {
+    <seed-alert type="error">{{ errorMessage }}</seed-alert>
+  }
+</div>
+
+@if (!inProgress) {
+  <div class="flex justify-end">
+    <mat-dialog-actions>
+      <button [disabled]="errorMessage" (click)="onSubmit()" mat-raised-button color="warn">Delete</button>
+    </mat-dialog-actions>
+    <mat-dialog-actions>
+      <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+    </mat-dialog-actions>
+  </div>
+}

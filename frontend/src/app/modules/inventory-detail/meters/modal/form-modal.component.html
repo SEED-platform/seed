@@ -1,0 +1,79 @@
+<div class="mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
+  <div class="text-2xl font-medium leading-6">Edit Meter</div>
+</div>
+<mat-divider class="mb-8"></mat-divider>
+
+<form class="flex flex-col gap-4" [formGroup]="form">
+  <!-- DIRECTION -->
+  <mat-form-field hideRequiredMarker>
+    <mat-label>Flow Direction</mat-label>
+    <mat-select formControlName="direction">
+      @for (option of directionOptions; track $index) {
+        <mat-option [value]="option.value">{{ option.display }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  <!-- CONNECTION -->
+  <mat-form-field hideRequiredMarker>
+    <mat-label>Connection</mat-label>
+    <mat-select formControlName="connection">
+      @for (option of connectionOptions; track $index) {
+        <mat-option [value]="option.value">{{ option.display }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+
+  @if (form.get('connection').value === 'service') {
+    <!-- USE -->
+    <mat-form-field hideRequiredMarker>
+      <mat-label>Meter Usage</mat-label>
+      <mat-select formControlName="use">
+        @for (option of useOptions; track $index) {
+          <mat-option [value]="option.value">{{ option.display }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- GROUP -->
+    <mat-form-field hideRequiredMarker>
+      <mat-label>Group</mat-label>
+      <mat-select formControlName="group_id">
+        @for (option of groupOptions; track $index) {
+          <mat-option [value]="option.id">{{ option.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- SYSTEM -->
+    <mat-form-field hideRequiredMarker>
+      <mat-label>System</mat-label>
+      <mat-select formControlName="system_id">
+        @for (option of systemOptions; track $index) {
+          <mat-option [value]="option.id">{{ option.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <!-- SERVICE -->
+    <mat-form-field hideRequiredMarker>
+      <mat-label>Service</mat-label>
+      <mat-select formControlName="service_id">
+        @for (option of serviceOptions; track $index) {
+          <mat-option [value]="option.id">{{ option.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  }
+</form>
+
+<!-- Actions -->
+<div class="flex justify-end">
+  <mat-dialog-actions>
+    <button [disabled]="!formValid" (click)="onSubmit()" mat-raised-button color="primary">Submit</button>
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="close()" mat-stroked-button>Dismiss</button>
+  </mat-dialog-actions>
+</div>

@@ -1,0 +1,99 @@
+<seed-page
+  [config]="{
+    titleIcon: 'fa-solid:envelope',
+    title: 'Email Templates',
+    action: toggleHelp,
+    actionIcon: 'fa-solid:circle-question',
+  }"
+>
+  <div class="h-[calc(100vh-260px)]">
+    <mat-drawer-container class="h-full border">
+      <mat-drawer class="w-1/2" #drawer [(opened)]="helpOpened" mode="over" position="end">
+        <ng-container *ngTemplateOutlet="helpTemplate"></ng-container>
+      </mat-drawer>
+      <ng-container *ngTemplateOutlet="mainTemplate"></ng-container>
+    </mat-drawer-container>
+  </div>
+</seed-page>
+
+<!-- HELP CONTENT -->
+<ng-template class="w-1/3" #helpTemplate>
+  <div class="prose px-4">
+    <h2 class="mt-6 flex items-center border-b-2 font-extrabold tracking-tight">
+      Help<mat-icon class="mx-2 text-current icon-size-3" svgIcon="fa-solid:chevron-right"></mat-icon>Email Templates
+    </h2>
+    <h3>Custom Emails</h3>
+    <div class="my-4">
+      Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner
+      Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used
+      to email users their account information.
+    </div>
+    <div class="my-4">
+      The email supports brace templating to pull in data from the SEED property record. For example, the snippet below will replace the
+      latitude and longitude from the SEED record. Other fields can be added, but make sure to use the SEED field name not the display name.
+    </div>
+    <div class="my-4 w-fit rounded bg-gray-100 p-2 dark:bg-gray-900">
+      "Your building's latitude and longitude is {{ '{{' }}latitude{{ '}}' }}, {{ '{{' }}longitude{{ '}}' }}!"
+    </div>
+  </div>
+</ng-template>
+
+<!-- MAIN CONTENT -->
+<ng-template #mainTemplate>
+  <!-- select template form  -->
+  <div class="mr-5 flex items-center justify-end gap-x-2">
+    <form class="mt-4 flex w-100" [formGroup]="selectedTemplateForm">
+      <mat-label class="text-secondary mr-4 mt-4">Templates</mat-label>
+      <mat-form-field class="flex w-full">
+        <mat-select (selectionChange)="selectTemplate()" formControlName="selectedTemplate">
+          @for (template of templates; track template.id) {
+            <mat-option [value]="template.id">{{ template.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </form>
+    <!-- template actions -->
+    <button [disabled]="!selectedTemplate" (click)="rename()" mat-icon-button matTooltip="Rename">
+      <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil"></mat-icon>
+    </button>
+    <button [disabled]="!selectedTemplate" (click)="delete()" mat-icon-button matTooltip="Delete">
+      <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
+    </button>
+    <button (click)="create()" mat-icon-button matTooltip="Create New">
+      <mat-icon class="scale-75 fill-primary-700" svgIcon="fa-solid:plus"></mat-icon>
+    </button>
+  </div>
+
+  <!-- email template -->
+  @if (!selectedTemplate) {
+    <seed-not-found message="No Email Templates Found" icon="fa-solid:triangle-exclamation"> </seed-not-found>
+    <div class="mt-4 flex w-full justify-center">
+      <button class="flex gap-4" (click)="create()" mat-raised-button color="primary">
+        <mat-icon class="fill-white icon-size-4" svgIcon="fa-solid:plus"></mat-icon> Create New Template
+      </button>
+    </div>
+  } @else {
+    <div class="ml-8 w-2/3">
+      <form class="m-l-8 flex flex-col" [formGroup]="templateForm">
+        <mat-form-field class="flex">
+          <mat-label class="text-secondary">Subject</mat-label>
+          <input matInput formControlName="subject" />
+          @if (templateForm.controls.subject?.hasError('required')) {
+            <mat-error>Subject is a required field</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-label class="text-secondary">Content</mat-label>
+        <ngx-wig class="" formControlName="html_content"></ngx-wig>
+        @if (templateForm.controls.html_content?.hasError('required')) {
+          <mat-error>Content is a required field</mat-error>
+        }
+        <div class="mt-4 flex">
+          <button [disabled]="templateForm.invalid || templateForm.pending" (click)="save()" mat-flat-button color="primary">
+            <span>Save Changes</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</ng-template>

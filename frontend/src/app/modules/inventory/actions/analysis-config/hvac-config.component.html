@@ -1,0 +1,16 @@
+<div class="text-secondary my-4 text-sm">
+  The HVAC Metrics analysis calculates HVAC-related metrics for the property based on floor area and available meter data.
+  <mat-divider class="mt-2"></mat-divider>
+</div>
+
+<form class="compact-form" [formGroup]="form">
+  <mat-form-field class="w-full">
+    <mat-label>Floor Area Column</mat-label>
+    <mat-select formControlName="floor_area_column">
+      @for (column of areaColumns; track column.id) {
+        <mat-option class="compact-form" [value]="column.id">{{ column.display_name }}</mat-option>
+      }
+    </mat-select>
+    <mat-hint>Select the column containing floor area data</mat-hint>
+  </mat-form-field>
+</form>

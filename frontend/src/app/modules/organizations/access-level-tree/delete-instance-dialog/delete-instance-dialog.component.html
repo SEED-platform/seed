@@ -1,0 +1,39 @@
+<div class="relative flex h-full w-full flex-col" *transloco="let t">
+  <div class="flex flex-auto flex-col items-center p-8 pb-6 sm:flex-row sm:items-start" [ngClass]="{ 'sm:pb-8': warnings.length === 0 }">
+    <div
+      class="flex h-10 w-10 flex-0 items-center justify-center rounded-full bg-warn-100 text-warn-600 sm:mr-4 dark:bg-warn-600 dark:text-warn-50"
+    >
+      <mat-icon class="text-current" svgIcon="heroicons-outline:exclamation-triangle"></mat-icon>
+    </div>
+
+    <div class="mt-4 flex w-full flex-col items-center space-y-1 text-left sm:mt-0 sm:items-start sm:pr-8">
+      <div class="text-xl font-medium leading-6">
+        {{ t('Delete Access Level Instance') }} <span class="font-semibold">{{ instance.name }}</span>
+      </div>
+      <div class="text-secondary">
+        {{ t('Are you sure you want to delete this Access Level Instance? This action cannot be undone.') }}
+        @if (warnings.length > 0) {
+          <div class="prose mt-4 text-warn">
+            {{ t('Deleting this Access Level Instance will delete everything else associated with it:') }}
+            <ul class="my-0">
+              @for (warning of warnings; track $index) {
+                <li>{{ warning }}</li>
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-center space-x-3 bg-gray-50 px-6 py-4 sm:justify-end dark:bg-black dark:bg-opacity-10">
+    <button class="w-24" [disabled]="submitted" mat-stroked-button matDialogClose="canceled">{{ t('Cancel') }}</button>
+    <button class="flex w-24 items-center justify-center" [disabled]="submitted" (click)="delete()" mat-flat-button color="warn">
+      @if (!submitted) {
+        {{ t('Delete') }}
+      } @else {
+        <mat-progress-spinner [diameter]="24" mode="indeterminate"></mat-progress-spinner>
+      }
+    </button>
+  </div>
+</div>

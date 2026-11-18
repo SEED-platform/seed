@@ -1,0 +1,62 @@
+<div class="text-secondary my-4 text-sm">
+  {{ aboutMap[service] }}
+  <mat-divider class="mt-2"></mat-divider>
+</div>
+
+@if (service === 'BSyncr') {
+  <!-- BSYNCR -->
+  <form class="compact-form" [formGroup]="formBSyncr">
+    <mat-form-field class="w-full">
+      <mat-label>BSyncr Model Selection</mat-label>
+      <mat-select formControlName="model_type">
+        @for (option of bsyncrModelOptions; track option) {
+          <mat-option class="compact-form" [value]="option">{{ option }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+  </form>
+} @else if (service === 'CO2') {
+  <!-- CO2 -->
+  <form class="compact-form" [formGroup]="formCO2">
+    <mat-checkbox formControlName="save_co2_results"> Save Results to Property </mat-checkbox>
+  </form>
+} @else if (service === 'EUI') {
+  <!-- EUI -->
+  <form class="compact-form flex flex-col gap-2" [formGroup]="formEUI">
+    <mat-button-toggle-group class="border-button-toggle-group mt-2" formControlName="select_meters">
+      <mat-button-toggle value="select_cycle">Cycle</mat-button-toggle>
+      <mat-button-toggle value="date_range">Meter Data Range</mat-button-toggle>
+      <mat-button-toggle value="all">All Meter Data</mat-button-toggle>
+    </mat-button-toggle-group>
+
+    @if (form.value.select_meters === 'select_cycle') {
+      <mat-form-field class="mt-2 flex-1">
+        <mat-label>Cycle</mat-label>
+        <mat-select formControlName="cycle_id">
+          @for (cycle of cycles; track cycle) {
+            <mat-option [value]="cycle.id">{{ cycle.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    } @else if (form.value.select_meters === 'date_range') {
+      <div class="mt-2 flex gap-4" formGroupName="meter">
+        <mat-form-field class="flex-1">
+          <mat-label>Start Date</mat-label>
+          <input [matDatepicker]="startDatePicker" matInput formControlName="start_date" />
+          <mat-datepicker-toggle [for]="startDatePicker" matSuffix></mat-datepicker-toggle>
+          <mat-datepicker #startDatePicker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field class="flex-1">
+          <mat-label>End Date</mat-label>
+          <input [matDatepicker]="endDatePicker" matInput formControlName="end_date" />
+          <mat-datepicker-toggle [for]="endDatePicker" matSuffix></mat-datepicker-toggle>
+          <mat-datepicker #endDatePicker></mat-datepicker>
+          @if (form.get('meter.end_date')?.hasError('dateBefore')) {
+            <mat-error>End date must be after start date.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+    }
+  </form>
+}

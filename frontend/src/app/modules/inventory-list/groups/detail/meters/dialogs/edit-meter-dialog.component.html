@@ -1,0 +1,103 @@
+<div class="relative flex h-full w-full flex-col">
+  <div class="flex flex-auto flex-col p-6">
+    <div class="mb-4 text-xl font-medium">Configure Meter Details</div>
+
+    <div class="flex flex-col gap-4">
+      <!-- Property (read-only) -->
+      @if (meter.property_display_field) {
+        <mat-form-field class="w-full">
+          <mat-label>Property</mat-label>
+          <input [value]="meter.property_display_field" matInput disabled />
+        </mat-form-field>
+      }
+
+      <!-- Alias -->
+      <mat-form-field class="w-full">
+        <mat-label>Alias</mat-label>
+        <input [(ngModel)]="alias" matInput autocomplete="off" />
+      </mat-form-field>
+
+      <mat-divider></mat-divider>
+
+      <!-- Flow Direction -->
+      <mat-form-field class="w-full">
+        <mat-label>Flow Direction</mat-label>
+        <mat-select [(ngModel)]="direction">
+          <mat-option value="imported">Imported</mat-option>
+          <mat-option value="exported">Exported</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <!-- Connection -->
+      <mat-form-field class="w-full">
+        <mat-label>Connection</mat-label>
+        <mat-select [(ngModel)]="connection" (ngModelChange)="onConnectionChanged()">
+          <mat-option value="outside">Connected to Outside</mat-option>
+          <mat-option value="service">Connected to a Service</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      @if (!loading && connection === 'service') {
+        <!-- Meter Usage -->
+        <mat-form-field class="w-full">
+          <mat-label>
+            Meter Usage
+            <mat-icon class="ml-1 text-sm" matTooltip="Is the meter using a service, or offering a service?" matTooltipPosition="right"
+              >info</mat-icon
+            >
+          </mat-label>
+          <mat-select [(ngModel)]="use" [disabled]="isPropertyMeter" (ngModelChange)="onUseSelected()">
+            @for (option of useOptions; track option.value) {
+              <mat-option [value]="option.value">{{ option.display }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- System -->
+        @if (use) {
+          <mat-form-field class="w-full">
+            <mat-label>System</mat-label>
+            <mat-select [(ngModel)]="selectedSystemId" [disabled]="use === 'offering'" (ngModelChange)="onSystemSelected()">
+              @for (system of systemOptions; track system.id) {
+                <mat-option [value]="system.id">{{ system.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+
+        <!-- Service -->
+        @if (selectedSystemId !== null) {
+          <mat-form-field class="w-full">
+            <mat-label>Service</mat-label>
+            <mat-select [(ngModel)]="selectedServiceId">
+              @for (service of serviceOptions; track service.id) {
+                <mat-option [value]="service.id">{{ service.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+      }
+
+      @if (loading && connection === 'service') {
+        <div class="flex items-center justify-center py-4">
+          <mat-progress-spinner [diameter]="32" mode="indeterminate"></mat-progress-spinner>
+        </div>
+      }
+    </div>
+
+    @if (error) {
+      <div class="mt-4 rounded bg-red-50 p-3 text-center text-red-700">{{ error }}</div>
+    }
+  </div>
+
+  <div class="flex items-center justify-end gap-2 bg-gray-50 px-6 py-4 dark:bg-black dark:bg-opacity-10">
+    <button [matDialogClose]="false" [disabled]="submitted" mat-stroked-button>Cancel</button>
+    <button [disabled]="submitted || !formValid" (click)="save()" mat-flat-button color="primary">
+      @if (!submitted) {
+        Confirm
+      } @else {
+        <mat-progress-spinner [diameter]="24" mode="indeterminate"></mat-progress-spinner>
+      }
+    </button>
+  </div>
+</div>

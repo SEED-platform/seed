@@ -1,0 +1,33 @@
+<h2 class="text-3xl font-extrabold capitalize leading-7 tracking-tight sm:leading-10 md:text-4xl" mat-dialog-title>
+  {{ create ? 'Create' : 'Edit' }} a Salesforce Field Mapping
+</h2>
+<form class="flex flex-col gap-4" [formGroup]="form">
+  <mat-form-field>
+    <mat-label>Salesforce Field Name</mat-label>
+    <input matInput formControlName="salesforce_fieldname" placeholder="address_c" />
+    @if (form.controls.salesforce_fieldname?.hasError('required')) {
+      <mat-error>Salesforce Field Name is a required field</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>SEED Field Name</mat-label>
+    <mat-select formControlName="column">
+      @for (c of columns; track c.id) {
+        <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+      }
+    </mat-select>
+    @if (form.controls.column?.hasError('required')) {
+      <mat-error>SEED Column Name is a required field</mat-error>
+    }
+  </mat-form-field>
+</form>
+
+<div class="flex justify-end">
+  <mat-dialog-actions>
+    <button [disabled]="form.invalid" (click)="onSubmit()" mat-raised-button color="primary">Submit</button>
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="close()" mat-stroked-button>Dismiss</button>
+  </mat-dialog-actions>
+</div>

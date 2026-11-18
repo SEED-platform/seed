@@ -1,0 +1,151 @@
+<div class="overflow-x-none">
+  <div class="mt-4 flex gap-4" mat-dialog-title>
+    <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
+    <div class="text-2xl font-medium leading-6">{{ create ? 'Create' : 'Edit' }} Rule</div>
+  </div>
+  <mat-divider></mat-divider>
+
+  <div class="h-150 mt-2 overflow-y-auto">
+    <form class="flex flex-col gap-4" [formGroup]="form">
+      <!-- enabled -->
+      <div class="mt-4 flex">
+        <mat-label class="mr-4 font-medium" required>Enabled</mat-label>
+        <mat-slide-toggle formControlName="enabled"></mat-slide-toggle>
+      </div>
+
+      <!-- field -->
+      <mat-form-field>
+        <mat-label>Field</mat-label>
+        <mat-select formControlName="field">
+          @for (item of columns; track item) {
+            <mat-option [value]="item.column_name">{{ item.display_name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <div class="flex">
+        <!-- condition -->
+        <mat-form-field class="mr-1 w-1/2">
+          <mat-label>Condition</mat-label>
+          <mat-select formControlName="condition">
+            @for (item of constants.conditions; track item) {
+              <mat-option [value]="item.key">{{ item.value }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- data type -->
+        <mat-form-field class="w-1/2">
+          <mat-label>Data Type</mat-label>
+          <mat-select formControlName="data_type">
+            @for (item of constants.dataTypesByCondition[form.value.condition]; track item) {
+              <mat-option [value]="item.key">{{ item.value }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <div class="flex">
+        @if (form.value.condition === 'range') {
+          <!-- min -->
+          <mat-form-field class="mr-1 w-1/3">
+            <mat-label>Min</mat-label>
+            @if (form.value.data_type === 2) {
+              <ng-container>
+                <input [matDatepicker]="min" matInput formControlName="min" />
+                <mat-datepicker-toggle [for]="min" matIconSuffix></mat-datepicker-toggle>
+                <mat-datepicker #min></mat-datepicker>
+              </ng-container>
+            } @else {
+              <input matInput formControlName="min" type="number" />
+            }
+            @if (form.get('min').value === null) {
+              <mat-hint>No minimum</mat-hint>
+            }
+          </mat-form-field>
+
+          <!-- max -->
+          <mat-form-field class="mr-1 w-1/3">
+            <mat-label>Max</mat-label>
+            @if (form.value.data_type === 2) {
+              <ng-container>
+                <input [matDatepicker]="max" matInput formControlName="max" />
+                <mat-datepicker-toggle [for]="max" matIconSuffix></mat-datepicker-toggle>
+                <mat-datepicker #max></mat-datepicker>
+              </ng-container>
+            } @else {
+              <input matInput formControlName="max" type="number" />
+            }
+            @if (form.get('max').value === null) {
+              <mat-hint>No maximum</mat-hint>
+            }
+          </mat-form-field>
+
+          <!-- units -->
+          <mat-form-field class="w-1/3">
+            <mat-label>Units</mat-label>
+            <mat-select formControlName="units">
+              @for (item of constants.units; track item) {
+                <mat-option [value]="item.key">{{ item.value }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        } @else if (['exclude', 'include'].includes(form.value.condition)) {
+          <!-- text_match -->
+          <mat-form-field class="w-full">
+            <mat-label>Text Match</mat-label>
+            <input matInput formControlName="text_match" />
+          </mat-form-field>
+        }
+      </div>
+
+      <div class="flex">
+        <!-- severity -->
+        <mat-form-field class="mr-1 w-1/2">
+          <mat-label>Severity</mat-label>
+          <mat-select formControlName="severity">
+            @for (item of constants.severities; track item) {
+              <mat-option [value]="item.key">{{ item.value }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- labels -->
+        <mat-form-field class="w-1/2">
+          <mat-label>Label</mat-label>
+          <mat-select formControlName="status_label">
+            <mat-select-trigger>
+              @if (form.value.status_label) {
+                <seed-label [label]="labelLookup[form.value.status_label]"></seed-label>
+              }
+            </mat-select-trigger>
+            <mat-option [value]="null"></mat-option>
+            @for (item of labels; track item) {
+              <mat-option [value]="item.id">
+                <seed-label [label]="item"></seed-label>
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+
+  @if (formErrors) {
+    <ul class="rounded border border-red-400 bg-red-100 p-2">
+      @for (error of formErrors; track error) {
+        <li class="text-red-900">* {{ error }}</li>
+      }
+    </ul>
+  }
+
+  <!-- Actions -->
+  <div class="flex justify-end">
+    <mat-dialog-actions>
+      <button [disabled]="form.invalid" (click)="onSubmit()" mat-raised-button color="primary">Submit</button>
+    </mat-dialog-actions>
+    <mat-dialog-actions>
+      <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+    </mat-dialog-actions>
+  </div>
+</div>

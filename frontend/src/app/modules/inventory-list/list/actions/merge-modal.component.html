@@ -1,0 +1,89 @@
+<seed-modal-header [title]="title" [close]="close.bind(this)" titleIcon="fa-solid:code-merge"></seed-modal-header>
+
+<div>
+  @if (status === 'loading') {
+    <seed-progress-bar title="Loading..."></seed-progress-bar>
+  } @else if (status === 'review') {
+    <div>
+      <div class="my-5 ml-4 flex items-center text-lg font-medium">
+        <mat-icon svgIcon="fa-solid:building"></mat-icon>
+        <span class="ml-4">Resulting Merge</span>
+      </div>
+      <ag-grid-angular
+        [columnDefs]="colDefs"
+        [rowData]="postData"
+        [style.height.px]="78"
+        [theme]="gridTheme$ | async"
+        [style.--ag-spacing.px]="6"
+      >
+      </ag-grid-angular>
+
+      <mat-divider class="my-5"></mat-divider>
+
+      <div class="my-5 ml-4 flex items-center text-lg font-medium">
+        <mat-icon svgIcon="fa-solid:layer-group"></mat-icon>
+        <span class="ml-4 whitespace-nowrap">Selected Inventory</span>
+      </div>
+      <div class="text-secondary mb-2 ml-4 text-sm">
+        Records will be merged together from bottom to top, with the top record having the highest priority. Drag to reorder.
+      </div>
+
+      <ag-grid-angular
+        [columnDefs]="colDefs"
+        [rowData]="preData"
+        [gridOptions]="gridOptions"
+        [style.height.px]="gridHeight"
+        [theme]="gridTheme$ | async"
+        [style.--ag-spacing.px]="6"
+        (gridReady)="onPreGridReady($event)"
+        (rowDragEnd)="onRowDragEnd()"
+      >
+      </ag-grid-angular>
+    </div>
+  } @else if (status === 'confirm') {
+    <seed-alert type="warning">This action cannot be undone</seed-alert>
+
+    <div class="my-4" *transloco="let t">
+      <!-- <mat-divider class="m-4"></mat-divider> -->
+      <div class="my-4">
+        <seed-alert type="info" appearance="border" showIcon="false">
+          <ul class="mb-4 ml-8 list-disc">
+            <li>{{ t('MERGE_IN_CYCLE_MATCHES') }}</li>
+            <li>{{ t('LINK_OUT_CYCLE_MATCHES') }}</li>
+            <li>{{ t('MERGE_MULTIPLE_IN_CYCLE_MATCHES') }}</li>
+          </ul>
+
+          <div>{{ t('LISTING_ORG_MATCHING_CRITERIA') }}</div>
+          <ul class="ml-8 list-disc">
+            @for (column of matchingColumnDisplayNames; track $index) {
+              <li>{{ column }}</li>
+            }
+          </ul>
+        </seed-alert>
+      </div>
+    </div>
+  } @else if (status === 'complete') {
+    <div class="text-success text-lg font-medium">Merge completed successfully!</div>
+    <seed-alert class="mt-2" type="info">
+      <ul class="ml-8 list-disc">
+        @for (result of results; track $index) {
+          <li>{{ result }}</li>
+        }
+      </ul>
+    </seed-alert>
+  } @else if (status === 'error') {
+    <seed-alert type="error">{{ errorMessage }}</seed-alert>
+  }
+</div>
+
+<div class="mt-4 flex justify-end gap-2">
+  @if (status === 'review') {
+    <button (click)="onSubmit()" mat-raised-button color="primary">Merge</button>
+  }
+  @if (status === 'confirm') {
+    <button (click)="onConfirm()" mat-raised-button color="warn">Merge</button>
+  }
+  @if (status === 'complete' || status === 'error') {
+    <button (click)="close(status === 'complete')" mat-raised-button color="primary">Close</button>
+  }
+</div>

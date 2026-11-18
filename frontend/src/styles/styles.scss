@@ -1,0 +1,486 @@
+// Styles from this file will override 'vendors.scss' and SEED's base styles.
+@tailwind utilities;
+
+// colors for text alerts
+:root {
+  --primary-text-color: rgb(29 78 216);
+  --success-text-color: rgb(21 128 61);
+  --info-text-color: theme('colors.cyan.600');
+  --warning-text-color: rgb(180 83 9);
+  --error-text-color: rgb(185 28 28);
+  --header-row-bg: #f2f2f2; /* Light mode background */
+}
+
+seed-page.portfolio-summary-compact-buttons {
+  .mat-mdc-button,
+  .mat-mdc-raised-button,
+  .mat-mdc-outlined-button,
+  .mat-mdc-unelevated-button {
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    padding: 0 16px !important;
+    font-size: 0.8125rem !important;
+  }
+
+  .mat-mdc-icon-button {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    min-height: 36px !important;
+  }
+}
+
+.mat-mdc-snack-bar-container {
+  &.success-snackbar {
+    --mat-snack-bar-button-color: #fff;
+    --mat-snackbar-container-color: rgb(22 163 74 / var(--tw-bg-opacity, 1));
+    --mat-snackbar-supporting-text-color: #fff;
+  }
+
+  &.info-snackbar {
+    --mat-snack-bar-button-color: #fff;
+    --mat-snackbar-container-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));
+    --mat-snackbar-supporting-text-color: #fff;
+  }
+
+  &.alert-snackbar {
+    --mat-snack-bar-button-color: #fff;
+    --mat-snackbar-container-color: rgb(220 38 38 / var(--tw-bg-opacity, 1));
+    --mat-snackbar-supporting-text-color: #fff;
+  }
+
+  &.warning-snackbar {
+    --mat-snack-bar-button-color: #fff;
+    --mat-snackbar-container-color: rgb(245 158 11 / var(--tw-bg-opacity, 1));
+    --mat-snackbar-supporting-text-color: #fff;
+  }
+
+  &.soft-success-snackbar {
+    border-width: 1px;
+    border-color: rgb(22 163 74);
+    border-radius: 4px;
+
+    button {
+      span {
+        color: rgb(20 83 45);
+      }
+    }
+
+    --mat-snackbar-container-color: rgb(240 253 244 / var(--tw-bg-opacity, 1));
+    --mat-snackbar-supporting-text-color: rgb(21 128 61);
+  }
+
+  &.soft-info-snackbar {
+    border-width: 1px;
+    border-color: rgb(37 99 235);
+    border-radius: 4px;
+
+    button {
+      span {
+        color: rgb(30 58 138);
+      }
+    }
+
+    --mat-snackbar-container-color: rgb(239 246 255 / var(--tw-bg-opacity, 1));
+    --mat-snackbar-supporting-text-color: rgb(29 78 216);
+  }
+
+  &.soft-alert-snackbar {
+    border-width: 1px;
+    border-color: rgb(220 38 38);
+    border-radius: 4px;
+
+    button {
+      span {
+        color: rgb(127 29 29);
+      }
+    }
+
+    --mat-snackbar-container-color: rgb(254 242 242);
+    --mat-snackbar-supporting-text-color: rgb(185 28 28);
+  }
+
+  &.soft-warning-snackbar {
+    border-width: 1px;
+    border-radius: 4px;
+    border-color: rgb(217 119 6);
+
+    button {
+      span {
+        color: rgb(120 53 15);
+      }
+    }
+
+    --mat-snackbar-container-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));
+    --mat-snackbar-supporting-text-color: rgb(180 83 9);
+  }
+}
+
+.ag-root {
+  user-select: text;
+}
+
+.access-level-header {
+  background-color: rgb(219 234 254) !important; // blue-100
+}
+
+.access-level-cell {
+  background-color: rgb(239 246 255) !important; // blue-50
+}
+
+.dark .access-level-header {
+  background-color: rgb(30 58 138 / 40%) !important; // blue-900/40
+}
+
+.dark .access-level-cell {
+  background-color: rgb(30 64 175 / 20%) !important; // blue-800/20
+}
+
+.mat-mdc-slide-toggle.mat-mdc-slide-toggle-checked:not(.mat-disabled) .mdc-switch__shadow {
+  background-color: rgb(50 170 118);
+}
+
+.mat-mdc-slide-toggle.mat-mdc-slide-toggle-checked:not(.mat-disabled) .mdc-switch__track::after {
+  background-color: rgb(113 226 147) !important;
+}
+
+.label {
+  color: #fff !important;
+  font-weight: 700;
+  padding: 4px;
+  margin: 2px;
+  border-radius: 4px;
+  display: inline;
+  width: auto;
+
+  // Tight pill for labels shown in lists and grids (inventory Labels column, Add / Remove Labels modal)
+  &.compact {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    padding: 0 8px;
+    margin: 0;
+    line-height: 1;
+  }
+
+  &.orange {
+    background-color: theme('colors.orange.400');
+  }
+
+  &.red {
+    background-color: theme('colors.red.700');
+  }
+
+  &.gray {
+    background-color: theme('colors.stone.600');
+  }
+
+  &.green {
+    background-color: theme('colors.green.700');
+  }
+
+  &.blue {
+    background-color: theme('colors.blue.700');
+
+    &.light {
+      background-color: theme('colors.cyan.600') !important;
+    }
+  }
+}
+
+.even-row {
+  @apply bg-gray-100;
+}
+
+.inventory-grid {
+  .ag-header-cell {
+    .cell-menu {
+      overflow: visible !important;
+    }
+  }
+
+  .ng-star-inserted {
+    width: 100%;
+  }
+}
+
+.seed-dialog-panel {
+  @screen md {
+    @apply w-128;
+  }
+
+  .mat-mdc-dialog-container {
+    .mat-mdc-dialog-surface {
+      padding: 0 !important;
+    }
+  }
+}
+
+.seed-chip .mat-mdc-chip-action-label {
+  @apply inline !text-xs !text-gray-700 dark:!text-secondary;
+}
+
+.fit-content-select.mat-mdc-select-panel {
+  min-height: fit-content !important;
+}
+
+// dark components
+.dark {
+  --header-row-bg: #0f172b;
+
+  .even-row {
+    @apply bg-slate-900;
+  }
+
+  .mat-mdc-option-active {
+    .mdc-list-item__primary-text,
+    .mat-pseudo-checkbox::after {
+      color: lightblue !important;
+    }
+  }
+
+  .mat-mdc-table {
+    background: transparent;
+    color: theme('colors.gray.200');
+  }
+
+  .mat-mdc-header-cell {
+    color: theme('colors.gray.300');
+  }
+
+  .mat-mdc-cell {
+    color: theme('colors.gray.200');
+  }
+
+  .mat-mdc-paginator {
+    color: theme('colors.gray.300');
+  }
+
+  .nw-editor {
+    background-color: theme('colors.gray.800');
+  }
+
+  .mat-pseudo-checkbox-full.mat-pseudo-checkbox-checked {
+    background: white !important;
+  }
+}
+
+.h-full-page {
+  height: calc(100vh - 235px);
+}
+
+.h-full-page-tabs {
+  height: calc(100vh - 265px);
+}
+
+.fp-in-plan {
+  background-color: rgb(220 252 231) !important; // green-100
+}
+
+.dark .fp-in-plan {
+  background-color: rgb(20 83 45 / 40%) !important; // green-900/40
+}
+
+.filter-border {
+  .ag-floating-filter-input {
+    outline: 1px solid #cecece;
+    border-radius: 4px;
+    margin: 7px 0;
+  }
+
+  .dark & {
+    .ag-floating-filter-input {
+      outline: 1px solid #484848;
+    }
+  }
+}
+
+.stepper-disable-hover {
+  .mat-step-header {
+    background: transparent !important;
+  }
+
+  .mat-step-header:hover {
+    background-color: transparent !important;
+    border-radius: 25px !important;
+  }
+}
+
+.menu-option {
+  @apply flex w-full cursor-pointer items-center gap-4 rounded p-2 text-sm hover:bg-[#F4F5F4] hover:dark:bg-[#2E3B4A];
+}
+
+.vertical-divider {
+  @apply border;
+}
+
+.mock-button {
+  @apply whitespace-nowrap rounded-full border border-primary bg-primary px-2 py-1 text-white;
+}
+
+// Fix Material button color theming (M2 color attribute removed in AM v21)
+.mat-mdc-unelevated-button,
+.mat-mdc-raised-button {
+  &.mat-primary:not(:disabled),
+  &[color='primary']:not(:disabled) {
+    @apply bg-primary text-white hover:bg-primary-800 #{'!important'};
+  }
+
+  &.mat-primary:disabled,
+  &[color='primary']:disabled {
+    @apply cursor-not-allowed bg-primary/40 text-white/70 #{'!important'};
+  }
+
+  &.mat-warn:not(:disabled),
+  &[color='warn']:not(:disabled) {
+    @apply bg-warn text-white hover:bg-warn-800 #{'!important'};
+  }
+
+  &.mat-warn:disabled,
+  &[color='warn']:disabled {
+    @apply cursor-not-allowed bg-warn/40 text-white/70 #{'!important'};
+  }
+}
+
+.dark {
+  .mat-mdc-unelevated-button,
+  .mat-mdc-raised-button {
+    &.mat-primary:not(:disabled),
+    &[color='primary']:not(:disabled) {
+      background-color: #2196f3 !important;
+      color: #fff !important;
+
+      --mdc-filled-button-container-color: #2196f3;
+      --mdc-protected-button-container-color: #2196f3;
+      --mdc-filled-button-label-text-color: #fff;
+      --mdc-protected-button-label-text-color: #fff;
+
+      &:hover {
+        background-color: #74b0f5 !important;
+      }
+    }
+
+    &.mat-primary:disabled,
+    &[color='primary']:disabled {
+      background-color: rgba(#2196f3, 0.4) !important;
+      color: rgb(255 255 255 / 70%) !important;
+    }
+
+    &.mat-warn:not(:disabled),
+    &[color='warn']:not(:disabled) {
+      background-color: #ef4444 !important;
+      color: #fff !important;
+
+      --mdc-filled-button-container-color: #ef4444;
+      --mdc-protected-button-container-color: #ef4444;
+
+      &:hover {
+        background-color: #f87171 !important;
+      }
+    }
+
+    &.mat-warn:disabled,
+    &[color='warn']:disabled {
+      background-color: rgba(#ef4444, 0.4) !important;
+      color: rgb(255 255 255 / 70%) !important;
+    }
+  }
+}
+
+.menu-compact {
+  padding: 0.5rem;
+  max-height: 60vh;
+  overflow-y: auto;
+
+  .menu-option {
+    padding: 0.25rem !important;
+  }
+}
+
+.border-button-toggle-group {
+  @apply w-fit gap-0 rounded-full !important;
+
+  border: 1px solid rgb(170 170 170) !important;
+
+  .mat-button-toggle {
+    @apply m-0 rounded-none !important;
+  }
+
+  .mat-button-toggle:not(:first-child) {
+    border-left: 1px solid rgb(170 170 170) !important;
+  }
+
+  // Uncomment to change checked button to primary color
+  // .mat-button-toggle-checked {
+  //   @apply dark:bg-primary dark:bg-opacity-50 !important;
+  // }
+}
+
+.border-button-toggle-group-vertical {
+  @apply w-fit gap-0 !important;
+
+  .mat-button-toggle {
+    border: 1px solid rgb(170 170 170) !important;
+  }
+
+  .mat-button-toggle-checked {
+    @apply dark:bg-primary dark:bg-opacity-50 !important;
+  }
+}
+
+.compact-form {
+  label,
+  span {
+    @apply text-sm !important;
+  }
+
+  .mat-mdc-form-field-flex,
+  .mat-mdc-form-field-infix {
+    @apply my-auto h-10 min-h-10 text-sm !important;
+  }
+}
+
+.no-sub {
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none !important;
+  }
+}
+
+.no-header .mat-horizontal-stepper-header-container {
+  display: none !important;
+}
+
+.mat-mdc-text-field-wrapper .mdc-notched-outline__notch {
+  border-left: none !important;
+}
+
+.cdk-overlay-pane:has(.wide-select-lg) {
+  width: 700px !important;
+}
+
+.cdk-overlay-pane:has(.wide-select-md) {
+  width: 500px !important;
+}
+
+.cdk-overlay-pane:has(.wide-select-sm) {
+  width: 400px !important;
+}
+
+.strike-through {
+  mat-button-toggle:not(.mat-button-toggle-checked) {
+    span {
+      @apply line-through;
+    }
+  }
+}
+
+.accordion-sub-tables {
+  .mat-expansion-panel {
+    @apply m-0 !rounded-none border;
+  }
+
+  .mat-expansion-panel-body {
+    @apply p-0;
+  }
+}

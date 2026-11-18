@@ -1,0 +1,33 @@
+<seed-modal-header [close]="close.bind(this)" title="Compare UBIDs" titleIcon="fa-solid:code-compare"> </seed-modal-header>
+
+<div class="flex flex-col">
+  <div class="text-secondary my-4">
+    The comparison relies on the Jaccard Index, which ranges from 0.0 (no overlap) to 1.0 (perfect match).
+  </div>
+
+  <form [formGroup]="form">
+    <mat-form-field class="w-full" hideRequiredMarker>
+      <mat-label>UBID 1:</mat-label>
+      <input matInput formControlName="ubid1" type="text" maxlength="254" />
+      @if (form.controls.ubid1?.hasError('invalid')) {
+        <mat-error>Invalid UBID</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field class="w-full" hideRequiredMarker>
+      <mat-label>UBID 2:</mat-label>
+      <input matInput formControlName="ubid2" type="text" maxlength="254" />
+      <mat-error>Invalid UBID</mat-error>
+    </mat-form-field>
+  </form>
+
+  <div class="mx-auto h-7 text-lg">
+    @if (result !== null) {
+      UBID Comparison: <span class="font-bold"> {{ result | number: '1.2-2' }} - {{ jaccardQuality(result) }}</span>
+    }
+  </div>
+</div>
+
+<div class="mt-4 flex justify-end gap-2">
+  <button [disabled]="!form.valid" (click)="onSubmit()" mat-raised-button color="primary">Compare</button>
+</div>

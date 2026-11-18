@@ -1,0 +1,62 @@
+<seed-page-table-container *transloco="let t">
+  <div class="mb-3 flex justify-end">
+    <button (click)="createColumn()" mat-flat-button color="primary">
+      <mat-icon class="icon-size-4" svgIcon="fa-solid:plus"></mat-icon>
+      <span class="ml-2">{{ t('New Column') }}</span>
+    </button>
+  </div>
+  <mat-form-field class="w-full">
+    <mat-label>Filter</mat-label>
+    <input #input (keyup)="applyFilter($event)" matInput placeholder="Ex. ium" />
+  </mat-form-field>
+  <table [dataSource]="columnTableDataSource" mat-table>
+    <ng-container matColumnDef="canonical">
+      <th *matHeaderCellDef mat-header-cell>Canonical?</th>
+      <td *matCellDef="let c" mat-cell>
+        @if (!c.is_extra_data && !c.derived_column) {
+          <mat-icon class="icon-size-4" svgIcon="fa-solid:check" matTooltip="Canonical Column"></mat-icon>
+        }
+      </td>
+    </ng-container>
+    <ng-container matColumnDef="display_name">
+      <th *matHeaderCellDef mat-header-cell>Display Name</th>
+      <td *matCellDef="let c" mat-cell>{{ c.display_name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="column_name">
+      <th *matHeaderCellDef mat-header-cell>Column Name</th>
+      <td *matCellDef="let c" mat-cell>{{ c.column_name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="column_description">
+      <th *matHeaderCellDef mat-header-cell>Description</th>
+      <td *matCellDef="let c" mat-cell>{{ c.column_description }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="comstock_mapping">
+      <th *matHeaderCellDef mat-header-cell>Comstock Mapping</th>
+      <td *matCellDef="let c" mat-cell>{{ c.comstock_mapping ? t(`comstock.${c.comstock_mapping}`) : '' }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th class="select-none" *matHeaderCellDef mat-header-cell>Actions</th>
+      <td class="w-50 py-2" *matCellDef="let c" mat-cell>
+        <button class="mr-2" (click)="edit(c)" mat-icon-button>
+          <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil" matTooltip="Edit Column"></mat-icon>
+        </button>
+        <button class="mr-2" (click)="rename(c)" mat-icon-button>
+          <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:copy" matTooltip="Rename Column"></mat-icon>
+        </button>
+        @if (c.is_extra_data) {
+          <button (click)="delete(c)" mat-icon-button>
+            <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash" matTooltip="Delete Column"></mat-icon>
+          </button>
+        }
+      </td>
+    </ng-container>
+
+    <tr *matHeaderRowDef="columnTableColumns" mat-header-row></tr>
+    <tr *matRowDef="let row; columns: columnTableColumns" mat-row></tr>
+  </table>
+</seed-page-table-container>
+<mat-paginator [pageSizeOptions]="[10, 20]" showFirstLastButtons aria-label="Select page"> </mat-paginator>

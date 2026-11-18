@@ -1,0 +1,33 @@
+<div class="seed-horizontal-navigation-wrapper">
+  @for (item of navigation(); track item.id || $index) {
+    <!-- Skip the hidden items -->
+    @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
+      <!-- Basic -->
+      @if (item.type === 'basic') {
+        <seed-horizontal-navigation-basic-item
+          class="seed-horizontal-navigation-menu-item"
+          [item]="item"
+          [name]="name()"
+        ></seed-horizontal-navigation-basic-item>
+      }
+
+      <!-- Branch: aside, collapsible, group -->
+      @if (item.type === 'aside' || item.type === 'collapsible' || item.type === 'group') {
+        <seed-horizontal-navigation-branch-item
+          class="seed-horizontal-navigation-menu-item"
+          [item]="item"
+          [name]="name()"
+        ></seed-horizontal-navigation-branch-item>
+      }
+
+      <!-- Spacer -->
+      @if (item.type === 'spacer') {
+        <seed-horizontal-navigation-spacer-item
+          class="seed-horizontal-navigation-menu-item"
+          [item]="item"
+          [name]="name()"
+        ></seed-horizontal-navigation-spacer-item>
+      }
+    }
+  }
+</div>

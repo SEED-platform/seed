@@ -1,0 +1,34 @@
+<div [ngClass]="outline ? 'mx-auto mt-20 w-1/2 rounded-xl border bg-white p-10 dark:bg-gray-800' : 'm-10'">
+  <div>
+    <div class="flex justify-between">
+      <div class="mb-5 flex items-center space-x-2">
+        <mat-icon class="text-primary-600" svgIcon="fa-solid:hourglass-half"></mat-icon>
+        <div class="text-secondary text-xl font-medium leading-6">{{ title }}</div>
+      </div>
+      @if (progress) {
+        <div class="text-secondary flex flex-col justify-end">
+          {{ progressString }}
+        </div>
+      }
+    </div>
+
+    <mat-progress-bar class="animate-pulse" [mode]="getProgressMode(progress)" [value]="percent"></mat-progress-bar>
+  </div>
+
+  @if (showSubProgress && subProgress && subProgress < 100) {
+    <div class="mx-10 mt-15">
+      <div class="flex justify-between">
+        <div class="mb-5 flex items-center space-x-2">
+          <div class="text-secondary text-md leading-6">{{ subTitle }}</div>
+        </div>
+        @if (subProgress) {
+          <div class="text-secondary flex flex-col justify-end">
+            {{ subProgressString }}
+          </div>
+        }
+      </div>
+
+      <mat-progress-bar [value]="subPercent" mode="determinate"></mat-progress-bar>
+    </div>
+  }
+</div>

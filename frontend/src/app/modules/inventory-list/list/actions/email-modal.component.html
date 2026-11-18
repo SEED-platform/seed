@@ -1,0 +1,25 @@
+<seed-modal-header [close]="close.bind(this)" title="Email" titleIcon="fa-solid:envelope"></seed-modal-header>
+
+<div>
+  <div class="flex items-center gap-4">
+    <mat-form-field class="w-3/4">
+      <mat-label>Select an Email Template</mat-label>
+      <mat-select [(value)]="selectedTemplateId">
+        @for (template of emailTemplates; track $index) {
+          <mat-option [value]="template.id">{{ template.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <button [disabled]="!selectedTemplateId" (click)="onSubmit()" mat-raised-button color="primary">
+      <mat-icon class="scale-50" svgIcon="fa-solid:paper-plane"></mat-icon>Send
+    </button>
+  </div>
+
+  <div class="flex justify-end gap-2">
+    <span class="text-secondary">Not seeing your template? </span>
+    <a class="text-primary-600 underline" [routerLink]="'/organizations/email-templates'" (click)="close()"
+      >Create one in Organization Settings</a
+    >
+  </div>
+</div>

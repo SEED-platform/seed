@@ -1,0 +1,67 @@
+<seed-page
+  [config]="{
+    title: service ? service.system_name + ' — ' + service.name : 'Service Detail',
+    titleIcon: 'fa-solid:gears',
+    breadcrumbs: [
+      { label: 'Groups', link: layout.groupsLink },
+      { label: layout.group?.name, link: layout.groupLink, translate: false },
+      { label: 'Systems & Services', link: layout.groupLink + '/systems' },
+      'Service Detail',
+    ],
+  }"
+>
+</seed-page>
+
+<div class="bg-card m-5 flex flex-col gap-6 p-2.5">
+  @if (loading) {
+    <div class="text-secondary text-sm">Loading...</div>
+  } @else if (!service) {
+    <div class="text-secondary text-sm">Service not found</div>
+  } @else {
+    <!-- Add Properties button -->
+    <div class="flex justify-end">
+      <button (click)="addProperties()" mat-flat-button color="primary">
+        <mat-icon svgIcon="fa-solid:plus"></mat-icon>
+        Add Properties
+      </button>
+    </div>
+
+    <!-- Connected Properties -->
+    <div>
+      <div class="text-secondary mb-3 text-sm font-semibold uppercase tracking-wide">Connected Properties</div>
+
+      @if (service.properties.length) {
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="text-secondary bg-default border-b text-left text-xs font-semibold uppercase tracking-wide">
+              <th class="px-3 py-2">Property</th>
+              <th class="px-3 py-2">Connected Via</th>
+              <th class="px-3 py-2">Connection Type</th>
+              <th class="px-3 py-2">Has Meter Data</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (prop of service.properties; track prop.property_id) {
+              <tr class="border-b hover:bg-default">
+                <td class="px-3 py-2">
+                  <a class="text-primary hover:underline" [routerLink]="['/', inventoryType, prop.property_view_id]">
+                    {{ prop.property_display_name || 'Property ' + prop.property_id }}
+                  </a>
+                </td>
+                <td class="px-3 py-2">
+                  <a class="text-primary hover:underline" [routerLink]="['/', inventoryType, prop.property_view_id, 'meters']">
+                    {{ prop.meter_alias || 'Meter ' + prop.meter_id }}
+                  </a>
+                </td>
+                <td class="px-3 py-2">{{ prop.meter_type }}</td>
+                <td class="px-3 py-2">{{ prop.has_meter_data ? 'Yes' : 'No' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div class="text-secondary text-xs">No properties connected to this service</div>
+      }
+    </div>
+  }
+</div>

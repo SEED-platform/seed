@@ -1,0 +1,74 @@
+<div class="border-bottom mx-2 flex gap-4 rounded-lg">
+  <div class="text-secondary font-bold">Cycle:</div>
+  <div class="">{{ cycle?.name }}</div>
+</div>
+
+<mat-divider class="mb-2 mt-4"></mat-divider>
+<div class="flex items-center justify-between">
+  <div>
+    <button (click)="backToMapping.emit()" mat-stroked-button>Back to Mapping</button>
+  </div>
+  <div class="flex items-center gap-4">
+    <button
+      [disabled]="!dqcComplete"
+      [ngClass]="{ 'animate-pulse bg-gray-500': !dqcComplete }"
+      (click)="showDataQualityResults()"
+      mat-stroked-button
+    >
+      Data Quality Results
+    </button>
+    <button
+      [disabled]="loading"
+      [ngClass]="{ 'animate-pulse bg-gray-500': loading }"
+      (click)="saveData()"
+      color="primary"
+      mat-raised-button
+    >
+      Save Data
+    </button>
+  </div>
+</div>
+<mat-divider class="my-2"></mat-divider>
+
+@if (propertyResults.length) {
+  <div class="mb-4 ml-4 flex items-center gap-4 font-medium">
+    <mat-icon svgIcon="fa-solid:layer-group"></mat-icon>
+    <span>Properties</span>
+    <div class="vertical-divider"></div>
+    <div class="mx-3 my-2 flex gap-4">
+      <div class="h-5 w-10 rounded border bg-primary bg-opacity-25"></div>
+      <div class="text-secondary italic">Access Level Info</div>
+    </div>
+  </div>
+
+  <ag-grid-angular
+    [rowData]="propertyResults"
+    [columnDefs]="propertyDefs"
+    [theme]="gridTheme$ | async"
+    [pagination]="true"
+    [paginationPageSize]="20"
+    [domLayout]="'autoHeight'"
+  >
+  </ag-grid-angular>
+  <mat-divider class="my-5"></mat-divider>
+}
+@if (taxlotResults.length) {
+  <div class="mb-4 ml-4 flex items-center gap-4 font-medium">
+    <mat-icon svgIcon="fa-solid:layer-group"></mat-icon>
+    <span>Tax Lots</span>
+    <div class="vertical-divider"></div>
+    <div class="mx-3 my-2 flex gap-4">
+      <div class="h-5 w-10 rounded border bg-primary bg-opacity-25"></div>
+      <div class="text-secondary italic">Access Level Info</div>
+    </div>
+  </div>
+  <ag-grid-angular
+    [rowData]="taxlotResults"
+    [columnDefs]="taxlotDefs"
+    [theme]="gridTheme$ | async"
+    [pagination]="true"
+    [paginationPageSize]="20"
+    [domLayout]="'autoHeight'"
+  >
+  </ag-grid-angular>
+}

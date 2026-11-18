@@ -1,0 +1,311 @@
+<seed-page [config]="{ title: 'Default Reports', titleIcon: 'fa-solid:chart-column' }">
+  <div class="content mx-5 my-2">
+    <!-- Report Configuration Bar -->
+    <div class="flex items-center gap-4">
+      <div class="compact-form flex-1">
+        <mat-form-field class="w-full">
+          <mat-label class="text-secondary">Report Configuration</mat-label>
+          <mat-select [value]="selectedConfigId" (selectionChange)="changeReportConfig($event.value)">
+            <mat-option [value]="0">-- Select --</mat-option>
+            @for (config of reportConfigurations; track config.id) {
+              <mat-option [value]="config.id">{{ config.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      @if (isOwner) {
+        <div class="flex gap-1">
+          <button
+            [disabled]="!currentConfig?.id || !reportModified"
+            (click)="saveReportConfig()"
+            mat-icon-button
+            title="Save"
+            aria-label="Save"
+          >
+            <mat-icon class="scale-75 text-green-600" svgIcon="fa-solid:floppy-disk"></mat-icon>
+          </button>
+          <button
+            [disabled]="!currentConfig || currentConfig.id === null"
+            (click)="renameConfig()"
+            mat-icon-button
+            title="Rename"
+            aria-label="Rename"
+          >
+            <mat-icon class="scale-75 fill-cyan-600" svgIcon="fa-solid:pencil"></mat-icon>
+          </button>
+          <button
+            [disabled]="!currentConfig || currentConfig.id === null"
+            (click)="deleteConfig()"
+            mat-icon-button
+            title="Delete"
+            aria-label="Delete"
+          >
+            <mat-icon class="scale-75 text-red-500" svgIcon="fa-solid:trash"></mat-icon>
+          </button>
+          <button (click)="newConfig()" mat-icon-button title="New" aria-label="New">
+            <mat-icon class="scale-75 fill-primary-700" svgIcon="fa-solid:plus"></mat-icon>
+          </button>
+        </div>
+      }
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <!-- Controls Form -->
+    <form class="compact-form my-4 grid grid-cols-3 gap-x-8 gap-y-2" [formGroup]="form">
+      <!-- Col 1: Access Level -->
+      <div class="flex flex-col">
+        <mat-form-field>
+          <mat-label class="text-secondary">Access Level</mat-label>
+          <mat-select formControlName="accessLevelIndex" panelClass="wide-select-sm">
+            @for (name of levelNames; track $index) {
+              <mat-option [value]="$index">{{ name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label class="text-secondary">Access Level Instance</mat-label>
+          <mat-select formControlName="accessLevelInstanceId" panelClass="wide-select-sm">
+            @for (inst of potentialLevelInstances; track inst.id) {
+              <mat-option [value]="inst.id">{{ inst.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Col 2: Cycles & Filter Group -->
+      <div class="flex flex-col">
+        <mat-form-field>
+          <mat-label class="text-secondary">Cycles to Include</mat-label>
+          <mat-select formControlName="cycles" multiple panelClass="wide-select">
+            @for (cycle of cycles; track cycle.id) {
+              <mat-option [value]="cycle.id">{{ cycle.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label class="text-secondary">Filter Group</mat-label>
+          <mat-select formControlName="filterGroupId" panelClass="wide-select-sm">
+            <mat-option [value]="null">None</mat-option>
+            @for (group of filterGroups; track group.id) {
+              <mat-option [value]="group.id">{{ group.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Col 3: Axes & Aggregation + Update -->
+      <div class="flex flex-col">
+        <mat-form-field>
+          <mat-label class="text-secondary">X Axis</mat-label>
+          <mat-select formControlName="xAxis" panelClass="wide-select-lg">
+            @for (v of xAxisVars; track v.varName) {
+              <mat-option [value]="v.varName">{{ v.name }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>
+            <a class="text-primary hover:underline" routerLink="/organizations/settings/display-fields">Add more display fields</a>
+          </mat-hint>
+        </mat-form-field>
+        <mat-form-field>
+          <mat-label class="text-secondary">Y Axis</mat-label>
+          <mat-select formControlName="yAxis" panelClass="wide-select-lg">
+            @for (v of yAxisVars; track v.varName) {
+              <mat-option [value]="v.varName">{{ v.name }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>
+            <a class="text-primary hover:underline" routerLink="/organizations/settings/display-fields">Add more display fields</a>
+          </mat-hint>
+        </mat-form-field>
+        <div class="flex items-center gap-4">
+          <mat-form-field class="flex-1">
+            <mat-label class="text-secondary">Aggregation Type</mat-label>
+            <mat-select formControlName="aggregationType">
+              <mat-option value="Sum">Sum</mat-option>
+              <mat-option value="Average">Average</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button
+            class="mt-1 inline-flex h-9 shrink-0 cursor-pointer items-center gap-1 rounded-full bg-primary px-4 text-sm text-white hover:bg-primary-800 disabled:cursor-not-allowed disabled:opacity-50"
+            [disabled]="!form.value.accessLevelInstanceId"
+            (click)="updateChartData()"
+          >
+            Update Charts
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <mat-divider class="my-2"></mat-divider>
+
+    <!-- Charts -->
+    <div class="grid grid-cols-2 gap-6 rounded-lg bg-white p-4 dark:bg-gray-900">
+      <!-- Scatter Chart -->
+      <div>
+        <div class="text-secondary mb-1 text-center text-sm font-medium">{{ chart1Title }}</div>
+        <div class="relative h-[400px]">
+          <canvas #scatterCanvas></canvas>
+          @if (scatterStatusMessage) {
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="bg-card rounded-lg p-4 text-center shadow">
+                <span class="text-secondary">{{ scatterStatusMessage }}</span>
+                @if (scatterLoading) {
+                  <mat-progress-bar class="mt-2" mode="indeterminate"></mat-progress-bar>
+                }
+              </div>
+            </div>
+          }
+        </div>
+        <div class="my-1">
+          <button class="text-xs" (click)="resetScatterZoom()" mat-stroked-button>Reset Zoom</button>
+        </div>
+        <!-- Scatter Property Counts -->
+        @if (scatterPropertyCounts.length) {
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-secondary border-b text-left">
+                <th class="p-1">Cycle</th>
+                <th class="p-1">Properties with Data</th>
+                <th class="p-1">Total Properties</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of scatterPropertyCounts; track row.yr_e) {
+                <tr class="border-b">
+                  <td class="p-1">
+                    <span class="mr-2 inline-block h-3 w-3 rounded-full" [style.backgroundColor]="row.color"></span>
+                    {{ row.cycle }}
+                  </td>
+                  <td class="p-1">{{ row['num_properties_w-data'] }}</td>
+                  <td class="p-1">{{ row.num_properties }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+
+      <!-- Bar Chart -->
+      <div>
+        <div class="text-secondary mb-1 text-center text-sm font-medium">{{ chart2Title }}</div>
+        <div class="relative h-[400px]">
+          <canvas #barCanvas></canvas>
+          @if (aggStatusMessage) {
+            <div class="absolute inset-0 flex items-center justify-center">
+              <div class="bg-card rounded-lg p-4 text-center shadow">
+                <span class="text-secondary">{{ aggStatusMessage }}</span>
+                @if (aggLoading) {
+                  <mat-progress-bar class="mt-2" mode="indeterminate"></mat-progress-bar>
+                }
+              </div>
+            </div>
+          }
+        </div>
+        <div class="my-1">
+          <button class="text-xs" (click)="resetBarZoom()" mat-stroked-button>Reset Zoom</button>
+        </div>
+        <!-- Bar Property Counts -->
+        @if (aggPropertyCounts.length) {
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-secondary border-b text-left">
+                <th class="p-1">Cycle</th>
+                <th class="p-1">Properties with Data</th>
+                <th class="p-1">Total Properties</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of aggPropertyCounts; track row.yr_e) {
+                <tr class="border-b">
+                  <td class="p-1">
+                    <span class="mr-2 inline-block h-3 w-3" [style.backgroundColor]="row.color"></span>
+                    {{ row.cycle }}
+                  </td>
+                  <td class="p-1">{{ row['num_properties_w-data'] }}</td>
+                  <td class="p-1">{{ row.num_properties }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+
+    <!-- Export Buttons -->
+    <div class="mt-3 flex justify-end gap-2">
+      <button [disabled]="!hasChartData" (click)="openExportModal()" mat-stroked-button>
+        <mat-icon class="scale-50" svgIcon="fa-solid:table"></mat-icon>
+        Export Data
+      </button>
+      <button [disabled]="!hasChartData" (click)="downloadCharts()" mat-stroked-button>
+        <mat-icon class="scale-50" svgIcon="fa-solid:image"></mat-icon>
+        Export Charts
+      </button>
+    </div>
+
+    <!-- Statistics Section -->
+    @if (axisData && objectKeys(axisData).length) {
+      <mat-divider class="my-4"></mat-divider>
+      <div class="text-lg font-medium">Statistics</div>
+      <mat-accordion multi>
+        @for (cycle of objectKeys(axisData); track cycle) {
+          <mat-expansion-panel class="!bg-white dark:!bg-gray-900">
+            <mat-expansion-panel-header>
+              <mat-panel-title>{{ cycle }}</mat-panel-title>
+            </mat-expansion-panel-header>
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-secondary border-b text-left">
+                    <th class="p-1">Axis</th>
+                    <th class="p-1">Access Level Instance</th>
+                    <th class="p-1">Sum</th>
+                    <th class="p-1">Min</th>
+                    <th class="p-1">5th %</th>
+                    <th class="p-1">25th %</th>
+                    <th class="p-1">Mean</th>
+                    <th class="p-1">Median</th>
+                    <th class="p-1">75th %</th>
+                    <th class="p-1">95th %</th>
+                    <th class="p-1">Max</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (axisKey of objectKeys(axisData[cycle]); track axisKey) {
+                    <tr class="border-b">
+                      <td class="p-1 font-medium">{{ axisKey }}</td>
+                      @for (val of axisData[cycle][axisKey].values; track $index) {
+                        <td class="p-1">{{ formatStatValue(axisKey, val) }}</td>
+                      }
+                    </tr>
+                    @if (axisData[cycle][axisKey].children) {
+                      @for (childKey of objectKeys(axisData[cycle][axisKey].children); track childKey) {
+                        <tr class="border-b bg-gray-50 dark:bg-gray-800">
+                          <td class="p-1"></td>
+                          <td class="p-1">{{ childKey }}</td>
+                          @for (val of axisData[cycle][axisKey].children[childKey]; track $index; let i = $index) {
+                            @if (i > 0) {
+                              <td class="p-1">{{ formatStatValue(axisKey, val) }}</td>
+                            }
+                          }
+                        </tr>
+                      }
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+    }
+  </div>
+
+  @if (scatterLoading && aggLoading) {
+    <div class="absolute top-20 w-full">
+      <seed-progress-bar [outline]="true" title="Loading Report Data..."></seed-progress-bar>
+    </div>
+  }
+</seed-page>

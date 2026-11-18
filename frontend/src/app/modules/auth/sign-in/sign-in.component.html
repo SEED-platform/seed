@@ -1,0 +1,152 @@
+@if (!twoFactorStep) {
+  <!-- Title -->
+  <div class="mt-8 text-4xl font-extrabold leading-tight tracking-tight">Sign in</div>
+  @if (allowSignUp) {
+    <div class="mt-0.5 flex items-baseline font-medium">
+      <div>Don't have an account?</div>
+      <a class="ml-1 text-primary-500 hover:underline focus:underline" [routerLink]="['/sign-up']">Sign up</a>
+    </div>
+  }
+
+  <!-- Alert -->
+  @if (showAlert) {
+    <seed-alert class="-mb-4 mt-8" [@shake]="alert.type === 'error'" [showIcon]="false" [type]="alert.type" appearance="outline">
+      {{ alert.message }}
+    </seed-alert>
+  }
+
+  <!-- Sign in form -->
+  <form class="mt-8" [formGroup]="signInForm">
+    <!-- Email field -->
+    <mat-form-field class="w-full">
+      <mat-label>Email address</mat-label>
+      <input class="text-lg sm:text-base" id="email" matInput type="email" autocomplete="email" maxlength="254" formControlName="email" />
+      @if (signInForm.get('email').hasError('required')) {
+        <mat-error>Email address is required</mat-error>
+      } @else if (signInForm.get('email').hasError('email')) {
+        <mat-error>Please enter a valid email address</mat-error>
+      }
+    </mat-form-field>
+
+    <!-- Password field -->
+    <mat-form-field class="w-full">
+      <mat-label>Password</mat-label>
+      <input
+        class="text-lg sm:text-base"
+        id="password"
+        #passwordField
+        matInput
+        type="password"
+        autocomplete="current-password"
+        formControlName="password"
+      />
+      <button
+        (click)="passwordField.type === 'password' ? (passwordField.type = 'text') : (passwordField.type = 'password')"
+        mat-icon-button
+        type="button"
+        matSuffix
+      >
+        @if (passwordField.type === 'password') {
+          <mat-icon class="icon-size-5" svgIcon="fa-solid:eye-slash"></mat-icon>
+        } @else if (passwordField.type === 'text') {
+          <mat-icon class="icon-size-5" svgIcon="fa-solid:eye"></mat-icon>
+        }
+      </button>
+      <mat-error>Password is required</mat-error>
+    </mat-form-field>
+
+    <!-- Actions -->
+    <div class="mt-1.5 inline-flex w-full items-center justify-end">
+      <a class="text-md font-medium text-primary-500 hover:underline focus:underline" [routerLink]="['/forgot-password']"
+        >Forgot password?</a
+      >
+    </div>
+
+    @if (termsPreviouslyAccepted) {
+      <div class="text-secondary mt-1.5 flex w-full items-center gap-2">
+        <mat-icon class="text-green-600 icon-size-5" svgIcon="fa-solid:circle-check"></mat-icon>
+        <span>Already accepted Data Terms</span>
+        <button class="text-primary-500" (click)="showTermsOfService()" mat-button type="button">Review terms</button>
+      </div>
+    } @else {
+      <div class="mt-1.5 flex w-full flex-col">
+        <mat-checkbox
+          class="-ml-2"
+          #termsCheckbox
+          [class.mb-5]="!isTermsInvalid"
+          (keydown.enter)="termsCheckbox.toggle(); $event.preventDefault()"
+          color="primary"
+          formControlName="terms"
+        >
+          <span>I agree with the&nbsp;</span>
+          <a class="cursor-pointer text-primary-500 hover:underline focus:underline" (click)="$event.preventDefault(); showTermsOfService()"
+            >Data Terms</a
+          >
+        </mat-checkbox>
+        @if (isTermsInvalid) {
+          <mat-error class="h-5 text-sm font-medium" @fadeInTop>You must accept the Data Terms.</mat-error>
+        }
+      </div>
+    }
+
+    <!-- Submit button -->
+    <button class="seed-mat-button-large mt-6 w-full" [disabled]="signInForm.disabled" (click)="signIn()" mat-flat-button color="primary">
+      @if (!signInForm.disabled) {
+        <span>Sign in</span>
+      } @else {
+        <mat-progress-spinner [diameter]="24" mode="indeterminate"></mat-progress-spinner>
+      }
+    </button>
+  </form>
+} @else {
+  <ng-container *transloco="let t">
+    <!-- Title -->
+    <div class="mt-8 text-4xl font-extrabold leading-tight tracking-tight">{{ t('Two-factor authentication') }}</div>
+    <div class="text-secondary mt-0.5 font-medium">
+      @if (twoFactorMethod === 'email') {
+        {{ t('A verification code has been sent to your email address.') }}
+      } @else {
+        {{ t('Enter the code from your authenticator app.') }}
+      }
+    </div>
+
+    <!-- Alert -->
+    @if (showAlert) {
+      <seed-alert class="-mb-4 mt-8" [@shake]="alert.type === 'error'" [showIcon]="false" [type]="alert.type" appearance="outline">
+        {{ alert.message }}
+      </seed-alert>
+    }
+
+    <!-- OTP form -->
+    <form class="mt-8" [formGroup]="otpForm">
+      <mat-form-field class="w-full">
+        <mat-label>{{ t('Verification code') }}</mat-label>
+        <input class="text-lg sm:text-base" id="otp-token" matInput type="text" autocomplete="one-time-code" formControlName="otp_token" />
+        @if (otpForm.get('otp_token').hasError('required')) {
+          <mat-error>{{ t('Verification code is required') }}</mat-error>
+        }
+      </mat-form-field>
+
+      <!-- Submit button -->
+      <button class="seed-mat-button-large mt-6 w-full" [disabled]="otpForm.disabled" (click)="submitOtp()" mat-flat-button color="primary">
+        @if (!otpForm.disabled) {
+          <span>{{ t('Verify') }}</span>
+        } @else {
+          <mat-progress-spinner [diameter]="24" mode="indeterminate"></mat-progress-spinner>
+        }
+      </button>
+
+      <!-- Resend code (email only) -->
+      @if (twoFactorMethod === 'email') {
+        <button class="mt-4 w-full" [disabled]="otpForm.disabled" (click)="resendCode()" mat-stroked-button type="button">
+          {{ t('Resend code') }}
+        </button>
+      }
+
+      <!-- Back -->
+      <button class="mt-2 w-full" [disabled]="otpForm.disabled" (click)="backToSignIn()" mat-button type="button">
+        {{ t('Back to sign in') }}
+      </button>
+    </form>
+  </ng-container>
+}

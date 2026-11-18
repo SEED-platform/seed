@@ -1,0 +1,19 @@
+<div class="mb-5 flex flex-col gap-4">
+  <div class="ml-4 flex items-center gap-2 text-lg font-medium">
+    <mat-icon svgIcon="fa-solid:atom"></mat-icon>
+    <span>Property Elements ({{ elements.length }})</span>
+  </div>
+
+  @if (loading) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  } @else {
+    <ag-grid-angular
+      [columnDefs]="columnDefs"
+      [rowData]="elements"
+      [theme]="gridTheme$ | async"
+      [style.height.px]="getGridHeight()"
+      [tooltipShowDelay]="300"
+      (gridReady)="onGridReady($event)"
+    ></ag-grid-angular>
+  }
+</div>

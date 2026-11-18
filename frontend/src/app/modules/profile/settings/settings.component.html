@@ -1,0 +1,27 @@
+<div class="flex-auto p-6 sm:p-10" *transloco="let t">
+  <div class="max-w-2xl">
+    <h2 class="mb-6 flex items-center text-center text-2xl">
+      <mat-icon class="mr-2 text-primary-900 dark:text-primary-300" svgIcon="fa-solid:gear"></mat-icon>
+      {{ t('Display') }}
+    </h2>
+
+    <div class="bg-card flex flex-col overflow-hidden rounded-2xl p-8 shadow">
+      <mat-button-toggle-group
+        class="border-button-toggle-group flex w-full"
+        [disabled]="saving"
+        [value]="scheme"
+        (change)="setScheme($event.value)"
+        aria-label="Color scheme"
+      >
+        <mat-button-toggle class="flex-1" value="light">
+          <mat-icon class="mr-2 icon-size-5" svgIcon="heroicons-solid:sun"></mat-icon>
+          {{ t('Light') }}
+        </mat-button-toggle>
+        <mat-button-toggle class="flex-1" value="dark">
+          <mat-icon class="mr-2 icon-size-5" svgIcon="heroicons-solid:moon"></mat-icon>
+          {{ t('Dark') }}
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+  </div>
+</div>

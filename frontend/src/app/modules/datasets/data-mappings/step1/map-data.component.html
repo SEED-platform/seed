@@ -1,0 +1,83 @@
+<div class="flex flex-row gap-4">
+  <!-- CYCLE -->
+
+  <div class="border-bottom my-auto flex gap-4 rounded-lg">
+    <div class="text text-secondary font-bold">Cycle:</div>
+    <div class="">{{ cycle?.name }}</div>
+  </div>
+  <div class="vertical-divider"></div>
+
+  <!-- PROFILE -->
+  <div class="flex gap-4">
+    <div class="text text-secondary my-auto font-bold">Column Profile:</div>
+    <mat-select class="h-10 w-60 rounded border border-gray-500 p-3 text-sm" [(value)]="profile" placeholder="No Profile Selected">
+      <mat-option [value]="null"></mat-option>
+      @for (profile of columnMappingProfiles; track profile.id) {
+        <mat-option [value]="profile">{{ profile.name }}</mat-option>
+      }
+    </mat-select>
+    <!-- Profile Controls -->
+    <button [disabled]="!profile" (click)="applyProfile()" matTooltip="Apply Profile" mat-icon-button>
+      <mat-icon class="scale-75 fill-primary-700" svgIcon="fa-solid:check"></mat-icon>
+    </button>
+    <button [disabled]="!profile" (click)="saveProfile()" matTooltip="Save Profile" mat-icon-button>
+      <mat-icon class="scale-75 fill-green-700" svgIcon="fa-solid:floppy-disk"></mat-icon>
+    </button>
+    <button (click)="createProfile()" matTooltip="Create Profile" mat-icon-button>
+      <mat-icon class="scale-75 fill-primary-700" svgIcon="fa-solid:plus"></mat-icon>
+    </button>
+  </div>
+</div>
+
+<!-- GRID CONTROLS -->
+<mat-divider class="my-4"></mat-divider>
+<div class="flex gap-2">
+  <!-- <button mat-stroked-button>Toggle Omitted</button> -->
+  <mat-button-toggle-group
+    class="border-button-toggle-group"
+    [(ngModel)]="defaultInventoryType"
+    (change)="setAllInventoryType($event.value)"
+    name="inventoryType"
+    appearance="standard"
+  >
+    <mat-button-toggle value="Property">Properties</mat-button-toggle>
+    <mat-button-toggle value="Tax Lot">Tax Lots</mat-button-toggle>
+  </mat-button-toggle-group>
+  <button [disabled]="!rowData.length" (click)="copyHeadersToSeed()" mat-stroked-button>
+    Copy Data File Headers directly to SEED headers
+  </button>
+</div>
+
+<!-- GRID HEADER -->
+<mat-divider class="my-5"></mat-divider>
+<div class="flex items-center justify-between">
+  <div class="mx-3 my-2 flex gap-4">
+    <div class="h-5 w-10 rounded border bg-primary bg-opacity-25"></div>
+    <div class="text-secondary italic">Editable Cell</div>
+  </div>
+
+  <!-- errors -->
+  <div>
+    @if (errorMessages.length) {
+      <seed-alert class="mb-4" type="error" showIcon="false">
+        <ul class="pl-4">
+          @for (error of errorMessages; track $index) {
+            <li class="list-disc">{{ error }}</li>
+          }
+        </ul>
+      </seed-alert>
+    }
+  </div>
+
+  <button class="mb-2" [disabled]="!dataValid" (click)="mapData()" mat-raised-button color="primary">Map Data</button>
+</div>
+
+<ag-grid-angular
+  [rowData]="rowData"
+  [columnDefs]="columnDefs"
+  [gridOptions]="gridOptions"
+  [theme]="gridTheme$ | async"
+  [style.height.px]="gridHeight"
+  (gridReady)="onGridReady($event)"
+>
+</ag-grid-angular>

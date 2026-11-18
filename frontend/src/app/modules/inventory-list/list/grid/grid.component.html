@@ -1,0 +1,25 @@
+<seed-inventory-grid-controls
+  [currentUser]="currentUser"
+  [gridApi]="gridApi"
+  [pageRowCount]="rowData?.length ?? 0"
+  [pagination]="pagination"
+  [selectedViewIds]="selectedViewIds"
+  (pageChange)="onPageChange($event)"
+  (selectAllMatching)="selectAllMatching.emit()"
+>
+  <ng-content></ng-content>
+</seed-inventory-grid-controls>
+
+<ag-grid-angular
+  class="inventory-grid min-h-0 w-full flex-auto"
+  [columnDefs]="columnDefs"
+  [context]="gridContext"
+  [defaultColDef]="defaultColDef"
+  [gridOptions]="gridOptions"
+  [paginationPageSize]="agPageSize"
+  [rowData]="rowData"
+  [theme]="gridTheme$ | async"
+  (gridReady)="onGridReady($event)"
+  (filterChanged)="onFilterSortChange()"
+  (sortChanged)="onFilterSortChange()"
+/>

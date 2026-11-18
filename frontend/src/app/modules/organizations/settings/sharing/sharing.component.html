@@ -1,0 +1,231 @@
+<seed-page
+  [config]="{
+    titleIcon: 'fa-solid:share-from-square',
+    title: 'Public Data Sharing',
+    breadcrumbs: ['Organization Settings'],
+    sideNavToggle: true,
+  }"
+>
+  <div class="flex-auto p-6 sm:p-10" *transloco="let t">
+    @if (loading) {
+      <div class="flex justify-center py-10">
+        <mat-progress-spinner [diameter]="32" mode="indeterminate"></mat-progress-spinner>
+      </div>
+    } @else if (loadError) {
+      <seed-alert [showIcon]="true" type="error" appearance="outline">
+        {{ t('Failed to load Public Data Sharing settings. Please try refreshing the page.') }}
+      </seed-alert>
+    } @else if (organization) {
+      <div class="max-w-4xl">
+        @if (!canManage) {
+          <seed-alert [showIcon]="true" type="warning" appearance="outline">
+            @if (!organization.is_parent) {
+              {{ t('Sharing settings are not available for sub-organizations.') }}
+            } @else {
+              {{ t('You must be an organization owner to view and manage sharing settings.') }}
+            }
+          </seed-alert>
+        } @else {
+          <div class="bg-card mb-6 flex flex-col gap-y-2 rounded-2xl p-6 shadow">
+            <mat-slide-toggle [checked]="organization.public_feed_enabled" (change)="toggleFeed($event.checked)">
+              {{ t('Enable Public Endpoints') }}
+            </mat-slide-toggle>
+            <div class="prose ml-10 mt-2 max-w-none">
+              {{
+                t('When enabled, data is accessible via the /v3/public endpoints. Configure which fields are shared in the table below.')
+              }}
+            </div>
+          </div>
+
+          @if (organization.public_feed_enabled) {
+            <mat-accordion class="mb-6 block">
+              <mat-expansion-panel class="bg-card rounded-2xl shadow">
+                <mat-expansion-panel-header collapsedHeight="56px">
+                  <mat-panel-title class="select-none font-medium leading-tight">{{ t('URL_OPTIONS') }}</mat-panel-title>
+                </mat-expansion-panel-header>
+                <div class="prose max-w-none">
+                  <h3>{{ t('JSON/HTML') }}</h3>
+                  <p class="flex flex-wrap items-center gap-2">
+                    {{ t('PUBLIC_JSON') }}:
+                    <strong>{{ baseUrl }}/api/v3/public/organizations/{{ organization.id }}/feed.json</strong>
+                    <button
+                      [matTooltip]="t('Test')"
+                      [attr.aria-label]="t('Open the public JSON feed in a new tab')"
+                      (click)="openInNewTab(baseUrl + '/api/v3/public/organizations/' + organization.id + '/feed.json')"
+                      type="button"
+                      mat-icon-button
+                      color="primary"
+                    >
+                      <mat-icon class="icon-size-4" svgIcon="fa-solid:arrow-up-right-from-square"></mat-icon>
+                    </button>
+                  </p>
+                  <p class="flex flex-wrap items-center gap-2">
+                    {{ t('PUBLIC_HTML') }}:
+                    <strong>{{ baseUrl }}/api/v3/public/organizations/{{ organization.id }}/feed.html</strong>
+                    <button
+                      [matTooltip]="t('Test')"
+                      [attr.aria-label]="t('Open the public HTML feed in a new tab')"
+                      (click)="openInNewTab(baseUrl + '/api/v3/public/organizations/' + organization.id + '/feed.html')"
+                      type="button"
+                      mat-icon-button
+                      color="primary"
+                    >
+                      <mat-icon class="icon-size-4" svgIcon="fa-solid:arrow-up-right-from-square"></mat-icon>
+                    </button>
+                  </p>
+                  <p>{{ t('SHARING_QUERY_PARAMS') }}:</p>
+                  <ul>
+                    <li><strong>page</strong> &mdash; {{ t('SHARING_PAGE') }}</li>
+                    <li><strong>per_page</strong> &mdash; {{ t('SHARING_PER_PAGE') }}</li>
+                    <li><strong>properties</strong> &mdash; {{ t('SHARING_PROPERTIES') }}</li>
+                    <li><strong>taxlots</strong> &mdash; {{ t('SHARING_TAXLOTS') }}</li>
+                    <li><strong>cycles</strong> &mdash; {{ t('SHARING_CYCLES') }}</li>
+                    <li><strong>labels</strong> &mdash; {{ t('SHARING_LABELS') }}</li>
+                  </ul>
+                  <p>
+                    <strong>{{ t('Example') }}:</strong>
+                    {{ baseUrl }}/api/v3/public/organizations/{{
+                      organization.id
+                    }}/feed.json?properties=True&amp;taxlots=False&amp;per_page=25&amp;cycles=12,13
+                  </p>
+                  @if (organization.public_geojson_enabled) {
+                    <h3>GeoJSON</h3>
+                    <p>
+                      {{ t('PUBLIC_GEOJSON_TEXT_1') }}:
+                      <strong>{{ baseUrl }}/api/v3/public/organizations/{{ organization.id }}/cycles/CYCLE_ID/geo.json</strong>.
+                      {{ t('PUBLIC_GEOJSON_TEXT_2') }}
+                      <a routerLink="/organizations/cycles">{{ t('Cycles Page') }}</a>
+                    </p>
+                    <p>
+                      <strong>{{ t('Example') }}:</strong>
+                      {{ baseUrl }}/api/v3/public/organizations/{{ organization.id }}/cycles/1/geo.json?taxlots=true
+                    </p>
+                  }
+                  <p>
+                    {{ t('See API Documentation for more information about the /v3/public endpoints') }}
+                    <a routerLink="/api-documentation">{{ t('API Documentation') }}</a>
+                  </p>
+                </div>
+              </mat-expansion-panel>
+            </mat-accordion>
+
+            <form class="bg-card mb-6 flex flex-col gap-y-4 rounded-2xl p-6 shadow" [formGroup]="thresholdForm">
+              <div class="text-lg font-medium">{{ t('Public Query Threshold') }}</div>
+              <div class="prose max-w-none">{{ t('QUERY_THRESHOLD_HELP') }}</div>
+              <mat-form-field class="max-w-xs" appearance="outline">
+                <mat-label>{{ t('Public Query Threshold') }}</mat-label>
+                <input matInput formControlName="query_threshold" type="number" min="0" step="1" />
+                @if (thresholdForm.controls.query_threshold.invalid) {
+                  <mat-error>{{ t('Public Query Threshold must be a whole number of 0 or more.') }}</mat-error>
+                }
+              </mat-form-field>
+            </form>
+
+            <div class="bg-card flex flex-col gap-y-4 rounded-2xl p-6 shadow">
+              <div class="text-lg font-medium">{{ t('Selecting Fields to Share') }}</div>
+              <div class="prose max-w-none">{{ t('PUBLIC_SHARE') }}</div>
+
+              <!--
+                Rows below start out as every field already populated with data in this org's
+                Property/Tax Lot inventory, plus any field already marked public even if it no
+                longer has data (see SharingComponent._setFields). Checking "Share" only flags a
+                row as public — it isn't persisted until "Save Changes" is clicked. To make a
+                field that isn't listed yet sharable (e.g. one that doesn't have data yet), use
+                "Add a field" at the bottom to append it as a new row first.
+              -->
+              <seed-alert [showIcon]="true" type="info" appearance="outline">
+                {{ t('PUBLIC_SHARE_FIELDS_HELP') }}
+              </seed-alert>
+
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ t('Search table name') }}</mat-label>
+                  <input [(ngModel)]="searchTableName" [ngModelOptions]="{ standalone: true }" matInput />
+                </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>{{ t('Search field name') }}</mat-label>
+                  <input [(ngModel)]="searchDisplayName" [ngModelOptions]="{ standalone: true }" matInput />
+                </mat-form-field>
+              </div>
+
+              <div class="max-h-[28rem] overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table class="w-full text-left text-sm">
+                  <thead class="bg-default-50 sticky top-0 z-10 dark:bg-gray-800">
+                    <tr>
+                      <th class="w-24 p-2">
+                        <div class="flex items-center gap-2">
+                          <mat-checkbox
+                            [checked]="allFilteredSelected"
+                            [indeterminate]="someFilteredSelected"
+                            [matTooltip]="t('Select all visible fields')"
+                            [attr.aria-label]="t('Select all visible fields')"
+                            (change)="onSelectAllChange($event.checked)"
+                          ></mat-checkbox>
+                          <span class="font-medium">{{ t('Share') }}</span>
+                        </div>
+                      </th>
+                      <th class="p-2 font-medium">{{ t('Table Name') }}</th>
+                      <th class="p-2 font-medium">{{ t('Field Name') }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (field of filteredFields; track field.table_name + ':' + field.id) {
+                      <tr class="border-t border-gray-200 dark:border-gray-700">
+                        <td class="p-2">
+                          <mat-checkbox [(ngModel)]="field.public_checked" [ngModelOptions]="{ standalone: true }"></mat-checkbox>
+                        </td>
+                        <td class="p-2">{{ tableLabel(field.table_name) }}</td>
+                        <td class="p-2">{{ field.display_name }}</td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td class="text-secondary p-4" colspan="3">{{ t('No fields found.') }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="text-secondary text-sm font-medium">
+                {{ t('Or select a field to add to the table. Selecting a field adds it to the table above so it can be shared.') }}
+              </div>
+              <mat-form-field appearance="outline">
+                <mat-label>{{ t('Add a field') }}</mat-label>
+                <input
+                  [(ngModel)]="addFieldQuery"
+                  [ngModelOptions]="{ standalone: true }"
+                  [matAutocomplete]="addFieldAuto"
+                  [placeholder]="t('Search by field or table name')"
+                  matInput
+                />
+                <mat-autocomplete
+                  #addFieldAuto="matAutocomplete"
+                  [displayWith]="clearAutocompleteDisplay"
+                  (optionSelected)="addField($event.option.value)"
+                >
+                  @for (field of availableFieldsToAdd; track field.table_name + ':' + field.id) {
+                    <mat-option [value]="field">{{ tableLabel(field.table_name) }} &mdash; {{ field.display_name }}</mat-option>
+                  } @empty {
+                    <mat-option disabled>{{ t('No matching fields found.') }}</mat-option>
+                  }
+                </mat-autocomplete>
+              </mat-form-field>
+
+              <div class="flex items-center gap-4">
+                <button [disabled]="thresholdForm.invalid || saving" (click)="save()" mat-flat-button color="primary" type="button">
+                  <span>{{ t('Save Changes') }}</span>
+                  @if (saved && !saving) {
+                    <mat-icon class="ml-2 icon-size-4" svgIcon="fa-solid:check"></mat-icon>
+                  }
+                </button>
+                @if (saving) {
+                  <mat-progress-spinner [diameter]="20" mode="indeterminate"></mat-progress-spinner>
+                }
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+</seed-page>

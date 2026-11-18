@@ -1,0 +1,14 @@
+<seed-page *transloco="let t" [config]="config">
+  <seed-page-inventory-tab [config]="{ tabs, action: toggleInventoryType.bind(this) }"></seed-page-inventory-tab>
+  <seed-page-table-container>
+    @if (type === 'goal') {
+      <seed-data-quality-goal-table [currentRules]="currentRules" (getRules)="getRules()"></seed-data-quality-goal-table>
+    } @else {
+      <seed-data-quality-inventory-table
+        [currentRules]="currentRules"
+        [type]="type"
+        (getRules)="getRules()"
+      ></seed-data-quality-inventory-table>
+    }
+  </seed-page-table-container>
+</seed-page>

@@ -1,0 +1,24 @@
+<seed-page
+  [config]="{
+    title: 'Data',
+    titleIcon: 'fa-solid:sitemap',
+    action: createDataset,
+    actionIcon: 'fa-solid:plus',
+    actionText: 'Create Dataset',
+  }"
+>
+  <div class="h-full-page p-5" id="content">
+    @if (datasets.length) {
+      <ag-grid-angular
+        [columnDefs]="columnDefs"
+        [rowData]="datasets"
+        [theme]="gridTheme$ | async"
+        [domLayout]="'autoHeight'"
+        [pagination]="true"
+        [paginationPageSizeSelector]="[10, 20, 50, 100]"
+        [paginationPageSize]="10"
+        (gridReady)="onGridReady($event)"
+      ></ag-grid-angular>
+    }
+  </div>
+</seed-page>

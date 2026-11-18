@@ -1,0 +1,36 @@
+<div class="flex min-w-0 flex-wrap items-center gap-1 text-xs" *transloco="let t">
+  <!-- Column filters -->
+  <seed-filter-chips [chips]="filterChips" (removed)="removeFilter($event.original)"></seed-filter-chips>
+
+  <!-- Label filters -->
+  @for (chip of labelChips; track chip.id + chip.operator) {
+    <span class="flex items-center gap-1 rounded-full bg-blue-600 py-0.5 pl-2 pr-1 text-white">
+      <mat-icon class="text-white icon-size-3.5" fontIcon="label"></mat-icon>
+      {{ t(chip.prefix) }}: {{ chip.name }}
+      <button
+        class="flex rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary dark:focus-visible:outline-primary-400"
+        [attr.aria-label]="t('Remove') + ' ' + t(chip.prefix) + ' ' + chip.name"
+        (click)="removeLabel(chip)"
+        type="button"
+      >
+        <mat-icon class="text-white icon-size-3.5" fontIcon="close"></mat-icon>
+      </button>
+    </span>
+  }
+
+  <!-- Sorts -->
+  @for (item of sortChips; track item.original) {
+    <span class="flex items-center gap-1 rounded-full bg-gray-200 py-0.5 pl-2 pr-1 text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+      <mat-icon class="icon-size-3" svgIcon="fa-solid:sort"></mat-icon>
+      {{ item.displayName }}
+      <button
+        class="flex rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary dark:focus-visible:outline-primary-400"
+        [attr.aria-label]="t('Remove') + ' ' + item.displayName"
+        (click)="removeSort(item.original)"
+        type="button"
+      >
+        <mat-icon class="icon-size-3.5" fontIcon="close"></mat-icon>
+      </button>
+    </span>
+  }
+</div>

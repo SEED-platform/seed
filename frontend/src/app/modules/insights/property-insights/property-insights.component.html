@@ -1,0 +1,214 @@
+<seed-page
+  [config]="{
+    title: 'Property Insights',
+    titleIcon: 'fa-solid:chart-line',
+    action: canConfigureProgram ? openProgramConfig : undefined,
+    actionIcon: 'fa-solid:gears',
+    actionText: 'Program Configuration',
+  }"
+>
+  <div class="content mx-5 my-2">
+    <div class="flex items-center justify-between gap-8">
+      <!-- Program Select -->
+      <div class="compact-form flex-1">
+        <mat-form-field class="w-full">
+          <mat-label class="text-secondary">Select Program</mat-label>
+          <mat-select [value]="program" [compareWith]="compareSelection" (selectionChange)="programChange($event.value)">
+            @for (p of programs; track $index) {
+              <mat-option class="compact-form" [value]="p">
+                {{ p.name }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Legend -->
+      @if (program) {
+        <div>
+          <div class="flex flex-col">
+            <mat-button-toggle-group
+              class="compact-button-toggle-group strike-through"
+              [value]="datasetVisibility"
+              [disabled]="!program"
+              multiple
+              hideMultipleSelectionIndicator="false"
+            >
+              @for (entry of colors | keyvalue; track $index; let i = $index) {
+                <mat-button-toggle [value]="entry.key" (change)="toggleVisibility(i, $event.source.checked)">
+                  <div class="flex items-center">
+                    <div class="mr-2 h-4 w-4" [style.backgroundColor]="entry.value"></div>
+                    <span class="text-sm">{{ entry.key | titlecase }}</span>
+                  </div>
+                </mat-button-toggle>
+              }
+              <mat-button-toggle (change)="toggleVisibility(3, $event.source.checked)" value="whisker">
+                <mat-icon class="scale-50" svgIcon="fa-solid:t"></mat-icon>
+                <span class="text-sm">Distance from Target</span>
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+        </div>
+        <div class="flex">
+          <mat-icon
+            class="scale-75 cursor-pointer"
+            (click)="refreshChart()"
+            svgIcon="fa-solid:arrows-rotate"
+            title="Refresh Chart"
+          ></mat-icon>
+          <mat-icon
+            class="scale-75 cursor-pointer"
+            (click)="downloadChart()"
+            svgIcon="fa-solid:cloud-arrow-down"
+            title="Download Chart"
+          ></mat-icon>
+        </div>
+      }
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="m-2 flex justify-between">
+      <!-- Config Form -->
+      @if (program) {
+        <div class="flex flex-col">
+          <form class="compact-form fit-content flex w-[180px] flex-col" [formGroup]="form">
+            <mat-form-field>
+              <mat-label class="text-secondary">Cycle</mat-label>
+              <mat-select formControlName="cycleId" panelClass="wide-select-sm">
+                @for (cycle of programCycles; track $index) {
+                  <mat-option class="compact-form" [value]="cycle.id">{{ cycle.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label class="text-secondary">Metric Type</mat-label>
+              <mat-select formControlName="metricType" panelClass="wide-select-sm">
+                @for (metricType of programMetricTypes; track $index) {
+                  <mat-option class="compact-form" [value]="metricType.key">{{ metricType.value }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label class="text-secondary">X-Axis</mat-label>
+              <mat-select formControlName="xAxisColumnId" panelClass="wide-select-sm">
+                @for (column of programXAxisColumns; track $index) {
+                  <mat-option class="compact-form" [value]="column.id">{{ column.display_name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label class="text-secondary">Access Level</mat-label>
+              <mat-select formControlName="accessLevel" panelClass="wide-select-sm">
+                @for (level of accessLevelNames; track $index) {
+                  <mat-option class="compact-form" [value]="level">{{ level }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field>
+              <mat-label class="text-secondary">Access Level Instance</mat-label>
+              <mat-select formControlName="accessLevelInstanceId" panelClass="wide-select-sm">
+                @for (instance of accessLevelInstances; track $index) {
+                  <mat-option class="compact-form" [value]="instance.id">{{ instance.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </form>
+
+          @if (canUpdateLabels) {
+            <button class="my-2 flex gap-2" (click)="openLabelModal()" mat-stroked-button>
+              <mat-icon svgIcon="fa-solid:tags"></mat-icon>Update Labels
+            </button>
+          }
+        </div>
+      }
+      <!-- Chart -->
+      <div class="mx-5 flex w-full flex-1 flex-col gap-2" [class.hidden]="!program">
+        <div class="graph mx-auto flex w-[90%] justify-center">
+          <canvas #propertyInsightsChart></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    @if (program) {
+      <div>
+        <mat-divider></mat-divider>
+        <div class="flex items-end justify-between">
+          <div class="m-4 flex items-center text-lg font-medium">
+            <mat-icon svgIcon="fa-solid:layer-group"></mat-icon>
+            <span class="ml-4">Data Table</span>
+          </div>
+          <span class="text-secondary mx-2 text-sm italic">Click to expand</span>
+        </div>
+
+        <mat-accordion class="accordion-sub-tables" multi>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Compliant:</mat-panel-title>
+              <mat-panel-description>{{ results.y }}</mat-panel-description>
+            </mat-expansion-panel-header>
+            <ag-grid-angular
+              [columnDefs]="colDefs"
+              [rowData]="rowData.compliant"
+              [theme]="gridTheme$ | async"
+              [domLayout]="'autoHeight'"
+              [gridOptions]="gridOptions"
+              [pagination]="true"
+              [paginationPageSize]="100"
+              (rowClicked)="onRowClicked($event)"
+            ></ag-grid-angular>
+          </mat-expansion-panel>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Non-Compliant:</mat-panel-title>
+              <mat-panel-description>{{ results.n }}</mat-panel-description>
+            </mat-expansion-panel-header>
+            <ag-grid-angular
+              [columnDefs]="colDefs"
+              [rowData]="rowData['non-compliant']"
+              [theme]="gridTheme$ | async"
+              [domLayout]="'autoHeight'"
+              [gridOptions]="gridOptions"
+              [pagination]="true"
+              [paginationPageSize]="100"
+              (rowClicked)="onRowClicked($event)"
+            ></ag-grid-angular>
+          </mat-expansion-panel>
+          <mat-expansion-panel>
+            <mat-expansion-panel-header>
+              <mat-panel-title>Unknown:</mat-panel-title>
+              <mat-panel-description>{{ results.u }}</mat-panel-description>
+            </mat-expansion-panel-header>
+            <ag-grid-angular
+              [columnDefs]="colDefs"
+              [rowData]="rowData.unknown"
+              [theme]="gridTheme$ | async"
+              [domLayout]="'autoHeight'"
+              [gridOptions]="gridOptions"
+              [pagination]="true"
+              [paginationPageSize]="100"
+              (rowClicked)="onRowClicked($event)"
+            ></ag-grid-angular>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+    }
+
+    @if (loading && program) {
+      <div class="absolute top-20 w-full">
+        <seed-progress-bar [outline]="true" title="Loading Program..."></seed-progress-bar>
+      </div>
+    }
+
+    @if (!program) {
+      <div class="absolute top-20 w-full">
+        <seed-not-found icon="fa-solid:triangle-exclamation" message="No Programs Found"></seed-not-found>
+      </div>
+    }
+  </div>
+</seed-page>

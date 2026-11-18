@@ -1,0 +1,86 @@
+<!-- Title -->
+<div class="mt-8 text-4xl font-extrabold leading-tight tracking-tight">Sign up</div>
+<div class="mt-0.5 flex items-baseline font-medium">
+  <div>Already have an account?</div>
+  <a class="ml-1 text-primary-500 hover:underline focus:underline" [routerLink]="['/sign-in']">Sign in</a>
+</div>
+
+<!-- Alert -->
+@if (showAlert) {
+  <seed-alert class="-mb-4 mt-8" [@shake]="alert.type === 'error'" [showIcon]="false" [type]="alert.type" appearance="outline">
+    {{ alert.message }}
+  </seed-alert>
+}
+
+<!-- Sign Up form -->
+<form class="mt-8" [formGroup]="signUpForm">
+  <!-- Email field -->
+  <mat-form-field class="w-full">
+    <mat-label>Email address</mat-label>
+    <input class="text-lg sm:text-base" id="email" matInput type="email" autocomplete="email" maxlength="254" formControlName="email" />
+    @if (signUpForm.get('email').hasError('required')) {
+      <mat-error>Email address is required</mat-error>
+    } @else if (signUpForm.get('email').hasError('email')) {
+      <mat-error>Please enter a valid email address</mat-error>
+    }
+  </mat-form-field>
+
+  <!-- Password field -->
+  <mat-form-field class="w-full">
+    <mat-label>Password</mat-label>
+    <input
+      class="text-lg sm:text-base"
+      id="password"
+      #passwordField
+      matInput
+      type="password"
+      autocomplete="new-password"
+      formControlName="password"
+    />
+    <button
+      (click)="passwordField.type === 'password' ? (passwordField.type = 'text') : (passwordField.type = 'password')"
+      mat-icon-button
+      type="button"
+      matSuffix
+    >
+      @if (passwordField.type === 'password') {
+        <mat-icon class="icon-size-5" svgIcon="fa-solid:eye-slash"></mat-icon>
+      } @else if (passwordField.type === 'text') {
+        <mat-icon class="icon-size-5" svgIcon="fa-solid:eye"></mat-icon>
+      }
+    </button>
+    @if (signUpForm.get('password').hasError('required')) {
+      <mat-error>Password is required</mat-error>
+    } @else if (signUpForm.get('password').hasError('minlength')) {
+      <mat-error>Password must be at least 8 characters</mat-error>
+    } @else if (signUpForm.get('password').hasError('pattern')) {
+      <mat-error>Passwords must contain an uppercase letter, a lowercase letter, and a number</mat-error>
+    }
+  </mat-form-field>
+
+  <!-- ToS -->
+  <ng-container *transloco="let t">
+    <div class="mt-1.5 inline-flex w-full flex-col">
+      <mat-checkbox class="-ml-2" [class.mb-5]="!isTermsInvalid" color="primary" formControlName="terms">
+        <span>{{ t('I agree with the') }}&nbsp;</span>
+        <a
+          class="cursor-pointer text-primary-500 hover:underline focus:underline"
+          (click)="$event.preventDefault(); showTermsOfService()"
+          >{{ t('Data Terms') }}</a
+        >
+      </mat-checkbox>
+      @if (isTermsInvalid) {
+        <mat-error class="h-5 text-sm font-medium" @fadeInTop>{{ t('You must accept the Data Terms.') }}</mat-error>
+      }
+    </div>
+  </ng-container>
+
+  <!-- Submit button -->
+  <button class="seed-mat-button-large mt-6 w-full" [disabled]="signUpForm.disabled" (click)="signUp()" mat-flat-button color="primary">
+    @if (!signUpForm.disabled) {
+      <span>Create my account</span>
+    } @else {
+      <mat-progress-spinner [diameter]="24" mode="indeterminate"></mat-progress-spinner>
+    }
+  </button>
+</form>

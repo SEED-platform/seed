@@ -1,0 +1,17 @@
+export const DataTypes = [
+  { id: 'None', label: '' },
+  { id: 'number', label: 'Number' },
+  { id: 'float', label: 'Float' },
+  { id: 'integer', label: 'Integer' },
+  { id: 'string', label: 'Text' },
+  { id: 'datetime', label: 'Datetime' },
+  { id: 'date', label: 'Date' },
+  { id: 'boolean', label: 'Boolean' },
+  { id: 'area', label: 'Area' },
+  { id: 'eui', label: 'EUI' },
+  { id: 'geometry', label: 'Geometry' },
+  { id: 'ghg', label: 'GHG' },
+  { id: 'ghg_intensity', label: 'GHG Intensity' },
+  { id: 'wui', label: 'WUI' },
+  { id: 'water_use', label: 'Water Use' },
+]

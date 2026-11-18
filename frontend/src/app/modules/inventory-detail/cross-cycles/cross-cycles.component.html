@@ -1,0 +1,13 @@
+<seed-page
+  [config]="{
+    title: displayName,
+    subTitle: viewDisplayField$ | async,
+    titleIcon: 'fa-solid:shuffle',
+    breadcrumbs: [{ label: type === 'taxlots' ? 'Tax Lots' : 'Properties', link: '/' + type }, 'Cross Cycles'],
+    sideNavToggle: true,
+  }"
+>
+  @if (linkingId) {
+    <seed-cross-cycles-grid [type]="type" [linkingId]="linkingId" mode="detail"></seed-cross-cycles-grid>
+  }
+</seed-page>

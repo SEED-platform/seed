@@ -1,0 +1,45 @@
+<div class="relative flex h-full w-full flex-col">
+  <div class="flex flex-auto flex-col p-6">
+    <div class="mb-4 text-xl font-medium">{{ title }}</div>
+
+    @if (action === 'delete') {
+      <p class="text-sm">
+        Are you sure you want to delete the service <strong>{{ serviceName }}</strong
+        >?
+      </p>
+    } @else {
+      <div class="flex flex-col gap-4">
+        <mat-form-field class="w-full">
+          <mat-label>Service Name</mat-label>
+          <input [(ngModel)]="serviceName" matInput autocomplete="off" />
+        </mat-form-field>
+
+        <mat-form-field class="w-full">
+          <mat-label>Emission Factor</mat-label>
+          <input [(ngModel)]="emissionFactor" matInput type="number" min="0" step="0.1" />
+        </mat-form-field>
+      </div>
+    }
+  </div>
+
+  <div class="flex items-center justify-end gap-2 bg-gray-50 px-6 py-4 dark:bg-black dark:bg-opacity-10">
+    <button [matDialogClose]="false" [disabled]="submitted" mat-stroked-button>Cancel</button>
+    @if (action === 'delete') {
+      <button [disabled]="submitted" (click)="deleteService()" mat-flat-button color="warn">
+        @if (!submitted) {
+          Delete
+        } @else {
+          <mat-progress-spinner [diameter]="24" mode="indeterminate"></mat-progress-spinner>
+        }
+      </button>
+    } @else {
+      <button [disabled]="submitted || !isValid" (click)="save()" mat-flat-button color="primary">
+        @if (!submitted) {
+          {{ action === 'create' ? 'Create' : 'Save' }}
+        } @else {
+          <mat-progress-spinner [diameter]="24" mode="indeterminate"></mat-progress-spinner>
+        }
+      </button>
+    }
+  </div>
+</div>

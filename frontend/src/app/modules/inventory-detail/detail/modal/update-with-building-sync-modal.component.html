@@ -1,0 +1,24 @@
+<seed-modal-header
+  [close]="close.bind(this)"
+  title="Update with BuildingSync"
+  titleIcon="fa-solid:arrow-up-from-bracket"
+></seed-modal-header>
+
+<div class="flex flex-col gap-4">
+  @if (errorMessage) {
+    <seed-alert type="error">{{ errorMessage }}</seed-alert>
+  }
+
+  <div class="text-secondary text-sm">Select a BuildingSync XML file to update this property's data.</div>
+
+  <input (change)="onFileChange($event)" accept=".xml,application/xml,text/xml" type="file" />
+
+  @if (file) {
+    <div class="text-secondary text-sm">{{ file.name }}</div>
+  }
+</div>
+
+<div class="mt-4 flex justify-end gap-2">
+  <button [disabled]="uploading" (click)="close()" mat-stroked-button>Cancel</button>
+  <button [disabled]="!file || uploading" (click)="upload()" mat-flat-button color="primary">Update</button>
+</div>

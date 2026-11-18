@@ -1,0 +1,128 @@
+<seed-modal-header [close]="close" title="Upload Meter Data" titleIcon="fa-solid:bolt"></seed-modal-header>
+
+<mat-stepper class="stepper-disable-hover" #stepper [linear]="true">
+  <!-- STEP 1 -->
+  <mat-step [completed]="completed[1]" label="File Select" editable="false">
+    <div class="m-10">
+      <div class="text-secondary mb-4 ml-4">Accepted File Types: .csv, .xls, .xlsx</div>
+
+      <div class="flex w-full items-center rounded-full border border-gray-300 dark:border-gray-600">
+        <input
+          class="pointer-events-none invisible absolute h-0 w-0 opacity-0"
+          id="file-input"
+          #fileInput
+          [multiple]="false"
+          [accept]="allowedTypes"
+          (change)="step1(fileInput.files)"
+          type="file"
+        />
+
+        <button class="flex items-center gap-x-2" [disabled]="uploading" (click)="fileInput.click()" mat-flat-button color="primary">
+          <mat-icon class="text-white icon-size-5" svgIcon="fa-solid:file"></mat-icon>
+          <span>Choose file</span>
+        </button>
+        <div class="text-secondary max-w-[21rem] cursor-default items-center truncate pl-3 pr-2">
+          {{ file?.name ?? defaultFileName }}
+        </div>
+      </div>
+
+      <div class="text-secondary ml-4 mt-5">Note: only the first sheet of multi-sheet Excel files will be imported.</div>
+    </div>
+
+    @if (uploading) {
+      <seed-progress-bar [title]="step1ProgressTitle"></seed-progress-bar>
+    } @else {
+      <div class="mt-10 flex justify-end">
+        <button [disabled]="!completed[1] && !file" (click)="stepper.next()" mat-raised-button color="primary">Next</button>
+      </div>
+    }
+  </mat-step>
+  <!-- STEP 2 -->
+  <mat-step [completed]="completed[2]" label="Review" editable="false">
+    <!-- Meter grid -->
+    <div class="flex items-center justify-between">
+      <div class="m-4 flex items-center text-lg font-medium">
+        <mat-icon svgIcon="fa-solid:layer-group"></mat-icon>
+        <span class="ml-4">{{ readingGridTitle }} </span>
+      </div>
+
+      <mat-icon
+        class="text-secondary cursor-pointer"
+        (click)="csvDownload('proposed_meter_imports')"
+        svgIcon="fa-solid:cloud-arrow-down"
+      ></mat-icon>
+    </div>
+    <ag-grid-angular
+      [columnDefs]="readingDefs"
+      [rowData]="proposedImports"
+      [theme]="gridTheme$ | async"
+      [style.--ag-spacing.px]="6"
+      [style.height.px]="readingHeight"
+    ></ag-grid-angular>
+
+    <!-- units grid -->
+    <div class="flex items-center justify-between">
+      <div class="m-4 flex items-center text-lg font-medium">
+        <mat-icon svgIcon="fa-solid:layer-group"></mat-icon>
+        <span class="ml-4">Parsed Energy Types and Units </span>
+      </div>
+
+      <mat-icon
+        class="text-secondary cursor-pointer"
+        (click)="csvDownload('validated_type_units')"
+        svgIcon="fa-solid:cloud-arrow-down"
+      ></mat-icon>
+    </div>
+    <ag-grid-angular
+      [columnDefs]="unitDefs"
+      [rowData]="validatedTypeUnits"
+      [theme]="gridTheme$ | async"
+      [style.--ag-spacing.px]="6"
+      [style.height.px]="unitHeight"
+    ></ag-grid-angular>
+
+    <div class="mt-10 flex justify-between">
+      <button (click)="stepper.previous()" mat-stroked-button>Previous</button>
+      @if (completed[2]) {
+        <button (click)="step3()" mat-raised-button color="primary">Next</button>
+      }
+    </div>
+  </mat-step>
+  <!-- STEP 3 -->
+  <mat-step [completed]="completed[3]" label="Upload" editable="false">
+    @if (inProgress) {
+      <seed-progress-bar
+        [progress]="progressBarObj.progress"
+        [total]="progressBarObj.total"
+        title="Uploading Meter Data..."
+      ></seed-progress-bar>
+    }
+  </mat-step>
+  <!-- STEP 4 -->
+  <mat-step [completed]="completed[3]" label="Review" editable="false">
+    <!-- Meter grid -->
+    <div class="flex items-center justify-between">
+      <div class="m-4 flex items-center text-lg font-medium">
+        <mat-icon svgIcon="fa-solid:layer-group"></mat-icon>
+        <span class="ml-4">{{ readingGridTitle }} </span>
+      </div>
+
+      <mat-icon
+        class="text-secondary cursor-pointer"
+        (click)="csvDownload('imported_meters')"
+        svgIcon="fa-solid:cloud-arrow-down"
+      ></mat-icon>
+    </div>
+    <ag-grid-angular
+      [columnDefs]="importedDefs"
+      [rowData]="importedMeters"
+      [theme]="gridTheme$ | async"
+      [style.--ag-spacing.px]="6"
+      [style.height.px]="readingHeight"
+    ></ag-grid-angular>
+
+    <div class="mt-10 flex justify-end">
+      <button (click)="close()" mat-raised-button color="primary">Finish</button>
+    </div>
+  </mat-step>
+</mat-stepper>

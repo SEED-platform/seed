@@ -1,0 +1,150 @@
+<seed-page
+  [config]="{
+    title: 'Dashboard',
+    breadcrumbs: [{ label: 'Groups', link: layout.groupsLink }, { label: layout.group?.name, translate: false }, 'Dashboard'],
+    titleIcon: 'fa-solid:chart-line',
+  }"
+>
+</seed-page>
+
+<div class="bg-card flex flex-col gap-4 p-2.5">
+  <!-- Cycle Selector -->
+  <div class="flex items-center gap-4">
+    <mat-label class="text-secondary text-sm">Cycle</mat-label>
+    <mat-select
+      class="h-10 w-60 rounded border border-gray-500 p-3 text-sm"
+      [value]="cycleId"
+      (selectionChange)="changeCycle($event.value)"
+    >
+      @for (cycle of cycles; track cycle.cycle_id) {
+        <mat-option [value]="cycle.cycle_id">{{ cycle.name }}</mat-option>
+      }
+    </mat-select>
+  </div>
+
+  @if (loading) {
+    <div class="text-secondary text-sm">Loading...</div>
+  } @else if (dashboard) {
+    <!-- Summary Metrics -->
+    <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
+      <div class="rounded-lg border p-4">
+        <div class="text-secondary text-xs font-medium uppercase">Gross Floor Area</div>
+        <div class="mt-1 text-2xl font-bold">{{ dashboard['Gross Floor Area'] ?? 0 | number }}</div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-secondary text-xs font-medium uppercase">Site EUI</div>
+        <div class="mt-1 text-2xl font-bold">{{ dashboard['Site EUI'] ?? 0 | number }}</div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-secondary text-xs font-medium uppercase">Views Count</div>
+        <div class="mt-1 text-2xl font-bold">{{ dashboard['Views Count'] | number }}</div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-secondary text-xs font-medium uppercase">Missing Site EUI</div>
+        <div class="mt-1 text-2xl font-bold" [class.text-warn]="dashboard['Views Missing Site EUI']">
+          {{ dashboard['Views Missing Site EUI'] | number }}
+        </div>
+      </div>
+      <div class="rounded-lg border p-4">
+        <div class="text-secondary text-xs font-medium uppercase">Missing Gross Floor Area</div>
+        <div class="mt-1 text-2xl font-bold" [class.text-warn]="dashboard['Views Missing Gross Floor Area']">
+          {{ dashboard['Views Missing Gross Floor Area'] | number }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Import / Export Totals -->
+    @if (meterTypes.length) {
+      <mat-divider></mat-divider>
+
+      <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <!-- Importing -->
+        <div>
+          <div class="mb-2 text-sm font-semibold">Importing Totals</div>
+          @if (dashboard.importing_total | keyvalue; as imports) {
+            @for (entry of imports; track entry.key) {
+              <div class="flex justify-between border-b py-1 text-sm">
+                <span>{{ entry.key }}</span>
+                <span class="font-medium">{{ entry.value | number }}</span>
+              </div>
+            }
+          } @else {
+            <div class="text-secondary text-sm">No importing data</div>
+          }
+        </div>
+
+        <!-- Exporting -->
+        <div>
+          <div class="mb-2 text-sm font-semibold">Exporting Totals</div>
+          @if (dashboard.exporting_total | keyvalue; as exports) {
+            @for (entry of exports; track entry.key) {
+              <div class="flex justify-between border-b py-1 text-sm">
+                <span>{{ entry.key }}</span>
+                <span class="font-medium">{{ entry.value | number }}</span>
+              </div>
+            }
+          } @else {
+            <div class="text-secondary text-sm">No exporting data</div>
+          }
+        </div>
+      </div>
+
+      <!-- Sankey Section -->
+      <mat-divider></mat-divider>
+
+      <div class="flex flex-col gap-2">
+        <div class="flex items-center gap-4">
+          <mat-label class="text-secondary text-sm">Energy Type</mat-label>
+          <mat-select
+            class="h-10 w-60 rounded border border-gray-500 p-3 text-sm"
+            [value]="meterType"
+            (selectionChange)="changeMeterType($event.value)"
+          >
+            @for (type of meterTypes; track type) {
+              <mat-option [value]="type">{{ type }}</mat-option>
+            }
+          </mat-select>
+        </div>
+
+        @if (sankeyData.length) {
+          <!-- Sankey Diagram -->
+          <div class="rounded-lg border p-4">
+            <div class="mb-2 text-sm font-semibold">Energy Flow</div>
+            <div class="h-[480px]">
+              <canvas #sankeyCanvas></canvas>
+            </div>
+          </div>
+
+          <!-- Troubleshooting Table -->
+          <mat-expansion-panel class="mat-elevation-z0 rounded-lg border">
+            <mat-expansion-panel-header>
+              <mat-panel-title class="text-sm font-semibold">Troubleshooting Data</mat-panel-title>
+            </mat-expansion-panel-header>
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b">
+                  <th class="px-3 py-2 text-left font-semibold">From</th>
+                  <th class="px-3 py-2 text-left font-semibold">To</th>
+                  <th class="px-3 py-2 text-right font-semibold">Flow</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (entry of sankeyData; track $index) {
+                  <tr class="border-b last:border-0">
+                    <td class="px-3 py-1.5">{{ entry.from }}</td>
+                    <td class="px-3 py-1.5">{{ entry.to }}</td>
+                    <td class="px-3 py-1.5 text-right">{{ entry.flow | number: '1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </mat-expansion-panel>
+        } @else {
+          <div class="text-secondary text-sm">No energy flow data for this type and cycle</div>
+        }
+      </div>
+    }
+  } @else {
+    <div class="text-secondary text-sm">No dashboard data available. Add properties to this group to see metrics.</div>
+  }
+</div>

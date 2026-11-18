@@ -1,0 +1,31 @@
+input,
+textarea {
+  background: transparent;
+
+  /* Placeholder color */
+  &::placeholder {
+    @apply text-hint;
+  }
+
+  /* Autofill color fix */
+  &:-webkit-autofill,
+  &:-webkit-autofill:hover,
+  &:-webkit-autofill:focus,
+  &:-webkit-autofill:active {
+    background-clip: text;
+    transition: background-color 5000s !important;
+  }
+
+  .dark & {
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+      -webkit-text-fill-color: rgb(255 255 255 / 87%);
+    }
+  }
+
+  [data-autocompleted] {
+    background-color: transparent !important;
+  }
+}

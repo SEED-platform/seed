@@ -1,0 +1,84 @@
+<seed-page
+  [config]="{
+    title: viewDisplayField$ | async,
+    subTitle: displayName,
+    titleIcon: 'fa-solid:building',
+    breadcrumbs: [{ label: type === 'taxlots' ? 'Tax Lots' : 'Properties', link: '/' + type }, 'Detail'],
+    sideNavToggle: true,
+  }"
+>
+  <div class="m-5 flex flex-col gap-4">
+    <!-- HEADER -->
+    @if (views) {
+      <seed-inventory-detail-header
+        [currentProfile]="currentProfile"
+        [labels]="labels"
+        [org]="org"
+        [profiles]="profiles"
+        [selectedView]="selectedView"
+        [type]="type"
+        [view]="view"
+        [views]="views"
+        (changeProfile)="onChangeProfile($event)"
+        (changeView)="onChangeView($event)"
+        (refreshDetail)="onRefreshDetail()"
+      ></seed-inventory-detail-header>
+    }
+
+    <!-- HISTORY -->
+    @if (view) {
+      <mat-divider></mat-divider>
+      <seed-inventory-detail-history
+        [columns]="columns"
+        [currentUser]="currentUser"
+        [currentProfile]="currentProfile"
+        [matchingColumns]="matchingColumns"
+        [orgId]="orgId"
+        [profiles]="profiles"
+        [type]="type"
+        [view]="view"
+        [viewId]="viewId"
+        (refreshView)="onRefreshView()"
+      ></seed-inventory-detail-history>
+    }
+
+    <!-- PAIRED TAXLOTS / PROPERTIES -->
+    @if (paired?.length) {
+      <mat-divider></mat-divider>
+      <seed-inventory-detail-paired-grid
+        [org]="org"
+        [type]="type"
+        [view]="view"
+        [viewId]="viewId"
+        (refreshView)="onRefreshView()"
+      ></seed-inventory-detail-paired-grid>
+    }
+
+    <!-- INVENTORY DOCUMENTS -->
+    @if (view?.property) {
+      <mat-divider></mat-divider>
+      <seed-inventory-detail-documents-grid [org]="org" [type]="type" [view]="view" [viewId]="viewId" (refreshDetail)="onRefreshDetail()">
+      </seed-inventory-detail-documents-grid>
+    }
+
+    <!-- BUILDING ELEMENTS -->
+    @if (view?.property && type === 'properties') {
+      <mat-divider></mat-divider>
+      <seed-inventory-detail-building-elements-grid [orgId]="orgId" [propertyId]="view.property.id">
+      </seed-inventory-detail-building-elements-grid>
+    }
+
+    <!-- BUILDING FILES -->
+    @if (view?.property && view?.state.files.length) {
+      <mat-divider></mat-divider>
+      <seed-inventory-detail-building-files-grid [type]="type" [view]="view"> </seed-inventory-detail-building-files-grid>
+    }
+
+    <!-- SCENARIOS AND MEASURES -->
+    @if (view?.state.scenarios?.length) {
+      <mat-divider></mat-divider>
+      <seed-inventory-detail-scenarios-grid [orgId]="orgId" [view]="view" [viewId]="viewId" (refreshView)="onRefreshView()">
+      </seed-inventory-detail-scenarios-grid>
+    }
+  </div>
+</seed-page>

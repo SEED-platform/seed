@@ -1,0 +1,91 @@
+<ng-container *transloco="let t">
+  <!-- rendered twice; only the top copy is announced so screen readers don't hear the status twice -->
+  <ng-template #saveRow let-announce="announce">
+    <div class="flex flex-row items-center gap-4">
+      <button
+        class="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        [disabled]="!hasUnsavedChanges || saving"
+        (click)="save()"
+        mat-flat-button
+        color="primary"
+      >
+        {{ saving ? t('Saving...') : t('Save Changes') }}
+      </button>
+      <span
+        [class.text-warn]="!saving"
+        [class.text-secondary]="saving"
+        [attr.role]="announce ? 'status' : null"
+        [attr.aria-hidden]="announce ? null : 'true'"
+      >
+        @if (saving) {
+          {{ t('Saving...') }}
+        } @else if (hasUnsavedChanges) {
+          {{ t('You have unsaved changes') }}
+        }
+      </span>
+    </div>
+  </ng-template>
+
+  <div class="text-secondary my-6">{{ t('Drag columns to reorder them. Add columns with the selector below.') }}</div>
+
+  <ng-container *ngTemplateOutlet="saveRow; context: { announce: true }"></ng-container>
+
+  <div class="" [attr.aria-busy]="saving" [cdkDropListDisabled]="saving" (cdkDropListDropped)="drop($event)" cdkDropList>
+    @for (column of columns; track column.id) {
+      <div
+        class="w-75 dark:color-white my-2 flex flex-row items-center justify-between space-x-2 rounded-md border border-solid border-slate-600 bg-slate-100 p-2 drop-shadow-md dark:bg-gray-700"
+        cdkDrag
+      >
+        <div class="leading-40 flex flex-row space-x-4 text-lg">
+          <div>{{ $index + 1 }}</div>
+          <div>{{ column.display_name }}</div>
+        </div>
+        <div class="ml-auto flex">
+          <button
+            class="focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            [attr.aria-label]="t('Remove {{columnName}} from geocoding', { columnName: column.display_name })"
+            [disabled]="saving"
+            [matTooltip]="t('Remove from geocoding')"
+            (click)="remove(column)"
+            mat-icon-button
+          >
+            <mat-icon class="text-secondary icon-size-5" svgIcon="fa-solid:xmark"></mat-icon>
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <div class="text-secondary my-4">{{ t('GEOCODING_COL_COUNT_REQUIREMENT') }}</div>
+    }
+  </div>
+
+  <section class="pt-4">
+    <h3 class="text-xl font-bold" id="add-geocoding-column-heading">{{ t('Add a Geocoding Column') }}</h3>
+    <form
+      class="mt-2 flex flex-row items-center gap-4"
+      [formGroup]="addForm"
+      (ngSubmit)="add()"
+      aria-labelledby="add-geocoding-column-heading"
+    >
+      <mat-form-field class="w-100" subscriptSizing="dynamic">
+        <mat-select [aria-label]="t('Column to add')" [placeholder]="t('Select a column')" formControlName="addGeocoder">
+          @for (c of availableColumns; track c.id) {
+            <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <button
+        class="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        [disabled]="addForm.invalid || saving"
+        type="submit"
+        mat-flat-button
+        color="primary"
+      >
+        <mat-icon svgIcon="fa-solid:plus"></mat-icon>
+        {{ t('Add') }}
+      </button>
+    </form>
+  </section>
+
+  <div class="prose my-4">{{ t('When all your changes have been made, make sure to save them.') }}</div>
+  <ng-container *ngTemplateOutlet="saveRow; context: { announce: false }"></ng-container>
+</ng-container>

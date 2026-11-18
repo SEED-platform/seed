@@ -1,0 +1,42 @@
+@if (readings.length) {
+  <div>
+    <mat-divider></mat-divider>
+
+    <div class="flex justify-between">
+      <div class="my-5 ml-4 flex items-center text-lg font-medium">
+        <mat-icon svgIcon="fa-solid:table-list"></mat-icon>
+        <span class="ml-4">Readings</span>
+      </div>
+      <!-- Interval select -->
+      <div class="m-1 my-auto flex flex-row gap-4">
+        <span class="text-secondary my-auto">Occupied Hours only</span>
+        <mat-checkbox [(ngModel)]="occupiedHoursOnly" (ngModelChange)="occupiedHoursOnlyChange.emit($event)"></mat-checkbox>
+        <mat-label class="text-secondary my-auto">Interval</mat-label>
+        <mat-select
+          class="mt-1 h-8 w-40 rounded border border-gray-500 p-3 text-sm"
+          [(value)]="interval"
+          (selectionChange)="intervalChange.emit($event.value)"
+        >
+          <mat-option value="Exact">Exact</mat-option>
+          <mat-option value="Year">Year</mat-option>
+          <mat-option value="Month">Month</mat-option>
+        </mat-select>
+      </div>
+    </div>
+
+    <!-- Grid -->
+    <div class="my-5">
+      <ag-grid-angular
+        [columnDefs]="columnDefs"
+        [rowData]="readings"
+        [gridOptions]="gridOptions"
+        [theme]="gridTheme$ | async"
+        [pagination]="true"
+        [paginationPageSize]="500"
+        [style.height.px]="gridHeight"
+        [style.--ag-spacing.px]="6"
+        (gridReady)="onGridReady($event)"
+      ></ag-grid-angular>
+    </div>
+  </div>
+}

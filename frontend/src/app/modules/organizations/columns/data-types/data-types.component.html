@@ -1,0 +1,40 @@
+@if (columns && columns.length === 0) {
+  <div class="my-4 text-lg">No extra data columns have been created yet.</div>
+}
+<div [hidden]="isLoading">
+  <seed-page-table-container>
+    <mat-form-field class="w-full">
+      <mat-label>Filter</mat-label>
+      <input #input (keyup)="applyFilter($event)" matInput placeholder="Ex. ium" />
+    </mat-form-field>
+    <form [formGroup]="dataTypesForm" (ngSubmit)="save()">
+      <table [dataSource]="columnTableDataSource" mat-table>
+        <ng-container matColumnDef="display_name">
+          <th class="w-2/3" *matHeaderCellDef mat-header-cell>Display Name</th>
+          <td class="w-2/3" *matCellDef="let c" mat-cell>{{ c.display_name }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="data_type">
+          <th class="w-1/3" *matHeaderCellDef mat-header-cell>Data Type</th>
+          <td class="w-1/3" *matCellDef="let c" mat-cell>
+            <mat-select class="text-secondary" formControlName="{{ c.id }}">
+              @for (type of dataTypes; track type.id) {
+                <mat-option [value]="type.id">{{ type.label }}</mat-option>
+              }
+            </mat-select>
+          </td>
+        </ng-container>
+
+        <tr *matHeaderRowDef="columnTableColumns" mat-header-row></tr>
+        <tr *matRowDef="let row; columns: columnTableColumns" mat-row></tr>
+      </table>
+      <mat-paginator [pageSizeOptions]="[10, 20]" showFirstLastButtons aria-label="Select page"></mat-paginator>
+
+      <div class="my-4">
+        <button [disabled]="dataTypesForm.invalid" mat-flat-button color="primary">
+          <span class="">Save Changes</span>
+        </button>
+      </div>
+    </form>
+  </seed-page-table-container>
+</div>

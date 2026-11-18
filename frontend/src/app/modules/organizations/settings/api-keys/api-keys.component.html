@@ -1,0 +1,52 @@
+<seed-page [config]="{ titleIcon: 'fa-solid:gears', title: 'API Keys', breadcrumbs: ['Organization Settings'], sideNavToggle: true }">
+  @if (organization) {
+    <div class="flex-auto p-6 sm:p-10" *transloco="let t">
+      <div class="max-w-2xl">
+        <form
+          class="bg-card flex flex-col gap-y-6 overflow-hidden rounded-2xl p-2 pb-4 shadow"
+          [formGroup]="apiKeyForm"
+          (ngSubmit)="submit()"
+        >
+          <mat-form-field appearance="outline">
+            <mat-label>MapQuest API Key</mat-label>
+            <input [formControlName]="'mapquest_api_key'" matInput />
+          </mat-form-field>
+
+          @if (betterEnabled) {
+            <div class="flex flex-col">
+              <div class="prose my-4">
+                Your BETTER API key will need to be verified before it can be saved. Please paste your key below and then click the 'Verify
+                Token' button.
+              </div>
+              <mat-form-field appearance="outline">
+                <mat-label>BETTER Analysis API Key</mat-label>
+                <input [formControlName]="'better_analysis_api_key'" matInput />
+                @if (apiKeyForm.controls.better_analysis_api_key.touched && apiKeyForm.controls.better_analysis_api_key?.valid) {
+                  <mat-icon class="icon-size-5" [svgIcon]="'check'" matSuffix color="primary"></mat-icon>
+                }
+                @if (apiKeyForm.controls.better_analysis_api_key.touched && apiKeyForm.controls.better_analysis_api_key?.invalid) {
+                  <mat-icon class="icon-size-5" [svgIcon]="'warning'" matSuffix color="warn"></mat-icon>
+                }
+                @if (apiKeyForm.controls.better_analysis_api_key.touched && apiKeyForm.controls.better_analysis_api_key?.invalid) {
+                  <mat-error>API Key is Invalid</mat-error>
+                }
+              </mat-form-field>
+              <div class="prose mt-4">
+                An API key will be assigned to your account upon creation of a BETTER account at
+                <a href="https://better-lbnl-staging.herokuapp.com/accounts/signup/"
+                  >https://better-lbnl-staging.herokuapp.com/accounts/signup/</a
+                >
+              </div>
+            </div>
+          }
+
+          <div class="flex justify-center">
+            <button [disabled]="apiKeyForm.invalid || apiKeyForm.pending" mat-flat-button color="primary">
+              <span class="">{{ t('Save Changes') }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</seed-page>

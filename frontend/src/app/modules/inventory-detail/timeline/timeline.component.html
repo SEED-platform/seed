@@ -1,0 +1,120 @@
+<seed-page
+  [config]="{
+    title: type === 'taxlots' ? 'Tax Lot' : 'Property',
+    titleIcon: 'fa-solid:timeline',
+    breadcrumbs: [{ label: type === 'taxlots' ? 'Tax Lots' : 'Properties', link: '/' + type }, 'Timeline'],
+    sideNavToggle: true,
+  }"
+>
+  <div class="m-5 flex flex-col gap-4">
+    <!-- Controls -->
+    <div class="flex items-center justify-between">
+      <div class="text-secondary text-sm">{{ timeline.length }} cycle(s)</div>
+      <div class="flex items-center gap-3">
+        <span class="text-secondary text-sm">Sort:</span>
+        <button class="text-sm" (click)="toggleSort()" mat-stroked-button>
+          {{ sortDesc ? 'Oldest to Newest' : 'Newest to Oldest' }}
+        </button>
+      </div>
+    </div>
+
+    @if (loading) {
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    } @else if (!timeline.length) {
+      <div class="text-secondary py-8 text-center text-sm">No timeline events found.</div>
+    } @else {
+      <!-- Cycle groups -->
+      @for (cycle of timeline; track cycle.cycle) {
+        <mat-expansion-panel class="bg-card" expanded>
+          <mat-expansion-panel-header>
+            <mat-panel-title class="font-semibold">{{ cycleNameById[cycle.cycle] ?? 'Cycle ' + cycle.cycle }}</mat-panel-title>
+            <mat-panel-description class="text-secondary text-xs">{{ cycle.events.length }} event(s)</mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div class="flex flex-col gap-2 pt-1">
+            @for (event of cycle.events; track event.id) {
+              <mat-expansion-panel class="border !shadow-none">
+                <mat-expansion-panel-header>
+                  <mat-panel-title class="flex items-center gap-3 text-sm">
+                    <mat-icon class="shrink-0 icon-size-4" [svgIcon]="eventIcon[event.event_type]"></mat-icon>
+                    <span class="font-medium">{{ eventLabel[event.event_type] }}</span>
+                    <span class="text-secondary">{{ event.modified | date: 'yyyy-MM-dd HH:mm' }}</span>
+                    @if (userName(event.user_id)) {
+                      <span class="text-secondary">{{ userName(event.user_id) }}</span>
+                    }
+                    @if (event.audit_date) {
+                      <span class="text-secondary">Audit: {{ event.audit_date }}</span>
+                    }
+                    @if (event.analysis) {
+                      <span class="text-secondary">{{ event.analysis.service }}</span>
+                    }
+                  </mat-panel-title>
+                </mat-expansion-panel-header>
+
+                <!-- NoteEvent detail -->
+                @if (event.event_type === 'NoteEvent' && event.note) {
+                  <div class="rounded bg-gray-50 p-3 text-sm dark:bg-gray-800">
+                    <div class="text-secondary mb-1 text-xs">{{ event.note.updated | date: 'yyyy-MM-dd HH:mm' }}</div>
+                    <p class="whitespace-pre-wrap">{{ event.note.text }}</p>
+                  </div>
+                }
+
+                <!-- AnalysisEvent detail -->
+                @if (event.event_type === 'AnalysisEvent' && event.analysis) {
+                  <div class="rounded bg-gray-50 p-3 text-sm dark:bg-gray-800">
+                    <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1">
+                      <dt class="text-secondary">Name</dt>
+                      <dd class="font-medium">{{ event.analysis.name }}</dd>
+                      <dt class="text-secondary">Service</dt>
+                      <dd>{{ event.analysis.service }}</dd>
+                      <dt class="text-secondary">Created</dt>
+                      <dd>{{ event.analysis.created_at | date: 'yyyy-MM-dd' }}</dd>
+                      @if (formatDuration(event.analysis.start_time, event.analysis.end_time)) {
+                        <dt class="text-secondary">Duration</dt>
+                        <dd>{{ formatDuration(event.analysis.start_time, event.analysis.end_time) }}</dd>
+                      }
+                      @if (event.analysis.status) {
+                        <dt class="text-secondary">Status</dt>
+                        <dd>{{ event.analysis.status }}</dd>
+                      }
+                    </dl>
+                  </div>
+                }
+
+                <!-- ATEvent detail: scenarios + measures -->
+                @if (event.event_type === 'ATEvent' && event.scenarios?.length) {
+                  <mat-accordion multi>
+                    @for (scenario of event.scenarios; track scenario.id) {
+                      <mat-expansion-panel class="bg-card border-t !shadow-none">
+                        <mat-expansion-panel-header>
+                          <mat-panel-title class="text-sm font-medium">{{ scenario.name }}</mat-panel-title>
+                          <mat-panel-description class="flex gap-4 text-xs">
+                            <span>Elec: {{ scenario.annual_electricity_savings ?? 'N/A' }} kBtu</span>
+                            <span>{{ scenario.measures?.length ?? 0 }} measure(s)</span>
+                          </mat-panel-description>
+                        </mat-expansion-panel-header>
+                        @if (scenario.measures?.length) {
+                          <div class="flex flex-col gap-1 text-sm">
+                            @for (measure of scenario.measures; track $index) {
+                              <div class="flex gap-3 border-b py-1 text-xs last:border-0">
+                                <span class="text-secondary w-28 shrink-0">{{ measure['category'] }}</span>
+                                <span class="font-medium">{{ measure['display_name'] }}</span>
+                                <span class="text-secondary ml-auto">{{ measure['implementation_status'] }}</span>
+                              </div>
+                            }
+                          </div>
+                        } @else {
+                          <div class="text-secondary text-sm">No measures.</div>
+                        }
+                      </mat-expansion-panel>
+                    }
+                  </mat-accordion>
+                }
+              </mat-expansion-panel>
+            }
+          </div>
+        </mat-expansion-panel>
+      }
+    }
+  </div>
+</seed-page>

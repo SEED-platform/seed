@@ -1,0 +1,53 @@
+<seed-page
+  [config]="{
+    title: 'Cycles',
+    titleIcon: 'fa-solid:calendar-days',
+    action: createCycle,
+    actionIcon: 'fa-solid:plus',
+    actionText: 'Create Cycle',
+  }"
+  title="Cycles"
+>
+  <!-- Cycles Table -->
+  <seed-page-table-container>
+    <table class="mat-elevation-z8 w-full bg-transparent" [dataSource]="cyclesDataSource" [trackBy]="trackByFn" mat-table matSort>
+      <ng-container matColumnDef="id">
+        <th *matHeaderCellDef mat-header-cell>ID</th>
+        <td *matCellDef="let cycle" mat-cell>{{ cycle.id }}</td>
+      </ng-container>
+      <ng-container matColumnDef="name">
+        <th *matHeaderCellDef mat-header-cell>Name</th>
+        <td *matCellDef="let cycle" mat-cell>{{ cycle.name }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="start">
+        <th *matHeaderCellDef mat-header-cell>Start Date</th>
+        <td *matCellDef="let cycle" mat-cell>{{ cycle.start }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="end">
+        <th *matHeaderCellDef mat-header-cell>End Date</th>
+        <td *matCellDef="let cycle" mat-cell>{{ cycle.end }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th class="select-none pr-24 text-right" *matHeaderCellDef mat-header-cell>Actions</th>
+        <td class="w-50 text-right" *matCellDef="let cycle" mat-cell>
+          <button class="mr-2" (click)="editCycle(cycle)" mat-icon-button>
+            <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil"></mat-icon>
+          </button>
+          <button (click)="deleteCycle(cycle)" mat-icon-button>
+            <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <thead>
+        <tr *matHeaderRowDef="cyclesColumns" mat-header-row></tr>
+      </thead>
+      <tbody>
+        <tr *matRowDef="let row; columns: cyclesColumns" mat-row></tr>
+      </tbody>
+    </table>
+  </seed-page-table-container>
+</seed-page>

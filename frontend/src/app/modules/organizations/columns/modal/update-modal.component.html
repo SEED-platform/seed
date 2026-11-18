@@ -1,0 +1,10 @@
+<h2 class="text-3xl font-extrabold capitalize leading-7 tracking-tight sm:leading-10 md:text-4xl" mat-dialog-title>Update Columns</h2>
+
+<div class="mb-4 mt-4">
+  @if (inProgress) {
+    <mat-progress-bar [value]="progressBarObj.progress" mode="determinate"></mat-progress-bar>
+  }
+  @if (errorMessage) {
+    <seed-alert type="error">{{ errorMessage }}</seed-alert>
+  }
+</div>

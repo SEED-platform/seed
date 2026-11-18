@@ -1,0 +1,16 @@
+<ng-container *transloco="let t">
+  @for (item of chips; track item.original) {
+    <span class="flex items-center gap-1 rounded-full bg-green-700 py-0.5 pl-2 pr-1 text-white">
+      <mat-icon class="text-white icon-size-3" svgIcon="fa-solid:filter"></mat-icon>
+      {{ item.displayName }}
+      <button
+        class="flex rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary dark:focus-visible:outline-primary-400"
+        [attr.aria-label]="t('Remove') + ' ' + item.displayName"
+        (click)="removed.emit(item)"
+        type="button"
+      >
+        <mat-icon class="text-white icon-size-3.5" fontIcon="close"></mat-icon>
+      </button>
+    </span>
+  }
+</ng-container>

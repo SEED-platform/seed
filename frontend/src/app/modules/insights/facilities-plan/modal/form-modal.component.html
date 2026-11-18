@@ -1,0 +1,95 @@
+<div *transloco="let t">
+  <div class="mt-4 flex gap-4" mat-dialog-title>
+    <mat-icon class="text-primary-600 icon-size-5 dark:text-primary-400" svgIcon="fa-solid:building-circle-check"></mat-icon>
+    <div class="text-2xl font-medium leading-6">{{ isEditing ? t('Edit Plan Run') : t('New Facilities Plan Run') }}</div>
+  </div>
+  <mat-divider class="mb-4"></mat-divider>
+
+  <mat-dialog-content>
+    <form class="flex flex-col gap-4 pt-2" [formGroup]="form">
+      <!-- Facilities Plan -->
+      <mat-form-field>
+        <mat-label>{{ t('Generic Facilities Plan') }}</mat-label>
+        <mat-select formControlName="facilities_plan">
+          @for (plan of data.facilitiesPlans; track plan.id) {
+            <mat-option [value]="plan.id">{{ plan.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>{{ t('Select the template that defines the energy and compliance columns') }}</mat-hint>
+      </mat-form-field>
+
+      <!-- Name -->
+      <mat-form-field>
+        <mat-label>{{ t('Name') }}</mat-label>
+        <input [placeholder]="t('e.g. FY2025 Campus Plan')" matInput formControlName="name" />
+        <mat-hint>{{ t('Unique name shown in the dropdown selector') }}</mat-hint>
+      </mat-form-field>
+
+      <!-- Baseline Cycle (create only) -->
+      @if (!isEditing) {
+        <mat-form-field>
+          <mat-label>{{ t('Baseline Cycle') }}</mat-label>
+          <mat-select formControlName="cycle">
+            @for (cycle of cycles; track cycle.id) {
+              <mat-option [value]="cycle.id">{{ cycle.name }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>{{ t('Cycle used as the baseline for calculations') }}</mat-hint>
+        </mat-form-field>
+      }
+
+      <!-- Access Level (create only) -->
+      @if (!isEditing) {
+        <mat-form-field>
+          <mat-label>{{ t('Access Level') }}</mat-label>
+          <mat-select [value]="selectedLevelIndex" (selectionChange)="onLevelIndexChange($event.value)">
+            @for (name of accessLevelNames; track $index) {
+              <mat-option [value]="$index">{{ name }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>{{ t('Scope of properties included in this plan run') }}</mat-hint>
+        </mat-form-field>
+
+        <mat-form-field>
+          <mat-label>{{ t('Access Level Instance') }}</mat-label>
+          <mat-select formControlName="ali">
+            @for (instance of potentialInstances; track instance.id) {
+              <mat-option [value]="instance.id">{{ instance.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+
+      <!-- Display Columns -->
+      <div>
+        <p class="mb-1 text-sm font-medium">{{ t('Display Columns') }}</p>
+
+        @for (colId of selectedColumnIds; track colId) {
+          <div class="flex items-center justify-between border-b border-gray-100 py-1 dark:border-gray-700">
+            <span class="text-sm">{{ getColumnName(colId) }}</span>
+            <button (click)="removeColumn(colId)" mat-icon-button type="button">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        }
+
+        <mat-form-field class="mt-2 w-full">
+          <mat-label>{{ t('Add column') }}</mat-label>
+          <mat-select [value]="null" (selectionChange)="addColumn($event.value)">
+            @for (col of availableColumns; track col.id) {
+              <mat-option [value]="col.id">{{ col.display_name || col.column_name }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>{{ t('Extra columns to display alongside the calculated columns') }}</mat-hint>
+        </mat-form-field>
+      </div>
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button (click)="close()" mat-button>{{ t('Cancel') }}</button>
+    <button [disabled]="form.invalid || isSaving" (click)="save()" color="primary" mat-flat-button>
+      {{ isSaving ? t('Saving…') : t('Save') }}
+    </button>
+  </mat-dialog-actions>
+</div>

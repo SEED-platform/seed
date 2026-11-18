@@ -1,0 +1,21 @@
+<div class="relative flex h-full w-full flex-col">
+  <div class="flex flex-auto flex-col p-6">
+    <div class="mb-4 text-xl font-medium">Delete Meter</div>
+    <p class="text-sm">
+      Are you sure you want to delete the meter <strong>{{ meterName }}</strong
+      >?
+    </p>
+    <p class="text-secondary mt-2 text-xs">This action cannot be undone. All associated meter readings will also be deleted.</p>
+  </div>
+
+  <div class="flex items-center justify-end gap-2 bg-gray-50 px-6 py-4 dark:bg-black dark:bg-opacity-10">
+    <button [matDialogClose]="false" [disabled]="submitted" mat-stroked-button>Cancel</button>
+    <button [disabled]="submitted" (click)="confirm()" mat-flat-button color="warn">
+      @if (!submitted) {
+        Delete
+      } @else {
+        <mat-progress-spinner [diameter]="24" mode="indeterminate"></mat-progress-spinner>
+      }
+    </button>
+  </div>
+</div>

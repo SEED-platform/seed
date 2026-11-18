@@ -1,0 +1,90 @@
+<seed-page
+  [config]="{
+    title: 'Data Mapping',
+    breadcrumbs: [
+      { label: 'Data', link: '/data' },
+      { label: importFile?.dataset?.name, link: datasetId ? '/data/' + datasetId : null, translate: false },
+      'Data Mapping',
+    ],
+    titleIcon: 'fa-solid:map',
+    action: toggleHelp,
+    actionIcon: 'fa-solid:circle-question',
+  }"
+>
+  <div class="h-full-page-tabs" id="content">
+    <mat-drawer-container class="h-full">
+      <mat-drawer class="w-1/2" #drawer [(opened)]="helpOpened" mode="over" position="end">
+        <ng-container *ngTemplateOutlet="helpTemplate"></ng-container>
+      </mat-drawer>
+      <ng-container *ngTemplateOutlet="mainTemplate"></ng-container>
+    </mat-drawer-container>
+  </div>
+</seed-page>
+
+<!-- HELP CONTENT -->
+<ng-template class="w-1/3" #helpTemplate>
+  <seed-data-mapping-help
+    [completed]="completed"
+    [matchingPropertyColumnDisplayNames]="matchingPropertyColumnDisplayNames"
+    [matchingTaxLotColumnDisplayNames]="matchingTaxLotColumnDisplayNames"
+  ></seed-data-mapping-help>
+</ng-template>
+
+<!-- MAIN CONTENT -->
+<ng-template #mainTemplate>
+  <mat-stepper class="stepper-disable-hover bg-transparent p-0" #stepper [linear]="true">
+    <!-- Always show a checkmark when complete  -->
+    <ng-template matStepperIcon="edit"><mat-icon>check</mat-icon></ng-template>
+    <ng-template matStepperIcon="number" let-index="index">
+      @if (completed[index + 1]) {
+        <mat-icon>check</mat-icon>
+      } @else {
+        {{ index + 1 }}
+      }
+    </ng-template>
+
+    <mat-step [completed]="completed[1]" label="Map Data">
+      <seed-map-data
+        [columnMappingProfiles]="columnMappingProfiles"
+        [cycle]="cycle"
+        [firstFiveRows]="firstFiveRows"
+        [importFile]="importFile"
+        [mappingSuggestions]="mappingSuggestions"
+        [matchingPropertyColumns]="matchingPropertyColumns"
+        [matchingTaxLotColumns]="matchingTaxLotColumns"
+        [orgId]="orgId"
+        [rawColumnNames]="rawColumnNames"
+        (completed)="startMapping()"
+        (defaultInventoryTypeChange)="onDefaultInventoryTypeChange($event)"
+      ></seed-map-data>
+    </mat-step>
+
+    <mat-step [completed]="completed[2]" label="Mapping" editable="false">
+      <seed-progress-bar [progress]="progressBarObj.progress" [total]="progressBarObj.total" [title]="progressTitle"></seed-progress-bar>
+    </mat-step>
+
+    <mat-step [completed]="completed[3]" label="Review Mappings" editable="false">
+      <seed-save-mappings
+        [columns]="columns"
+        [cycle]="cycle"
+        [importFile]="importFile"
+        [mappingResultsResponse]="mappingResultsResponse"
+        [org]="org"
+        [orgId]="orgId"
+        (completed)="startMatchMerge()"
+        (backToMapping)="backToMapping()"
+      ></seed-save-mappings>
+    </mat-step>
+
+    <mat-step [completed]="completed[4]" label="Save Mappings" editable="false">
+      <seed-match-merge
+        [cycleId]="cycle?.id"
+        [datasetId]="datasetId"
+        [importFileId]="fileId"
+        [inventoryType]="inventoryType"
+        [orgId]="orgId"
+        (matchMergeComplete)="onMatchComplete()"
+      ></seed-match-merge>
+    </mat-step>
+  </mat-stepper>
+</ng-template>

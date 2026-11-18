@@ -1,0 +1,85 @@
+<seed-page
+  [config]="{
+    title: 'Analysis View',
+    titleIcon: 'fa-solid:chart-bar',
+    breadcrumbs: [
+      { label: 'Analyses', link: '/analyses' },
+      { label: analysis?.name, link: '/analyses/' + analysisId, translate: false },
+      'Analysis View',
+    ],
+  }"
+>
+  <div class="h-full-page p-5" id="content">
+    <!--  Header -->
+    <div class="mb-5 flex flex-col gap-4">
+      <div class="flex gap-4">
+        <span class="text-secondary w-20">Cycle</span>
+        <span class="text-lg">{{ cycle.name }}</span>
+      </div>
+      <div class="flex gap-4">
+        <span class="text-secondary w-20">Analysis </span>
+        <a class="text-primary dark:text-primary-400" [routerLink]="['/analyses/', analysis.id]">
+          <span class="mr-1 text-lg">{{ analysis.name }}</span>
+          <span class="material-icons text-secondary text-sm">open_in_new</span>
+        </a>
+      </div>
+      <div class="flex gap-4">
+        <span class="text-secondary w-20">Property </span>
+        <a class="text-primary dark:text-primary-400" [routerLink]="['/properties/', propertyViewId]">
+          <span class="mr-1 text-lg">{{ viewDisplayField$ | async }}</span>
+          <span class="material-icons text-secondary text-sm">open_in_new</span>
+        </a>
+      </div>
+    </div>
+    <mat-divider></mat-divider>
+    <div class="my-5 flex gap-4">
+      <div class="bold text-secondary w-20">Messages</div>
+      <div class="text-secondary max-w-160">
+        <ul class="list-disc pl-5">
+          @for (message of messages; track $index) {
+            <li class="text">{{ message.user_message || message.debug_message }}</li>
+          }
+        </ul>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+    <div class="my-5">
+      <div class="flex justify-between">
+        <div class="m-4 flex items-center text-lg font-medium">
+          <mat-icon svgIcon="fa-solid:chart-bar"></mat-icon>
+          <span class="ml-4">Results</span>
+        </div>
+        @if (view.output_files?.length) {
+          <mat-icon class="my-auto scale-150 cursor-pointer" (click)="downloadOutputFile()" svgIcon="fa-solid:cloud-arrow-down"></mat-icon>
+        }
+      </div>
+      <!-- Table Display -->
+      @if (rowData.length) {
+        <ag-grid-angular
+          [columnDefs]="columnDefs"
+          [rowData]="rowData"
+          [theme]="gridTheme$ | async"
+          [domLayout]="'autoHeight'"
+          (gridReady)="onGridReady($event)"
+        ></ag-grid-angular>
+      } @else if (view.output_files?.length) {
+        <mat-divider></mat-divider>
+
+        @for (file of outputFiles; track file.id) {
+          <!--Display HTML-->
+          @if (file.kind === 'html') {
+            <iframe class="h-screen w-full" [srcdoc]="file.html" sandbox="allow-scripts allow-popups" title="Analysis report"></iframe>
+          }
+
+          <!--Display Image-->
+          @if (file.kind === 'image') {
+            <img [src]="file.src" style="width: 100%; min-width: 200px; max-width: 50%" alt="Analysis result image" />
+          }
+        }
+      } @else {
+        <seed-not-found message="No results found for this analysis" icon="fa-solid:triangle-exclamation"></seed-not-found>
+      }
+    </div>
+  </div>
+</seed-page>

@@ -1,0 +1,62 @@
+<!-- header -->
+<div class="ml-4 mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
+  <div class="text-2xl font-medium leading-6">
+    @if (data.mode === 'create') {
+      Create Group
+    }
+    @if (data.mode === 'edit') {
+      Rename Group?
+    }
+  </div>
+</div>
+<mat-divider></mat-divider>
+
+<!-- CONTENT -->
+<div class="m-4">
+  <form class="flex flex-col gap-4" [formGroup]="form">
+    <!-- Name -->
+    <mat-form-field class="w-full">
+      <mat-label>Group Name</mat-label>
+      <input matInput formControlName="name" placeholder="Group Name" />
+      @if (form.controls.name?.hasError('valueExists')) {
+        <mat-error>This name already exists.</mat-error>
+      }
+    </mat-form-field>
+
+    @if (data.mode === 'create') {
+      <!-- Access Level Info -->
+      <mat-form-field>
+        <mat-label>Access Level</mat-label>
+        <mat-select formControlName="access_level">
+          @for (level of accessLevelNames; track level) {
+            <mat-option [value]="level">{{ level }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Access Level Instance</mat-label>
+        <mat-select formControlName="access_level_instance">
+          @for (ali of accessLevelInstances; track ali.id) {
+            <mat-option [value]="ali.id">{{ ali.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+  </form>
+</div>
+
+<!-- FOOTER -->
+<div class="flex justify-end">
+  <mat-dialog-actions>
+    @if (data.mode === 'create') {
+      <button [disabled]="form.invalid" (click)="onCreate()" color="primary" mat-raised-button>Create</button>
+    } @else if (data.mode === 'edit') {
+      <button [disabled]="form.invalid" (click)="onEdit()" color="primary" mat-raised-button>Rename</button>
+    }
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+  </mat-dialog-actions>
+</div>

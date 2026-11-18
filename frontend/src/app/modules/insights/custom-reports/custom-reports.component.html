@@ -1,0 +1,402 @@
+<seed-page [config]="{ title: 'Custom Reports', titleIcon: 'fa-solid:chart-area' }">
+  @if (loading) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+  }
+
+  <div class="px-5 pt-2.5">
+    <!-- Config Panel -->
+    <mat-expansion-panel
+      class="mb-4 !rounded !bg-white !shadow-sm dark:!bg-gray-900"
+      [expanded]="showConfig"
+      (expandedChange)="showConfig = $event"
+      hideToggle
+    >
+      <mat-expansion-panel-header>
+        <mat-panel-title class="flex items-center gap-1 font-semibold">
+          <mat-icon class="text-lg" [fontIcon]="showConfig ? 'expand_less' : 'expand_more'" />
+          Configuration
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+      <div class="flex flex-col gap-4">
+        <!-- Top row: Report list + config columns -->
+        <div class="flex gap-4">
+          <!-- Report List -->
+          <div class="border-hint flex min-w-48 flex-col gap-2 border-r pr-4">
+            <div class="text-secondary font-semibold">Custom Reports</div>
+
+            @if (selectedReport) {
+              <div class="flex items-center gap-2 rounded bg-primary-200 px-3 py-1.5 dark:bg-primary-700">
+                <span class="flex-1 truncate">{{ selectedReport.name }}</span>
+              </div>
+            }
+
+            <div class="flex max-h-48 flex-col gap-1 overflow-y-auto">
+              @for (report of customReports; track report.id) {
+                @if (!selectedReport || report.id !== selectedReport.id) {
+                  <div class="flex cursor-pointer items-center gap-2 rounded px-3 py-1 hover:bg-hover">
+                    <a class="text-default flex-1 truncate no-underline" [routerLink]="['/insights/custom-reports', report.id]">
+                      {{ report.name }}
+                    </a>
+                  </div>
+                }
+              }
+            </div>
+
+            @if (auth.requires_member) {
+              <button [disabled]="editing" (click)="clickNewReport()" mat-flat-button color="primary">
+                <mat-icon fontIcon="add_circle_outline" />
+                New Custom Report
+              </button>
+            }
+          </div>
+
+          <!-- No report selected state -->
+          @if (!selectedReport && !editing) {
+            <div class="flex flex-1 flex-col gap-2 p-4">
+              @if (customReports.length === 0) {
+                <div class="font-semibold">No Custom Reports Created</div>
+                @if (auth.requires_member) {
+                  <p class="text-secondary">
+                    <mat-icon class="align-middle mr-1 !text-base" fontIcon="arrow_back" />
+                    Create a Custom Report to get started!
+                  </p>
+                }
+              } @else {
+                <div class="font-semibold">No Custom Reports Selected</div>
+                <p class="text-secondary">
+                  <mat-icon class="align-middle mr-1 !text-base" fontIcon="arrow_back" />
+                  Select a Custom Report to get started!
+                </p>
+              }
+              <div class="font-semibold">What is a Custom Report?</div>
+              <p class="text-secondary">
+                A Custom Report allows you to look at aggregated data across your inventories and cycles. This is useful to see how specific
+                metrics change over time.
+              </p>
+            </div>
+          }
+
+          <!-- Config columns (when report selected or editing) -->
+          @if (selectedReport || editing) {
+            <!-- Name + Filter Groups column -->
+            <div class="flex min-w-48 flex-col gap-2">
+              <div class="text-secondary font-semibold">Name</div>
+              <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
+                <input [(ngModel)]="fields.name" [disabled]="!editing" matInput placeholder="Report name" />
+              </mat-form-field>
+
+              <div class="text-secondary font-semibold">Filter Groups <span class="text-hint text-xs font-normal">(optional)</span></div>
+              @if (editing) {
+                <div class="flex max-h-32 flex-col gap-1 overflow-y-auto">
+                  @for (fg of filterGroups; track fg.id) {
+                    <mat-checkbox
+                      class="rounded px-2"
+                      [(ngModel)]="fields.filterGroupCheckboxes[fg.id]"
+                      [class.bg-primary-200]="fields.filterGroupCheckboxes[fg.id]"
+                      [class.dark:bg-primary-700]="fields.filterGroupCheckboxes[fg.id]"
+                    >
+                      {{ fg.name }}
+                    </mat-checkbox>
+                  }
+                  @if (filterGroups.length === 0) {
+                    <div class="text-hint text-sm">No filter groups available. Data will include all properties.</div>
+                  }
+                </div>
+              } @else if (hasFilterGroups) {
+                <div class="flex max-h-32 flex-col gap-1 overflow-y-auto">
+                  @for (fg of usedFilterGroups | keyvalue; track fg.key) {
+                    <div
+                      class="cursor-pointer select-none rounded px-3 py-1"
+                      [class.bg-primary-200]="isFilterGroupSelected(fg.key)"
+                      [class.dark:bg-primary-700]="isFilterGroupSelected(fg.key)"
+                      (click)="auth.requires_member && toggleFilterGroup(fg.value.id)"
+                    >
+                      {{ fg.value.name }}
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="text-hint text-sm">None — data includes all properties.</div>
+              }
+            </div>
+
+            <!-- Cycles column -->
+            <div class="flex min-w-36 flex-col gap-2">
+              <div class="text-secondary font-semibold">Cycles</div>
+              @if (editing) {
+                <div class="flex max-h-48 flex-col gap-1 overflow-y-auto">
+                  @for (cycle of cycles; track cycle.id) {
+                    <mat-checkbox
+                      class="rounded px-2"
+                      [(ngModel)]="fields.cycleCheckboxes[cycle.id]"
+                      [class.bg-primary-200]="fields.cycleCheckboxes[cycle.id]"
+                      [class.dark:bg-primary-700]="fields.cycleCheckboxes[cycle.id]"
+                    >
+                      {{ cycle.name }}
+                    </mat-checkbox>
+                  }
+                </div>
+              } @else {
+                <div class="flex max-h-48 flex-col gap-1 overflow-y-auto">
+                  @for (cycle of usedCycles | keyvalue; track cycle.key) {
+                    <div
+                      class="cursor-pointer select-none rounded px-3 py-1"
+                      [class.bg-primary-200]="isCycleSelected(cycle.key)"
+                      [class.dark:bg-primary-700]="isCycleSelected(cycle.key)"
+                      (click)="auth.requires_member && toggleCycle(cycle.key)"
+                    >
+                      {{ cycle.value.name }}
+                    </div>
+                  }
+                </div>
+              }
+              @if (selectedCyclesCount === 0 || editing) {
+                <div class="text-secondary text-sm">
+                  <mat-icon class="align-middle mr-1 !text-sm" fontIcon="arrow_upward" />
+                  Select one or more cycles to populate the horizontal axis.
+                </div>
+              }
+            </div>
+
+            <!-- Left Axis column -->
+            <div class="flex min-w-48 flex-col gap-2">
+              <div class="text-secondary font-semibold">Left Axis</div>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Column</mat-label>
+                <mat-select [(ngModel)]="firstAxisColumnId" [disabled]="!auth.requires_member">
+                  <mat-option [value]="null">-- None --</mat-option>
+                  <mat-optgroup label="Property Columns">
+                    @for (col of filteredPropertyColumns; track col.id) {
+                      <mat-option [value]="col.id">{{ col.display_name }} ({{ col.data_type }})</mat-option>
+                    }
+                  </mat-optgroup>
+                  <mat-optgroup label="Tax Lot Columns">
+                    @for (col of filteredTaxLotColumns; track col.id) {
+                      <mat-option [value]="col.id">{{ col.display_name }} ({{ col.data_type }})</mat-option>
+                    }
+                  </mat-optgroup>
+                </mat-select>
+              </mat-form-field>
+
+              @if (sourceColumnByLocation.first_axis) {
+                <div class="flex flex-col gap-1">
+                  @for (agg of aggregations; track agg.id) {
+                    <div
+                      class="cursor-pointer select-none rounded px-3 py-1"
+                      [class.bg-primary-200]="hasAggregation('first_axis', agg.id)"
+                      [class.dark:bg-primary-700]="hasAggregation('first_axis', agg.id)"
+                      (click)="auth.requires_member && toggleAggregation('first_axis', agg.id)"
+                    >
+                      {{ agg.name }}
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="text-secondary text-sm">
+                  <mat-icon class="align-middle mr-1 !text-sm" fontIcon="arrow_upward" />
+                  Select a column to show data on this axis. Only numeric columns are listed.
+                </div>
+              }
+              @if (sourceColumnByLocation.first_axis && firstAxisAggregations.length === 0) {
+                <div class="text-secondary text-sm">
+                  <mat-icon class="align-middle mr-1 !text-sm" fontIcon="arrow_upward" />
+                  Select one or more aggregation methods.
+                </div>
+              }
+            </div>
+
+            <!-- Right Axis column -->
+            <div class="flex min-w-48 flex-col gap-2">
+              <div class="text-secondary font-semibold">Right Axis</div>
+              <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Column</mat-label>
+                <mat-select [(ngModel)]="secondAxisColumnId" [disabled]="!auth.requires_member">
+                  <mat-option [value]="null">-- None --</mat-option>
+                  <mat-optgroup label="Property Columns">
+                    @for (col of filteredPropertyColumnsSecond; track col.id) {
+                      <mat-option [value]="col.id">{{ col.display_name }} ({{ col.data_type }})</mat-option>
+                    }
+                  </mat-optgroup>
+                  <mat-optgroup label="Tax Lot Columns">
+                    @for (col of filteredTaxLotColumnsSecond; track col.id) {
+                      <mat-option [value]="col.id">{{ col.display_name }} ({{ col.data_type }})</mat-option>
+                    }
+                  </mat-optgroup>
+                </mat-select>
+              </mat-form-field>
+
+              @if (sourceColumnByLocation.second_axis) {
+                <div class="flex flex-col gap-1">
+                  @for (agg of aggregations; track agg.id) {
+                    <div
+                      class="cursor-pointer select-none rounded px-3 py-1"
+                      [class.bg-primary-200]="hasAggregation('second_axis', agg.id)"
+                      [class.dark:bg-primary-700]="hasAggregation('second_axis', agg.id)"
+                      (click)="auth.requires_member && toggleAggregation('second_axis', agg.id)"
+                    >
+                      {{ agg.name }}
+                    </div>
+                  }
+                </div>
+              } @else {
+                <div class="text-secondary text-sm">
+                  <mat-icon class="align-middle mr-1 !text-sm" fontIcon="arrow_upward" />
+                  Select a column to show data on this axis. Only numeric columns are listed.
+                </div>
+              }
+              @if (sourceColumnByLocation.second_axis && secondAxisAggregations.length === 0) {
+                <div class="text-secondary text-sm">
+                  <mat-icon class="align-middle mr-1 !text-sm" fontIcon="arrow_upward" />
+                  Select one or more aggregation methods.
+                </div>
+              }
+            </div>
+
+            <!-- Actions column -->
+            @if (auth.requires_member) {
+              <div class="flex min-w-32 flex-col gap-2">
+                <div class="text-secondary font-semibold">Actions</div>
+
+                @if (!editing && selectedReport) {
+                  <div class="flex gap-1">
+                    <button (click)="clickEdit()" mat-icon-button matTooltip="Edit">
+                      <mat-icon class="scale-75 fill-cyan-600" svgIcon="fa-solid:pencil" />
+                    </button>
+                    <button (click)="clickDelete(selectedReport)" mat-icon-button matTooltip="Delete">
+                      <mat-icon class="scale-75 text-red-500" svgIcon="fa-solid:trash" />
+                    </button>
+                  </div>
+                }
+
+                @if (editing) {
+                  @if (createErrors.length > 0) {
+                    <div class="rounded border border-warn bg-warn/10 p-2 text-sm">
+                      @for (error of createErrors; track error) {
+                        <div>{{ error }}</div>
+                      }
+                    </div>
+                  }
+                  <div class="flex gap-2">
+                    <button (click)="clickCancel()" mat-stroked-button>Cancel</button>
+                    <button
+                      class="inline-flex h-9 shrink-0 cursor-pointer items-center gap-1 rounded-full bg-primary px-4 text-sm text-white hover:bg-primary-800"
+                      (click)="clickSave()"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                }
+
+                @if (selectedReport && selectedReport.id) {
+                  <button class="mt-2" (click)="downloadChart()" mat-stroked-button>
+                    <mat-icon fontIcon="download" />
+                    Download Chart
+                  </button>
+                }
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Chart -->
+    @if (selectedReport) {
+      <div class="mx-auto rounded bg-white p-4 shadow-sm dark:bg-gray-900" style="margin-left: 10vw; margin-right: 5vw">
+        <canvas #chartCanvas></canvas>
+      </div>
+    }
+
+    <!-- Data Table -->
+    @if (selectedReport && !editing && evaluateData) {
+      <div class="mt-6 overflow-x-auto rounded bg-white p-4 shadow-sm dark:bg-gray-900">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-hint border-b">
+              @if (hasFilterGroups) {
+                <th class="p-2 text-left font-semibold" rowspan="2">Filter Group</th>
+              }
+              <th class="p-2" [attr.colspan]="selectedCyclesCount">
+                <div class="flex items-center gap-2">
+                  <mat-form-field class="!min-w-0" appearance="outline" subscriptSizing="dynamic">
+                    <mat-select [(ngModel)]="selectedTableLocation">
+                      @if (sourceColumnByLocation.first_axis) {
+                        <mat-option value="first_axis">{{ sourceColumnByLocation.first_axis.display_name }}</mat-option>
+                      }
+                      @if (sourceColumnByLocation.second_axis) {
+                        <mat-option value="second_axis">{{ sourceColumnByLocation.second_axis.display_name }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <mat-form-field class="!min-w-0" appearance="outline" subscriptSizing="dynamic">
+                    <mat-select [(ngModel)]="selectedTableAggregation">
+                      @for (agg of aggregations; track agg.id) {
+                        <mat-option [value]="agg.id">{{ agg.name }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </th>
+            </tr>
+            <tr class="border-hint border-b">
+              @for (cycle of selectedCyclesList; track cycle.id) {
+                <th class="p-2 text-right font-semibold">{{ cycle.name }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @if (hasFilterGroups) {
+              @for (fg of selectedFilterGroupsList; track fg.id) {
+                <!-- Filter group summary row -->
+                <tr class="border-hint border-b hover:bg-hover">
+                  <td
+                    class="cursor-pointer select-none rounded bg-primary-200 p-2 font-medium dark:bg-primary-700"
+                    (click)="togglePropertyExpansion(fg.id)"
+                  >
+                    {{ fg.name }}
+                  </td>
+                  @for (cycle of selectedCyclesList; track cycle.id) {
+                    <td class="p-2 text-right">
+                      @if (activeTableColumnId) {
+                        {{ getTableValue(activeTableColumnId, fg.id, cycle.id, selectedAggregationName) }}
+                      }
+                    </td>
+                  }
+                </tr>
+
+                <!-- Expanded property rows -->
+                @if (showPropertiesForFilterGroup[fg.id]) {
+                  @for (prop of getPropertiesForFilterGroup(fg.id); track prop[0]) {
+                    <tr class="border-hint/50 text-secondary border-b hover:bg-hover">
+                      <td class="p-2 pl-6">
+                        <a class="underline" [routerLink]="['/properties', prop[0]]"> Property - {{ prop[1] }} </a>
+                      </td>
+                      @for (cycle of selectedCyclesList; track cycle.id) {
+                        <td class="p-2 text-right">
+                          @if (activeTableColumnId) {
+                            {{ getPropertyValue(activeTableColumnId, fg.id, cycle.id, prop[1]) }}
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                }
+              }
+            } @else if (evaluateData) {
+              <!-- No filter groups: show aggregate row from first available filter group key -->
+              <tr class="border-hint border-b hover:bg-hover">
+                @for (cycle of selectedCyclesList; track cycle.id) {
+                  <td class="p-2 text-right">
+                    @if (activeTableColumnId) {
+                      {{ getTableValueNoFilterGroup(activeTableColumnId, cycle.id, selectedAggregationName) }}
+                    }
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</seed-page>

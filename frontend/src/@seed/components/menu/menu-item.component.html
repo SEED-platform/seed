@@ -1,0 +1,14 @@
+<div
+  class="menu-option"
+  [class.cursor-pointer]="!disabled"
+  [class.text-secondary]="disabled"
+  [class.hover:bg-transparent]="disabled"
+  (click)="onClick()"
+>
+  @if (icon) {
+    <mat-icon class="scale-50" [svgIcon]="icon"></mat-icon>
+  } @else {
+    <div class="w-6"></div>
+  }
+  <span>{{ label }}</span>
+</div>

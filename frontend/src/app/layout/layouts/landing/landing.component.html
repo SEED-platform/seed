@@ -1,0 +1,82 @@
+<seed-loading-bar></seed-loading-bar>
+
+<!-- Wrapper -->
+<div class="flex w-full flex-auto flex-col" *transloco="let t">
+  <!-- Content -->
+  <div class="relative flex flex-auto flex-col">
+    <div class="absolute inset-0 flex min-w-0 flex-col overflow-y-auto" cdkScrollable>
+      <div class="flex min-w-0 flex-auto flex-col items-center sm:justify-center md:p-8">
+        <div class="flex overflow-hidden sm:bg-card sm:rounded-2xl sm:shadow md:w-full md:max-w-6xl">
+          <div
+            class="relative hidden h-full flex-auto items-center justify-center overflow-hidden bg-gray-800 p-16 md:flex lg:px-28 dark:border-r"
+          >
+            <!-- Background -->
+            <svg
+              class="pointer-events-none absolute inset-0"
+              height="100%"
+              preserveAspectRatio="xMidYMax slice"
+              viewBox="0 0 960 540"
+              width="100%"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g class="text-gray-700 opacity-25" fill="none" stroke="currentColor" stroke-width="100">
+                <circle r="234" cx="196" cy="23"></circle>
+                <circle r="234" cx="790" cy="491"></circle>
+              </g>
+            </svg>
+            <svg class="absolute -right-16 -top-16 text-gray-700" viewBox="0 0 220 192" width="220" height="192" fill="none">
+              <defs>
+                <pattern id="dots" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                  <rect x="0" y="0" width="4" height="4" fill="currentColor"></rect>
+                </pattern>
+              </defs>
+              <rect width="220" height="192" fill="url(#dots)"></rect>
+            </svg>
+            <!-- Content -->
+            <div class="relative z-10 w-full max-w-2xl">
+              @if (config$ | async; as config) {
+                <div class="text-7xl font-bold leading-none text-gray-100">
+                  @if (config.branding.login_heading) {
+                    <div class="break-words text-4xl leading-tight lg:text-5xl">{{ config.branding.login_heading }}</div>
+                  } @else {
+                    <div>Welcome to</div>
+                    <div>SEED Platform™</div>
+                  }
+                </div>
+                @if (config.branding.login_text) {
+                  <div class="mt-6 whitespace-pre-line text-lg text-gray-100">{{ config.branding.login_text }}</div>
+                } @else {
+                  <div class="text-secondary mt-6 text-lg leading-6 tracking-tight">{{ t('MARKETING_BULLET_1') }}</div>
+                  <div class="text-secondary mt-6 text-lg leading-6 tracking-tight">{{ t('MARKETING_BULLET_2') }}</div>
+                  <div class="text-secondary mt-6 text-lg leading-6 tracking-tight">{{ t('MARKETING_BULLET_3') }}</div>
+                }
+              }
+            </div>
+          </div>
+          <div class="w-full px-4 py-8 sm:w-auto sm:p-12 md:p-16">
+            <div class="mx-auto w-full max-w-80 sm:mx-0 sm:w-80">
+              <div class="pointer-events-none mx-auto w-40 select-none">
+                @if (config$ | async; as config) {
+                  <img [src]="config.branding.logo_url || 'images/logo.svg'" [alt]="config.branding.logo_url ? '' : 'SEED Platform logo'" />
+                }
+              </div>
+              @if (config$ | async; as config) {
+                @if (config.branding.login_heading || config.branding.login_text) {
+                  <div class="mt-6 break-words text-center md:hidden">
+                    @if (config.branding.login_heading) {
+                      <div class="text-2xl font-bold">{{ config.branding.login_heading }}</div>
+                    }
+                    @if (config.branding.login_text) {
+                      <p class="text-secondary mt-2 whitespace-pre-line">{{ config.branding.login_text }}</p>
+                    }
+                  </div>
+                }
+              }
+              <router-outlet></router-outlet>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

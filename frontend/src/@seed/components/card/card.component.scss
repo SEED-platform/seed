@@ -1,0 +1,65 @@
+seed-card {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+
+  @apply bg-card rounded-2xl shadow;
+
+  /* Flippable */
+  &.card-flippable {
+    border-radius: 0;
+    overflow: visible;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+    perspective: 600px;
+    background: transparent;
+
+    @apply shadow-none;
+
+    &.card-face-back {
+      .card-front {
+        visibility: hidden;
+        opacity: 0;
+        transform: rotateY(180deg);
+      }
+
+      .card-back {
+        visibility: visible;
+        opacity: 1;
+        transform: rotateY(360deg);
+      }
+    }
+
+    .card-front,
+    .card-back {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      z-index: 10;
+      transition:
+        transform 0.5s ease-out 0s,
+        visibility 0s ease-in 0.2s,
+        opacity 0s ease-in 0.2s;
+      backface-visibility: hidden;
+
+      @apply bg-card rounded-2xl shadow;
+    }
+
+    .card-front {
+      position: relative;
+      opacity: 1;
+      visibility: visible;
+      transform: rotateY(0deg);
+      overflow: hidden;
+    }
+
+    .card-back {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: rotateY(180deg);
+      overflow: hidden auto;
+    }
+  }
+}

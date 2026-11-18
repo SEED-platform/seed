@@ -1,0 +1,13 @@
+<div class="absolute inset-0 flex min-w-0 flex-col overflow-hidden">
+  <mat-drawer-container class="h-full flex-auto">
+    <mat-drawer class="flex w-60 min-w-60 dark:bg-gray-900" #drawer [autoFocus]="false" mode="side" opened>
+      <seed-vertical-navigation [inner]="true" [navigation]="detailNavigationMenu" [opened]="true" mode="side" name="detailNavigation">
+      </seed-vertical-navigation>
+    </mat-drawer>
+    <mat-drawer-content class="flex flex-col" scrollReset>
+      <div class="flex-auto">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-drawer-content>
+  </mat-drawer-container>
+</div>

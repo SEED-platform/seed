@@ -1,0 +1,15 @@
+layout-wrapper {
+  @apply flex h-svh max-h-svh w-full min-w-0 max-w-full flex-auto;
+
+  /* Base styles for individual layouts */
+  > * {
+    @apply relative flex w-full flex-auto;
+  }
+
+  /* Base styles for components that load as a route */
+  router-outlet {
+    + * {
+      @apply relative flex w-full flex-auto flex-col;
+    }
+  }
+}

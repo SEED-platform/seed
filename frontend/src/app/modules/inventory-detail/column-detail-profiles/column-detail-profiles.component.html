@@ -1,0 +1,13 @@
+<seed-page
+  [config]="{
+    title: displayName,
+    subTitle: viewDisplayField$ | async,
+    titleIcon: 'fa-solid:sliders',
+    breadcrumbs: [{ label: type === 'taxlots' ? 'Tax Lots' : 'Properties', link: '/' + type }, 'Column Detail Profiles'],
+    sideNavToggle: true,
+    action: onSave,
+    actionText: 'Save Profile',
+  }"
+>
+  <seed-column-profiles #columnProfiles [profileType]="'detail'" [type]="type"></seed-column-profiles>
+</seed-page>

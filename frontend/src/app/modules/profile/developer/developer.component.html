@@ -1,0 +1,32 @@
+<div class="flex-auto p-6 sm:p-10" *transloco="let t">
+  <div class="max-w-2xl">
+    <h2 class="mb-6 flex items-center text-center text-2xl">
+      <mat-icon class="mr-2 text-primary-900 dark:text-primary-300" svgIcon="fa-solid:code"></mat-icon>Developer
+    </h2>
+
+    <div class="bg-card flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+      <h2 class="pb-5 text-xl">{{ t('Manage Your API Key') }}</h2>
+
+      <div class="mb-10 mt-4 flex flex-col items-center">
+        <div class="flex flex-wrap items-center justify-center gap-x-2">
+          <span class="text-nowrap font-bold">{{ t('API Key:') }}</span>
+          <span class="bg-default break-all rounded-md border px-5 py-3 font-mono">{{ user.api_key }}</span>
+          <seed-clipboard [text]="user.api_key"></seed-clipboard>
+        </div>
+        <div class="pt-7">
+          <button (click)="generateKey()" mat-flat-button color="primary">
+            {{ t('Get a New API Key') }}
+          </button>
+        </div>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <div class="my-3 flex items-center justify-between">
+        <div class="font-medium">{{ t('Example Usage') }}</div>
+        <seed-clipboard [text]="getCurl()"></seed-clipboard>
+      </div>
+      <pre class="bg-default overflow-y-auto rounded-md border p-4">{{ getCurl() }}</pre>
+    </div>
+  </div>
+</div>

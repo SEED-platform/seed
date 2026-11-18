@@ -1,0 +1,42 @@
+<div class="mt-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
+  <div class="text-2xl font-medium leading-6">{{ create ? 'Create' : 'Edit' }} Label</div>
+</div>
+<mat-divider class="mb-8"></mat-divider>
+<form class="flex flex-col gap-4" [formGroup]="form">
+  <mat-form-field>
+    <mat-label>Label Name</mat-label>
+    <input matInput formControlName="name" placeholder="Label Name" />
+    @if (form.controls.name?.hasError('required')) {
+      <mat-error>Name is a required field</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-form-field>
+    <mat-label>Color</mat-label>
+    <mat-select formControlName="color">
+      <mat-select-trigger>
+        <div class="label {{ form.controls.color?.value }}">{{ form.controls.color?.value }}</div>
+      </mat-select-trigger>
+      @for (c of colors; track c) {
+        <mat-option [value]="c"
+          ><div class="label {{ c }}">{{ c }}</div></mat-option
+        >
+      }
+    </mat-select>
+    @if (form.controls.color?.hasError('required')) {
+      <mat-error>Color is a required field</mat-error>
+    }
+  </mat-form-field>
+
+  <mat-slide-toggle formControlName="show_in_list"><mat-label>Show in List</mat-label></mat-slide-toggle>
+</form>
+
+<div class="flex justify-end">
+  <mat-dialog-actions>
+    <button [disabled]="form.invalid" (click)="onSubmit()" mat-raised-button color="primary">{{ create ? 'Create' : 'Save' }}</button>
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="close()" mat-stroked-button>Cancel</button>
+  </mat-dialog-actions>
+</div>

@@ -1,0 +1,68 @@
+@if (!completed[1]) {
+  <!-- STEP 1 MAP YOUR DATA -->
+
+  <div class="flex flex-col gap-5 p-5">
+    <div class="text-lg font-bold">MAPPING YOUR DATA TO SEED</div>
+
+    <div>
+      It is necessary to map your field names to SEED field names. You can select from the list that appears as you start to type, which is
+      based on the Building Energy Data Exchange Specification (BEDES), or you can type in your own name, as well as typing in the field
+      name from the original datafile.
+    </div>
+
+    <div>
+      In addition, you need to specify where the field should be associated with Tax Lot data or Property data. This will affect how the
+      data is matched and merged, as well as how it is displayed in the Inventory view.
+    </div>
+
+    <div>
+      Column Mapping Profiles can be used to help you easily and consistently map your data. Note that file header columns defined in the
+      profile must match exactly (spaces, lowercase, uppercase, etc.) in order for the corresponding SEED column information to be used.
+    </div>
+
+    <div>
+      <span class="whitespace-nowrap rounded bg-primary p-2 text-white">Field names for matching Properties:</span>
+      <span class="ml-4 whitespace-nowrap font-bold">
+        {{ matchingPropertyColumnDisplayNames }}
+      </span>
+    </div>
+
+    <div>
+      <span class="whitespace-nowrap rounded bg-primary p-2 text-white">Field names for matching Tax Lots:</span>
+      <span class="ml-4 whitespace-nowrap font-bold">
+        {{ matchingTaxLotColumnDisplayNames }}
+      </span>
+    </div>
+
+    <div>
+      If there are fields in the datafile mapped to these names, the program will attempt to match on the corresponding values in existing
+      records. All of these fields must have the same values between records for the records to match.
+    </div>
+
+    <div>
+      Matches within the same cycle will be merged together, while matches in different cycles will be associated for cross-cycle analysis.
+    </div>
+
+    <div>
+      <span class="mock-button">Map Your Data</span> The program will show a grid with the new field names as the column headings and your
+      data in the rows. In that view, you can still come back to the initial mapping screen and change the field mapping.
+    </div>
+  </div>
+} @else if (!completed[3]) {
+  <!-- STEP 1 MAP YOUR DATA -->
+  <div class="flex flex-col gap-5 p-5">
+    <div class="text-lg font-bold">REVIEW YOUR DATA MAPPINGS</div>
+
+    <div class="leading-7">
+      <span class="mock-button">Map Your Data</span>
+      You will see a view with the mapped fields and your data in a grid, so that you can verify the mapping is what you want.
+    </div>
+    <div class="leading-7">
+      <span class="mock-button">Back to Mapping</span> If you need to change the mapping, click the button and edit the field mapping.
+    </div>
+    <div class="leading-7">
+      <span class="mock-button">Save Mappings</span> Make sure that the mappings are correct in this step. Once you have clicked on the
+      button, you will not be able to change the field mappings.
+    </div>
+  </div>
+}

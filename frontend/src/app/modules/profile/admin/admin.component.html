@@ -1,0 +1,286 @@
+<div class="flex-auto p-6 sm:p-10" *transloco="let t">
+  <div class="max-w-5xl">
+    <h2 class="mb-6 flex items-center text-2xl">
+      <mat-icon class="mr-2 text-primary-900 dark:text-primary-300" svgIcon="fa-solid:user-gear"></mat-icon>{{ t('Admin') }}
+    </h2>
+
+    <!-- Section 1: Organization Management -->
+    <mat-expansion-panel class="mb-4" expanded>
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ t('Organizations') }}</mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="overflow-x-auto">
+        <table class="w-full" [dataSource]="orgDataSource" [trackBy]="trackByOrgId" mat-table>
+          <ng-container matColumnDef="id">
+            <th *matHeaderCellDef mat-header-cell>{{ t('ID') }}</th>
+            <td *matCellDef="let org" mat-cell>{{ org.id }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="name">
+            <th *matHeaderCellDef mat-header-cell>{{ t('Name') }}</th>
+            <td *matCellDef="let org" mat-cell>{{ org.name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="created">
+            <th *matHeaderCellDef mat-header-cell>{{ t('Created') }}</th>
+            <td *matCellDef="let org" mat-cell>{{ org.created | date: 'shortDate' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="number_of_users">
+            <th *matHeaderCellDef mat-header-cell>{{ t('Users') }}</th>
+            <td *matCellDef="let org" mat-cell>{{ org.number_of_users }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="property_count">
+            <th *matHeaderCellDef mat-header-cell>{{ t('Properties') }}</th>
+            <td *matCellDef="let org" mat-cell>{{ org.property_count ?? '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="taxlot_count">
+            <th *matHeaderCellDef mat-header-cell>{{ t('Tax Lots') }}</th>
+            <td *matCellDef="let org" mat-cell>{{ org.taxlot_count ?? '-' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th *matHeaderCellDef mat-header-cell>{{ t('Actions') }}</th>
+            <td *matCellDef="let org" mat-cell>
+              <div class="flex gap-2">
+                @if (deletingInventory.has(org.id)) {
+                  <mat-progress-bar class="w-24" [value]="deletingInventory.get(org.id)" mode="determinate"></mat-progress-bar>
+                } @else {
+                  <button (click)="removeInventory(org)" mat-stroked-button>{{ t('Remove Inventory') }}</button>
+                }
+                <button (click)="deleteOrganization(org)" mat-raised-button color="warn">{{ t('Delete') }}</button>
+              </div>
+            </td>
+          </ng-container>
+
+          <thead>
+            <tr *matHeaderRowDef="orgColumns" mat-header-row></tr>
+          </thead>
+          <tbody>
+            <tr *matRowDef="let row; columns: orgColumns" mat-row></tr>
+          </tbody>
+        </table>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- Section 2: Create Organization -->
+    <mat-expansion-panel class="mb-4">
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ t('Create Organization') }}</mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <form
+        class="flex flex-col gap-4"
+        #createOrgDirective="ngForm"
+        [formGroup]="createOrgForm"
+        (ngSubmit)="onCreateOrg(createOrgDirective)"
+      >
+        <mat-form-field class="flex-auto">
+          <mat-label>{{ t('Organization Name') }}</mat-label>
+          <input matInput formControlName="organizationName" />
+          @if (createOrgForm.controls.organizationName.hasError('required')) {
+            <mat-error>{{ t('Organization Name required') }}</mat-error>
+          }
+        </mat-form-field>
+        <mat-form-field class="flex-auto">
+          <mat-label>{{ t('Owner') }}</mat-label>
+          <mat-select (openedChange)="$event || resetSearch(userSearch)" formControlName="userId">
+            <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+              <input class="h-8 w-full bg-transparent outline-none" [formControl]="userSearch" [placeholder]="t('Search users…')" />
+            </div>
+            @for (user of filteredUsers; track user.user_id) {
+              <mat-option [value]="user.user_id">{{ user.email }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <div class="flex justify-end">
+          <button [disabled]="createOrgForm.invalid" mat-raised-button color="primary">{{ t('Create Organization') }}</button>
+        </div>
+      </form>
+    </mat-expansion-panel>
+
+    <!-- Section 3: Create User -->
+    <mat-expansion-panel class="mb-4">
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ t('Create User') }}</mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <form
+        class="flex flex-col gap-4"
+        #createUserDirective="ngForm"
+        [formGroup]="createUserForm"
+        (ngSubmit)="onCreateUser(createUserDirective)"
+      >
+        <div class="flex flex-col gap-x-4 sm:flex-row">
+          <mat-form-field class="flex-auto">
+            <mat-label>{{ t('First Name') }}</mat-label>
+            <input matInput formControlName="firstName" />
+            @if (createUserForm.controls.firstName.hasError('required')) {
+              <mat-error>{{ t('First Name required') }}</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field class="flex-auto">
+            <mat-label>{{ t('Last Name') }}</mat-label>
+            <input matInput formControlName="lastName" />
+            @if (createUserForm.controls.lastName.hasError('required')) {
+              <mat-error>{{ t('Last Name required') }}</mat-error>
+            }
+          </mat-form-field>
+        </div>
+        <mat-form-field class="flex-auto">
+          <mat-label>{{ t('Email') }}</mat-label>
+          <input matInput formControlName="email" type="email" />
+          @if (createUserForm.controls.email.hasError('required') || createUserForm.controls.email.hasError('email')) {
+            <mat-error>{{ t('Valid email required') }}</mat-error>
+          }
+        </mat-form-field>
+        <div class="flex flex-col gap-x-4 sm:flex-row">
+          <mat-form-field class="flex-auto">
+            <mat-label>{{ t('Organization') }}</mat-label>
+            <mat-select
+              (openedChange)="$event || resetSearch(orgSearch)"
+              (selectionChange)="onCreateUserOrgChange()"
+              formControlName="organizationId"
+            >
+              <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                <input
+                  class="h-8 w-full bg-transparent outline-none"
+                  [formControl]="orgSearch"
+                  [placeholder]="t('Search organizations…')"
+                />
+              </div>
+              @for (org of sortedOrganizations; track org.id) {
+                <mat-option [value]="org.id">{{ org.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="flex-auto">
+            <mat-label>{{ t('Role') }}</mat-label>
+            <mat-select formControlName="role">
+              @for (role of roles; track role.value) {
+                <mat-option [value]="role.value">{{ t(role.label) }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="flex flex-col gap-x-4 sm:flex-row">
+          <mat-form-field class="flex-auto">
+            <mat-label>{{ t('Access Level') }}</mat-label>
+            <mat-select (selectionChange)="onCreateUserAccessLevelChange()" formControlName="accessLevel">
+              @for (name of createUserAccessLevelNames; track name) {
+                <mat-option [value]="name">{{ name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="flex-auto">
+            <mat-label>{{ t('Access Level Instance') }}</mat-label>
+            <mat-select (openedChange)="$event || resetSearch(aliSearch)" formControlName="accessLevelInstanceId">
+              <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                <input class="h-8 w-full bg-transparent outline-none" [formControl]="aliSearch" [placeholder]="t('Search instances…')" />
+              </div>
+              @for (ali of filteredAccessLevelInstances; track ali.id) {
+                <mat-option [value]="ali.id">{{ ali.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="flex justify-end">
+          <button [disabled]="createUserForm.invalid" mat-raised-button color="primary">{{ t('Create User') }}</button>
+        </div>
+      </form>
+    </mat-expansion-panel>
+
+    <!-- Section 4: Add User to Organization -->
+    <mat-expansion-panel class="mb-4">
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ t('Add User to Organization') }}</mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <form
+        class="flex flex-col gap-4"
+        #addUserOrgDirective="ngForm"
+        [formGroup]="addUserOrgForm"
+        (ngSubmit)="onAddUserToOrg(addUserOrgDirective)"
+      >
+        <div class="flex flex-col gap-x-4 sm:flex-row">
+          <mat-form-field class="flex-auto">
+            <mat-label>{{ t('Organization') }}</mat-label>
+            <mat-select (openedChange)="$event || resetSearch(orgSearch)" formControlName="organizationId">
+              <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                <input
+                  class="h-8 w-full bg-transparent outline-none"
+                  [formControl]="orgSearch"
+                  [placeholder]="t('Search organizations…')"
+                />
+              </div>
+              @for (org of sortedOrganizations; track org.id) {
+                <mat-option [value]="org.id">{{ org.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field class="flex-auto">
+            <mat-label>{{ t('User') }}</mat-label>
+            <mat-select (openedChange)="$event || resetSearch(userSearch)" formControlName="userId">
+              <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+                <input class="h-8 w-full bg-transparent outline-none" [formControl]="userSearch" [placeholder]="t('Search users…')" />
+              </div>
+              @for (user of filteredUsers; track user.user_id) {
+                <mat-option [value]="user.user_id">{{ user.email }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <div class="flex justify-end">
+          <button [disabled]="addUserOrgForm.invalid" mat-raised-button color="primary">{{ t('Add User') }}</button>
+        </div>
+      </form>
+    </mat-expansion-panel>
+
+    <!-- Section 5: Remove User from Organization -->
+    <mat-expansion-panel class="mb-4">
+      <mat-expansion-panel-header>
+        <mat-panel-title>{{ t('Remove User from Organization') }}</mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div class="flex flex-col gap-4">
+        <mat-form-field class="flex-auto">
+          <mat-label>{{ t('Organization') }}</mat-label>
+          <mat-select
+            [(value)]="selectedRemoveOrgId"
+            (openedChange)="$event || resetSearch(orgSearch)"
+            (selectionChange)="onRemoveOrgChange()"
+          >
+            <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+              <input class="h-8 w-full bg-transparent outline-none" [formControl]="orgSearch" [placeholder]="t('Search organizations…')" />
+            </div>
+            @for (org of sortedOrganizations; track org.id) {
+              <mat-option [value]="org.id">{{ org.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        @if (removeOrgUsers.length > 0) {
+          <div class="rounded border border-gray-200 dark:border-gray-700">
+            @for (user of removeOrgUsers; track user.user_id) {
+              <div class="flex items-center justify-between border-b border-gray-200 p-3 last:border-b-0 dark:border-gray-700">
+                <div>
+                  <span class="font-medium">{{ user.first_name }} {{ user.last_name }}</span>
+                  <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">{{ user.email }}</span>
+                  <span class="ml-2 text-xs text-gray-400 dark:text-gray-500">({{ user.role }})</span>
+                </div>
+                <button (click)="removeUserFromOrg(user)" mat-stroked-button color="warn">{{ t('Remove') }}</button>
+              </div>
+            }
+          </div>
+        }
+
+        @if (selectedRemoveOrgId && removeOrgUsers.length === 0) {
+          <p class="text-sm text-gray-500 dark:text-gray-400">{{ t('No users found in this organization') }}</p>
+        }
+      </div>
+    </mat-expansion-panel>
+  </div>
+</div>

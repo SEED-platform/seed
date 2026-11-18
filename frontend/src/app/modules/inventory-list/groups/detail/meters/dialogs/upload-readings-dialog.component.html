@@ -1,0 +1,52 @@
+<div class="relative flex h-full w-full flex-col">
+  <div class="flex flex-auto flex-col p-6">
+    <div class="mb-4 text-xl font-medium">Add Meter Readings to {{ meterName }}</div>
+
+    @if (state === 'upload') {
+      <div class="flex flex-col gap-4">
+        <p class="text-secondary text-sm">Upload a CSV or XLSX file with columns: Start Date, End Date, Usage Units, Reading.</p>
+
+        <div>
+          <button (click)="fileInput.click()" mat-stroked-button>
+            <mat-icon svgIcon="fa-solid:upload"></mat-icon>
+            Choose File
+          </button>
+          <input class="hidden" #fileInput (change)="onFileSelected($event)" type="file" accept=".csv,.xlsx" />
+        </div>
+
+        @if (selectedFile) {
+          <div class="text-sm">
+            <mat-icon class="align-middle text-secondary mr-1" svgIcon="fa-solid:file"></mat-icon>
+            {{ selectedFile.name }}
+          </div>
+        }
+
+        @if (invalidExtension) {
+          <div class="text-sm text-red-600">Invalid file type. Please upload a CSV or XLSX file.</div>
+        }
+      </div>
+    }
+
+    @if (state === 'processing') {
+      <div class="flex flex-col items-center gap-4 py-8">
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <p class="text-secondary text-sm">Processing meter readings...</p>
+      </div>
+    }
+
+    @if (state === 'confirmation') {
+      <div class="py-4">
+        <p class="text-sm">{{ confirmationMessage }}</p>
+      </div>
+    }
+  </div>
+
+  <div class="flex items-center justify-end gap-2 bg-gray-50 px-6 py-4 dark:bg-black dark:bg-opacity-10">
+    @if (state === 'upload') {
+      <button [matDialogClose]="false" mat-stroked-button>Cancel</button>
+      <button [disabled]="!selectedFile" (click)="upload()" mat-flat-button color="primary">Upload</button>
+    } @else if (state === 'confirmation') {
+      <button (click)="dismiss()" mat-flat-button color="primary">Dismiss</button>
+    }
+  </div>
+</div>

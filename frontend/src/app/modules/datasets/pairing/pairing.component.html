@@ -1,0 +1,60 @@
+<seed-page
+  [config]="{
+    title: pageTitle,
+    subTitle: importFile?.uploaded_filename,
+    titleIcon: 'fa-solid:link',
+    breadcrumbs: [
+      { label: 'Data', link: '/data' },
+      { label: importFile?.dataset?.name, link: importFile?.dataset?.id ? '/data/' + importFile.dataset.id : null, translate: false },
+      'Pairing',
+    ],
+  }"
+>
+  <div class="flex flex-col gap-4 p-5" id="content" *transloco="let t">
+    <seed-page-inventory-tab [config]="{ tabs: ['properties', 'taxlots'], action: onTypeChange }"></seed-page-inventory-tab>
+
+    <div class="flex flex-wrap items-end gap-4">
+      <mat-form-field class="w-48">
+        <mat-label>{{ t('Cycle:') }}</mat-label>
+        <mat-select [value]="cycleId" (selectionChange)="onCycleChange($event.value)">
+          @for (cycle of cycles; track cycle.id) {
+            <mat-option [value]="cycle.id">{{ cycle.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field class="w-48">
+        <mat-label>{{ t('Show') }}</mat-label>
+        <mat-select [value]="showPaired" (selectionChange)="showPaired = $event.value; applyShowPairedFilter()">
+          <mat-option value="all">{{ t('Show All') }}</mat-option>
+          <mat-option value="paired">{{ t('Show Paired') }}</mat-option>
+          <mat-option value="unpaired">{{ t('Show Unpaired') }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex min-w-0 flex-col gap-2">
+        <h3 class="font-medium">{{ t(leftTitle) }}</h3>
+        <ag-grid-angular
+          [columnDefs]="leftColumnDefs"
+          [rowData]="leftRowData"
+          [theme]="gridTheme$ | async"
+          [domLayout]="'autoHeight'"
+          (gridReady)="onLeftGridReady($event)"
+        ></ag-grid-angular>
+      </div>
+      <div class="flex min-w-0 flex-col gap-2">
+        <h3 class="font-medium">{{ t(rightTitle) }}</h3>
+        <ag-grid-angular
+          [columnDefs]="rightColumnDefs"
+          [rowData]="rightRowData"
+          [theme]="gridTheme$ | async"
+          [domLayout]="'autoHeight'"
+          (gridReady)="onRightGridReady($event)"
+          (cellClicked)="onRightCellClicked($event)"
+        ></ag-grid-angular>
+      </div>
+    </div>
+  </div>
+</seed-page>

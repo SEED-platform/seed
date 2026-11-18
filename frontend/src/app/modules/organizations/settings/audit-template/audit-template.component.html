@@ -1,0 +1,174 @@
+<seed-page [config]="{ titleIcon: 'fa-solid:gears', title: 'Audit Template', breadcrumbs: ['Organization Settings'], sideNavToggle: true }">
+  @if (organization) {
+    <div class="flex-auto p-6 sm:p-10" *transloco="let t">
+      <div class="prose">
+        If your organization has configured a customized report form in Audit Template, fill out the settings below to enable importing
+        Audit Template submissions into your SEED organization.
+      </div>
+      <div class="max-w-2xl">
+        <form
+          class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow"
+          [formGroup]="auditTemplateForm"
+          (ngSubmit)="submit()"
+        >
+          <div class="flex flex-col">
+            <div class="text-lg font-medium">Audit Template Credentials</div>
+            <div class="text-secondary prose mb-6">
+              <p>An API Token, Username and Password are all required to connect to your Audit Template.</p>
+              <p>
+                Please refer to the
+                <a class="text-blue-400" href="https://staging.labworks.org/reports/api/" target="_new">Audit Template documentation</a> for
+                more information.
+              </p>
+            </div>
+            <mat-form-field class="mb-6">
+              <mat-label>Audit Template Organization Token</mat-label>
+              <input [formControlName]="'at_organization_token'" matInput />
+              <mat-hint> Note, do not prefix the token with "Token ", only include the token itself. </mat-hint>
+            </mat-form-field>
+            <mat-form-field class="mb-6">
+              <mat-label>Audit Template Email</mat-label>
+              <input [formControlName]="'audit_template_user'" matInput />
+              <mat-hint>
+                Use the email associated with your account from the
+                <a class="text-blue-400" href="https://staging.labworks.org/">Building Energy Score Site</a>.
+              </mat-hint>
+            </mat-form-field>
+            <mat-form-field>
+              <mat-label>Audit Template Password </mat-label>
+              <input [formControlName]="'audit_template_password'" [type]="passwordHidden ? 'password' : 'text'" matInput />
+              <button
+                [attr.aria-label]="'Hide password'"
+                [attr.aria-pressed]="passwordHidden"
+                (click)="togglePassword()"
+                mat-icon-button
+                matSuffix
+                type="button"
+              >
+                <mat-icon class="icon-size-5" [svgIcon]="passwordHidden ? 'fa-solid:eye-slash' : 'fa-solid:eye'"></mat-icon>
+              </button>
+              <mat-hint>
+                Use the password associated with your account from the
+                <a class="text-blue-400" href="https://staging.labworks.org/">Building Energy Score Site</a>.
+              </mat-hint>
+            </mat-form-field>
+          </div>
+          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <div class="flex flex-col">
+            <div class="text-lg font-medium">{{ t('Audit Template City ID') }}</div>
+            <div class="text-secondary prose mb-6">
+              <p>
+                Specify your Audit Template City ID. This number is visible in the Audit Template URL when browsing to the 'CITIES' tab.
+                SEED will import submission data for the specified City only.
+              </p>
+            </div>
+            <mat-form-field class="mb-6">
+              <mat-label>{{ t('Audit Template City ID') }}</mat-label>
+              <input [formControlName]="'audit_template_city_id'" matInput type="number" />
+            </mat-form-field>
+          </div>
+          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <div class="flex flex-col">
+            <div class="text-lg font-medium">{{ t('Audit Template Submission Status') }}</div>
+            <div class="text-secondary prose mb-6">
+              <p>SEED will import data for submissions with the following statuses in Audit Template.</p>
+            </div>
+            <div class="flex flex-row">
+              <mat-checkbox formControlName="status_complies">Complies</mat-checkbox>
+              <mat-checkbox formControlName="status_pending">Pending</mat-checkbox>
+              <mat-checkbox formControlName="status_received">Received</mat-checkbox>
+              <mat-checkbox formControlName="status_rejected">Rejected</mat-checkbox>
+            </div>
+          </div>
+          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <div class="flex flex-col">
+            <div class="text-lg font-medium">{{ t('Conditional Import') }}</div>
+            <div class="text-secondary prose mb-6">
+              <p>
+                When this checkbox is checked, SEED will only import Audit Template submissions that have been submitted more recently than
+                the SEED records' most recent update. If unchecked, all Audit Template submissions will be imported regardless of the
+                submission date.
+              </p>
+            </div>
+            <div class="flex flex-row">
+              <mat-slide-toggle formControlName="audit_template_conditional_import">{{ t('Enable Conditional Import') }}</mat-slide-toggle>
+            </div>
+            <div class="my-6">
+              <button [attr.aria-label]="'Import Submissions'" (click)="importSubmissions()" mat-stroked-button type="button">
+                Import Submissions
+              </button>
+            </div>
+          </div>
+          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <div class="flex flex-col">
+            <div class="text-lg font-medium">{{ t('Schedule Weekly Update') }}</div>
+
+            <div class="mt-6 flex flex-row">
+              <mat-slide-toggle (click)="updateScheduleInputs()" formControlName="audit_template_sync_enabled">{{
+                t('Enable Audit Template Auto Sync')
+              }}</mat-slide-toggle>
+            </div>
+            <div class="text-secondary prose my-6">
+              If you would like to automatically update your SEED organization with Audit Template submission data for the selected Audit
+              Template City ID, configure the fields below to schedule your weekly update.
+            </div>
+            <div class="flex flex-row gap-2">
+              <mat-form-field class="flex">
+                <mat-label>{{ t('Day') }}</mat-label>
+                <mat-select formControlName="audit_template_config_day">
+                  @for (d of days; track d.index) {
+                    <mat-option [value]="d.index">{{ d.name }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field class="flex">
+                <mat-label>{{ t('Hour') }} (24)</mat-label>
+                <mat-select formControlName="audit_template_config_hour">
+                  @for (h of hours; track h) {
+                    <mat-option [value]="h">{{ h }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+              <mat-form-field class="flex">
+                <mat-label>{{ t('Minute') }}</mat-label>
+                <mat-select formControlName="audit_template_config_minute">
+                  @for (m of minutes; track m) {
+                    <mat-option [value]="m">{{ m }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <div class="flex flex-col">
+            <div class="text-lg font-medium">{{ t('Advanced Settings') }}</div>
+            <div class="text-secondary prose mb-6">
+              <p>
+                {{
+                  t(
+                    'If you wish to generate stub Audit Template reports from SEED data, select which Audit Template Report Type SEED should generate.'
+                  )
+                }}
+              </p>
+            </div>
+
+            <mat-form-field class="mb-6">
+              <mat-label>{{ t('Audit Template Report Type') }}</mat-label>
+              <mat-select formControlName="audit_template_report_type">
+                <mat-option value="">None</mat-option>
+                @for (atrt of auditTemplateReportTypes; track atrt) {
+                  <mat-option [value]="atrt">{{ atrt }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div>
+            <button [disabled]="auditTemplateForm.invalid || auditTemplateForm.pending" mat-flat-button color="primary">
+              <span class="">{{ t('Save Changes') }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</seed-page>

@@ -1,0 +1,10 @@
+<seed-page
+  *transloco="let t"
+  [config]="{
+    title: t('Cross Cycles'),
+    titleIcon: 'fa-solid:shuffle',
+    tabs: ['properties', 'taxlots'],
+  }"
+>
+  <seed-cross-cycles-grid [type]="type" mode="list"></seed-cross-cycles-grid>
+</seed-page>

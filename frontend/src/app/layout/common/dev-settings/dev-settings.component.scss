@@ -1,0 +1,12 @@
+seed-dev-settings {
+  position: static;
+  display: block;
+  flex: none;
+  width: auto;
+}
+
+@media (screen and min-width: 1280px) {
+  empty-layout + seed-dev-settings .settings-cog {
+    right: 0 !important;
+  }
+}

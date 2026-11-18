@@ -1,0 +1,14 @@
+<div>
+  <ag-grid-angular
+    [columnDefs]="columnDefs"
+    [domLayout]="'autoHeight'"
+    [getRowHeight]="getRowHeight"
+    [pagination]="true"
+    [paginationPageSize]="15"
+    [paginationPageSizeSelector]="[15, 25, 50, 100]"
+    [rowData]="analyses"
+    [suppressHorizontalScroll]="false"
+    [theme]="gridTheme$ | async"
+    (gridReady)="onGridReady($event)"
+  ></ag-grid-angular>
+</div>

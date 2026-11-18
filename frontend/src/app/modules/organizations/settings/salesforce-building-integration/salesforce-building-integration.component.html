@@ -1,0 +1,528 @@
+<seed-page
+  [config]="{
+    titleIcon: 'fa-solid:gears',
+    title: 'Salesforce Integration',
+    breadcrumbs: ['Organization Settings'],
+    sideNavToggle: true,
+  }"
+>
+  @if (organization) {
+    <div class="flex-auto p-6 sm:p-10" *transloco="let t">
+      <div class="max-w-2xl">
+        <form class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow" [formGroup]="salesforceForm" (ngSubmit)="submit()">
+          <mat-tab-group>
+            <mat-tab label="Salesforce Configuration">
+              <div class="prose">
+                {{ t('SF_BUILDING_DESC') }}
+              </div>
+
+              <div class="mb-6 flex">
+                <mat-slide-toggle (click)="toggleForm()" formControlName="salesforce_enabled">{{
+                  t('Enable Salesforce Integration (Individual Properties)')
+                }}</mat-slide-toggle>
+              </div>
+
+              <div formGroupName="salesforceConfig">
+                @if (salesforceForm.controls.salesforce_enabled.value) {
+                  <div class="flex items-center space-x-2">
+                    <mat-icon svgIcon="heroicons-solid:signal" />
+                    <div class="text-2xl font-bold text-gray-700">{{ t('Salesforce Connection') }}</div>
+                  </div>
+                  <div class="prose mb-4">{{ t('SF_CONNECTION_TEXT') }}</div>
+                  <div class="flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Salesforce URL') }}</mat-label>
+                      <input type="text" matInput formControlName="url" />
+                    </mat-form-field>
+                  </div>
+                  <div class="flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Username') }}</mat-label>
+                      <input type="text" matInput formControlName="username" />
+                    </mat-form-field>
+                  </div>
+                  <div class="flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Password') }}</mat-label>
+                      <input [type]="passwordHidden ? 'password' : 'text'" matInput formControlName="password" />
+                      <button
+                        [attr.aria-label]="'Hide password'"
+                        [attr.aria-pressed]="passwordHidden"
+                        (click)="togglePassword()"
+                        mat-icon-button
+                        matSuffix
+                        type="button"
+                      >
+                        <mat-icon class="icon-size-5" [svgIcon]="passwordHidden ? 'fa-solid:eye-slash' : 'fa-solid:eye'"></mat-icon>
+                      </button>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Security Token') }}</mat-label>
+                      <input [type]="tokenHidden ? 'password' : 'text'" matInput formControlName="security_token" />
+                      <button
+                        [attr.aria-label]="'Hide token'"
+                        [attr.aria-pressed]="tokenHidden"
+                        (click)="toggleToken()"
+                        mat-icon-button
+                        matSuffix
+                        type="button"
+                      >
+                        <mat-icon class="icon-size-5" [svgIcon]="passwordHidden ? 'fa-solid:eye-slash' : 'fa-solid:eye'"></mat-icon>
+                      </button>
+                      <mat-hint>{{ t('SF_SECURITY_TOKEN_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Domain') }}</mat-label>
+                      <input type="text" matInput formControlName="domain" />
+                      <mat-hint>{{ t('SF_DOMAIN_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div>
+                    <button (click)="testConnection()" type="button" mat-stroked-button>Test Connection</button>
+                  </div>
+                  @if (testConnectionStatus === 'success') {
+                    <div class="mt-2 flex items-center space-x-2 rounded-lg bg-green-50 p-3 text-green-700">
+                      <mat-icon class="icon-size-5" svgIcon="heroicons-solid:check-circle" />
+                      <span>{{ t('Salesforce connection successful') }}</span>
+                    </div>
+                  }
+                  @if (testConnectionStatus === 'error') {
+                    <div class="mt-2 flex items-center space-x-2 rounded-lg bg-red-50 p-3 text-red-700">
+                      <mat-icon class="icon-size-5" svgIcon="heroicons-solid:exclamation-circle" />
+                      <span>{{ t('Connection error') }}{{ testConnectionMessage ? ': ' + testConnectionMessage : '' }}</span>
+                    </div>
+                  }
+                  <mat-divider
+                    class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                    role="separator"
+                    aria-orientation="horizontal"
+                  ></mat-divider>
+
+                  <div class="flex items-center space-x-2">
+                    <mat-icon svgIcon="heroicons-solid:clock" />
+                    <div class="text-2xl font-bold text-gray-700">{{ t('Scheduled Daily Update') }}</div>
+                  </div>
+                  <div class="prose mb-4">
+                    {{ t('SF_SCHEDULED_UPDATE_TEXT') }}
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Hour') }}</mat-label>
+                      <input type="number" matInput formControlName="update_at_hour" min="0" max="23" />
+                      <mat-hint>{{ t('SF_UPDATE_HOUR_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Minute') }}</mat-label>
+                      <input type="number" matInput formControlName="update_at_minute" min="0" max="59" />
+                      <mat-hint>{{ t('SF_UPDATE_MINUTE_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Logging Email') }}</mat-label>
+                      <input type="email" matInput formControlName="logging_email" />
+                      <mat-hint>{{ t('SF_LOGGING_EMAIL_TEXT') }}</mat-hint>
+                      @if (salesforceForm.get('salesforceConfig.logging_email').hasError('email')) {
+                        <mat-error>Please enter a valid email address</mat-error>
+                      }
+                    </mat-form-field>
+                  </div>
+                  @if (salesforceConfig) {
+                    <div class="flex flex-row items-center space-x-2">
+                      <div class="text-grey-700 text-lg">
+                        {{ t('Last Salesforce Update') }}: {{ salesforceConfig.last_update_date || 'N/A' }}
+                      </div>
+                      @if (salesforceConfig.last_update_date) {
+                        <button (click)="resetUpdateDate()" type="button" mat-stroked-button>Reset</button>
+                      }
+                    </div>
+                  }
+                  <mat-divider
+                    class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                    role="separator"
+                    aria-orientation="horizontal"
+                  ></mat-divider>
+
+                  <div class="flex items-center space-x-2">
+                    <mat-icon svgIcon="heroicons-solid:cog" />
+                    <div class="text-2xl font-bold text-gray-700">{{ t('Configuration') }}</div>
+                  </div>
+                  <div class="prose mb-4">{{ t('SF_CONFIGURATION_TEXT') }}</div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Indication Label') }}</mat-label>
+                      <mat-select formControlName="indication_label">
+                        @for (l of labels; track l.id) {
+                          <mat-option [value]="l.id">{{ l.name }}</mat-option>
+                        }
+                      </mat-select>
+                      <mat-hint>{{ t('SF_INDICATION_LABEL_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-12 flex flex-col">
+                    <mat-slide-toggle formControlName="delete_label_after_sync">
+                      <mat-label>
+                        {{ t('Delete Indication Label After Successful Salesforce Update') }}
+                      </mat-label>
+                    </mat-slide-toggle>
+                    <mat-hint class="text-sm" style="color: rgb(148, 163, 184)">
+                      {{ t('SF_DELETE_LABEL_AFTER_SYNC_TEXT') }}
+                    </mat-hint>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Violation Label') }}</mat-label>
+                      <mat-select formControlName="violation_label">
+                        @for (l of labels; track l.id) {
+                          <mat-option [value]="l.id">{{ l.name }}</mat-option>
+                        }
+                      </mat-select>
+                      <mat-hint>{{ t('SF_VIOLATION_LABEL_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Compliance Label') }}</mat-label>
+                      <mat-select formControlName="compliance_label">
+                        @for (l of labels; track l.id) {
+                          <mat-option [value]="l.id">{{ l.name }}</mat-option>
+                        }
+                      </mat-select>
+                      <mat-hint>{{ t('SF_COMPLIANCE_LABEL_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <mat-divider
+                    class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                    role="separator"
+                    aria-orientation="horizontal"
+                  ></mat-divider>
+
+                  <div class="flex items-center space-x-2">
+                    <mat-icon svgIcon="heroicons-solid:identification" />
+                    <div class="text-2xl font-bold text-gray-700">{{ t('Benchmark Configuration') }}</div>
+                  </div>
+                  <div class="prose mb-4">
+                    {{ t('Configure the fields used to identify and update benchmark records in Salesforce') }}
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Salesforce Unique Benchmark ID Fieldname') }}</mat-label>
+                      <input type="text" matInput formControlName="unique_benchmark_id_fieldname" />
+                      <mat-hint>{{ t('SF_BENCHMARK_ID_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('SEED Unique Benchmark ID Column') }}</mat-label>
+                      <mat-select formControlName="seed_benchmark_id_column">
+                        @for (c of columns; track c.id) {
+                          <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+                        }
+                      </mat-select>
+                      <mat-hint>{{ t('SF_SEED_BENCHMARK_ID_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Cycle Name Benchmark Field') }}</mat-label>
+                      <input type="text" matInput formControlName="cycle_fieldname" />
+                      <mat-hint>{{ t('SF_CYCLE_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Status Label Benchmark Field') }}</mat-label>
+                      <input type="text" matInput formControlName="status_fieldname" />
+                      <mat-hint>{{ t('SF_STATUS_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('All Labels Benchmark Field') }}</mat-label>
+                      <input type="text" matInput formControlName="labels_fieldname" />
+                      <mat-hint>{{ t('SF_LABELS_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <mat-divider
+                    class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                    role="separator"
+                    aria-orientation="horizontal"
+                  ></mat-divider>
+
+                  <div class="flex items-center space-x-2">
+                    <mat-icon svgIcon="heroicons-solid:user-plus" />
+                    <div class="text-2xl font-bold text-gray-700">{{ t('Contacts and Accounts') }}</div>
+                  </div>
+                  <div class="prose mb-4">
+                    {{ t('SF_CONTACTS_AND_ACCOUNTS_TEXT') }}
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Salesforce Account Object Record Type') }}</mat-label>
+                      <input type="text" matInput formControlName="account_rec_type" />
+                      <mat-hint>{{ t('SF_ACCOUNT_RECORD_TYPE_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Salesforce Contact Object Record Type') }}</mat-label>
+                      <input type="text" matInput formControlName="contact_rec_type" />
+                      <mat-hint>{{ t('SF_CONTACT_RECORD_TYPE_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="align-middle mt-12 font-bold">{{ t('Main Contact Settings') }}</div>
+                  <div class="prose mb-4">
+                    {{ t('SF_CONTACT_HEADER_TEXT') }}
+                  </div>
+                  <div class="mb-8 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Contact Account Name Column') }}</mat-label>
+                      <mat-select formControlName="account_name_column">
+                        @for (c of columns; track c.id) {
+                          <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+                        }
+                      </mat-select>
+                      <mat-hint>{{ t('SF_ACCOUNT_NAME_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-16 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Default Contact Account Name') }}</mat-label>
+                      <input type="text" matInput formControlName="default_contact_account_name" />
+                      <mat-hint>{{ t('SF_DEFAULT_ACCOUNT_NAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-8 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Contact Name Column') }}</mat-label>
+                      <mat-select formControlName="contact_name_column">
+                        @for (c of columns; track c.id) {
+                          <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+                        }
+                      </mat-select>
+                      <mat-hint>{{ t('SF_CONTACT_NAME_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-8 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Contact Email Column') }}</mat-label>
+                      <mat-select formControlName="contact_email_column">
+                        @for (c of columns; track c.id) {
+                          <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+                        }
+                      </mat-select>
+                      <mat-hint>{{ t('SF_CONTACT_EMAIL_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-4 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Contact Benchmark Field') }}</mat-label>
+                      <input type="text" matInput formControlName="benchmark_contact_fieldname" />
+                      <mat-hint>{{ t('SF_BENCHMARK_CONTACT_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="align-middle mt-12 font-bold">{{ t('Data Administrator Contact Settings') }}</div>
+                  <div class="prose mb-4">
+                    {{ t('SF_DATA_ADMIN_HEADER_TEXT') }}
+                  </div>
+                  <div class="mb-8 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Data Administrator Account Name Column') }}</mat-label>
+                      <mat-select formControlName="data_admin_account_name_column">
+                        @for (c of columns; track c.id) {
+                          <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+                        }
+                      </mat-select>
+                      <mat-hint>{{ t('SF_DATA_ADMIN_ACCOUNT_NAME_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-16 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Default Data Administrator Account Name') }}</mat-label>
+                      <input type="text" matInput formControlName="default_data_admin_account_name" />
+                      <mat-hint>{{ t('SF_DEFAULT_DATA_ADMIN_ACCOUNT_NAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-8 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Data Administrator Name Column') }}</mat-label>
+                      <mat-select formControlName="data_admin_name_column">
+                        @for (c of columns; track c.id) {
+                          <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+                        }
+                      </mat-select>
+                      <mat-hint>{{ t('SF_DATA_ADMIN_NAME_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-8 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Data Administrator Email Column') }}</mat-label>
+                      <mat-select formControlName="data_admin_email_column">
+                        @for (c of columns; track c.id) {
+                          <mat-option [value]="c.id">{{ c.display_name }}</mat-option>
+                        }
+                      </mat-select>
+                      <mat-hint>{{ t('SF_DATA_ADMIN_EMAIL_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <div class="mb-16 flex flex-col">
+                    <mat-form-field>
+                      <mat-label>{{ t('Data Administrator Contact Field') }}</mat-label>
+                      <input type="text" matInput formControlName="data_admin_contact_fieldname" />
+                      <mat-hint>{{ t('SF_DATA_ADMIN_CONTACT_FIELDNAME_TEXT') }}</mat-hint>
+                    </mat-form-field>
+                  </div>
+                  <mat-divider
+                    class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                    role="separator"
+                    aria-orientation="horizontal"
+                  ></mat-divider>
+                }
+              </div>
+
+              <div>
+                <button [disabled]="salesforceForm.invalid || salesforceForm.pending" mat-flat-button color="primary">
+                  <span class="">{{ t('Save Changes') }}</span>
+                </button>
+              </div>
+
+              <mat-divider
+                class="mat-divider mat-divider-horizontal mb-6 mt-8"
+                role="separator"
+                aria-orientation="horizontal"
+              ></mat-divider>
+
+              <!-- Portfolio of Properties Salesforce Integration -->
+              <div class="prose">
+                {{ t('SF_PORTFOLIO_DESC') }}
+              </div>
+
+              <div class="mb-6 flex">
+                <mat-slide-toggle [formControl]="bbSalesforceForm.controls.bb_salesforce_enabled" (click)="toggleBbForm()">{{
+                  t('Enable Salesforce Integration (Portfolio of Properties)')
+                }}</mat-slide-toggle>
+              </div>
+
+              @if (bbSalesforceForm.controls.bb_salesforce_enabled.value) {
+                <div [formGroup]="bbSalesforceForm">
+                  <div formGroupName="bbSalesforceConfig">
+                    <div class="flex items-center space-x-2">
+                      <mat-icon svgIcon="heroicons-solid:signal" />
+                      <div class="text-2xl font-bold text-gray-700">{{ t('Salesforce Connection') }}</div>
+                    </div>
+                    <div class="prose mb-4">
+                      {{ t('Enter your Salesforce OAuth credentials to connect portfolio data') }}
+                    </div>
+                    <div class="mb-4 flex flex-col">
+                      <mat-form-field>
+                        <mat-label>{{ t('Salesforce URL') }}</mat-label>
+                        <input type="text" matInput formControlName="salesforce_url" />
+                        <mat-hint>{{ t('The URL of your Salesforce instance') }}</mat-hint>
+                      </mat-form-field>
+                    </div>
+                    <div class="mb-4 flex flex-col">
+                      <mat-form-field>
+                        <mat-label>{{ t('Client ID') }}</mat-label>
+                        <input type="text" matInput formControlName="client_id" />
+                        <mat-hint>{{ t('The Client ID from your Salesforce Connected App') }}</mat-hint>
+                      </mat-form-field>
+                    </div>
+                    <div class="mb-4 flex flex-col">
+                      <mat-form-field>
+                        <mat-label>{{ t('Client Secret') }}</mat-label>
+                        <input [type]="bbClientSecretHidden ? 'password' : 'text'" matInput formControlName="client_secret" />
+                        <button
+                          [attr.aria-label]="'Hide client secret'"
+                          [attr.aria-pressed]="bbClientSecretHidden"
+                          (click)="toggleBbClientSecret()"
+                          mat-icon-button
+                          matSuffix
+                          type="button"
+                        >
+                          <mat-icon class="icon-size-5" [svgIcon]="bbClientSecretHidden ? 'fa-solid:eye-slash' : 'fa-solid:eye'"></mat-icon>
+                        </button>
+                        <mat-hint>{{ t('The Client Secret from your Salesforce Connected App') }}</mat-hint>
+                      </mat-form-field>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                      <mat-icon svgIcon="heroicons-solid:link" />
+                      <div class="text-2xl font-bold text-gray-700">{{ t('Connection Status') }}</div>
+                    </div>
+                    <div class="mb-4 mt-4 flex items-center space-x-4">
+                      @if (isLoggedIntoBbSalesforce) {
+                        <div class="flex items-center space-x-2 rounded-lg bg-green-50 p-3 text-green-700">
+                          <mat-icon class="icon-size-5" svgIcon="heroicons-solid:check-circle" />
+                          <span>{{ t('Connected to Salesforce') }}</span>
+                        </div>
+                        <button (click)="bbLogout()" type="button" mat-stroked-button>{{ t('Logout') }}</button>
+                      } @else {
+                        <div class="flex items-center space-x-2 rounded-lg bg-red-50 p-3 text-red-700">
+                          <mat-icon class="icon-size-5" svgIcon="heroicons-solid:x-circle" />
+                          <span>{{ t('Not connected to Salesforce') }}</span>
+                        </div>
+                        <button (click)="bbLogin()" type="button" mat-stroked-button>{{ t('Login') }}</button>
+                      }
+                    </div>
+                  </div>
+                </div>
+                <mat-divider
+                  class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                  role="separator"
+                  aria-orientation="horizontal"
+                ></mat-divider>
+              }
+
+              <div>
+                <button (click)="submitBb()" type="button" mat-flat-button color="primary">
+                  <span>{{ t('Save Changes') }}</span>
+                </button>
+              </div>
+            </mat-tab>
+            <mat-tab [disabled]="!salesforceForm.controls.salesforce_enabled.value" label="Salesforce Column Mappings">
+              <div class="prose mb-12">
+                {{ t('SF_MAPPINGS_TEXT') }}
+              </div>
+              <mat-table class="mat-elevation-z4 w-100" [dataSource]="salesforceMappingsDataSource">
+                <ng-container matColumnDef="salesforce_fieldname">
+                  <th class="p-4" *matHeaderCellDef mat-header-cell>Salesforce Field Name</th>
+                  <td *matCellDef="let sfm" mat-cell>{{ sfm.salesforce_fieldname }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="column">
+                  <th *matHeaderCellDef mat-header-cell>SEED Field Name</th>
+                  <td *matCellDef="let sfm" mat-cell>{{ columnName(sfm.column) }}</td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                  <th class="select-none" *matHeaderCellDef mat-header-cell>Actions</th>
+                  <td class="w-50 py-2" *matCellDef="let sfm" mat-cell>
+                    <button class="mr-2" (click)="editMapping(sfm)" mat-icon-button>
+                      <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil"></mat-icon>
+                    </button>
+                    <button (click)="deleteMapping(sfm)" mat-icon-button>
+                      <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
+                    </button>
+                  </td>
+                </ng-container>
+
+                <tr *matHeaderRowDef="salesforceMappingColumns" mat-header-row></tr>
+                <tr *matRowDef="let row; columns: salesforceMappingColumns" mat-row></tr>
+              </mat-table>
+              <div class="mt-12">
+                <button (click)="addMapping()" mat-flat-button type="button" color="primary">Add Mapping</button>
+              </div>
+            </mat-tab>
+          </mat-tab-group>
+        </form>
+      </div>
+    </div>
+  }
+</seed-page>

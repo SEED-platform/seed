@@ -1,0 +1,68 @@
+<seed-page
+  [config]="{
+    title: 'Meters',
+    breadcrumbs: [
+      { label: 'Groups', link: layout.groupsLink },
+      { label: layout.group?.name, link: layout.groupLink, translate: false },
+      'Meters',
+    ],
+    titleIcon: 'fa-solid:bolt',
+  }"
+>
+</seed-page>
+
+<div class="bg-card flex flex-col gap-4 p-2.5">
+  <!-- Meters Grid -->
+  <div class="flex items-center justify-between">
+    <button (click)="createMeter()" mat-flat-button color="primary">
+      <mat-icon svgIcon="fa-solid:plus"></mat-icon>
+      Add Meter
+    </button>
+    <div class="text-secondary text-xs italic">Note: Meters are labeled with the following format: "Type - Source - Source ID".</div>
+  </div>
+  @if (loadingMeters) {
+    <div class="text-secondary text-sm">Loading meters...</div>
+  } @else if (meters.length === 0) {
+    <div class="text-secondary text-sm">No meters in this group</div>
+  } @else {
+    <ag-grid-angular
+      [theme]="gridTheme$ | async"
+      [rowData]="meters"
+      [columnDefs]="meterColumnDefs"
+      [defaultColDef]="defaultColDef"
+      [gridOptions]="meterGridOptions"
+      (gridReady)="onMeterGridReady($event)"
+      (selectionChanged)="onMeterSelectionChanged($event)"
+      (cellClicked)="onMeterCellClicked($event)"
+      style="height: 400px; width: 100%"
+    ></ag-grid-angular>
+  }
+
+  <mat-divider></mat-divider>
+
+  <!-- Meter Readings -->
+  <div class="flex items-center gap-4">
+    <div class="text-sm font-semibold">Readings</div>
+    <mat-select
+      class="h-10 w-40 rounded border border-gray-500 p-3 text-sm"
+      [value]="interval"
+      (selectionChange)="changeInterval($event.value)"
+    >
+      @for (i of intervals; track i) {
+        <mat-option [value]="i">{{ i }}</mat-option>
+      }
+    </mat-select>
+  </div>
+
+  @if (loadingReadings) {
+    <div class="text-secondary text-sm">Loading readings...</div>
+  } @else if (readings.length) {
+    <ag-grid-angular
+      [theme]="gridTheme$ | async"
+      [rowData]="readings"
+      [columnDefs]="readingColumnDefs"
+      [defaultColDef]="defaultColDef"
+      style="height: 400px; width: 100%"
+    ></ag-grid-angular>
+  }
+</div>

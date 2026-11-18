@@ -1,0 +1,99 @@
+<div class="mb-5 flex gap-4">
+  <div>
+    <!--  Actions -->
+    <div class="m-1 flex flex-row gap-4">
+      <mat-label class="text-secondary w-15 text-sm">Actions</mat-label>
+      <mat-select
+        class="h-8 w-60 rounded border border-gray-500 p-3 text-sm"
+        #actionSelect
+        (selectionChange)="onAction($event.value.action, actionSelect)"
+        panelClass="fit-content-select"
+        placeholder="Select Action"
+      >
+        @for (item of actions; track $index) {
+          <mat-option class="!h-3 text-sm" [value]="item" [disabled]="item.disabled">{{ item.name }}</mat-option>
+        }
+      </mat-select>
+    </div>
+
+    <!--  Cycles -->
+    <div class="m-1 flex flex-row gap-4">
+      <mat-label class="text-secondary w-15 text-sm">Cycle</mat-label>
+      <mat-select
+        class="h-8 w-60 rounded border border-gray-500 p-3 text-sm"
+        [value]="selectedView.id"
+        (selectionChange)="onChangeView($event.value)"
+        placeholder="Select Cycle"
+      >
+        @for (item of views; track $index) {
+          <mat-option class="!h-3 text-sm" [value]="item.id">{{ item.cycle.name }}</mat-option>
+        }
+      </mat-select>
+    </div>
+
+    <!-- Profiles -->
+    @if (profiles && profiles.length) {
+      <div class="m-1 flex flex-row gap-4">
+        <mat-label class="text-secondary w-15 text-sm">Profile</mat-label>
+        <mat-select
+          class="h-8 w-60 rounded border border-gray-500 p-3 text-sm"
+          [value]="currentProfile.id"
+          (selectionChange)="onChangeProfile($event.value)"
+          placeholder="(no profiles)"
+        >
+          @for (item of profiles; track $index) {
+            <mat-option class="!h-3 text-sm" [value]="item.id">{{ item.name }}</mat-option>
+          }
+        </mat-select>
+      </div>
+    }
+
+    <!-- Labels -->
+    @if (shownLabels.length) {
+      <div class="text-secondary m-1 mt-2 flex">
+        <span class="mr-8 w-12">Labels</span>
+        @for (label of shownLabels; track $index) {
+          <seed-label [label]="label"></seed-label>
+        }
+      </div>
+    }
+
+    <!-- Groups -->
+
+    @if (type === 'properties' && groupMappings.length) {
+      <div class="text-secondary m-1 mt-2 flex">
+        <span class="my-auto mr-8 w-12">Groups</span>
+        @for (group of groupMappings; track $index) {
+          <a class="mr-2 !p-0" (click)="tempAction()" mat-stroked-button>
+            {{ group.group_name }}
+          </a>
+        }
+      </div>
+    }
+  </div>
+
+  @if (enableMap) {
+    <div class="h-80 w-full">
+      <seed-inventory-detail-map [state]="view.state" [type]="type"></seed-inventory-detail-map>
+    </div>
+  }
+</div>
+
+<!-- Access Level Instance Info -->
+@if (aliColumnDefs.length) {
+  <mat-divider class="mt-4"></mat-divider>
+  <div class="mt-4">
+    <div class="mb-4 ml-4 flex text-lg font-medium">
+      <mat-icon svgIcon="fa-solid:tree"></mat-icon>
+      <span class="ml-4">Access Levels</span>
+    </div>
+    <ag-grid-angular
+      [columnDefs]="aliColumnDefs"
+      [rowData]="aliRowData"
+      [theme]="gridTheme$ | async"
+      [style.height.px]="90"
+      (gridReady)="onGridReady($event)"
+      style="height: 100%"
+    />
+  </div>
+}

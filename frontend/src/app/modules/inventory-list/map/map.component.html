@@ -1,0 +1,162 @@
+@if (!groupId) {
+  <seed-page
+    [config]="{
+      title: 'Map',
+      titleIcon: 'fa-solid:map-location-dot',
+      tabs: ['properties', 'taxlots'],
+    }"
+  >
+    <ng-container *ngTemplateOutlet="mapContent"></ng-container>
+  </seed-page>
+} @else {
+  <ng-container *ngTemplateOutlet="mapContent"></ng-container>
+}
+
+<ng-template #mapContent>
+  <div [class]="groupId ? 'flex h-full flex-col' : 'h-full-page-tabs flex flex-col'">
+    <!-- CONFIG -->
+    <div class="m-4 flex gap-8">
+      <!-- CYCLE -->
+      <div>
+        <mat-label class="text-secondary my-auto mr-4 text-sm">Cycle</mat-label>
+        <mat-select
+          class="h-10 w-60 rounded border border-gray-500 p-3 text-sm"
+          [(value)]="cycle"
+          [disabled]="inProgress"
+          (selectionChange)="cycle$.next()"
+          panelClass="fit-content-select"
+          placeholder="Select Cycle"
+        >
+          @for (cycle of cycles; track cycle.cycle_id) {
+            <mat-option [value]="cycle">{{ cycle.name }}</mat-option>
+          }
+        </mat-select>
+      </div>
+      <!-- LABELS -->
+      <seed-inventory-list-map-labels
+        [currentUser]="currentUser"
+        [labels]="labels"
+        [selectedLabels]="selectedLabels"
+        (labelChange)="onLabelChange($event)"
+      ></seed-inventory-list-map-labels>
+    </div>
+
+    <!-- PROGRESS -->
+    @if (inProgress) {
+      <seed-progress-bar
+        [progress]="progress.current"
+        [total]="progress.total"
+        [outline]="true"
+        title="Loading Inventory..."
+      ></seed-progress-bar>
+    } @else if (data.length === 0) {
+      <seed-not-found message="No Inventory Found" icon="fa-solid:triangle-exclamation"></seed-not-found>
+    } @else {
+      <div class="flex gap-3 bg-white px-2 dark:bg-gray-800">
+        <!-- Refresh Map -->
+        <mat-icon
+          class="my-auto scale-75 cursor-pointer"
+          (click)="refreshMap$.next()"
+          svgIcon="fa-solid:arrows-rotate"
+          matTooltip="Reset map"
+        ></mat-icon>
+
+        @if (type === 'taxlots') {
+          <!-- Taxlot Layer Toggle -->
+          <mat-checkbox [checked]="layers?.pointsLayer.visible" (change)="toggleLayer('pointsLayer', $event.checked)" color="primary">
+            <span class="text-sm">Tax Lot Points</span>
+          </mat-checkbox>
+          <mat-checkbox [checked]="layers?.taxlotBBLayer.visible" (change)="toggleLayer('taxlotBBLayer', $event.checked)" color="primary">
+            <span class="text-sm">Tax Lot Ubids</span>
+          </mat-checkbox>
+          <mat-checkbox
+            [checked]="layers?.taxlotCentroidLayer.visible"
+            (change)="toggleLayer('taxlotCentroidLayer', $event.checked)"
+            color="primary"
+          >
+            <span class="text-sm">Tax Lot Ubid Centroids</span>
+          </mat-checkbox>
+        } @else {
+          <!-- Property layer Toggle -->
+          <mat-checkbox [checked]="layers?.hexBinLayer.visible" (change)="toggleLayer('hexBinLayer', $event.checked)" color="primary">
+            <span class="text-sm">Hexagonal Bins</span>
+          </mat-checkbox>
+          <mat-checkbox [checked]="layers?.pointsLayer.visible" (change)="toggleLayer('pointsLayer', $event.checked)" color="primary">
+            <span class="text-sm">Property Points</span>
+          </mat-checkbox>
+          <mat-checkbox
+            [checked]="layers?.propertyBBLayer.visible"
+            (change)="toggleLayer('propertyBBLayer', $event.checked)"
+            color="primary"
+          >
+            <span class="text-sm">Property Ubids</span>
+          </mat-checkbox>
+          <mat-checkbox
+            [checked]="layers?.propertyCentroidLayer.visible"
+            (change)="toggleLayer('propertyCentroidLayer', $event.checked)"
+            color="primary"
+          >
+            <span class="text-sm">Property Ubid Centroids</span>
+          </mat-checkbox>
+          <mat-checkbox [checked]="layers?.footprintLayer.visible" (change)="toggleLayer('footprintLayer', $event.checked)" color="primary">
+            <span class="text-sm">Footprints</span>
+          </mat-checkbox>
+        }
+
+        <mat-checkbox
+          [checked]="layers?.censusTractLayer.visible"
+          (change)="toggleLayer('censusTractLayer', $event.checked)"
+          color="primary"
+        >
+          <span class="text-sm">Census Tracts</span>
+        </mat-checkbox>
+        <mat-checkbox
+          [class.opacity-40]="!layers?.censusTractLayer?.visible"
+          [checked]="highlightDACs"
+          [disabled]="!layers?.censusTractLayer?.visible"
+          (change)="toggleHighlightDACs()"
+          color="primary"
+        >
+          <span class="text-sm">Highlight DACs</span>
+        </mat-checkbox>
+      </div>
+    }
+    <!-- MAP -->
+    <div class="relative min-h-0 w-full flex-auto" id="map">
+      <div class="pointer-events-auto" id="popup-element">
+        @if (popupInfo) {
+          <div
+            class="relative -translate-x-1/2 cursor-pointer rounded-lg bg-white px-3 py-2 text-sm shadow-lg ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-600"
+            (click)="navigateToDetail(popupInfo.viewId)"
+          >
+            <span class="font-medium text-blue-600 hover:underline dark:text-blue-400">{{ popupInfo.displayValue }}</span>
+            <button
+              class="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gray-200 text-xs text-gray-600 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+              (click)="dismissPopup(); $event.stopPropagation()"
+              aria-label="Close popup"
+            >
+              ×
+            </button>
+            <div
+              class="absolute bottom-0 left-1/2 h-2 w-2 -translate-x-1/2 translate-y-1/2 rotate-45 bg-white ring-1 ring-gray-200 dark:bg-gray-800 dark:ring-gray-600"
+            ></div>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- EUI GRADIENT -->
+    @if (!inProgress) {
+      <div
+        class="text-secondary absolute bottom-0 right-0 rounded-tl-lg border border-opacity-0 bg-gray-100 p-1 pb-0 text-xs opacity-100 dark:text-secondary dark:bg-gray-900"
+      >
+        <div class="flex">
+          <span class="mr-2">Total Site EUI (kBtu/ft²)</span>
+          <span>20 -</span>
+          <div class="mx-2 h-3 w-20 rounded-lg border" [style]="hexBinInfoBarColor()"></div>
+          <span>+ 750</span>
+        </div>
+      </div>
+    }
+  </div>
+</ng-template>

@@ -1,0 +1,99 @@
+<div class="seed-vertical-navigation-wrapper">
+  <!-- Header -->
+  <div class="seed-vertical-navigation-header">
+    <ng-content select="[verticalNavigationHeader]"></ng-content>
+  </div>
+
+  <!-- Content -->
+  <div
+    class="seed-vertical-navigation-content"
+    id="navigationContent"
+    #navigationContent
+    [seedScrollbar]="showScrollbar"
+    [seedScrollbarOptions]="{
+      wheelPropagation: inner(),
+      suppressScrollX: true,
+    }"
+  >
+    <!-- Content header -->
+    <div class="seed-vertical-navigation-content-header">
+      <ng-content select="[verticalNavigationContentHeader]"></ng-content>
+    </div>
+
+    <!-- Items -->
+    @for (item of navigation(); track item.id || $index) {
+      <!-- Skip hidden items -->
+      @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
+        @if (item.type === 'aside') {
+          <seed-vertical-navigation-aside-item
+            [item]="item"
+            [name]="name()"
+            [activeItemId]="activeAsideItemId"
+            [autoCollapse]="autoCollapse()"
+            [skipChildren]="true"
+            (click)="toggleAside(item)"
+          ></seed-vertical-navigation-aside-item>
+        } @else if (item.type === 'basic') {
+          <seed-vertical-navigation-basic-item [item]="item" [name]="name()"></seed-vertical-navigation-basic-item>
+        } @else if (item.type === 'collapsible') {
+          <seed-vertical-navigation-collapsible-item
+            [item]="item"
+            [name]="name()"
+            [autoCollapse]="autoCollapse()"
+          ></seed-vertical-navigation-collapsible-item>
+        } @else if (item.type === 'divider') {
+          <seed-vertical-navigation-divider-item [item]="item" [name]="name()"></seed-vertical-navigation-divider-item>
+        } @else if (item.type === 'group') {
+          <seed-vertical-navigation-group-item
+            [item]="item"
+            [name]="name()"
+            [autoCollapse]="autoCollapse()"
+          ></seed-vertical-navigation-group-item>
+        } @else if (item.type === 'spacer') {
+          <seed-vertical-navigation-spacer-item [item]="item" [name]="name()"></seed-vertical-navigation-spacer-item>
+        }
+      }
+    }
+
+    <!-- Content footer -->
+    <div class="seed-vertical-navigation-content-footer">
+      <ng-content select="[verticalNavigationContentFooter]"></ng-content>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="seed-vertical-navigation-footer">
+    <ng-content select="[verticalNavigationFooter]"></ng-content>
+  </div>
+</div>
+
+<!-- Aside -->
+@if (activeAsideItemId) {
+  <div
+    class="seed-vertical-navigation-aside-wrapper"
+    [@fadeInLeft]="position() === 'left'"
+    [@fadeInRight]="position() === 'right'"
+    [@fadeOutLeft]="position() === 'left'"
+    [@fadeOutRight]="position() === 'right'"
+    [seedScrollbar]="true"
+    [seedScrollbarOptions]="{
+      wheelPropagation: false,
+      suppressScrollX: true,
+    }"
+  >
+    <!-- Items -->
+    @for (item of navigation(); track item.id || $index) {
+      <!-- Skip hidden items -->
+      @if ((item.hidden && !item.hidden(item)) || !item.hidden) {
+        <!-- Aside -->
+        @if (item.type === 'aside' && item.id === activeAsideItemId) {
+          <seed-vertical-navigation-aside-item
+            [item]="item"
+            [name]="name()"
+            [autoCollapse]="autoCollapse()"
+          ></seed-vertical-navigation-aside-item>
+        }
+      }
+    }
+  </div>
+}

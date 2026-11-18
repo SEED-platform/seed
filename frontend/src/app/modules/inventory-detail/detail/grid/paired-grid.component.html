@@ -1,0 +1,15 @@
+<div class="mb-5 flex flex-col gap-4">
+  <div class="ml-4 flex text-lg font-medium">
+    <mat-icon svgIcon="fa-solid:map"></mat-icon>
+    <span class="ml-4">Paired {{ this.type === 'taxlots' ? 'Properties' : 'Tax Lots' }}</span>
+  </div>
+
+  <ag-grid-angular
+    [columnDefs]="columnDefs"
+    [rowData]="rowData"
+    [theme]="gridTheme$ | async"
+    [style.height.px]="gridHeight"
+    (gridReady)="onGridReady($event)"
+    (firstDataRendered)="onFirstDataRendered($event)"
+  ></ag-grid-angular>
+</div>

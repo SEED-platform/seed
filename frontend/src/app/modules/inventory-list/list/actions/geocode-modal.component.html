@@ -1,0 +1,123 @@
+<seed-modal-header [close]="close.bind(this)" title="Geocode Inventory" titleIcon="fa-solid:map"> </seed-modal-header>
+
+<!-- CONTENT -->
+<div *transloco="let t">
+  @if (geocodeState === 'verify') {
+    @if (!hasGeoColumns) {
+      <seed-alert class="my-2" type="error" appearance="outline">
+        <div class="flex flex-col gap-4">
+          <span>{{ t('GEOCODING_COL_COUNT_REQUIREMENT') }}</span>
+          <span>{{ t('SUGGEST_UPDATE_GEOCODE_COLS') }}</span>
+        </div>
+      </seed-alert>
+    }
+
+    @if (!hasApiKey) {
+      <seed-alert class="my-2" type="error" appearance="outline">
+        <div class="flex flex-col gap-4">
+          <span>{{ t('NO_MAPQUEST_API_KEY_FOR_ORG') }}</span>
+          <span>{{ t('DIRECTIONS_FOR_UPDATING_MQ_API_KEY') }}</span>
+        </div>
+      </seed-alert>
+    }
+
+    @if (!geocodingEnabled) {
+      <seed-alert class="my-2" type="error" appearance="outline">
+        {{ t('Geocoding has been disabled for this organization.') }}
+      </seed-alert>
+    }
+
+    @if (pSummary?.not_geocoded || tSummary?.not_geocoded) {
+      <seed-alert class="my-2" type="info" appearance="border" showIcon="false">
+        <span>{{ t('NOT_GEOCODED_PREVIOUSLY') }}</span>
+        @if (pSummary?.not_geocoded) {
+          <li>{{ pSummary?.not_geocoded }} properties</li>
+        }
+        @if (tSummary?.not_geocoded) {
+          <li>{{ tSummary?.not_geocoded }} tax lots</li>
+        }
+      </seed-alert>
+    }
+  }
+
+  <!-- @if (suggestVerify) {
+    <div translate>{{ t('SUGGEST_TO_VERIFY') }}</div>
+  } -->
+
+  <!--  General messages -->
+  @if (pMessages || tMessages) {
+    <seed-alert class="my-2" [type]="typeMap[geocodeState]" appearance="border" showIcon="false">
+      @if (geocodeState === 'verify') {
+        <div class="flex flex-col gap-4">
+          <span>{{ t('GEOCODE_ATTEMPTED_PREVIOUSLY') }}</span>
+          <span>{{ t('UPDATE_MANUALLY_GEOCODED_INSTRUCTIONS') }}</span>
+        </div>
+      }
+      @if (geocodeState === 'result') {
+        <div>{{ t('POST_GEOCODING_COUNTS') }}</div>
+      }
+
+      <!-- PROPERTIES -->
+      @if (pMessages) {
+        <div class="mt-4">Properties</div>
+      }
+      @if (pSummary?.high_confidence) {
+        <li>{{ pSummary?.high_confidence }} {{ t('GEOCODED_WITH_HIGH_CONFIDENCE') }}</li>
+      }
+      @if (pSummary?.low_confidence) {
+        <li>{{ pSummary?.low_confidence }} {{ t('GEOCODED_WITH_LOW_CONFIDENCE') }}</li>
+      }
+      @if (pSummary?.manual) {
+        <li>
+          {{ pSummary?.manual }} {{ t('GEOCODED_MANUALLY') }}
+          @if (geocodeState === 'verify') {
+            - <b>{{ t('ITEMS_WILL_NOT_CHANGE') }}</b>
+          }
+        </li>
+      }
+      @if (pSummary?.missing_address_components) {
+        <li>{{ pSummary?.missing_address_components }} {{ t('GEOCODE_UNSUCCESSFUL_MISSING_FIELDS') }}</li>
+      }
+
+      <!-- TAX LOTS -->
+      @if (tMessages) {
+        <div class="mt-4">Tax Lots</div>
+      }
+      @if (tSummary?.high_confidence) {
+        <li>{{ tSummary?.high_confidence }} {{ t('GEOCODED_WITH_HIGH_CONFIDENCE') }}</li>
+      }
+      @if (tSummary?.low_confidence) {
+        <li>{{ tSummary?.low_confidence }} {{ t('GEOCODED_WITH_LOW_CONFIDENCE') }}</li>
+      }
+      @if (tSummary?.manual) {
+        <li>
+          {{ tSummary?.manual }} {{ t('GEOCODED_MANUALLY') }}
+          @if (geocodeState === 'verify') {
+            - <b>{{ t('ITEMS_WILL_NOT_CHANGE') }}</b>
+          }
+        </li>
+      }
+      @if (tSummary?.missing_address_components) {
+        <li>{{ tSummary?.missing_address_components }} {{ t('GEOCODE_UNSUCCESSFUL_MISSING_FIELDS') }}</li>
+      }
+    </seed-alert>
+  }
+
+  @if (geocodeState === 'fail') {
+    <seed-alert class="my-2" type="error" appearance="outline">
+      {{ errorMessage }}
+    </seed-alert>
+  }
+
+  @if (geocodeState === 'geocoding') {
+    <seed-progress-bar title="Geocoding..."></seed-progress-bar>
+  }
+</div>
+
+<div class="mt-4 flex justify-end gap-2">
+  @if (geocodeState === 'verify') {
+    <button [disabled]="!valid" (click)="geocodeBuildings()" mat-raised-button color="primary">Geocode</button>
+  } @else if (['result', 'fail'].includes(geocodeState)) {
+    <button (click)="close(geocodeState === 'result')" mat-raised-button color="primary">Close</button>
+  }
+</div>

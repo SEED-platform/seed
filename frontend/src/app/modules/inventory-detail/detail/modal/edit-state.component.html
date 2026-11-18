@@ -1,0 +1,64 @@
+<div class="ml-4 mt-10 flex gap-4" mat-dialog-title>
+  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
+  @if (preSave) {
+    <div class="text-2xl font-medium leading-6">Edit Main State</div>
+  } @else {
+    <div class="text-2xl font-medium leading-6">Update Record?</div>
+  }
+</div>
+<mat-divider></mat-divider>
+
+<div class="m-5 max-h-[75vh-300px] overflow-y-auto p-5">
+  @if (preSave) {
+    <form [formGroup]="form">
+      <table class="w-full table-auto border-collapse">
+        <tbody>
+          @for (column of orderedColumns; track $index) {
+            <tr class="border-b">
+              <td class="w-1/3 px-4 py-2 text-right">{{ displayNameMap[column] }}</td>
+              <td class="px-4 py-2">
+                <input
+                  class="w-full rounded-full border border-gray-500 px-4 py-1"
+                  [formControlName]="column"
+                  [class.border-blue-400]="changedFields.has(column)"
+                />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </form>
+  } @else {
+    <div class="prose">
+      <h3>Updating will trigger a matching round for this record</h3>
+      <div class="flex flex-col">
+        <ul>
+          <li>Matches within this cycle will be merged.</li>
+          <li>Matches outside of this cycle will be linked.</li>
+          <li>In the event that multiple matches are returned from a single cycle, those matches will be merged together.</li>
+        </ul>
+
+        <h3 class="mt-4">For this organization, records match if the following fields match:</h3>
+        <ul class="pl-8">
+          @for (column of data.matchingColumns; track $index) {
+            <li>{{ column }}</li>
+          }
+        </ul>
+      </div>
+    </div>
+  }
+</div>
+<mat-divider></mat-divider>
+
+<div class="flex justify-end">
+  <mat-dialog-actions>
+    @if (preSave) {
+      <button (click)="onSave()" mat-raised-button color="primary">Save</button>
+    } @else {
+      <button (click)="onSubmit()" mat-raised-button color="primary">Submit</button>
+    }
+  </mat-dialog-actions>
+  <mat-dialog-actions>
+    <button (click)="dismiss()" mat-stroked-button>Dismiss</button>
+  </mat-dialog-actions>
+</div>

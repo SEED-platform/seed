@@ -1,0 +1,222 @@
+<div *transloco="let t">
+  <seed-modal-header [close]="close.bind(this)" title="Configure Goals" titleIcon="fa-solid:gauge-high"></seed-modal-header>
+
+  <mat-dialog-content class="flex flex-row gap-6">
+    <!-- Goal list sidebar -->
+    <div class="flex w-48 shrink-0 flex-col gap-1 border-r pr-4">
+      <div class="text-secondary mb-2 text-sm font-semibold uppercase tracking-wide">{{ t('Goals') }}</div>
+      @for (goal of goals; track goal.id) {
+        <div
+          class="flex cursor-pointer items-center justify-between rounded px-2 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+          [class.bg-primary-50]="currentGoal?.id === goal.id"
+          [class.dark:bg-primary-900]="currentGoal?.id === goal.id"
+          [class.text-primary-600]="currentGoal?.id === goal.id"
+          [class.font-medium]="currentGoal?.id === goal.id"
+          (click)="selectGoal(goal.id)"
+        >
+          <span class="truncate">{{ goal.name }}</span>
+        </div>
+      }
+      <mat-divider class="my-2"></mat-divider>
+      <button class="w-full" (click)="selectGoal(null)" mat-stroked-button>
+        <mat-icon class="icon-size-4" svgIcon="fa-solid:plus"></mat-icon>
+        <span class="ml-2">{{ t('New Goal') }}</span>
+      </button>
+    </div>
+
+    <!-- Form panel -->
+    <form class="flex min-w-0 flex-1 flex-col gap-4 pt-1" [formGroup]="goalForm">
+      <!-- GOAL section -->
+      <div class="text-secondary mb-1 text-sm font-semibold uppercase tracking-wide">{{ t('Goal') }}</div>
+      <mat-divider class="mb-2"></mat-divider>
+
+      <mat-form-field>
+        <mat-label>{{ t('Name') }}</mat-label>
+        <input matInput formControlName="name" />
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ t('Type') }}</mat-label>
+        <mat-select formControlName="type">
+          <mat-option value="standard">{{ t('Standard') }}</mat-option>
+          <mat-option value="transaction">{{ t('Transaction') }}</mat-option>
+        </mat-select>
+        <mat-hint>{{ t('Standard calculates EUI per sq ft. Transaction also calculates EUI per transaction.') }}</mat-hint>
+      </mat-form-field>
+
+      <!-- CYCLE SELECTION section -->
+      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Cycle Selection') }}</div>
+      <mat-divider class="mb-2"></mat-divider>
+
+      <mat-form-field>
+        <mat-label>{{ t('Baseline Cycle') }}</mat-label>
+        <mat-select formControlName="baselineCycle">
+          @for (cycle of cycles; track cycle.id) {
+            <mat-option [value]="cycle.id">{{ cycle.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>{{ t('Cycle used as the baseline for comparison.') }}</mat-hint>
+      </mat-form-field>
+
+      <!-- ACCESS LEVEL INSTANCE section -->
+      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Access Level Instance') }}</div>
+      <mat-divider class="mb-2"></mat-divider>
+
+      <mat-form-field>
+        <mat-label>{{ t('Access Level') }}</mat-label>
+        <mat-select (selectionChange)="onAccessLevelChange($event.value)" formControlName="accessLevel">
+          @for (level of accessLevelNames; track level) {
+            <mat-option [value]="level">{{ level }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>{{ t('Only properties belonging to this Access Level Instance will be included.') }}</mat-hint>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>{{ t('Access Level Instance') }}</mat-label>
+        <mat-select formControlName="accessLevelInstanceId">
+          @for (ali of accessLevelInstances; track ali.id) {
+            <mat-option [value]="ali.id">{{ ali.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <!-- AREA TARGET COLUMN section -->
+      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Area Target Column') }}</div>
+      <mat-divider class="mb-2"></mat-divider>
+
+      <mat-form-field>
+        <mat-label>{{ t('Area Column') }}</mat-label>
+        <mat-select formControlName="areaColumn">
+          @for (column of areaColumns; track column.id) {
+            <mat-option [value]="column.id">{{ column.display_name }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>{{ t('Not seeing your column? Update the column\'s data type to "Area" in Column Settings.') }}</mat-hint>
+      </mat-form-field>
+
+      <!-- EUI TARGET COLUMNS section -->
+      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('EUI Target Columns') }}</div>
+      <mat-divider class="mb-2"></mat-divider>
+
+      <mat-form-field>
+        <mat-label>{{ t('Primary Column') }}</mat-label>
+        <mat-select formControlName="euiColumn1">
+          @for (column of euiColumns; track column.id) {
+            <mat-option [value]="column.id">{{ column.display_name }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>{{ t('Not seeing your column? Update the column\'s data type to "EUI" in Column Settings.') }}</mat-hint>
+      </mat-form-field>
+      @if (goalForm.value.euiColumn1) {
+        <mat-form-field>
+          <mat-label>{{ t('Secondary Column (optional)') }}</mat-label>
+          <mat-select formControlName="euiColumn2">
+            <mat-option value="">--</mat-option>
+            @for (column of euiColumns; track column.id) {
+              <mat-option [value]="column.id">{{ column.display_name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+      @if (goalForm.value.euiColumn2) {
+        <mat-form-field>
+          <mat-label>{{ t('Tertiary Column (optional)') }}</mat-label>
+          <mat-select formControlName="euiColumn3">
+            <mat-option value="">--</mat-option>
+            @for (column of euiColumns; track column.id) {
+              <mat-option [value]="column.id">{{ column.display_name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+
+      <!-- TRANSACTIONS COLUMN (only for transaction type) -->
+      @if (isTransactionType) {
+        <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Transactions Column') }}</div>
+        <mat-divider class="mb-2"></mat-divider>
+        <mat-form-field>
+          <mat-label>{{ t('Transactions') }}</mat-label>
+          <mat-select formControlName="transactionsColumn">
+            @for (column of allColumns; track column.id) {
+              <mat-option [value]="column.id">{{ column.display_name || column.column_name }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>{{ t('Column representing number of transactions per property.') }}</mat-hint>
+        </mat-form-field>
+      }
+
+      <!-- PORTFOLIO TARGET section -->
+      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Portfolio Target') }}</div>
+      <mat-divider class="mb-2"></mat-divider>
+
+      <mat-form-field>
+        <mat-label>{{ t('Percentage (%)') }}</mat-label>
+        <input matInput type="number" formControlName="targetPercentage" min="0" max="100" />
+        <mat-hint>{{ t('Target EUI improvement percentage. Must be between 0 and 100.') }}</mat-hint>
+      </mat-form-field>
+
+      <!-- COMMITMENT section -->
+      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Commitment') }}</div>
+      <mat-divider class="mb-2"></mat-divider>
+
+      <mat-form-field>
+        <mat-label>{{ t('Commitment (Sq Ft)') }}</mat-label>
+        <input matInput type="number" formControlName="commitmentSqft" min="0" />
+        <mat-hint>{{ t('Committed area in square feet.') }}</mat-hint>
+      </mat-form-field>
+
+      <!-- SALESFORCE section (conditional) -->
+      @if (bb_salesforce_enabled) {
+        <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Salesforce') }}</div>
+        <mat-divider class="mb-2"></mat-divider>
+
+        <!-- Connection status -->
+        <div class="mb-3 flex items-center gap-2 text-sm">
+          @if (isLoggedIntoBbSalesforce) {
+            <mat-icon class="text-green-600 icon-size-4 dark:text-green-400" svgIcon="heroicons-solid:check-circle"></mat-icon>
+            <span class="text-green-700 dark:text-green-400">{{ t('Connected to Salesforce') }}</span>
+          } @else {
+            <mat-icon class="text-amber-600 icon-size-4 dark:text-amber-400" svgIcon="heroicons-solid:exclamation-triangle"></mat-icon>
+            <span class="text-amber-700 dark:text-amber-400">
+              {{ t('Not connected to Salesforce.') }}
+              <a class="cursor-pointer underline" (click)="goToSalesforceSettings()">{{ t('Log in via Organization Settings') }}</a>
+              {{ t('to configure partner and goal associations.') }}
+            </span>
+          }
+        </div>
+
+        @if (isLoggedIntoBbSalesforce) {
+          <mat-form-field>
+            <mat-label>{{ t('Salesforce Partner') }}</mat-label>
+            <mat-select (selectionChange)="onPartnerChange($event.value)" formControlName="salesforcePartnerID">
+              <mat-option value="">--</mat-option>
+              @for (partner of salesforcePartners; track partner.id) {
+                <mat-option [value]="partner.id">{{ partner.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>{{ t('Salesforce Goal') }}</mat-label>
+            <mat-select formControlName="salesforceGoalID">
+              @for (sfGoal of salesforceGoals; track sfGoal.id) {
+                <mat-option [value]="sfGoal.id">{{ sfGoal.name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        }
+      }
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    @if (currentGoal) {
+      <button class="mr-auto" [disabled]="isDeleting" (click)="deleteCurrentGoal()" color="warn" mat-stroked-button>
+        <mat-icon class="icon-size-4" svgIcon="fa-solid:trash"></mat-icon>
+        <span class="ml-2">{{ isDeleting ? t('Deleting…') : t('Delete Goal') }}</span>
+      </button>
+    }
+    <button (click)="close()" mat-button>{{ t('Cancel') }}</button>
+    <button [disabled]="goalForm.invalid || isSaving" (click)="save()" color="primary" mat-flat-button>
+      {{ isSaving ? t('Saving…') : t('Save') }}
+    </button>
+  </mat-dialog-actions>
+</div>

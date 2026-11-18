@@ -1,0 +1,64 @@
+@if (!dismissible() || (dismissible() && !dismissed())) {
+  <div class="seed-alert-container" [@fadeIn]="!dismissed()" [@fadeOut]="!dismissed()">
+    <!-- Border -->
+    @if (appearance() === 'border') {
+      <div class="seed-alert-border"></div>
+    }
+
+    <!-- Icon -->
+    @if (showIcon()) {
+      <div class="seed-alert-icon">
+        <!-- Custom icon -->
+        <div class="seed-alert-custom-icon">
+          <ng-content select="[seedAlertIcon]"></ng-content>
+        </div>
+
+        <!-- Default icons -->
+        <div class="seed-alert-default-icon">
+          @switch (type()) {
+            @case ('primary') {
+              <mat-icon svgIcon="heroicons-solid:check-circle"></mat-icon>
+            }
+            @case ('accent') {
+              <mat-icon svgIcon="heroicons-solid:check-circle"></mat-icon>
+            }
+            @case ('warn') {
+              <mat-icon svgIcon="heroicons-solid:x-circle"></mat-icon>
+            }
+            @case ('basic') {
+              <mat-icon svgIcon="heroicons-solid:check-circle"></mat-icon>
+            }
+            @case ('info') {
+              <mat-icon svgIcon="heroicons-solid:information-circle"></mat-icon>
+            }
+            @case ('success') {
+              <mat-icon svgIcon="heroicons-solid:check-circle"></mat-icon>
+            }
+            @case ('warning') {
+              <mat-icon svgIcon="heroicons-solid:exclamation-triangle"></mat-icon>
+            }
+            @case ('error') {
+              <mat-icon svgIcon="heroicons-solid:x-circle"></mat-icon>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Content -->
+    <div class="seed-alert-content">
+      <div class="seed-alert-title">
+        <ng-content select="[seedAlertTitle]"></ng-content>
+      </div>
+
+      <div class="seed-alert-message">
+        <ng-content></ng-content>
+      </div>
+    </div>
+
+    <!-- Dismiss button -->
+    <button class="seed-alert-dismiss-button" (click)="dismiss()" mat-icon-button>
+      <mat-icon svgIcon="heroicons-solid:x-mark"></mat-icon>
+    </button>
+  </div>
+}
