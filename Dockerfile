@@ -2,6 +2,8 @@
 
 ARG NGINX_LISTEN_OPTS
 ARG UV_VERSION=0.13.9
+# Registry for Docker Hub images. Defaults to Docker Hub; a build system can point it at a Docker Hub mirror.
+ARG DOCKERHUB_REGISTRY=docker.io
 
 # AUTHOR:           Clay Teeter <teeterc@gmail.com>, Nicholas Long <nicholas.long@nlr.gov>
 # DESCRIPTION:      Production image with SEED Platform and runtime dependencies
@@ -9,7 +11,7 @@ ARG UV_VERSION=0.13.9
 
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 
-FROM node:24-alpine AS build-base
+FROM ${DOCKERHUB_REGISTRY}/library/node:24-alpine AS build-base
 COPY --from=uv /uv /uvx /bin/
 
 WORKDIR /seed
@@ -84,7 +86,7 @@ COPY ./backend/vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
     pnpm install --prod --frozen-lockfile --ignore-scripts --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false
 
-FROM node:24-alpine AS runtime
+FROM ${DOCKERHUB_REGISTRY}/library/node:24-alpine AS runtime
 
 ARG NGINX_LISTEN_OPTS
 
