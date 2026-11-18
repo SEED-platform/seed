@@ -156,7 +156,7 @@ export class DefaultReportsComponent implements OnInit, OnDestroy {
     const euiUnit = UNIT_MAPPINGS[this.org.display_units_eui] ?? this.org.display_units_eui
     const areaUnit = UNIT_MAPPINGS[this.org.display_units_area] ?? this.org.display_units_area
 
-    const parseAxisLabel = (col: Column) => {
+    const parseAxisLabel = (col: Pick<Column, 'column_name' | 'display_name'>) => {
       const name = col.display_name || col.column_name
       if (col.column_name.includes('eui')) return `${name} (${euiUnit})`
       if (col.column_name.includes('area')) return `${name} (${areaUnit})`

@@ -1,6 +1,8 @@
-<button (click)="edit($event)" mat-icon-button>
-  <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil"></mat-icon>
-</button>
-<button (click)="delete($event)" mat-icon-button>
-  <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
-</button>
+<ng-container *transloco="let t">
+  <button [attr.aria-label]="t('Edit')" [matTooltip]="t('Edit')" (click)="edit($event)" mat-icon-button>
+    <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil"></mat-icon>
+  </button>
+  <button [attr.aria-label]="t('Delete')" [matTooltip]="t('Delete')" (click)="delete($event)" mat-icon-button>
+    <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
+  </button>
+</ng-container>

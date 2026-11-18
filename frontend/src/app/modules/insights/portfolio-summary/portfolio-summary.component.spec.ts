@@ -737,6 +737,15 @@ describe('PortfolioSummaryComponent', () => {
   // ─── exportTable ─────────────────────────────────────────────────────────────
 
   describe('exportTable', () => {
+    beforeEach(() => {
+      // Keeps the download's deferred URL revoke from running after the spies are gone
+      jasmine.clock().install()
+    })
+
+    afterEach(() => {
+      jasmine.clock().uninstall()
+    })
+
     it('should not throw when goalSummaryData is empty', () => {
       component.goalSummaryData = []
       expect(() => {
@@ -761,6 +770,18 @@ describe('PortfolioSummaryComponent', () => {
       component.exportTable()
       expect(mockAnchor.click).toHaveBeenCalled()
       expect(mockAnchor.download).toBe('portfolio_summary_table.csv')
+    })
+
+    it('should keep the columns and escape commas and quotes in cycle names', async () => {
+      spyOn(document, 'createElement').and.returnValue({ href: '', download: '', click: jasmine.createSpy('click') } as unknown as HTMLElement)
+      const createObjectURL = spyOn(URL, 'createObjectURL').and.returnValue('blob:test')
+      spyOn(URL, 'revokeObjectURL')
+      component.goalSummaryData = [{ ...mockWeightedEUIs[1], 'Cycle Name': 'FY2024 "Q4", final' }]
+      component.exportTable()
+      const [blob] = createObjectURL.calls.mostRecent().args as [Blob]
+      expect(await blob.text()).toBe(
+        ['"Cycle Name","Baseline?","EUI","Goal","Annual % Imp","Cumulative % Imp"', '"FY2024 ""Q4"", final","No","88.00","80","12","12"'].join('\n'),
+      )
     })
   })
 

@@ -3,136 +3,145 @@
   <button
     class="bg-card mr-1 flex w-50 cursor-pointer items-center justify-between rounded border border-gray-500 px-2"
     [matMenuTriggerFor]="menu"
-    aria-labelledby="inventory-actions-label"
+    aria-labelledby="inventory-actions-label inventory-actions-value"
     type="button"
   >
-    <span class="text-secondary text-sm">{{ t('Select Action') }}</span>
+    <span class="text-secondary text-sm" id="inventory-actions-value">{{ t('Select Action') }}</span>
     <mat-icon class="scale-50" svgIcon="fa-solid:chevron-down"></mat-icon>
   </button>
 </div>
 
+<!-- mat-menu only adds the mat-menu-items in its own content to keyboard navigation, so don't wrap them in a component.
+     Each section is a group labelled by its heading, so screen readers can tell same-named items apart -->
 <mat-menu class="menu-compact w-80 rounded border text-sm" #menu="matMenu">
-  <seed-menu-item (action)="selectAll()" label="Select All"></seed-menu-item>
-  <seed-menu-item (action)="deselectAll()" label="Select None"></seed-menu-item>
-  <!-- Labels (kept near the top since it's one of the most-used actions) -->
-  <mat-divider class="my-0"></mat-divider>
-  <span class="text-secondary text-sm">Labels</span>
-  <div>
-    <seed-menu-item
-      [disabled]="!hasSelection"
-      [label]="groupMode ? 'Add / Remove (applies to inventory, not group)' : 'Add / Remove'"
-      (action)="openLabelsModal()"
-    >
-    </seed-menu-item>
-  </div>
-  <mat-divider></mat-divider>
-  @if (!groupMode) {
-    <seed-menu-item [disabled]="!hasSelection" (action)="deleteStates()" label="Delete" icon="fa-solid:trash-can"></seed-menu-item>
-    <seed-menu-item [disabled]="!hasSelection" (action)="openExportModal()" label="Export" icon="fa-solid:download"></seed-menu-item>
-    <seed-menu-item
-      [disabled]="selectedViewIds.length < 2"
-      (action)="openMergeModal()"
-      label="Merge"
-      icon="fa-solid:code-merge"
-    ></seed-menu-item>
-    @if (type === 'properties') {
-      <seed-menu-item
-        [disabled]="!hasSelection"
-        (action)="openCopyToCycleModal()"
-        label="Copy to Different Cycle"
-        icon="fa-solid:copy"
-      ></seed-menu-item>
-    }
-  }
-  <seed-menu-item (action)="openShowPopulatedColumnsModal()" label="Only Show Populated Columns" icon="fa-solid:filter"></seed-menu-item>
-  @if (!groupMode) {
-    <!-- Access Levels -->
+  <ng-container *transloco="let t">
+    <button (click)="selectAll()" mat-menu-item>{{ t('Select All') }}</button>
+    <button (click)="deselectAll()" mat-menu-item>{{ t('Select None') }}</button>
+    <!-- Labels (kept near the top since it's one of the most-used actions) -->
     <mat-divider class="my-0"></mat-divider>
-    <span class="text-secondary text-sm">Access Levels</span>
-    <div>
+    <span class="text-secondary text-sm" id="inventory-actions-labels">{{ t('Labels') }}</span>
+    <div role="group" aria-labelledby="inventory-actions-labels">
+      <button [disabled]="!hasSelection" (click)="openLabelsModal()" mat-menu-item>
+        {{ groupMode ? t('Add / Remove (applies to inventory, not group)') : t('Add / Remove') }}
+      </button>
+    </div>
+    <mat-divider></mat-divider>
+    @if (!groupMode) {
+      <button [disabled]="!hasSelection" (click)="deleteStates()" mat-menu-item>
+        <mat-icon class="scale-50" svgIcon="fa-solid:trash-can"></mat-icon>
+        <span>{{ t('Delete') }}</span>
+      </button>
+      <button [disabled]="!hasSelection" (click)="openExportModal()" mat-menu-item>
+        <mat-icon class="scale-50" svgIcon="fa-solid:download"></mat-icon>
+        <span>{{ t('Export') }}</span>
+      </button>
+      <button [disabled]="selectedViewIds.length < 2" (click)="openMergeModal()" mat-menu-item>
+        <mat-icon class="scale-50" svgIcon="fa-solid:code-merge"></mat-icon>
+        <span>{{ t('Merge') }}</span>
+      </button>
       @if (type === 'properties') {
-        <seed-menu-item [disabled]="!hasSelection" (action)="openAliChangeModal()" label="Edit"> </seed-menu-item>
+        <button [disabled]="!hasSelection" (click)="openCopyToCycleModal()" mat-menu-item>
+          <mat-icon class="scale-50" svgIcon="fa-solid:copy"></mat-icon>
+          <span>{{ t('Copy to Different Cycle') }}</span>
+        </button>
       }
-      <seed-menu-item class="text-secondary" [label]="showAccessLevelInstances ? 'Hide' : 'Show'" (action)="toggleAccessLevelInstances()">
-      </seed-menu-item>
-    </div>
-    <!-- Analyses -->
-    @if (type === 'properties') {
-      <mat-divider class="my-0"></mat-divider>
-      <span class="text-secondary text-sm">Analyses</span>
-      <div>
-        <seed-menu-item [disabled]="!hasSelection" (action)="openAnalysisRunModal()" label="Run"> </seed-menu-item>
-      </div>
     }
-    <!-- Audit Template -->
-    @if (type === 'properties') {
+    <button (click)="openShowPopulatedColumnsModal()" mat-menu-item>
+      <mat-icon class="scale-50" svgIcon="fa-solid:filter"></mat-icon>
+      <span>{{ t('Only Show Populated Columns') }}</span>
+    </button>
+    @if (!groupMode) {
+      <!-- Access Levels -->
       <mat-divider class="my-0"></mat-divider>
-      <span class="text-secondary text-sm">Audit Template</span>
-      <div>
-        <seed-menu-item
-          [disabled]="!hasSelection || !organization?.audit_template_user"
-          (action)="openAuditTemplateExportModal()"
-          label="Export"
-        ></seed-menu-item>
-        <seed-menu-item
-          [disabled]="!hasSelection || !organization?.audit_template_user || !organization?.audit_template_sync_enabled"
-          (action)="openAuditTemplateImportModal()"
-          label="Update"
-        ></seed-menu-item>
+      <span class="text-secondary text-sm" id="inventory-actions-access-levels">{{ t('Access Levels') }}</span>
+      <div role="group" aria-labelledby="inventory-actions-access-levels">
+        @if (type === 'properties') {
+          <button [disabled]="!hasSelection" (click)="openAliChangeModal()" mat-menu-item>{{ t('Edit') }}</button>
+        }
+        <button class="text-secondary" (click)="toggleAccessLevelInstances()" mat-menu-item>
+          {{ showAccessLevelInstances ? t('Hide') : t('Show') }}
+        </button>
       </div>
-    }
-    <mat-divider class="my-0"></mat-divider>
+      <!-- Analyses -->
+      @if (type === 'properties') {
+        <mat-divider class="my-0"></mat-divider>
+        <span class="text-secondary text-sm" id="inventory-actions-analyses">{{ t('Analyses') }}</span>
+        <div role="group" aria-labelledby="inventory-actions-analyses">
+          <button [disabled]="!hasSelection" (click)="openAnalysisRunModal()" mat-menu-item>{{ t('Run') }}</button>
+        </div>
+      }
+      <!-- Audit Template -->
+      @if (type === 'properties') {
+        <mat-divider class="my-0"></mat-divider>
+        <span class="text-secondary text-sm" id="inventory-actions-audit-template">{{ t('Audit Template') }}</span>
+        <div role="group" aria-labelledby="inventory-actions-audit-template">
+          <button [disabled]="!hasSelection || !organization?.audit_template_user" (click)="openAuditTemplateExportModal()" mat-menu-item>
+            {{ t('Export') }}
+          </button>
+          <button
+            [disabled]="!hasSelection || !organization?.audit_template_user || !organization?.audit_template_sync_enabled"
+            (click)="openAuditTemplateImportModal()"
+            mat-menu-item
+          >
+            {{ t('Update') }}
+          </button>
+        </div>
+      }
+      <mat-divider class="my-0"></mat-divider>
 
-    <!-- DATA QUALITY DATA -->
-    <mat-divider class="my-0"></mat-divider>
-    <span class="text-secondary text-sm">Data Quality</span>
-    <div>
-      <seed-menu-item [disabled]="!hasSelection" (action)="openDataQualityCheck()" label="Run Check"> </seed-menu-item>
-    </div>
-    <!-- DERIVED DATA -->
-    <mat-divider class="my-0"></mat-divider>
-    <span class="text-secondary text-sm">Derived Data</span>
-    <div>
-      <seed-menu-item [disabled]="!hasSelection" (action)="openDerivedDataUpdateModal()" label="Update"> </seed-menu-item>
-    </div>
-    <mat-divider class="my-0"></mat-divider>
-    <!-- Groups -->
-    <mat-divider class="my-0"></mat-divider>
-    <span class="text-secondary text-sm">Groups</span>
-    <div>
-      <seed-menu-item [disabled]="!hasSelection" (action)="openGroupsModal()" label="Add / Remove"> </seed-menu-item>
-    </div>
-  }
-  <mat-divider class="my-0"></mat-divider>
-  <!-- MISC / OTHER -->
-  <mat-divider class="my-0"></mat-divider>
-  <span class="text-secondary text-sm">Other</span>
-  <seed-menu-item [disabled]="!canEmailSelection" (action)="openEmailModal()" label="Email"></seed-menu-item>
-  @if (!groupMode) {
-    @if (type === 'properties') {
-      <seed-menu-item [disabled]="!hasSelection" (action)="openFempExportModal()" label="FEMP CTS Export"></seed-menu-item>
-    }
-    <seed-menu-item [disabled]="!hasSelection" (action)="openGeocodeModal()" label="Geocode"></seed-menu-item>
-    <seed-menu-item [disabled]="!hasSelection" (action)="openRefreshMetadataModal()" label="Refresh Updated Timestamp"></seed-menu-item>
-    <!-- SalesForce -->
-    @if (organization?.bb_salesforce_enabled) {
+      <!-- DATA QUALITY DATA -->
       <mat-divider class="my-0"></mat-divider>
-      <span class="text-secondary text-sm">Salesforce</span>
-      <div>
-        <seed-menu-item [disabled]="!hasSelection" (action)="updateSalesforce()" label="Update"> </seed-menu-item>
+      <span class="text-secondary text-sm" id="inventory-actions-data-quality">{{ t('Data Quality') }}</span>
+      <div role="group" aria-labelledby="inventory-actions-data-quality">
+        <button [disabled]="!hasSelection" (click)="openDataQualityCheck()" mat-menu-item>{{ t('Run Check') }}</button>
+      </div>
+      <!-- DERIVED DATA -->
+      <mat-divider class="my-0"></mat-divider>
+      <span class="text-secondary text-sm" id="inventory-actions-derived-data">{{ t('Derived Data') }}</span>
+      <div role="group" aria-labelledby="inventory-actions-derived-data">
+        <button [disabled]="!hasSelection" (click)="openDerivedDataUpdateModal()" mat-menu-item>{{ t('Update') }}</button>
+      </div>
+      <mat-divider class="my-0"></mat-divider>
+      <!-- Groups -->
+      <mat-divider class="my-0"></mat-divider>
+      <span class="text-secondary text-sm" id="inventory-actions-groups">{{ t('Groups') }}</span>
+      <div role="group" aria-labelledby="inventory-actions-groups">
+        <button [disabled]="!hasSelection" (click)="openGroupsModal()" mat-menu-item>{{ t('Add / Remove') }}</button>
       </div>
     }
-  }
-  <!-- UBID -->
-  <mat-divider class="my-0"></mat-divider>
-  <span class="text-secondary text-sm">UBID</span>
-  <div>
-    @if (!groupMode) {
-      <seed-menu-item [disabled]="selectedViewIds.length !== 1" (action)="openUbidModal()" label="Add / Update"> </seed-menu-item>
+    <mat-divider class="my-0"></mat-divider>
+    <!-- MISC / OTHER -->
+    <mat-divider class="my-0"></mat-divider>
+    <span class="text-secondary text-sm" id="inventory-actions-other">{{ t('Other') }}</span>
+    <div role="group" aria-labelledby="inventory-actions-other">
+      <button [disabled]="!canEmailSelection" (click)="openEmailModal()" mat-menu-item>{{ t('Email') }}</button>
+      @if (!groupMode) {
+        @if (type === 'properties') {
+          <button [disabled]="!hasSelection" (click)="openFempExportModal()" mat-menu-item>{{ t('FEMP CTS Export') }}</button>
+        }
+        <button [disabled]="!hasSelection" (click)="openGeocodeModal()" mat-menu-item>{{ t('Geocode') }}</button>
+        <button [disabled]="!hasSelection" (click)="openRefreshMetadataModal()" mat-menu-item>{{ t('Refresh Updated Timestamp') }}</button>
+      }
+    </div>
+    <!-- SalesForce -->
+    @if (!groupMode && organization?.bb_salesforce_enabled) {
+      <mat-divider class="my-0"></mat-divider>
+      <span class="text-secondary text-sm" id="inventory-actions-salesforce">{{ t('Salesforce') }}</span>
+      <div role="group" aria-labelledby="inventory-actions-salesforce">
+        <button [disabled]="!hasSelection" (click)="updateSalesforce()" mat-menu-item>{{ t('Update') }}</button>
+      </div>
     }
-    <seed-menu-item [disabled]="selectedViewIds.length !== 2" (action)="openUbidCompareModal()" label="Compare"> </seed-menu-item>
-    @if (!groupMode) {
-      <seed-menu-item [disabled]="!hasSelection" (action)="openUbidDecodeModal()" label="Decode"></seed-menu-item>
-    }
-  </div>
+    <!-- UBID -->
+    <mat-divider class="my-0"></mat-divider>
+    <span class="text-secondary text-sm" id="inventory-actions-ubid">{{ t('UBID') }}</span>
+    <div role="group" aria-labelledby="inventory-actions-ubid">
+      @if (!groupMode) {
+        <button [disabled]="selectedViewIds.length !== 1" (click)="openUbidModal()" mat-menu-item>{{ t('Add / Update') }}</button>
+      }
+      <button [disabled]="selectedViewIds.length !== 2" (click)="openUbidCompareModal()" mat-menu-item>{{ t('Compare') }}</button>
+      @if (!groupMode) {
+        <button [disabled]="!hasSelection" (click)="openUbidDecodeModal()" mat-menu-item>{{ t('Decode') }}</button>
+      }
+    </div>
+  </ng-container>
 </mat-menu>

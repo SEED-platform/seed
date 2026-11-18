@@ -1,5 +1,6 @@
 import type { AfterViewInit } from '@angular/core'
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core'
+import { TranslocoDirective } from '@jsverse/transloco'
 import { defaults as defaultControls } from 'ol/control'
 import WKT from 'ol/format/WKT'
 import TileLayer from 'ol/layer/Tile'
@@ -19,7 +20,7 @@ import type { InventoryType, State } from 'app/modules/inventory/inventory.types
   selector: 'seed-inventory-detail-map',
   templateUrl: './map.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
-  imports: [MaterialImports],
+  imports: [MaterialImports, TranslocoDirective],
 })
 export class MapComponent implements AfterViewInit {
   @Input() state: State

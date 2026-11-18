@@ -1,4 +1,4 @@
-import type { Column } from '../column'
+import type { SerializedColumn } from '../column'
 
 export type FacilitiesPlan = {
   id: number;
@@ -37,11 +37,11 @@ export type FacilitiesPlansResponse = {
 
 // The serializer exposes the plan's columns as a named map on the run response
 export type FacilitiesPlanRunColumns = {
-  compliance_cycle_year_column?: Column;
-  include_in_total_denominator_column?: Column;
-  exclude_from_plan_column?: Column;
-  require_in_plan_column?: Column;
-  electric_energy_usage_column?: Column;
-  gas_energy_usage_column?: Column;
-  steam_energy_usage_column?: Column;
+  compliance_cycle_year_column?: SerializedColumn;
+  include_in_total_denominator_column?: SerializedColumn;
+  exclude_from_plan_column?: SerializedColumn;
+  require_in_plan_column?: SerializedColumn;
+  electric_energy_usage_column?: SerializedColumn;
+  gas_energy_usage_column?: SerializedColumn;
+  steam_energy_usage_column?: SerializedColumn;
 }

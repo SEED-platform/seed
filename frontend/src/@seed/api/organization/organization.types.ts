@@ -1,4 +1,4 @@
-import type { Column, LabelOperator, UserRole } from '@seed/api'
+import type { Column, LabelOperator, SerializedColumn, UserRole } from '@seed/api'
 
 export type OrgCycle = {
   name: string;
@@ -69,8 +69,9 @@ export type Organization = BriefOrganization & {
   public_feed_enabled: boolean;
   public_feed_labels: boolean;
   public_geojson_enabled: boolean;
-  default_reports_x_axis_options: Column[];
-  default_reports_y_axis_options: Column[];
+  // The API returns serialized columns; the display fields settings assign list columns before saving their ids
+  default_reports_x_axis_options: (Column | SerializedColumn)[];
+  default_reports_y_axis_options: (Column | SerializedColumn)[];
   require_2fa: boolean;
   // Not part of the standard organization GET response; fetched separately via
   // `getQueryThreshold` and attached here before `updateSettings` saves it back.
