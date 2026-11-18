@@ -3,7 +3,7 @@ Translating SEED
 
 1. Update translations on `lokalise`_.
 
-2. Copy lokalise.yml.example to lokalise.yml. Update API token.
+2. In ``backend/``, copy lokalise.yml.example to lokalise.yml. Update API token.
 
 3. Install lokalise locally
 
@@ -16,6 +16,7 @@ Translating SEED
 
    .. code:: bash
 
+      cd backend
       script/get_python_translations.sh
       script/get_angular_translations.sh
 

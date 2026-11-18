@@ -5,7 +5,7 @@ and never drifts between agents.
 
 ## Start here
 
-- **[`.github/copilot-instructions.md`](../.github/copilot-instructions.md)** — the authoritative,
+- **[`AGENTS.md`](../AGENTS.md)** — the authoritative,
   agent-facing guide: project context, setup & commands, architecture, linting & code style, key
   conventions (TypeScript/Angular, RxJS, CSS & UI, translations, empty/loading states,
   accessibility), change discipline, and the definition of done. **Read this first and follow it.**
@@ -29,5 +29,5 @@ and never drifts between agents.
 - **[`../docs/local-testing.md`](../docs/local-testing.md)** — stand up a throwaway backend + seed
   data and click through your change with the Playwright MCP tools before calling it done.
 
-> Everything that previously lived in this file now lives in `.github/copilot-instructions.md`.
+> Everything that previously lived in this file now lives in `AGENTS.md`.
 > Keep a single source of truth rather than duplicating guidance across agent files.

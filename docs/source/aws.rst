@@ -62,7 +62,7 @@ enter the repo and sync the Python environment with `uv`_
 
 .. code-block:: console
 
-    $ cd seed
+    $ cd seed/backend
     $ uv sync --frozen --no-dev
 
 

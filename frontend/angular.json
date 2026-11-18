@@ -24,7 +24,7 @@
           "options": {
             "baseHref": "/ng-app/",
             "outputPath": {
-              "base": "../../collected_static/ng-app"
+              "base": "../backend/collected_static/ng-app"
             },
             "index": "src/index.html",
             "polyfills": ["zone.js"],

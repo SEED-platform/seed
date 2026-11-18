@@ -231,7 +231,7 @@ If upgrading from `< 2.7.0` to `>= 2.7.1` you may encounter a failed migration w
 Version 2.7.0
 -------------
 
-- This migration will run a match/merge/pair/link method upon migration. Make sure to run the migration manually and not inside of the docker container using the ./deploy.sh script.
+- This migration will run a match/merge/pair/link method upon migration. Make sure to run the migration manually, not as part of an automated container start.
 - Make sure to backup the database before performing the migration.
 - Run ``./manage.py migrate``.
 

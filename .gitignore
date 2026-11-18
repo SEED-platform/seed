@@ -28,16 +28,10 @@ ipython_input_log_history
 web_root/csvs/*
 web_root/uploads/*
 web_root/images/sites/*
-config/settings_local.py
-config/local_untracked.py
-config/settings/local_untracked.py
-config/settings/local_untracked.py.dist.*
 node_modules/*
 web_root/CACHE
 collected_static
 celerybeat-schedule*
-web_root/images/sites/*
-media/*
 bpd/data/untracked/*
 bpd/data/epa*
 bpd/data/BEDES*
@@ -49,17 +43,11 @@ node_modules/
 venv/
 
 dump.rdb
-log/*.log
 *.log
 .tox
 
 # Ignore tmp test data
 seed_api_test_seedhost.txt
-seed/data_importer/tests/data/tmp_*
-seed/data_importer/tests/data/~*
-seed/tests/api/api_test_user.json
-seed/building_sync/tests/data/test_file.xml
-seed/tests/output
 test.sqlite
 
 docs/build/
@@ -71,17 +59,14 @@ lokalise.yml
 # Docker-based files
 docker-compose.*.yml
 !docker-compose.yml
-!docker-compose.local.yml
-!docker-compose.build.yml
 !docker-compose.dev.yml
 docker-compose-dbs.yml
 
 # generated files
-/auto*.csv
 /branding/
 
 # ruff linting and formatting
-/.ruff_cache
+.ruff_cache/
 #ignore appfleet config files downloaded at build time
 appfleet-config*
 

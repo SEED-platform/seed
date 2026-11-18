@@ -35,7 +35,7 @@ Use `pnpm build` when you only need a one-time output:
 - Does not rebuild automatically
 - Best for quick verification or production-like builds
 
-Both commands write Angular output under `../../collected_static/ng-app`.
+Both commands write Angular output under `../backend/collected_static/ng-app`.
 The Django `/ng-app/` route serves those files; it does not start the Angular development server.
 
 If Django returns this error:
@@ -45,11 +45,9 @@ Page not found (404)
 seed-angular static files not found
 ```
 
-follow this checklist:
-1. In `ng_seed/seed-angular`, run `pnpm watch` (recommended for dev) or `pnpm build`.
-2. Confirm Angular output exists under `../../collected_static/ng-app`.
-3. If your output is under `../../collected_static/ng-app/browser/index.html` (instead of `../../collected_static/ng-app/index.html`) and Django still shows 404, your backend static-file lookup may only be checking the non-`browser` path.
-4. If that happens, use the current backend static-file convention in your branch or update the backend lookup to support the `browser` subdirectory.
+then the Angular output does not exist yet:
+1. In `frontend/`, run `pnpm watch` (recommended for dev) or `pnpm build`.
+2. Confirm Angular output exists under `../backend/collected_static/ng-app/browser`.
 
 Tip: for everyday development through Django, keep `pnpm watch` running in a dedicated terminal.
 

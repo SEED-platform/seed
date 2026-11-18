@@ -11,10 +11,16 @@ help demonstrate the economic and environmental benefits of energy efficiency,
 to implement programs, and to target investment activity.
 
 The SEED application is written in Python/Django. The front end includes the
-legacy AngularJS application and a newer Angular application in the
-`ng_seed/seed-angular` submodule. The back-end database is PostgreSQL with
-PostGIS; Docker development currently uses the repository's configured
-TimescaleDB/Postgres image.
+legacy AngularJS application and a newer Angular application. The back-end
+database is PostgreSQL with PostGIS; Docker development currently uses the
+repository's configured TimescaleDB/Postgres image.
+
+The repository holds both projects:
+
+- `backend/`: the Django project, including the legacy AngularJS application
+- `frontend/`: the Angular application (see [frontend/README.md](frontend/README.md))
+- `docker/`, `docs/`, and the Dockerfiles and Compose files at the root, which
+  build and document SEED as a whole
 
 The SEED web application provides both a browser-based interface for users to
 upload and manage their building data, as well as a full set of APIs that app
@@ -29,14 +35,9 @@ documentation link in the sidebar.
 - Development on macOS or Windows: [Installation Notes][development-local]
 - Development using Docker: [Installation Notes][development-docker]
 
-For local development, initialize the Angular UI submodule before installing
-dependencies or building Docker images:
-
-```bash
-git submodule update --init ng_seed/seed-angular
-```
-
 ### Starting SEED Platform
+
+Run the backend commands below from the `backend/` directory.
 
 In production the following two commands will run the web server (Hypercorn) and
 the background task manager (Celery) with:
@@ -66,7 +67,8 @@ uv run celery -A seed worker -l INFO -c 4 --max-tasks-per-child 1000 -EBS django
 ```
 
 The legacy AngularJS app is served at `/app/`. The newer Angular app is served
-at `/ng-app/` after its static assets have been built.
+at `/ng-app/` after its static assets have been built with `pnpm build` (or
+`pnpm watch`) in `frontend/`.
 
 ### Deployment appearance
 
@@ -102,9 +104,9 @@ files into a deployment-owned directory, not this repository: Compose mounts
 `${SEED_BRANDING_DIR:-./branding}` read-only at `/seed/branding` in the web container.
 Set `SEED_BRANDING_DIR` to an absolute host path in production. Non-Compose deployments
 must mount that directory at `/seed/branding` for nginx; Django's debug server uses the
-repository's ignored `branding/` directory. The logo is public so it works before sign-in.
+ignored `backend/branding/` directory. The logo is public so it works before sign-in.
 Use a suitably sized SVG or WebP and confirm both image URLs load before enabling them.
-For a local preview, place `us-army.svg` in that ignored directory, start Django with
+For a local preview, place `us-army.svg` in `backend/branding/`, start Django with
 `SEED_BRAND_LOGO_URL=/branding/us-army.svg`, and restart the Angular dev server so its
 `/branding/` proxy is loaded. No frontend rebuild is needed when the image or Django
 settings change. Leave image variables unset when no corresponding file is present.

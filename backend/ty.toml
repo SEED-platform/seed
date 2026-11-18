@@ -2,7 +2,6 @@
 exclude = [
     "config/settings/",
     "**/migrations/",
-    "docs/source/conf.py",
     "seed/tests/test_search.py",
 ]
 

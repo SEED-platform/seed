@@ -9,13 +9,16 @@ Developer Resources
 General Notes
 -------------
 
+The Django project lives in ``backend/`` and the Angular UI in ``frontend/``.
+Unless noted otherwise, run the commands in this guide from ``backend/``.
+
 Pre-commit
 ^^^^^^^^^^
 We use precommit commits for formatting. Set it up locally with
 
 .. code-block:: bash
 
-    pre-commit install
+    uv run pre-commit install
 
 Ruff Settings
 ^^^^^^^^^^^^^^
@@ -263,7 +266,7 @@ import. Currently, the list of Columns is dynamically populated by importing dat
 
 There are default mappings for ESPM are located here:
 
-    https://github.com/SEED-platform/seed/blob/develop/seed/lib/mappings/data/pm-mapping.json
+    https://github.com/SEED-platform/seed/blob/develop/backend/seed/lib/mappings/data/pm-mapping.json
 
 
 Resetting the Database
@@ -391,7 +394,8 @@ Run coverage using
     coverage run manage.py test --settings=config.settings.test
     coverage report --fail-under=83
 
-JavaScript compliance uses ESLint, SCSS compliance uses StyleLint, and HTML compliance uses Prettier
+JavaScript compliance uses ESLint, SCSS compliance uses StyleLint, and HTML compliance uses Prettier.
+Run these in ``backend/`` for the legacy AngularJS UI and in ``frontend/`` for the Angular UI.
 
 .. code-block:: bash
 
@@ -405,7 +409,7 @@ Older versions of the source code documentation are (still) on readthedocs; howe
 
 .. code-block:: bash
 
-    cd docs
+    cd ../docs
     rm -rf htmlout
     sphinx-build -b html source htmlout
 
@@ -445,7 +449,7 @@ Release Instructions
 To make a release do the following:
 
 #. Create a branch from develop to prepare the updates (e.g., 2.21.0-release-prep).
-#. Update the root ``package.json`` and ``pyproject.toml`` files with the release version number. Always use MAJOR.MINOR.RELEASE.
+#. Update the ``backend/package.json``, ``backend/pyproject.toml``, and ``frontend/package.json`` files with the release version number. Always use MAJOR.MINOR.RELEASE.
 #. Update the ``docs/sources/migrations.rst`` file with any required actions.
 #. Commit the changes and push the release prep branch to GitHub, then go to the Releases page to draft a new release which will generate the changelog.
 #. Copy the GitHub changelog results into ``CHANGELOG.md``. Cleanup the formatting and items as needed (make sure the spelling is correct, starts with a capital letter, if any PRs were missing the ``Do not publish`` label, etc.) and push the changelog update.

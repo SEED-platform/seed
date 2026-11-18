@@ -32,8 +32,8 @@ services:
       - EEEJ_LOAD_SMALL_TEST_DATASET=True
     volumes:
       - ref_seed_media:/seed/media
-      - ./seed/:/seed/seed/
-      - ./config:/seed/config/
+      - ./backend/seed/:/seed/seed/
+      - ./backend/config:/seed/config/
   web-celery:
     container_name: seed_celery
     image: seedplatform/seed:develop
@@ -46,8 +46,8 @@ services:
       - DJANGO_LOG_LEVEL
     volumes:
       - ref_seed_media:/seed/media
-      - ./seed:/seed/seed
-      - ./config:/seed/config/
+      - ./backend/seed:/seed/seed
+      - ./backend/config:/seed/config/
 volumes:
   ref_seed_pgdata:
     external: true

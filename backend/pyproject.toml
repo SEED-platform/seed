@@ -120,9 +120,6 @@ dev = [
     "types-requests>=2.33.0.20260906",
 ]
 
-[tool.ruff]
-target-version = "py314"
-
 [tool.uv]
 default-groups = ["dev"]
 override-dependencies = ["django>=6.1,<6.2"] # Remove this override once django-celery-beat has been updated beyond 2.9.0

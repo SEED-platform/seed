@@ -67,20 +67,10 @@ Ubuntu server 18.04 or newer with a m5ad.xlarge (if using in Production instance
 
     git clone
 
-* Add in the Server setting into profile.d. For example add the content below (appropriately filled out) into /etc/profile.d/seed.sh
+* Add the server settings that ``docker-compose.yml`` passes through to the containers into profile.d. For example
+  add the content below (appropriately filled out) into /etc/profile.d/seed.sh
 
 .. code-block:: console
-
-    export POSTGRES_USER=seed
-    export POSTGRES_DB=seed
-    export POSTGRES_PASSWORD=GDEus3fasd1askj89QkAldjfX
-    export POSTGRES_PORT=5432
-    export SECRET_KEY="96=7jg%_&1-z9c9qwwu2@w$hb3r322yf3lz@*ekw-1@ly-%+^"
-
-    # The admin user is only valid only until the database is restored
-    export SEED_ADMIN_USER=user@seed-platform.org
-    export SEED_ADMIN_PASSWORD="7FeBWal38*&k3jlfa92lakj8ih4"
-    export SEED_ADMIN_ORG=default
 
     # For SES
     export AWS_ACCESS_KEY_ID=<AWS_ACCESS_KEY>
@@ -93,39 +83,41 @@ Ubuntu server 18.04 or newer with a m5ad.xlarge (if using in Production instance
     export COOKIE_EXPIRATION=1209600
 
 
-* Before launching the first time, make sure the persistent volumes and the backup directory exist.
+* Before launching the first time, make sure the persistent volumes exist.
 
 .. code-block:: console
 
     docker volume create --name=seed_pgdata
     docker volume create --name=seed_media
 
-    mkdir -p $HOME/seed-backups
+* ``docker-compose.yml`` contains example values for the database password, ``SECRET_KEY``, and the SEED admin
+  user. Replace them in a ``docker-compose.override.yml`` next to it, which Docker Compose loads automatically and
+  git ignores. The admin user is only created if it does not already exist.
 
-.. note:: Make sure to have the seed-backups in your path, otherwise the db-postgres container will not launch.
+.. code-block:: yaml
+
+    services:
+      db-postgres:
+        environment:
+          - POSTGRES_PASSWORD=<database password>
+      web:
+        environment:
+          - POSTGRES_PASSWORD=<database password>
+          - SECRET_KEY=<secret key>
+          - SEED_ADMIN_USER=<admin email>
+          - SEED_ADMIN_PASSWORD=<admin password>
+          - SEED_ADMIN_ORG=<organization>
+      web-celery:
+        environment:
+          - POSTGRES_PASSWORD=<database password>
+          - SECRET_KEY=<secret key>
 
 * Launch the project
 
 .. code-block:: console
 
     cd <checkout dir>
-    ./deploy.sh
+    docker compose up -d
 
 
-Deploying with Docker
-^^^^^^^^^^^^^^^^^^^^^
-
-The preferred way to deploy with Docker is using docker swarm and docker stack.
-Look at the `deploy.sh script`_  for implementation details.
-
-The short version is to simply run the command below. Note that the passing of the docker-compose.yml filename is not required if using docker-compose.local.yml.
-
-```bash
-./deploy.sh docker-compose.local.yml
-```
-
-If deploying using a custom docker-compose yml file, then simple replace the name in the command above.
-
-
-.. _`deploy.sh script`: https://github.com/SEED-platform/seed/blob/develop/deploy.sh
 .. _`JSON Type`: https://www.postgresql.org/docs/9.4/datatype-json.html

@@ -12,8 +12,6 @@ jobs:
     runs-on: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v7
-        with:
-          submodules: true
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Cache Docker ARM layers
@@ -45,8 +43,6 @@ jobs:
         test_env: [django, functional, api]
     steps:
       - uses: actions/checkout@v7
-        with:
-          submodules: true
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
       - name: Cache Docker layers
@@ -83,7 +79,10 @@ jobs:
           node-version: 24
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
+        with:
+          package_json_file: backend/package.json
       - name: Install dependencies
+        working-directory: backend
         run: |
           pnpm install
           sudo apt-get update
@@ -104,12 +103,13 @@ jobs:
           docker exec seed_web touch /seed/config/settings/local_untracked.py
           docker exec --env SEED_PM_UN --env SEED_PM_PW --env DJANGO_LOG_LEVEL --env SF_INSTANCE --env SF_USERNAME --env SF_PASSWORD --env SF_SECURITY_TOKEN --env SF_DOMAIN seed_web /bin/bash -lc 'uv run coverage run manage.py test --settings=config.settings.docker_test --parallel="$(nproc)" --verbosity=2'
           if [[ ! -z "${COVERALLS_REPO_TOKEN}" ]]; then
-            docker exec --env COVERALLS_REPO_TOKEN seed_web uv run coveralls
+            docker exec --env COVERALLS_REPO_TOKEN seed_web uv run coveralls --srcdir backend
           else
             echo "INFO: Env var COVERALLS_REPO_TOKEN was not found, skipping coveralls update"
           fi
-      - name: Test Frontend
+      - name: Test AngularJS
         if: ${{ matrix.test_env == 'functional' }}
+        working-directory: backend
         env:
           DISPLAY: ":99"
           PUPPETEER_SKIP_DOWNLOAD: true
@@ -134,11 +134,14 @@ jobs:
   # and the job passes, making that no-op state obvious in the checks list.
   salesforce-connection:
     runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
         with:
-          python-version-file: ".python-version"
+          python-version-file: "backend/.python-version"
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
@@ -164,13 +167,14 @@ jobs:
     strategy:
       matrix:
         tox_env: [docs, precommit, lint]
+    defaults:
+      run:
+        working-directory: backend
     steps:
       - uses: actions/checkout@v7
-        with:
-          submodules: true
       - uses: actions/setup-python@v7
         with:
-          python-version-file: ".python-version"
+          python-version-file: "backend/.python-version"
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
@@ -179,6 +183,8 @@ jobs:
           node-version: 24
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
+        with:
+          package_json_file: backend/package.json
       - name: Install deps
         run: |
           uv sync --frozen --all-groups
@@ -198,3 +204,28 @@ jobs:
           EOF
       - name: Run tox
         run: uv run tox -e ${{ matrix.tox_env }}
+
+  frontend:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Test
+        run: pnpm test --watch=false --browsers=ChromeHeadless
+      - name: Build
+        run: pnpm build

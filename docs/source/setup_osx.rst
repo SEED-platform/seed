@@ -6,11 +6,14 @@ Docker containers for PostgreSQL/PostGIS/TimescaleDB and Redis.
 
 SEED currently uses:
 
-* Python 3.14 in ``.python-version``; ``pyproject.toml`` requires Python 3.12 or newer.
+* Python 3.14 in ``backend/.python-version``; ``backend/pyproject.toml`` requires Python 3.12 or newer.
 * ``uv`` for Python installation and dependency management.
 * Docker Compose services for PostgreSQL/PostGIS/TimescaleDB and Redis.
-* Node 24 and pnpm 11 for JavaScript dependencies.
-* A separate Angular UI checked out as the ``ng_seed/seed-angular`` git submodule.
+* Node 24 and pnpm 12 for JavaScript dependencies.
+
+The Django project (including the legacy AngularJS UI) lives in ``backend/`` and
+the Angular UI in ``frontend/``. Run Django, ``uv``, and backend ``pnpm``
+commands from ``backend/``, and Docker Compose commands from the repository root.
 
 Quick Installation Instructions
 -------------------------------
@@ -32,15 +35,15 @@ Clone the repository and install dependencies:
 .. code-block:: bash
 
     git clone git@github.com:SEED-platform/seed.git
-    cd seed
-    git submodule update --init ng_seed/seed-angular
+    cd seed/backend
 
     uv sync
     pnpm install
+    pnpm --dir ../frontend install
 
     cp config/settings/local_untracked.py.dist config/settings/local_untracked.py
 
-Start the Docker database and Redis services:
+Start the Docker database and Redis services from the repository root:
 
 .. code-block:: bash
 
@@ -62,7 +65,7 @@ The AngularJS application runs at http://127.0.0.1:8000/app/.
 
 To see the new Angular application at http://127.0.0.1:8000/ng-app/, build its
 static files and run the Django server. For active Angular development, see
-``ng_seed/README.md``.
+``frontend/README.md``.
 
 Docker Postgres and Redis with Local Django
 -------------------------------------------
@@ -143,33 +146,30 @@ the ``dev`` dependency group by default.
 JavaScript Dependencies
 -----------------------
 
-The root project expects Node 24 or newer and pnpm 11 or newer. The Angular UI
-submodule expects Node 22 or newer and pnpm 10 or newer, so Node 24/pnpm 11
-satisfies both.
+``backend/`` and ``frontend/`` are separate pnpm projects. Both expect Node 24
+or newer and pnpm 12 or newer, and each pins its exact pnpm version in its
+``package.json``.
 
 .. code-block:: bash
 
     corepack enable
     pnpm install
+    pnpm --dir ../frontend install
 
-If the Angular submodule is not checked out, initialize it first:
-
-.. code-block:: bash
-
-    git submodule update --init ng_seed/seed-angular
-
-To build the Angular UI for Django to serve at ``/ng-app/``:
+To build the Angular UI for Django to serve at ``/ng-app/`` (the build is
+written to ``backend/collected_static/ng-app``):
 
 .. code-block:: bash
 
-    cd ng_seed/seed-angular
+    cd ../frontend
     pnpm build
 
-For hot reloading during Angular UI development:
+Use ``pnpm watch`` instead to rebuild on every change. For hot reloading during
+Angular UI development:
 
 .. code-block:: bash
 
-    cd ng_seed/seed-angular
+    cd ../frontend
     pnpm start
 
 Then browse to http://localhost:4200.

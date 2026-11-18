@@ -7,7 +7,9 @@ repos:
       - id: check-ast
       - id: check-builtin-literals
       - id: check-case-conflict
+      # frontend/ is formatted by its own `pnpm lint` (its tsconfig files are JSONC)
       - id: check-json
+        exclude: ^frontend/
       - id: check-merge-conflict
       - id: check-toml
       - id: check-xml
@@ -15,12 +17,12 @@ repos:
         exclude: pnpm-lock\.yaml|pnpm-workspace\.yaml
       - id: debug-statements
       - id: end-of-file-fixer
-        exclude: seed/static/seed/locales/
+        exclude: ^frontend/|seed/static/seed/locales/
       - id: fix-byte-order-marker
       - id: mixed-line-ending
       - id: pretty-format-json
         args: ["--autofix", "--no-sort-keys", "--no-ensure-ascii"]
-        exclude: seed/static/seed/locales/
+        exclude: ^frontend/|seed/static/seed/locales/
       - id: trailing-whitespace
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.22.0
@@ -31,26 +33,28 @@ repos:
     hooks:
       - id: prettier
         name: prettier
-        entry: node node_modules/prettier/bin/prettier.cjs --write
+        entry: node backend/node_modules/prettier/bin/prettier.cjs --write
         language: unsupported
         require_serial: true
-        exclude: pnpm-lock\.yaml|pnpm-workspace\.yaml
+        exclude: ^frontend/|pnpm-lock\.yaml|pnpm-workspace\.yaml
         types_or: [yaml, markdown, css, scss]
       - id: prettier-angularjs-templates
         name: prettier (AngularJS templates)
-        entry: node node_modules/prettier/bin/prettier.cjs --write
+        entry: node backend/node_modules/prettier/bin/prettier.cjs --write
         language: unsupported
         require_serial: true
-        files: ^seed/static/seed/partials/.*\.html$
+        files: ^backend/seed/static/seed/partials/.*\.html$
         types: [html]
   - repo: https://github.com/astral-sh/ty-pre-commit
     rev: v0.0.95
     hooks:
       - id: ty
-        args: [--locked]
+        args: [--locked, --directory, backend]
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.17.3
     hooks:
       - id: ruff-check
         args: [--fix, --exit-non-zero-on-fix, --output-format=full]
       - id: ruff-format
+        # Also formats Python blocks in Markdown; frontend/ has no Python tooling
+        exclude: ^frontend/

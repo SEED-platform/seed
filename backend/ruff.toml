@@ -1,6 +1,7 @@
 fix = true
 line-length = 140
-extend-exclude = ["ng_seed/seed-angular"]
+# Match `requires-python` in pyproject.toml
+target-version = "py312"
 
 [format]
 # preview = true

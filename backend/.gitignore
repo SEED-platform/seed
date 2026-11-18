@@ -1,0 +1,19 @@
+# Local settings and credentials
+config/settings_local.py
+config/local_untracked.py
+config/settings/local_untracked.py
+config/settings/local_untracked.py.dist.*
+
+media/*
+log/*.log
+
+# Ignore tmp test data
+seed/data_importer/tests/data/tmp_*
+seed/data_importer/tests/data/~*
+seed/tests/api/api_test_user.json
+seed/building_sync/tests/data/test_file.xml
+seed/tests/output
+
+# generated files
+/auto*.csv
+/branding/

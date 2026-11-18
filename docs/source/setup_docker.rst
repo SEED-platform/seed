@@ -9,15 +9,10 @@ Docker Compose starts the required PostgreSQL/PostGIS/TimescaleDB and Redis
 containers. Developers do not need to install PostgreSQL, PostGIS, TimescaleDB,
 or Redis on the host machine.
 
-Before building, initialize the Angular UI submodule:
-
-.. code-block:: bash
-
-    git submodule update --init ng_seed/seed-angular
-
-The Dockerfiles install Python with ``uv`` and use Node 24 with pnpm through
-Corepack. The development image also builds the Angular UI assets that Django
-serves from ``/ng-app/``.
+Run the Docker commands below from the repository root, which is the build
+context for both images. The Dockerfiles install Python with ``uv`` and use
+Node 24 with pnpm through Corepack. Both images build the Angular UI in
+``frontend/`` into the assets that Django serves from ``/ng-app/``.
 
 Docker Native (Ubuntu)
 ----------------------
@@ -100,9 +95,6 @@ Build
     docker volume create --name=seed_pgdata
     docker volume create --name=seed_media
 
-    # initialize the Angular UI submodule
-    git submodule update --init ng_seed/seed-angular
-
     # build the images
     docker compose -f docker-compose.yml -f docker-compose.dev.yml build
 
@@ -110,8 +102,8 @@ Running the Server
 ^^^^^^^^^^^^^^^^^^
 
 NOTE: the server config is sourced from config.settings.docker_dev, which will include
-your local_untracked.py if it exists. If you have a local_untracked.py, make sure it doesn't
-overwrite the database or celery configuration!
+your backend/config/settings/local_untracked.py if it exists. If you have a local_untracked.py,
+make sure it doesn't overwrite the database or celery configuration!
 
 .. code-block:: bash
 
@@ -187,7 +179,7 @@ The dev image includes `debugpy <https://github.com/microsoft/debugpy>`_ and the
 port 5678 on localhost, so you can set breakpoints in VS Code and attach to a process running in the container.
 Rebuild the image and recreate the containers after pulling these changes.
 
-Add the following configuration to ``.vscode/launch.json`` (``.vscode`` is git-ignored, so this is a local file):
+Add the following configuration to the repository root's ``.vscode/launch.json`` (``.vscode`` is git-ignored, so this is a local file):
 
 .. code-block:: json
 
@@ -197,8 +189,8 @@ Add the following configuration to ``.vscode/launch.json`` (``.vscode`` is git-i
         "request": "attach",
         "connect": {"host": "localhost", "port": 5678},
         "pathMappings": [
-            {"localRoot": "${workspaceFolder}/seed", "remoteRoot": "/seed/seed"},
-            {"localRoot": "${workspaceFolder}/config", "remoteRoot": "/seed/config"}
+            {"localRoot": "${workspaceFolder}/backend/seed", "remoteRoot": "/seed/seed"},
+            {"localRoot": "${workspaceFolder}/backend/config", "remoteRoot": "/seed/config"}
         ],
         "django": true,
         "justMyCode": false
@@ -206,7 +198,7 @@ Add the following configuration to ``.vscode/launch.json`` (``.vscode`` is git-i
 
 Then:
 
-1. Set a breakpoint in a file under ``seed/``.
+1. Set a breakpoint in a file under ``backend/seed/``.
 2. Start a process in the container that waits for the debugger, for example a test module:
 
    .. code-block:: bash

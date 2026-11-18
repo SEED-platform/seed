@@ -1,8 +1,9 @@
 # Backend Agent Guide
 
 This guide adds backend instructions to the [root guide](../AGENTS.md).
+Paths and commands below are relative to `backend/`, the Django project root.
 For legacy frontend work under `seed/`, also read the
-[AngularJS guide](static/seed/AGENTS.md).
+[AngularJS guide](seed/static/seed/AGENTS.md).
 
 ## Backend Map
 

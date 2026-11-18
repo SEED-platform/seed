@@ -45,8 +45,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
-        with:
-          submodules: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
@@ -80,6 +78,10 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
+        with:
+          package_json_file: frontend/package.json
 
       - name: Install frontend dependencies
-        run: pnpm install
+        run: |
+          pnpm --dir backend install
+          pnpm --dir frontend install

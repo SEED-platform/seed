@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-ARG UV_VERSION=0.11.9
+ARG UV_VERSION=0.13.9
 
 FROM ghcr.io/astral-sh/uv:${UV_VERSION} AS uv
 
@@ -9,7 +9,7 @@ COPY --from=uv /uv /uvx /bin/
 
 WORKDIR /seed
 
-COPY ./.python-version /seed/.python-version
+COPY ./backend/.python-version /seed/.python-version
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     apk add --no-cache \
@@ -63,25 +63,33 @@ ENV GDAL_LIBRARY_PATH="/usr/lib/libgdal.so" \
 ENV PATH="/seed/.venv/bin:$PATH"
 
 FROM dev-base AS python-dev-deps
-COPY ./pyproject.toml /seed/pyproject.toml
-COPY ./uv.lock /seed/uv.lock
+COPY ./backend/pyproject.toml /seed/pyproject.toml
+COPY ./backend/uv.lock /seed/uv.lock
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --managed-python --no-install-project && \
     uv pip install supervisor==4.3.0 remote-pdb debugpy "watchdog[watchmedo]"
 
-FROM dev-base AS frontend-dev-deps
+FROM dev-base AS node-dev-deps
 ENV CI=true
 
-COPY ./package.json /seed/package.json
-COPY ./pnpm-lock.yaml /seed/pnpm-lock.yaml
-COPY ./pnpm-workspace.yaml /seed/pnpm-workspace.yaml
-COPY ./vendors/package.json /seed/vendors/package.json
-COPY ./vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
-COPY ./ng_seed/seed-angular /seed/ng_seed/seed-angular
+COPY ./backend/package.json /seed/package.json
+COPY ./backend/pnpm-lock.yaml /seed/pnpm-lock.yaml
+COPY ./backend/pnpm-workspace.yaml /seed/pnpm-workspace.yaml
+COPY ./backend/vendors/package.json /seed/vendors/package.json
+COPY ./backend/vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
-    pnpm install --frozen-lockfile --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false && \
-    cd /seed/ng_seed/seed-angular && \
-    ./node_modules/.bin/ng build
+    pnpm install --frozen-lockfile --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false
+
+# The Angular app builds into ../backend/collected_static/ng-app (see frontend/angular.json)
+FROM dev-base AS frontend-build
+ENV CI=true
+WORKDIR /repo/frontend
+
+COPY ./frontend/package.json ./frontend/pnpm-lock.yaml ./frontend/pnpm-workspace.yaml ./
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
+    pnpm install --frozen-lockfile --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false
+COPY ./frontend ./
+RUN ./node_modules/.bin/ng build
 
 FROM dev-base AS dev
 
@@ -89,11 +97,15 @@ COPY --from=python-dev-deps /opt/uv/python /opt/uv/python
 COPY --from=python-dev-deps /seed/.venv /seed/.venv
 
 ### Copy over the SEED application and prebuilt frontend assets
-COPY . /seed/
-COPY --from=frontend-dev-deps /seed/node_modules /seed/node_modules
-COPY --from=frontend-dev-deps /seed/vendors/node_modules /seed/vendors/node_modules
-COPY --from=frontend-dev-deps /seed/ng_seed/seed-angular/node_modules /seed/ng_seed/seed-angular/node_modules
-COPY --from=frontend-dev-deps /seed/collected_static/ng-app /seed/collected_static/ng-app
+COPY ./backend /seed/
+COPY ./docker /seed/docker
+COPY ./LICENSE.md /seed/LICENSE.md
+# The version endpoint and coveralls read the commit from git; the wildcard keeps
+# builds from contexts without .git (e.g., a Git URL) working
+COPY ./.gi[t] /seed/.git
+COPY --from=node-dev-deps /seed/node_modules /seed/node_modules
+COPY --from=node-dev-deps /seed/vendors/node_modules /seed/vendors/node_modules
+COPY --from=frontend-build /repo/backend/collected_static/ng-app /seed/collected_static/ng-app
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 RUN git config --system --add safe.directory /seed
 

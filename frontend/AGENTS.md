@@ -1,19 +1,21 @@
-# SEED Angular — Copilot Instructions
+# SEED Angular Agent Guide
+
+This guide adds Angular instructions to the [root guide](../AGENTS.md). Paths and commands below
+are relative to `frontend/`.
 
 ## Project Context
 
 Angular frontend for the SEED Platform™ (Standard Energy Efficiency Data) — an Angular app
 (standalone components, no NgModules) replacing the legacy AngularJS UI. Focused on building energy
 data management, with key workflows around inventory, insights/reporting, data quality, and
-analyses. Paired with a Django backend in the parent `seed` repo (this repo is a git submodule of
-it), available at `../seed` locally or at https://github.com/SEED-platform/seed.
+analyses. Paired with the Django backend in [`../backend`](../backend) of this repository.
 
 **Stack:** Angular 22 · TypeScript 6.0 · RxJS · TailwindCSS · Angular Material · Chart.js · Ag-Grid ·
 Transloco (i18n) · pnpm
 
 **Backend API (`/api/v3/` vs `/api/v4/`):** The Django backend exposes both versioned REST APIs.
 The overwhelming majority of endpoints this app calls are **v3** — reuse an existing v3 endpoint
-whenever one exists (the legacy AngularJS app at `seed/static/seed/` calls the same v3 endpoints
+whenever one exists (the legacy AngularJS app at `../backend/seed/static/seed/` calls the same v3 endpoints
 and is a good reference for request/response shape). **Do not modify v3 endpoints, and never add a
 new v3 endpoint.** Only introduce or call a `/api/v4/` endpoint when a feature genuinely needs a
 new backend endpoint with no v3 equivalent (see the existing v4 calls in `organization.service.ts`,
@@ -30,7 +32,7 @@ Package manager is **pnpm** (a `preinstall` script fails under npm/yarn). Node 2
 ```bash
 pnpm i                    # install
 pnpm start                # dev server at localhost:4200 (proxies /api/ and /media/ to Django)
-pnpm watch                # build through Django to ../../collected_static/ng-app, served at /ng-app/
+pnpm watch                # build to ../backend/collected_static/ng-app, served by Django at /ng-app/
 pnpm build                # production build (AoT + template typecheck)
 pnpm lint                 # eslint + prettier check + stylelint, in parallel
 pnpm lint:fix             # auto-fix all three
@@ -45,8 +47,8 @@ pnpm update-translations  # pull translations from Lokalise (needs .env with LOK
 - **Lokalise is the source of truth** for translations — `update-translations` only *pulls*, it
   never pushes new keys.
 - To run a single spec: `pnpm test --include='**/some.component.spec.ts'`.
-- CI (`.github/workflows/ci.yml`) runs `pnpm install`, `pnpm lint`, headless `pnpm test`, and
-  `pnpm build` on push/PR to `main`.
+- CI (the `frontend` job in the root `.github/workflows/ci.yml`) runs `pnpm install`, `pnpm lint`,
+  headless `pnpm test`, and `pnpm build`.
 - Tell me what keys to add to Lokalise in a simple list and I will add them and run update-translations so the public/i18n/*.json files are updated.
 
 ---
@@ -133,9 +135,11 @@ Three linters run in parallel via `pnpm lint` (or `pnpm lint:fix` to auto-fix):
 `rgb(var(--seed-*-rgb) / <alpha>)` for theme color tokens (the comma `rgba(var(...), a)` form is
 blocked).
 **EditorConfig:** 2-space indent, UTF-8, final newline, trim trailing whitespace.
-**No pre-commit hooks** — run `pnpm lint` manually before committing. Import order/sorting and the
-single-quote/no-semicolon style are eslint/prettier-enforced, so run `pnpm lint:fix` rather than
-hand-formatting.
+**Pre-commit:** the repository's root hooks (whitespace, line endings, YAML, merge conflicts, large
+files) also run on `frontend/`, in CI and in the installed git hook; check changed files with
+`uv run --project ../backend pre-commit run --files <paths>`. Run `pnpm lint` before committing.
+Import order/sorting and the single-quote/no-semicolon style are eslint/prettier-enforced, so run
+`pnpm lint:fix` rather than hand-formatting.
 
 ---
 
@@ -223,7 +227,7 @@ file is a flat `Record<string, string>` (no nesting).
 - Preserve existing component `@Input()`/`@Output()` contracts and routing behavior.
 - Don't add dependencies without a clear need.
 - Don't change API payload shapes without explicit approval.
-- Don't delete or edit the legacy AngularJS code (`seed/static/seed/` in the parent repo) as part
+- Don't delete or edit the legacy AngularJS code (`../backend/seed/static/seed/`) as part
   of a migration PR unless explicitly asked — it keeps serving `/app/` until the team retires it.
 
 ## Definition of done
@@ -240,7 +244,7 @@ necessary but **not sufficient** — lint and build don't run the code and the u
 module registration, a wrong assumption about an API response's field names/shape, a route-param
 reactivity bug, or a layout that only breaks with real data. Actually load the page against a live
 backend with real seeded data and click through it with the Playwright MCP tools before calling the
-work done — see [`docs/local-testing.md`](../docs/local-testing.md) for standing up a throwaway
+work done — see [`docs/local-testing.md`](docs/local-testing.md) for standing up a throwaway
 backend + seed data in this environment (including gotchas already discovered). Publish a couple of
 `browser_take_screenshot` captures (the overall page, plus the notable new interaction) to the PR
 description.
@@ -252,17 +256,17 @@ messages brief — a one-line title plus an itemized list of changes (no lengthy
 
 ## Migrating legacy pages & forms
 
-This app is actively replacing the legacy AngularJS 1.x frontend (`seed/static/seed/` in the parent
-`seed` repo), often by several agents in parallel. Don't re-derive conventions from scratch each
+This app is actively replacing the legacy AngularJS 1.x frontend (`../backend/seed/static/seed/`),
+often by several agents in parallel. Don't re-derive conventions from scratch each
 time — follow the docs below and copy the canonical examples they reference:
 
-- **[`docs/porting-forms.md`](../docs/porting-forms.md)** — the form-specific recipe: canonical
+- **[`docs/porting-forms.md`](docs/porting-forms.md)** — the form-specific recipe: canonical
   full-page/modal form components to copy, the reusable service integration points (`CycleService`,
   `ColumnService`, `SnackBarService`, `ErrorService`, …), the validation/confirm/save flow, and the
   Transloco + Lokalise workflow. It also covers non-form interactive workspaces (e.g. the dual-grid
   drag-and-drop `datasets/pairing` page), so check its examples table for the closest match before
   assuming a `FormGroup`/save-flow shape.
-- **[`docs/local-testing.md`](../docs/local-testing.md)** — how to actually run and click through
+- **[`docs/local-testing.md`](docs/local-testing.md)** — how to actually run and click through
   what you built (throwaway backend + seeded data + the Playwright MCP tools). Required before
   calling a migration done — see "Definition of done" above.
 

@@ -17,10 +17,10 @@ already discovered so you don't have to rediscover them.
 
 ## 1. Stand up an isolated backend
 
-The Django backend lives in the parent `seed` repo (this app's repo is a git submodule of it). It
-has a full docker-compose stack, but **don't reuse `docker-compose.dev.yml` as-is** — it bind-mounts
-`./config:/seed/config/` from the host, which on a machine with a personal
-`config/settings/local_untracked.py` (macOS `GDAL_LIBRARY_PATH`/`GEOS_LIBRARY_PATH` overrides, etc.)
+The Django backend lives in `../backend` of this repository. The repository root has a full
+docker-compose stack, but **don't reuse `docker-compose.dev.yml` as-is** — it bind-mounts
+`./backend/config:/seed/config/` from the host, which on a machine with a personal
+`backend/config/settings/local_untracked.py` (macOS `GDAL_LIBRARY_PATH`/`GEOS_LIBRARY_PATH` overrides, etc.)
 gets mounted straight into the Linux container and crashes it. Compose also merges (concatenates)
 `volumes:`/`ports:` lists across `-f` layered files rather than replacing them, so you can't
 "unmount" it with an override file either. Write one standalone compose file instead:

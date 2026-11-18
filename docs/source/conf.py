@@ -27,12 +27,12 @@ from shutil import copyfile
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 # Copy over the local_untracked if it does not exist yet.
-if not os.path.exists("../../config/settings/local_untracked.py"):
-    copyfile("../../config/settings/local_untracked.py.dist", "../../config/settings/local_untracked.py")
+if not os.path.exists("../../backend/config/settings/local_untracked.py"):
+    copyfile("../../backend/config/settings/local_untracked.py.dist", "../../backend/config/settings/local_untracked.py")
 
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.dev")
-sys.path.insert(0, os.path.abspath("../.."))
+sys.path.insert(0, os.path.abspath("../../backend"))
 
 # -- General configuration ------------------------------------------------
 
@@ -83,7 +83,7 @@ author = "Alliance for Energy Innovation, LLC, and other contributors."
 # built documents.
 #
 # Grab the version from the package.json file
-with open("../../package.json", encoding=locale.getpreferredencoding(False)) as package_json:
+with open("../../backend/package.json", encoding=locale.getpreferredencoding(False)) as package_json:
     package = json.load(package_json)
 
 version = package["version"]

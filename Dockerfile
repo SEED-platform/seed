@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 ARG NGINX_LISTEN_OPTS
-ARG UV_VERSION=0.11.9
+ARG UV_VERSION=0.13.9
 
 # AUTHOR:           Clay Teeter <teeterc@gmail.com>, Nicholas Long <nicholas.long@nlr.gov>
 # DESCRIPTION:      Production image with SEED Platform and runtime dependencies
@@ -14,7 +14,7 @@ COPY --from=uv /uv /uvx /bin/
 
 WORKDIR /seed
 
-COPY ./.python-version /seed/.python-version
+COPY ./backend/.python-version /seed/.python-version
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     apk add --no-cache \
@@ -56,40 +56,33 @@ RUN apk add --no-cache \
         xz-dev \
         zlib-dev
 
-COPY ./pyproject.toml /seed/pyproject.toml
-COPY ./uv.lock /seed/uv.lock
+COPY ./backend/pyproject.toml /seed/pyproject.toml
+COPY ./backend/uv.lock /seed/uv.lock
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --managed-python --no-dev --no-install-project && \
     uv pip install supervisor==4.3.0
 
+# The Angular app builds into ../backend/collected_static/ng-app (see frontend/angular.json)
 FROM build-base AS frontend-build
 ENV CI=true
+WORKDIR /repo/frontend
 
-COPY ./package.json /seed/package.json
-COPY ./pnpm-lock.yaml /seed/pnpm-lock.yaml
-COPY ./pnpm-workspace.yaml /seed/pnpm-workspace.yaml
-COPY ./vendors/package.json /seed/vendors/package.json
-COPY ./vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
-COPY ./ng_seed/seed-angular /seed/ng_seed/seed-angular
+COPY ./frontend/package.json ./frontend/pnpm-lock.yaml ./frontend/pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
-    pnpm install --frozen-lockfile --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false && \
-    cd /seed/ng_seed/seed-angular && \
-    ./node_modules/.bin/ng build
+    pnpm install --frozen-lockfile --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false
+COPY ./frontend ./
+RUN ./node_modules/.bin/ng build
 
 FROM build-base AS node-runtime-deps
 ENV CI=true
 
-COPY ./package.json /seed/package.json
-COPY ./pnpm-lock.yaml /seed/pnpm-lock.yaml
-COPY ./pnpm-workspace.yaml /seed/pnpm-workspace.yaml
-COPY ./vendors/package.json /seed/vendors/package.json
-COPY ./vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
-COPY ./ng_seed/seed-angular/package.json /seed/ng_seed/seed-angular/package.json
-COPY ./ng_seed/seed-angular/pnpm-lock.yaml /seed/ng_seed/seed-angular/pnpm-lock.yaml
-COPY ./ng_seed/seed-angular/pnpm-workspace.yaml /seed/ng_seed/seed-angular/pnpm-workspace.yaml
+COPY ./backend/package.json /seed/package.json
+COPY ./backend/pnpm-lock.yaml /seed/pnpm-lock.yaml
+COPY ./backend/pnpm-workspace.yaml /seed/pnpm-workspace.yaml
+COPY ./backend/vendors/package.json /seed/vendors/package.json
+COPY ./backend/vendors/pnpm-lock.yaml /seed/vendors/pnpm-lock.yaml
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store,sharing=locked \
-    pnpm install --prod --frozen-lockfile --ignore-scripts --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false && \
-    rm -rf /seed/ng_seed/seed-angular/node_modules
+    pnpm install --prod --frozen-lockfile --ignore-scripts --store-dir "${PNPM_STORE_DIR}" --config.confirmModulesPurge=false
 
 FROM node:24-alpine AS runtime
 
@@ -142,8 +135,13 @@ COPY --from=node-runtime-deps /seed/node_modules /seed/node_modules
 COPY --from=node-runtime-deps /seed/vendors/node_modules /seed/vendors/node_modules
 
 ### Copy over the SEED application and prebuilt frontend assets
-COPY . /seed/
-COPY --from=frontend-build /seed/collected_static/ng-app /seed/collected_static/ng-app
+COPY ./backend /seed/
+COPY ./docker /seed/docker
+COPY ./LICENSE.md /seed/LICENSE.md
+# The version endpoint reads the commit with `git rev-parse`; the wildcard keeps
+# builds from contexts without .git (e.g., a Git URL) working
+COPY ./.gi[t] /seed/.git
+COPY --from=frontend-build /repo/backend/collected_static/ng-app /seed/collected_static/ng-app
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 RUN git config --system --add safe.directory /seed
 

@@ -4,21 +4,18 @@
 # mediafiles, then push the backups to S3. The script itself is the backup_database.sh
 # script that is copied into this container for use by helm/k8s batch/CronJob.
 
-# docker build -f docker/backup_k8s/Dockerfile -t seedplatform/seed-backup-k8s .
-# tag this as needed, latest is automatically pulled by helm at the moment.
-# docker tag seedplatform/seed-backup-k8s:latest seedplatform/seed-backup-k8s:{tag}
-# docker push seedplatform/seed-backup-k8s:{tag}
+# Build with this directory as the context, and push the tag the helm CronJobs pull
+# (pg18, matching the PostgreSQL client installed below). From the repository root:
+# docker build -t seedplatform/seed-backup-k8s:pg18 docker/backup_k8s
+# docker push seedplatform/seed-backup-k8s:pg18
 
 FROM ubuntu:26.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ=Etc/UTC
 
-# Keys to access the s3 backups
-ENV AWS_ACCESS_KEY_ID ""
-ENV AWS_SECRET_ACCESS_KEY ""
-ENV AWS_DEFAULT_REGION ""
-ENV S3_BUCKET_NAME ""
+# backup_database.sh reads AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION,
+# S3_BUCKET, and PGPASSWORD (plus optional ENVIRONMENT and APP_SLACK_WEBHOOK) at run time
 
 # Run the update and install the PostgreSQL client used for pg_dump.
 RUN apt-get update && \

@@ -14,7 +14,7 @@
     "node": "^24.15.0 || >=26.0.0",
     "pnpm": ">=12"
   },
-  "packageManager": "pnpm@12.11.2",
+  "packageManager": "pnpm@12.21.0",
   "private": true,
   "scripts": {
     "preinstall": "node -e \"const ua = process.env.npm_config_user_agent || ''; const execpath = process.env.npm_execpath || ''; if (!ua.startsWith('pnpm/') && !execpath.includes('pnpm')) { console.error('Use pnpm install for installation in this project.'); process.exit(1); }\"",
