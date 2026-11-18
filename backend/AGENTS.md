@@ -99,6 +99,8 @@ uv run pytest seed/tests/test_columns.py
   database backend. They coordinate Timescale workers and database connections
   during cloning, using the effective minimum of requested processes and
   parallelizable TestCase groups. Do not bypass this setup for parallel tests.
+  Its `--shard INDEX/COUNT` option runs one of the groups of whole test modules
+  that CI splits the suite into; pass the same value to reproduce a CI shard.
 - `--parallel=1` is useful for debugging, but a test that only passes alone is
   not necessarily correct. Avoid ordering assumptions and coincidentally equal
   primary keys in fixtures. Prefer the CLI when isolating IDE/spawn issues.
