@@ -30,39 +30,67 @@ jobs:
             --file Dockerfile \
             .
 
-  # Currently GH Actions provides no simple method for "sharing"
-  # our setup steps. Ideally this would be in an action, but we would need to use
-  # actions inside of our actions which you cannot currently do (see https://github.com/actions/runner/issues/438)
-  #
-  # As a result, the DRYest method for now is to use a testing matrix and
-  # use conditional steps for actually running the tests.
-  unittests:
+  # Build the dev image once and hand it to the jobs that run the stack as an
+  # artifact.
+  build-dev-image:
     runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        test_env: [django, functional, api]
     steps:
       - uses: actions/checkout@v7
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v4
-      - name: Cache Docker layers
-        uses: actions/cache@v6
-        with:
-          path: /tmp/.buildx-cache
-          # using `-v3` in key to clear old cache due to errors
-          # See: https://stackoverflow.com/questions/63521430/clear-cache-in-github-actions
-          key: ${{ runner.os }}-buildx-v3-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-v3-
       - name: Build Docker dev image
-        run: /usr/bin/docker buildx build --tag seedplatform/seed:develop --cache-from type=local,src=/tmp/.buildx-cache --cache-to type=local,dest=/tmp/.buildx-cache,mode=max --load --file Dockerfile-dev .
-      - name: Start the stack
-        env:
-          DJANGO_LOG_LEVEL: ERROR
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: Dockerfile-dev
+          tags: seedplatform/seed:develop
+          cache-from: type=gha,scope=dev
+          cache-to: type=gha,scope=dev,mode=max
+          outputs: type=docker,dest=${{ runner.temp }}/seed-dev.tar
+      - name: Upload Docker dev image
+        uses: actions/upload-artifact@v7
+        with:
+          name: seed-dev-image
+          path: ${{ runner.temp }}/seed-dev.tar
+          # The image layers are already compressed
+          compression-level: 0
+          retention-days: 1
+
+  # The jobs that run the stack share their setup steps through YAML anchors
+  # (`&name` defines a step, `*name` reuses it).
+  unittests:
+    needs: build-dev-image
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        test_env: [functional, api]
+    steps:
+      - uses: actions/checkout@v7
+      - &pull-service-images
+        name: Pull service images in the background
+        # Overlaps the large Postgres pull with the image download; "Start the stack" waits for it
         run: |
           docker volume create --name=seed_pgdata
           docker volume create --name=seed_media
-          docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+          (docker compose -f docker-compose.yml -f docker-compose.dev.yml pull --quiet db-postgres db-redis; echo $? > "$RUNNER_TEMP/pull-exit-code") > "$RUNNER_TEMP/pull.log" 2>&1 &
+      - &download-dev-image
+        name: Download Docker dev image
+        uses: actions/download-artifact@v8
+        with:
+          name: seed-dev-image
+          path: ${{ runner.temp }}
+      - &start-stack
+        name: Start the stack
+        env:
+          DJANGO_LOG_LEVEL: ERROR
+        run: |
+          docker load --input "$RUNNER_TEMP/seed-dev.tar"
+          timeout 600 bash -c 'until [[ -f "$RUNNER_TEMP/pull-exit-code" ]]; do sleep 1; done'
+          cat "$RUNNER_TEMP/pull.log"
+          if [[ "$(< "$RUNNER_TEMP/pull-exit-code")" != 0 ]]; then exit 1; fi
+          # Use only the images loaded and pulled above, so a missing image fails instead of building or pulling another
+          docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --no-build --pull never
+          docker exec seed_web /usr/local/wait-for-it.sh --strict --timeout=120 db-postgres:5432
       - name: Migrate
         env:
           DJANGO_LOG_LEVEL: ERROR
@@ -75,38 +103,21 @@ jobs:
           docker exec --env DJANGO_LOG_LEVEL seed_web uv run python manage.py create_default_user --username=demo@example.com --password=demo123
           docker exec --env DJANGO_LOG_LEVEL seed_web /bin/bash -lc 'echo "y" | uv run python manage.py make_superuser --user demo@example.com'
       - uses: actions/setup-node@v7
+        if: ${{ matrix.test_env == 'functional' }}
         with:
           node-version: 24
       - name: Setup pnpm
+        if: ${{ matrix.test_env == 'functional' }}
         uses: pnpm/action-setup@v6
         with:
           package_json_file: backend/package.json
       - name: Install dependencies
+        if: ${{ matrix.test_env == 'functional' }}
         working-directory: backend
         run: |
           pnpm install
           sudo apt-get update
           sudo apt-get install -y xvfb
-      - name: Test Django
-        if: ${{ matrix.test_env == 'django' }}
-        env:
-          SEED_PM_UN: ${{ secrets.SEED_PM_UN }}
-          SEED_PM_PW: ${{ secrets.SEED_PM_PW }}
-          SF_INSTANCE: ${{ secrets.SF_INSTANCE }}
-          SF_USERNAME: ${{ secrets.SF_USERNAME }}
-          SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
-          SF_DOMAIN: ${{ vars.SF_DOMAIN }}
-          SF_SECURITY_TOKEN: ${{ secrets.SF_SECURITY_TOKEN }}
-          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-          DJANGO_LOG_LEVEL: ERROR
-        run: |
-          docker exec seed_web touch /seed/config/settings/local_untracked.py
-          docker exec --env SEED_PM_UN --env SEED_PM_PW --env DJANGO_LOG_LEVEL --env SF_INSTANCE --env SF_USERNAME --env SF_PASSWORD --env SF_SECURITY_TOKEN --env SF_DOMAIN seed_web /bin/bash -lc 'uv run coverage run manage.py test --settings=config.settings.docker_test --parallel="$(nproc)" --verbosity=2'
-          if [[ ! -z "${COVERALLS_REPO_TOKEN}" ]]; then
-            docker exec --env COVERALLS_REPO_TOKEN seed_web uv run coveralls --srcdir backend
-          else
-            echo "INFO: Env var COVERALLS_REPO_TOKEN was not found, skipping coveralls update"
-          fi
       - name: Test AngularJS
         if: ${{ matrix.test_env == 'functional' }}
         working-directory: backend
@@ -121,9 +132,72 @@ jobs:
         run: |
           docker exec seed_web uv run python manage.py create_test_user_json --username demo@example.com --host http://localhost --file ./seed/tests/api/api_test_user.json
           docker exec seed_web uv run python seed/tests/api/test_seed_host_api.py --noinput --nofile
-      - name: Web container logs
+      - &web-container-logs
+        name: Web container logs
         if: ${{ always() }}
         run: docker logs seed_web
+
+  # The Django suite, split into shards of whole test modules with similar test
+  # counts (see `--shard` in seed/backends/postgis_timescaledb_tests/runner.py).
+  # Add or remove matrix entries to change the number of shards. The test runner
+  # migrates its own test database, so the dev database isn't migrated here.
+  django-tests:
+    name: unittests (django ${{ matrix.shard }}/${{ strategy.job-total }})
+    needs: build-dev-image
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5, 6]
+    steps:
+      - uses: actions/checkout@v7
+      - *pull-service-images
+      - *download-dev-image
+      - *start-stack
+      - name: Test Django
+        env:
+          SEED_PM_UN: ${{ secrets.SEED_PM_UN }}
+          SEED_PM_PW: ${{ secrets.SEED_PM_PW }}
+          SF_INSTANCE: ${{ secrets.SF_INSTANCE }}
+          SF_USERNAME: ${{ secrets.SF_USERNAME }}
+          SF_PASSWORD: ${{ secrets.SF_PASSWORD }}
+          SF_DOMAIN: ${{ vars.SF_DOMAIN }}
+          SF_SECURITY_TOKEN: ${{ secrets.SF_SECURITY_TOKEN }}
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+          DJANGO_LOG_LEVEL: ERROR
+          SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
+        run: |
+          docker exec seed_web touch /seed/config/settings/local_untracked.py
+          docker exec --env SEED_PM_UN --env SEED_PM_PW --env DJANGO_LOG_LEVEL --env SF_INSTANCE --env SF_USERNAME --env SF_PASSWORD --env SF_SECURITY_TOKEN --env SF_DOMAIN --env SHARD seed_web /bin/bash -lc 'uv run coverage run manage.py test --settings=config.settings.docker_test --parallel="$(nproc)" --shard="$SHARD" --verbosity=2'
+          if [[ ! -z "${COVERALLS_REPO_TOKEN}" ]]; then
+            # Each shard is a job in one parallel Coveralls build, which "unittests (django)" closes
+            docker exec --env COVERALLS_REPO_TOKEN --env COVERALLS_PARALLEL=true --env COVERALLS_FLAG_NAME="django-${{ matrix.shard }}" --env COVERALLS_SERVICE_NUMBER="${{ github.run_id }}" seed_web uv run coveralls --srcdir backend
+          else
+            echo "INFO: Env var COVERALLS_REPO_TOKEN was not found, skipping coveralls update"
+          fi
+      - *web-container-logs
+
+  # The required "unittests (django)" check: passes only when every shard passed
+  django:
+    name: unittests (django)
+    needs: django-tests
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    env:
+      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+    steps:
+      - name: Check Django shards
+        run: |
+          echo "Django shards: ${{ needs.django-tests.result }}"
+          [[ "${{ needs.django-tests.result }}" == success ]]
+      - uses: astral-sh/setup-uv@v7
+        if: ${{ env.COVERALLS_REPO_TOKEN != '' }}
+      - name: Finish the Coveralls build
+        if: ${{ env.COVERALLS_REPO_TOKEN != '' }}
+        env:
+          COVERALLS_SERVICE_NUMBER: ${{ github.run_id }}
+        # Same coveralls version as backend/uv.lock
+        run: uvx coveralls@4.1.0 --finish
 
   # Lightweight, standalone Salesforce connectivity check. Runs only the
   # SimpleTestCase in seed/tests/test_salesforce_connection.py, which needs no
