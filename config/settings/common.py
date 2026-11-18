@@ -23,7 +23,7 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = None
 
 ASGI_APPLICATION = "config.asgi.seed"
 
-TIME_ZONE = "America/Los_Angeles"
+TIME_ZONE = os.environ.get("TZ", "America/Los_Angeles")
 USE_TZ = True
 SITE_ID = 1
 
