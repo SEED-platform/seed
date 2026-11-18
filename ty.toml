@@ -158,7 +158,7 @@ include = ["seed/utils/salesforce.py", "seed/views/v4/property.py"]
 unsupported-operator = "ignore"
 
 [[overrides]]
-include = ["seed/landing/models.py", "setup.py"]
+include = ["seed/landing/models.py"]
 
 [overrides.rules]
 unresolved-import = "ignore"
