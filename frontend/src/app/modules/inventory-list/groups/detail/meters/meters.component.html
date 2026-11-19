@@ -11,19 +11,19 @@
 >
 </seed-page>
 
-<div class="bg-card flex flex-col gap-4 p-2.5">
+<div class="flex flex-col gap-4 bg-card p-2.5">
   <!-- Meters Grid -->
   <div class="flex items-center justify-between">
     <button (click)="createMeter()" mat-flat-button color="primary">
       <mat-icon svgIcon="fa-solid:plus"></mat-icon>
       Add Meter
     </button>
-    <div class="text-secondary text-xs italic">Note: Meters are labeled with the following format: "Type - Source - Source ID".</div>
+    <div class="text-xs text-secondary italic">Note: Meters are labeled with the following format: "Type - Source - Source ID".</div>
   </div>
   @if (loadingMeters) {
-    <div class="text-secondary text-sm">Loading meters...</div>
+    <div class="text-sm text-secondary">Loading meters...</div>
   } @else if (meters.length === 0) {
-    <div class="text-secondary text-sm">No meters in this group</div>
+    <div class="text-sm text-secondary">No meters in this group</div>
   } @else {
     <ag-grid-angular
       [theme]="gridTheme$ | async"
@@ -44,7 +44,7 @@
   <div class="flex items-center gap-4">
     <div class="text-sm font-semibold">Readings</div>
     <mat-select
-      class="h-10 w-40 rounded border border-gray-500 p-3 text-sm"
+      class="h-10 w-40 rounded-sm border border-gray-500 p-3 text-sm"
       [value]="interval"
       (selectionChange)="changeInterval($event.value)"
     >
@@ -55,7 +55,7 @@
   </div>
 
   @if (loadingReadings) {
-    <div class="text-secondary text-sm">Loading readings...</div>
+    <div class="text-sm text-secondary">Loading readings...</div>
   } @else if (readings.length) {
     <ag-grid-angular
       [theme]="gridTheme$ | async"

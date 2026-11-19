@@ -10,7 +10,7 @@
         <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
       </div>
     } @else {
-      <div class="bg-card flex flex-col overflow-hidden rounded-2xl p-8 pb-6 shadow">
+      <div class="flex flex-col overflow-hidden rounded-2xl bg-card p-8 pb-6 shadow-sm">
         <h3 class="mb-4 text-lg font-medium">{{ t('TWO_FACTOR_ENABLE') }}</h3>
 
         <div class="mb-4 flex flex-wrap items-center gap-2">
@@ -29,7 +29,7 @@
           >
         </div>
 
-        <p class="text-secondary mb-4">{{ t('TWO_FACTOR_SELECT') }}</p>
+        <p class="mb-4 text-secondary">{{ t('TWO_FACTOR_SELECT') }}</p>
 
         @if (requiresOrg2fa) {
           <seed-alert class="mb-4" type="info" appearance="outline">
@@ -41,15 +41,15 @@
           <mat-radio-group class="flex flex-col gap-4" formControlName="method">
             <div>
               <mat-radio-button [disabled]="requiresOrg2fa" value="disabled">{{ t('Disabled') }}</mat-radio-button>
-              <p class="text-secondary ml-8 text-sm">{{ t('TWO_FACTOR_DISABLED_TEXT') }}</p>
+              <p class="ml-8 text-sm text-secondary">{{ t('TWO_FACTOR_DISABLED_TEXT') }}</p>
             </div>
             <div>
               <mat-radio-button value="email">{{ t('Email') }}</mat-radio-button>
-              <p class="text-secondary ml-8 text-sm">{{ emailHelpText }}</p>
+              <p class="ml-8 text-sm text-secondary">{{ emailHelpText }}</p>
             </div>
             <div>
               <mat-radio-button value="token">{{ t('Token Generator') }}</mat-radio-button>
-              <p class="text-secondary ml-8 text-sm">{{ t('TWO_FACTOR_TOKEN_SELECTED_TEXT') }}</p>
+              <p class="ml-8 text-sm text-secondary">{{ t('TWO_FACTOR_TOKEN_SELECTED_TEXT') }}</p>
             </div>
           </mat-radio-group>
         </form>
@@ -57,7 +57,7 @@
         <div class="mt-6 flex flex-wrap items-center gap-4">
           <button [disabled]="methodUnchanged || saving" (click)="save()" mat-flat-button color="primary">
             @if (saving) {
-              <mat-progress-spinner class="align-middle mr-2 inline-block" diameter="18" mode="indeterminate"></mat-progress-spinner>
+              <mat-progress-spinner class="mr-2 inline-block" diameter="18" mode="indeterminate"></mat-progress-spinner>
             }
             <span>{{ t('Save Changes') }}</span>
           </button>

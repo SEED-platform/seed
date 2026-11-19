@@ -94,7 +94,7 @@ export class SaveMappingsComponent implements OnChanges, OnDestroy {
   }
 
   setColumnDefs(keys: string[]): ColDef[] {
-    const aliClass = 'bg-primary bg-opacity-25'
+    const aliClass = 'bg-primary/25'
 
     // remove ALI & hidden cols
     const excludeKeys = ['id', 'lot_number', 'raw_access_level_instance_error', ...this.org.access_level_names]

@@ -8,14 +8,14 @@
 
   <ng-container matColumnDef="field">
     <th *matHeaderCellDef mat-header-cell>Field</th>
-    <td class="max-w-50 flex-grow truncate" *matCellDef="let rule; let i = index" mat-cell>
+    <td class="max-w-50 grow truncate" *matCellDef="let rule; let i = index" mat-cell>
       {{ getFieldName(rule.field) }}
     </td>
   </ng-container>
 
   <ng-container matColumnDef="criteria">
     <th *matHeaderCellDef mat-header-cell>Criteria</th>
-    <td class="max-w-60 flex-grow truncate" *matCellDef="let rule" mat-cell>
+    <td class="max-w-60 grow truncate" *matCellDef="let rule" mat-cell>
       {{ getCriteria(rule) }}
     </td>
   </ng-container>
@@ -23,7 +23,7 @@
   <ng-container matColumnDef="severity">
     <th *matHeaderCellDef mat-header-cell>Severity</th>
     <td class="w-26" *matCellDef="let rule" mat-cell>
-      <div class="rounded px-2 py-1" [ngClass]="severityLookup[rule.severity].class">
+      <div class="rounded-sm px-2 py-1" [ngClass]="severityLookup[rule.severity].class">
         {{ severityLookup[rule.severity].name }}
       </div>
     </td>
@@ -39,8 +39,8 @@
   </ng-container>
 
   <ng-container matColumnDef="actions">
-    <th class="select-none pr-24 text-right" *matHeaderCellDef mat-header-cell>Actions</th>
-    <td class="w-50 text-right" class="whitespace-nowrap text-right" *matCellDef="let rule" mat-cell>
+    <th class="pr-24 text-right select-none" *matHeaderCellDef mat-header-cell>Actions</th>
+    <td class="w-50 text-right" class="text-right whitespace-nowrap" *matCellDef="let rule" mat-cell>
       <button class="mr-2" (click)="editRule(rule)" mat-icon-button>
         <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil"></mat-icon>
       </button>

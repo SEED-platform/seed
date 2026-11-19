@@ -21,7 +21,7 @@
     }
   </div>
 
-  <div class="flex items-center justify-end gap-2 bg-gray-50 px-6 py-4 dark:bg-black dark:bg-opacity-10">
+  <div class="flex items-center justify-end gap-2 bg-gray-50 px-6 py-4 dark:bg-black/10">
     <button [matDialogClose]="false" [disabled]="submitted" mat-stroked-button>Cancel</button>
     @if (action === 'delete') {
       <button [disabled]="submitted" (click)="deleteService()" mat-flat-button color="warn">

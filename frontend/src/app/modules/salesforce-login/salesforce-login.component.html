@@ -1,13 +1,13 @@
 <div class="p-6" *transloco="let t">
   @if (state === 'pending') {
-    <p class="text-secondary text-center">{{ t('Logging in to Salesforce…') }}</p>
+    <p class="text-center text-secondary">{{ t('Logging in to Salesforce…') }}</p>
   }
 
   @if (state === 'success') {
     <div
-      class="mb-5 flex items-center gap-2 rounded border border-green-400 bg-green-50 p-4 text-green-800 dark:border-green-700 dark:bg-green-950 dark:text-green-200"
+      class="mb-5 flex items-center gap-2 rounded-sm border border-green-400 bg-green-50 p-4 text-green-800 dark:border-green-700 dark:bg-green-950 dark:text-green-200"
     >
-      <mat-icon class="shrink-0 icon-size-5" svgIcon="fa-solid:circle-check"></mat-icon>
+      <mat-icon class="icon-size-5 shrink-0" svgIcon="fa-solid:circle-check"></mat-icon>
       <span>{{ t('SEED is now logged in to Salesforce.') }}</span>
     </div>
     <div class="flex items-center gap-4">
@@ -22,9 +22,9 @@
 
   @if (state === 'failure') {
     <div
-      class="mb-5 flex items-center gap-2 rounded border border-red-400 bg-red-50 p-4 text-red-800 dark:border-red-700 dark:bg-red-950 dark:text-red-200"
+      class="mb-5 flex items-center gap-2 rounded-sm border border-red-400 bg-red-50 p-4 text-red-800 dark:border-red-700 dark:bg-red-950 dark:text-red-200"
     >
-      <mat-icon class="shrink-0 icon-size-5" svgIcon="fa-solid:circle-exclamation"></mat-icon>
+      <mat-icon class="icon-size-5 shrink-0" svgIcon="fa-solid:circle-exclamation"></mat-icon>
       <span
         >{{ t('There was an error logging in to Salesforce.') }}
         @if (errorMessage) {

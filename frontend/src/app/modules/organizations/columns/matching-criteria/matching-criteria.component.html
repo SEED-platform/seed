@@ -3,7 +3,7 @@
   <mat-icon svgIcon="fa-solid:layer-group"></mat-icon>
   <span class="ml-4">Current Criteria</span>
   @if (isLocked) {
-    <span class="text-secondary ml-2 text-sm">(Locked — org has access levels and inventory data)</span>
+    <span class="ml-2 text-sm text-secondary">(Locked — org has access levels and inventory data)</span>
   }
 </div>
 
@@ -34,7 +34,7 @@
   </div>
 
   @if (rowDataPending.length) {
-    <div class="text-secondary mb-4 ml-4 text-sm font-medium">Adding</div>
+    <div class="mb-4 ml-4 text-sm font-medium text-secondary">Adding</div>
     <div class="mb-4">
       <ag-grid-angular
         [columnDefs]="columnDefsPending"
@@ -48,7 +48,7 @@
   }
 
   @if (pendingRemovals.length) {
-    <div class="text-secondary mb-4 ml-4 text-sm font-medium">Removing</div>
+    <div class="mb-4 ml-4 text-sm font-medium text-secondary">Removing</div>
     <div class="mb-4">
       @for (col of pendingRemovals; track col.id) {
         <div class="ml-4 flex items-center gap-2 py-1">

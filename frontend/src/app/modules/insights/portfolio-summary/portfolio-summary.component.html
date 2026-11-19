@@ -12,7 +12,7 @@
 >
   <div class="mx-5 my-1 flex flex-col gap-3">
     <!-- Intro text -->
-    <p class="text-secondary text-sm">
+    <p class="text-sm text-secondary">
       {{
         t(
           'The portfolio summary page compares 2 cycles to calculate progress toward an Energy Use Intensity reduction goal. Cycle selection and goal details can be customized by clicking Configure Goals.'
@@ -23,7 +23,7 @@
     <!-- Goal selector -->
     <div class="flex flex-wrap items-center gap-3">
       <div class="flex items-center gap-3">
-        <mat-label class="text-secondary shrink-0 text-sm">{{ t('Goal') }}:</mat-label>
+        <mat-label class="shrink-0 text-sm text-secondary">{{ t('Goal') }}:</mat-label>
         <mat-form-field class="w-72" subscriptSizing="dynamic">
           <mat-select
             [value]="currentGoal?.id"
@@ -35,7 +35,7 @@
             <!-- Search input pinned at top of dropdown -->
             <div class="px-4 py-1">
               <input
-                class="h-8 w-full bg-transparent outline-none"
+                class="h-8 w-full bg-transparent outline-hidden"
                 [formControl]="goalSearchCtrl"
                 [placeholder]="t('Search\u2026')"
                 (click)="$event.stopPropagation()"
@@ -50,16 +50,16 @@
       </div>
 
       @if (salesforceEnabled && organization && organization.bb_salesforce_enabled) {
-        <div class="flex flex-wrap items-center gap-2 rounded border px-3 py-1 text-sm">
+        <div class="flex flex-wrap items-center gap-2 rounded-sm border px-3 py-1 text-sm">
           <span class="text-secondary">{{ t('Salesforce') }}</span>
           <a class="cursor-pointer text-primary-600 underline dark:text-primary-400" (click)="toSettings()">{{ t('Settings') }}</a>
           <div class="flex items-center gap-2">
             <span class="text-secondary">{{ t('Connection:') }}</span>
             @if (isLoggedIntoBbSalesforce) {
-              <mat-icon class="text-green-500 icon-size-4">check_circle</mat-icon>
+              <mat-icon class="icon-size-4 text-green-500">check_circle</mat-icon>
               <button (click)="loginToSalesforce()" mat-stroked-button>{{ t('Logout') }}</button>
             } @else {
-              <mat-icon class="text-red-500 icon-size-4">cancel</mat-icon>
+              <mat-icon class="icon-size-4 text-red-500">cancel</mat-icon>
               <button (click)="loginToSalesforce()" mat-flat-button color="primary">{{ t('Login') }}</button>
             }
           </div>
@@ -68,7 +68,7 @@
     </div>
 
     @if (currentGoal) {
-      <div class="-mx-5 -mb-4 flex flex-col gap-3 bg-white px-5 pb-4 pt-2 dark:bg-gray-900">
+      <div class="-mx-5 -mb-4 flex flex-col gap-3 bg-white px-5 pt-2 pb-4 dark:bg-gray-900">
         <div class="flex flex-wrap gap-4">
           <!-- Goal details card: 2 true side-by-side columns -->
           <div class="flex-1 rounded-lg bg-gray-50 p-3 dark:bg-gray-800">
@@ -147,7 +147,7 @@
         <!-- Currently viewing + edit/delete cycle goal -->
         @if (currentCycleGoal) {
           <div class="-mt-1 flex items-center gap-1 text-sm">
-            <span class="text-secondary mr-1">{{ t('Currently Viewing:') }}</span>
+            <span class="mr-1 text-secondary">{{ t('Currently Viewing:') }}</span>
             <span class="font-semibold">{{ currentCycleGoal.current_cycle.name }}</span>
             <button [title]="t('Edit cycle')" (click)="openEditCycleGoal()" mat-icon-button>
               <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil"></mat-icon>
@@ -171,20 +171,20 @@
             <div
               class="-mt-1 flex items-start gap-3 rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm dark:border-yellow-700 dark:bg-yellow-950"
             >
-              <mat-icon class="mt-0.5 shrink-0 text-yellow-600 icon-size-4 dark:text-yellow-400">info</mat-icon>
+              <mat-icon class="mt-0.5 icon-size-4 shrink-0 text-yellow-600 dark:text-yellow-400">info</mat-icon>
               <div class="flex-1">
                 <p class="font-medium text-yellow-900 dark:text-yellow-100">
                   {{ t('Unexpected Portfolio Summary Calculations?') }}
                   <button class="ml-2" (click)="runDataQualityChecks()" mat-stroked-button>{{ t('Run Data Quality Checks') }}</button>
                 </p>
-                <p class="text-secondary mt-1">
+                <p class="mt-1 text-secondary">
                   {{
                     t(
                       'Portfolio Summary calculations only include properties that have "Passed Checks" and are not "New Build or Acquired".'
                     )
                   }}
                 </p>
-                <p class="text-secondary mt-1">
+                <p class="mt-1 text-secondary">
                   {{ t('Run Data Quality Check (in the Actions menu below) to auto-populate the "Passed Checks" column.') }}
                   <a
                     class="ml-1 text-primary-600 hover:underline dark:text-primary-400"
@@ -238,7 +238,7 @@
                     {{ showAccessLevelInstances ? t('Hide Access Levels') : t('Show Access Levels') }}
                   </button>
                 </mat-menu>
-                <span class="text-secondary text-xs">
+                <span class="text-xs text-secondary">
                   {{ t('Only cross-cycle labels for the selected goal are shown here; other property labels are omitted.') }}
                 </span>
 
@@ -249,7 +249,7 @@
 
               <!-- Pagination -->
               @if (propertiesPagination && propertiesPagination.total > 0) {
-                <div class="text-secondary flex items-center gap-2 text-sm">
+                <div class="flex items-center gap-2 text-sm text-secondary">
                   @if (isSelectingAllProperties) {
                     <span aria-live="polite">{{ t('Loading...') }}</span>
                   } @else if (selectedPropertyViewIds.length) {
@@ -324,7 +324,7 @@
               }
             </div>
             <div class="flex min-w-0 flex-col gap-3">
-              <p class="text-secondary text-sm">
+              <p class="text-sm text-secondary">
                 {{
                   t(
                     'If your organization requires partner approval for notes, please ensure that the appropriate stakeholders are notified. Partner: once you have reviewed and edited the note above, please check the box below to indicate your approval.'
@@ -339,7 +339,7 @@
                 {{ t('Partner Approval') }}
               </mat-checkbox>
               @if (currentGoal.partner_note_approval) {
-                <div class="text-secondary text-sm">{{ partnerNoteApprovalLabel }}</div>
+                <div class="text-sm text-secondary">{{ partnerNoteApprovalLabel }}</div>
               }
             </div>
           </div>

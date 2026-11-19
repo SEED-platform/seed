@@ -1,4 +1,4 @@
-<button class="text-secondary font-semibold" [matMenuTriggerFor]="orgMenu" mat-button>
+<button class="font-semibold text-secondary" [matMenuTriggerFor]="orgMenu" mat-button>
   <mat-icon class="" svgIcon="fa-solid:city"></mat-icon>
   <span class="ml-2">{{ currentUser.org_name }}</span>
   <span class="mx-1 font-extralight">|</span>
@@ -9,8 +9,7 @@
   @for (org of organizations; track org.id) {
     <button
       *transloco="let t"
-      [class.bg-red-100]="!org.user_role"
-      [class.dark:bg-red-950]="!org.user_role"
+      [class.organization-selector-non-member]="!org.user_role"
       [title]="!org.user_role ? t('You are not a member of this organization') : ''"
       (click)="selectOrganization(org)"
       mat-menu-item

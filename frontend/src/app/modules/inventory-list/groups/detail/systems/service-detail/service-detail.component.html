@@ -12,11 +12,11 @@
 >
 </seed-page>
 
-<div class="bg-card m-5 flex flex-col gap-6 p-2.5">
+<div class="m-5 flex flex-col gap-6 bg-card p-2.5">
   @if (loading) {
-    <div class="text-secondary text-sm">Loading...</div>
+    <div class="text-sm text-secondary">Loading...</div>
   } @else if (!service) {
-    <div class="text-secondary text-sm">Service not found</div>
+    <div class="text-sm text-secondary">Service not found</div>
   } @else {
     <!-- Add Properties button -->
     <div class="flex justify-end">
@@ -28,12 +28,12 @@
 
     <!-- Connected Properties -->
     <div>
-      <div class="text-secondary mb-3 text-sm font-semibold uppercase tracking-wide">Connected Properties</div>
+      <div class="mb-3 text-sm font-semibold tracking-wide text-secondary uppercase">Connected Properties</div>
 
       @if (service.properties.length) {
         <table class="w-full border-collapse text-sm">
           <thead>
-            <tr class="text-secondary bg-default border-b text-left text-xs font-semibold uppercase tracking-wide">
+            <tr class="border-b bg-default text-left text-xs font-semibold tracking-wide text-secondary uppercase">
               <th class="px-3 py-2">Property</th>
               <th class="px-3 py-2">Connected Via</th>
               <th class="px-3 py-2">Connection Type</th>
@@ -60,7 +60,7 @@
           </tbody>
         </table>
       } @else {
-        <div class="text-secondary text-xs">No properties connected to this service</div>
+        <div class="text-xs text-secondary">No properties connected to this service</div>
       }
     </div>
   }

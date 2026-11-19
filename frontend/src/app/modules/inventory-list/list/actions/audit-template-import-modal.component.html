@@ -13,12 +13,12 @@
       <div class="flex items-center gap-2">
         <span class="text-sm">Import setting:</span>
         @if (data.org.audit_template_conditional_import) {
-          <span class="label blue whitespace-nowrap px-2 text-xs">MORE RECENT DATA</span>
+          <span class="label blue px-2 text-xs whitespace-nowrap">MORE RECENT DATA</span>
         } @else {
-          <span class="label gray whitespace-nowrap px-2 text-xs">ALL DATA</span>
+          <span class="label gray px-2 text-xs whitespace-nowrap">ALL DATA</span>
         }
       </div>
-      <div class="text-secondary text-sm">
+      <div class="text-sm text-secondary">
         @if (data.org.audit_template_conditional_import) {
           Only Audit Template submissions that have been submitted more recently than the SEED inventory's most recent update will be
           imported.

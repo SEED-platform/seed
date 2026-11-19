@@ -16,6 +16,7 @@ const escapeHtml = (value: string): string =>
 @Component({
   selector: 'seed-organization-selector',
   templateUrl: './organization-selector.component.html',
+  styleUrl: './organization-selector.component.scss',
   encapsulation: ViewEncapsulation.None,
   exportAs: 'organization-selector',
   changeDetection: ChangeDetectionStrategy.Eager,

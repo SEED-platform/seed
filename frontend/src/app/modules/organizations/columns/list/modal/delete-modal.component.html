@@ -1,10 +1,10 @@
 <div class="mt-4 flex gap-4" mat-dialog-title>
-  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:trash-can"></mat-icon>
-  <div class="text-2xl font-medium leading-6">Delete Column {{ data.column.display_name }}?</div>
+  <mat-icon class="icon-size-5 text-current" svgIcon="fa-solid:trash-can"></mat-icon>
+  <div class="text-2xl leading-6 font-medium">Delete Column {{ data.column.display_name }}?</div>
 </div>
 <mat-divider></mat-divider>
 
-<div class="mb-4 mt-4">
+<div class="mt-4 mb-4">
   @if (inProgress) {
     <mat-progress-bar [value]="progressBarObj.progress" mode="determinate"></mat-progress-bar>
   }

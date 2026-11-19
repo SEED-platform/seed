@@ -8,7 +8,7 @@
       </div>
     } @else if (hasError) {
       <div class="flex flex-col items-center gap-3 p-8 text-center">
-        <mat-icon class="text-warn icon-size-10" svgIcon="heroicons-solid:exclamation-triangle" />
+        <mat-icon class="icon-size-10 text-warn" svgIcon="heroicons-solid:exclamation-triangle" />
         <p class="text-secondary">
           {{ t('Unable to retrieve Salesforce data. Ensure annual reports are linked for each cycle in the goal configuration.') }}
         </p>
@@ -16,11 +16,11 @@
     } @else {
       <!-- Goal Details -->
       <section class="mb-6">
-        <h3 class="text-secondary mb-2 text-sm font-semibold uppercase tracking-wide">{{ t('Goal Details') }}</h3>
-        <div class="border-divider bg-card rounded border p-3">
+        <h3 class="mb-2 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Goal Details') }}</h3>
+        <div class="border-divider rounded-sm border bg-card p-3">
           @for (detail of goalDetails; track detail.label) {
             <div class="flex gap-3 py-1">
-              <span class="text-secondary w-40 font-semibold">{{ t(detail.label) }}</span>
+              <span class="w-40 font-semibold text-secondary">{{ t(detail.label) }}</span>
               <span>{{ detail.value }}</span>
             </div>
           }
@@ -30,7 +30,7 @@
       @if (latestEntry) {
         <!-- Baseline -->
         <section class="mb-6">
-          <h3 class="text-secondary mb-2 text-sm font-semibold uppercase tracking-wide">{{ t('Baseline') }}</h3>
+          <h3 class="mb-2 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Baseline') }}</h3>
           <table class="w-full text-sm">
             <thead>
               <tr class="border-divider border-b">
@@ -61,7 +61,7 @@
 
         <!-- Current Year Annual Report -->
         <section class="mb-6">
-          <h3 class="text-secondary mb-2 text-sm font-semibold uppercase tracking-wide">{{ t('Current Year Annual Report') }}</h3>
+          <h3 class="mb-2 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Current Year Annual Report') }}</h3>
           <table class="w-full text-sm">
             <thead>
               <tr class="border-divider border-b">
@@ -97,7 +97,7 @@
                     }
                   </mat-select>
                 </td>
-                <td class="text-secondary py-1.5 text-right">{{ reportStatus }}</td>
+                <td class="py-1.5 text-right text-secondary">{{ reportStatus }}</td>
               </tr>
               <!-- Review Status -->
               <tr class="border-divider/50 border-b">
@@ -110,7 +110,7 @@
                     }
                   </mat-select>
                 </td>
-                <td class="text-secondary py-1.5 text-right">{{ reviewStatus }}</td>
+                <td class="py-1.5 text-right text-secondary">{{ reviewStatus }}</td>
               </tr>
             </tbody>
           </table>
@@ -122,7 +122,7 @@
         <!-- Historical Annual Reports -->
         @if (pastCycleRows.length) {
           <section>
-            <h3 class="text-secondary mb-2 text-sm font-semibold uppercase tracking-wide">{{ t('Historical Annual Reports') }}</h3>
+            <h3 class="mb-2 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Historical Annual Reports') }}</h3>
             <div class="overflow-x-auto">
               <table class="w-full min-w-[700px] text-sm">
                 <thead>

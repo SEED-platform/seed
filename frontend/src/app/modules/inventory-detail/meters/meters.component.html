@@ -41,16 +41,16 @@
             <mat-icon svgIcon="fa-solid:table-list"></mat-icon>
             <span>Readings</span>
             <mat-icon
-              class="transition-transform icon-size-4"
+              class="icon-size-4 transition-transform"
               [class.rotate-180]="readingsCollapsed"
               svgIcon="fa-solid:chevron-down"
             ></mat-icon>
           </button>
           <!-- Interval select -->
           <div class="m-1 my-auto flex flex-row gap-4">
-            <mat-label class="text-secondary my-auto">Interval</mat-label>
+            <mat-label class="my-auto text-secondary">Interval</mat-label>
             <mat-select
-              class="h-8 w-40 rounded border border-gray-500 p-3 text-sm"
+              class="h-8 w-40 rounded-sm border border-gray-500 p-3 text-sm"
               [(value)]="interval"
               (selectionChange)="intervalChange()"
             >
@@ -85,7 +85,7 @@
             <mat-icon svgIcon="fa-solid:chart-line"></mat-icon>
             <span class="ml-4">Readings Chart</span>
           </div>
-          <div class="bg-card rounded-lg p-4">
+          <div class="rounded-lg bg-card p-4">
             <canvas #metersChart aria-label="Readings chart" role="img"></canvas>
           </div>
         </div>

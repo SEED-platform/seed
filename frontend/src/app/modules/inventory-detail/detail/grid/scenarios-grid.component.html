@@ -1,11 +1,11 @@
 <div class="mb-5 flex flex-col gap-4" *transloco="let t">
   <div class="ml-4 flex items-center gap-2 text-lg font-medium">
-    <mat-icon class="text-primary-600 icon-size-5 dark:text-primary-400" svgIcon="fa-solid:lightbulb"></mat-icon>
+    <mat-icon class="icon-size-5 text-primary-600 dark:text-primary-400" svgIcon="fa-solid:lightbulb"></mat-icon>
     <span>{{ t('Scenarios & Measures') }}</span>
   </div>
 
   @for (entry of rowDataEntries; track $index) {
-    <div class="text-secondary ml-1 flex items-center gap-2 text-sm">
+    <div class="ml-1 flex items-center gap-2 text-sm text-secondary">
       <mat-icon class="icon-size-4" svgIcon="fa-solid:calendar-days"></mat-icon>
       <span>{{ entry.date }}</span>
     </div>
@@ -14,32 +14,32 @@
         <mat-expansion-panel class="bg-card" (opened)="onPanelExpanded(scenario.id)">
           <mat-expansion-panel-header class="h-auto py-3">
             <mat-panel-title class="flex items-center gap-2 font-medium">
-              <mat-icon class="text-primary-600 icon-size-5 dark:text-primary-400" svgIcon="fa-solid:layer-group"></mat-icon>
+              <mat-icon class="icon-size-5 text-primary-600 dark:text-primary-400" svgIcon="fa-solid:layer-group"></mat-icon>
               <span>{{ scenario.name }}</span>
             </mat-panel-title>
             <mat-panel-description class="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs">
               <span class="flex items-center gap-1.5" [matTooltip]="t('Annual electricity savings')">
-                <mat-icon class="text-amber-500 icon-size-4 dark:text-amber-400" svgIcon="fa-solid:bolt"></mat-icon>
+                <mat-icon class="icon-size-4 text-amber-500 dark:text-amber-400" svgIcon="fa-solid:bolt"></mat-icon>
                 <span class="font-semibold">{{ (getElectricitySavings(scenario) | number: '1.0-0') ?? t('N/A') }}</span>
                 <span class="text-secondary">{{ t('kBtu') }}</span>
               </span>
               <span class="flex items-center gap-1.5" [matTooltip]="t('Annual peak electricity reduction')">
-                <mat-icon class="text-blue-500 icon-size-4 dark:text-blue-400" svgIcon="fa-solid:arrow-trend-down"></mat-icon>
+                <mat-icon class="icon-size-4 text-blue-500 dark:text-blue-400" svgIcon="fa-solid:arrow-trend-down"></mat-icon>
                 <span class="font-semibold">{{ (getPeakElectricityReduction(scenario) | number: '1.0-0') ?? t('N/A') }}</span>
                 <span class="text-secondary">{{ t('kW') }}</span>
               </span>
               <span class="flex items-center gap-1.5" [matTooltip]="t('Annual natural gas savings')">
-                <mat-icon class="text-orange-500 icon-size-4 dark:text-orange-400" svgIcon="fa-solid:fire-flame-curved"></mat-icon>
+                <mat-icon class="icon-size-4 text-orange-500 dark:text-orange-400" svgIcon="fa-solid:fire-flame-curved"></mat-icon>
                 <span class="font-semibold">{{ (getNaturalGasSavings(scenario) | number: '1.0-0') ?? t('N/A') }}</span>
                 <span class="text-secondary">{{ t('kBtu') }}</span>
               </span>
               <span class="flex items-center gap-1.5" [matTooltip]="t('Total first cost of the scenario\'s measures')">
-                <mat-icon class="text-rose-500 icon-size-4 dark:text-rose-400" svgIcon="fa-solid:money-bill-wave"></mat-icon>
+                <mat-icon class="icon-size-4 text-rose-500 dark:text-rose-400" svgIcon="fa-solid:money-bill-wave"></mat-icon>
                 <span class="font-semibold">{{ (getTotalFirstCost(scenario) | currency: 'USD' : 'symbol' : '1.0-0') ?? t('N/A') }}</span>
                 <span class="text-secondary">{{ t('first cost') }}</span>
               </span>
               <span class="flex items-center gap-1.5" [matTooltip]="t('Total annual cost savings of the scenario\'s measures')">
-                <mat-icon class="text-green-600 icon-size-4 dark:text-green-400" svgIcon="fa-solid:piggy-bank"></mat-icon>
+                <mat-icon class="icon-size-4 text-green-600 dark:text-green-400" svgIcon="fa-solid:piggy-bank"></mat-icon>
                 <span class="font-semibold">{{
                   (getTotalAnnualCostSavings(scenario) | currency: 'USD' : 'symbol' : '1.0-0') ?? t('N/A')
                 }}</span>
@@ -54,7 +54,7 @@
           </mat-expansion-panel-header>
 
           <ng-template matExpansionPanelContent>
-            <div class="text-secondary mb-2 flex items-center gap-2 text-sm font-medium uppercase tracking-wide">
+            <div class="mb-2 flex items-center gap-2 text-sm font-medium tracking-wide text-secondary uppercase">
               <mat-icon class="icon-size-4" svgIcon="fa-solid:wrench"></mat-icon>
               <span>{{ t('Measures') }}</span>
             </div>

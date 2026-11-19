@@ -86,11 +86,11 @@
     </div>
 
     @if (error) {
-      <div class="mt-4 rounded bg-red-50 p-3 text-center text-red-700">{{ error }}</div>
+      <div class="mt-4 rounded-sm bg-red-50 p-3 text-center text-red-700">{{ error }}</div>
     }
   </div>
 
-  <div class="flex items-center justify-end gap-2 bg-gray-50 px-6 py-4 dark:bg-black dark:bg-opacity-10">
+  <div class="flex items-center justify-end gap-2 bg-gray-50 px-6 py-4 dark:bg-black/10">
     <button [matDialogClose]="false" [disabled]="submitted" mat-stroked-button>Cancel</button>
     <button [disabled]="submitted || !formValid" (click)="save()" mat-flat-button color="primary">
       @if (!submitted) {

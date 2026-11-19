@@ -1,6 +1,6 @@
-<div class="ml-4 mt-4 flex gap-4" mat-dialog-title>
-  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:plug"></mat-icon>
-  <div class="text-2xl font-medium leading-6">Add Properties</div>
+<div class="mt-4 ml-4 flex gap-4" mat-dialog-title>
+  <mat-icon class="icon-size-5 text-current" svgIcon="fa-solid:plug"></mat-icon>
+  <div class="text-2xl leading-6 font-medium">Add Properties</div>
 </div>
 <mat-divider></mat-divider>
 
@@ -32,7 +32,7 @@
 
     <!-- Selected properties -->
     @for (prop of selectedProperties; track prop.property_id) {
-      <div class="flex items-center justify-between rounded border border-gray-200 px-3 py-1.5 text-sm">
+      <div class="flex items-center justify-between rounded-sm border border-gray-200 px-3 py-1.5 text-sm">
         <span>{{ prop.property_display_name || 'Property ' + prop.property_id }}</span>
         <button class="scale-75" (click)="removeProperty(prop)" mat-icon-button matTooltip="Remove">
           <mat-icon class="text-red-600" svgIcon="fa-solid:xmark"></mat-icon>
@@ -54,7 +54,7 @@
   </div>
 
   @if (errorMessage) {
-    <div class="rounded bg-red-100 p-3 text-sm text-red-700">{{ errorMessage }}</div>
+    <div class="rounded-sm bg-red-100 p-3 text-sm text-red-700">{{ errorMessage }}</div>
   }
 </mat-dialog-content>
 

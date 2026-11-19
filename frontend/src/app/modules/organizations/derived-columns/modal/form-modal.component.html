@@ -1,7 +1,7 @@
 <!-- header -->
 <div class="mt-4 flex gap-4" mat-dialog-title>
-  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:pen-to-square"></mat-icon>
-  <div class="text-2xl font-medium leading-6">{{ update ? 'Edit' : 'Create' }} Derived Column</div>
+  <mat-icon class="icon-size-5 text-current" svgIcon="fa-solid:pen-to-square"></mat-icon>
+  <div class="text-2xl leading-6 font-medium">{{ update ? 'Edit' : 'Create' }} Derived Column</div>
 </div>
 <mat-divider></mat-divider>
 
@@ -57,7 +57,7 @@
     }
 
     <a (click)="addParameter()" mat-flat-button color="primary">
-      <mat-icon class="fill-white icon-size-4" svgIcon="fa-solid:plus"></mat-icon>
+      <mat-icon class="icon-size-4 fill-white" svgIcon="fa-solid:plus"></mat-icon>
       <span class="ml-2">Add Parameter</span>
     </a>
 

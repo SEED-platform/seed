@@ -11,8 +11,8 @@
 >
   <div class="h-full-page m-5" id="content">
     <div class="my-5 flex gap-4">
-      <div class="bold min-w-40 whitespace-nowrap text-lg">{{ analysis?.service }} Analysis</div>
-      <div class="text-secondary max-w-160">{{ analysisDescription }}</div>
+      <div class="bold min-w-40 text-lg whitespace-nowrap">{{ analysis?.service }} Analysis</div>
+      <div class="max-w-160 text-secondary">{{ analysisDescription }}</div>
     </div>
     <mat-divider></mat-divider>
 
@@ -29,8 +29,8 @@
     <mat-divider></mat-divider>
 
     <div class="my-5 flex gap-4">
-      <div class="bold w-40 whitespace-nowrap text-lg">Configuration</div>
-      <ul class="text-secondary list-disc pl-5">
+      <div class="bold w-40 text-lg whitespace-nowrap">Configuration</div>
+      <ul class="list-disc pl-5 text-secondary">
         @for (item of analysis?.configuration | keyvalue; track $index) {
           @if (item.key === 'meter') {
             <div [innerHTML]="meterConfig(item)"></div>
@@ -43,8 +43,8 @@
 
     <mat-divider></mat-divider>
     <div class="my-5 flex gap-4">
-      <div class="bold w-40 whitespace-nowrap text-lg">Latest Message</div>
-      <div class="text-secondary max-w-160">
+      <div class="bold w-40 text-lg whitespace-nowrap">Latest Message</div>
+      <div class="max-w-160 text-secondary">
         {{ latestMessage }}
       </div>
     </div>

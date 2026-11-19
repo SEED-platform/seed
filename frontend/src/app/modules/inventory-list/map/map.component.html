@@ -18,9 +18,9 @@
     <div class="m-4 flex gap-8">
       <!-- CYCLE -->
       <div>
-        <mat-label class="text-secondary my-auto mr-4 text-sm">Cycle</mat-label>
+        <mat-label class="my-auto mr-4 text-sm text-secondary">Cycle</mat-label>
         <mat-select
-          class="h-10 w-60 rounded border border-gray-500 p-3 text-sm"
+          class="h-10 w-60 rounded-sm border border-gray-500 p-3 text-sm"
           [(value)]="cycle"
           [disabled]="inProgress"
           (selectionChange)="cycle$.next()"
@@ -131,7 +131,7 @@
           >
             <span class="font-medium text-blue-600 hover:underline dark:text-blue-400">{{ popupInfo.displayValue }}</span>
             <button
-              class="absolute -right-1.5 -top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gray-200 text-xs text-gray-600 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+              class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-gray-200 text-xs text-gray-600 hover:bg-gray-300 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
               (click)="dismissPopup(); $event.stopPropagation()"
               aria-label="Close popup"
             >
@@ -148,7 +148,7 @@
     <!-- EUI GRADIENT -->
     @if (!inProgress) {
       <div
-        class="text-secondary absolute bottom-0 right-0 rounded-tl-lg border border-opacity-0 bg-gray-100 p-1 pb-0 text-xs opacity-100 dark:text-secondary dark:bg-gray-900"
+        class="absolute right-0 bottom-0 rounded-tl-lg border border-transparent bg-gray-100 p-1 pb-0 text-xs text-secondary opacity-100 dark:bg-gray-900 dark:text-secondary"
       >
         <div class="flex">
           <span class="mr-2">Total Site EUI (kBtu/ft²)</span>

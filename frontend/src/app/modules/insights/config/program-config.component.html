@@ -12,7 +12,7 @@
         </mat-select>
       </mat-form-field>
       @if (program) {
-        <button class="text-secondary px-5" [disabled]="!program" (click)="removeProgram()" mat-stroked-button title="Delete Program">
+        <button class="px-5 text-secondary" [disabled]="!program" (click)="removeProgram()" mat-stroked-button title="Delete Program">
           <mat-icon class="scale-50" svgIcon="fa-solid:xmark"></mat-icon>
           Delete
         </button>
@@ -33,7 +33,7 @@
           <mat-icon class="scale-50" svgIcon="fa-solid:gears"></mat-icon>
           General Settings
         </div>
-        <div class="text-secondary ml-10 text-sm">
+        <div class="ml-10 text-sm text-secondary">
           Configure your program metric to enable visualizations on the
           <a class="text-primary underline dark:text-primary-400" (click)="close()" routerLink="/insights/program-overview"
             >program overview</a
@@ -89,7 +89,7 @@
           <mat-icon class="scale-50" svgIcon="fa-solid:gears"></mat-icon>
           Metric Settings
         </div>
-        <div class="text-secondary ml-10 text-sm">
+        <div class="ml-10 text-sm text-secondary">
           The overall metric can be made up of an energy metric, an emission metric, or both. At least one type of metric is required and if
           two are defined, then both metrics must be met for compliance.
         </div>
@@ -97,7 +97,7 @@
 
       <!-- ENERGY -->
       <div class="flex flex-col rounded-lg border p-4">
-        <div class="text-secondary w-full text-center">Energy Metric</div>
+        <div class="w-full text-center text-secondary">Energy Metric</div>
 
         <mat-form-field class="flex-1">
           <mat-label>Actual Field</mat-label>
@@ -130,7 +130,7 @@
 
       <!-- EMISSION -->
       <div class="mt-4 flex flex-col rounded-lg border p-4">
-        <div class="text-secondary w-full text-center">Emission Metric</div>
+        <div class="w-full text-center text-secondary">Emission Metric</div>
         <mat-form-field class="flex-1">
           <mat-label>Actual Field</mat-label>
           <mat-select formControlName="actual_emission_column">
@@ -167,7 +167,7 @@
           <mat-icon class="scale-50" svgIcon="fa-solid:gears"></mat-icon>
           Visualization Settings
         </div>
-        <div class="text-secondary ml-10 text-sm">
+        <div class="ml-10 text-sm text-secondary">
           Select at least one field which will serve as the x-axis for visualizations on the
           <a class="text-primary underline dark:text-primary-400" (click)="close()" routerLink="/insights/property-insights"
             >property insights</a
@@ -201,7 +201,7 @@
     </form>
   </div>
   <div class="h-6"></div>
-  <div class="pointer-events-none sticky bottom-0 left-0 h-12 w-full bg-gradient-to-t from-white to-transparent dark:from-slate-800"></div>
+  <div class="pointer-events-none sticky bottom-0 left-0 h-12 w-full bg-linear-to-t from-white to-transparent dark:from-slate-800"></div>
 </div>
 <mat-divider></mat-divider>
 <div class="mt-4 flex justify-end gap-2">

@@ -3,7 +3,7 @@
     <div class="flex-auto p-6 sm:p-10" *transloco="let t">
       <div class="max-w-2xl">
         <form
-          class="bg-card flex flex-col gap-y-6 overflow-hidden rounded-2xl p-2 pb-4 shadow"
+          class="flex flex-col gap-y-6 overflow-hidden rounded-2xl bg-card p-2 pb-4 shadow-sm"
           [formGroup]="apiKeyForm"
           (ngSubmit)="submit()"
         >
@@ -14,7 +14,7 @@
 
           @if (betterEnabled) {
             <div class="flex flex-col">
-              <div class="prose my-4">
+              <div class="my-4 prose">
                 Your BETTER API key will need to be verified before it can be saved. Please paste your key below and then click the 'Verify
                 Token' button.
               </div>

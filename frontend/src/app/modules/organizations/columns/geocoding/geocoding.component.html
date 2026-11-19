@@ -3,7 +3,7 @@
   <ng-template #saveRow let-announce="announce">
     <div class="flex flex-row items-center gap-4">
       <button
-        class="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary focus-visible:outline-solid"
         [disabled]="!hasUnsavedChanges || saving"
         (click)="save()"
         mat-flat-button
@@ -26,35 +26,35 @@
     </div>
   </ng-template>
 
-  <div class="text-secondary my-6">{{ t('Drag columns to reorder them. Add columns with the selector below.') }}</div>
+  <div class="my-6 text-secondary">{{ t('Drag columns to reorder them. Add columns with the selector below.') }}</div>
 
   <ng-container *ngTemplateOutlet="saveRow; context: { announce: true }"></ng-container>
 
   <div class="" [attr.aria-busy]="saving" [cdkDropListDisabled]="saving" (cdkDropListDropped)="drop($event)" cdkDropList>
     @for (column of columns; track column.id) {
       <div
-        class="w-75 dark:color-white my-2 flex flex-row items-center justify-between space-x-2 rounded-md border border-solid border-slate-600 bg-slate-100 p-2 drop-shadow-md dark:bg-gray-700"
+        class="dark:color-white my-2 flex flex-row items-center justify-between space-x-2 rounded-md border border-solid border-slate-600 bg-slate-100 p-2 drop-shadow-md dark:bg-gray-700"
         cdkDrag
       >
-        <div class="leading-40 flex flex-row space-x-4 text-lg">
+        <div class="flex flex-row space-x-4 text-lg">
           <div>{{ $index + 1 }}</div>
           <div>{{ column.display_name }}</div>
         </div>
         <div class="ml-auto flex">
           <button
-            class="focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            class="focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-solid"
             [attr.aria-label]="t('Remove {{columnName}} from geocoding', { columnName: column.display_name })"
             [disabled]="saving"
             [matTooltip]="t('Remove from geocoding')"
             (click)="remove(column)"
             mat-icon-button
           >
-            <mat-icon class="text-secondary icon-size-5" svgIcon="fa-solid:xmark"></mat-icon>
+            <mat-icon class="icon-size-5 text-secondary" svgIcon="fa-solid:xmark"></mat-icon>
           </button>
         </div>
       </div>
     } @empty {
-      <div class="text-secondary my-4">{{ t('GEOCODING_COL_COUNT_REQUIREMENT') }}</div>
+      <div class="my-4 text-secondary">{{ t('GEOCODING_COL_COUNT_REQUIREMENT') }}</div>
     }
   </div>
 
@@ -74,7 +74,7 @@
         </mat-select>
       </mat-form-field>
       <button
-        class="focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+        class="focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary focus-visible:outline-solid"
         [disabled]="addForm.invalid || saving"
         type="submit"
         mat-flat-button
@@ -86,6 +86,6 @@
     </form>
   </section>
 
-  <div class="prose my-4">{{ t('When all your changes have been made, make sure to save them.') }}</div>
+  <div class="my-4 prose">{{ t('When all your changes have been made, make sure to save them.') }}</div>
   <ng-container *ngTemplateOutlet="saveRow; context: { announce: false }"></ng-container>
 </ng-container>

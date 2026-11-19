@@ -1,9 +1,9 @@
 <div class="flex">
-  <mat-label class="text-secondary my-auto mr-4 text-sm">Labels</mat-label>
+  <mat-label class="my-auto mr-4 text-sm text-secondary">Labels</mat-label>
 
   <!-- LABEL SELECT -->
   <input
-    class="text-secondary mr-4 h-[40px] rounded border border-gray-500 px-3 text-sm"
+    class="mr-4 h-[40px] rounded-sm border border-gray-500 px-3 text-sm text-secondary"
     [(ngModel)]="labelInput"
     [matAutocomplete]="auto"
     (input)="labelInputChange($event)"
@@ -14,19 +14,19 @@
   <mat-autocomplete #auto="matAutocomplete">
     @for (label of filteredLabels; track $index) {
       <mat-option class="w-100" [value]="label" (click)="addLabel(label)">
-        <span class="whitespace-nowrap rounded-lg border p-2" [style.background-color]="colorMap[label.color]">{{ label.name }}</span>
+        <span class="rounded-lg border p-2 whitespace-nowrap" [style.background-color]="colorMap[label.color]">{{ label.name }}</span>
       </mat-option>
     }
   </mat-autocomplete>
 
   <!-- LABEL OPERATOR -->
   <mat-select
-    class="text-secondary mr-4 h-[40px] w-36 rounded border border-gray-500 px-3 text-sm"
+    class="mr-4 h-[40px] w-36 rounded-sm border border-gray-500 px-3 text-sm text-secondary"
     [value]="labelOperator"
     (selectionChange)="selectLabelOperator($event.value)"
   >
     @for (operator of labelOperators; track $index) {
-      <mat-option class="text-secondary text-sm" [value]="operator.value">
+      <mat-option class="text-sm text-secondary" [value]="operator.value">
         {{ operator.name }}
       </mat-option>
     }

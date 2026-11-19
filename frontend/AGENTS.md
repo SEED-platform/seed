@@ -10,7 +10,7 @@ Angular frontend for the SEED Platform™ (Standard Energy Efficiency Data) — 
 data management, with key workflows around inventory, insights/reporting, data quality, and
 analyses. Paired with the Django backend in [`../backend`](../backend) of this repository.
 
-**Stack:** Angular 22 · TypeScript 6.0 · RxJS · TailwindCSS · Angular Material · Chart.js · Ag-Grid ·
+**Stack:** Angular 22 · TypeScript 6.0 · RxJS · TailwindCSS 4 · Angular Material · Chart.js · Ag-Grid ·
 Transloco (i18n) · pnpm
 
 **Backend API (`/api/v3/` vs `/api/v4/`):** The Django backend exposes both versioned REST APIs.
@@ -65,7 +65,7 @@ src/
     components/    #   reusable UI kit (ag-grid, alert, card, drawer, label, modal, page, …)
     services/      #   app-wide services (config, confirmation, loading, error, media, …)
     materials/     #   MaterialImports barrel re-exporting Angular Material modules
-    directives/ guards/ pipes/ routing/ validators/ styles/ tailwind/
+    directives/ guards/ pipes/ routing/ validators/ styles/
   app/             # The application itself
     core/          #   auth, icons, navigation, snack-bar, transloco wiring
     layout/        #   shell layout component + layouts/
@@ -115,7 +115,7 @@ Three linters run in parallel via `pnpm lint` (or `pnpm lint:fix` to auto-fix):
 |------|-------|--------|
 | ESLint + `angular-eslint` (+ `@cspell/eslint-plugin`) | `**/*.ts`, `**/*.html` | `eslint.config.mjs` |
 | Prettier | `src/**/*.html` (template formatting) | `.prettierrc` |
-| Stylelint | `src/**/*.scss` | `.stylelintrc.js` |
+| Stylelint | `src/**/*.{css,scss}` | `.stylelintrc.js` |
 
 **Key ESLint rules:**
 - `@typescript-eslint/consistent-type-definitions` → `type` only (never `interface`)
@@ -172,12 +172,19 @@ Import order/sorting and the single-quote/no-semicolon style are eslint/prettier
 ### CSS & UI (TailwindCSS + Angular Material)
 - Tailwind utility-first, mobile-first; **all new UI must support both light and dark themes**.
   Avoid broad/global SCSS — scope styles to the component.
-- **Colors:** never hardcode hex/rgb in templates or SCSS. Use the semantic theme utilities the
-  theme plugin generates from `tailwind.config.ts` (`text-primary-{50-900}`, `bg-card`,
-  `text-secondary`, … — see `src/@seed/tailwind/plugins/theming.ts`), which already adapt
-  light/dark; add a `dark:` variant only for a one-off the theme doesn't cover. On Material
-  components, express intent with `color="primary"`/`"accent"`/`"warn"`. If you must reference a
-  `--seed-*` variable in SCSS, use the `rgb(var(--seed-*-rgb) / <alpha>)` form.
+- **Tailwind CSS v4** is configured CSS-first in `src/styles/tailwind.css` (theme, custom
+  utilities, global base styles); there is no `tailwind.config.ts`. Angular compiles each stylesheet
+  separately, so an SCSS file that uses `@apply`, `@variant` or `--theme()` must start with
+  `@reference '#tailwind';` (after any `@use`; `#tailwind` is the `package.json` `imports` alias for
+  that file). Mark important utilities with a `!` suffix (`@apply text-primary!`), not
+  `@apply … !important`. In SCSS, read Tailwind colors with `--theme(--color-*)` (or `@apply`), not
+  a bare `var(--color-*)`, which is only defined when a template also uses that color.
+- **Colors:** never hardcode hex/rgb in templates or SCSS. Use the semantic theme utilities from
+  `src/styles/tailwind.css` (`text-primary-{50-900}`, `bg-card`, `text-secondary`, …; the palettes
+  live in `src/@seed/styles/user-themes.scss`), which already adapt light/dark; add a `dark:` variant
+  only for a one-off the theme doesn't cover. On Material components, express intent with
+  `color="primary"`/`"accent"`/`"warn"`. If you must reference a `--seed-*` variable in SCSS, use the
+  `rgb(var(--seed-*-rgb) / <alpha>)` form.
 - **Buttons:** primary/main actions are the theme's dark-blue primary with white text — get this by
   picking the Material variant that matches intent rather than hand-styling: `mat-flat-button` for
   a primary action, `mat-stroked-button` for secondary/cancel, `mat-icon-button` for icon-only,
@@ -187,10 +194,10 @@ Import order/sorting and the single-quote/no-semicolon style are eslint/prettier
   `action`/`actionIcon`/`actionText` (and `action2*`) into `<seed-page [config]="...">`, which
   renders it consistently (see `organizations/cycles/cycles.component.html`). Reuse the shared
   icon-button styles and icons for add/save/edit/delete so the look stays consistent across the site.
-- **Icon sizing:** size `mat-icon` with the `icon-size-*` scale (e.g. `icon-size-4`, `icon-size-5`
-  — defined in `src/@seed/tailwind/plugins/icon-size.ts`), not raw `w-*`/`h-*` classes.
+- **Icon sizing:** size `mat-icon` with the `icon-size-*` utility (e.g. `icon-size-4`, `icon-size-5`,
+  on the spacing scale — defined in `src/styles/tailwind.css`), not raw `w-*`/`h-*` classes.
 - **Spacing:** prefer flex/grid `gap-*` between sibling elements over `space-x-*`/`space-y-*` or
-  manual `mr-*`/`ml-*`; reach for the extended spacing scale in `tailwind.config.ts` rather than
+  manual `mr-*`/`ml-*`; use the spacing scale (any multiple of 0.25rem, e.g. `p-13`) rather than
   arbitrary-value classes like `p-[13px]`.
 - **Angular Material form fields:** default appearance is `fill` (set globally in `seed.provider.ts`).
 - **Images/media:** prefer `webp` or `svg` formats.

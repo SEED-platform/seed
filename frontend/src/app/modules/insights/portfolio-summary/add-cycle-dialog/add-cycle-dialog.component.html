@@ -2,7 +2,7 @@
   <seed-modal-header [close]="close.bind(this)" [title]="title" titleIcon="fa-solid:rotate"></seed-modal-header>
 
   <mat-dialog-content>
-    <p class="text-secondary mb-4 text-sm">
+    <p class="mb-4 text-sm text-secondary">
       {{
         t(
           'Add a new cycle to compare against the baseline. The latest cycle added will be the "current" cycle for comparison. Older cycles remain available for historical reference.'
@@ -32,7 +32,7 @@
         </mat-form-field>
       } @else {
         <div class="flex items-center gap-2 text-sm">
-          <mat-icon class="text-amber-600 icon-size-4 dark:text-amber-400" svgIcon="heroicons-solid:exclamation-triangle"></mat-icon>
+          <mat-icon class="icon-size-4 text-amber-600 dark:text-amber-400" svgIcon="heroicons-solid:exclamation-triangle"></mat-icon>
           <span class="text-amber-700 dark:text-amber-400">
             {{ t('Not connected to Salesforce.') }}
             <a class="cursor-pointer underline" (click)="goToSalesforceSettings()">{{ t('Log in via Organization Settings') }}</a>

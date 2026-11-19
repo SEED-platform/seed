@@ -1,8 +1,8 @@
 <div class="relative mr-1 flex flex-col">
-  <mat-label class="text-secondary text-sm">Filter Group</mat-label>
+  <mat-label class="text-sm text-secondary">Filter Group</mat-label>
   <div class="flex h-8 items-center gap-1">
     <mat-select
-      class="bg-card h-6 w-50 self-start rounded border border-gray-500 p-3 text-sm"
+      class="h-6 w-50 self-start rounded-sm border border-gray-500 bg-card p-3 text-sm"
       [(value)]="selectedFilterGroupId"
       (selectionChange)="onFilterGroupChange($event.value)"
       placeholder="None"
@@ -20,7 +20,7 @@
     @if (isAliRoot) {
       <div class="flex items-center gap-2">
         <button
-          class="!size-8 !min-w-0"
+          class="size-8! min-w-0!"
           [disabled]="!selectedFilterGroup || !modified"
           (click)="saveFilterGroup()"
           mat-icon-button
@@ -29,7 +29,7 @@
           <mat-icon class="scale-75 text-green-600" svgIcon="fa-solid:floppy-disk" />
         </button>
         <button
-          class="!size-8 !min-w-0"
+          class="size-8! min-w-0!"
           [disabled]="!selectedFilterGroup"
           (click)="renameFilterGroup()"
           mat-icon-button
@@ -38,7 +38,7 @@
           <mat-icon class="scale-75 fill-cyan-600" svgIcon="fa-solid:pencil" />
         </button>
         <button
-          class="!size-8 !min-w-0"
+          class="size-8! min-w-0!"
           [disabled]="!selectedFilterGroup"
           (click)="deleteFilterGroup()"
           mat-icon-button
@@ -46,7 +46,7 @@
         >
           <mat-icon class="scale-75 text-red-500" svgIcon="fa-solid:trash" />
         </button>
-        <button class="!size-8 !min-w-0" (click)="newFilterGroup()" mat-icon-button matTooltip="New Filter Group">
+        <button class="size-8! min-w-0!" (click)="newFilterGroup()" mat-icon-button matTooltip="New Filter Group">
           <mat-icon class="scale-75 fill-primary-700" svgIcon="fa-solid:plus" />
         </button>
       </div>
@@ -54,22 +54,22 @@
 
     <!-- Label toggle -->
     <button
-      class="ml-1 flex h-8 items-center gap-1 rounded px-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+      class="ml-1 flex h-8 items-center gap-1 rounded-sm px-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
       [attr.aria-expanded]="showLabelPanel"
       (click)="showLabelPanel = !showLabelPanel"
       type="button"
     >
-      <mat-icon class="!text-blue-600 icon-size-5" [class.!text-blue-800]="hasLabelSelections" fontIcon="label" />
+      <mat-icon class="icon-size-5 text-blue-600!" [class.text-blue-800!]="hasLabelSelections" fontIcon="label" />
       <span>Filter by labels</span>
     </button>
   </div>
 
   <!-- Label filter panel (collapsible popover) -->
   @if (showLabelPanel && labels.length > 0) {
-    <div class="absolute right-0 top-full z-10 mt-1 w-96 rounded border bg-white p-3 shadow-md dark:bg-gray-900" *transloco="let t">
+    <div class="absolute top-full right-0 z-10 mt-1 w-96 rounded-sm border bg-white p-3 shadow-md dark:bg-gray-900" *transloco="let t">
       <div class="mb-2 flex items-center justify-between">
         <span class="text-sm font-semibold">Label Filters</span>
-        <button class="!size-6 !min-w-0" [attr.aria-label]="t('Close')" (click)="showLabelPanel = false" mat-icon-button>
+        <button class="size-6! min-w-0!" [attr.aria-label]="t('Close')" (click)="showLabelPanel = false" mat-icon-button>
           <mat-icon class="icon-size-4" fontIcon="close" />
         </button>
       </div>

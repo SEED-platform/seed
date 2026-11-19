@@ -1,2 +1,5 @@
 @use 'appearances/default';
 @use 'appearances/dense';
+
+/* For @apply in the appearances */
+@reference '#tailwind';

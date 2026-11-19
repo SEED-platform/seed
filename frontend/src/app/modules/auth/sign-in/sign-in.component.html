@@ -1,6 +1,6 @@
 @if (!twoFactorStep) {
   <!-- Title -->
-  <div class="mt-8 text-4xl font-extrabold leading-tight tracking-tight">Sign in</div>
+  <div class="mt-8 text-4xl leading-tight font-extrabold tracking-tight">Sign in</div>
   @if (allowSignUp) {
     <div class="mt-0.5 flex items-baseline font-medium">
       <div>Don't have an account?</div>
@@ -10,7 +10,7 @@
 
   <!-- Alert -->
   @if (showAlert) {
-    <seed-alert class="-mb-4 mt-8" [@shake]="alert.type === 'error'" [showIcon]="false" [type]="alert.type" appearance="outline">
+    <seed-alert class="mt-8 -mb-4" [@shake]="alert.type === 'error'" [showIcon]="false" [type]="alert.type" appearance="outline">
       {{ alert.message }}
     </seed-alert>
   }
@@ -63,8 +63,8 @@
     </div>
 
     @if (termsPreviouslyAccepted) {
-      <div class="text-secondary mt-1.5 flex w-full items-center gap-2">
-        <mat-icon class="text-green-600 icon-size-5" svgIcon="fa-solid:circle-check"></mat-icon>
+      <div class="mt-1.5 flex w-full items-center gap-2 text-secondary">
+        <mat-icon class="icon-size-5 text-green-600" svgIcon="fa-solid:circle-check"></mat-icon>
         <span>Already accepted Data Terms</span>
         <button class="text-primary-500" (click)="showTermsOfService()" mat-button type="button">Review terms</button>
       </div>
@@ -101,8 +101,8 @@
 } @else {
   <ng-container *transloco="let t">
     <!-- Title -->
-    <div class="mt-8 text-4xl font-extrabold leading-tight tracking-tight">{{ t('Two-factor authentication') }}</div>
-    <div class="text-secondary mt-0.5 font-medium">
+    <div class="mt-8 text-4xl leading-tight font-extrabold tracking-tight">{{ t('Two-factor authentication') }}</div>
+    <div class="mt-0.5 font-medium text-secondary">
       @if (twoFactorMethod === 'email') {
         {{ t('A verification code has been sent to your email address.') }}
       } @else {
@@ -112,7 +112,7 @@
 
     <!-- Alert -->
     @if (showAlert) {
-      <seed-alert class="-mb-4 mt-8" [@shake]="alert.type === 'error'" [showIcon]="false" [type]="alert.type" appearance="outline">
+      <seed-alert class="mt-8 -mb-4" [@shake]="alert.type === 'error'" [showIcon]="false" [type]="alert.type" appearance="outline">
         {{ alert.message }}
       </seed-alert>
     }

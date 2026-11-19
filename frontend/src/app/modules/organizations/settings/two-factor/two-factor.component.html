@@ -13,7 +13,11 @@
           Checking this box requires all organization users to use Two-Factor Authentication (2FA). If a user does not already have a 2FA
           method configured, an email-based authentication method will be set as the default.
         </div>
-        <form class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow" [formGroup]="twoFactorForm" (ngSubmit)="submit()">
+        <form
+          class="flex flex-col overflow-hidden rounded-2xl bg-card p-2 pb-4 shadow-sm"
+          [formGroup]="twoFactorForm"
+          (ngSubmit)="submit()"
+        >
           <div class="my-6 flex flex-col">
             <mat-slide-toggle formControlName="require_2fa"
               ><mat-label>{{ t('Require Two Factor Authentication') }}</mat-label></mat-slide-toggle

@@ -6,14 +6,14 @@
       <mat-icon class="scale-50" [svgIcon]="sortIcon"></mat-icon>
     }
   </div>
-  <div class="cursor-pointer rounded hover:bg-gray-100 dark:hover:bg-gray-800" (click)="toggleMenu()">
+  <div class="cursor-pointer rounded-sm hover:bg-gray-100 dark:hover:bg-gray-800" (click)="toggleMenu()">
     <mat-icon class="scale-50" svgIcon="fa-solid:ellipsis-vertical"></mat-icon>
   </div>
 </div>
 
 <!-- MENU -->
 <ng-template #menu>
-  <div class="w-60 rounded border p-2 text-sm" [class.bg-[#2A3341]]="scheme === 'dark'" [class.bg-white]="scheme === 'light'">
+  <div class="w-60 rounded-sm border p-2 text-sm" [class.bg-[#2A3341]]="scheme === 'dark'" [class.bg-white]="scheme === 'light'">
     <div class="menu-option" (click)="sortCol('asc')">
       <mat-icon class="scale-50" svgIcon="fa-solid:arrow-up"></mat-icon>
       <span>Sort Ascending</span>

@@ -1,6 +1,6 @@
 <div class="flex min-w-0 flex-auto flex-col" *transloco="let t">
   <div
-    class="bg-card flex flex-0 flex-col border-b px-6 sm:flex-row sm:items-center sm:justify-between sm:px-10 dark:bg-transparent"
+    class="flex flex-none flex-col border-b bg-card px-6 sm:flex-row sm:items-center sm:justify-between sm:px-10 dark:bg-transparent"
     [ngClass]="headerPaddingClass"
     [style.padding-bottom]="tabsPaddingBottom"
   >
@@ -17,11 +17,11 @@
               @for (crumb of breadcrumbs; track $index) {
                 <li class="flex items-center gap-x-1 whitespace-nowrap">
                   @if (!$first) {
-                    <mat-icon class="text-secondary icon-size-3" aria-hidden="true" svgIcon="fa-solid:chevron-right"></mat-icon>
+                    <mat-icon class="icon-size-3 text-secondary" aria-hidden="true" svgIcon="fa-solid:chevron-right"></mat-icon>
                   }
                   @if (crumb.link) {
                     <a
-                      class="rounded-sm text-primary hover:underline focus-visible:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary dark:text-primary-400 dark:focus-visible:outline-primary-400"
+                      class="rounded-xs text-primary hover:underline focus-visible:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary focus-visible:outline-solid dark:text-primary-400 dark:focus-visible:outline-primary-400"
                       [routerLink]="crumb.link"
                       >{{ crumb.translate === false ? crumb.label : t(crumb.label) }}</a
                     >
@@ -37,18 +37,18 @@
 
       <div [ngClass]="{ 'mt-2': breadcrumbs.length > 0 }">
         <div class="flex">
-          <h2 class="truncate font-bold capitalize tracking-tight" [ngClass]="titleClass">
+          <h2 class="truncate font-bold tracking-tight capitalize" [ngClass]="titleClass">
             @if (config.titleIcon) {
-              <mat-icon class="text-primary-900 icon-size-6 dark:text-primary-300" [svgIcon]="config.titleIcon"></mat-icon>
+              <mat-icon class="icon-size-6 text-primary-900 dark:text-primary-300" [svgIcon]="config.titleIcon"></mat-icon>
             }
             {{ t(config.title) }}
             @if (config.subTitle) {
-              <span class="text-secondary ml-2 text-2xl font-normal">({{ config.subTitle }})</span>
+              <span class="ml-2 text-2xl font-normal text-secondary">({{ config.subTitle }})</span>
             }
           </h2>
           @if (config.switchLink && otherInventoryType) {
             <button class="ml-4 self-center capitalize" (click)="toggleInventoryType(otherInventoryType)" mat-button>
-              <mat-icon class="mr-0.5 icon-size-4" svgIcon="heroicons-outline:arrows-right-left"></mat-icon>
+              <mat-icon class="icon-size-4" svgIcon="heroicons-outline:arrows-right-left"></mat-icon>
               {{ t('Switch to') }} {{ t(otherInventoryType) }}
             </button>
           }
@@ -58,7 +58,7 @@
     <!-- Actions -->
     <div class="flex justify-end" [ngClass]="actionsClass">
       @if (config.action2) {
-        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+        <div class="mt-6 flex shrink-0 items-center sm:mt-0 sm:ml-4">
           @if (config.action2Icon && !config.action2Text) {
             <button [class]="config.action2Classes" (click)="config.action2()" mat-icon-button>
               <mat-icon [svgIcon]="config.action2Icon"></mat-icon>
@@ -76,7 +76,7 @@
         </div>
       }
       @if (config.action) {
-        <div class="mt-6 flex shrink-0 items-center sm:ml-4 sm:mt-0">
+        <div class="mt-6 flex shrink-0 items-center sm:mt-0 sm:ml-4">
           @if (config.actionIcon && !config.actionText) {
             <button [class]="config.actionClasses" (click)="config.action()" mat-icon-button>
               <mat-icon [svgIcon]="config.actionIcon"></mat-icon>
@@ -97,7 +97,7 @@
   </div>
   @if (config.tabs && !config.switchLink) {
     <div class="bg-card">
-      <div class="flex w-full max-w-screen-xl flex-col px-6 sm:px-8">
+      <div class="flex w-full max-w-(--breakpoint-xl) flex-col px-6 sm:px-8">
         <!-- Tabs -->
         <seed-page-inventory-tab
           [config]="{ tabs: config.tabs, action: toggleInventoryType.bind(this), dense: dense }"

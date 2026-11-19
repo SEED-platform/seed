@@ -2,15 +2,15 @@
   <!-- CYCLE -->
 
   <div class="border-bottom my-auto flex gap-4 rounded-lg">
-    <div class="text text-secondary font-bold">Cycle:</div>
+    <div class="text font-bold text-secondary">Cycle:</div>
     <div class="">{{ cycle?.name }}</div>
   </div>
   <div class="vertical-divider"></div>
 
   <!-- PROFILE -->
   <div class="flex gap-4">
-    <div class="text text-secondary my-auto font-bold">Column Profile:</div>
-    <mat-select class="h-10 w-60 rounded border border-gray-500 p-3 text-sm" [(value)]="profile" placeholder="No Profile Selected">
+    <div class="text my-auto font-bold text-secondary">Column Profile:</div>
+    <mat-select class="h-10 w-60 rounded-sm border border-gray-500 p-3 text-sm" [(value)]="profile" placeholder="No Profile Selected">
       <mat-option [value]="null"></mat-option>
       @for (profile of columnMappingProfiles; track profile.id) {
         <mat-option [value]="profile">{{ profile.name }}</mat-option>
@@ -52,7 +52,7 @@
 <mat-divider class="my-5"></mat-divider>
 <div class="flex items-center justify-between">
   <div class="mx-3 my-2 flex gap-4">
-    <div class="h-5 w-10 rounded border bg-primary bg-opacity-25"></div>
+    <div class="h-5 w-10 rounded-sm border bg-primary/25"></div>
     <div class="text-secondary italic">Editable Cell</div>
   </div>
 

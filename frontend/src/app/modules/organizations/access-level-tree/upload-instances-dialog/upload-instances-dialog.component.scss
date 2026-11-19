@@ -1,5 +1,5 @@
 @use '@angular/material' as mat;
-@tailwind utilities;
+@reference '#tailwind';
 
 $height: 0.5rem;
 $primary: '#005191';
@@ -15,13 +15,13 @@ seed-upload-instances-dialog mat-progress-bar {
 body.light seed-upload-instances-dialog mat-progress-bar * {
   @include mat.progress-bar-overrides((
     active-indicator-color: $primary,
-    track-color: theme('colors.slate.200'),
+    track-color: --theme(--color-slate-200),
   ));
 }
 
 body.dark seed-upload-instances-dialog mat-progress-bar * {
   @include mat.progress-bar-overrides((
     active-indicator-color: $primary,
-    track-color: theme('colors.slate.500'),
+    track-color: --theme(--color-slate-500),
   ));
 }

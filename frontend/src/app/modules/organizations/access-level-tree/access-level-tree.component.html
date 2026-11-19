@@ -15,7 +15,7 @@
     <mat-drawer-content>
       <mat-drawer-container class="min-h-[calc(100svh-14rem)]">
         <mat-drawer class="w-72 dark:bg-gray-900" [(opened)]="drawerOpened" [mode]="drawerMode">
-          <div class="mx-6 mb-8 mt-10 text-3xl font-extrabold leading-none tracking-tight">{{ t('Access Levels') }}</div>
+          <div class="mx-6 mt-10 mb-8 text-3xl leading-none font-extrabold tracking-tight">{{ t('Access Levels') }}</div>
 
           @if (currentUser.is_ali_root) {
             <div class="mb-8 flex h-12 items-center">
@@ -40,7 +40,7 @@
 
         <mat-drawer-content class="flex flex-col overflow-hidden">
           <div class="relative flex flex-auto flex-col overflow-y-auto sm:max-h-[calc(100svh-14rem-1px)]">
-            <div class="mx-6 mb-8 mt-10 text-3xl font-extrabold leading-none tracking-tight">{{ t('Access Level Instances') }}</div>
+            <div class="mx-6 mt-10 mb-8 text-3xl leading-none font-extrabold tracking-tight">{{ t('Access Level Instances') }}</div>
             <div class="max-w-4xl px-6 pb-6">
               <div class="mb-4 flex h-12 flex-auto items-center">
                 <mat-form-field class="seed-mat-rounded seed-mat-dense flex-auto" subscriptSizing="dynamic">
@@ -60,9 +60,9 @@
               @if (filteredAccessLevelTree?.length === 0) {
                 <div class="ml-[calc(0.5rem-1px)] flex items-center">
                   <div
-                    class="flex h-10 w-10 flex-0 items-center justify-center rounded-full bg-accent-200 text-accent-600 dark:bg-accent-600 dark:text-accent-50"
+                    class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-accent-200 text-accent-600 dark:bg-accent-600 dark:text-accent-50"
                   >
-                    <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:magnifying-glass-minus"></mat-icon>
+                    <mat-icon class="icon-size-5 text-current" svgIcon="fa-solid:magnifying-glass-minus"></mat-icon>
                   </div>
                   <span class="ml-2">{{ t('No matching instances') }}</span>
                 </div>
@@ -73,7 +73,7 @@
                     class="flex items-center justify-between bg-primary-600 px-4 py-2 text-sm font-semibold text-white dark:bg-primary-500"
                   >
                     <span>{{ t('Level') }} 1: {{ accessLevelNames[0] }}</span>
-                    <button class="ml-2 rounded px-3 py-1 text-xs font-medium text-white hover:bg-white/20" (click)="toggleExpandAll()">
+                    <button class="ml-2 rounded-sm px-3 py-1 text-xs font-medium text-white hover:bg-white/20" (click)="toggleExpandAll()">
                       {{ allExpanded ? t('Collapse All') : t('Expand All') }}
                     </button>
                   </div>
@@ -153,7 +153,7 @@
         <span class="flex-auto truncate py-2 text-sm">{{ instance.name }}</span>
         @if (currentUser.is_ali_root) {
           <button
-            class="m-1.5 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md border-none bg-transparent opacity-0 hover:bg-gray-300 focus:opacity-100 group-hover:opacity-100 dark:hover:bg-gray-600"
+            class="m-1.5 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md border-none bg-transparent opacity-0 group-hover:opacity-100 hover:bg-gray-300 focus:opacity-100 dark:hover:bg-gray-600 pointer-coarse:opacity-100"
             [attr.aria-label]="t('Actions for') + ' ' + instance.name"
             [matMenuTriggerFor]="instanceMenu"
             [matMenuTriggerData]="{ $implicit: instance, depth }"
@@ -206,7 +206,7 @@
 <ng-template #helpTemplate>
   <div class="prose px-4" *transloco="let t">
     <h2 class="mt-6 flex items-center border-b-2 font-extrabold tracking-tight">
-      {{ t('Help') }}<mat-icon class="mx-2 text-current icon-size-3" svgIcon="fa-solid:chevron-right"></mat-icon
+      {{ t('Help') }}<mat-icon class="mx-2 icon-size-3 text-current" svgIcon="fa-solid:chevron-right"></mat-icon
       >{{ t('Access Level Tree') }}
     </h2>
     <p>{{ t('ACCESS_LEVEL_TREE_HELP_1') }}</p>

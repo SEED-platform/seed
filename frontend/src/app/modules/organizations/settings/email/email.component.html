@@ -6,7 +6,7 @@
           Customizes the email sent when a new user is invited to SEED. The body can accept placeholders {{ '{{first_name}}' }} and
           {{ '{{sign_up_link}}' }}, including the braces.
         </div>
-        <form class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow" [formGroup]="emailForm" (ngSubmit)="submit()">
+        <form class="flex flex-col overflow-hidden rounded-2xl bg-card p-2 pb-4 shadow-sm" [formGroup]="emailForm" (ngSubmit)="submit()">
           <div class="flex flex-col">
             <mat-form-field class="mb-6">
               <mat-label>From Email</mat-label>
@@ -46,7 +46,7 @@
               <input type="text" matInput formControlName="new_user_email_signature" placeholder="The SEED Team" />
             </mat-form-field>
           </div>
-          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <mat-divider class="mat-divider mat-divider-horizontal mt-4 mb-6" role="separator" aria-orientation="horizontal"></mat-divider>
 
           <div>
             <button [disabled]="emailForm.invalid || emailForm.pending" mat-flat-button color="primary">

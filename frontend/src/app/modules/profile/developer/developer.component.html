@@ -4,13 +4,13 @@
       <mat-icon class="mr-2 text-primary-900 dark:text-primary-300" svgIcon="fa-solid:code"></mat-icon>Developer
     </h2>
 
-    <div class="bg-card flex flex-col overflow-hidden rounded-2xl p-8 pb-4 shadow">
+    <div class="flex flex-col overflow-hidden rounded-2xl bg-card p-8 pb-4 shadow-sm">
       <h2 class="pb-5 text-xl">{{ t('Manage Your API Key') }}</h2>
 
-      <div class="mb-10 mt-4 flex flex-col items-center">
+      <div class="mt-4 mb-10 flex flex-col items-center">
         <div class="flex flex-wrap items-center justify-center gap-x-2">
-          <span class="text-nowrap font-bold">{{ t('API Key:') }}</span>
-          <span class="bg-default break-all rounded-md border px-5 py-3 font-mono">{{ user.api_key }}</span>
+          <span class="font-bold text-nowrap">{{ t('API Key:') }}</span>
+          <span class="rounded-md border bg-default px-5 py-3 font-mono break-all">{{ user.api_key }}</span>
           <seed-clipboard [text]="user.api_key"></seed-clipboard>
         </div>
         <div class="pt-7">
@@ -26,7 +26,7 @@
         <div class="font-medium">{{ t('Example Usage') }}</div>
         <seed-clipboard [text]="getCurl()"></seed-clipboard>
       </div>
-      <pre class="bg-default overflow-y-auto rounded-md border p-4">{{ getCurl() }}</pre>
+      <pre class="overflow-y-auto rounded-md border bg-default p-4">{{ getCurl() }}</pre>
     </div>
   </div>
 </div>

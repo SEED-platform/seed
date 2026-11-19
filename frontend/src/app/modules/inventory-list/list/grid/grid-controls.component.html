@@ -1,7 +1,7 @@
 <div class="mx-2 flex items-center justify-between gap-4" *transloco="let t">
   <div class="flex min-w-0 flex-1 items-center gap-2">
     <button
-      class="flex shrink-0 items-center rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+      class="flex shrink-0 items-center rounded-sm hover:bg-gray-100 dark:hover:bg-gray-700"
       [attr.aria-label]="t('Reset Grid')"
       [matTooltip]="t('Reset Grid')"
       (click)="resetGrid()"
@@ -75,7 +75,7 @@
     @if (pagination) {
       <span class="my-auto mr-10">{{ pagination.start }} - {{ pagination.end }} of {{ pagination.total }}</span>
       <button
-        class="m-1 flex h-[25px] items-center rounded hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
+        class="m-1 flex h-[25px] items-center rounded-sm hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
         [attr.aria-label]="t('First page')"
         [disabled]="isPageButtonDisabled('first')"
         [matTooltip]="t('First page')"
@@ -85,7 +85,7 @@
         <mat-icon class="scale-50" svgIcon="fa-solid:angles-left"></mat-icon>
       </button>
       <button
-        class="m-1 flex h-[25px] items-center rounded hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
+        class="m-1 flex h-[25px] items-center rounded-sm hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
         [attr.aria-label]="t('Previous page')"
         [disabled]="isPageButtonDisabled('previous')"
         [matTooltip]="t('Previous page')"
@@ -96,7 +96,7 @@
       </button>
       <span class="my-auto">Page {{ pagination.page }} of {{ pagination.num_pages }}</span>
       <button
-        class="m-1 flex h-[25px] items-center rounded hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
+        class="m-1 flex h-[25px] items-center rounded-sm hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
         [attr.aria-label]="t('Next page')"
         [disabled]="isPageButtonDisabled('next')"
         [matTooltip]="t('Next page')"
@@ -106,7 +106,7 @@
         <mat-icon class="scale-50" svgIcon="fa-solid:chevron-right"></mat-icon>
       </button>
       <button
-        class="m-1 flex h-[25px] items-center rounded hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
+        class="m-1 flex h-[25px] items-center rounded-sm hover:bg-white disabled:cursor-default disabled:opacity-40 dark:hover:bg-gray-700"
         [attr.aria-label]="t('Last page')"
         [disabled]="isPageButtonDisabled('last')"
         [matTooltip]="t('Last page')"

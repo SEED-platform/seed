@@ -5,7 +5,7 @@
         <!-- Navigation header hook -->
         <ng-container verticalNavigationContentHeader>
           <div class="static mt-[24px] flex p-4 pl-6">
-            <h3 class="text-sm font-semibold uppercase tracking-wider text-primary-400">Columns</h3>
+            <h3 class="text-sm font-semibold tracking-wider text-primary-400 uppercase">Columns</h3>
           </div>
         </ng-container>
       </seed-vertical-navigation>
@@ -37,7 +37,7 @@
       @if (!helpComponent) {
         <div class="prose px-4" *transloco="let t">
           <h2 class="mt-6 flex items-center border-b-2 font-extrabold tracking-tight">
-            {{ t('Help') }}<mat-icon class="mx-2 text-current icon-size-3" svgIcon="fa-solid:chevron-right"></mat-icon
+            {{ t('Help') }}<mat-icon class="mx-2 icon-size-3 text-current" svgIcon="fa-solid:chevron-right"></mat-icon
             >{{ t('No Help Available Yet') }}
           </h2>
           <p>Available Help Text will appear in this space.</p>

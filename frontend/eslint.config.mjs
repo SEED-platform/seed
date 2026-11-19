@@ -191,15 +191,6 @@ export default tseslint.config(
     },
   },
   {
-    // chroma-js exposes `contrast` at runtime, but its published typings still model the
-    // API around the default export. Keep the readable call site and suppress only this
-    // false-positive import rule for the helper.
-    files: ['src/@seed/tailwind/utils/generate-contrasts.ts'],
-    rules: {
-      'import/no-named-as-default-member': 'off',
-    },
-  },
-  {
     files: ['**/*.html'],
     extends: [
       ...angular.configs.templateRecommended,

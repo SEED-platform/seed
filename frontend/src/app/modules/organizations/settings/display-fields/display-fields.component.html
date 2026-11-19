@@ -3,13 +3,13 @@
     <div class="flex-auto p-6 sm:p-10" *transloco="let t">
       <div class="max-w-2xl">
         <form
-          class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow"
+          class="flex flex-col overflow-hidden rounded-2xl bg-card p-2 pb-4 shadow-sm"
           [formGroup]="defaultDisplayFieldsForm"
           (ngSubmit)="submit()"
         >
           <div class="flex flex-col">
             <div class="text-lg font-medium">Property Display Field</div>
-            <div class="text-secondary prose mb-6">
+            <div class="prose mb-6 text-secondary">
               <p>Determines which column field is used when displaying and identifying a property. Defaults to "Address Line 1".</p>
             </div>
             <mat-form-field class="mb-6">
@@ -22,10 +22,10 @@
               </mat-select>
             </mat-form-field>
           </div>
-          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <mat-divider class="mat-divider mat-divider-horizontal mt-4 mb-6" role="separator" aria-orientation="horizontal"></mat-divider>
           <div class="flex flex-col">
             <div class="text-lg font-medium">TaxLot Display Field</div>
-            <div class="text-secondary prose mb-6">
+            <div class="prose mb-6 text-secondary">
               <p>Determines which column field is used when displaying and identifying a taxlot. Defaults to "Address Line 1".</p>
             </div>
             <mat-form-field class="mb-6">
@@ -38,7 +38,7 @@
               </mat-select>
             </mat-form-field>
           </div>
-          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <mat-divider class="mat-divider mat-divider-horizontal mt-4 mb-6" role="separator" aria-orientation="horizontal"></mat-divider>
           <div class="flex flex-col">
             <div class="text-lg font-medium">Columns to Include in Reports x axis Options</div>
 
@@ -52,7 +52,7 @@
               </mat-select>
             </mat-form-field>
           </div>
-          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <mat-divider class="mat-divider mat-divider-horizontal mt-4 mb-6" role="separator" aria-orientation="horizontal"></mat-divider>
           <div class="flex flex-col">
             <div class="text-lg font-medium">Columns to Include in Reports Y Axis Options</div>
 
@@ -66,7 +66,7 @@
               </mat-select>
             </mat-form-field>
           </div>
-          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <mat-divider class="mat-divider mat-divider-horizontal mt-4 mb-6" role="separator" aria-orientation="horizontal"></mat-divider>
 
           <div>
             <button [disabled]="defaultDisplayFieldsForm.invalid || defaultDisplayFieldsForm.pending" mat-flat-button color="primary">

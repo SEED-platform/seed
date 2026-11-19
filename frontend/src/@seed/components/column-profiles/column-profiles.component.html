@@ -1,9 +1,9 @@
 <div class="h-full-page-tabs flex flex-col gap-2">
   <div class="m-5 flex flex-wrap items-center gap-2">
     <div class="flex flex-wrap items-center gap-2">
-      <mat-label class="text-secondary mr-4 text-sm">Column List Profile</mat-label>
+      <mat-label class="mr-4 text-sm text-secondary">Column List Profile</mat-label>
       <mat-select
-        class="h-10 w-60 rounded border border-gray-500 p-3 text-sm"
+        class="h-10 w-60 rounded-sm border border-gray-500 p-3 text-sm"
         [value]="currentProfile?.id"
         (selectionChange)="selectProfile($event)"
         placeholder="(no profiles)"
@@ -46,8 +46,8 @@
   }
 
   <!-- legend -->
-  <div class="ml-4 text-sm italic text-gray-500">
-    <span class="mr-4"><span class="material-icons align-middle ml-1 text-md text-gray-500">emergency</span>Extra Data Column</span>
-    <span><span class="material-icons align-middle ml-1 text-lg text-gray-500">link</span>Derived Column</span>
+  <div class="ml-4 text-sm text-gray-500 italic">
+    <span class="mr-4"><span class="material-icons ml-1 text-md text-gray-500">emergency</span>Extra Data Column</span>
+    <span><span class="material-icons ml-1 text-lg text-gray-500">link</span>Derived Column</span>
   </div>
 </div>

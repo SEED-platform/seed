@@ -214,7 +214,7 @@ export class ColumnProfilesComponent implements OnDestroy, OnInit {
     container.append(document.createTextNode(' '))
 
     const icon = document.createElement('span')
-    icon.className = `material-icons align-middle ml-1 mb-2 text-secondary ${textSize}`
+    icon.className = `material-icons ml-1 mb-2 text-secondary ${textSize}`
     icon.textContent = iconName
     container.append(icon)
 

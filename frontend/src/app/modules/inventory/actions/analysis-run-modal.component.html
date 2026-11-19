@@ -1,7 +1,7 @@
 <seed-modal-header [close]="close.bind(this)" title="Run Analysis" titleIcon="fa-solid:chart-bar"></seed-modal-header>
 
 @if (!runningAnalysis) {
-  <div class="relative max-h-[60vh] overflow-y-auto !text-sm">
+  <div class="relative max-h-[60vh] overflow-y-auto text-sm!">
     <form class="compact-form flex flex-col gap-1" [formGroup]="form">
       <mat-form-field class="mt-1">
         <mat-label>Analysis Name</mat-label>
@@ -40,7 +40,7 @@
     @if (['BETTER', 'Building Upgrade Recommendation'].includes(service)) {
       <div class="h-6"></div>
       <div
-        class="pointer-events-none sticky bottom-0 left-0 h-12 w-full bg-gradient-to-t from-white to-transparent dark:from-slate-800"
+        class="pointer-events-none sticky bottom-0 left-0 h-12 w-full bg-linear-to-t from-white to-transparent dark:from-slate-800"
       ></div>
     }
   </div>
