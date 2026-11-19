@@ -15,4 +15,7 @@ onlyBuiltDependencies:
   - msgpackr-extract
   - unrs-resolver
 overrides:
+  # @tailwindcss/typography (0.5.20, latest) pins postcss-selector-parser 6.0.10 (GHSA-rj75-hqrm-r3gf).
+  # Remove once a typography release depends on >=6.1.5 (tailwindlabs/tailwindcss-typography#431).
+  '@tailwindcss/typography>postcss-selector-parser': ^6.1.6
   less: ^4.9.1
