@@ -97,6 +97,10 @@ ENV GDAL_LIBRARY_PATH="/usr/lib/libgdal.so" \
 
 WORKDIR /seed
 
+# nginx must be >= 1.30.7: earlier releases have the HTTP/2 flaws CVE-2026-123633 and
+# CVE-2026-123007 (remote code execution when http2 is enabled via NGINX_LISTEN_OPTS).
+# The version floor also invalidates a cached layer that still holds an older nginx and
+# makes the build fail instead of shipping a vulnerable package.
 RUN apk add --no-cache \
         bash \
         brotli \
@@ -111,8 +115,8 @@ RUN apk add --no-cache \
         libxml2 \
         libxslt \
         ncurses-libs \
-        nginx \
-        nginx-mod-http-brotli \
+        'nginx>=1.30.7-r0' \
+        'nginx-mod-http-brotli>=1.30.7-r0' \
         openssl \
         libpq \
         pcre \
