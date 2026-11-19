@@ -449,7 +449,7 @@ Release Instructions
 To make a release do the following:
 
 #. Create a branch from develop to prepare the updates (e.g., 2.21.0-release-prep).
-#. Update the ``backend/package.json``, ``backend/pyproject.toml``, and ``frontend/package.json`` files with the release version number. Always use MAJOR.MINOR.RELEASE.
+#. Update the release version number in ``backend/pyproject.toml`` then run ``uv lock`` in ``backend/`` to update ``backend/uv.lock``. Always use MAJOR.MINOR.RELEASE.
 #. Update the ``docs/sources/migrations.rst`` file with any required actions.
 #. Commit the changes and push the release prep branch to GitHub, then go to the Releases page to draft a new release which will generate the changelog.
 #. Copy the GitHub changelog results into ``CHANGELOG.md``. Cleanup the formatting and items as needed (make sure the spelling is correct, starts with a capital letter, if any PRs were missing the ``Do not publish`` label, etc.) and push the changelog update.

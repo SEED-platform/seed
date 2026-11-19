@@ -5,7 +5,9 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 import base64
 import json
+import tomllib
 from datetime import date
+from pathlib import Path
 from unittest import mock
 
 from django.conf import settings
@@ -460,6 +462,8 @@ class TestApiEndpointAuthenticationFailures(TestCase):
     def test_version_with_valid_api_key(self, check_output):
         r = self.client.get("/api/version/", headers=self._basic_auth(self.user.username, self.user.api_key))
         self.assertEqual(r.status_code, 200)
+        with (Path(__file__).resolve().parents[2] / "pyproject.toml").open("rb") as pyproject:
+            self.assertEqual(r.json()["version"], tomllib.load(pyproject)["project"]["version"])
         self.assertEqual(r.json()["sha"], "abcdef123")
         check_output.assert_called_once()
 

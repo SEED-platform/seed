@@ -3,10 +3,10 @@ SEED Platform (TM), Copyright (c) Alliance for Energy Innovation, LLC, and other
 See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
-import json
+import functools
 import logging
-import os
 import subprocess
+import tomllib
 from pathlib import Path
 
 from django.conf import settings
@@ -248,6 +248,12 @@ def config(request):
     }
 
 
+@functools.cache
+def seed_version() -> str:
+    with (Path(__file__).resolve().parents[2] / "pyproject.toml").open("rb") as pyproject:
+        return tomllib.load(pyproject)["project"]["version"]
+
+
 @extend_schema(responses={200: AutoSchemaHelper.schema_factory({"version": "string", "sha": "string"})})
 @api_endpoint
 @ajax_request
@@ -256,13 +262,9 @@ def version(request):
     """
     Returns the SEED version and current git sha
     """
-    manifest_path = os.path.dirname(os.path.realpath(__file__)) + "/../../package.json"
-    with open(manifest_path, encoding="utf-8") as package_json:
-        manifest = json.load(package_json)
-
     sha = subprocess.check_output(["git", "rev-parse", "--short=9", "HEAD"]).strip()
 
-    return JsonResponse({"version": manifest["version"], "sha": sha.decode("utf-8")})
+    return JsonResponse({"version": seed_version(), "sha": sha.decode("utf-8")})
 
 
 def error404(request, exception):

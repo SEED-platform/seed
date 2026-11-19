@@ -1,6 +1,5 @@
 {
   "name": "seed",
-  "version": "3.4.1",
   "description": "Standard Energy Efficiency Data (SEED) Platform™",
   "license": "SEE LICENSE IN LICENSE.md",
   "directories": {
@@ -18,6 +17,7 @@
     "pnpm": ">=12"
   },
   "packageManager": "pnpm@12.21.0",
+  "private": true,
   "dependencies": {
     "sass": "1.103.0"
   },
