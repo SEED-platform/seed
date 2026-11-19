@@ -7,13 +7,13 @@
       </div>
       <div class="max-w-2xl">
         <form
-          class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow"
+          class="flex flex-col overflow-hidden rounded-2xl bg-card p-2 pb-4 shadow-sm"
           [formGroup]="auditTemplateForm"
           (ngSubmit)="submit()"
         >
           <div class="flex flex-col">
             <div class="text-lg font-medium">Audit Template Credentials</div>
-            <div class="text-secondary prose mb-6">
+            <div class="prose mb-6 text-secondary">
               <p>An API Token, Username and Password are all required to connect to your Audit Template.</p>
               <p>
                 Please refer to the
@@ -53,10 +53,10 @@
               </mat-hint>
             </mat-form-field>
           </div>
-          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <mat-divider class="mat-divider mat-divider-horizontal mt-4 mb-6" role="separator" aria-orientation="horizontal"></mat-divider>
           <div class="flex flex-col">
             <div class="text-lg font-medium">{{ t('Audit Template City ID') }}</div>
-            <div class="text-secondary prose mb-6">
+            <div class="prose mb-6 text-secondary">
               <p>
                 Specify your Audit Template City ID. This number is visible in the Audit Template URL when browsing to the 'CITIES' tab.
                 SEED will import submission data for the specified City only.
@@ -67,10 +67,10 @@
               <input [formControlName]="'audit_template_city_id'" matInput type="number" />
             </mat-form-field>
           </div>
-          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <mat-divider class="mat-divider mat-divider-horizontal mt-4 mb-6" role="separator" aria-orientation="horizontal"></mat-divider>
           <div class="flex flex-col">
             <div class="text-lg font-medium">{{ t('Audit Template Submission Status') }}</div>
-            <div class="text-secondary prose mb-6">
+            <div class="prose mb-6 text-secondary">
               <p>SEED will import data for submissions with the following statuses in Audit Template.</p>
             </div>
             <div class="flex flex-row">
@@ -80,10 +80,10 @@
               <mat-checkbox formControlName="status_rejected">Rejected</mat-checkbox>
             </div>
           </div>
-          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <mat-divider class="mat-divider mat-divider-horizontal mt-4 mb-6" role="separator" aria-orientation="horizontal"></mat-divider>
           <div class="flex flex-col">
             <div class="text-lg font-medium">{{ t('Conditional Import') }}</div>
-            <div class="text-secondary prose mb-6">
+            <div class="prose mb-6 text-secondary">
               <p>
                 When this checkbox is checked, SEED will only import Audit Template submissions that have been submitted more recently than
                 the SEED records' most recent update. If unchecked, all Audit Template submissions will be imported regardless of the
@@ -99,7 +99,7 @@
               </button>
             </div>
           </div>
-          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <mat-divider class="mat-divider mat-divider-horizontal mt-4 mb-6" role="separator" aria-orientation="horizontal"></mat-divider>
           <div class="flex flex-col">
             <div class="text-lg font-medium">{{ t('Schedule Weekly Update') }}</div>
 
@@ -108,7 +108,7 @@
                 t('Enable Audit Template Auto Sync')
               }}</mat-slide-toggle>
             </div>
-            <div class="text-secondary prose my-6">
+            <div class="my-6 prose text-secondary">
               If you would like to automatically update your SEED organization with Audit Template submission data for the selected Audit
               Template City ID, configure the fields below to schedule your weekly update.
             </div>
@@ -139,10 +139,10 @@
               </mat-form-field>
             </div>
           </div>
-          <mat-divider class="mat-divider mat-divider-horizontal mb-6 mt-4" role="separator" aria-orientation="horizontal"></mat-divider>
+          <mat-divider class="mat-divider mat-divider-horizontal mt-4 mb-6" role="separator" aria-orientation="horizontal"></mat-divider>
           <div class="flex flex-col">
             <div class="text-lg font-medium">{{ t('Advanced Settings') }}</div>
-            <div class="text-secondary prose mb-6">
+            <div class="prose mb-6 text-secondary">
               <p>
                 {{
                   t(

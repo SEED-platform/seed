@@ -68,7 +68,7 @@
     <div class="border-t pt-4">
       <table class="w-full">
         <thead>
-          <tr class="text-secondary border-b text-left text-sm">
+          <tr class="border-b text-left text-sm text-secondary">
             <th class="p-2">{{ t('Inventory Type') }}</th>
             <th class="p-2">{{ t('Column') }}</th>
             <th class="p-2">{{ t('Value') }}</th>
@@ -81,7 +81,7 @@
         <tbody>
           @for (row of rows; track row.id; let i = $index) {
             <tr [class.bg-red-100]="row.is_duplicate" [class.dark:bg-red-900]="row.is_duplicate">
-              <td class="align-middle p-2">{{ row.table_name.slice(0, -5) }}</td>
+              <td class="p-2">{{ row.table_name.slice(0, -5) }}</td>
               <td class="min-w-48 p-2">
                 <mat-form-field class="w-full" subscriptSizing="dynamic">
                   <input
@@ -110,7 +110,7 @@
               <td class="p-2 text-center">
                 <mat-checkbox [checked]="row.is_extra_data" disabled></mat-checkbox>
               </td>
-              <td class="align-middle p-2">{{ row.data_type }}</td>
+              <td class="p-2">{{ row.data_type }}</td>
               <td class="p-2 text-center">
                 <button [attr.aria-label]="t('Remove column')" (click)="removeColumn(i)" mat-icon-button color="warn">
                   <mat-icon svgIcon="fa-solid:xmark"></mat-icon>

@@ -4,10 +4,10 @@
   <mat-dialog-content class="flex flex-row gap-6">
     <!-- Goal list sidebar -->
     <div class="flex w-48 shrink-0 flex-col gap-1 border-r pr-4">
-      <div class="text-secondary mb-2 text-sm font-semibold uppercase tracking-wide">{{ t('Goals') }}</div>
+      <div class="mb-2 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Goals') }}</div>
       @for (goal of goals; track goal.id) {
         <div
-          class="flex cursor-pointer items-center justify-between rounded px-2 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
+          class="flex cursor-pointer items-center justify-between rounded-sm px-2 py-1 text-sm hover:bg-gray-100 dark:hover:bg-gray-800"
           [class.bg-primary-50]="currentGoal?.id === goal.id"
           [class.dark:bg-primary-900]="currentGoal?.id === goal.id"
           [class.text-primary-600]="currentGoal?.id === goal.id"
@@ -27,7 +27,7 @@
     <!-- Form panel -->
     <form class="flex min-w-0 flex-1 flex-col gap-4 pt-1" [formGroup]="goalForm">
       <!-- GOAL section -->
-      <div class="text-secondary mb-1 text-sm font-semibold uppercase tracking-wide">{{ t('Goal') }}</div>
+      <div class="mb-1 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Goal') }}</div>
       <mat-divider class="mb-2"></mat-divider>
 
       <mat-form-field>
@@ -44,7 +44,7 @@
       </mat-form-field>
 
       <!-- CYCLE SELECTION section -->
-      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Cycle Selection') }}</div>
+      <div class="mt-4 mb-1 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Cycle Selection') }}</div>
       <mat-divider class="mb-2"></mat-divider>
 
       <mat-form-field>
@@ -58,7 +58,7 @@
       </mat-form-field>
 
       <!-- ACCESS LEVEL INSTANCE section -->
-      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Access Level Instance') }}</div>
+      <div class="mt-4 mb-1 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Access Level Instance') }}</div>
       <mat-divider class="mb-2"></mat-divider>
 
       <mat-form-field>
@@ -80,7 +80,7 @@
       </mat-form-field>
 
       <!-- AREA TARGET COLUMN section -->
-      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Area Target Column') }}</div>
+      <div class="mt-4 mb-1 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Area Target Column') }}</div>
       <mat-divider class="mb-2"></mat-divider>
 
       <mat-form-field>
@@ -94,7 +94,7 @@
       </mat-form-field>
 
       <!-- EUI TARGET COLUMNS section -->
-      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('EUI Target Columns') }}</div>
+      <div class="mt-4 mb-1 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('EUI Target Columns') }}</div>
       <mat-divider class="mb-2"></mat-divider>
 
       <mat-form-field>
@@ -131,7 +131,7 @@
 
       <!-- TRANSACTIONS COLUMN (only for transaction type) -->
       @if (isTransactionType) {
-        <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Transactions Column') }}</div>
+        <div class="mt-4 mb-1 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Transactions Column') }}</div>
         <mat-divider class="mb-2"></mat-divider>
         <mat-form-field>
           <mat-label>{{ t('Transactions') }}</mat-label>
@@ -145,7 +145,7 @@
       }
 
       <!-- PORTFOLIO TARGET section -->
-      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Portfolio Target') }}</div>
+      <div class="mt-4 mb-1 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Portfolio Target') }}</div>
       <mat-divider class="mb-2"></mat-divider>
 
       <mat-form-field>
@@ -155,7 +155,7 @@
       </mat-form-field>
 
       <!-- COMMITMENT section -->
-      <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Commitment') }}</div>
+      <div class="mt-4 mb-1 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Commitment') }}</div>
       <mat-divider class="mb-2"></mat-divider>
 
       <mat-form-field>
@@ -166,16 +166,16 @@
 
       <!-- SALESFORCE section (conditional) -->
       @if (bb_salesforce_enabled) {
-        <div class="text-secondary mb-1 mt-4 text-sm font-semibold uppercase tracking-wide">{{ t('Salesforce') }}</div>
+        <div class="mt-4 mb-1 text-sm font-semibold tracking-wide text-secondary uppercase">{{ t('Salesforce') }}</div>
         <mat-divider class="mb-2"></mat-divider>
 
         <!-- Connection status -->
         <div class="mb-3 flex items-center gap-2 text-sm">
           @if (isLoggedIntoBbSalesforce) {
-            <mat-icon class="text-green-600 icon-size-4 dark:text-green-400" svgIcon="heroicons-solid:check-circle"></mat-icon>
+            <mat-icon class="icon-size-4 text-green-600 dark:text-green-400" svgIcon="heroicons-solid:check-circle"></mat-icon>
             <span class="text-green-700 dark:text-green-400">{{ t('Connected to Salesforce') }}</span>
           } @else {
-            <mat-icon class="text-amber-600 icon-size-4 dark:text-amber-400" svgIcon="heroicons-solid:exclamation-triangle"></mat-icon>
+            <mat-icon class="icon-size-4 text-amber-600 dark:text-amber-400" svgIcon="heroicons-solid:exclamation-triangle"></mat-icon>
             <span class="text-amber-700 dark:text-amber-400">
               {{ t('Not connected to Salesforce.') }}
               <a class="cursor-pointer underline" (click)="goToSalesforceSettings()">{{ t('Log in via Organization Settings') }}</a>

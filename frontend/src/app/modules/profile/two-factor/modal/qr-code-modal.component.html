@@ -29,13 +29,13 @@
       </mat-form-field>
       <button [disabled]="codeForm.invalid || verifying" mat-flat-button color="primary" type="submit">
         @if (verifying) {
-          <mat-progress-spinner class="align-middle mr-2 inline-block" diameter="18" mode="indeterminate"></mat-progress-spinner>
+          <mat-progress-spinner class="mr-2 inline-block" diameter="18" mode="indeterminate"></mat-progress-spinner>
         }
         <span>{{ t('Verify') }}</span>
       </button>
     </form>
 
-    <p class="text-secondary text-sm">
+    <p class="text-sm text-secondary">
       {{ t('If you are unable to scan the QR code, select a different method below.') }}
     </p>
   </div>

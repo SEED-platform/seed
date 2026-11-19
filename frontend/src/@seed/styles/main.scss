@@ -4,3 +4,6 @@
 /* 2. Overrides */
 @use 'overrides/angular-material';
 @use 'overrides/perfect-scrollbar';
+
+/* For @apply in the partials above */
+@reference '#tailwind';

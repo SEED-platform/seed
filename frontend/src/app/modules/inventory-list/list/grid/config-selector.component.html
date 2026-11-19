@@ -1,8 +1,8 @@
 @if (items) {
   <div class="mr-1 flex flex-col">
-    <mat-label class="text-secondary text-sm">{{ label }}</mat-label>
+    <mat-label class="text-sm text-secondary">{{ label }}</mat-label>
     <mat-select
-      class="bg-card h-6 w-50 rounded border border-gray-500 p-3 text-sm"
+      class="h-6 w-50 rounded-sm border border-gray-500 bg-card p-3 text-sm"
       [(value)]="selectedId"
       (selectionChange)="onSelectionChange($event.value)"
     >

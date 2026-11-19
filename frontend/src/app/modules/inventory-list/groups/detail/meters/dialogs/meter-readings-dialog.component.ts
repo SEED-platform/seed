@@ -42,7 +42,7 @@ export type MeterReadingsDialogData = {
         </div>
       }
     </mat-dialog-content>
-    <div class="flex items-center justify-end gap-2 bg-gray-50 px-6 py-4 dark:bg-black dark:bg-opacity-10">
+    <div class="flex items-center justify-end gap-2 bg-gray-50 px-6 py-4 dark:bg-black/10">
       <button mat-stroked-button mat-dialog-close>Close</button>
     </div>
   `,

@@ -17,7 +17,7 @@
         [class.w-40]="brandingLogoUrl && navigationAppearance === 'default'"
       >
         <img
-          class="pointer-events-none max-h-14 w-full select-none object-contain"
+          class="pointer-events-none max-h-14 w-full object-contain select-none"
           [src]="brandingLogoUrl || 'images/logo.svg'"
           [alt]="brandingLogoUrl ? '' : 'SEED Platform logo'"
         />
@@ -44,15 +44,15 @@
 <div class="flex w-full min-w-0 flex-auto flex-col">
   <!-- Header -->
   <div
-    class="bg-card relative z-49 flex h-12 w-full flex-0 items-center px-4 shadow md:px-6 dark:border-b dark:bg-transparent dark:shadow-none print:hidden"
+    class="relative z-49 flex h-12 w-full flex-none items-center bg-card px-4 shadow-sm md:px-6 dark:border-b dark:bg-transparent dark:shadow-none print:hidden"
   >
-    <div class="flex items-center space-x-2 pr-2">
+    <div class="flex items-center gap-2 pr-2">
       <!-- Navigation toggle button -->
       <button class="inline-flex md:hidden" (click)="toggleNavigation('mainNavigation')" mat-icon-button>
         <mat-icon svgIcon="heroicons-outline:bars-3"></mat-icon>
       </button>
 
-      <div class="hidden text-3xl font-bold uppercase leading-none tracking-tighter md:inline-flex">
+      <div class="hidden text-3xl leading-none font-bold tracking-tighter uppercase md:ml-2 md:inline-flex">
         <a [routerLink]="['/']"><span class="font-extrabold">SEED</span><span> Platform™</span></a>
       </div>
     </div>
@@ -73,9 +73,9 @@
 
   <!-- Footer -->
   <div
-    class="bg-card relative z-49 flex h-10 w-full flex-0 items-center justify-start border-t px-4 md:px-6 dark:bg-transparent print:hidden"
+    class="relative z-49 flex h-10 w-full flex-none items-center justify-start border-t bg-card px-4 md:px-6 dark:bg-transparent print:hidden"
   >
-    <span class="text-secondary font-medium"
+    <span class="font-medium text-secondary"
       >SEED Platform™ <span [title]="'SHA ' + sha">v{{ version }}</span></span
     >
   </div>

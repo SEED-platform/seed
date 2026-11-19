@@ -3,10 +3,10 @@
     <div class="flex justify-between">
       <div class="mb-5 flex items-center space-x-2">
         <mat-icon class="text-primary-600" svgIcon="fa-solid:hourglass-half"></mat-icon>
-        <div class="text-secondary text-xl font-medium leading-6">{{ title }}</div>
+        <div class="text-xl leading-6 font-medium text-secondary">{{ title }}</div>
       </div>
       @if (progress) {
-        <div class="text-secondary flex flex-col justify-end">
+        <div class="flex flex-col justify-end text-secondary">
           {{ progressString }}
         </div>
       }
@@ -19,10 +19,10 @@
     <div class="mx-10 mt-15">
       <div class="flex justify-between">
         <div class="mb-5 flex items-center space-x-2">
-          <div class="text-secondary text-md leading-6">{{ subTitle }}</div>
+          <div class="text-md leading-6 text-secondary">{{ subTitle }}</div>
         </div>
         @if (subProgress) {
-          <div class="text-secondary flex flex-col justify-end">
+          <div class="flex flex-col justify-end text-secondary">
             {{ subProgressString }}
           </div>
         }

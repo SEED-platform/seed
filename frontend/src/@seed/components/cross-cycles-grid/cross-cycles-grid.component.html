@@ -3,9 +3,9 @@
     <div class="flex flex-wrap items-end gap-4">
       @if (mode === 'list') {
         <div class="flex flex-col">
-          <mat-label class="text-secondary text-sm">{{ t('Cycle') }}</mat-label>
+          <mat-label class="text-sm text-secondary">{{ t('Cycle') }}</mat-label>
           <mat-select
-            class="h-8 w-60 rounded border border-gray-500 p-3 text-sm"
+            class="h-8 w-60 rounded-sm border border-gray-500 p-3 text-sm"
             [(value)]="selectedCycleIds"
             [placeholder]="t('Select Cycles')"
             (closed)="onSelectCycleClosed()"
@@ -19,9 +19,9 @@
       }
 
       <div class="flex flex-col">
-        <mat-label class="text-secondary text-sm">{{ t('Column List Profile') }}</mat-label>
+        <mat-label class="text-sm text-secondary">{{ t('Column List Profile') }}</mat-label>
         <mat-select
-          class="h-8 w-60 rounded border border-gray-500 p-3 text-sm"
+          class="h-8 w-60 rounded-sm border border-gray-500 p-3 text-sm"
           [(value)]="selectedProfileId"
           [placeholder]="profiles.length ? t('Select Profile') : t('(no profiles)')"
           (selectionChange)="onSelectProfile()"
@@ -32,8 +32,8 @@
         </mat-select>
       </div>
 
-      <div class="text-secondary self-end pb-2 text-xs font-medium italic">{{ t('MATCHING_COLUMN_SORT_PRIORITY') }}</div>
-      <div class="text-secondary self-end pb-2 text-xs font-medium italic">
+      <div class="self-end pb-2 text-xs font-medium text-secondary italic">{{ t('MATCHING_COLUMN_SORT_PRIORITY') }}</div>
+      <div class="self-end pb-2 text-xs font-medium text-secondary italic">
         {{ t('The list is automatically sorted by Linking ID, then Cycle Start at page load.') }}
       </div>
     </div>

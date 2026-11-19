@@ -1,6 +1,6 @@
 <div class="mt-4 flex gap-4" mat-dialog-title>
-  <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:folder-plus"></mat-icon>
-  <div class="text-2xl font-medium leading-6">Create New Column Mapping Profile</div>
+  <mat-icon class="icon-size-5 text-current" svgIcon="fa-solid:folder-plus"></mat-icon>
+  <div class="text-2xl leading-6 font-medium">Create New Column Mapping Profile</div>
 </div>
 <mat-divider class="mb-8"></mat-divider>
 
@@ -14,7 +14,7 @@
       }
     </mat-form-field>
     <div class="flex w-full flex-row items-center">
-      <div class="w-75 flex flex-1 flex-row items-center">
+      <div class="flex flex-1 flex-row items-center">
         <span class="flex flex-1 text-lg">File Headers: </span>
       </div>
       <div class="flex justify-self-end"></div>
@@ -51,7 +51,7 @@
             <mat-label>File Header {{ i + 1 }}</mat-label>
             <input formControlName="from_field" matInput placeholder="File Header {{ i + 1 }}" />
           </mat-form-field>
-          <button class="flex flex-0" (click)="removeMapping(i)" mat-icon-button matTooltip="Remove">
+          <button class="flex flex-none" (click)="removeMapping(i)" mat-icon-button matTooltip="Remove">
             <mat-icon class="scale-75 fill-red-700 dark:fill-red-400" svgIcon="fa-solid:trash"></mat-icon>
           </button>
         </div>
@@ -64,7 +64,7 @@
   <div class="flex flex-1">
     <mat-dialog-actions>
       <button (click)="addMapping()" mat-stroked-button matTooltip="Add File Header">
-        <mat-icon class="fill-primary-700 icon-size-4" svgIcon="fa-solid:plus"></mat-icon><span class="ml-2">Add Row</span>
+        <mat-icon class="icon-size-4 fill-primary-700" svgIcon="fa-solid:plus"></mat-icon><span class="ml-2">Add Row</span>
       </button>
     </mat-dialog-actions>
   </div>

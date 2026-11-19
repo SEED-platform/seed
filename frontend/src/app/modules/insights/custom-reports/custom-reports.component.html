@@ -6,7 +6,7 @@
   <div class="px-5 pt-2.5">
     <!-- Config Panel -->
     <mat-expansion-panel
-      class="mb-4 !rounded !bg-white !shadow-sm dark:!bg-gray-900"
+      class="mb-4 rounded-sm! bg-white! shadow-xs! dark:bg-gray-900!"
       [expanded]="showConfig"
       (expandedChange)="showConfig = $event"
       hideToggle
@@ -22,10 +22,10 @@
         <div class="flex gap-4">
           <!-- Report List -->
           <div class="border-hint flex min-w-48 flex-col gap-2 border-r pr-4">
-            <div class="text-secondary font-semibold">Custom Reports</div>
+            <div class="font-semibold text-secondary">Custom Reports</div>
 
             @if (selectedReport) {
-              <div class="flex items-center gap-2 rounded bg-primary-200 px-3 py-1.5 dark:bg-primary-700">
+              <div class="flex items-center gap-2 rounded-sm bg-primary-200 px-3 py-1.5 dark:bg-primary-700">
                 <span class="flex-1 truncate">{{ selectedReport.name }}</span>
               </div>
             }
@@ -33,8 +33,8 @@
             <div class="flex max-h-48 flex-col gap-1 overflow-y-auto">
               @for (report of customReports; track report.id) {
                 @if (!selectedReport || report.id !== selectedReport.id) {
-                  <div class="flex cursor-pointer items-center gap-2 rounded px-3 py-1 hover:bg-hover">
-                    <a class="text-default flex-1 truncate no-underline" [routerLink]="['/insights/custom-reports', report.id]">
+                  <div class="flex cursor-pointer items-center gap-2 rounded-sm px-3 py-1 hover:bg-hover">
+                    <a class="flex-1 truncate text-default no-underline" [routerLink]="['/insights/custom-reports', report.id]">
                       {{ report.name }}
                     </a>
                   </div>
@@ -57,14 +57,14 @@
                 <div class="font-semibold">No Custom Reports Created</div>
                 @if (auth.requires_member) {
                   <p class="text-secondary">
-                    <mat-icon class="align-middle mr-1 !text-base" fontIcon="arrow_back" />
+                    <mat-icon class="mr-1 text-base!" fontIcon="arrow_back" />
                     Create a Custom Report to get started!
                   </p>
                 }
               } @else {
                 <div class="font-semibold">No Custom Reports Selected</div>
                 <p class="text-secondary">
-                  <mat-icon class="align-middle mr-1 !text-base" fontIcon="arrow_back" />
+                  <mat-icon class="mr-1 text-base!" fontIcon="arrow_back" />
                   Select a Custom Report to get started!
                 </p>
               }
@@ -80,17 +80,17 @@
           @if (selectedReport || editing) {
             <!-- Name + Filter Groups column -->
             <div class="flex min-w-48 flex-col gap-2">
-              <div class="text-secondary font-semibold">Name</div>
+              <div class="font-semibold text-secondary">Name</div>
               <mat-form-field class="w-full" appearance="outline" subscriptSizing="dynamic">
                 <input [(ngModel)]="fields.name" [disabled]="!editing" matInput placeholder="Report name" />
               </mat-form-field>
 
-              <div class="text-secondary font-semibold">Filter Groups <span class="text-hint text-xs font-normal">(optional)</span></div>
+              <div class="font-semibold text-secondary">Filter Groups <span class="text-xs font-normal text-hint">(optional)</span></div>
               @if (editing) {
                 <div class="flex max-h-32 flex-col gap-1 overflow-y-auto">
                   @for (fg of filterGroups; track fg.id) {
                     <mat-checkbox
-                      class="rounded px-2"
+                      class="rounded-sm px-2"
                       [(ngModel)]="fields.filterGroupCheckboxes[fg.id]"
                       [class.bg-primary-200]="fields.filterGroupCheckboxes[fg.id]"
                       [class.dark:bg-primary-700]="fields.filterGroupCheckboxes[fg.id]"
@@ -99,14 +99,14 @@
                     </mat-checkbox>
                   }
                   @if (filterGroups.length === 0) {
-                    <div class="text-hint text-sm">No filter groups available. Data will include all properties.</div>
+                    <div class="text-sm text-hint">No filter groups available. Data will include all properties.</div>
                   }
                 </div>
               } @else if (hasFilterGroups) {
                 <div class="flex max-h-32 flex-col gap-1 overflow-y-auto">
                   @for (fg of usedFilterGroups | keyvalue; track fg.key) {
                     <div
-                      class="cursor-pointer select-none rounded px-3 py-1"
+                      class="cursor-pointer rounded-sm px-3 py-1 select-none"
                       [class.bg-primary-200]="isFilterGroupSelected(fg.key)"
                       [class.dark:bg-primary-700]="isFilterGroupSelected(fg.key)"
                       (click)="auth.requires_member && toggleFilterGroup(fg.value.id)"
@@ -116,18 +116,18 @@
                   }
                 </div>
               } @else {
-                <div class="text-hint text-sm">None — data includes all properties.</div>
+                <div class="text-sm text-hint">None — data includes all properties.</div>
               }
             </div>
 
             <!-- Cycles column -->
             <div class="flex min-w-36 flex-col gap-2">
-              <div class="text-secondary font-semibold">Cycles</div>
+              <div class="font-semibold text-secondary">Cycles</div>
               @if (editing) {
                 <div class="flex max-h-48 flex-col gap-1 overflow-y-auto">
                   @for (cycle of cycles; track cycle.id) {
                     <mat-checkbox
-                      class="rounded px-2"
+                      class="rounded-sm px-2"
                       [(ngModel)]="fields.cycleCheckboxes[cycle.id]"
                       [class.bg-primary-200]="fields.cycleCheckboxes[cycle.id]"
                       [class.dark:bg-primary-700]="fields.cycleCheckboxes[cycle.id]"
@@ -140,7 +140,7 @@
                 <div class="flex max-h-48 flex-col gap-1 overflow-y-auto">
                   @for (cycle of usedCycles | keyvalue; track cycle.key) {
                     <div
-                      class="cursor-pointer select-none rounded px-3 py-1"
+                      class="cursor-pointer rounded-sm px-3 py-1 select-none"
                       [class.bg-primary-200]="isCycleSelected(cycle.key)"
                       [class.dark:bg-primary-700]="isCycleSelected(cycle.key)"
                       (click)="auth.requires_member && toggleCycle(cycle.key)"
@@ -151,8 +151,8 @@
                 </div>
               }
               @if (selectedCyclesCount === 0 || editing) {
-                <div class="text-secondary text-sm">
-                  <mat-icon class="align-middle mr-1 !text-sm" fontIcon="arrow_upward" />
+                <div class="text-sm text-secondary">
+                  <mat-icon class="mr-1 text-sm!" fontIcon="arrow_upward" />
                   Select one or more cycles to populate the horizontal axis.
                 </div>
               }
@@ -160,7 +160,7 @@
 
             <!-- Left Axis column -->
             <div class="flex min-w-48 flex-col gap-2">
-              <div class="text-secondary font-semibold">Left Axis</div>
+              <div class="font-semibold text-secondary">Left Axis</div>
               <mat-form-field appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Column</mat-label>
                 <mat-select [(ngModel)]="firstAxisColumnId" [disabled]="!auth.requires_member">
@@ -182,7 +182,7 @@
                 <div class="flex flex-col gap-1">
                   @for (agg of aggregations; track agg.id) {
                     <div
-                      class="cursor-pointer select-none rounded px-3 py-1"
+                      class="cursor-pointer rounded-sm px-3 py-1 select-none"
                       [class.bg-primary-200]="hasAggregation('first_axis', agg.id)"
                       [class.dark:bg-primary-700]="hasAggregation('first_axis', agg.id)"
                       (click)="auth.requires_member && toggleAggregation('first_axis', agg.id)"
@@ -192,14 +192,14 @@
                   }
                 </div>
               } @else {
-                <div class="text-secondary text-sm">
-                  <mat-icon class="align-middle mr-1 !text-sm" fontIcon="arrow_upward" />
+                <div class="text-sm text-secondary">
+                  <mat-icon class="mr-1 text-sm!" fontIcon="arrow_upward" />
                   Select a column to show data on this axis. Only numeric columns are listed.
                 </div>
               }
               @if (sourceColumnByLocation.first_axis && firstAxisAggregations.length === 0) {
-                <div class="text-secondary text-sm">
-                  <mat-icon class="align-middle mr-1 !text-sm" fontIcon="arrow_upward" />
+                <div class="text-sm text-secondary">
+                  <mat-icon class="mr-1 text-sm!" fontIcon="arrow_upward" />
                   Select one or more aggregation methods.
                 </div>
               }
@@ -207,7 +207,7 @@
 
             <!-- Right Axis column -->
             <div class="flex min-w-48 flex-col gap-2">
-              <div class="text-secondary font-semibold">Right Axis</div>
+              <div class="font-semibold text-secondary">Right Axis</div>
               <mat-form-field appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Column</mat-label>
                 <mat-select [(ngModel)]="secondAxisColumnId" [disabled]="!auth.requires_member">
@@ -229,7 +229,7 @@
                 <div class="flex flex-col gap-1">
                   @for (agg of aggregations; track agg.id) {
                     <div
-                      class="cursor-pointer select-none rounded px-3 py-1"
+                      class="cursor-pointer rounded-sm px-3 py-1 select-none"
                       [class.bg-primary-200]="hasAggregation('second_axis', agg.id)"
                       [class.dark:bg-primary-700]="hasAggregation('second_axis', agg.id)"
                       (click)="auth.requires_member && toggleAggregation('second_axis', agg.id)"
@@ -239,14 +239,14 @@
                   }
                 </div>
               } @else {
-                <div class="text-secondary text-sm">
-                  <mat-icon class="align-middle mr-1 !text-sm" fontIcon="arrow_upward" />
+                <div class="text-sm text-secondary">
+                  <mat-icon class="mr-1 text-sm!" fontIcon="arrow_upward" />
                   Select a column to show data on this axis. Only numeric columns are listed.
                 </div>
               }
               @if (sourceColumnByLocation.second_axis && secondAxisAggregations.length === 0) {
-                <div class="text-secondary text-sm">
-                  <mat-icon class="align-middle mr-1 !text-sm" fontIcon="arrow_upward" />
+                <div class="text-sm text-secondary">
+                  <mat-icon class="mr-1 text-sm!" fontIcon="arrow_upward" />
                   Select one or more aggregation methods.
                 </div>
               }
@@ -255,7 +255,7 @@
             <!-- Actions column -->
             @if (auth.requires_member) {
               <div class="flex min-w-32 flex-col gap-2">
-                <div class="text-secondary font-semibold">Actions</div>
+                <div class="font-semibold text-secondary">Actions</div>
 
                 @if (!editing && selectedReport) {
                   <div class="flex gap-1">
@@ -270,7 +270,7 @@
 
                 @if (editing) {
                   @if (createErrors.length > 0) {
-                    <div class="rounded border border-warn bg-warn/10 p-2 text-sm">
+                    <div class="rounded-sm border border-warn bg-warn/10 p-2 text-sm">
                       @for (error of createErrors; track error) {
                         <div>{{ error }}</div>
                       }
@@ -302,14 +302,14 @@
 
     <!-- Chart -->
     @if (selectedReport) {
-      <div class="mx-auto rounded bg-white p-4 shadow-sm dark:bg-gray-900" style="margin-left: 10vw; margin-right: 5vw">
+      <div class="mx-auto rounded-sm bg-white p-4 shadow-xs dark:bg-gray-900" style="margin-left: 10vw; margin-right: 5vw">
         <canvas #chartCanvas></canvas>
       </div>
     }
 
     <!-- Data Table -->
     @if (selectedReport && !editing && evaluateData) {
-      <div class="mt-6 overflow-x-auto rounded bg-white p-4 shadow-sm dark:bg-gray-900">
+      <div class="mt-6 overflow-x-auto rounded-sm bg-white p-4 shadow-xs dark:bg-gray-900">
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-hint border-b">
@@ -318,7 +318,7 @@
               }
               <th class="p-2" [attr.colspan]="selectedCyclesCount">
                 <div class="flex items-center gap-2">
-                  <mat-form-field class="!min-w-0" appearance="outline" subscriptSizing="dynamic">
+                  <mat-form-field class="min-w-0!" appearance="outline" subscriptSizing="dynamic">
                     <mat-select [(ngModel)]="selectedTableLocation">
                       @if (sourceColumnByLocation.first_axis) {
                         <mat-option value="first_axis">{{ sourceColumnByLocation.first_axis.display_name }}</mat-option>
@@ -328,7 +328,7 @@
                       }
                     </mat-select>
                   </mat-form-field>
-                  <mat-form-field class="!min-w-0" appearance="outline" subscriptSizing="dynamic">
+                  <mat-form-field class="min-w-0!" appearance="outline" subscriptSizing="dynamic">
                     <mat-select [(ngModel)]="selectedTableAggregation">
                       @for (agg of aggregations; track agg.id) {
                         <mat-option [value]="agg.id">{{ agg.name }}</mat-option>
@@ -350,7 +350,7 @@
                 <!-- Filter group summary row -->
                 <tr class="border-hint border-b hover:bg-hover">
                   <td
-                    class="cursor-pointer select-none rounded bg-primary-200 p-2 font-medium dark:bg-primary-700"
+                    class="cursor-pointer rounded-sm bg-primary-200 p-2 font-medium select-none dark:bg-primary-700"
                     (click)="togglePropertyExpansion(fg.id)"
                   >
                     {{ fg.name }}
@@ -367,7 +367,7 @@
                 <!-- Expanded property rows -->
                 @if (showPropertiesForFilterGroup[fg.id]) {
                   @for (prop of getPropertiesForFilterGroup(fg.id); track prop[0]) {
-                    <tr class="border-hint/50 text-secondary border-b hover:bg-hover">
+                    <tr class="border-hint/50 border-b text-secondary hover:bg-hover">
                       <td class="p-2 pl-6">
                         <a class="underline" [routerLink]="['/properties', prop[0]]"> Property - {{ prop[1] }} </a>
                       </td>

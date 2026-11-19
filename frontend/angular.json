@@ -42,12 +42,11 @@
             },
             "styles": [
               "src/styles/splash-screen.scss",
-              "src/@seed/styles/tailwind.scss",
+              "src/styles/tailwind.css",
               "src/@seed/styles/themes.scss",
               "src/styles/vendors.scss",
               "src/@seed/styles/main.scss",
-              "src/styles/styles.scss",
-              "src/styles/tailwind.scss"
+              "src/styles/styles.scss"
             ],
             "scripts": [],
             "browser": "src/main.ts"

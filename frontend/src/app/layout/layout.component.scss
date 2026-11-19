@@ -1,3 +1,5 @@
+@reference '#tailwind';
+
 layout-wrapper {
   @apply flex h-svh max-h-svh w-full min-w-0 max-w-full flex-auto;
 

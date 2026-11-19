@@ -7,12 +7,12 @@
 >
 </seed-page>
 
-<div class="bg-card flex flex-col gap-4 p-2.5">
+<div class="flex flex-col gap-4 bg-card p-2.5">
   <!-- Cycle Selector -->
   <div class="flex items-center gap-4">
-    <mat-label class="text-secondary text-sm">Cycle</mat-label>
+    <mat-label class="text-sm text-secondary">Cycle</mat-label>
     <mat-select
-      class="h-10 w-60 rounded border border-gray-500 p-3 text-sm"
+      class="h-10 w-60 rounded-sm border border-gray-500 p-3 text-sm"
       [value]="cycleId"
       (selectionChange)="changeCycle($event.value)"
     >
@@ -23,30 +23,30 @@
   </div>
 
   @if (loading) {
-    <div class="text-secondary text-sm">Loading...</div>
+    <div class="text-sm text-secondary">Loading...</div>
   } @else if (dashboard) {
     <!-- Summary Metrics -->
     <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
       <div class="rounded-lg border p-4">
-        <div class="text-secondary text-xs font-medium uppercase">Gross Floor Area</div>
+        <div class="text-xs font-medium text-secondary uppercase">Gross Floor Area</div>
         <div class="mt-1 text-2xl font-bold">{{ dashboard['Gross Floor Area'] ?? 0 | number }}</div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-secondary text-xs font-medium uppercase">Site EUI</div>
+        <div class="text-xs font-medium text-secondary uppercase">Site EUI</div>
         <div class="mt-1 text-2xl font-bold">{{ dashboard['Site EUI'] ?? 0 | number }}</div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-secondary text-xs font-medium uppercase">Views Count</div>
+        <div class="text-xs font-medium text-secondary uppercase">Views Count</div>
         <div class="mt-1 text-2xl font-bold">{{ dashboard['Views Count'] | number }}</div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-secondary text-xs font-medium uppercase">Missing Site EUI</div>
+        <div class="text-xs font-medium text-secondary uppercase">Missing Site EUI</div>
         <div class="mt-1 text-2xl font-bold" [class.text-warn]="dashboard['Views Missing Site EUI']">
           {{ dashboard['Views Missing Site EUI'] | number }}
         </div>
       </div>
       <div class="rounded-lg border p-4">
-        <div class="text-secondary text-xs font-medium uppercase">Missing Gross Floor Area</div>
+        <div class="text-xs font-medium text-secondary uppercase">Missing Gross Floor Area</div>
         <div class="mt-1 text-2xl font-bold" [class.text-warn]="dashboard['Views Missing Gross Floor Area']">
           {{ dashboard['Views Missing Gross Floor Area'] | number }}
         </div>
@@ -69,7 +69,7 @@
               </div>
             }
           } @else {
-            <div class="text-secondary text-sm">No importing data</div>
+            <div class="text-sm text-secondary">No importing data</div>
           }
         </div>
 
@@ -84,7 +84,7 @@
               </div>
             }
           } @else {
-            <div class="text-secondary text-sm">No exporting data</div>
+            <div class="text-sm text-secondary">No exporting data</div>
           }
         </div>
       </div>
@@ -94,9 +94,9 @@
 
       <div class="flex flex-col gap-2">
         <div class="flex items-center gap-4">
-          <mat-label class="text-secondary text-sm">Energy Type</mat-label>
+          <mat-label class="text-sm text-secondary">Energy Type</mat-label>
           <mat-select
-            class="h-10 w-60 rounded border border-gray-500 p-3 text-sm"
+            class="h-10 w-60 rounded-sm border border-gray-500 p-3 text-sm"
             [value]="meterType"
             (selectionChange)="changeMeterType($event.value)"
           >
@@ -140,11 +140,11 @@
             </table>
           </mat-expansion-panel>
         } @else {
-          <div class="text-secondary text-sm">No energy flow data for this type and cycle</div>
+          <div class="text-sm text-secondary">No energy flow data for this type and cycle</div>
         }
       </div>
     }
   } @else {
-    <div class="text-secondary text-sm">No dashboard data available. Add properties to this group to see metrics.</div>
+    <div class="text-sm text-secondary">No dashboard data available. Add properties to this group to see metrics.</div>
   }
 </div>

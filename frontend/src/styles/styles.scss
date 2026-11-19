@@ -1,11 +1,11 @@
 // Styles from this file will override 'vendors.scss' and SEED's base styles.
-@tailwind utilities;
+@reference '#tailwind';
 
 // colors for text alerts
 :root {
   --primary-text-color: rgb(29 78 216);
   --success-text-color: rgb(21 128 61);
-  --info-text-color: theme('colors.cyan.600');
+  --info-text-color: --theme(--color-cyan-600);
   --warning-text-color: rgb(180 83 9);
   --error-text-color: rgb(185 28 28);
   --header-row-bg: #f2f2f2; /* Light mode background */
@@ -165,26 +165,26 @@ seed-page.portfolio-summary-compact-buttons {
   }
 
   &.orange {
-    background-color: theme('colors.orange.400');
+    background-color: --theme(--color-orange-400);
   }
 
   &.red {
-    background-color: theme('colors.red.700');
+    background-color: --theme(--color-red-700);
   }
 
   &.gray {
-    background-color: theme('colors.stone.600');
+    background-color: --theme(--color-stone-600);
   }
 
   &.green {
-    background-color: theme('colors.green.700');
+    background-color: --theme(--color-green-700);
   }
 
   &.blue {
-    background-color: theme('colors.blue.700');
+    background-color: --theme(--color-blue-700);
 
     &.light {
-      background-color: theme('colors.cyan.600') !important;
+      background-color: --theme(--color-cyan-600) !important;
     }
   }
 }
@@ -206,9 +206,7 @@ seed-page.portfolio-summary-compact-buttons {
 }
 
 .seed-dialog-panel {
-  @screen md {
-    @apply w-128;
-  }
+  @apply md:w-128;
 
   .mat-mdc-dialog-container {
     .mat-mdc-dialog-surface {
@@ -218,7 +216,7 @@ seed-page.portfolio-summary-compact-buttons {
 }
 
 .seed-chip .mat-mdc-chip-action-label {
-  @apply inline !text-xs !text-gray-700 dark:!text-secondary;
+  @apply inline text-xs! text-gray-700! dark:text-secondary!;
 }
 
 .fit-content-select.mat-mdc-select-panel {
@@ -242,23 +240,23 @@ seed-page.portfolio-summary-compact-buttons {
 
   .mat-mdc-table {
     background: transparent;
-    color: theme('colors.gray.200');
+    color: --theme(--color-gray-200);
   }
 
   .mat-mdc-header-cell {
-    color: theme('colors.gray.300');
+    color: --theme(--color-gray-300);
   }
 
   .mat-mdc-cell {
-    color: theme('colors.gray.200');
+    color: --theme(--color-gray-200);
   }
 
   .mat-mdc-paginator {
-    color: theme('colors.gray.300');
+    color: --theme(--color-gray-300);
   }
 
   .nw-editor {
-    background-color: theme('colors.gray.800');
+    background-color: --theme(--color-gray-800);
   }
 
   .mat-pseudo-checkbox-full.mat-pseudo-checkbox-checked {
@@ -308,7 +306,7 @@ seed-page.portfolio-summary-compact-buttons {
 }
 
 .menu-option {
-  @apply flex w-full cursor-pointer items-center gap-4 rounded p-2 text-sm hover:bg-[#F4F5F4] hover:dark:bg-[#2E3B4A];
+  @apply flex w-full cursor-pointer items-center gap-4 rounded-sm p-2 text-sm hover:bg-[#F4F5F4] hover:dark:bg-[#2E3B4A];
 }
 
 .vertical-divider {
@@ -324,22 +322,22 @@ seed-page.portfolio-summary-compact-buttons {
 .mat-mdc-raised-button {
   &.mat-primary:not(:disabled),
   &[color='primary']:not(:disabled) {
-    @apply bg-primary text-white hover:bg-primary-800 #{'!important'};
+    @apply bg-primary! text-white! hover:bg-primary-800!;
   }
 
   &.mat-primary:disabled,
   &[color='primary']:disabled {
-    @apply cursor-not-allowed bg-primary/40 text-white/70 #{'!important'};
+    @apply cursor-not-allowed! bg-primary/40! text-white/70!;
   }
 
   &.mat-warn:not(:disabled),
   &[color='warn']:not(:disabled) {
-    @apply bg-warn text-white hover:bg-warn-800 #{'!important'};
+    @apply bg-warn! text-white! hover:bg-warn-800!;
   }
 
   &.mat-warn:disabled,
   &[color='warn']:disabled {
-    @apply cursor-not-allowed bg-warn/40 text-white/70 #{'!important'};
+    @apply cursor-not-allowed! bg-warn/40! text-white/70!;
   }
 }
 
@@ -407,7 +405,7 @@ seed-page.portfolio-summary-compact-buttons {
     border-radius: 0.25rem;
 
     // Keep disabled items readable, as they were before: grey them like secondary text instead of fading them or using
-    // the dimmer [disabled] color from @seed/styles/tailwind.scss, which is hard to read on dark backgrounds
+    // the dimmer [disabled] color from src/styles/tailwind.css, which is hard to read on dark backgrounds
     &[disabled] {
       opacity: 1;
       color: rgb(var(--seed-text-secondary-rgb)) !important;
@@ -416,12 +414,12 @@ seed-page.portfolio-summary-compact-buttons {
 }
 
 .border-button-toggle-group {
-  @apply w-fit gap-0 rounded-full !important;
+  @apply w-fit! gap-0! rounded-full!;
 
   border: 1px solid rgb(170 170 170) !important;
 
   .mat-button-toggle {
-    @apply m-0 rounded-none !important;
+    @apply m-0! rounded-none!;
   }
 
   .mat-button-toggle:not(:first-child) {
@@ -430,31 +428,31 @@ seed-page.portfolio-summary-compact-buttons {
 
   // Uncomment to change checked button to primary color
   // .mat-button-toggle-checked {
-  //   @apply dark:bg-primary dark:bg-opacity-50 !important;
+  //   @apply dark:bg-primary/50!;
   // }
 }
 
 .border-button-toggle-group-vertical {
-  @apply w-fit gap-0 !important;
+  @apply w-fit! gap-0!;
 
   .mat-button-toggle {
     border: 1px solid rgb(170 170 170) !important;
   }
 
   .mat-button-toggle-checked {
-    @apply dark:bg-primary dark:bg-opacity-50 !important;
+    @apply dark:bg-primary/50!;
   }
 }
 
 .compact-form {
   label,
   span {
-    @apply text-sm !important;
+    @apply text-sm!;
   }
 
   .mat-mdc-form-field-flex,
   .mat-mdc-form-field-infix {
-    @apply my-auto h-10 min-h-10 text-sm !important;
+    @apply my-auto! h-10! min-h-10! text-sm!;
   }
 }
 
@@ -494,10 +492,25 @@ seed-page.portfolio-summary-compact-buttons {
 
 .accordion-sub-tables {
   .mat-expansion-panel {
-    @apply m-0 !rounded-none border;
+    @apply m-0 rounded-none! border;
   }
 
   .mat-expansion-panel-body {
     @apply p-0;
   }
+}
+
+.vertical-stripe {
+  th {
+    @apply bg-gray-100!;
+  }
+
+  td,
+  th {
+    @apply border border-collapse border-gray-200;
+  }
+}
+
+.mat-select-panel {
+  @apply max-w-50;
 }

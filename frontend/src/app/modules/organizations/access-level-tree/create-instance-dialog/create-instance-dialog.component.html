@@ -1,18 +1,18 @@
 <div class="relative flex h-full w-full flex-col" *transloco="let t">
   <div class="flex flex-auto flex-col items-center p-8 pb-3 sm:flex-row sm:items-start">
     <div
-      class="flex h-10 w-10 flex-0 items-center justify-center rounded-full bg-primary-100 text-primary-600 sm:mr-4 dark:bg-primary-600 dark:text-primary-50"
+      class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-primary-100 text-primary-600 sm:mr-4 dark:bg-primary-600 dark:text-primary-50"
     >
-      <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:circle-plus"></mat-icon>
+      <mat-icon class="icon-size-5 text-current" svgIcon="fa-solid:circle-plus"></mat-icon>
     </div>
 
     <div class="mt-4 flex w-full flex-col items-center text-left sm:mt-0 sm:items-start sm:pr-8">
-      <div class="text-xl font-medium leading-6">{{ t('Create Child Access Level Instance') }}</div>
-      <div class="text-hint mb-3 mt-1 flex flex-wrap items-center gap-1 text-sm font-medium">
+      <div class="text-xl leading-6 font-medium">{{ t('Create Child Access Level Instance') }}</div>
+      <div class="mt-1 mb-3 flex flex-wrap items-center gap-1 text-sm font-medium text-hint">
         @for (breadcrumb of breadcrumbs; track $index) {
           <span class="whitespace-nowrap">{{ breadcrumb }}</span>
           @if (!$last) {
-            <mat-icon class="text-current icon-size-3" svgIcon="fa-solid:chevron-right"></mat-icon>
+            <mat-icon class="icon-size-3 text-current" svgIcon="fa-solid:chevron-right"></mat-icon>
           }
         }
       </div>
@@ -41,7 +41,7 @@
     </div>
   </div>
 
-  <div class="flex items-center justify-center space-x-3 bg-gray-50 px-6 py-4 sm:justify-end dark:bg-black dark:bg-opacity-10">
+  <div class="flex items-center justify-center space-x-3 bg-gray-50 px-6 py-4 sm:justify-end dark:bg-black/10">
     <button class="w-24" [matDialogClose]="false" [disabled]="submitted" mat-stroked-button>{{ t('Cancel') }}</button>
     <button
       class="flex w-24 items-center justify-center"

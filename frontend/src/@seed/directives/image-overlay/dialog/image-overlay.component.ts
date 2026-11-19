@@ -8,7 +8,7 @@ import type { ImageOverlayData } from '../image-overlay.types'
   templateUrl: './image-overlay.component.html',
   imports: [MaterialImports],
   changeDetection: ChangeDetectionStrategy.Eager,
-  styles: ':host { @apply flex }',
+  styles: ':host { display: flex; }',
 })
 export class OverlayImageComponent {
   data = inject(MAT_DIALOG_DATA) as ImageOverlayData

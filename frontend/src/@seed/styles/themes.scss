@@ -1,6 +1,100 @@
+@use 'sass:color';
 @use 'sass:map';
 @use '@angular/material' as mat;
 @use 'user-themes' as userThemes;
+
+/*
+ * SEED color tokens: `--seed-*` custom properties used by the Tailwind theme (src/styles/tailwind.css) and
+ * component styles, each with a space-separated `--seed-*-rgb` variant for `rgb(var(--seed-*-rgb) / <alpha>)`
+ */
+@mixin seed-color($name, $color) {
+  $channels: color.channel($color, 'red', $space: rgb) color.channel($color, 'green', $space: rgb)
+    color.channel($color, 'blue', $space: rgb);
+
+  --seed-#{$name}: #{$color};
+  --seed-#{$name}-rgb: #{$channels};
+}
+
+/* Light and dark scheme colors, e.g. `--seed-bg-card` */
+$seed-scheme-colors: (
+  light: (
+    bg-app-bar: #fff,
+    bg-card: #fff,
+    bg-default: #f1f5f9,
+    bg-dialog: #fff,
+    bg-hover: rgb(148 163 184 / 12%),
+    bg-status-bar: #cbd5e1,
+    text-default: #1e293b,
+    text-secondary: #64748b,
+    text-hint: #94a3b8,
+    text-disabled: #94a3b8,
+    border: #e2e8f0,
+    divider: #e2e8f0,
+    icon: #64748b,
+    mat-icon: #64748b,
+  ),
+  dark: (
+    bg-app-bar: #0f172a,
+    bg-card: #1e293b,
+    bg-default: #0f172a,
+    bg-dialog: #1e293b,
+    bg-hover: rgb(255 255 255 / 5%),
+    bg-status-bar: #0f172a,
+    text-default: #fff,
+    text-secondary: #94a3b8,
+    text-hint: #64748b,
+    text-disabled: #475569,
+    border: rgb(241 245 249 / 12%),
+    divider: rgb(241 245 249 / 12%),
+    icon: #94a3b8,
+    mat-icon: #94a3b8,
+  ),
+);
+
+body.light,
+.light,
+.dark .light {
+  @each $name, $color in map.get($seed-scheme-colors, light) {
+    @include seed-color($name, $color);
+  }
+}
+
+body.dark,
+.dark,
+.light .dark {
+  @each $name, $color in map.get($seed-scheme-colors, dark) {
+    @include seed-color($name, $color);
+  }
+}
+
+/* Theme palettes and their contrasting colors, e.g. `--seed-primary-500`, `--seed-primary` and `--seed-on-primary` */
+@each $name, $theme in userThemes.$user-themes {
+  $selector: map.get($theme, selector);
+
+  @if $name == default {
+    $selector: 'body, #{$selector}';
+  }
+
+  #{$selector} {
+    @each $palette in (primary, accent, warn) {
+      @each $hue, $color in map.get($theme, $palette) {
+        @if $hue == DEFAULT {
+          @include seed-color($palette, $color);
+        } @else if $hue != contrast {
+          @include seed-color('#{$palette}-#{$hue}', $color);
+        }
+      }
+
+      @each $hue, $color in map.get($theme, $palette, contrast) {
+        @if $hue == DEFAULT {
+          @include seed-color('on-#{$palette}', $color);
+        } @else {
+          @include seed-color('on-#{$palette}-#{$hue}', $color);
+        }
+      }
+    }
+  }
+}
 
 /* Set the base colors for light themes */
 $light-base: (
@@ -90,20 +184,20 @@ $dark-base: (
     color: null,
     density: 0,
     typography: mat.m2-define-typography-config(
-        $font-family: theme('fontFamily.sans'),
-        $headline-1: mat.m2-define-typography-level(1.875rem, 2.25rem, 800, theme('fontFamily.sans')),
-        $headline-2: mat.m2-define-typography-level(1.25rem, 1.75rem, 700, theme('fontFamily.sans')),
-        $headline-3: mat.m2-define-typography-level(1.125rem, 1.75rem, 600, theme('fontFamily.sans')),
-        $headline-4: mat.m2-define-typography-level(0.875rem, 1.25rem, 600, theme('fontFamily.sans')),
-        $headline-5: mat.m2-define-typography-level(0.875rem, 1.5rem, 400, theme('fontFamily.sans')),
-        $headline-6: mat.m2-define-typography-level(0.875rem, 1.5rem, 400, theme('fontFamily.sans')),
-        $subtitle-1: mat.m2-define-typography-level(1rem, 1.75rem, 400, theme('fontFamily.sans')),
-        $subtitle-2: mat.m2-define-typography-level(0.875rem, 1.25rem, 600, theme('fontFamily.sans')),
-        $body-1: mat.m2-define-typography-level(0.875rem, 1.5rem, 400, theme('fontFamily.sans')),
-        $body-2: mat.m2-define-typography-level(0.875rem, 1.5rem, 400, theme('fontFamily.sans')),
-        $caption: mat.m2-define-typography-level(0.75rem, 1rem, 400, theme('fontFamily.sans')),
-        $button: mat.m2-define-typography-level(0.875rem, 0.875rem, 500, theme('fontFamily.sans')),
-        $overline: mat.m2-define-typography-level(0.75rem, 2rem, 500, theme('fontFamily.sans'))
+        $font-family: var(--font-sans),
+        $headline-1: mat.m2-define-typography-level(1.875rem, 2.25rem, 800, var(--font-sans)),
+        $headline-2: mat.m2-define-typography-level(1.25rem, 1.75rem, 700, var(--font-sans)),
+        $headline-3: mat.m2-define-typography-level(1.125rem, 1.75rem, 600, var(--font-sans)),
+        $headline-4: mat.m2-define-typography-level(0.875rem, 1.25rem, 600, var(--font-sans)),
+        $headline-5: mat.m2-define-typography-level(0.875rem, 1.5rem, 400, var(--font-sans)),
+        $headline-6: mat.m2-define-typography-level(0.875rem, 1.5rem, 400, var(--font-sans)),
+        $subtitle-1: mat.m2-define-typography-level(1rem, 1.75rem, 400, var(--font-sans)),
+        $subtitle-2: mat.m2-define-typography-level(0.875rem, 1.25rem, 600, var(--font-sans)),
+        $body-1: mat.m2-define-typography-level(0.875rem, 1.5rem, 400, var(--font-sans)),
+        $body-2: mat.m2-define-typography-level(0.875rem, 1.5rem, 400, var(--font-sans)),
+        $caption: mat.m2-define-typography-level(0.75rem, 1rem, 400, var(--font-sans)),
+        $button: mat.m2-define-typography-level(0.875rem, 0.875rem, 500, var(--font-sans)),
+        $overline: mat.m2-define-typography-level(0.75rem, 2rem, 500, var(--font-sans))
       ),
   )
 );

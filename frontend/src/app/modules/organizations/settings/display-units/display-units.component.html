@@ -5,7 +5,11 @@
         <mat-tab-group>
           <mat-tab label="Display Units">
             <div class="prose">These settings govern what units will be used for fields within the application</div>
-            <form class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow" [formGroup]="unitsForm" (ngSubmit)="submit()">
+            <form
+              class="flex flex-col overflow-hidden rounded-2xl bg-card p-2 pb-4 shadow-sm"
+              [formGroup]="unitsForm"
+              (ngSubmit)="submit()"
+            >
               <div class="flex flex-col">
                 <mat-form-field class="mb-6">
                   <mat-label class="w-full">Measurement Unit Display for energy use intensities (EUI)</mat-label>
@@ -88,7 +92,7 @@
               </div>
 
               <mat-divider
-                class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                class="mat-divider mat-divider-horizontal mt-4 mb-6"
                 role="separator"
                 aria-orientation="horizontal"
               ></mat-divider>
@@ -103,7 +107,7 @@
           <mat-tab label="Energy Unit Display">
             <div class="prose">These settings govern units for energy meters</div>
             <form
-              class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow"
+              class="flex flex-col overflow-hidden rounded-2xl bg-card p-2 pb-4 shadow-sm"
               [formGroup]="energyMeterForm"
               (ngSubmit)="submit()"
             >
@@ -129,7 +133,7 @@
           <mat-tab label="Water Unit Display">
             <div class="prose">These settings govern units for water meters</div>
             <form
-              class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow"
+              class="flex flex-col overflow-hidden rounded-2xl bg-card p-2 pb-4 shadow-sm"
               [formGroup]="waterMeterForm"
               (ngSubmit)="submit()"
             >

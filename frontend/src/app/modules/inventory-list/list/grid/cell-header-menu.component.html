@@ -8,7 +8,7 @@
   </div>
   <!-- ag-grid owns header focus (Tab moves between headers), so keyboard users open this with Alt+Down instead -->
   <button
-    class="flex cursor-pointer items-center rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+    class="flex cursor-pointer items-center rounded-sm hover:bg-gray-100 dark:hover:bg-gray-800"
     [attr.aria-expanded]="isOpen"
     [attr.aria-label]="t('Column menu')"
     (click)="toggleMenu()"
@@ -23,7 +23,7 @@
 <!-- MENU -->
 <ng-template #menu>
   <div
-    class="w-60 rounded border p-2 text-sm"
+    class="w-60 rounded-sm border p-2 text-sm"
     [class.bg-[#2A3341]]="scheme === 'dark'"
     [class.bg-white]="scheme === 'light'"
     (keydown)="onMenuKeyDown($event)"

@@ -1,0 +1,6 @@
+@reference '#tailwind';
+
+/* Not !important (unlike a utility class), so the menu's hover and focus highlights still apply */
+.mat-mdc-menu-item.organization-selector-non-member {
+  @apply bg-red-100 dark:bg-red-950;
+}

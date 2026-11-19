@@ -1,6 +1,6 @@
 // Overlay
 .seed-backdrop-on-mobile {
-  @apply bg-black bg-opacity-60 sm:bg-transparent #{'!important'};
+  @apply bg-black/60! sm:bg-transparent!;
 }
 
 .cdk-overlay-container {
@@ -26,7 +26,7 @@
     border-radius: 8px !important;
     transition: box-shadow 225ms cubic-bezier(0.4, 0, 0.2, 1);
 
-    @apply shadow #{'!important'};
+    @apply shadow-sm!;
 
     &:last-child {
       margin-bottom: 0;
@@ -34,7 +34,7 @@
 
     &.mat-expanded,
     &:hover {
-      @apply shadow-lg #{'!important'};
+      @apply shadow-lg!;
     }
 
     &:not(.mat-expanded) {
@@ -73,7 +73,7 @@
     }
 
     .mat-expansion-panel-body {
-      @apply text-secondary #{'!important'};
+      @apply text-secondary!;
     }
   }
 }
@@ -188,11 +188,11 @@
 .mat-mdc-unelevated-button,
 .mat-mdc-fab,
 .mat-mdc-mini-fab {
-  --mat-mdc-button-persistent-ripple-color: theme('colors.gray[400]') !important;
+  --mat-mdc-button-persistent-ripple-color: --theme(--color-gray-400) !important;
   --mat-mdc-button-ripple-color: rgb(0 0 0 / 10%) !important;
 
   .dark & {
-    --mat-mdc-button-persistent-ripple-color: theme('colors.black') !important;
+    --mat-mdc-button-persistent-ripple-color: --theme(--color-black) !important;
     --mat-mdc-button-ripple-color: rgb(0 0 0 / 10%) !important;
   }
 
@@ -201,7 +201,7 @@
   }
 
   .mat-ripple-element {
-    @apply bg-black/10 #{'!important'};
+    @apply bg-black/10!;
   }
 }
 
@@ -213,21 +213,21 @@
     /* Apply primary color */
     &.mat-primary {
       .mat-icon {
-        @apply text-primary #{'!important'};
+        @apply text-primary!;
       }
     }
 
     /* Apply accent color */
     &.mat-accent {
       .mat-icon {
-        @apply text-accent #{'!important'};
+        @apply text-accent!;
       }
     }
 
     /* Apply warn color */
     &.mat-warn {
       .mat-icon {
-        @apply text-warn #{'!important'};
+        @apply text-warn!;
       }
     }
   }
@@ -237,12 +237,12 @@
 .mat-mdc-outlined-button {
   /* Not disabled */
   &:not([disabled='true']) {
-    @apply border-gray-300 dark:border-gray-500 #{'!important'};
+    @apply border-gray-300! dark:border-gray-500!;
   }
 
   /* Disabled */
   &[disabled='true'] {
-    @apply border-gray-300/70 dark:border-gray-600 #{'!important'};
+    @apply border-gray-300/70! dark:border-gray-600!;
   }
 }
 
@@ -273,7 +273,7 @@
 
     &.mat-button-toggle-checked {
       .mat-button-toggle-label-content {
-        @apply text-default #{'!important'};
+        @apply text-default!;
       }
     }
 
@@ -358,14 +358,14 @@
   &.mat-form-field-invalid {
     /* Border color */
     .mat-mdc-text-field-wrapper {
-      @apply border-warn dark:border-warn #{'!important'};
+      @apply border-warn! dark:border-warn!;
     }
 
     /* Select */
     .mat-mdc-select {
       /* Placeholder color */
       .mat-mdc-select-placeholder {
-        @apply text-warn #{'!important'};
+        @apply text-warn!;
       }
     }
   }
@@ -388,7 +388,7 @@
   &.mat-focused:not(.mat-form-field-invalid) {
     /* Border color */
     .mat-mdc-text-field-wrapper {
-      @apply border-primary dark:border-primary #{'!important'};
+      @apply border-primary! dark:border-primary!;
     }
   }
 
@@ -424,7 +424,7 @@
     border-width: 1px;
     border-style: solid;
 
-    @apply border-gray-300 bg-white shadow-sm dark:border-gray-500 dark:bg-black dark:bg-opacity-5 #{'!important'};
+    @apply border-gray-300! bg-white! shadow-xs! dark:border-gray-500! dark:bg-black/5!;
 
     /* Adjust the top spacing and overflow when mat-label present */
     &:not(.mdc-text-field--no-label) {
@@ -496,7 +496,7 @@
         align-items: center;
         justify-content: center;
 
-        @apply text-hint #{'!important'};
+        @apply text-hint!;
 
         .mat-mdc-icon-button {
           width: 40px;
@@ -524,7 +524,7 @@
           &:focus {
             .mat-mdc-select-trigger {
               .mat-mdc-select-value {
-                @apply text-primary #{'!important'};
+                @apply text-primary!;
               }
 
               .mat-mdc-select-arrow-wrapper {
@@ -559,7 +559,7 @@
               .mat-mdc-select-arrow {
                 min-height: 0;
 
-                @apply text-gray-500 dark:text-secondary #{'!important'};
+                @apply text-gray-500! dark:text-secondary!;
               }
             }
           }
@@ -585,7 +585,7 @@
           pointer-events: auto;
           font-weight: 500;
 
-          @apply text-default #{'!important'};
+          @apply text-default!;
         }
 
         /* Textarea */
@@ -619,7 +619,7 @@
     }
 
     .mat-mdc-form-field-hint {
-      @apply text-hint #{'!important'};
+      @apply text-hint!;
     }
   }
 
@@ -852,7 +852,7 @@
         .mat-mdc-form-field-text-prefix,
         .mat-mdc-form-field-icon-suffix,
         .mat-mdc-form-field-text-suffix {
-          @apply bg-default border-gray-300 dark:border-gray-500 #{'!important'};
+          @apply bg-default! border-gray-300! dark:border-gray-500!;
         }
       }
     }
@@ -919,7 +919,7 @@
           .mdc-notched-outline__leading,
           .mdc-notched-outline__notch,
           .mdc-notched-outline__trailing {
-            @apply border-slate-300 dark:border-slate-500 #{'!important'};
+            @apply border-slate-300! dark:border-slate-500!;
           }
         }
       }
@@ -959,7 +959,7 @@
   &::placeholder {
     transition: none !important;
 
-    @apply text-hint #{'!important'};
+    @apply text-hint!;
   }
 }
 
@@ -968,7 +968,7 @@
   .mat-mdc-input-element {
     /* Placeholder color */
     &::placeholder {
-      @apply text-warn #{'!important'};
+      @apply text-warn!;
     }
   }
 }
@@ -1031,7 +1031,7 @@ div.mat-mdc-autocomplete-panel {
     padding: 8px 16px;
     justify-content: space-between;
 
-    @screen sm {
+    @variant sm {
       justify-content: normal;
     }
 
@@ -1045,7 +1045,7 @@ div.mat-mdc-autocomplete-panel {
         display: none;
         margin-right: 12px;
 
-        @screen sm {
+        @variant sm {
           display: block;
         }
       }
@@ -1088,7 +1088,7 @@ div.mat-mdc-autocomplete-panel {
   .mat-mdc-select-placeholder {
     transition: none !important;
 
-    @apply text-hint #{'!important'};
+    @apply text-hint!;
   }
 
   .mat-mdc-select-trigger {
@@ -1115,7 +1115,7 @@ div.mat-mdc-autocomplete-panel {
     .mat-mdc-select-arrow {
       margin: 0 0 0 8px;
 
-      @apply text-secondary #{!important};
+      @apply text-secondary!;
     }
   }
 }
@@ -1197,69 +1197,69 @@ textarea.mat-mdc-input-element {
   /* Apply primary contrast color */
   &.mat-primary {
     .mat-icon {
-      @apply text-on-primary #{'!important'};
+      @apply text-on-primary!;
     }
 
     .text-secondary {
-      @apply text-on-primary text-opacity-60 #{'!important'};
+      @apply text-on-primary/60!;
     }
 
     .text-hint {
-      @apply text-on-primary text-opacity-38 #{'!important'};
+      @apply text-on-primary/38!;
     }
 
     .text-disabled {
-      @apply text-on-primary text-opacity-38 #{'!important'};
+      @apply text-on-primary/38!;
     }
 
     .divider {
-      @apply text-on-primary text-opacity-12 #{'!important'};
+      @apply text-on-primary/12!;
     }
   }
 
   /* Apply accent contrast color */
   &.mat-accent {
     .mat-icon {
-      @apply text-on-accent #{'!important'};
+      @apply text-on-accent!;
     }
 
     .text-secondary {
-      @apply text-on-accent text-opacity-60 #{'!important'};
+      @apply text-on-accent/60!;
     }
 
     .text-hint {
-      @apply text-on-accent text-opacity-38 #{'!important'};
+      @apply text-on-accent/38!;
     }
 
     .text-disabled {
-      @apply text-on-accent text-opacity-38 #{'!important'};
+      @apply text-on-accent/38!;
     }
 
     .divider {
-      @apply text-on-accent text-opacity-12 #{'!important'};
+      @apply text-on-accent/12!;
     }
   }
 
   /* Apply warn contrast color */
   &.mat-warn {
     .mat-icon {
-      @apply text-on-warn #{'!important'};
+      @apply text-on-warn!;
     }
 
     .text-secondary {
-      @apply text-on-warn text-opacity-60 #{'!important'};
+      @apply text-on-warn/60!;
     }
 
     .text-hint {
-      @apply text-on-warn text-opacity-38 #{'!important'};
+      @apply text-on-warn/38!;
     }
 
     .text-disabled {
-      @apply text-on-warn text-opacity-38 #{'!important'};
+      @apply text-on-warn/38!;
     }
 
     .divider {
-      @apply text-on-warn text-opacity-12 #{'!important'};
+      @apply text-on-warn/12!;
     }
   }
 }

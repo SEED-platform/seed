@@ -1,9 +1,11 @@
+@reference '#tailwind';
+
 seed-card {
   position: relative;
   display: flex;
   overflow: hidden;
 
-  @apply bg-card rounded-2xl shadow;
+  @apply bg-card rounded-2xl shadow-sm;
 
   /* Flippable */
   &.card-flippable {
@@ -42,7 +44,7 @@ seed-card {
         opacity 0s ease-in 0.2s;
       backface-visibility: hidden;
 
-      @apply bg-card rounded-2xl shadow;
+      @apply bg-card rounded-2xl shadow-sm;
     }
 
     .card-front {

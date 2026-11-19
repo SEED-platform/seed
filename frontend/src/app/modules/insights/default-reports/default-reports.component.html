@@ -144,12 +144,12 @@
     <div class="grid grid-cols-2 gap-6 rounded-lg bg-white p-4 dark:bg-gray-900">
       <!-- Scatter Chart -->
       <div>
-        <div class="text-secondary mb-1 text-center text-sm font-medium">{{ chart1Title }}</div>
+        <div class="mb-1 text-center text-sm font-medium text-secondary">{{ chart1Title }}</div>
         <div class="relative h-[400px]">
           <canvas #scatterCanvas></canvas>
           @if (scatterStatusMessage) {
             <div class="absolute inset-0 flex items-center justify-center">
-              <div class="bg-card rounded-lg p-4 text-center shadow">
+              <div class="rounded-lg bg-card p-4 text-center shadow-sm">
                 <span class="text-secondary">{{ scatterStatusMessage }}</span>
                 @if (scatterLoading) {
                   <mat-progress-bar class="mt-2" mode="indeterminate"></mat-progress-bar>
@@ -165,7 +165,7 @@
         @if (scatterPropertyCounts.length) {
           <table class="w-full text-sm">
             <thead>
-              <tr class="text-secondary border-b text-left">
+              <tr class="border-b text-left text-secondary">
                 <th class="p-1">Cycle</th>
                 <th class="p-1">Properties with Data</th>
                 <th class="p-1">Total Properties</th>
@@ -189,12 +189,12 @@
 
       <!-- Bar Chart -->
       <div>
-        <div class="text-secondary mb-1 text-center text-sm font-medium">{{ chart2Title }}</div>
+        <div class="mb-1 text-center text-sm font-medium text-secondary">{{ chart2Title }}</div>
         <div class="relative h-[400px]">
           <canvas #barCanvas></canvas>
           @if (aggStatusMessage) {
             <div class="absolute inset-0 flex items-center justify-center">
-              <div class="bg-card rounded-lg p-4 text-center shadow">
+              <div class="rounded-lg bg-card p-4 text-center shadow-sm">
                 <span class="text-secondary">{{ aggStatusMessage }}</span>
                 @if (aggLoading) {
                   <mat-progress-bar class="mt-2" mode="indeterminate"></mat-progress-bar>
@@ -210,7 +210,7 @@
         @if (aggPropertyCounts.length) {
           <table class="w-full text-sm">
             <thead>
-              <tr class="text-secondary border-b text-left">
+              <tr class="border-b text-left text-secondary">
                 <th class="p-1">Cycle</th>
                 <th class="p-1">Properties with Data</th>
                 <th class="p-1">Total Properties</th>
@@ -251,14 +251,14 @@
       <div class="text-lg font-medium">Statistics</div>
       <mat-accordion multi>
         @for (cycle of objectKeys(axisData); track cycle) {
-          <mat-expansion-panel class="!bg-white dark:!bg-gray-900">
+          <mat-expansion-panel class="bg-white! dark:bg-gray-900!">
             <mat-expansion-panel-header>
               <mat-panel-title>{{ cycle }}</mat-panel-title>
             </mat-expansion-panel-header>
             <div class="overflow-x-auto">
               <table class="w-full text-sm">
                 <thead>
-                  <tr class="text-secondary border-b text-left">
+                  <tr class="border-b text-left text-secondary">
                     <th class="p-1">Axis</th>
                     <th class="p-1">Access Level Instance</th>
                     <th class="p-1">Sum</th>

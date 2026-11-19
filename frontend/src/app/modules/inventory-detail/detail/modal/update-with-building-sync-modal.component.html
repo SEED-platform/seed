@@ -9,12 +9,12 @@
     <seed-alert type="error">{{ errorMessage }}</seed-alert>
   }
 
-  <div class="text-secondary text-sm">Select a BuildingSync XML file to update this property's data.</div>
+  <div class="text-sm text-secondary">Select a BuildingSync XML file to update this property's data.</div>
 
   <input (change)="onFileChange($event)" accept=".xml,application/xml,text/xml" type="file" />
 
   @if (file) {
-    <div class="text-secondary text-sm">{{ file.name }}</div>
+    <div class="text-sm text-secondary">{{ file.name }}</div>
   }
 </div>
 

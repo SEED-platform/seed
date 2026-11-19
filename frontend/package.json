@@ -16,6 +16,9 @@
   },
   "packageManager": "pnpm@12.21.0",
   "private": true,
+  "imports": {
+    "#tailwind": "./src/styles/tailwind.css"
+  },
   "scripts": {
     "preinstall": "node -e \"const ua = process.env.npm_config_user_agent || ''; const execpath = process.env.npm_execpath || ''; if (!ua.startsWith('pnpm/') && !execpath.includes('pnpm')) { console.error('Use pnpm install for installation in this project.'); process.exit(1); }\"",
     "ng": "ng",
@@ -31,7 +34,7 @@
     "lint:fix": "run-p -c eslint:fix prettier:fix stylelint:fix",
     "prettier": "prettier \"src/**/*.html\" --check",
     "prettier:fix": "prettier \"src/**/*.html\" --write",
-    "stylelint": "stylelint \"src/**/*.scss\"",
+    "stylelint": "stylelint \"src/**/*.{css,scss}\"",
     "stylelint:fix": "npm run stylelint -- --fix",
     "update-translations": "node --env-file=.env --no-warnings update-translations.mts"
   },
@@ -81,9 +84,9 @@
     "@eslint/js": "^9.39.5",
     "@lokalise/node-api": "^15.7.1",
     "@stylistic/eslint-plugin": "^5.10.0",
+    "@tailwindcss/postcss": "^4.3.5",
     "@tailwindcss/typography": "^0.5.20",
     "@types/adm-zip": "^0.5.8",
-    "@types/chroma-js": "^3.1.2",
     "@types/geojson": "^7946.0.16",
     "@types/jasmine": "~6.0.0",
     "@types/lodash-es": "^4.17.12",
@@ -92,8 +95,6 @@
     "@types/ol-ext": "npm:@siedlerchr/types-ol-ext@^3.6.8",
     "adm-zip": "^0.6.1",
     "angular-eslint": "^22.6.0",
-    "autoprefixer": "^10.6.1",
-    "chroma-js": "^3.2.0",
     "eslint": "^9.39.5",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-github": "^6.1.2",
@@ -115,7 +116,7 @@
     "prettier-plugin-tailwindcss": "^0.8.1",
     "stylelint": "^17.15.0",
     "stylelint-config-standard-scss": "^17.0.0",
-    "tailwindcss": "^3.4.19",
+    "tailwindcss": "^4.3.5",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.70.1"
   },

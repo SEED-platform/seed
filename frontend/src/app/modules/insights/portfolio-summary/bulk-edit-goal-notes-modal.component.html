@@ -1,7 +1,7 @@
 <seed-modal-header [close]="close.bind(this)" title="Edit Fields for Selected" titleIcon="fa-solid:pen-to-square"></seed-modal-header>
 
 <form class="flex flex-col gap-4" [formGroup]="form">
-  <div class="text-secondary text-sm">
+  <div class="text-sm text-secondary">
     Check a field to update it for all {{ data.viewIds.length }} selected {{ data.viewIds.length === 1 ? 'property' : 'properties' }}.
     Unchecked fields will remain unchanged.
   </div>

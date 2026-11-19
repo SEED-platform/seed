@@ -1,7 +1,7 @@
 <div *transloco="let t">
   <div class="mt-4 flex gap-4" mat-dialog-title>
-    <mat-icon class="text-primary-600 icon-size-5 dark:text-primary-400" svgIcon="fa-solid:arrow-up-from-bracket"></mat-icon>
-    <div class="text-2xl font-medium leading-6">{{ t('Upload Access Level Instances') }}</div>
+    <mat-icon class="icon-size-5 text-primary-600 dark:text-primary-400" svgIcon="fa-solid:arrow-up-from-bracket"></mat-icon>
+    <div class="text-2xl leading-6 font-medium">{{ t('Upload Access Level Instances') }}</div>
   </div>
   <mat-divider class="mb-4"></mat-divider>
 
@@ -27,22 +27,22 @@
           mat-flat-button
           color="primary"
         >
-          <mat-icon class="text-white icon-size-5" svgIcon="fa-solid:file-csv"></mat-icon>
+          <mat-icon class="icon-size-5 text-white" svgIcon="fa-solid:file-csv"></mat-icon>
           <span>{{ t('Choose file') }}</span>
         </button>
-        <div class="text-secondary max-w-[21rem] cursor-default items-center truncate pl-3 pr-2">
+        <div class="max-w-84 cursor-default items-center truncate pr-2 pl-3 text-secondary">
           {{ file?.name ?? t('No file selected') }}
         </div>
       </div>
       @if (isExcelFile()) {
-        <div class="text-secondary text-sm" [innerHTML]="t('MULTI_FILE_EXCEL_NOT_SUPPORTED')"></div>
+        <div class="text-sm text-secondary" [innerHTML]="t('MULTI_FILE_EXCEL_NOT_SUPPORTED')"></div>
       }
     } @else if (inProgress) {
       <mat-progress-bar
         [mode]="(progress[0]?.value ?? 0) === 0 ? 'indeterminate' : 'determinate'"
         [value]="progress[0]?.value"
       ></mat-progress-bar>
-      <div class="text-secondary grid grid-cols-1 gap-x-3 gap-y-1 text-sm font-medium sm:grid-cols-[minmax(0,1fr)_2.75rem]">
+      <div class="grid grid-cols-1 gap-x-3 gap-y-1 text-sm font-medium text-secondary sm:grid-cols-[minmax(0,1fr)_2.75rem]">
         @for (p of progress; track p.message) {
           <div>{{ t(p.message) }}</div>
           <div class="text-center font-mono sm:text-right">{{ p.value | number: '1.1-1' }}%</div>
@@ -53,7 +53,7 @@
         @if (errors?.length > 0) {
           <div>{{ t('Errors occurred while importing access level instances:') }}</div>
           <div class="prose max-h-48 overflow-y-auto">
-            <ul class="my-0">
+            <ul class="mt-0 mb-0">
               @for (error of errors; track $index) {
                 <li>{{ error }}</li>
               }

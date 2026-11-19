@@ -29,7 +29,7 @@
 
       <ng-container matColumnDef="actions">
         <th class="select-none" *matHeaderCellDef mat-header-cell>Actions</th>
-        <td class="w-50 whitespace-nowrap text-right" *matCellDef="let member" mat-cell>
+        <td class="w-50 text-right whitespace-nowrap" *matCellDef="let member" mat-cell>
           <button class="mr-2" (click)="editMember(member)" mat-icon-button>
             <mat-icon class="scale-75 fill-cyan-600 dark:fill-cyan-400" svgIcon="fa-solid:pencil"></mat-icon>
           </button>

@@ -1,3 +1,7 @@
+/*
+ * Theme palettes: the source for both the Angular Material themes and the `--seed-*` color tokens (see themes.scss)
+ * that the Tailwind CSS theme colors use. `contrast` holds the readable text color for each hue (`on-*` colors).
+ */
 $user-themes: (
   default: (
     selector: '.theme-default',

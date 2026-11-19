@@ -1,3 +1,10 @@
+@reference '#tailwind';
+
+/* Not a text-hint utility class (always !important), so the active item rules below can override it */
+.seed-horizontal-navigation-item-subtitle {
+  color: var(--seed-text-hint);
+}
+
 /* Root navigation specific */
 seed-horizontal-navigation {
   .seed-horizontal-navigation-wrapper {
@@ -7,7 +14,7 @@ seed-horizontal-navigation {
     /* Basic, Branch */
     seed-horizontal-navigation-basic-item,
     seed-horizontal-navigation-branch-item {
-      @screen sm {
+      @variant sm {
         &:hover {
           .seed-horizontal-navigation-item-wrapper {
             @apply bg-hover;
@@ -36,19 +43,19 @@ seed-horizontal-navigation {
       .seed-horizontal-navigation-item-active,
       .seed-horizontal-navigation-item-active-forced {
         .seed-horizontal-navigation-item-title {
-          @apply text-primary #{'!important'};
+          @apply text-primary!;
         }
 
         .seed-horizontal-navigation-item-subtitle {
-          @apply text-primary-400 #{'!important'};
+          @apply text-primary-400!;
 
           .dark & {
-            @apply text-primary-600 #{'!important'};
+            @apply text-primary-600!;
           }
         }
 
         .seed-horizontal-navigation-item-icon {
-          @apply text-primary #{'!important'};
+          @apply text-primary!;
         }
       }
     }
@@ -105,19 +112,19 @@ seed-horizontal-navigation {
     .seed-horizontal-navigation-item-active,
     .seed-horizontal-navigation-item-active-forced {
       .seed-horizontal-navigation-item-title {
-        @apply text-primary #{'!important'};
+        @apply text-primary!;
       }
 
       .seed-horizontal-navigation-item-subtitle {
-        @apply text-primary-400 #{'!important'};
+        @apply text-primary-400!;
 
         .dark & {
-          @apply text-primary-600 #{'!important'};
+          @apply text-primary-600!;
         }
       }
 
       .seed-horizontal-navigation-item-icon {
-        @apply text-primary #{'!important'};
+        @apply text-primary!;
       }
     }
   }

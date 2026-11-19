@@ -2,13 +2,13 @@
   @let levelsRemoved = isLevelRemoved();
   <div class="mt-4 flex gap-4" mat-dialog-title>
     <mat-icon
-      class="text-current icon-size-5"
+      class="icon-size-5 text-current"
       [ngClass]="
         levelsRemoved && instancesToBeRemoved() > 0 ? 'text-warn-600 dark:text-warn-400' : 'text-primary-600 dark:text-primary-400'
       "
       svgIcon="fa-solid:pen-to-square"
     ></mat-icon>
-    <div class="text-2xl font-medium leading-6">{{ t('Edit Access Levels') }}</div>
+    <div class="text-2xl leading-6 font-medium">{{ t('Edit Access Levels') }}</div>
   </div>
   <mat-divider class="mb-4"></mat-divider>
 
@@ -18,7 +18,7 @@
         @for (control of levels.controls; track $index) {
           <div class="flex items-center space-x-3">
             <div
-              class="text-hint flex h-10 w-10 shrink-0 select-none items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800"
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-hint select-none dark:bg-gray-800"
             >
               {{ $index + 1 }}
             </div>

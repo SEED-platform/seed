@@ -26,11 +26,11 @@
             }
           </seed-alert>
         } @else {
-          <div class="bg-card mb-6 flex flex-col gap-y-2 rounded-2xl p-6 shadow">
+          <div class="mb-6 flex flex-col gap-y-2 rounded-2xl bg-card p-6 shadow-sm">
             <mat-slide-toggle [checked]="organization.public_feed_enabled" (change)="toggleFeed($event.checked)">
               {{ t('Enable Public Endpoints') }}
             </mat-slide-toggle>
-            <div class="prose ml-10 mt-2 max-w-none">
+            <div class="prose mt-2 ml-10 max-w-none">
               {{
                 t('When enabled, data is accessible via the /v3/public endpoints. Configure which fields are shared in the table below.')
               }}
@@ -39,9 +39,9 @@
 
           @if (organization.public_feed_enabled) {
             <mat-accordion class="mb-6 block">
-              <mat-expansion-panel class="bg-card rounded-2xl shadow">
+              <mat-expansion-panel class="bg-card">
                 <mat-expansion-panel-header collapsedHeight="56px">
-                  <mat-panel-title class="select-none font-medium leading-tight">{{ t('URL_OPTIONS') }}</mat-panel-title>
+                  <mat-panel-title class="leading-tight font-medium select-none">{{ t('URL_OPTIONS') }}</mat-panel-title>
                 </mat-expansion-panel-header>
                 <div class="prose max-w-none">
                   <h3>{{ t('JSON/HTML') }}</h3>
@@ -109,7 +109,7 @@
               </mat-expansion-panel>
             </mat-accordion>
 
-            <form class="bg-card mb-6 flex flex-col gap-y-4 rounded-2xl p-6 shadow" [formGroup]="thresholdForm">
+            <form class="mb-6 flex flex-col gap-y-4 rounded-2xl bg-card p-6 shadow-sm" [formGroup]="thresholdForm">
               <div class="text-lg font-medium">{{ t('Public Query Threshold') }}</div>
               <div class="prose max-w-none">{{ t('QUERY_THRESHOLD_HELP') }}</div>
               <mat-form-field class="max-w-xs" appearance="outline">
@@ -121,7 +121,7 @@
               </mat-form-field>
             </form>
 
-            <div class="bg-card flex flex-col gap-y-4 rounded-2xl p-6 shadow">
+            <div class="flex flex-col gap-y-4 rounded-2xl bg-card p-6 shadow-sm">
               <div class="text-lg font-medium">{{ t('Selecting Fields to Share') }}</div>
               <div class="prose max-w-none">{{ t('PUBLIC_SHARE') }}</div>
 
@@ -148,7 +148,7 @@
                 </mat-form-field>
               </div>
 
-              <div class="max-h-[28rem] overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700">
+              <div class="max-h-112 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table class="w-full text-left text-sm">
                   <thead class="bg-default-50 sticky top-0 z-10 dark:bg-gray-800">
                     <tr>
@@ -179,14 +179,14 @@
                       </tr>
                     } @empty {
                       <tr>
-                        <td class="text-secondary p-4" colspan="3">{{ t('No fields found.') }}</td>
+                        <td class="p-4 text-secondary" colspan="3">{{ t('No fields found.') }}</td>
                       </tr>
                     }
                   </tbody>
                 </table>
               </div>
 
-              <div class="text-secondary text-sm font-medium">
+              <div class="text-sm font-medium text-secondary">
                 {{ t('Or select a field to add to the table. Selecting a field adds it to the table above so it can be shared.') }}
               </div>
               <mat-form-field appearance="outline">
@@ -215,7 +215,7 @@
                 <button [disabled]="thresholdForm.invalid || saving" (click)="save()" mat-flat-button color="primary" type="button">
                   <span>{{ t('Save Changes') }}</span>
                   @if (saved && !saving) {
-                    <mat-icon class="ml-2 icon-size-4" svgIcon="fa-solid:check"></mat-icon>
+                    <mat-icon class="icon-size-4" svgIcon="fa-solid:check"></mat-icon>
                   }
                 </button>
                 @if (saving) {

@@ -9,7 +9,11 @@
   @if (organization) {
     <div class="flex-auto p-6 sm:p-10" *transloco="let t">
       <div class="max-w-2xl">
-        <form class="bg-card flex flex-col overflow-hidden rounded-2xl p-2 pb-4 shadow" [formGroup]="salesforceForm" (ngSubmit)="submit()">
+        <form
+          class="flex flex-col overflow-hidden rounded-2xl bg-card p-2 pb-4 shadow-sm"
+          [formGroup]="salesforceForm"
+          (ngSubmit)="submit()"
+        >
           <mat-tab-group>
             <mat-tab label="Salesforce Configuration">
               <div class="prose">
@@ -97,7 +101,7 @@
                     </div>
                   }
                   <mat-divider
-                    class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                    class="mat-divider mat-divider-horizontal mt-4 mb-6"
                     role="separator"
                     aria-orientation="horizontal"
                   ></mat-divider>
@@ -144,7 +148,7 @@
                     </div>
                   }
                   <mat-divider
-                    class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                    class="mat-divider mat-divider-horizontal mt-4 mb-6"
                     role="separator"
                     aria-orientation="horizontal"
                   ></mat-divider>
@@ -198,7 +202,7 @@
                     </mat-form-field>
                   </div>
                   <mat-divider
-                    class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                    class="mat-divider mat-divider-horizontal mt-4 mb-6"
                     role="separator"
                     aria-orientation="horizontal"
                   ></mat-divider>
@@ -250,7 +254,7 @@
                     </mat-form-field>
                   </div>
                   <mat-divider
-                    class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                    class="mat-divider mat-divider-horizontal mt-4 mb-6"
                     role="separator"
                     aria-orientation="horizontal"
                   ></mat-divider>
@@ -277,7 +281,7 @@
                     </mat-form-field>
                   </div>
 
-                  <div class="align-middle mt-12 font-bold">{{ t('Main Contact Settings') }}</div>
+                  <div class="mt-12 font-bold">{{ t('Main Contact Settings') }}</div>
                   <div class="prose mb-4">
                     {{ t('SF_CONTACT_HEADER_TEXT') }}
                   </div>
@@ -328,7 +332,7 @@
                       <mat-hint>{{ t('SF_BENCHMARK_CONTACT_FIELDNAME_TEXT') }}</mat-hint>
                     </mat-form-field>
                   </div>
-                  <div class="align-middle mt-12 font-bold">{{ t('Data Administrator Contact Settings') }}</div>
+                  <div class="mt-12 font-bold">{{ t('Data Administrator Contact Settings') }}</div>
                   <div class="prose mb-4">
                     {{ t('SF_DATA_ADMIN_HEADER_TEXT') }}
                   </div>
@@ -380,7 +384,7 @@
                     </mat-form-field>
                   </div>
                   <mat-divider
-                    class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                    class="mat-divider mat-divider-horizontal mt-4 mb-6"
                     role="separator"
                     aria-orientation="horizontal"
                   ></mat-divider>
@@ -394,7 +398,7 @@
               </div>
 
               <mat-divider
-                class="mat-divider mat-divider-horizontal mb-6 mt-8"
+                class="mat-divider mat-divider-horizontal mt-8 mb-6"
                 role="separator"
                 aria-orientation="horizontal"
               ></mat-divider>
@@ -456,7 +460,7 @@
                       <mat-icon svgIcon="heroicons-solid:link" />
                       <div class="text-2xl font-bold text-gray-700">{{ t('Connection Status') }}</div>
                     </div>
-                    <div class="mb-4 mt-4 flex items-center space-x-4">
+                    <div class="mt-4 mb-4 flex items-center space-x-4">
                       @if (isLoggedIntoBbSalesforce) {
                         <div class="flex items-center space-x-2 rounded-lg bg-green-50 p-3 text-green-700">
                           <mat-icon class="icon-size-5" svgIcon="heroicons-solid:check-circle" />
@@ -474,7 +478,7 @@
                   </div>
                 </div>
                 <mat-divider
-                  class="mat-divider mat-divider-horizontal mb-6 mt-4"
+                  class="mat-divider mat-divider-horizontal mt-4 mb-6"
                   role="separator"
                   aria-orientation="horizontal"
                 ></mat-divider>

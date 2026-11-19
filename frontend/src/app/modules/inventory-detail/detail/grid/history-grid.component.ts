@@ -132,7 +132,7 @@ export class HistoryGridComponent implements OnChanges, OnDestroy {
     // add icon to extra data and derived columns
     const iconName = derived_column ? 'link' : is_extra_data ? 'emergency' : null
     const textSize = derived_column ? 'text-sm' : 'text-xs'
-    return `${value} <span class="material-icons align-middle ml-1 mb-2 text-secondary ${textSize}">${iconName}</span>`
+    return `${value} <span class="material-icons ml-1 mb-2 text-secondary ${textSize}">${iconName}</span>`
   }
 
   setRowData() {

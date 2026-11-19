@@ -1,9 +1,9 @@
 <div class="border-bottom mx-2 flex gap-4 rounded-lg">
-  <div class="text-secondary font-bold">Cycle:</div>
+  <div class="font-bold text-secondary">Cycle:</div>
   <div class="">{{ cycle?.name }}</div>
 </div>
 
-<mat-divider class="mb-2 mt-4"></mat-divider>
+<mat-divider class="mt-4 mb-2"></mat-divider>
 <div class="flex items-center justify-between">
   <div>
     <button (click)="backToMapping.emit()" mat-stroked-button>Back to Mapping</button>
@@ -36,7 +36,7 @@
     <span>Properties</span>
     <div class="vertical-divider"></div>
     <div class="mx-3 my-2 flex gap-4">
-      <div class="h-5 w-10 rounded border bg-primary bg-opacity-25"></div>
+      <div class="h-5 w-10 rounded-sm border bg-primary/25"></div>
       <div class="text-secondary italic">Access Level Info</div>
     </div>
   </div>
@@ -58,7 +58,7 @@
     <span>Tax Lots</span>
     <div class="vertical-divider"></div>
     <div class="mx-3 my-2 flex gap-4">
-      <div class="h-5 w-10 rounded border bg-primary bg-opacity-25"></div>
+      <div class="h-5 w-10 rounded-sm border bg-primary/25"></div>
       <div class="text-secondary italic">Access Level Info</div>
     </div>
   </div>

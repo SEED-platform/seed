@@ -13,28 +13,28 @@
     <!--  Header -->
     <div class="mb-5 flex flex-col gap-4">
       <div class="flex gap-4">
-        <span class="text-secondary w-20">Cycle</span>
+        <span class="w-20 text-secondary">Cycle</span>
         <span class="text-lg">{{ cycle.name }}</span>
       </div>
       <div class="flex gap-4">
-        <span class="text-secondary w-20">Analysis </span>
+        <span class="w-20 text-secondary">Analysis </span>
         <a class="text-primary dark:text-primary-400" [routerLink]="['/analyses/', analysis.id]">
           <span class="mr-1 text-lg">{{ analysis.name }}</span>
-          <span class="material-icons text-secondary text-sm">open_in_new</span>
+          <span class="material-icons text-sm text-secondary">open_in_new</span>
         </a>
       </div>
       <div class="flex gap-4">
-        <span class="text-secondary w-20">Property </span>
+        <span class="w-20 text-secondary">Property </span>
         <a class="text-primary dark:text-primary-400" [routerLink]="['/properties/', propertyViewId]">
           <span class="mr-1 text-lg">{{ viewDisplayField$ | async }}</span>
-          <span class="material-icons text-secondary text-sm">open_in_new</span>
+          <span class="material-icons text-sm text-secondary">open_in_new</span>
         </a>
       </div>
     </div>
     <mat-divider></mat-divider>
     <div class="my-5 flex gap-4">
-      <div class="bold text-secondary w-20">Messages</div>
-      <div class="text-secondary max-w-160">
+      <div class="bold w-20 text-secondary">Messages</div>
+      <div class="max-w-160 text-secondary">
         <ul class="list-disc pl-5">
           @for (message of messages; track $index) {
             <li class="text">{{ message.user_message || message.debug_message }}</li>

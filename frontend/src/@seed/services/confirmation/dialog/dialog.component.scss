@@ -1,7 +1,7 @@
+@reference '#tailwind';
+
 .seed-confirmation-dialog-panel {
-  @screen md {
-    @apply w-128;
-  }
+  @apply md:w-128;
 
   .mat-mdc-dialog-container {
     .mat-mdc-dialog-surface {

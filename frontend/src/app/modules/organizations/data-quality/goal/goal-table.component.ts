@@ -32,9 +32,9 @@ export class DataQualityGoalTableComponent implements OnChanges, OnDestroy, OnIn
   rulesColumns = ['enabled', 'dataType', 'severity', 'criteria', 'label', 'actions']
   labelLookup = {}
   severityLookup = {
-    0: { name: 'Error', class: 'bg-red-200 border rounded border-red-900 text-red-900' },
-    1: { name: 'Warning', class: 'bg-amber-200 border rounded border-amber-900 text-amber-900' },
-    2: { name: 'Valid', class: 'bg-green-200 border rounded border-green-900 text-green-900' },
+    0: { name: 'Error', class: 'bg-red-200 border rounded-sm border-red-900 text-red-900' },
+    1: { name: 'Warning', class: 'bg-amber-200 border rounded-sm border-amber-900 text-amber-900' },
+    2: { name: 'Valid', class: 'bg-green-200 border rounded-sm border-green-900 text-green-900' },
   }
   dataTypeLookup = { 0: 'Number', 1: 'Text', 2: 'Date', 3: 'Year', 4: 'Area', 5: 'EUI' }
 

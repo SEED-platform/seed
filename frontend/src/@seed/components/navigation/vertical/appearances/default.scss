@@ -447,7 +447,7 @@ seed-vertical-navigation-collapsible-item {
       &:not(.seed-vertical-navigation-item-disabled) {
         &.seed-vertical-navigation-item-active,
         &.seed-vertical-navigation-item-active-forced {
-          @apply bg-gray-800 bg-opacity-5 dark:bg-white dark:bg-opacity-12;
+          @apply bg-gray-800/5 dark:bg-white/12;
 
           .seed-vertical-navigation-item-icon {
             @apply opacity-100;
@@ -466,7 +466,7 @@ seed-vertical-navigation-collapsible-item {
       // Hover state
       &:not(.seed-vertical-navigation-item-active-forced, .seed-vertical-navigation-item-active, .seed-vertical-navigation-item-disabled) {
         &:hover {
-          @apply bg-gray-800 bg-opacity-5 dark:bg-white dark:bg-opacity-12;
+          @apply bg-gray-800/5 dark:bg-white/12;
 
           .seed-vertical-navigation-item-icon {
             @apply opacity-100;

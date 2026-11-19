@@ -1,25 +1,25 @@
-<div class="text-secondary text-sm" *transloco="let t">
+<div class="text-sm text-secondary" *transloco="let t">
   <span id="inventory-actions-label">{{ t('Actions') }}</span>
   <button
-    class="bg-card mr-1 flex w-50 cursor-pointer items-center justify-between rounded border border-gray-500 px-2"
+    class="mr-1 flex w-50 cursor-pointer items-center justify-between rounded-sm border border-gray-500 bg-card px-2"
     [matMenuTriggerFor]="menu"
     aria-labelledby="inventory-actions-label inventory-actions-value"
     type="button"
   >
-    <span class="text-secondary text-sm" id="inventory-actions-value">{{ t('Select Action') }}</span>
+    <span class="text-sm text-secondary" id="inventory-actions-value">{{ t('Select Action') }}</span>
     <mat-icon class="scale-50" svgIcon="fa-solid:chevron-down"></mat-icon>
   </button>
 </div>
 
 <!-- mat-menu only adds the mat-menu-items in its own content to keyboard navigation, so don't wrap them in a component.
      Each section is a group labelled by its heading, so screen readers can tell same-named items apart -->
-<mat-menu class="menu-compact w-80 rounded border text-sm" #menu="matMenu">
+<mat-menu class="menu-compact w-80 rounded-sm border text-sm" #menu="matMenu">
   <ng-container *transloco="let t">
     <button (click)="selectAll()" mat-menu-item>{{ t('Select All') }}</button>
     <button (click)="deselectAll()" mat-menu-item>{{ t('Select None') }}</button>
     <!-- Labels (kept near the top since it's one of the most-used actions) -->
     <mat-divider class="my-0"></mat-divider>
-    <span class="text-secondary text-sm" id="inventory-actions-labels">{{ t('Labels') }}</span>
+    <span class="text-sm text-secondary" id="inventory-actions-labels">{{ t('Labels') }}</span>
     <div role="group" aria-labelledby="inventory-actions-labels">
       <button [disabled]="!hasSelection" (click)="openLabelsModal()" mat-menu-item>
         {{ groupMode ? t('Add / Remove (applies to inventory, not group)') : t('Add / Remove') }}
@@ -53,7 +53,7 @@
     @if (!groupMode) {
       <!-- Access Levels -->
       <mat-divider class="my-0"></mat-divider>
-      <span class="text-secondary text-sm" id="inventory-actions-access-levels">{{ t('Access Levels') }}</span>
+      <span class="text-sm text-secondary" id="inventory-actions-access-levels">{{ t('Access Levels') }}</span>
       <div role="group" aria-labelledby="inventory-actions-access-levels">
         @if (type === 'properties') {
           <button [disabled]="!hasSelection" (click)="openAliChangeModal()" mat-menu-item>{{ t('Edit') }}</button>
@@ -65,7 +65,7 @@
       <!-- Analyses -->
       @if (type === 'properties') {
         <mat-divider class="my-0"></mat-divider>
-        <span class="text-secondary text-sm" id="inventory-actions-analyses">{{ t('Analyses') }}</span>
+        <span class="text-sm text-secondary" id="inventory-actions-analyses">{{ t('Analyses') }}</span>
         <div role="group" aria-labelledby="inventory-actions-analyses">
           <button [disabled]="!hasSelection" (click)="openAnalysisRunModal()" mat-menu-item>{{ t('Run') }}</button>
         </div>
@@ -73,7 +73,7 @@
       <!-- Audit Template -->
       @if (type === 'properties') {
         <mat-divider class="my-0"></mat-divider>
-        <span class="text-secondary text-sm" id="inventory-actions-audit-template">{{ t('Audit Template') }}</span>
+        <span class="text-sm text-secondary" id="inventory-actions-audit-template">{{ t('Audit Template') }}</span>
         <div role="group" aria-labelledby="inventory-actions-audit-template">
           <button [disabled]="!hasSelection || !organization?.audit_template_user" (click)="openAuditTemplateExportModal()" mat-menu-item>
             {{ t('Export') }}
@@ -91,20 +91,20 @@
 
       <!-- DATA QUALITY DATA -->
       <mat-divider class="my-0"></mat-divider>
-      <span class="text-secondary text-sm" id="inventory-actions-data-quality">{{ t('Data Quality') }}</span>
+      <span class="text-sm text-secondary" id="inventory-actions-data-quality">{{ t('Data Quality') }}</span>
       <div role="group" aria-labelledby="inventory-actions-data-quality">
         <button [disabled]="!hasSelection" (click)="openDataQualityCheck()" mat-menu-item>{{ t('Run Check') }}</button>
       </div>
       <!-- DERIVED DATA -->
       <mat-divider class="my-0"></mat-divider>
-      <span class="text-secondary text-sm" id="inventory-actions-derived-data">{{ t('Derived Data') }}</span>
+      <span class="text-sm text-secondary" id="inventory-actions-derived-data">{{ t('Derived Data') }}</span>
       <div role="group" aria-labelledby="inventory-actions-derived-data">
         <button [disabled]="!hasSelection" (click)="openDerivedDataUpdateModal()" mat-menu-item>{{ t('Update') }}</button>
       </div>
       <mat-divider class="my-0"></mat-divider>
       <!-- Groups -->
       <mat-divider class="my-0"></mat-divider>
-      <span class="text-secondary text-sm" id="inventory-actions-groups">{{ t('Groups') }}</span>
+      <span class="text-sm text-secondary" id="inventory-actions-groups">{{ t('Groups') }}</span>
       <div role="group" aria-labelledby="inventory-actions-groups">
         <button [disabled]="!hasSelection" (click)="openGroupsModal()" mat-menu-item>{{ t('Add / Remove') }}</button>
       </div>
@@ -112,7 +112,7 @@
     <mat-divider class="my-0"></mat-divider>
     <!-- MISC / OTHER -->
     <mat-divider class="my-0"></mat-divider>
-    <span class="text-secondary text-sm" id="inventory-actions-other">{{ t('Other') }}</span>
+    <span class="text-sm text-secondary" id="inventory-actions-other">{{ t('Other') }}</span>
     <div role="group" aria-labelledby="inventory-actions-other">
       <button [disabled]="!canEmailSelection" (click)="openEmailModal()" mat-menu-item>{{ t('Email') }}</button>
       @if (!groupMode) {
@@ -126,14 +126,14 @@
     <!-- SalesForce -->
     @if (!groupMode && organization?.bb_salesforce_enabled) {
       <mat-divider class="my-0"></mat-divider>
-      <span class="text-secondary text-sm" id="inventory-actions-salesforce">{{ t('Salesforce') }}</span>
+      <span class="text-sm text-secondary" id="inventory-actions-salesforce">{{ t('Salesforce') }}</span>
       <div role="group" aria-labelledby="inventory-actions-salesforce">
         <button [disabled]="!hasSelection" (click)="updateSalesforce()" mat-menu-item>{{ t('Update') }}</button>
       </div>
     }
     <!-- UBID -->
     <mat-divider class="my-0"></mat-divider>
-    <span class="text-secondary text-sm" id="inventory-actions-ubid">{{ t('UBID') }}</span>
+    <span class="text-sm text-secondary" id="inventory-actions-ubid">{{ t('UBID') }}</span>
     <div role="group" aria-labelledby="inventory-actions-ubid">
       @if (!groupMode) {
         <button [disabled]="selectedViewIds.length !== 1" (click)="openUbidModal()" mat-menu-item>{{ t('Add / Update') }}</button>

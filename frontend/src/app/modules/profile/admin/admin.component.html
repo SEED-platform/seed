@@ -5,12 +5,12 @@
     </h2>
 
     <!-- Section 1: Organization Management -->
-    <mat-expansion-panel class="bg-card mb-4" expanded>
+    <mat-expansion-panel class="mb-4 bg-card" expanded>
       <mat-expansion-panel-header>
         <mat-panel-title>{{ t('Organizations') }}</mat-panel-title>
       </mat-expansion-panel-header>
 
-      <p class="text-secondary mb-2 text-sm">{{ t('Inventory counts are scoped to your access level.') }}</p>
+      <p class="mb-2 text-sm text-secondary">{{ t('Inventory counts are scoped to your access level.') }}</p>
       <div class="overflow-x-auto">
         <!-- 12px cell padding (vs 16px) so all ten columns fit the card; the caret and Parent ID columns are tighter still -->
         <table
@@ -26,7 +26,7 @@
             <td *matCellDef="let org" mat-cell>
               @if (org.cycleCounts.length) {
                 <button
-                  class="!h-8 !min-h-8 !w-8 !p-2"
+                  class="h-8! min-h-8! w-8! p-2!"
                   [style.--mat-icon-button-state-layer-size]="'32px'"
                   [attr.aria-expanded]="expandedOrgIds.has(org.id)"
                   [attr.aria-label]="
@@ -115,7 +115,7 @@
           </ng-container>
 
           <ng-container matColumnDef="cycle_name">
-            <td class="whitespace-normal break-words" *matCellDef="let row" mat-cell>{{ row.cycle.cycle }}</td>
+            <td class="wrap-break-word whitespace-normal" *matCellDef="let row" mat-cell>{{ row.cycle.cycle }}</td>
           </ng-container>
 
           <ng-container matColumnDef="cycle_properties">
@@ -136,7 +136,7 @@
           <tbody>
             <tr *matRowDef="let row; columns: orgColumns; when: isOrgRow" mat-row></tr>
             <tr
-              class="text-secondary !h-9 bg-gray-50 text-sm dark:bg-white/5"
+              class="h-9! bg-gray-50 text-sm text-secondary dark:bg-white/5"
               *matRowDef="let row; columns: cycleColumns; when: isCycleRow"
               mat-row
             ></tr>
@@ -155,7 +155,7 @@
     </mat-expansion-panel>
 
     <!-- Section 2: Create Organization -->
-    <mat-expansion-panel class="bg-card mb-4">
+    <mat-expansion-panel class="mb-4 bg-card">
       <mat-expansion-panel-header>
         <mat-panel-title>{{ t('Create Organization') }}</mat-panel-title>
       </mat-expansion-panel-header>
@@ -177,7 +177,7 @@
           <mat-label>{{ t('Owner') }}</mat-label>
           <mat-select (openedChange)="$event || resetSearch(userSearch)" formControlName="userId">
             <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
-              <input class="h-8 w-full bg-transparent outline-none" [formControl]="userSearch" [placeholder]="t('Search users…')" />
+              <input class="h-8 w-full bg-transparent outline-hidden" [formControl]="userSearch" [placeholder]="t('Search users…')" />
             </div>
             @for (user of filteredUsers; track user.user_id) {
               <mat-option [value]="user.user_id">{{ user.email }}</mat-option>
@@ -191,7 +191,7 @@
     </mat-expansion-panel>
 
     <!-- Section 3: Create User -->
-    <mat-expansion-panel class="bg-card mb-4">
+    <mat-expansion-panel class="mb-4 bg-card">
       <mat-expansion-panel-header>
         <mat-panel-title>{{ t('Create User') }}</mat-panel-title>
       </mat-expansion-panel-header>
@@ -257,7 +257,7 @@
               >
                 <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
                   <input
-                    class="h-8 w-full bg-transparent outline-none"
+                    class="h-8 w-full bg-transparent outline-hidden"
                     [formControl]="orgSearch"
                     [placeholder]="t('Search organizations…')"
                   />
@@ -289,7 +289,11 @@
               <mat-label>{{ t('Access Level Instance') }}</mat-label>
               <mat-select (openedChange)="$event || resetSearch(aliSearch)" formControlName="accessLevelInstanceId">
                 <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
-                  <input class="h-8 w-full bg-transparent outline-none" [formControl]="aliSearch" [placeholder]="t('Search instances…')" />
+                  <input
+                    class="h-8 w-full bg-transparent outline-hidden"
+                    [formControl]="aliSearch"
+                    [placeholder]="t('Search instances…')"
+                  />
                 </div>
                 @for (ali of filteredAccessLevelInstances; track ali.id) {
                   <mat-option [value]="ali.id">{{ ali.name }}</mat-option>
@@ -311,7 +315,7 @@
     </mat-expansion-panel>
 
     <!-- Section 4: Add User to Organization -->
-    <mat-expansion-panel class="bg-card mb-4">
+    <mat-expansion-panel class="mb-4 bg-card">
       <mat-expansion-panel-header>
         <mat-panel-title>{{ t('Add User to Organization') }}</mat-panel-title>
       </mat-expansion-panel-header>
@@ -328,7 +332,7 @@
             <mat-select (openedChange)="$event || resetSearch(orgSearch)" formControlName="organizationId">
               <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
                 <input
-                  class="h-8 w-full bg-transparent outline-none"
+                  class="h-8 w-full bg-transparent outline-hidden"
                   [formControl]="orgSearch"
                   [placeholder]="t('Search organizations…')"
                 />
@@ -342,7 +346,7 @@
             <mat-label>{{ t('User') }}</mat-label>
             <mat-select (openedChange)="$event || resetSearch(userSearch)" formControlName="userId">
               <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
-                <input class="h-8 w-full bg-transparent outline-none" [formControl]="userSearch" [placeholder]="t('Search users…')" />
+                <input class="h-8 w-full bg-transparent outline-hidden" [formControl]="userSearch" [placeholder]="t('Search users…')" />
               </div>
               @for (user of filteredUsers; track user.user_id) {
                 <mat-option [value]="user.user_id">{{ user.email }}</mat-option>
@@ -357,7 +361,7 @@
     </mat-expansion-panel>
 
     <!-- Section 5: Remove User from Organization -->
-    <mat-expansion-panel class="bg-card mb-4">
+    <mat-expansion-panel class="mb-4 bg-card">
       <mat-expansion-panel-header>
         <mat-panel-title>{{ t('Remove User from Organization') }}</mat-panel-title>
       </mat-expansion-panel-header>
@@ -371,7 +375,11 @@
             (selectionChange)="onRemoveOrgChange()"
           >
             <div class="px-3 py-1" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
-              <input class="h-8 w-full bg-transparent outline-none" [formControl]="orgSearch" [placeholder]="t('Search organizations…')" />
+              <input
+                class="h-8 w-full bg-transparent outline-hidden"
+                [formControl]="orgSearch"
+                [placeholder]="t('Search organizations…')"
+              />
             </div>
             @for (org of sortedOrganizations; track org.id) {
               <mat-option [value]="org.id">{{ org.name }}</mat-option>
@@ -380,7 +388,7 @@
         </mat-form-field>
 
         @if (removeOrgUsers.length > 0) {
-          <div class="rounded border border-gray-200 dark:border-gray-700">
+          <div class="rounded-sm border border-gray-200 dark:border-gray-700">
             @for (user of removeOrgUsers; track user.user_id) {
               <div class="flex items-center justify-between border-b border-gray-200 p-3 last:border-b-0 dark:border-gray-700">
                 <div>

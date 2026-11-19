@@ -1,21 +1,21 @@
 <div class="flex-between flex">
   <div class="flex flex-auto flex-col items-center p-8 pb-0 sm:flex-row sm:items-start">
     <div
-      class="flex h-10 w-10 flex-0 items-center justify-center rounded-full bg-primary-100 text-primary-600 sm:mr-4 dark:bg-primary-600 dark:text-primary-50"
+      class="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-primary-100 text-primary-600 sm:mr-4 dark:bg-primary-600 dark:text-primary-50"
     >
-      <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:arrow-up-from-bracket"></mat-icon>
+      <mat-icon class="icon-size-5 text-current" svgIcon="fa-solid:arrow-up-from-bracket"></mat-icon>
     </div>
 
     <div class="mt-4 flex w-full flex-col items-center space-y-3 text-left sm:mt-0 sm:items-start sm:pr-8">
-      <div class="text-xl font-medium leading-6">Upload Sensor Readings</div>
+      <div class="text-xl leading-6 font-medium">Upload Sensor Readings</div>
     </div>
   </div>
 
   <div
-    class="flex h-10 w-10 flex-0 cursor-pointer items-center justify-center rounded-full border hover:bg-gray-100 dark:hover:bg-gray-900"
+    class="flex h-10 w-10 flex-none cursor-pointer items-center justify-center rounded-full border hover:bg-gray-100 dark:hover:bg-gray-900"
     (click)="dismiss()"
   >
-    <mat-icon class="text-current icon-size-5" svgIcon="fa-solid:xmark"></mat-icon>
+    <mat-icon class="icon-size-5 text-current" svgIcon="fa-solid:xmark"></mat-icon>
   </div>
 </div>
 
@@ -23,7 +23,7 @@
   <!-- STEP 1 -->
   <mat-step [completed]="completed[1]" label="File Select">
     <div class="m-10">
-      <div class="text-secondary mb-4 ml-4">Accepted File Types: .csv, .xls, .xlsx</div>
+      <div class="mb-4 ml-4 text-secondary">Accepted File Types: .csv, .xls, .xlsx</div>
       <div class="flex w-full items-center rounded-full border border-gray-300 dark:border-gray-600">
         <input
           class="pointer-events-none invisible absolute h-0 w-0 opacity-0"
@@ -36,10 +36,10 @@
         />
 
         <button class="flex items-center gap-x-2" (click)="fileInput.click()" mat-flat-button color="primary">
-          <mat-icon class="text-white icon-size-5" svgIcon="fa-solid:file"></mat-icon>
+          <mat-icon class="icon-size-5 text-white" svgIcon="fa-solid:file"></mat-icon>
           <span>Choose file</span>
         </button>
-        <div class="text-secondary max-w-[21rem] cursor-default items-center truncate pl-3 pr-2">
+        <div class="max-w-84 cursor-default items-center truncate pr-2 pl-3 text-secondary">
           {{ file?.name ?? 'No file selected' }}
         </div>
       </div>

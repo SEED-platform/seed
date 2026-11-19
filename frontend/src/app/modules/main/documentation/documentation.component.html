@@ -1,16 +1,16 @@
 <div class="flex min-w-0 flex-auto flex-col" *transloco="let t">
   <div class="flex flex-col items-center p-6 sm:p-10">
     <div class="flex w-full max-w-4xl flex-col">
-      <div class="mt-2 text-4xl font-extrabold leading-tight tracking-tight sm:text-7xl">{{ t('Frequently Asked Questions') }}</div>
+      <div class="mt-2 text-4xl leading-tight font-extrabold tracking-tight sm:text-7xl">{{ t('Frequently Asked Questions') }}</div>
       @for (faqCategory of faq; track $index) {
-        <div class="mt-12 text-3xl font-bold leading-tight tracking-tight sm:mt-16">
+        <div class="mt-12 text-3xl leading-tight font-bold tracking-tight sm:mt-16">
           {{ faqCategory.category }}
         </div>
         <mat-accordion class="mt-8 max-w-4xl">
           @for (faq of faqCategory.faqs; track $index) {
             <mat-expansion-panel>
               <mat-expansion-panel-header collapsedHeight="56px">
-                <mat-panel-title class="select-none font-medium leading-tight">{{ faq.question }}</mat-panel-title>
+                <mat-panel-title class="leading-tight font-medium select-none">{{ faq.question }}</mat-panel-title>
               </mat-expansion-panel-header>
               <div class="prose max-w-none" [innerHTML]="faq.answer" innerHTMLExternalLinks innerHTMLImageOverlay></div>
             </mat-expansion-panel>

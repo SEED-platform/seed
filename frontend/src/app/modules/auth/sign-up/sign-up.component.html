@@ -1,5 +1,5 @@
 <!-- Title -->
-<div class="mt-8 text-4xl font-extrabold leading-tight tracking-tight">Sign up</div>
+<div class="mt-8 text-4xl leading-tight font-extrabold tracking-tight">Sign up</div>
 <div class="mt-0.5 flex items-baseline font-medium">
   <div>Already have an account?</div>
   <a class="ml-1 text-primary-500 hover:underline focus:underline" [routerLink]="['/sign-in']">Sign in</a>
@@ -7,7 +7,7 @@
 
 <!-- Alert -->
 @if (showAlert) {
-  <seed-alert class="-mb-4 mt-8" [@shake]="alert.type === 'error'" [showIcon]="false" [type]="alert.type" appearance="outline">
+  <seed-alert class="mt-8 -mb-4" [@shake]="alert.type === 'error'" [showIcon]="false" [type]="alert.type" appearance="outline">
     {{ alert.message }}
   </seed-alert>
 }

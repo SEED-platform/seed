@@ -6,6 +6,13 @@ module.exports = {
     // Theme RGB tokens are emitted as space-separated channels so we can use
     // the modern `rgb(var(--seed-*-rgb) / alpha)` form consistently.
     'color-function-alias-notation': 'without-alpha',
+    // Kebab-case, plus Tailwind CSS theme namespace resets such as `--text-*: initial`
+    'custom-property-pattern': [
+      '^([a-z][a-z0-9]*)(-[a-z0-9]+)*(-\\*)?$',
+      {
+        message: 'Expected custom property name to be kebab-case'
+      }
+    ],
     'declaration-property-value-disallowed-list': {
       '/.*/': [
         /rgba\(var\(--seed-[^)]+-rgb\),/,
@@ -15,7 +22,8 @@ module.exports = {
     'scss/at-rule-no-unknown': [
       true,
       {
-        ignoreAtRules: ['screen', 'tailwind']
+        // Tailwind CSS directives
+        ignoreAtRules: ['custom-variant', 'plugin', 'reference', 'source', 'theme', 'utility', 'variant']
       }
     ],
     'scss/dollar-variable-pattern': [
@@ -40,7 +48,9 @@ module.exports = {
     'value-keyword-case': [
       'lower',
       {
-        camelCaseSvgKeywords: true
+        camelCaseSvgKeywords: true,
+        // Font family names in Tailwind CSS theme variables (src/styles/tailwind.css)
+        ignoreProperties: [/^--font-/]
       }]
   }
 };

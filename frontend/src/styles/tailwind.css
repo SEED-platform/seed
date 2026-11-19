@@ -1,0 +1,416 @@
+/*
+ * Tailwind CSS entry point and configuration (CSS-first, Tailwind CSS v4).
+ *
+ * Component and global SCSS files that use `@apply` or `@variant` must start with `@reference '#tailwind';`
+ * (the package.json `imports` alias for this file), because Angular compiles each stylesheet separately.
+ *
+ * Every utility is `!important` (`important` flag) so that utilities override Angular Material.
+ */
+@import 'tailwindcss' important source('..');
+@plugin '@tailwindcss/typography';
+
+/* Tailwind CSS v3 disabled `container`; keep identifiers such as `const container` from generating it */
+@source not inline('container');
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Keep in sync with src/@seed/services/config/config.screens.ts */
+  --breakpoint-*: initial;
+  --breakpoint-sm: 600px;
+  --breakpoint-md: 960px;
+  --breakpoint-lg: 1280px;
+  --breakpoint-xl: 1440px;
+
+  /* Fonts loaded in src/styles/vendors.scss */
+  --font-sans:
+    'Inter Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Noto Sans', Arial, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: 'Fira Code Variable', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+
+  /* A denser type scale; sizes deliberately set no line height */
+  --text-*: initial;
+  --text-xs: 0.625rem;
+  --text-sm: 0.75rem;
+  --text-md: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-lg: 1rem;
+  --text-xl: 1.125rem;
+  --text-2xl: 1.25rem;
+  --text-3xl: 1.5rem;
+  --text-4xl: 2rem;
+  --text-5xl: 2.25rem;
+  --text-6xl: 2.5rem;
+  --text-7xl: 3rem;
+  --text-8xl: 4rem;
+  --text-9xl: 6rem;
+  --text-10xl: 8rem;
+
+  /* `gray` is the slate palette */
+  --color-gray-50: oklch(98.4% 0.003 247.858deg);
+  --color-gray-100: oklch(96.8% 0.007 247.896deg);
+  --color-gray-200: oklch(92.9% 0.013 255.508deg);
+  --color-gray-300: oklch(86.9% 0.022 252.894deg);
+  --color-gray-400: oklch(70.4% 0.04 256.788deg);
+  --color-gray-500: oklch(55.4% 0.046 257.417deg);
+  --color-gray-600: oklch(44.6% 0.043 257.281deg);
+  --color-gray-700: oklch(37.2% 0.044 257.287deg);
+  --color-gray-800: oklch(27.9% 0.041 260.031deg);
+  --color-gray-900: oklch(20.8% 0.042 265.755deg);
+  --color-gray-950: oklch(12.9% 0.042 264.695deg);
+
+  /* Animation and easing */
+  --animate-spin-slow: spin 3s linear infinite;
+  --ease-drawer: cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/*
+ * Theme palettes, e.g. `bg-primary`, `text-on-primary`, `border-warn-500/50`. The `--seed-*` values are generated
+ * by src/@seed/styles/themes.scss from src/@seed/styles/user-themes.scss, and can change with the `.theme-*` class.
+ */
+@theme inline {
+  /* Primary */
+  --color-primary-50: var(--seed-primary-50);
+  --color-primary-100: var(--seed-primary-100);
+  --color-primary-200: var(--seed-primary-200);
+  --color-primary-300: var(--seed-primary-300);
+  --color-primary-400: var(--seed-primary-400);
+  --color-primary-500: var(--seed-primary-500);
+  --color-primary-600: var(--seed-primary-600);
+  --color-primary-700: var(--seed-primary-700);
+  --color-primary-800: var(--seed-primary-800);
+  --color-primary-900: var(--seed-primary-900);
+  --color-primary: var(--seed-primary);
+  --color-on-primary-50: var(--seed-on-primary-50);
+  --color-on-primary-100: var(--seed-on-primary-100);
+  --color-on-primary-200: var(--seed-on-primary-200);
+  --color-on-primary-300: var(--seed-on-primary-300);
+  --color-on-primary-400: var(--seed-on-primary-400);
+  --color-on-primary-500: var(--seed-on-primary-500);
+  --color-on-primary-600: var(--seed-on-primary-600);
+  --color-on-primary-700: var(--seed-on-primary-700);
+  --color-on-primary-800: var(--seed-on-primary-800);
+  --color-on-primary-900: var(--seed-on-primary-900);
+  --color-on-primary: var(--seed-on-primary);
+
+  /* Accent */
+  --color-accent-50: var(--seed-accent-50);
+  --color-accent-100: var(--seed-accent-100);
+  --color-accent-200: var(--seed-accent-200);
+  --color-accent-300: var(--seed-accent-300);
+  --color-accent-400: var(--seed-accent-400);
+  --color-accent-500: var(--seed-accent-500);
+  --color-accent-600: var(--seed-accent-600);
+  --color-accent-700: var(--seed-accent-700);
+  --color-accent-800: var(--seed-accent-800);
+  --color-accent-900: var(--seed-accent-900);
+  --color-accent-950: var(--seed-accent-950);
+  --color-accent: var(--seed-accent);
+  --color-on-accent-50: var(--seed-on-accent-50);
+  --color-on-accent-100: var(--seed-on-accent-100);
+  --color-on-accent-200: var(--seed-on-accent-200);
+  --color-on-accent-300: var(--seed-on-accent-300);
+  --color-on-accent-400: var(--seed-on-accent-400);
+  --color-on-accent-500: var(--seed-on-accent-500);
+  --color-on-accent-600: var(--seed-on-accent-600);
+  --color-on-accent-700: var(--seed-on-accent-700);
+  --color-on-accent-800: var(--seed-on-accent-800);
+  --color-on-accent-900: var(--seed-on-accent-900);
+  --color-on-accent-950: var(--seed-on-accent-950);
+  --color-on-accent: var(--seed-on-accent);
+
+  /* Warn */
+  --color-warn-50: var(--seed-warn-50);
+  --color-warn-100: var(--seed-warn-100);
+  --color-warn-200: var(--seed-warn-200);
+  --color-warn-300: var(--seed-warn-300);
+  --color-warn-400: var(--seed-warn-400);
+  --color-warn-500: var(--seed-warn-500);
+  --color-warn-600: var(--seed-warn-600);
+  --color-warn-700: var(--seed-warn-700);
+  --color-warn-800: var(--seed-warn-800);
+  --color-warn-900: var(--seed-warn-900);
+  --color-warn-950: var(--seed-warn-950);
+  --color-warn: var(--seed-warn);
+  --color-on-warn-50: var(--seed-on-warn-50);
+  --color-on-warn-100: var(--seed-on-warn-100);
+  --color-on-warn-200: var(--seed-on-warn-200);
+  --color-on-warn-300: var(--seed-on-warn-300);
+  --color-on-warn-400: var(--seed-on-warn-400);
+  --color-on-warn-500: var(--seed-on-warn-500);
+  --color-on-warn-600: var(--seed-on-warn-600);
+  --color-on-warn-700: var(--seed-on-warn-700);
+  --color-on-warn-800: var(--seed-on-warn-800);
+  --color-on-warn-900: var(--seed-on-warn-900);
+  --color-on-warn-950: var(--seed-on-warn-950);
+  --color-on-warn: var(--seed-on-warn);
+}
+
+/* Light/dark aware colors */
+@utility text-default {
+  color: var(--seed-text-default);
+}
+
+@utility text-secondary {
+  color: var(--seed-text-secondary);
+}
+
+@utility text-hint {
+  color: var(--seed-text-hint);
+}
+
+@utility text-disabled {
+  color: var(--seed-text-disabled);
+}
+
+@utility divider {
+  color: var(--seed-divider);
+}
+
+@utility bg-card {
+  background-color: var(--seed-bg-card);
+}
+
+@utility bg-default {
+  background-color: var(--seed-bg-default);
+}
+
+@utility bg-dialog {
+  background-color: var(--seed-bg-dialog);
+}
+
+@utility bg-hover {
+  background-color: var(--seed-bg-hover);
+}
+
+@utility ring-bg-card {
+  --tw-ring-color: var(--seed-bg-card);
+}
+
+@utility ring-bg-default {
+  --tw-ring-color: var(--seed-bg-default);
+}
+
+/* Square icon sizes on the spacing scale, e.g. `icon-size-5` (1.25rem) */
+@utility icon-size-* {
+  --icon-size: --spacing(--value(number));
+
+  width: var(--icon-size);
+  min-width: var(--icon-size);
+  height: var(--icon-size);
+  min-height: var(--icon-size);
+  font-size: var(--icon-size);
+  line-height: var(--icon-size);
+
+  svg {
+    width: var(--icon-size);
+    height: var(--icon-size);
+  }
+}
+
+/*
+ * @tailwindcss/typography: always use the small scale, with theme-aware colors.
+ * Like every utility, its element styles are !important and sort after `m-*`/`mx-*`/`my-*`, so set the margins of
+ * prose children with `mt-*`/`mb-*` or `prose-<element>:` modifiers (e.g. `prose-ul:my-0` on the prose element).
+ */
+@utility prose {
+  @apply prose-sm;
+
+  /* Same colors with `prose-invert` because the `--seed-*` colors already adapt to dark mode */
+  --tw-prose-body: var(--seed-text-default);
+  --tw-prose-invert-body: var(--seed-text-default);
+  --tw-prose-headings: var(--seed-text-default);
+  --tw-prose-invert-headings: var(--seed-text-default);
+  --tw-prose-lead: var(--seed-text-secondary);
+  --tw-prose-invert-lead: var(--seed-text-secondary);
+  --tw-prose-links: var(--seed-primary-500);
+  --tw-prose-invert-links: var(--seed-primary-500);
+  --tw-prose-bold: var(--seed-text-default);
+  --tw-prose-invert-bold: var(--seed-text-default);
+  --tw-prose-hr: var(--seed-border);
+  --tw-prose-invert-hr: var(--seed-border);
+  --tw-prose-quotes: var(--seed-text-default);
+  --tw-prose-invert-quotes: var(--seed-text-default);
+  --tw-prose-quote-borders: var(--seed-border);
+  --tw-prose-invert-quote-borders: var(--seed-border);
+  --tw-prose-captions: var(--seed-text-secondary);
+  --tw-prose-invert-captions: var(--seed-text-secondary);
+  --tw-prose-code: var(--seed-text-default);
+  --tw-prose-invert-code: var(--seed-text-default);
+  --tw-prose-pre-code: var(--color-white);
+  --tw-prose-invert-pre-code: var(--color-white);
+  --tw-prose-pre-bg: var(--color-gray-800);
+  --tw-prose-invert-pre-bg: var(--color-gray-800);
+  --tw-prose-th-borders: var(--seed-border);
+  --tw-prose-invert-th-borders: var(--seed-border);
+  --tw-prose-td-borders: var(--seed-border);
+  --tw-prose-invert-td-borders: var(--seed-border);
+
+  :where(a):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+      text-decoration: underline;
+    }
+  }
+
+  :where(a code):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    color: var(--seed-primary);
+  }
+
+  :where(code):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    font-size: 1em;
+    font-weight: 500;
+  }
+
+  :where(pre, table):not(:where([class~='not-prose'], [class~='not-prose'] *)) {
+    font-size: 1em;
+  }
+}
+
+/* Tailwind CSS v3 Preflight defaults that v4 changed */
+@layer base {
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray-400);
+  }
+
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+/*
+ * Global base styles. These are deliberately not in `@layer base`: unlayered rules keep their v3 precedence over
+ * Angular Material, and their `!important` declarations must not outrank the (important) utilities.
+ */
+* {
+  /* Text rendering */
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove the focus ring */
+*:focus {
+  outline: none !important;
+}
+
+/* HTML and Body default styles */
+html,
+body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  width: 100%;
+  height: 100svh;
+  min-height: 100svh;
+  max-height: 100svh;
+  -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: auto;
+}
+
+/* Font size */
+html {
+  font-size: 16px;
+}
+
+body {
+  font-size: 0.875rem;
+}
+
+/* Better spacing and border for horizontal rule */
+hr {
+  margin: 32px 0;
+  border-bottom-width: 1px;
+}
+
+/* Make images and videos to take up all the available space */
+img {
+  width: 100%;
+  vertical-align: top;
+}
+
+/* Fix: Disabled placeholder color is too faded on Safari */
+input[disabled] {
+  opacity: 1;
+  -webkit-text-fill-color: currentColor;
+}
+
+/* Set the background and foreground colors */
+body,
+.dark,
+.light {
+  color: var(--seed-text-default) !important;
+  background-color: var(--seed-bg-default) !important;
+}
+
+/* Set the border color */
+*,
+::before,
+::after,
+::backdrop,
+::file-selector-button {
+  border-color: var(--seed-border);
+}
+
+/* Style scrollbars on platforms other than macOS and iOS */
+@media only screen and (width >= 960px) {
+  body:not(.os-mac) {
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+      background-color: rgb(0 0 0 / 0%);
+    }
+
+    ::-webkit-scrollbar:hover {
+      width: 8px;
+      height: 8px;
+      background-color: rgb(0 0 0 / 6%);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      border: 2px solid transparent;
+      border-radius: 20px;
+      box-shadow: inset 0 0 0 20px rgb(0 0 0 / 24%);
+    }
+
+    ::-webkit-scrollbar-thumb:active {
+      border-radius: 20px;
+      box-shadow: inset 0 0 0 20px rgb(0 0 0 / 37%);
+    }
+
+    &.dark {
+      ::-webkit-scrollbar-thumb {
+        box-shadow: inset 0 0 0 20px rgb(255 255 255 / 24%);
+      }
+
+      ::-webkit-scrollbar-thumb:active {
+        box-shadow: inset 0 0 0 20px rgb(255 255 255 / 37%);
+      }
+    }
+  }
+}
+
+/* Set the foreground color for disabled elements */
+[disabled] {
+  color: var(--seed-text-disabled) !important;
+}
+
+/* Print styles */
+@media print {
+  /* Make the base font size smaller for print so everything is scaled nicely */
+  html {
+    font-size: 12px !important;
+  }
+
+  body,
+  .dark,
+  .light {
+    background: none !important;
+  }
+}
+
+.mat-icon {
+  color: var(--seed-mat-icon);
+}

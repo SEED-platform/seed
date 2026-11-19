@@ -278,7 +278,7 @@ export class SummaryComponent implements OnDestroy, OnInit {
       container.append(document.createTextNode(' '))
 
       const marker = document.createElement('span')
-      marker.className = 'material-icons align-middle ml-1 mb-2 text-secondary text-xs'
+      marker.className = 'material-icons ml-1 mb-2 text-secondary text-xs'
       marker.textContent = 'emergency'
       container.append(marker)
     }
