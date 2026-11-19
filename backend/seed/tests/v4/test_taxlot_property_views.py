@@ -4,7 +4,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from urllib.parse import urlencode
 
 from django.urls import reverse
@@ -20,10 +20,13 @@ from seed.models import (
     VIEW_LIST_TAXLOT,
     Column,
     ColumnMappingProfile,
+    DerivedColumn,
     Property,
+    PropertyState,
     PropertyView,
     StatusLabel,
     TaxLotProperty,
+    TaxLotState,
     TaxLotView,
 )
 from seed.serializers.columns import ColumnSerializer
@@ -273,6 +276,17 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["pagination"]["total"], 0)
 
+    def test_property_filter_invalid_cycle(self):
+        other_org, _, _ = create_organization(self.superuser, "other org")
+        other_cycle = FakeCycleFactory(organization=other_org, user=self.superuser).get_cycle()
+        self.login_as_root_member()
+
+        for cycle_id in [other_cycle.pk, "abc"]:
+            url = reverse("api:v4:tax_lot_properties-filter") + f"?inventory_type=property&cycle={cycle_id}&organization_id={self.org.pk}"
+            resp = self.client.post(url, content_type="application/json")
+            self.assertEqual(resp.status_code, 404)
+            self.assertEqual(resp.json(), {"status": "error", "message": "No such cycle."})
+
     def test_record_count(self):
         child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
         self.property_view_factory.get_property_view(prprty=child_property, cycle=self.cycle)
@@ -359,10 +373,11 @@ class FilterTests(AccessLevelBaseTestCase):
             filter_dict["filter"] = filter_val
         return filter_dict
 
-    def get_request_results(self, filters):
-        data = {"filters": filters}
+    def get_request_results(self, filters, sorts=None):
+        data = {"filters": filters, "sorts": sorts}
         url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(self.query_string)
         response = self.client.post(url, data=data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
         data = response.json()
         return data["results"]
 
@@ -456,6 +471,97 @@ class FilterTests(AccessLevelBaseTestCase):
 
         self.assertEqual(len(self.get_request_results(gt)), 79)  # 21-99
         self.assertEqual(len(self.get_request_results(lt)), 20)  # 0-19
+
+    def test_derived_column(self):
+        derived_column = DerivedColumn.objects.create(
+            name="Energy Use Intensity (kBtu/ft²)", expression="$a / 2", organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE
+        )
+        derived_name = ColumnSerializer(derived_column.column).data["name"]
+
+        # 0, 4, 8, ... can't be computed (null), 1, 5, 9, ... are missing, and the rest have values
+        def get_value(i):
+            return 50 + i if i % 4 > 1 else None
+
+        states = list(PropertyState.objects.filter(propertyview__cycle=self.cycle))
+        for state in states:
+            i = int(state.pm_property_id.removeprefix("pm-"))
+            if i % 4 != 1:
+                state.derived_data = {derived_column.name: get_value(i)}
+        PropertyState.objects.bulk_update(states, ["derived_data"])
+
+        blank = {derived_name: self.get_filter("blank")}
+        not_blank = {derived_name: self.get_filter("notBlank")}
+        number_blank = {derived_name: {"filterType": "number", "type": "blank"}}
+        number_not_blank = {derived_name: {"filterType": "number", "type": "notBlank"}}
+        gt = {derived_name: self.get_filter("greaterThan", 100)}
+
+        self.assertEqual(len(self.get_request_results(blank)), 50)
+        self.assertEqual(len(self.get_request_results(not_blank)), 50)
+        self.assertEqual(len(self.get_request_results(number_blank)), 50)
+        self.assertEqual(len(self.get_request_results(number_not_blank)), 50)
+        self.assertEqual(len(self.get_request_results(gt)), 25)  # 51-99
+
+        def get_sorted_values(sort):
+            results = self.get_request_results(None, [sort])
+            values = [get_value(int(r[self.pmpid_name].removeprefix("pm-"))) for r in results]
+            return [v for v in values if v is not None]
+
+        self.assertEqual(get_sorted_values(derived_name), sorted(get_value(i) for i in range(100) if i % 4 > 1))
+        self.assertEqual(get_sorted_values(f"-{derived_name}"), sorted((get_value(i) for i in range(100) if i % 4 > 1), reverse=True))
+
+    def test_blank_on_number_and_date_columns(self):
+        def get_name(column_name):
+            column = Column.objects.get(organization=self.org, table_name="PropertyState", column_name=column_name)
+            return ColumnSerializer(column).data["name"]
+
+        site_eui_name = get_name("site_eui")
+        year_ending_name = get_name("year_ending")
+        states = PropertyState.objects.filter(propertyview__cycle=self.cycle)
+        states.filter(pm_property_id__in=[f"pm-{i}" for i in range(0, 100, 2)]).update(site_eui=None)  # evens
+        states.filter(pm_property_id__in=[f"pm-{i}" for i in range(0, 100, 4)]).update(year_ending=date(2020, 12, 31))  # 4s
+
+        # AG Grid infers text filters for columns whose first values are null
+        for filter_type in ["text", "number"]:
+            blank = {site_eui_name: {"filterType": filter_type, "type": "blank"}}
+            not_blank = {site_eui_name: {"filterType": filter_type, "type": "notBlank"}}
+            self.assertEqual(len(self.get_request_results(blank)), 50)
+            self.assertEqual(len(self.get_request_results(not_blank)), 50)
+
+        blank_or_not = {
+            site_eui_name: {"filterType": "text", "operator": "OR", "conditions": [self.get_filter("blank"), self.get_filter("notBlank")]}
+        }
+        self.assertEqual(len(self.get_request_results(blank_or_not)), 100)
+
+        date_blank = {year_ending_name: {"filterType": "date", "type": "blank"}}
+        date_not_blank = {year_ending_name: {"filterType": "date", "type": "notBlank"}}
+        self.assertEqual(len(self.get_request_results(date_blank)), 75)
+        self.assertEqual(len(self.get_request_results(date_not_blank)), 25)
+
+        # Text that isn't a number
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(self.query_string)
+        data = {"filters": {site_eui_name: self.get_filter("equals", "abc")}}
+        response = self.client.post(url, data=data, content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["recommended_action"], "update_column_settings")
+
+    def test_unknown_columns_are_ignored(self):
+        unknown_filters = [
+            {"deleted_column_999999999": self.get_filter("notBlank")},
+            {"not_a_column": self.get_filter("notBlank")},
+            # Filter group saved in the legacy UI format
+            {f"{self.al1_name}__icontains": "address"},
+        ]
+        for filters in unknown_filters:
+            self.assertEqual(len(self.get_request_results(filters)), 100)
+
+        self.assertEqual(len(self.get_request_results(None, ["-deleted_column_999999999", "not_a_column"])), 100)
+
+    def test_extra_data_column_with_canonical_name_on_other_table(self):
+        Column.objects.create(table_name="TaxLotState", column_name="gross_floor_area", organization=self.org, is_extra_data=True)
+        self.query_string["include_related"] = True
+
+        gt = {self.gfa_name: self.get_filter("greaterThan", 1010)}
+        self.assertEqual(len(self.get_request_results(gt)), 89)  # 11-99
 
 
 class RelatedTests(AccessLevelBaseTestCase):
@@ -579,3 +685,47 @@ class RelatedTests(AccessLevelBaseTestCase):
         results = data["results"]
         # while there are multiple taxlots with j-ids with '2', only one property is associated with them
         self.assertEqual(len(results), 1)
+
+    def get_property_results(self, filters=None, sorts=None):
+        query_string = {"cycle": self.cycle.id, "inventory_type": "property", "include_related": True, "organization_id": self.org.id}
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(query_string)
+        response = self.client.post(url, data={"filters": filters, "sorts": sorts}, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        return sorted(r[self.pmpid_name] for r in response.json()["results"])
+
+    def test_related_derived_column_filter(self):
+        derived_column = DerivedColumn.objects.create(
+            name="Tax Lot EUI", expression="$a / 2", organization=self.org, inventory_type=DerivedColumn.TAXLOT_TYPE
+        )
+        derived_name = ColumnSerializer(derived_column.column).data["name"]
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id="jt-1").update(derived_data={derived_column.name: 5})
+
+        not_blank = {derived_name: self.get_filter("notBlank")}
+        blank = {derived_name: self.get_filter("blank")}
+        self.assertEqual(self.get_property_results(not_blank), ["pm-1a", "pm-1b"])
+        self.assertEqual(self.get_property_results(blank), ["pm-2", "pm-3"])
+
+    def test_related_not_blank_with_a_blank_related_value(self):
+        address_column = Column.objects.get(organization=self.org, table_name="TaxLotState", column_name="address_line_1")
+        address_name = ColumnSerializer(address_column).data["name"]
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id="jt-1").update(address_line_1="1 Main St")
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id="jt-2a").update(address_line_1="2 Main St")
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id__in=["jt-2b", "jt-3"]).update(address_line_1=None)
+
+        # pm-2 shows jt-2a's address, though jt-2b has none
+        for filter_type in ["text", "number"]:
+            not_blank = {address_name: {"filterType": filter_type, "type": "notBlank"}}
+            self.assertEqual(self.get_property_results(not_blank), ["pm-1a", "pm-1b", "pm-2"])
+
+    def test_related_text_blank_on_number_column(self):
+        query_string = {"cycle": self.cycle.id, "inventory_type": "taxlot", "include_related": True, "organization_id": self.org.id}
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(query_string)
+        data = {"filters": {self.seui_name: self.get_filter("notBlank")}}
+        response = self.client.post(url, data=data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        # jt-3 has no properties
+        self.assertEqual(sorted(r[self.jtlid_name] for r in response.json()["results"]), ["jt-1", "jt-2a", "jt-2b"])
+
+    def test_related_sort_is_ignored(self):
+        # Related columns aren't sortable, and PropertyState has no jurisdiction_tax_lot_id
+        self.assertEqual(self.get_property_results(sorts=[f"-{self.jtlid_name}"]), ["pm-1a", "pm-1b", "pm-2", "pm-3"])

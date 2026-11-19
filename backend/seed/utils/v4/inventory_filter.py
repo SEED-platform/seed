@@ -7,6 +7,8 @@ import re
 from functools import reduce
 from operator import and_, or_
 
+from django.apps import apps
+from django.core.exceptions import ValidationError
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.db.models import Q
 from django.db.utils import DataError
@@ -62,9 +64,9 @@ class InventoryFilter:
         self.profile_id = profile_id
         # class vars to be set through get_filtered_results
         self.access_level_instance = None
+        self.columns_by_name = None
         self.cycle = None
         self.db_columns = None
-        self.extra_data_column_names = None
         self.ids_only = None
         self.include_related = None
         self.inventory_type = None
@@ -72,7 +74,6 @@ class InventoryFilter:
         self.paginator = None
         self.per_page = None
         self.org = None
-        self.other_column_names_with_id = None
         self.shown_column_ids = None
 
     def get_filtered_results(self):
@@ -137,7 +138,7 @@ class InventoryFilter:
         if cycle_id:
             try:
                 cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
-            except Cycle.DoesNotExist as e:
+            except (Cycle.DoesNotExist, ValueError) as e:
                 raise InventoryFilterError(
                     JsonResponse({"status": "error", "message": "No such cycle."}, status=status.HTTP_404_NOT_FOUND)
                 ) from e
@@ -205,19 +206,25 @@ class InventoryFilter:
 
     def ag_filter_sort_views_list(self, views_qs):
         """Applies AG Grid filters and sorts to the views queryset"""
-        ag_filters = self.request.data.get("filters")
-        ag_sorts = self.request.data.get("sorts")
+        # AG Grid fields are the columns' names, formatted as `{column_name}_{id}`, ex: pm_property_id_123
+        self.columns_by_name = {c["name"]: c for c in self.db_columns}
 
-        other_table = "PropertyState" if self.inventory_type == "taxlot" else "TaxLotState"
-        # generate list of other tables column names with ids (as passed by ag grid), ex: pm_property_id_123
-        self.other_column_names_with_id = [f"{c['column_name']}_{c['id']}" for c in self.db_columns if c["table_name"] == other_table]
-        self.extra_data_column_names = [c["column_name"] for c in self.db_columns if c["is_extra_data"]]
-
-        filters = self.generate_q_filters(ag_filters)
-        sorts = self.generate_sorts(ag_sorts)
-        views_qs = views_qs.filter(filters).order_by(*sorts).distinct()
-
-        return views_qs
+        filters = self.generate_q_filters(self.request.data.get("filters"))
+        sorts = self.generate_sorts(self.request.data.get("sorts"))
+        try:
+            return views_qs.filter(filters).order_by(*sorts).distinct()
+        except (ValueError, ValidationError) as e:
+            # e.g., text filter values on number or date columns
+            raise InventoryFilterError(
+                JsonResponse(
+                    {
+                        "status": "error",
+                        "recommended_action": "update_column_settings",
+                        "message": f"Error filtering - your data might not match the column settings data type: {e!s}",
+                    },
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            ) from e
 
     def generate_q_filters(self, filters_dict):
         """generates a Q object for all incoming filters"""
@@ -233,28 +240,18 @@ class InventoryFilter:
         if name_with_id in self.ali_level_names:
             return self.generate_ali_q(name_with_id, filter_dict)
 
+        # Ignore unknown columns (e.g., deleted since the filter was saved), as the v3 API does
+        if (column := self.columns_by_name.get(name_with_id)) is None:
+            return Q()
+
         conditions = filter_dict.get("conditions")
         operator = filter_dict.get("operator")
-        filter = filter_dict.get("filter")
-        filter_to = filter_dict.get("filterTo")
-        filter_type = filter_dict.get("filterType")
-        type = filter_dict.get("type")
-        # handles cases when filtering on other table
-        prefixed_name = self.parse_name(name_with_id)
-
-        type_overrides = {
-            ("number", "blank"): "isNull",
-            ("number", "notBlank"): "notNull",
-        }
-        type = type_overrides.get((filter_type, type), type)
-
         if conditions and operator:
-            q = self.parse_conditions(prefixed_name, conditions, operator)
-        elif type:
-            q = self.parse_filter(prefixed_name, type, filter, filter_to)
+            return self.parse_conditions(column, conditions, operator)
+        elif filter_dict.get("type"):
+            return self.parse_filter(column, filter_dict)
         else:
             raise InventoryFilterError(JsonResponse({"status": "error", "message": "Invalid filter"}, status=status.HTTP_400_BAD_REQUEST))
-        return q
 
     def generate_ali_q(self, level_name, filter_dict):
         """Generate a Q for filtering by an access level instance path column."""
@@ -279,74 +276,61 @@ class InventoryFilter:
 
         return type_map.get(filter_type, Q())
 
-    def parse_filter(self, prefixed_name, filter_type, filter_from, filter_to=None):
-        """convert a single filter to a Q object"""
-        return self.Q_MAP[filter_type](prefixed_name, filter_from, filter_to)
+    def parse_filter(self, column, filter_dict):
+        """convert a single filter (`type`, `filter`, and `filterTo`) on a column to a Q object"""
+        lookup = self.get_lookup(column)
+        filter_type = filter_dict.get("type")
+        is_json = column["is_extra_data"] or column["derived_column"]
+        # Only strings and JSON values can be "" (comparing other types with it raises), so other blanks are nulls
+        if not (is_json or self.is_string_field(column)):
+            filter_type = {"blank": "isNull", "notBlank": "notNull"}.get(filter_type, filter_type)
 
-    def parse_conditions(self, prefixed_name, conditions, operator):
+        q = self.Q_MAP[filter_type](lookup, filter_dict.get("filter"), filter_dict.get("filterTo"))
+        # JSON values can be null (e.g., derived values that can't be computed), which `__isnull` treats as present.
+        # Not for related columns, where negating a null match would exclude records with any null related value
+        if is_json and not column["related"]:
+            if filter_type in {"blank", "isNull"}:
+                q |= Q(**{lookup: None})
+            elif filter_type in {"notBlank", "notNull"}:
+                q &= ~Q(**{lookup: None})
+        return q
+
+    def parse_conditions(self, column, conditions, operator):
         """handle multiple conditions and convert to a single Q object"""
         operator_map = {"AND": and_, "OR": or_}
-        qs = []
+        return reduce(operator_map[operator], [self.parse_filter(column, condition) for condition in conditions])
 
-        for condition in conditions:
-            type = condition.get("type")
-            filter = condition.get("filter")
-            filter_to = condition.get("filterTo")
-            q = self.Q_MAP[type](prefixed_name, filter, filter_to)
-            qs.append(q)
+    @staticmethod
+    def is_string_field(column):
+        """Whether a column is a string model field (not extra data or a derived column)"""
+        field = apps.get_model("seed", column["table_name"])._meta.get_field(column["column_name"])
+        return field.get_internal_type() in {"CharField", "TextField"}
 
-        combine_Q = reduce(operator_map[operator], qs)
-        return combine_Q
-
-    def strip_id(self, name_with_id):
-        """strips the _id from the end of the column name"""
-        parts = name_with_id.rsplit("_", 1)
-        if len(parts) != 2:
-            raise InventoryFilterError(
-                JsonResponse({"status": "error", "message": f"Invalid column name: {name_with_id}"}, status=status.HTTP_400_BAD_REQUEST)
-            )
-        return parts[0]
-
-    def prefix_name(self, name, related_prefix=""):
+    def get_lookup(self, column):
         """
-        adds 'extra_data__' to name if its an extra data field
-        if its a related filter (property -> taxlot) add the related prefix ('taxlotproperty__taxlot_view__')
-        else it ignores the related_prefix
+        The ORM lookup for a column's values, ex: 'state__field', 'state__extra_data__field', 'state__derived_data__field'
+        Related columns (property -> taxlot) are prefixed with 'taxlotproperty__taxlot_view__'
         """
-        if name in self.extra_data_column_names:
-            return f"{related_prefix}state__extra_data__{name}"
-        return f"{related_prefix}state__{name}"
-
-    def parse_name(self, name_with_id):
-        """If filtering on related table (property -> taxlot) add the related prefix"""
         other_type = "property" if self.inventory_type == "taxlot" else "taxlot"
-
-        name = self.strip_id(name_with_id)
-        # conditionally add related prefix to the args
-        if name_with_id in self.other_column_names_with_id:
-            related_prefix = f"taxlotproperty__{other_type}_view__"
-            return self.prefix_name(name, related_prefix)
-        else:
-            return self.prefix_name(name)
+        lookup = f"taxlotproperty__{other_type}_view__state__" if column["related"] else "state__"
+        if column["is_extra_data"]:
+            lookup += "extra_data__"
+        elif column["derived_column"]:
+            lookup += "derived_data__"
+        return lookup + column["column_name"]
 
     def generate_sorts(self, ag_sorts):
         """
         Generates an array of sort strings for the django orm
-        sorts = ['state__field', '-state__field', 'state__extra_data__field', '-state__extra_data__field']
+        sorts = ['state__field', '-state__field', 'state__extra_data__field', '-state__derived_data__field']
         """
         sorts = []
-        if not ag_sorts:
-            return sorts
-
-        for sort in ag_sorts:
-            direction = "-" if sort[0] == "-" else ""
-
-            column_name = sort[1:] if direction else sort
-            column_name = self.strip_id(column_name)
-
-            prefixed_name = self.prefix_name(column_name)
-
-            sorts.append(f"{direction}{prefixed_name}")
+        for sort in ag_sorts or []:
+            direction = "-" if sort.startswith("-") else ""
+            column = self.columns_by_name.get(sort.removeprefix("-"))
+            # Ignore unknown columns and related columns, which aren't sortable (see `get_column_defs`)
+            if column is not None and not column["related"]:
+                sorts.append(f"{direction}{self.get_lookup(column)}")
 
         return sorts
 

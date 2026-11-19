@@ -50,6 +50,8 @@ export class CellHeaderMenuComponent implements IHeaderAngularComp, AfterViewIni
     this.orgId = org_id
     this.orgUserId = org_user_id
     this.userSettings = settings
+    // Before the first render, since the sort icon is in the header
+    this.updateSortState()
     // ag-grid owns header focus, so listen on the header cell itself for the menu shortcut
     params.eGridHeader.addEventListener('keydown', this._onHeaderKeyDown)
     params.eGridHeader.setAttribute('aria-keyshortcuts', 'Alt+ArrowDown')
@@ -62,7 +64,6 @@ export class CellHeaderMenuComponent implements IHeaderAngularComp, AfterViewIni
   ngAfterViewInit(): void {
     this.getScheme()
     this.setOverlay()
-    this.updateSortState()
     this.pinState = this.column.isPinned()
     this.column.addEventListener('sortChanged', () => {
       this.updateSortState()

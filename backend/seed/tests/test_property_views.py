@@ -1197,6 +1197,23 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         assert resp.status_code == 200
         assert resp.json()["pagination"]["total"] == 0
 
+    def test_property_list_invalid_cycle(self):
+        other_org, _, _ = create_organization(self.superuser, "other org")
+        other_cycle = FakeCycleFactory(organization=other_org, user=self.superuser).get_cycle()
+        self.login_as_root_member()
+
+        for method, url_name in [("get", "api:v3:properties-list"), ("post", "api:v3:properties-filter")]:
+            url = reverse(url_name) + f"?organization_id={self.org.pk}&per_page=1"
+            resp = getattr(self.client, method)(f"{url}&cycle={self.cycle.pk}", content_type="application/json")
+            assert resp.status_code == 200
+            assert resp.json()["pagination"]["total"] == 1
+
+            # another organization's cycle, or a malformed id
+            for cycle_id in [other_cycle.pk, "abc"]:
+                resp = getattr(self.client, method)(f"{url}&cycle={cycle_id}", content_type="application/json")
+                assert resp.status_code == 404
+                assert resp.json() == {"status": "error", "message": "No such cycle."}
+
     def test_property_filter_by_cycle(self):
         url = reverse("api:v3:properties-filter-by-cycle") + f"?organization_id={self.org.pk}"
         params = json.dumps({"cycle_ids": [self.cycle.id]})
