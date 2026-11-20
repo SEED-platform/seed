@@ -56,12 +56,8 @@ def get_dimensionality(quantity_object):
     return str(quantity_object.dimensionality)
 
 
-def collapse_unit(org, x):
-    """
-    Collapse a Quantity object present down to a straight Float, per the
-    preferences of the organization supplied (or the base units). Generally
-    used to hide the fact of Quantities from Angular.
-    """
+def display_units(org, quantity):
+    """The organization's display units for a Quantity, or its own units"""
     # make extensible / field name agnostic by just branching on the dimensionality
     # and not the field name (e.g., 'gross_floor_area') ... the dimensionality gets
     # enforced separately by the django pint column type
@@ -73,12 +69,17 @@ def collapse_unit(org, x):
         WUI_DIMENSIONALITY: org.display_units_wui or WUI_DEFAULT_UNITS,
         WATER_USE_DIMENSIONALITY: org.display_units_water_use or WATER_USE_DEFAULT_UNITS,
     }
+    return pint_specs.get(get_dimensionality(quantity), quantity.units)
 
+
+def collapse_unit(org, x):
+    """
+    Collapse a Quantity object present down to a straight Float, per the
+    preferences of the organization supplied (or the base units). Generally
+    used to hide the fact of Quantities from Angular.
+    """
     if isinstance(x, ureg.Quantity):
-        dimensionality = get_dimensionality(x)
-        # default to quantity's units if not found
-        pint_spec = pint_specs.get(dimensionality, x.units)
-        converted_value = x.to(pint_spec).magnitude
+        converted_value = x.to(display_units(org, x)).magnitude
         return round(converted_value, org.display_decimal_places)
     elif isinstance(x, list):
         # recurse out to collapse a dict for eg. the `related` key that

@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
 from seed.authentication import AUTHENTICATE_HEADER
+from seed.utils.search import FilterError
 
 
 def custom_exception_handler(exc, context):
@@ -40,4 +41,8 @@ def custom_exception_handler(exc, context):
 
         # set_rollback()
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+    if response is None and isinstance(exc, FilterError):
+        # Invalid filters, e.g., a filter group's text filter on a number column in a report or a compliance metric
+        return Response({"status": "error", "message": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
     return response

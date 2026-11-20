@@ -5,6 +5,7 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 
 from dataclasses import dataclass
 from datetime import datetime
+from urllib.parse import urlencode
 
 import pytest
 from django.db import models
@@ -16,9 +17,9 @@ from django.test import TestCase
 from django.utils import timezone
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Column, PropertyView, TaxLotProperty
+from seed.models import Column, DerivedColumn, PropertyView, TaxLotProperty
 from seed.serializers.columns import ColumnSerializer
-from seed.test_helpers.fake import FakeCycleFactory, FakePropertyViewFactory, FakeTaxLotViewFactory
+from seed.test_helpers.fake import FakeCycleFactory, FakeDerivedColumnFactory, FakePropertyViewFactory, FakeTaxLotViewFactory
 from seed.utils.organizations import create_organization
 from seed.utils.search import FilterError, TrimWhitespace, build_view_filters_and_sorts
 
@@ -167,6 +168,22 @@ class TestInventoryViewSearchParsers(TestCase):
 
         # -- Assert
         self.assertEqual(filters, Q())
+
+    def test_parse_filters_ignores_empty_values_without_a_blank_lookup(self):
+        # -- Setup
+        city_id = Column.objects.get(table_name="PropertyState", column_name="city").id
+        columns = Column.retrieve_all(self.fake_org, "property", only_used=False, include_related=False)
+
+        # -- Act
+        filters, annotations, _ = build_view_filters_and_sorts(QueryDict(f"cycle=&city_{city_id}="), columns, "property")
+        blank_filters, _, _ = build_view_filters_and_sorts(QueryDict(f"city_{city_id}__exact="), columns, "property")
+        blank_and_empty_filters, _, _ = build_view_filters_and_sorts(QueryDict(f"city_{city_id}__exact=&cycle="), columns, "property")
+
+        # -- Assert
+        self.assertEqual(filters, Q())
+        self.assertEqual(annotations, {})
+        # an empty value doesn't repeat the previous blank (`__exact` or `__ne`) filter
+        self.assertEqual(blank_and_empty_filters, blank_filters)
 
     def test_parse_filters_can_handle_multiple_filters(self):
         # -- Setup
@@ -405,6 +422,37 @@ class TestInventoryViewSearchParsers(TestCase):
                 expected = sorted(non_null_values, reverse=bool(direction))
                 self.assertEqual(non_null_values, expected, message)
 
+    def test_order_by_related_derived_columns(self):
+        """Related derived values are numbers (or null) in derived_data, whatever their column's data_type"""
+        # -- Setup
+        derived_column = FakeDerivedColumnFactory(organization=self.fake_org, inventory_type=DerivedColumn.TAXLOT_TYPE).get_derived_column(
+            expression="$a / 2", name="Derived Lot #1"
+        )
+        column = Column.objects.get(derived_column=derived_column)
+        # casting the derived values to integers would fail
+        Column.objects.filter(id=column.id).update(data_type="integer")
+        cycle = FakeCycleFactory(organization=self.fake_org, user=self.fake_user).get_cycle()
+        taxlot_view_factory = FakeTaxLotViewFactory(organization=self.fake_org, cycle=cycle)
+        for value in (12.5, None, 40.0, 5.0):
+            property_view = self.property_view_factory.get_property_view(cycle=cycle)
+            taxlot_view = taxlot_view_factory.get_taxlot_view(derived_data={derived_column.name: value})
+            TaxLotProperty.objects.create(property_view=property_view, taxlot_view=taxlot_view, cycle=cycle)
+
+        columns = Column.retrieve_all(self.fake_org, "property", only_used=False, include_related=True)
+        for direction in ("", "-"):
+            # -- Act
+            query = QueryDict(urlencode({"order_by": f"{direction}{column.column_name}_{column.id}"}))
+            _, annotations, order_by = build_view_filters_and_sorts(query, columns, "property")
+            (annotation_key,) = annotations
+            sorted_values = list(
+                PropertyView.objects.filter(cycle=cycle).annotate(**annotations).order_by(*order_by).values_list(annotation_key, flat=True)
+            )
+
+            # -- Assert
+            self.assertEqual(len(sorted_values), 4, f"Failed for {direction}")
+            non_null_values = [value for value in sorted_values if value is not None]
+            self.assertEqual(non_null_values, sorted([5.0, 12.5, 40.0], reverse=bool(direction)), f"Failed for {direction}")
+
     def test_filter_and_sorts_parser_annotations_works(self):
         # -- Setup
         # create extra data column with a number type
@@ -635,6 +683,50 @@ class TestInventoryViewSearchParsers(TestCase):
         filters, annotations, _ = build_view_filters_and_sorts(neq, columns, "property")
         property_views = PropertyView.objects.annotate(**annotations).filter(filters)
         self.assertEqual(property_views.count(), 4)
+
+    def test_filter_and_sort_derived_columns(self):
+        """Derived values are numbers (or null) in derived_data, whatever their column's data_type,
+        and their names can have characters (e.g., '#') that annotation aliases can't
+        """
+        # -- Setup
+        derived_column = FakeDerivedColumnFactory(
+            organization=self.fake_org, inventory_type=DerivedColumn.PROPERTY_TYPE
+        ).get_derived_column(expression="$a / 2", name="Derived EUI #1")
+        column = Column.objects.get(derived_column=derived_column)
+        column_key = f"{column.column_name}_{column.id}"
+        cycle = FakeCycleFactory(organization=self.fake_org, user=self.fake_user).get_cycle()
+        values_by_view_id = {
+            self.property_view_factory.get_property_view(cycle=cycle, derived_data={derived_column.name: value}).id: value
+            for value in (5.0, 12.5, 40.0, None)
+        }
+        # and one without a derived value
+        values_by_view_id[self.property_view_factory.get_property_view(cycle=cycle).id] = None
+
+        def matching_values(columns, query):
+            filters, annotations, order_by = build_view_filters_and_sorts(QueryDict(urlencode(query)), columns, "property")
+            views = PropertyView.objects.filter(cycle=cycle).annotate(**annotations).filter(filters).order_by(*order_by)
+            return [values_by_view_id[view_id] for view_id in views.values_list("id", flat=True)]
+
+        for data_type in ["None", "integer", "string"]:
+            Column.objects.filter(id=column.id).update(data_type=data_type)
+            columns = Column.retrieve_all(self.fake_org, "property", only_used=False, include_related=False)
+            message = f"Failed for {data_type}"
+
+            # -- Act, Assert
+            self.assertCountEqual(matching_values(columns, {f"{column_key}__gt": "10"}), [12.5, 40.0], message)
+            self.assertCountEqual(matching_values(columns, {f"{column_key}__lt": "20"}), [5.0, 12.5], message)
+            self.assertCountEqual(matching_values(columns, {f"{column_key}__exact": ""}), [None, None], message)
+            self.assertCountEqual(matching_values(columns, {f"{column_key}__ne": ""}), [5.0, 12.5, 40.0], message)
+            # pattern lookups match the JSON text (e.g., "12.5"), not a float cast of the filter value
+            self.assertCountEqual(matching_values(columns, {f"{column_key}__icontains": "12"}), [12.5], message)
+            for direction in ("", "-"):
+                sorted_values = matching_values(columns, {"order_by": f"{direction}{column_key}"})
+                self.assertEqual(len(sorted_values), 5, message)
+                non_null_values = [value for value in sorted_values if value is not None]
+                self.assertEqual(non_null_values, sorted([5.0, 12.5, 40.0], reverse=bool(direction)), message)
+
+            # the columns, which callers reuse, keep their data_type
+            self.assertEqual(next(c for c in columns if c["id"] == column.id)["data_type"], data_type, message)
 
 
 class TestInventoryViewSearchParsersAccessLevelInstances(TestCase):

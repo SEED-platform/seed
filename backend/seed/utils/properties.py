@@ -208,7 +208,7 @@ def properties_across_cycles_with_filters(org_id, user_ali, cycle_ids=None, filt
     )
 
     if filter_group:
-        views_list = filter_group.views(views_list, columns)
+        views_list = filter_group.views(views_list)
 
     views_list = _serialize_views(views_list, columns, org_id)
 

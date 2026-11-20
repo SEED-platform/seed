@@ -4,15 +4,32 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import re
+from datetime import UTC, datetime
 from functools import reduce
 from operator import and_, or_
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
-from django.db.models import Q
+from django.db.models import Case, Exists, F, FloatField, Func, OuterRef, Q, TextField, Value, When
+from django.db.models.functions import Cast, Left, Replace, Round, TruncDate
+from django.db.models.lookups import (
+    Exact,
+    GreaterThan,
+    GreaterThanOrEqual,
+    IContains,
+    IEndsWith,
+    IExact,
+    IsNull,
+    IStartsWith,
+    LessThan,
+    LessThanOrEqual,
+    Regex,
+)
 from django.db.utils import DataError
-from django.http import JsonResponse
+from django.http import JsonResponse, QueryDict
+from django.utils.timezone import get_current_timezone
+from quantityfield.units import ureg
 from rest_framework import status
 
 from seed.lib.superperms.orgs.models import AccessLevelInstance, Organization
@@ -30,7 +47,39 @@ from seed.models import (
 )
 from seed.serializers.column_list_profiles import ColumnListProfileSerializer
 from seed.serializers.columns import ColumnSerializer
-from seed.serializers.pint import apply_display_unit_preferences
+from seed.serializers.pint import DEFAULT_UNITS, apply_display_unit_preferences, display_units
+from seed.utils.search import FilterError, build_view_filters_and_sorts
+
+# The conditions AG Grid's text, number, and date filters send
+TEXT_CONDITIONS = {"contains", "notContains", "equals", "notEqual", "startsWith", "endsWith", "blank", "notBlank"}
+COMPARISONS = {
+    "equals": Exact,
+    "greaterThan": GreaterThan,
+    "greaterThanOrEqual": GreaterThanOrEqual,
+    "lessThan": LessThan,
+    "lessThanOrEqual": LessThanOrEqual,
+}
+COMPARISON_CONDITIONS = {*COMPARISONS, "notEqual", "inRange", "blank", "notBlank"}
+FILTER_CONDITIONS = {"text": TEXT_CONDITIONS, "number": COMPARISON_CONDITIONS, "date": COMPARISON_CONDITIONS}
+TEXT_LOOKUPS = {"contains": IContains, "equals": IExact, "startsWith": IStartsWith, "endsWith": IEndsWith}
+# The keys of each filter type's values (from and to), most expected first
+VALUE_KEYS = {
+    "text": (("filter",), ()),
+    "number": (("filter",), ("filterTo",)),
+    "date": (("dateFrom", "filter"), ("dateTo", "filterTo")),
+}
+NEGATED_TEXT_CONDITIONS = {"notContains": "contains", "notEqual": "equals"}
+
+NUMBER_FIELD_TYPES = {"IntegerField", "BigIntegerField", "SmallIntegerField", "PositiveIntegerField", "FloatField", "DecimalField"}
+STRING_FIELD_TYPES = {None, "CharField", "TextField"}  # None for JSON values (extra data and derived columns)
+# Text that is a number, possibly with thousands separators removed, or that starts with a date
+NUMBER_PATTERN = r"^\s*[+-]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?\s*$"
+DATE_PATTERN = r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])"
+
+
+def json_text(json_field, key):
+    """A JSON object's value for `key` as text, or null if it's missing or null (`->>` would read numeric keys as indexes)"""
+    return Func(json_field, Value(key), function="jsonb_extract_path_text", output_field=TextField())
 
 
 class InventoryFilterError(Exception):
@@ -41,23 +90,12 @@ class InventoryFilterError(Exception):
 
 
 class InventoryFilter:
-    Q_MAP = {
-        "contains": lambda name, filter, _: Q(**{f"{name}__icontains": filter}),  # noqa: A006
-        "notContains": lambda name, filter, _: ~Q(**{f"{name}__icontains": filter}),  # noqa: A006
-        "equals": lambda name, filter, _: Q(**{f"{name}": filter}),  # noqa: A006
-        "notEqual": lambda name, filter, _: ~Q(**{f"{name}": filter}),  # noqa: A006
-        "startsWith": lambda name, filter, _: Q(**{f"{name}__istartswith": filter}),  # noqa: A006
-        "endsWith": lambda name, filter, _: Q(**{f"{name}__iendswith": filter}),  # noqa: A006
-        "blank": lambda name, *_: Q(**{f"{name}__isnull": True}) | Q(**{f"{name}": ""}),
-        "notBlank": lambda name, *_: Q(**{f"{name}__isnull": False}) & ~Q(**{f"{name}": ""}),
-        "isNull": lambda name, *_: Q(**{f"{name}__isnull": True}),
-        "notNull": lambda name, *_: Q(**{f"{name}__isnull": False}),
-        "greaterThan": lambda name, filter, _: Q(**{f"{name}__gt": filter}),  # noqa: A006
-        "greaterThanOrEqual": lambda name, filter, _: Q(**{f"{name}__gte": filter}),  # noqa: A006
-        "lessThan": lambda name, filter, _: Q(**{f"{name}__lt": filter}),  # noqa: A006
-        "lessThanOrEqual": lambda name, filter, _: Q(**{f"{name}__lte": filter}),  # noqa: A006
-        "inRange": lambda name, filter, filter_to: Q(**{f"{name}__gt": filter, f"{name}__lt": filter_to}),  # noqa: A006
-    }
+    """
+    Filters and sorts inventory for the grid, which leaves all filtering to the server. Filters compare what the grid
+    shows: text case-insensitively, numbers in the organization's display units and rounding, and dates by day.
+    Blank is null or empty for every filter. Related columns match if any related record does, and their negated
+    conditions if none does.
+    """
 
     def __init__(self, request, profile_id=None):
         self.request = request
@@ -75,6 +113,42 @@ class InventoryFilter:
         self.per_page = None
         self.org = None
         self.shown_column_ids = None
+
+    @classmethod
+    def filter_model_to_q(cls, filter_model, columns, inventory_type, access_level_names, organization=None):
+        """
+        A Q object for an AG Grid filter model, without a request (e.g., for a filter group the grid saved).
+        Raises FilterError for invalid filters.
+
+        :param filter_model: filters keyed by column name (`{column_name}_{id}`) or access level name
+        :param columns: `Column.retrieve_all` columns, including related ones to filter by them
+        :param access_level_names: the organization's access level names, including the root's
+        :param organization: the organization whose display units number filters use (base units without one)
+        """
+        inventory_filter = cls(request=None)
+        inventory_filter.org = organization
+        inventory_filter.columns_by_name = {c["name"]: c for c in columns}
+        inventory_filter.inventory_type = inventory_type
+        inventory_filter.ali_level_names = set((access_level_names or [])[1:])
+        return inventory_filter.generate_q_filters(filter_model)
+
+    @classmethod
+    def filters_to_q(cls, filters, columns, inventory_type, access_level_names, organization=None):
+        """
+        A Q object and the annotations it needs for filters that can mix the grid's AG Grid filter models (dict values
+        keyed by `{column_name}_{id}` or access level name) and legacy filters (`{column_name}_{id}__{lookup}` keys,
+        e.g., in filter groups the legacy UI saved). Raises FilterError for invalid filters.
+        """
+        if not filters:
+            return Q(), {}
+        if not isinstance(filters, dict):
+            raise FilterError("Invalid filters")
+
+        legacy_filters = QueryDict(mutable=True)
+        legacy_filters.update({k: v for k, v in filters.items() if not isinstance(v, dict)})
+        q, annotations, _ = build_view_filters_and_sorts(legacy_filters, columns, inventory_type, access_level_names, include_sorts=False)
+        filter_models = {k: v for k, v in filters.items() if isinstance(v, dict)}
+        return q & cls.filter_model_to_q(filter_models, columns, inventory_type, access_level_names, organization), annotations
 
     def get_filtered_results(self):
         """Main method to get the filtered results"""
@@ -209,10 +283,15 @@ class InventoryFilter:
         # AG Grid fields are the columns' names, formatted as `{column_name}_{id}`, ex: pm_property_id_123
         self.columns_by_name = {c["name"]: c for c in self.db_columns}
 
-        filters = self.generate_q_filters(self.request.data.get("filters"))
+        try:
+            filters, annotations = self.filters_to_q(
+                self.request.data.get("filters"), self.db_columns, self.inventory_type, self.org.access_level_names, self.org
+            )
+        except FilterError as e:
+            raise InventoryFilterError(JsonResponse({"status": "error", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)) from e
         sorts = self.generate_sorts(self.request.data.get("sorts"))
         try:
-            return views_qs.filter(filters).order_by(*sorts).distinct()
+            return views_qs.annotate(**annotations).filter(filters).order_by(*sorts).distinct()
         except (ValueError, ValidationError) as e:
             # e.g., text filter values on number or date columns
             raise InventoryFilterError(
@@ -230,81 +309,229 @@ class InventoryFilter:
         """generates a Q object for all incoming filters"""
         if not filters_dict:
             return Q()
+        if not isinstance(filters_dict, dict):
+            raise FilterError("Invalid filters")
         qs = [self.generate_q(k, v) for k, v in filters_dict.items()]
         combined_Q = reduce(and_, qs)
         return combined_Q
 
     def generate_q(self, name_with_id, filter_dict):
         """generate a Q object from a filter dict"""
-        # Access level instance columns use the level name directly (not colname_id format)
+        # Even for unknown columns, so that legacy filter groups' `{name}__{lookup}` filters aren't silently ignored
+        self.validate_filter(name_with_id, filter_dict)
+        # Access level columns are named by level (not `{column_name}_{id}`), with values in the access level path
         if name_with_id in self.ali_level_names:
-            return self.generate_ali_q(name_with_id, filter_dict)
-
+            column = {"column_name": name_with_id, "access_level": True, "is_extra_data": False, "derived_column": None, "related": False}
         # Ignore unknown columns (e.g., deleted since the filter was saved), as the v3 API does
-        if (column := self.columns_by_name.get(name_with_id)) is None:
+        elif (column := self.columns_by_name.get(name_with_id)) is None:
             return Q()
 
         conditions = filter_dict.get("conditions")
         operator = filter_dict.get("operator")
         if conditions and operator:
+            # Conditions without a filter type have their filter's
+            conditions = [
+                {**condition, "filterType": condition.get("filterType") or filter_dict.get("filterType")} for condition in conditions
+            ]
             return self.parse_conditions(column, conditions, operator)
         elif filter_dict.get("type"):
             return self.parse_filter(column, filter_dict)
         else:
-            raise InventoryFilterError(JsonResponse({"status": "error", "message": "Invalid filter"}, status=status.HTTP_400_BAD_REQUEST))
+            raise FilterError(f'Invalid filter for "{name_with_id}"')
 
-    def generate_ali_q(self, level_name, filter_dict):
-        """Generate a Q for filtering by an access level instance path column."""
-        inventory_prefix = "property" if self.inventory_type == "property" else "taxlot"
-        path_field = f"{inventory_prefix}__access_level_instance__path"
-        prefixed = f"{path_field}__{level_name}"
-        filter_value = filter_dict.get("filter")
-        filter_type = filter_dict.get("type", "contains")
-
-        type_map = {
-            "contains": Q(**{f"{prefixed}__icontains": filter_value}),
-            "notContains": ~Q(**{f"{prefixed}__icontains": filter_value}),
-            "equals": Q(**{f"{prefixed}__iexact": filter_value}),
-            "notEqual": ~Q(**{f"{prefixed}__iexact": filter_value}),
-            "startsWith": Q(**{f"{prefixed}__istartswith": filter_value}),
-            "endsWith": Q(**{f"{prefixed}__iendswith": filter_value}),
-            "blank": ~Q(**{f"{path_field}__has_key": level_name}),
-            "notBlank": Q(**{f"{path_field}__has_key": level_name}),
-            "isNull": ~Q(**{f"{path_field}__has_key": level_name}),
-            "notNull": Q(**{f"{path_field}__has_key": level_name}),
-        }
-
-        return type_map.get(filter_type, Q())
+    @staticmethod
+    def validate_filter(name_with_id, filter_dict):
+        """
+        Raise a FilterError unless the filter is shaped like an AG Grid filter model (e.g., in a hand-built filter group):
+        a condition, or conditions joined by an `operator`, with text types and dates and scalar values
+        """
+        conditions = (filter_dict.get("conditions") or []) if isinstance(filter_dict, dict) else None
+        if not isinstance(conditions, list) or (conditions and not isinstance(filter_dict.get("operator"), str)):
+            raise FilterError(f'Invalid filter for "{name_with_id}"')
+        for condition in [filter_dict, *conditions]:
+            if not (
+                isinstance(condition, dict)
+                and all(isinstance(condition.get(key), str | None) for key in ("filterType", "type", "dateFrom", "dateTo"))
+                and all(isinstance(condition.get(key), str | int | float | None) for key in ("filter", "filterTo"))
+            ):
+                raise FilterError(f'Invalid filter for "{name_with_id}"')
 
     def parse_filter(self, column, filter_dict):
-        """convert a single filter (`type`, `filter`, and `filterTo`) on a column to a Q object"""
-        lookup = self.get_lookup(column)
-        filter_type = filter_dict.get("type")
-        is_json = column["is_extra_data"] or column["derived_column"]
-        # Only strings and JSON values can be "" (comparing other types with it raises), so other blanks are nulls
-        if not (is_json or self.is_string_field(column)):
-            filter_type = {"blank": "isNull", "notBlank": "notNull"}.get(filter_type, filter_type)
+        """Convert a filter (a `filterType` of text, number, or date, its `type`, and values) on a column to a Q object"""
+        filter_type = filter_dict.get("filterType") or "text"
+        condition = filter_dict.get("type")
+        # AG Grid keeps a filter's values when it changes its type (e.g., for a filter saved when the grid inferred a
+        # column's type from its values), so a date filter's values make it a date filter
+        if filter_dict.get("filter") is None and filter_dict.get("dateFrom") is not None:
+            filter_type = "date"
+        # AG Grid's filter for boolean values: "Choose one" (no filter), True, and False
+        if filter_type == "text" and condition in {"empty", "true", "false"}:
+            if condition == "empty":
+                return Q()
+            filter_dict, condition = {**filter_dict, "filter": condition}, "equals"
+        if condition not in FILTER_CONDITIONS.get(filter_type, ()):
+            raise FilterError(f'Invalid {filter_type} filter "{condition}"')
+        if not column["related"]:
+            return self.condition_q(column, "state__", filter_type, condition, filter_dict)
 
-        q = self.Q_MAP[filter_type](lookup, filter_dict.get("filter"), filter_dict.get("filterTo"))
-        # JSON values can be null (e.g., derived values that can't be computed), which `__isnull` treats as present.
-        # Not for related columns, where negating a null match would exclude records with any null related value
-        if is_json and not column["related"]:
-            if filter_type in {"blank", "isNull"}:
-                q |= Q(**{lookup: None})
-            elif filter_type in {"notBlank", "notNull"}:
-                q &= ~Q(**{lookup: None})
-        return q
+        # Related columns match if any related record does, and negated conditions if none does
+        other_type = "property" if self.inventory_type == "taxlot" else "taxlot"
+        related = TaxLotProperty.objects.filter(**{f"{self.inventory_type}_view": OuterRef("pk")})
+
+        def any_related(condition):
+            q = self.condition_q(column, f"{other_type}_view__state__", filter_type, condition, filter_dict)
+            return Q(Exists(related.filter(q)))
+
+        if condition == "blank":
+            return ~any_related("notBlank")
+        if filter_type == "text" and condition in NEGATED_TEXT_CONDITIONS:
+            return ~any_related(NEGATED_TEXT_CONDITIONS[condition])
+        if condition == "notEqual":
+            return any_related("notBlank") & ~any_related("equals")
+        return any_related(condition)
+
+    def condition_q(self, column, prefix, filter_type, condition, filter_dict):
+        """A filter condition on a column's value, as a Q object, through `prefix` to its state (ex: 'state__')"""
+        field_type = self.get_field_type(column)
+        value = self.get_value(column, prefix)
+        text = value if field_type in STRING_FIELD_TYPES else Cast(value, TextField())
+        blank = Q(IsNull(value, True)) | Q(Exact(text, ""))
+        if condition == "blank":
+            return blank
+        if condition == "notBlank":
+            return ~blank
+
+        # Values are in `filter` and `filterTo`, or a date filter's `dateFrom` and `dateTo`. AG Grid keeps them when it
+        # changes a filter's type, e.g., for a filter saved when the grid inferred a column's type from its values
+        start, end = (
+            next((filter_dict[key] for key in keys if filter_dict.get(key) is not None), None) for keys in VALUE_KEYS[filter_type]
+        )
+        if filter_type == "text":
+            if start is None:
+                raise FilterError(f'Invalid filter value for "{condition}"')
+            positive = NEGATED_TEXT_CONDITIONS.get(condition, condition)
+            q = Q(TEXT_LOOKUPS[positive](text, str(start)))
+            # Negated text conditions include blanks
+            return Q(IsNull(text, True)) | ~q if condition in NEGATED_TEXT_CONDITIONS else q
+
+        if filter_type == "number":
+            value = self.get_number(column, value, text, field_type)
+            start, end = self.parse_number(start), self.parse_number(end)
+        else:
+            value = self.get_day(column, value, text, field_type)
+            start, end = self.parse_day(start, field_type), self.parse_day(end, field_type)
+        if start is None:
+            raise FilterError(f'Invalid filter value for "{condition}"')
+        if condition == "notEqual":
+            # Not blanks, but values that aren't numbers or dates
+            return ~blank & (Q(IsNull(value, True)) | ~Q(Exact(value, start)))
+        if condition == "inRange":
+            # Excluding both ends, as the grid does
+            if end is None:
+                raise FilterError('Invalid filter value for "inRange"')
+            return Q(GreaterThan(value, start)) & Q(LessThan(value, end))
+        return Q(COMPARISONS[condition](value, start))
+
+    def get_value(self, column, prefix):
+        """A column's stored value through `prefix` to its state: a model field, or JSON text (null if missing or null)"""
+        if column.get("access_level"):
+            return json_text(F(f"{self.inventory_type}__access_level_instance__path"), column["column_name"])
+        if column["is_extra_data"]:
+            return json_text(F(f"{prefix}extra_data"), column["column_name"])
+        if column["derived_column"]:
+            return json_text(F(f"{prefix}derived_data"), column["column_name"])
+        return F(f"{prefix}{column['column_name']}")
+
+    def get_number(self, column, value, text, field_type):
+        """A column's value as a number, as the grid shows it (null for text that isn't a number)"""
+        if field_type in NUMBER_FIELD_TYPES:
+            number = Cast(value, FloatField())
+        else:
+            digits = Replace(text, Value(","), Value(""), output_field=TextField())
+            number = Case(When(Regex(digits, NUMBER_PATTERN), then=Cast(digits, FloatField())))
+
+        # Quantities show in the organization's display units, rounded (see `apply_display_unit_preferences`)
+        if self.org and (base_units := self.get_base_units(column, field_type)):
+            quantity = 1 * ureg(base_units)
+            factor = quantity.to(display_units(self.org, quantity)).magnitude
+            converted = Round(number * Value(factor), self.org.display_decimal_places)
+            # but extra data with thousands separators shows as stored (see `TaxLotProperty.extra_data_to_dict_with_mapping`)
+            number = converted if field_type else Case(When(Regex(text, NUMBER_PATTERN), then=converted), default=number)
+        return number
+
+    @staticmethod
+    def get_day(column, value, text, field_type):
+        """A column's value as a day: a date, or "YYYY-MM-DD" text (null for text that isn't one)"""
+        if field_type == "DateField":
+            return value
+        if field_type == "DateTimeField":
+            # The day shown, as serialized by `TaxLotProperty.model_to_dict_with_mapping`
+            naive = column["column_name"] in TaxLotProperty.NAIVE_DATE_TIME_FIELDS
+            return TruncDate(value, tzinfo=get_current_timezone() if naive else UTC)
+        if field_type in STRING_FIELD_TYPES:
+            return Case(When(Regex(text, DATE_PATTERN), then=Left(text, 10)))
+        raise FilterError(f'Invalid date filter for "{column["column_name"]}"')
+
+    @staticmethod
+    def parse_number(value):
+        """A filter's number, which may have thousands separators, or None if it has none"""
+        if value is None:
+            return None
+        try:
+            return float(str(value).replace(",", ""))
+        except ValueError as e:
+            raise FilterError(f'Invalid number "{value}"') from e
+
+    @staticmethod
+    def parse_day(value, field_type):
+        """A date filter's day (from "YYYY-MM-DD hh:mm:ss", ignoring the time), or None if it has none"""
+        if value is None:
+            return None
+        try:
+            date_time = datetime.fromisoformat(value)
+        except (TypeError, ValueError) as e:
+            raise FilterError(f'Invalid date "{value}"') from e
+        if date_time.tzinfo:
+            raise FilterError(f'Invalid date "{value}", which has a time zone')
+        return date_time.date() if field_type in {"DateField", "DateTimeField"} else date_time.date().isoformat()
 
     def parse_conditions(self, column, conditions, operator):
         """handle multiple conditions and convert to a single Q object"""
         operator_map = {"AND": and_, "OR": or_}
+        if operator not in operator_map:
+            raise FilterError(f'Invalid filter operator "{operator}"')
         return reduce(operator_map[operator], [self.parse_filter(column, condition) for condition in conditions])
 
     @staticmethod
-    def is_string_field(column):
-        """Whether a column is a string model field (not extra data or a derived column)"""
-        field = apps.get_model("seed", column["table_name"])._meta.get_field(column["column_name"])
-        return field.get_internal_type() in {"CharField", "TextField"}
+    def get_field_type(column):
+        """A column's model field type (e.g., 'CharField'), or None for JSON values (extra data, derived, and access level)"""
+        if column.get("access_level") or column["is_extra_data"] or column["derived_column"]:
+            return None
+        return apps.get_model("seed", column["table_name"])._meta.get_field(column["column_name"]).get_internal_type()
+
+    @staticmethod
+    def get_base_units(column, field_type):
+        """The units a quantity column's values are stored in, or None if it isn't one"""
+        if field_type is None:
+            # Related extra and derived data show as stored (see `TaxLotProperty.get_related`)
+            return None if column.get("access_level") or column["related"] else DEFAULT_UNITS.get(column.get("data_type"))
+        return getattr(apps.get_model("seed", column["table_name"])._meta.get_field(column["column_name"]), "base_units", None)
+
+    def get_filter_type(self, column):
+        """The grid filter for a column: 'text', 'number', or 'date', or None if the server can't filter it"""
+        if column is None:
+            return None
+        field_type = self.get_field_type(column)
+        if field_type is None:
+            # Derived values are always numbers
+            db_type = "float" if column["derived_column"] else Column.DB_TYPES.get(column["data_type"])
+            return {"float": "number", "integer": "number", "date": "date", "datetime": "date"}.get(db_type, "text")
+        if field_type in NUMBER_FIELD_TYPES:
+            return "number"
+        if field_type in {"DateField", "DateTimeField"}:
+            return "date"
+        # Not geometry, whose stored text isn't what the grid shows
+        return "text" if field_type in {"CharField", "TextField", "BooleanField"} else None
 
     def get_lookup(self, column):
         """
@@ -503,18 +730,17 @@ class InventoryFilter:
             other_columns = Column.objects.filter(organization_id=self.org.id, table_name=other_table)
             other_columns = ColumnSerializer(other_columns, many=True).data
 
-        column_defs = [
-            {
-                "field": c["name"],
-                "headerName": c["display_name"],
-                # **({"pinned": "left"} if c.get("pinned") else {})
-            }
-            for c in columns
-        ]
+        def filter_props(column):
+            """The grid filters on the server, which tells it each column's filter type, or not to filter one it can't"""
+            filter_type = self.get_filter_type(self.columns_by_name.get(column["name"]))
+            return {"context": {"filterType": filter_type}} if filter_type else {"filter": False}
+
+        column_defs = [{"field": c["name"], "headerName": c["display_name"], **filter_props(c)} for c in columns]
 
         if self.include_related:
             other_column_defs = [
-                {"field": c["name"], "headerName": f"{c['display_name']} {other_suffix}", "sortable": False} for c in other_columns
+                {"field": c["name"], "headerName": f"{c['display_name']} {other_suffix}", "sortable": False, **filter_props(c)}
+                for c in other_columns
             ]
 
             column_defs.extend(other_column_defs)

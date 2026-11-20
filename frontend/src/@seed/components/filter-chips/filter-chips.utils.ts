@@ -17,18 +17,18 @@ const FILTER_DESCRIPTIONS: Record<FilterType, (args: FilterArgs) => string> = {
   greaterThanOrEqual: ({ filter }) => `>= ${filter}`,
   lessThan: ({ filter }) => `< ${filter}`,
   lessThanOrEqual: ({ filter }) => `<= ${filter}`,
-  between: ({ filter, filterTo }) => `is between ${filter} and ${filterTo}`,
+  inRange: ({ filter, filterTo }) => `is between ${filter} and ${filterTo}`,
 }
 
 /*
- * ag-grid date filters store their values in `dateFrom`/`dateTo` ('YYYY-MM-DD HH:mm:ss')
- * instead of `filter`/`filterTo`; show just the date portion.
+ * ag-grid date filters store their values in `dateFrom`/`dateTo` instead of `filter`/`filterTo`, as
+ * 'YYYY-MM-DD HH:mm:ss' (or 'YYYY-MM-DDTHH:mm:ss' from the floating filter); show just the date portion.
  */
 const toFilterArgs = (condition: AgFilter): FilterArgs => {
   if (condition.dateFrom === undefined && condition.dateTo === undefined) return condition
   return {
-    filter: condition.dateFrom?.split(' ')[0],
-    filterTo: condition.dateTo?.split(' ')[0],
+    filter: condition.dateFrom?.split(/[ T]/)[0],
+    filterTo: condition.dateTo?.split(/[ T]/)[0],
   }
 }
 
@@ -51,7 +51,7 @@ export const buildFilterDisplayName = (colDef: ColDef, filterModel: AgFilter): s
 
 /*
  * Converts an ag-grid filter model (keyed by column id) into removable filter chips.
- * `columns` is an optional fallback for filters on columns that aren't in the grid.
+ * `columns` is an optional fallback for the names of filtered columns that aren't in `columnDefs` (e.g., access levels).
  */
 export const buildFilterChips = ({
   filterModel,
@@ -74,7 +74,7 @@ export const buildFilterChips = ({
     const column = columns.find((c) => c.name === columnName)
     return {
       field: columnName,
-      displayName: column?.display_name ?? columnName,
+      displayName: buildFilterDisplayName({ headerName: column?.display_name ?? columnName }, filterModel[columnName]),
       original: columnName,
     }
   })

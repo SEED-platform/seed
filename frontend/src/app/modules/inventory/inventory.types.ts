@@ -101,7 +101,7 @@ export type FilterType
     | 'greaterThanOrEqual'
     | 'lessThan'
     | 'lessThanOrEqual'
-    | 'between'
+    | 'inRange'
 
 export type AgFilter = {
   filterType?: string;

@@ -477,3 +477,34 @@ class ComplianceMetricEvaluationTests(AccessLevelBaseTestCase):
         response = self.client.get(url + str(self.child_level_instance.id), content_type="application/json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["data"]["properties_by_cycles"][str(self.cycle1.id)]), 2)
+
+    def evaluate_with_filter_group(self, query_dict):
+        self.compliance_metric.filter_group = FilterGroup.objects.create(
+            name=f"group {FilterGroup.objects.count()}", organization_id=self.org.id, inventory_type=0, query_dict=query_dict
+        )
+        self.compliance_metric.save()
+        url = reverse("api:v3:compliance_metrics-evaluate", args=[self.compliance_metric.id]) + f"?organization_id={self.org.id}"
+        return self.client.get(url, content_type="application/json")
+
+    def test_compliance_metric_evaluate_with_grid_filter_group(self):
+        site_eui_over_62 = {f"site_eui_{self.site_eui.id}": {"filterType": "number", "type": "greaterThan", "filter": 62}}
+        self.login_as_root_member()
+
+        def property_counts(query_dict):
+            response = self.evaluate_with_filter_group(query_dict)
+            self.assertEqual(response.status_code, 200)
+            properties_by_cycles = response.json()["data"]["properties_by_cycles"]
+            return len(properties_by_cycles[str(self.cycle1.id)]), len(properties_by_cycles[str(self.cycle2.id)])
+
+        self.assertEqual(property_counts(site_eui_over_62), (3, 3))  # 65, 70, and 72; 63, 68, and 70
+        # and in the child access level instance
+        self.assertEqual(
+            property_counts({**site_eui_over_62, "child": {"filterType": "text", "type": "contains", "filter": "child"}}), (2, 2)
+        )
+
+        # A number filter's text that isn't a number
+        response = self.evaluate_with_filter_group(
+            {f"site_eui_{self.site_eui.id}": {"filterType": "number", "type": "equals", "filter": "abc"}}
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["status"], "error")
