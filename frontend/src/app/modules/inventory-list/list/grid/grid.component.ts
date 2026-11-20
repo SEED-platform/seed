@@ -38,6 +38,33 @@ export const LABEL_COLOR_MAP: Record<string, string> = {
   white: '#e5e7eb',
 }
 
+type ServerFilterType = 'text' | 'number' | 'date'
+
+type ServerFilterColDef = Pick<ColDef, 'cellDataType' | 'filter' | 'filterParams'>
+
+/*
+ * Number and date columns show the values the server compares, rather than formatting them as the type AG Grid infers
+ * from the first row (e.g., "Invalid Number" for "12"), which would also put times in date-only floating filters.
+ * Text columns keep that inference, which shows booleans as checkboxes with true/false filter options.
+ */
+const SERVER_FILTERS: Record<ServerFilterType, ServerFilterColDef> = {
+  text: { filter: 'agTextColumnFilter' },
+  number: { cellDataType: false, filter: 'agNumberColumnFilter' },
+  // The server compares dates by day, and date-time columns would otherwise get a time picker
+  date: { cellDataType: false, filter: 'agDateColumnFilter', filterParams: { includeTime: false } },
+}
+
+/*
+ * The column filter for a server filter type, falling back to text. The grid's filters only build the model sent
+ * to the server, which filters each page, so the grid shows every row it receives (see `alwaysPassFilter`).
+ */
+export const serverFilterColDef = (filterType?: string): ServerFilterColDef => {
+  const type = Object.hasOwn(SERVER_FILTERS, filterType ?? '') ? (filterType as ServerFilterType) : 'text'
+  return structuredClone(SERVER_FILTERS[type])
+}
+
+type ApiColumnContext = { filterType?: string }
+
 @Component({
   selector: 'seed-inventory-grid',
   templateUrl: './grid.component.html',
@@ -86,16 +113,15 @@ export class InventoryGridComponent implements OnChanges {
 
   theme: string
 
-  defaultColDef = {
+  // Columns opt in to filtering with serverFilterColDef
+  defaultColDef: ColDef = {
     sortable: true,
-    filter: true,
     floatingFilter: true,
     resizable: true,
-    filterParams: {
-      suppressAndOrCondition: true,
-    },
   }
   gridOptions: GridOptions = {
+    // The server filters each page, so show every row it returns
+    alwaysPassFilter: () => true,
     rowSelection: {
       mode: 'multiRow',
       checkboxes: true,
@@ -195,7 +221,7 @@ export class InventoryGridComponent implements OnChanges {
       // Pinned left so user-pinned columns appear to the right of ALI columns
       pinned: 'left' as const,
       hide: !this.showAccessLevelInstances,
-      filter: true,
+      ...serverFilterColDef('text'),
       sortable: false,
       resizable: true,
       minWidth: 100,
@@ -236,6 +262,8 @@ export class InventoryGridComponent implements OnChanges {
   addHeaderMenu() {
     const stateColumns = this._apiColumnDefs.map((c) => ({
       ...c,
+      // The API sends `filter: false` for columns it can't filter (e.g., geometry)
+      ...(c.filter === false ? {} : serverFilterColDef((c.context as ApiColumnContext | undefined)?.filterType)),
       headerComponent: CellHeaderMenuComponent,
       headerComponentParams: {
         currentUser: this.currentUser,

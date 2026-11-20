@@ -397,7 +397,7 @@ class DataViewEvaluationTests(AccessLevelBaseTestCase, TestCase):
         self.office_filter_group = FilterGroup.objects.create(
             name="office",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={f"property_type_{property_type_id}__exact": "office", f"site_eui_{site_eui_id}__gt": 1},
         )
         self.office_filter_group.save()
@@ -405,7 +405,7 @@ class DataViewEvaluationTests(AccessLevelBaseTestCase, TestCase):
         self.retail_filter_group = FilterGroup.objects.create(
             name="retail",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={f"property_type_{property_type_id}__exact": "retail", f"site_eui_{site_eui_id}__gt": 1},
         )
         self.retail_filter_group.save()
@@ -427,14 +427,14 @@ class DataViewEvaluationTests(AccessLevelBaseTestCase, TestCase):
         self.three_properties_filter_group = FilterGroup.objects.create(
             name="three_properties",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={f"extra_col_{self.extra_col.id}__gt": "1", f"site_eui_{site_eui_id}__gt": 1},
         )
         self.three_properties_filter_group.save()
         self.four_properties_filter_group = FilterGroup.objects.create(
             name="four_properties",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={f"site_eui_{site_eui_id}__gt": 1},
         )
         self.four_properties_filter_group.save()
@@ -467,7 +467,7 @@ class DataViewEvaluationTests(AccessLevelBaseTestCase, TestCase):
         self.dc_filter_group = FilterGroup.objects.create(
             name="dc_filter",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={f"site_eui_{site_eui_id}__gt": 1},
         )
         self.dc_filter_group.save()
@@ -1008,14 +1008,14 @@ class DataViewInventoryTests(TestCase):
         self.fg1 = FilterGroup.objects.create(
             name="fg1",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={f"extra_col_{self.extra_col.id}__gt": "1", f"site_eui_{site_eui_id}__gt": 1},
         )
         self.fg1.save()
         self.fg2 = FilterGroup.objects.create(
             name="fg2",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={f"site_eui_{site_eui_id}__gt": 1},
         )
         self.fg2.save()
@@ -1034,7 +1034,7 @@ class DataViewInventoryTests(TestCase):
         self.fg_and = FilterGroup.objects.create(
             name="fg_and",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={f"extra_col_{self.extra_col.id}__gt": 1},
         )
         self.fg_and.and_labels.set([self.label2.id, self.label3.id])
@@ -1043,7 +1043,7 @@ class DataViewInventoryTests(TestCase):
         self.fg_or = FilterGroup.objects.create(
             name="fg_or",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={f"extra_col_{self.extra_col.id}__gt": 1},
         )
         self.fg_or.or_labels.set([self.label2.id, self.label3.id])
@@ -1052,7 +1052,7 @@ class DataViewInventoryTests(TestCase):
         self.fg_exc = FilterGroup.objects.create(
             name="fg_exc",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={f"extra_col_{self.extra_col.id}__gt": 1},
         )
         self.fg_exc.exclude_labels.set([self.label3.id, self.label4.id])
@@ -1142,6 +1142,48 @@ class DataViewInventoryTests(TestCase):
         ]
         self.assertEqual(sorted(exp), sorted(data[str(self.fg_exc.id)].values()))
 
+    def test_grid_filter_groups(self):
+        site_eui = f"site_eui_{self.site_eui.id}"
+        extra_col_over_1 = {f"extra_col_{self.extra_col.id}": {"filterType": "number", "type": "greaterThan", "filter": 1}}
+        grid_filter_group = FilterGroup.objects.create(
+            name="grid",
+            organization_id=self.org.id,
+            inventory_type=0,  # Property
+            query_dict={site_eui: {"filterType": "number", "type": "greaterThan", "filter": 20}, **extra_col_over_1},
+        )
+        # with filters saved by the legacy UI
+        mixed_filter_group = FilterGroup.objects.create(
+            name="mixed", organization_id=self.org.id, inventory_type=0, query_dict={f"{site_eui}__gt": 20, **extra_col_over_1}
+        )
+        data_view = DataView.objects.create(name="grid filters", organization=self.org)
+        data_view.filter_groups.set([grid_filter_group, mixed_filter_group])
+        data_view.cycles.set([self.cycle1, self.cycle2, self.cycle3])
+        inventory_url = reverse("api:v3:data_views-inventory", args=[data_view.id]) + f"?organization_id={self.org.id}"
+        evaluate_url = reverse("api:v3:data_views-evaluate", args=[data_view.id]) + f"?organization_id={self.org.id}"
+
+        def evaluate():
+            return self.client.post(evaluate_url, data=json.dumps({"columns": [self.site_eui.id]}), content_type="application/json")
+
+        data = self.client.get(inventory_url).json()["data"]
+        exp = [view.state.address_line_1 for view in [self.view21, self.view22, self.view30, self.view31, self.view32]]
+        for filter_group in [grid_filter_group, mixed_filter_group]:
+            self.assertEqual(sorted(exp), sorted(data[str(filter_group.id)].values()))
+
+        response = evaluate()
+        self.assertEqual(response.status_code, 200)
+        filter_groups_by_id = response.json()["data"]["columns_by_id"][str(self.site_eui.id)]["filter_groups_by_id"]
+        for filter_group in [grid_filter_group, mixed_filter_group]:
+            cycles_by_id = filter_groups_by_id[str(filter_group.id)]["cycles_by_id"]
+            self.assertEqual(0, cycles_by_id[str(self.cycle1.id)]["Count"])
+            self.assertEqual((2, 21.5), (cycles_by_id[str(self.cycle2.id)]["Count"], cycles_by_id[str(self.cycle2.id)]["Average"]))
+            self.assertEqual((3, 31), (cycles_by_id[str(self.cycle3.id)]["Count"], cycles_by_id[str(self.cycle3.id)]["Average"]))
+
+        # Invalid filters (a number filter's text that isn't a number) aren't ignored
+        grid_filter_group.query_dict = {site_eui: {"filterType": "number", "type": "equals", "filter": "abc"}}
+        grid_filter_group.save()
+        self.assertEqual(400, self.client.get(inventory_url).status_code)
+        self.assertEqual(400, evaluate().status_code)
+
 
 class DataViewViewSetPermissionsTests(AccessLevelBaseTestCase):
     def setUp(self):
@@ -1152,7 +1194,7 @@ class DataViewViewSetPermissionsTests(AccessLevelBaseTestCase):
         self.office_filter_group = FilterGroup.objects.create(
             name="office",
             organization_id=self.org.id,
-            inventory_type=1,  # Property
+            inventory_type=0,  # Property
             query_dict={},
         )
         self.data_view = DataView.objects.create(name="boo", organization=self.org)

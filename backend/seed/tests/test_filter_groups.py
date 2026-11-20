@@ -4,21 +4,27 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
+from urllib.parse import urlencode
 
+import pytest
 from django.test import TransactionTestCase
 from django.urls import reverse
+from django.utils.timezone import get_current_timezone
 
 from seed.landing.models import SEEDUser as User
-from seed.models import Column, FilterGroup, PropertyView, StatusLabel
+from seed.models import VIEW_LIST_PROPERTY, VIEW_LIST_TAXLOT, Column, DerivedColumn, FilterGroup, PropertyState, PropertyView, StatusLabel
+from seed.serializers.columns import ColumnSerializer
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyFactory,
     FakePropertyStateFactory,
     FakePropertyViewFactory,
+    FakeTaxLotPropertyFactory,
 )
 from seed.tests.util import AccessLevelBaseTestCase
 from seed.utils.organizations import create_organization
+from seed.utils.search import FilterError
 
 
 class FilterGroupsTests(TransactionTestCase):
@@ -549,3 +555,248 @@ class FilterGroupsViewTests(AccessLevelBaseTestCase, TransactionTestCase):
         pv = self.office_filter_group.views(base_views)
 
         self.assertEqual(len(pv), 1)
+
+
+def text(filter_type, value=None):
+    return {"filterType": "text", "type": filter_type, **({"filter": value} if value is not None else {})}
+
+
+def number(filter_type, value=None, value_to=None):
+    return {"filterType": "number", "type": filter_type, "filter": value, "filterTo": value_to}
+
+
+def date_filter(filter_type, date_from=None, date_to=None):
+    # As AG Grid's date filter sends them
+    date_from, date_to = (d and f"{d} 00:00:00" for d in (date_from, date_to))
+    return {"filterType": "date", "type": filter_type, "dateFrom": date_from, "dateTo": date_to}
+
+
+class FilterGroupGridFilterTests(AccessLevelBaseTestCase):
+    """Filter groups saved by the inventory grid (as AG Grid filter models) match the properties that the grid shows"""
+
+    def setUp(self):
+        super().setUp()
+        self.cycle = self.cycle_factory.get_cycle(start=datetime(2001, 1, 1, tzinfo=UTC), end=datetime(2002, 1, 1, tzinfo=UTC))
+        Column.objects.create(table_name="PropertyState", column_name="extra_eui", organization=self.org, is_extra_data=True)
+        derived_column = DerivedColumn.objects.create(
+            name="Derived EUI", expression="$a / 2", organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE
+        )
+
+        self.views_by_index = {}
+        for i in range(20):
+            access_level_instance = self.child_level_instance if i >= 15 else self.root_level_instance
+            self.views_by_index[i] = self.property_view_factory.get_property_view(
+                prprty=self.property_factory.get_property(access_level_instance=access_level_instance),
+                cycle=self.cycle,
+                pm_property_id=f"pm-{i}",
+                address_line_1=f"address{i}" if i % 2 else "",  # evens blank
+                gross_floor_area=1000 + i,
+                site_eui=50 + i if i % 3 else None,  # 0, 3, 6, ... null
+                year_ending=date(2001 + i % 4, 12, 31) if i < 16 else None,  # 4 each in 2001-2004, 16-19 null
+                recent_sale_date=datetime(2020, 6, 1 + i % 2, 12, tzinfo=get_current_timezone()) if i < 10 else None,
+                extra_data={"extra_eui": 100 + i},
+            )
+            # 0, 2, ... 8 have values, 1, 3, ... 9 can't be computed (null), and 10-19 are missing
+            if i < 10:
+                PropertyState.objects.filter(propertyview=self.views_by_index[i]).update(
+                    derived_data={derived_column.name: i * 10 if i % 2 == 0 else None}
+                )
+
+        # pm-0 and pm-1 share a tax lot, and pm-2 has two
+        taxlot_property_factory = FakeTaxLotPropertyFactory(organization=self.org, user=self.superuser)
+        taxlot_views = {
+            jurisdiction_tax_lot_id: self.taxlot_view_factory.get_taxlot_view(
+                cycle=self.cycle, jurisdiction_tax_lot_id=jurisdiction_tax_lot_id
+            )
+            for jurisdiction_tax_lot_id in ["jt-1", "jt-2a", "jt-2b"]
+        }
+        for i, jurisdiction_tax_lot_id in [(0, "jt-1"), (1, "jt-1"), (2, "jt-2a"), (2, "jt-2b")]:
+            taxlot_property_factory.get_taxlot_property(
+                cycle=self.cycle, property_view=self.views_by_index[i], taxlot_view=taxlot_views[jurisdiction_tax_lot_id]
+            )
+        self.taxlot_views = taxlot_views
+
+        # 3 and 4 have both labels
+        self.label_a = StatusLabel.objects.create(name="a", super_organization=self.org)
+        self.label_b = StatusLabel.objects.create(name="b", super_organization=self.org)
+        for i in range(8):
+            self.views_by_index[i].labels.add(*([self.label_a] if i < 5 else []), *([self.label_b] if i > 2 else []))
+
+        def name(column_name, table_name="PropertyState"):
+            column = Column.objects.get(organization=self.org, table_name=table_name, column_name=column_name)
+            return ColumnSerializer(column).data["name"]
+
+        self.pm_property_id = name("pm_property_id")
+        self.address_line_1 = name("address_line_1")
+        self.gross_floor_area = name("gross_floor_area")
+        self.site_eui = name("site_eui")
+        self.year_ending = name("year_ending")
+        self.recent_sale_date = name("recent_sale_date")
+        self.extra_eui = name("extra_eui")
+        self.derived_eui = ColumnSerializer(derived_column.column).data["name"]
+        self.jurisdiction_tax_lot_id = name("jurisdiction_tax_lot_id", "TaxLotState")
+
+    def filter_group(self, query_dict, inventory_type=VIEW_LIST_PROPERTY, **labels):
+        filter_group = FilterGroup.objects.create(
+            name=f"group {FilterGroup.objects.count()}", organization=self.org, inventory_type=inventory_type, query_dict=query_dict
+        )
+        for field, label_list in labels.items():
+            getattr(filter_group, field).set(label_list)
+        return filter_group
+
+    def group_ids(self, query_dict, **labels):
+        """The IDs of the cycle's property views that a filter group matches, unsorted to show any repeats"""
+        views = PropertyView.objects.filter(property__organization=self.org, cycle=self.cycle)
+        return [view.id for view in self.filter_group(query_dict, **labels).views(views)]
+
+    def post_grid_filters(self, filters):
+        query_string = urlencode({"cycle": self.cycle.id, "ids_only": True, "inventory_type": "property", "organization_id": self.org.id})
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + query_string
+        return self.client.post(url, data={"filters": filters}, content_type="application/json")
+
+    def grid_ids(self, filters):
+        """The IDs of the property views that the inventory grid shows with the filters"""
+        response = self.post_grid_filters(filters)
+        self.assertEqual(response.status_code, 200)
+        return sorted(response.json()["results"])
+
+    def ids(self, indexes):
+        return sorted(self.views_by_index[i].id for i in indexes)
+
+    def assert_matches(self, filters, indexes):
+        """A filter group with the grid's filters matches the properties at the indexes once each, as the grid does"""
+        expected = self.ids(indexes)
+        self.assertEqual(sorted(self.group_ids(filters)), expected)
+        self.assertEqual(self.grid_ids(filters), expected)
+
+    def test_text_filters(self):
+        self.assert_matches({self.pm_property_id: text("contains", "1")}, [1, *range(10, 20)])
+        self.assert_matches({self.pm_property_id: text("notContains", "1")}, [0, *range(2, 10)])
+        self.assert_matches({self.pm_property_id: text("equals", "pm-3")}, [3])
+        self.assert_matches({self.pm_property_id: text("notEqual", "pm-3")}, [i for i in range(20) if i != 3])
+        self.assert_matches({self.pm_property_id: text("startsWith", "PM-1")}, [1, *range(10, 20)])
+        self.assert_matches({self.pm_property_id: text("endsWith", "5")}, [5, 15])
+        self.assert_matches(
+            {self.pm_property_id: text("startsWith", "pm-1"), self.address_line_1: text("contains", "address")}, [1, 11, 13, 15, 17, 19]
+        )
+
+    def test_number_filters(self):
+        self.assert_matches({self.gross_floor_area: number("greaterThan", 1015)}, range(16, 20))
+        self.assert_matches({self.gross_floor_area: number("greaterThanOrEqual", 1015)}, range(15, 20))
+        self.assert_matches({self.gross_floor_area: number("lessThanOrEqual", 1002)}, range(3))
+        self.assert_matches({self.gross_floor_area: number("equals", 1004)}, [4])
+        # AG Grid's ranges exclude their ends
+        self.assert_matches({self.gross_floor_area: number("inRange", 1005, 1010)}, range(6, 10))
+
+    def test_date_filters(self):
+        self.assert_matches({self.year_ending: date_filter("equals", "2002-12-31")}, [1, 5, 9, 13])
+        self.assert_matches({self.year_ending: date_filter("greaterThan", "2002-12-31")}, [2, 3, 6, 7, 10, 11, 14, 15])
+        self.assert_matches({self.year_ending: date_filter("inRange", "2001-12-31", "2004-12-31")}, [1, 2, 5, 6, 9, 10, 13, 14])
+        # Date times compare by second, as the grid does (these are at noon)
+        self.assert_matches({self.recent_sale_date: date_filter("lessThan", "2020-06-02")}, range(0, 10, 2))
+
+    def test_blank_filters(self):
+        self.assert_matches({self.address_line_1: text("blank")}, range(0, 20, 2))
+        self.assert_matches({self.address_line_1: text("notBlank")}, range(1, 20, 2))
+        # AG Grid infers text filters for columns whose first values are null
+        for filter_type in ["text", "number"]:
+            self.assert_matches({self.site_eui: {"filterType": filter_type, "type": "blank"}}, range(0, 20, 3))
+            self.assert_matches({self.site_eui: {"filterType": filter_type, "type": "notBlank"}}, [i for i in range(20) if i % 3])
+        self.assert_matches({self.year_ending: date_filter("blank")}, range(16, 20))
+        self.assert_matches({self.year_ending: date_filter("notBlank")}, range(16))
+
+    def test_conditions(self):
+        either = {"filterType": "text", "operator": "OR", "conditions": [text("equals", "pm-1"), text("equals", "pm-2")]}
+        both = {"filterType": "number", "operator": "AND", "conditions": [number("greaterThan", 1005), number("lessThan", 1008)]}
+        self.assert_matches({self.pm_property_id: either}, [1, 2])
+        self.assert_matches({self.gross_floor_area: both}, [6, 7])
+        self.assert_matches({self.pm_property_id: either, self.gross_floor_area: both}, [])
+
+    def test_extra_data_and_derived_columns(self):
+        self.assert_matches({self.extra_eui: number("greaterThan", 115)}, range(16, 20))
+        self.assert_matches({self.extra_eui: text("contains", "11")}, range(10, 20))  # 110-119
+        self.assert_matches({self.derived_eui: text("notBlank")}, range(0, 10, 2))
+        self.assert_matches({self.derived_eui: number("blank")}, [*range(1, 10, 2), *range(10, 20)])
+        self.assert_matches({self.derived_eui: number("greaterThan", 40)}, [6, 8])
+
+    def test_related_columns(self):
+        self.assert_matches({self.jurisdiction_tax_lot_id: text("contains", "jt")}, [0, 1, 2])
+        # pm-2's two tax lots match, but it is returned once
+        self.assert_matches({self.jurisdiction_tax_lot_id: text("startsWith", "jt-2")}, [2])
+
+    def test_access_level_filters(self):
+        self.assert_matches({"child": text("contains", "chi")}, range(15, 20))
+        self.assert_matches({"child": text("blank")}, range(15))
+        either = {"filterType": "text", "operator": "OR", "conditions": [text("equals", "CHILD"), text("blank")]}
+        self.assert_matches({"child": either}, range(20))
+
+    def test_unknown_columns_are_ignored(self):
+        self.assert_matches({"deleted_column_999999999": text("notBlank")}, range(20))
+
+    def test_legacy_and_mixed_filters(self):
+        # Filter groups saved by the legacy UI
+        self.assertEqual(sorted(self.group_ids({f"{self.pm_property_id}__icontains": "1"})), self.ids([1, *range(10, 20)]))
+        self.assertEqual(sorted(self.group_ids({f"{self.gross_floor_area}__gt": "1015"})), self.ids(range(16, 20)))
+        self.assertEqual(sorted(self.group_ids({"child__icontains": "child"})), self.ids(range(15, 20)))
+
+        # and both formats
+        mixed = {f"{self.pm_property_id}__icontains": "1", self.gross_floor_area: number("lessThan", 1012)}
+        self.assertEqual(sorted(self.group_ids(mixed)), self.ids([1, 10, 11]))
+
+    def test_labels(self):
+        # 3 and 4 have both OR labels, but are returned once
+        self.assertEqual(sorted(self.group_ids({}, or_labels=[self.label_a, self.label_b])), self.ids(range(8)))
+        self.assertEqual(sorted(self.group_ids({}, and_labels=[self.label_a, self.label_b])), self.ids([3, 4]))
+        self.assertEqual(sorted(self.group_ids({}, exclude_labels=[self.label_a])), self.ids(range(5, 20)))
+
+        either = {self.pm_property_id: text("contains", "4")}
+        self.assertEqual(sorted(self.group_ids(either, or_labels=[self.label_a, self.label_b])), self.ids([4]))
+
+    def test_invalid_filters(self):
+        pm_property_id = self.pm_property_id
+        invalid_filters = [
+            {pm_property_id: text("unknownType", "pm")},
+            {pm_property_id: {"filterType": "text"}},
+            {pm_property_id: {"filterType": "text", "operator": "XOR", "conditions": [text("equals", "pm-1")]}},
+            # Values that aren't a number or a date, and comparisons text filters don't make
+            {self.gross_floor_area: number("equals", "abc")},
+            {self.year_ending: date_filter("equals", "not a date")},
+            {pm_property_id: text("greaterThan", "pm")},
+            # Malformed, e.g., in a filter group made with the API
+            {pm_property_id: text(["equals"], "pm-1")},
+            {pm_property_id: text("equals", {"value": "pm-1"})},
+            {pm_property_id: {"filterType": ["text"], "type": "equals", "filter": "pm-1"}},
+            {pm_property_id: {"filterType": "text", "operator": ["OR"], "conditions": [text("equals", "pm-1")]}},
+            {pm_property_id: {"filterType": "text", "operator": "OR", "conditions": "pm-1"}},
+            {pm_property_id: {"filterType": "text", "operator": "OR", "conditions": ["pm-1"]}},
+            {"child": text(["contains"], "child")},
+        ]
+        for filters in invalid_filters:
+            with self.subTest(filters=filters):
+                with pytest.raises(FilterError):
+                    self.group_ids(filters)
+                self.assertEqual(self.post_grid_filters(filters).status_code, 400)
+
+        with pytest.raises(FilterError):
+            self.group_ids([pm_property_id])
+        # Text filters on other columns compare their values as text
+        self.assert_matches({self.gross_floor_area: text("equals", "abc")}, [])
+        for filters in [[pm_property_id]]:
+            self.assertEqual(self.post_grid_filters(filters).status_code, 400)
+
+    def test_tax_lot_filter_groups(self):
+        def group_ids(filters, views=None):
+            return sorted(view.id for view in self.filter_group(filters, inventory_type=VIEW_LIST_TAXLOT).views(views))
+
+        jt_2 = {self.jurisdiction_tax_lot_id: text("startsWith", "jt-2")}
+        not_jt_2 = {self.jurisdiction_tax_lot_id: text("notContains", "jt-2")}
+        blank = {self.jurisdiction_tax_lot_id: text("blank")}
+
+        # Of all the organization's tax lots, by default
+        self.assertEqual(group_ids(jt_2), sorted([self.taxlot_views["jt-2a"].id, self.taxlot_views["jt-2b"].id]))
+
+        # or the properties of the matching tax lots, e.g., in a property report, but not those without tax lots
+        views = PropertyView.objects.filter(property__organization=self.org, cycle=self.cycle)
+        self.assertEqual(group_ids(jt_2, views), self.ids([2]))
+        self.assertEqual(group_ids(not_jt_2, views), self.ids([0, 1]))
+        self.assertEqual(group_ids(blank, views), [])

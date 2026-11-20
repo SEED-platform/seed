@@ -45,6 +45,9 @@ class TaxLotProperty(models.Model):
     # User controlled flag.
     primary = models.BooleanField(default=True)
 
+    # Date times serialized as naive times in the current time zone; others (`created` and `updated`) are in UTC
+    NAIVE_DATE_TIME_FIELDS = frozenset({"recent_sale_date", "release_date", "generation_date"})
+
     def __str__(self):
         return f"M2M Property View {self.property_view_id} / TaxLot View {self.taxlot_view_id}"
 
@@ -119,7 +122,7 @@ class TaxLotProperty(models.Model):
                 continue
 
             # fix specific time stamps
-            if f.name in {"recent_sale_date", "release_date", "generation_date"}:
+            if f.name in cls.NAIVE_DATE_TIME_FIELDS:
                 value = f.value_from_object(instance)
                 if value:
                     value = make_naive(value).isoformat()

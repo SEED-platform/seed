@@ -54,7 +54,10 @@ def get_filtered_results(request: Request, inventory_type: Literal["property", "
         )
 
     if cycle_id:
-        cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
+        try:
+            cycle = Cycle.objects.get(organization_id=org_id, pk=cycle_id)
+        except (Cycle.DoesNotExist, ValueError):
+            return JsonResponse({"status": "error", "message": "No such cycle."}, status=status.HTTP_404_NOT_FOUND)
     else:
         cycle = Cycle.objects.filter(organization_id=org_id).order_by("name")
         if cycle:

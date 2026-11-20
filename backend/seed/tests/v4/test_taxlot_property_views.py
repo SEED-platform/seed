@@ -4,10 +4,11 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
-from datetime import datetime
+from datetime import UTC, date, datetime
 from urllib.parse import urlencode
 
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.timezone import (
     get_current_timezone,
 )
@@ -20,10 +21,13 @@ from seed.models import (
     VIEW_LIST_TAXLOT,
     Column,
     ColumnMappingProfile,
+    DerivedColumn,
     Property,
+    PropertyState,
     PropertyView,
     StatusLabel,
     TaxLotProperty,
+    TaxLotState,
     TaxLotView,
 )
 from seed.serializers.columns import ColumnSerializer
@@ -108,8 +112,10 @@ class TaxLotPropertyViewTests(DataMappingBaseTestCase):
 
         self.assertEqual(pagination["total"], 1)
         self.assertEqual(len(results), 1)
-        self.assertEqual(list(column_defs[0].keys()), ["field", "headerName"])
-        self.assertEqual(list(column_defs[-1].keys()), ["field", "headerName", "sortable"])  # other inventory columns are not sortable
+        # with the server's filter types (the grid doesn't filter), and other inventory columns aren't sortable
+        self.assertEqual(list(column_defs[0].keys()), ["field", "headerName", "context"])
+        self.assertEqual(list(column_defs[-1].keys()), ["field", "headerName", "sortable", "context"])
+        self.assertIn(column_defs[0]["context"]["filterType"], {"text", "number", "date"})
 
     def test_inventory_filter_column_defs_use_only_organization_profiles(self):
         url = (
@@ -273,6 +279,17 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.json()["pagination"]["total"], 0)
 
+    def test_property_filter_invalid_cycle(self):
+        other_org, _, _ = create_organization(self.superuser, "other org")
+        other_cycle = FakeCycleFactory(organization=other_org, user=self.superuser).get_cycle()
+        self.login_as_root_member()
+
+        for cycle_id in [other_cycle.pk, "abc"]:
+            url = reverse("api:v4:tax_lot_properties-filter") + f"?inventory_type=property&cycle={cycle_id}&organization_id={self.org.pk}"
+            resp = self.client.post(url, content_type="application/json")
+            self.assertEqual(resp.status_code, 404)
+            self.assertEqual(resp.json(), {"status": "error", "message": "No such cycle."})
+
     def test_record_count(self):
         child_property = self.property_factory.get_property(access_level_instance=self.child_level_instance)
         self.property_view_factory.get_property_view(prprty=child_property, cycle=self.cycle)
@@ -354,15 +371,18 @@ class FilterTests(AccessLevelBaseTestCase):
         }
 
     def get_filter(self, filter_type, filter_val=None):
-        filter_dict = {"filterType": "text", "type": filter_type}
+        # As AG Grid sends them: comparisons from number filters, and the rest from text filters
+        kind = "number" if filter_type in {"greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual", "inRange"} else "text"
+        filter_dict = {"filterType": kind, "type": filter_type}
         if filter_val:
             filter_dict["filter"] = filter_val
         return filter_dict
 
-    def get_request_results(self, filters):
-        data = {"filters": filters}
+    def get_request_results(self, filters, sorts=None):
+        data = {"filters": filters, "sorts": sorts}
         url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(self.query_string)
         response = self.client.post(url, data=data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
         data = response.json()
         return data["results"]
 
@@ -457,6 +477,374 @@ class FilterTests(AccessLevelBaseTestCase):
         self.assertEqual(len(self.get_request_results(gt)), 79)  # 21-99
         self.assertEqual(len(self.get_request_results(lt)), 20)  # 0-19
 
+    def test_derived_column(self):
+        derived_column = DerivedColumn.objects.create(
+            name="Energy Use Intensity (kBtu/ft²)", expression="$a / 2", organization=self.org, inventory_type=DerivedColumn.PROPERTY_TYPE
+        )
+        derived_name = ColumnSerializer(derived_column.column).data["name"]
+
+        # 0, 4, 8, ... can't be computed (null), 1, 5, 9, ... are missing, and the rest have values
+        def get_value(i):
+            return 50 + i if i % 4 > 1 else None
+
+        states = list(PropertyState.objects.filter(propertyview__cycle=self.cycle))
+        for state in states:
+            i = int(state.pm_property_id.removeprefix("pm-"))
+            if i % 4 != 1:
+                state.derived_data = {derived_column.name: get_value(i)}
+        PropertyState.objects.bulk_update(states, ["derived_data"])
+
+        blank = {derived_name: self.get_filter("blank")}
+        not_blank = {derived_name: self.get_filter("notBlank")}
+        number_blank = {derived_name: {"filterType": "number", "type": "blank"}}
+        number_not_blank = {derived_name: {"filterType": "number", "type": "notBlank"}}
+        gt = {derived_name: self.get_filter("greaterThan", 100)}
+
+        self.assertEqual(len(self.get_request_results(blank)), 50)
+        self.assertEqual(len(self.get_request_results(not_blank)), 50)
+        self.assertEqual(len(self.get_request_results(number_blank)), 50)
+        self.assertEqual(len(self.get_request_results(number_not_blank)), 50)
+        self.assertEqual(len(self.get_request_results(gt)), 25)  # 51-99
+
+        def get_sorted_values(sort):
+            results = self.get_request_results(None, [sort])
+            values = [get_value(int(r[self.pmpid_name].removeprefix("pm-"))) for r in results]
+            return [v for v in values if v is not None]
+
+        self.assertEqual(get_sorted_values(derived_name), sorted(get_value(i) for i in range(100) if i % 4 > 1))
+        self.assertEqual(get_sorted_values(f"-{derived_name}"), sorted((get_value(i) for i in range(100) if i % 4 > 1), reverse=True))
+
+    def get_name(self, column_name):
+        column = Column.objects.get(organization=self.org, table_name="PropertyState", column_name=column_name)
+        return ColumnSerializer(column).data["name"]
+
+    def test_blank_on_number_and_date_columns(self):
+        site_eui_name = self.get_name("site_eui")
+        year_ending_name = self.get_name("year_ending")
+        states = PropertyState.objects.filter(propertyview__cycle=self.cycle)
+        states.filter(pm_property_id__in=[f"pm-{i}" for i in range(0, 100, 2)]).update(site_eui=None)  # evens
+        states.filter(pm_property_id__in=[f"pm-{i}" for i in range(0, 100, 4)]).update(year_ending=date(2020, 12, 31))  # 4s
+
+        # Blank is null (or empty text) for any filter type, e.g., in filters saved before the server chose the types
+        for filter_type in ["text", "number"]:
+            blank = {site_eui_name: {"filterType": filter_type, "type": "blank"}}
+            not_blank = {site_eui_name: {"filterType": filter_type, "type": "notBlank"}}
+            self.assertEqual(len(self.get_request_results(blank)), 50)
+            self.assertEqual(len(self.get_request_results(not_blank)), 50)
+
+        # Number filters exclude blanks from notEqual, and text filters include them
+        number_not_equal = {site_eui_name: {"filterType": "number", "type": "notEqual", "filter": -1}}
+        text_not_equal = {site_eui_name: self.get_filter("notEqual", "-1")}
+        self.assertEqual(len(self.get_request_results(number_not_equal)), 50)
+        self.assertEqual(len(self.get_request_results(text_not_equal)), 100)
+
+        blank_or_not = {
+            site_eui_name: {"filterType": "text", "operator": "OR", "conditions": [self.get_filter("blank"), self.get_filter("notBlank")]}
+        }
+        self.assertEqual(len(self.get_request_results(blank_or_not)), 100)
+
+        date_blank = {year_ending_name: {"filterType": "date", "type": "blank"}}
+        date_not_blank = {year_ending_name: {"filterType": "date", "type": "notBlank"}}
+        self.assertEqual(len(self.get_request_results(date_blank)), 75)
+        self.assertEqual(len(self.get_request_results(date_not_blank)), 25)
+
+        # Text filters on other columns compare their values as text
+        self.assertEqual(len(self.get_request_results({site_eui_name: self.get_filter("equals", "abc")})), 0)
+
+    def test_text_filters(self):
+        Column.objects.create(table_name="PropertyState", column_name="Parcel", organization=self.org, is_extra_data=True)
+        parcel_name = self.get_name("Parcel")
+        states = list(PropertyState.objects.filter(propertyview__cycle=self.cycle))
+        for state in states:
+            # JSON numbers, the same as text, other text, and missing
+            i = int(state.pm_property_id.removeprefix("pm-"))
+            if i < 30:
+                state.extra_data = {**state.extra_data, "Parcel": [100, "100", "ABC-1"][i // 10]}
+        PropertyState.objects.bulk_update(states, ["extra_data"])
+
+        # Case-insensitively
+        self.assertEqual(len(self.get_request_results({self.pmpid_name: self.get_filter("equals", "PM-1")})), 1)
+        self.assertEqual(len(self.get_request_results({self.pmpid_name: self.get_filter("notEqual", "PM-1")})), 99)
+        self.assertEqual(len(self.get_request_results({parcel_name: self.get_filter("equals", "abc-1")})), 10)
+        self.assertEqual(len(self.get_request_results({parcel_name: self.get_filter("startsWith", "Abc")})), 10)
+        # On the text of JSON values, and negated conditions include blanks
+        self.assertEqual(len(self.get_request_results({parcel_name: self.get_filter("equals", "100")})), 20)
+        self.assertEqual(len(self.get_request_results({parcel_name: self.get_filter("notEqual", "100")})), 80)
+        self.assertEqual(len(self.get_request_results({parcel_name: self.get_filter("notContains", "abc")})), 90)
+
+    def test_number_filters_on_text_and_json_values(self):
+        Column.objects.create(
+            table_name="PropertyState", column_name="Floor Count", organization=self.org, is_extra_data=True, data_type="number"
+        )
+        name = self.get_name("Floor Count")
+        values = [5, "12", "1,234", "n/a", None, True]
+        states = list(PropertyState.objects.filter(propertyview__cycle=self.cycle))
+        for state in states:
+            # 17 each of the first four values, and 16 each of the others
+            i = int(state.pm_property_id.removeprefix("pm-"))
+            state.extra_data = {**state.extra_data, "Floor Count": values[i % 6]}
+        PropertyState.objects.bulk_update(states, ["extra_data"])
+
+        def count(filter_type, value=None, value_to=None):
+            return len(
+                self.get_request_results({name: {"filterType": "number", "type": filter_type, "filter": value, "filterTo": value_to}})
+            )
+
+        # Not text, nulls, or booleans, which aren't numbers
+        self.assertEqual(count("greaterThan", 10), 34)
+        self.assertEqual(count("lessThan", 10), 17)
+        self.assertEqual(count("equals", 1234), 17)
+        self.assertEqual(count("equals", "1,234"), 17)
+        self.assertEqual(count("inRange", 5, 1234), 17)
+        self.assertEqual(count("notEqual", 5), 67)  # not blanks, but values that aren't numbers
+        self.assertEqual(count("blank"), 16)
+        self.assertEqual(count("notBlank"), 84)
+
+    def test_integer_filters_are_not_truncated(self):
+        year_built_name = self.get_name("year_built")
+        PropertyState.objects.filter(propertyview__cycle=self.cycle, pm_property_id__in=["pm-1", "pm-2"]).update(year_built=1999)
+
+        def count(filter_type, value):
+            return len(self.get_request_results({year_built_name: {"filterType": "number", "type": filter_type, "filter": value}}))
+
+        self.assertEqual(count("equals", 1999), 2)
+        self.assertEqual(count("equals", 1999.5), 0)
+
+    def test_number_filters_use_display_units(self):
+        # Gross floor areas are 1000-1099 ft², shown in whole m²
+        self.org.display_units_area = "m**2"
+        self.org.display_decimal_places = 0
+        self.org.save()
+        shown = [round((1000 + i) * 0.09290304) for i in range(100)]
+
+        def count(filter_type, value):
+            return len(self.get_request_results({self.gfa_name: {"filterType": "number", "type": filter_type, "filter": value}}))
+
+        self.assertEqual(count("equals", 93), shown.count(93))
+        self.assertEqual(count("greaterThan", 100), sum(area > 100 for area in shown))
+        self.assertEqual(count("lessThanOrEqual", 95), sum(area <= 95 for area in shown))
+
+    def test_json_keys_like_indexes_or_lookups(self):
+        for column_name in ["2019", "a__b"]:
+            Column.objects.create(table_name="PropertyState", column_name=column_name, organization=self.org, is_extra_data=True)
+        states = list(PropertyState.objects.filter(propertyview__cycle=self.cycle))
+        for state in states:
+            if int(state.pm_property_id.removeprefix("pm-")) < 10:
+                state.extra_data = {**state.extra_data, "2019": "x", "a__b": "y"}
+        PropertyState.objects.bulk_update(states, ["extra_data"])
+
+        self.assertEqual(len(self.get_request_results({self.get_name("2019"): self.get_filter("notBlank")})), 10)
+        self.assertEqual(len(self.get_request_results({self.get_name("a__b"): self.get_filter("equals", "Y")})), 10)
+
+    def test_invalid_filters(self):
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(self.query_string)
+        for filter_dict in [
+            {"filterType": "text", "type": "greaterThan", "filter": 1},
+            {"filterType": "number", "type": "contains", "filter": 1},
+            {"filterType": "number", "type": "equals", "filter": "abc"},
+            {"filterType": "number", "type": "inRange", "filter": 1},
+            {"filterType": "text", "type": "equals"},
+            {"filterType": "set", "type": "equals", "filter": "a"},
+        ]:
+            response = self.client.post(url, data={"filters": {self.gfa_name: filter_dict}}, content_type="application/json")
+            self.assertEqual(response.status_code, 400, filter_dict)
+
+        # Filters of a filter group saved by the legacy UI apply, as in reports
+        self.assertEqual(len(self.get_request_results({f"{self.al1_name}__icontains": "address"})), 50)
+
+    def test_boolean_filters(self):
+        Column.objects.create(
+            table_name="PropertyState", column_name="Has Solar", organization=self.org, is_extra_data=True, data_type="boolean"
+        )
+        name = self.get_name("Has Solar")
+        states = list(PropertyState.objects.filter(propertyview__cycle=self.cycle))
+        for state in states:
+            # 34 true, 33 false, and 33 null
+            state.extra_data = {**state.extra_data, "Has Solar": [True, False, None][int(state.pm_property_id.removeprefix("pm-")) % 3]}
+        PropertyState.objects.bulk_update(states, ["extra_data"])
+
+        # AG Grid's text filter options for boolean values: "Choose one" (no filter), True, and False
+        def count(condition):
+            return len(self.get_request_results({name: {"filterType": "text", "type": condition}}))
+
+        self.assertEqual(count("true"), 34)
+        self.assertEqual(count("false"), 33)
+        self.assertEqual(count("empty"), 100)
+
+    def test_filters_with_another_filter_types_values(self):
+        # AG Grid keeps a filter's values when it changes its type, e.g., for a filter saved when the grid inferred it
+        year_ending_name = self.get_name("year_ending")
+        PropertyState.objects.filter(propertyview__cycle=self.cycle, pm_property_id__in=["pm-1", "pm-2"]).update(
+            year_ending=date(2002, 12, 31)
+        )
+
+        date_with_text_value = {year_ending_name: {"filterType": "date", "type": "equals", "filter": "2002-12-31"}}
+        text_with_date_value = {year_ending_name: {"filterType": "text", "type": "equals", "dateFrom": "2002-12-31 00:00:00"}}
+        self.assertEqual(len(self.get_request_results(date_with_text_value)), 2)
+        self.assertEqual(len(self.get_request_results(text_with_date_value)), 2)
+
+    @staticmethod
+    def date_filter(name, filter_type, date_from=None, date_to=None):
+        """A filter as AG Grid's date filter sends it, with `dateFrom` and `dateTo` formatted as YYYY-MM-DD hh:mm:ss"""
+        return {name: {"filterType": "date", "type": filter_type, "dateFrom": date_from, "dateTo": date_to}}
+
+    def test_date_filters(self):
+        year_ending_name = self.get_name("year_ending")
+        states = list(PropertyState.objects.filter(propertyview__cycle=self.cycle))
+        for state in states:
+            # 15 each in 2001-2004, and 40 blank
+            i = int(state.pm_property_id.removeprefix("pm-"))
+            state.year_ending = date(2001 + i % 4, 12, 31) if i < 60 else None
+        PropertyState.objects.bulk_update(states, ["year_ending"])
+
+        def count(filter_type, date_from=None, date_to=None):
+            return len(self.get_request_results(self.date_filter(year_ending_name, filter_type, date_from, date_to)))
+
+        self.assertEqual(count("equals", "2002-12-31 00:00:00"), 15)
+        self.assertEqual(count("equals", "2002-12-31T00:00:00"), 15)  # as the floating filter sends it
+        self.assertEqual(count("notEqual", "2002-12-31 00:00:00"), 45)  # not blanks
+        self.assertEqual(count("greaterThan", "2002-12-31 00:00:00"), 30)
+        self.assertEqual(count("lessThan", "2002-12-31 00:00:00"), 15)
+        self.assertEqual(count("lessThan", "9999-12-31 00:00:00"), 60)
+        self.assertEqual(count("inRange", "2001-12-31 00:00:00", "2004-12-31 00:00:00"), 30)  # excludes its ends
+        self.assertEqual(count("blank"), 40)
+        self.assertEqual(count("notBlank"), 60)
+
+        first_or_last = {
+            year_ending_name: {
+                "filterType": "date",
+                "operator": "OR",
+                "conditions": [
+                    self.date_filter(year_ending_name, "equals", "2001-12-31 00:00:00")[year_ending_name],
+                    self.date_filter(year_ending_name, "equals", "2004-12-31 00:00:00")[year_ending_name],
+                ],
+            }
+        }
+        self.assertEqual(len(self.get_request_results(first_or_last)), 30)
+
+        # Not dates the grid sends, or not date columns
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(self.query_string)
+        for filters in [
+            self.date_filter(year_ending_name, "equals", "not a date"),
+            self.date_filter(year_ending_name, "equals", "2002-12-31T00:00:00Z"),
+            self.date_filter(year_ending_name, "inRange", "2001-12-31 00:00:00"),
+            self.date_filter(self.get_name("year_built"), "equals", "2002-12-31 00:00:00"),
+        ]:
+            response = self.client.post(url, data={"filters": filters}, content_type="application/json")
+            self.assertEqual(response.status_code, 400)
+
+    def test_date_filters_on_text_columns(self):
+        # e.g., date filters saved before the server chose filter types, which AG Grid inferred from dates
+        custom_id_1_name = self.get_name("custom_id_1")
+        states = PropertyState.objects.filter(propertyview__cycle=self.cycle)
+        states.filter(pm_property_id__in=[f"pm-{i}" for i in range(0, 100, 10)]).update(custom_id_1="2019-12-31")
+        states.filter(pm_property_id__in=[f"pm-{i}" for i in range(5, 100, 10)]).update(custom_id_1="")
+
+        def count(filter_type, date_from=None):
+            return len(self.get_request_results(self.date_filter(custom_id_1_name, filter_type, date_from)))
+
+        self.assertEqual(count("equals", "2019-12-31 00:00:00"), 10)
+        self.assertEqual(count("notEqual", "2019-12-31 00:00:00"), 80)  # other text, but not blanks
+        self.assertEqual(count("greaterThan", "2019-12-30 00:00:00"), 10)
+        self.assertEqual(count("blank"), 10)
+        self.assertEqual(count("notBlank"), 90)
+
+    def test_date_time_filters_on_repeated_clock_times(self):
+        # 1:30 AM happens twice in Los Angeles on 2020-11-01, and both show that day
+        recent_sale_date_name = self.get_name("recent_sale_date")
+        states = PropertyState.objects.filter(propertyview__cycle=self.cycle)
+        states.filter(pm_property_id="pm-0").update(recent_sale_date=datetime(2020, 11, 1, 8, 30, tzinfo=UTC))
+        states.filter(pm_property_id="pm-1").update(recent_sale_date=datetime(2020, 11, 1, 9, 30, tzinfo=UTC))
+
+        with timezone.override("America/Los_Angeles"):
+            equals = self.get_request_results(self.date_filter(recent_sale_date_name, "equals", "2020-11-01 00:00:00"))
+            after = self.get_request_results(self.date_filter(recent_sale_date_name, "greaterThan", "2020-11-01 00:00:00"))
+        self.assertEqual(sorted(r[self.pmpid_name] for r in equals), ["pm-0", "pm-1"])
+        self.assertEqual(after, [])
+
+    def test_date_time_filters(self):
+        recent_sale_date_name = self.get_name("recent_sale_date")
+        updated_name = self.get_name("updated")
+        states = PropertyState.objects.filter(propertyview__cycle=self.cycle)
+        states.filter(pm_property_id__in=[f"pm-{i}" for i in range(0, 50, 2)]).update(
+            recent_sale_date=datetime(2020, 6, 1, 9, tzinfo=get_current_timezone())
+        )
+        states.filter(pm_property_id__in=[f"pm-{i}" for i in range(1, 50, 2)]).update(
+            recent_sale_date=datetime(2020, 6, 1, 15, tzinfo=get_current_timezone())
+        )
+        # Serialized (and shown) in UTC, unlike the other date times: 2020-06-02, but 2020-06-01 in the Americas
+        states.filter(pm_property_id__in=[f"pm-{i}" for i in range(10)]).update(updated=datetime(2020, 6, 2, 3, tzinfo=UTC))
+
+        def count(name, filter_type, date_from=None, date_to=None):
+            return len(self.get_request_results(self.date_filter(name, filter_type, date_from, date_to)))
+
+        # Date times compare by the day shown, ignoring a filter's time
+        self.assertEqual(count(recent_sale_date_name, "equals", "2020-06-01 00:00:00"), 50)
+        self.assertEqual(count(recent_sale_date_name, "equals", "2020-06-01 12:34:56"), 50)
+        self.assertEqual(count(recent_sale_date_name, "equals", "2020-06-02 00:00:00"), 0)
+        self.assertEqual(count(recent_sale_date_name, "notEqual", "2020-06-02 00:00:00"), 50)
+        self.assertEqual(count(recent_sale_date_name, "greaterThan", "2020-05-31 00:00:00"), 50)
+        self.assertEqual(count(recent_sale_date_name, "lessThan", "2020-06-01 00:00:00"), 0)
+        self.assertEqual(count(recent_sale_date_name, "inRange", "2020-05-31 00:00:00", "2020-06-02 00:00:00"), 50)
+        self.assertEqual(count(recent_sale_date_name, "blank"), 50)
+        self.assertEqual(count(updated_name, "equals", "2020-06-02 00:00:00"), 10)
+        self.assertEqual(count(updated_name, "lessThan", "2020-06-02 00:00:00"), 0)
+
+    def test_json_date_filters(self):
+        Column.objects.create(table_name="PropertyState", column_name="Inspection Date", organization=self.org, is_extra_data=True)
+        name = self.get_name("Inspection Date")
+        # Days 2019-12-31, 2019-12-30, 2020-01-01, 2019-12-31, and 2019-12-31, then text that isn't a date, and blank
+        values = [
+            "2019-12-31 00:00:00",
+            "2019-12-30T10:00:00",
+            "2020-01-01",
+            "2019-12-31 10:00",
+            "2019-12-31 (est.)",
+            "n/a",
+            "2019-13-01",
+            None,
+        ]
+        states = list(PropertyState.objects.filter(propertyview__cycle=self.cycle))
+        for state in states:
+            # 12 of the first value, 11 each of the others, and 11 missing
+            i = int(state.pm_property_id.removeprefix("pm-"))
+            if i % 9 < len(values):
+                state.extra_data = {**state.extra_data, "Inspection Date": values[i % 9]}
+        PropertyState.objects.bulk_update(states, ["extra_data"])
+
+        def count(filter_type, date_from=None, date_to=None):
+            return len(self.get_request_results(self.date_filter(name, filter_type, date_from, date_to)))
+
+        self.assertEqual(count("equals", "2019-12-31 00:00:00"), 34)
+        self.assertEqual(count("equals", "2020-01-01 00:00:00"), 11)
+        self.assertEqual(count("greaterThan", "2019-12-31 00:00:00"), 11)
+        self.assertEqual(count("lessThan", "2019-12-31 00:00:00"), 11)
+        self.assertEqual(count("inRange", "2019-12-30 00:00:00", "2020-01-01 00:00:00"), 34)
+        self.assertEqual(count("notEqual", "2019-12-31 00:00:00"), 44)  # not blanks, but text that isn't a date
+        self.assertEqual(count("blank"), 22)
+        self.assertEqual(count("notBlank"), 78)
+
+        # Text filters include blanks in notEqual
+        not_equal = {name: self.get_filter("notEqual", "n/a")}
+        self.assertEqual(len(self.get_request_results(not_equal)), 89)
+
+    def test_unknown_columns_are_ignored(self):
+        unknown_filters = [
+            {"deleted_column_999999999": self.get_filter("notBlank")},
+            {"not_a_column": self.get_filter("notBlank")},
+        ]
+        for filters in unknown_filters:
+            self.assertEqual(len(self.get_request_results(filters)), 100)
+
+        self.assertEqual(len(self.get_request_results(None, ["-deleted_column_999999999", "not_a_column"])), 100)
+
+    def test_extra_data_column_with_canonical_name_on_other_table(self):
+        Column.objects.create(table_name="TaxLotState", column_name="gross_floor_area", organization=self.org, is_extra_data=True)
+        self.query_string["include_related"] = True
+
+        gt = {self.gfa_name: self.get_filter("greaterThan", 1010)}
+        self.assertEqual(len(self.get_request_results(gt)), 89)  # 11-99
+
 
 class RelatedTests(AccessLevelBaseTestCase):
     def setUp(self):
@@ -505,7 +893,9 @@ class RelatedTests(AccessLevelBaseTestCase):
         self.pv_filter = PropertyView.objects.filter
 
     def get_filter(self, filter_type, filter_val=None):
-        filter_dict = {"filterType": "text", "type": filter_type}
+        # As AG Grid sends them: comparisons from number filters, and the rest from text filters
+        kind = "number" if filter_type in {"greaterThan", "greaterThanOrEqual", "lessThan", "lessThanOrEqual", "inRange"} else "text"
+        filter_dict = {"filterType": kind, "type": filter_type}
         if filter_val:
             filter_dict["filter"] = filter_val
         return filter_dict
@@ -579,3 +969,80 @@ class RelatedTests(AccessLevelBaseTestCase):
         results = data["results"]
         # while there are multiple taxlots with j-ids with '2', only one property is associated with them
         self.assertEqual(len(results), 1)
+
+    def get_property_results(self, filters=None, sorts=None):
+        query_string = {"cycle": self.cycle.id, "inventory_type": "property", "include_related": True, "organization_id": self.org.id}
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(query_string)
+        response = self.client.post(url, data={"filters": filters, "sorts": sorts}, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        return sorted(r[self.pmpid_name] for r in response.json()["results"])
+
+    def test_related_derived_column_filter(self):
+        derived_column = DerivedColumn.objects.create(
+            name="Tax Lot EUI", expression="$a / 2", organization=self.org, inventory_type=DerivedColumn.TAXLOT_TYPE
+        )
+        derived_name = ColumnSerializer(derived_column.column).data["name"]
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id="jt-1").update(derived_data={derived_column.name: 5})
+
+        not_blank = {derived_name: self.get_filter("notBlank")}
+        blank = {derived_name: self.get_filter("blank")}
+        self.assertEqual(self.get_property_results(not_blank), ["pm-1a", "pm-1b"])
+        self.assertEqual(self.get_property_results(blank), ["pm-2", "pm-3"])
+
+    def test_related_not_blank_with_a_blank_related_value(self):
+        address_column = Column.objects.get(organization=self.org, table_name="TaxLotState", column_name="address_line_1")
+        address_name = ColumnSerializer(address_column).data["name"]
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id="jt-1").update(address_line_1="1 Main St")
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id="jt-2a").update(address_line_1="2 Main St")
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id__in=["jt-2b", "jt-3"]).update(address_line_1=None)
+
+        # pm-2 shows jt-2a's address, though jt-2b has none
+        for filter_type in ["text", "number"]:
+            not_blank = {address_name: {"filterType": filter_type, "type": "notBlank"}}
+            self.assertEqual(self.get_property_results(not_blank), ["pm-1a", "pm-1b", "pm-2"])
+
+    def test_related_text_blank_on_number_column(self):
+        query_string = {"cycle": self.cycle.id, "inventory_type": "taxlot", "include_related": True, "organization_id": self.org.id}
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(query_string)
+        data = {"filters": {self.seui_name: self.get_filter("notBlank")}}
+        response = self.client.post(url, data=data, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        # jt-3 has no properties
+        self.assertEqual(sorted(r[self.jtlid_name] for r in response.json()["results"]), ["jt-1", "jt-2a", "jt-2b"])
+
+    def test_related_conditions_match_any_related_record(self):
+        # pm-2 shows "jt-2a; jt-2b", and pm-3 has no tax lots
+        self.assertEqual(self.get_property_results({self.jtlid_name: self.get_filter("equals", "JT-2A")}), ["pm-2"])
+        # Negated conditions match if no related record does
+        self.assertEqual(self.get_property_results({self.jtlid_name: self.get_filter("notEqual", "jt-2a")}), ["pm-1a", "pm-1b", "pm-3"])
+        self.assertEqual(self.get_property_results({self.jtlid_name: self.get_filter("notContains", "2")}), ["pm-1a", "pm-1b", "pm-3"])
+
+        # Each condition can match a different related record, as in the cell
+        both = {
+            "filterType": "text",
+            "operator": "AND",
+            "conditions": [self.get_filter("equals", "jt-2a"), self.get_filter("equals", "jt-2b")],
+        }
+        self.assertEqual(self.get_property_results({self.jtlid_name: both}), ["pm-2"])
+        address_column = Column.objects.get(organization=self.org, table_name="TaxLotState", column_name="address_line_1")
+        address_name = ColumnSerializer(address_column).data["name"]
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id="jt-2a").update(address_line_1="2 Main St")
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id="jt-2b").update(address_line_1=None)
+        different_records = {self.jtlid_name: self.get_filter("equals", "jt-2b"), address_name: self.get_filter("contains", "main")}
+        self.assertEqual(self.get_property_results(different_records), ["pm-2"])
+
+    def test_related_extra_data_quantities_compare_as_shown(self):
+        # Unlike its own quantities, a record's related extra data shows as stored, not in the display units
+        self.org.display_units_area = "m**2"
+        self.org.save()
+        column = Column.objects.create(
+            table_name="TaxLotState", column_name="Lot Area", organization=self.org, is_extra_data=True, data_type="area"
+        )
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id="jt-1").update(extra_data={"Lot Area": 5000})
+
+        over_1000 = {ColumnSerializer(column).data["name"]: {"filterType": "number", "type": "greaterThan", "filter": 1000}}
+        self.assertEqual(self.get_property_results(over_1000), ["pm-1a", "pm-1b"])
+
+    def test_related_sort_is_ignored(self):
+        # Related columns aren't sortable, and PropertyState has no jurisdiction_tax_lot_id
+        self.assertEqual(self.get_property_results(sorts=[f"-{self.jtlid_name}"]), ["pm-1a", "pm-1b", "pm-2", "pm-3"])

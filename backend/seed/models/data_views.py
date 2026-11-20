@@ -4,20 +4,15 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import contextlib
-import logging
 
 from django.db import models
-from django.db.models import Avg, Count, F, Max, Min, Q, Sum
-from django.http import QueryDict
+from django.db.models import Avg, Count, F, Max, Min, Sum
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models.columns import Column
 from seed.models.cycles import Cycle
 from seed.models.filter_group import FilterGroup
 from seed.models.properties import PropertyState, PropertyView
-from seed.utils.search import build_view_filters_and_sorts
-
-logger = logging.getLogger(__name__)
 
 
 class DataView(models.Model):
@@ -33,39 +28,28 @@ class DataView(models.Model):
         return views_by_filter_group_id
 
     def views_by_filter(self, user_ali):
+        """The access level instance's property views of each filter group (or all of them as group 0, without filter groups) by cycle"""
+        views = (
+            PropertyView.objects.select_related("property", "state", "cycle")
+            .filter(
+                property__organization=self.organization,
+                property__access_level_instance__lft__gte=user_ali.lft,
+                property__access_level_instance__rgt__lte=user_ali.rgt,
+            )
+            .order_by("id")
+        )
+        views_by_group = {filter_group.id: filter_group.views(views) for filter_group in self.filter_groups.all()} or {0: views}
+        cycles = self.cycles.all()
+
         filter_group_views = {}
         views_by_filter_group_id = {}
-
-        if not self.filter_groups.exists():
-            # No filter groups: include all property views per cycle
-            views_by_filter_group_id[0] = {}
-            filter_group_views[0] = {}
-            for cycle in self.cycles.all():
-                views = PropertyView.objects.filter(
-                    cycle=cycle,
-                    property__organization=self.organization,
-                    property__access_level_instance__lft__gte=user_ali.lft,
-                    property__access_level_instance__rgt__lte=user_ali.rgt,
-                )
-                filter_group_views[0][cycle.id] = views
-                for view in views:
-                    view_name = self._format_property_display_field(view)
-                    views_by_filter_group_id[0][view.id] = view_name
-            return views_by_filter_group_id, filter_group_views
-
-        for filter_group in self.filter_groups.all():
-            views_by_filter_group_id[filter_group.id] = {}
-            filter_group_views[filter_group.id] = {}
-            query_dict = QueryDict(mutable=True)
-            query_dict.update(filter_group.query_dict)
-            for cycle in self.cycles.all():
-                filter_views = self._get_filter_group_views(cycle, query_dict, user_ali)
-                label_views = self._get_label_views(cycle, filter_group, user_ali)
-                views = self._combine_views(filter_views, label_views)
-                filter_group_views[filter_group.id][cycle.id] = views
-                for view in views:
-                    view_name = self._format_property_display_field(view)
-                    views_by_filter_group_id[filter_group.id][view.id] = view_name
+        for filter_group_id, group_views in views_by_group.items():
+            filter_group_views[filter_group_id] = {cycle.id: group_views.filter(cycle=cycle) for cycle in cycles}
+            views_by_filter_group_id[filter_group_id] = {
+                view.id: self._format_property_display_field(view)
+                for cycle_views in filter_group_views[filter_group_id].values()
+                for view in cycle_views
+            }
 
         return views_by_filter_group_id, filter_group_views
 
@@ -270,59 +254,6 @@ class DataView(models.Model):
         if values:
             type_to_aggregate = {Avg: sum(values) / len(values), Count: len(values), Max: max(values), Min: min(values), Sum: sum(values)}
             return round(type_to_aggregate[aggregation], 2)
-
-    def _combine_views(self, filter_views, label_views):
-        if label_views or label_views == []:
-            return list(set.intersection(*map(set, [label_views, filter_views])))
-        else:
-            return list(filter_views)
-
-    def _get_label_views(self, cycle, filter_group, user_ali):
-        if not (filter_group.and_labels.exists() or filter_group.or_labels.exists() or filter_group.exclude_labels.exists()):
-            return None
-
-        permissions_filter = {
-            "property__access_level_instance__lft__gte": user_ali.lft,
-            "property__access_level_instance__rgt__lte": user_ali.rgt,
-        }
-
-        and_labels = filter_group.and_labels.all()
-        or_labels = filter_group.or_labels.all()
-        exclude_labels = filter_group.exclude_labels.all()
-        views = None
-
-        if and_labels.exists():  # and
-            views = views or cycle.propertyview_set.filter(**permissions_filter)
-            for label in and_labels:
-                views = views.filter(labels=label)
-        if or_labels.exists():  # or
-            views = views or cycle.propertyview_set.filter(**permissions_filter)
-            views = views.filter(labels__in=or_labels)
-        if exclude_labels.exists():  # exclude
-            views = views or cycle.propertyview_set.filter(**permissions_filter)
-            views = views.exclude(labels__in=exclude_labels)
-        return list(views)
-
-    def _get_filter_group_views(self, cycle, query_dict, user_ali):
-        org_id = self.organization.id
-        columns = Column.retrieve_all(org_id=org_id, inventory_type="property", only_used=False, include_related=False)
-        annotations = {}
-        order_by = []
-        filters = Q()
-        try:
-            filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns, "property")
-        except Exception:
-            logger.error("error with filter group")
-
-        views_list = PropertyView.objects.select_related("property", "state", "cycle").filter(
-            property__organization_id=org_id,
-            cycle=cycle,
-            property__access_level_instance__lft__gte=user_ali.lft,
-            property__access_level_instance__rgt__lte=user_ali.rgt,
-        )
-
-        views_list = views_list.annotate(**annotations).filter(filters).order_by(*order_by)
-        return views_list
 
 
 class DataViewParameter(models.Model):
