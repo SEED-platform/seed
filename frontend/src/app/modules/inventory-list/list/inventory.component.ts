@@ -46,8 +46,9 @@ export function applyColumnProfile(profile: Profile, columnDefs: ColDef[]): ColD
 }
 
 /*
- * The saved filters the grid can show: those on filterable API columns and on access level columns, which are keyed
- * by level name (skipping the root). Returns a copy, since AG Grid keeps references to the model objects.
+ * The saved filters the grid can show: AG Grid filter models (rather than the legacy UI's filters, e.g., string values
+ * in its filter groups, which only the server applies) on filterable API columns and on access level columns, which are
+ * keyed by level name (skipping the root). Returns a copy, since AG Grid keeps references to the model objects.
  */
 export function savedFilterModel({
   filters,
@@ -59,7 +60,8 @@ export function savedFilterModel({
   accessLevelNames: string[];
 }): Record<string, unknown> {
   const colIds = new Set([...columnDefs.filter((c) => c.filter !== false).map((c) => c.field), ...accessLevelNames.slice(1)])
-  return structuredClone(Object.fromEntries(Object.entries(filters).filter(([colId]) => colIds.has(colId))))
+  const isFilterModel = (model: unknown) => typeof model === 'object' && model !== null && !Array.isArray(model)
+  return structuredClone(Object.fromEntries(Object.entries(filters).filter(([colId, model]) => colIds.has(colId) && isFilterModel(model))))
 }
 
 /*
@@ -185,7 +187,7 @@ export class InventoryComponent implements OnDestroy, OnInit {
         }),
         switchMap(() => this.loadInventory()),
         tap(() => {
-          this.setFilterSorts()
+          this.setPins()
           this.initStreams()
         }),
         takeUntil(this._unsubscribeAll$),
@@ -365,10 +367,12 @@ export class InventoryComponent implements OnDestroy, OnInit {
 
         return this._inventoryService.getAgInventory(params.toString(), this._inventoryFilterData()).pipe(
           tap(({ pagination, results, column_defs }: AgFilterResponse) => {
+            const fields = new Set(this.columnDefs.map(({ field }) => field))
             this.pagination = pagination
             this.inventory = results
             this.columnDefs = this.applyProfileColumns(column_defs)
             this.rowData = results
+            if (!fields.size || this.columnDefs.some(({ field }) => !fields.has(field))) this.setFilterSorts()
           }),
           map(() => null),
           catchError(() => of(null)),
@@ -390,7 +394,8 @@ export class InventoryComponent implements OnDestroy, OnInit {
   }
 
   /*
-   * on initial page load, set any filters and sorts from the user settings
+   * Shows the saved filters and sorts on a load's new columns (e.g., on the first load, or a new profile's), since the
+   * grid keeps only those on the columns it had
    */
   setFilterSorts() {
     // The grid gets this load's columns (and access level columns) on the next render, and setFilterModel ignores unknown columns
@@ -401,7 +406,6 @@ export class InventoryComponent implements OnDestroy, OnInit {
       { injector: this._injector },
     )
     this.setSorts()
-    this.setPins()
   }
 
   onGridReady(gridApi: GridApi) {
@@ -535,9 +539,11 @@ export class InventoryComponent implements OnDestroy, OnInit {
         ...this.userSettings,
         filters: { ...this.userSettings.filters, [this.type]: fg.query_dict as Record<string, Record<string, unknown>> },
       }
+      // The grid shows those it can, e.g., not the legacy UI's
+      this.gridApi?.setFilterModel(savedFilterModel({ filters: fg.query_dict, columnDefs: this.columnDefs, accessLevelNames: this.accessLevelNames }))
     } else {
-      // When deselecting a filter group, preserve whatever filters the grid currently has
-      const currentGridFilters = this.gridApi?.getFilterModel() ?? {}
+      // When deselecting a filter group, preserve whatever filters the grid currently has (and the saved ones it can't show)
+      const currentGridFilters = this._withHiddenFilters(this.gridApi?.getFilterModel() ?? {})
       this.userSettings = {
         ...this.userSettings,
         filters: { ...this.userSettings.filters, [this.type]: currentGridFilters as Record<string, Record<string, unknown>> },
@@ -561,6 +567,12 @@ export class InventoryComponent implements OnDestroy, OnInit {
     this.filterGroupSelector?.toggleLabel(id, operator)
   }
 
+  // The grid reports only the filters and sorts it can show, so this keeps the saved ones it can't
+  onGridFilterSortChange({ sorts, filters }: FiltersSorts) {
+    this.onFilterSortChange({ filters: this._withHiddenFilters(filters), sorts: this._withHiddenSorts(sorts) })
+  }
+
+  // Saves and loads exactly these filters and sorts, e.g., the saved ones without a removed chip's that the grid doesn't show
   onFilterSortChange({ sorts, filters }: FiltersSorts) {
     /*
      * The inventory has (or will have) these, e.g., when the grid shows the saved filters and sorts after the first load.
@@ -594,6 +606,24 @@ export class InventoryComponent implements OnDestroy, OnInit {
 
   private _invalidateSelectAllRequest(): void {
     this._selectAllRequestId++
+  }
+
+  // The grid's filters and the saved ones it can't show (e.g., on columns outside the profile), which only the server applies
+  private _withHiddenFilters(gridFilters: Record<string, unknown>): Record<string, unknown> {
+    const shown = savedFilterModel({ filters: this.filters, columnDefs: this.columnDefs, accessLevelNames: this.accessLevelNames })
+    const hidden = Object.entries(this.filters).filter(([colId]) => !Object.hasOwn(shown, colId))
+    return { ...Object.fromEntries(hidden), ...gridFilters }
+  }
+
+  /*
+   * Grid sorts that are all saved ones (e.g., when the grid shows the saved sorts, or after removing one) keep the saved
+   * order and the saved sorts on columns the grid doesn't have, while a new sort replaces them, as the column menu's does
+   */
+  private _withHiddenSorts(gridSorts: string[]): string[] {
+    if (!gridSorts.every((sort) => this.sorts.includes(sort))) return gridSorts
+
+    const fields = new Set(this.columnDefs.map(({ field }) => field))
+    return this.sorts.filter((sort) => gridSorts.includes(sort) || !fields.has(sort.replace(/^-/, '')))
   }
 
   // Request body shared by the paged grid load and the ids-only "select all" so both honor the same filters

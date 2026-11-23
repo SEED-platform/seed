@@ -13,7 +13,17 @@ from django.urls import reverse
 from django.utils.timezone import get_current_timezone
 
 from seed.landing.models import SEEDUser as User
-from seed.models import VIEW_LIST_PROPERTY, VIEW_LIST_TAXLOT, Column, DerivedColumn, FilterGroup, PropertyState, PropertyView, StatusLabel
+from seed.models import (
+    VIEW_LIST_PROPERTY,
+    VIEW_LIST_TAXLOT,
+    Column,
+    DerivedColumn,
+    FilterGroup,
+    PropertyState,
+    PropertyView,
+    StatusLabel,
+    TaxLotState,
+)
 from seed.serializers.columns import ColumnSerializer
 from seed.test_helpers.fake import (
     FakeCycleFactory,
@@ -635,6 +645,7 @@ class FilterGroupGridFilterTests(AccessLevelBaseTestCase):
         self.extra_eui = name("extra_eui")
         self.derived_eui = ColumnSerializer(derived_column.column).data["name"]
         self.jurisdiction_tax_lot_id = name("jurisdiction_tax_lot_id", "TaxLotState")
+        self.taxlot_address_line_1 = name("address_line_1", "TaxLotState")
 
     def filter_group(self, query_dict, inventory_type=VIEW_LIST_PROPERTY, **labels):
         filter_group = FilterGroup.objects.create(
@@ -743,6 +754,50 @@ class FilterGroupGridFilterTests(AccessLevelBaseTestCase):
         mixed = {f"{self.pm_property_id}__icontains": "1", self.gross_floor_area: number("lessThan", 1012)}
         self.assertEqual(sorted(self.group_ids(mixed)), self.ids([1, 10, 11]))
 
+    def test_legacy_related_filters(self):
+        # As in the legacy inventory list, a property matches legacy filters on tax lot columns if one of its tax lots
+        # matches them all (pm-0 and pm-1 share jt-1, pm-2 has jt-2a and jt-2b, and the others have none)
+        def update_taxlot(jurisdiction_tax_lot_id, **fields):
+            TaxLotState.objects.filter(organization=self.org, jurisdiction_tax_lot_id=jurisdiction_tax_lot_id).update(**fields)
+
+        def assert_group_matches(query_dict, indexes):
+            self.assertEqual(sorted(self.group_ids(query_dict)), self.ids(indexes))
+
+        update_taxlot("jt-1", address_line_1="1 Main St", extra_data={"extra_eui": 5})
+        update_taxlot("jt-2a", address_line_1="2 Main St", extra_data={"extra_eui": 50})
+        update_taxlot("jt-2b", address_line_1=None)
+        jtlid, address = self.jurisdiction_tax_lot_id, self.taxlot_address_line_1
+
+        assert_group_matches({f"{jtlid}__icontains": "jt-2"}, [2])
+        assert_group_matches({f"{self.pm_property_id}__icontains": "1", f"{address}__icontains": "main"}, [1])
+        assert_group_matches({f"{jtlid}__exact": "jt-2a", f"{address}__icontains": "2 main"}, [2])
+        assert_group_matches({f"{jtlid}__exact": "jt-2b", f"{address}__icontains": "main"}, [])
+        assert_group_matches({f"{jtlid}__icontains": "jt,2b"}, [2])
+        assert_group_matches({f"{jtlid}__icontains": "2a,2b"}, [])
+        assert_group_matches({f"{jtlid}__ne": "jt-1"}, [2])
+
+        # Blanks match properties without tax lots too, but the property's own blanks don't
+        assert_group_matches({f"{address}__exact": ""}, [2, *range(3, 20)])
+        assert_group_matches({f"{address}__ne": ""}, [0, 1, 2])
+        assert_group_matches({f"{self.address_line_1}__exact": "", f"{jtlid}__icontains": "jt"}, [0, 2])
+
+        # Tax lot extra data and derived columns, even named as the property's
+        extra_eui = Column.objects.create(
+            table_name="TaxLotState", column_name="extra_eui", organization=self.org, is_extra_data=True, data_type="number"
+        )
+        extra_eui = ColumnSerializer(extra_eui).data["name"]
+        derived_column = DerivedColumn.objects.create(
+            name="Lot EUI", expression="$a / 2", organization=self.org, inventory_type=DerivedColumn.TAXLOT_TYPE
+        )
+        update_taxlot("jt-2b", derived_data={derived_column.name: 7})
+        assert_group_matches({f"{extra_eui}__lt": "10"}, [0, 1])
+        assert_group_matches({f"{self.extra_eui}__icontains": "10", f"{extra_eui}__gt": "10"}, [2])
+        assert_group_matches({f"{ColumnSerializer(derived_column.column).data['name']}__gt": "1"}, [2])
+
+        # and with the grid's filters, whose conditions can each match a different tax lot
+        assert_group_matches({f"{jtlid}__icontains": "jt", self.pm_property_id: text("contains", "1")}, [1])
+        assert_group_matches({f"{jtlid}__exact": "jt-2b", address: text("contains", "main")}, [2])
+
     def test_labels(self):
         # 3 and 4 have both OR labels, but are returned once
         self.assertEqual(sorted(self.group_ids({}, or_labels=[self.label_a, self.label_b])), self.ids(range(8)))
@@ -800,3 +855,12 @@ class FilterGroupGridFilterTests(AccessLevelBaseTestCase):
         self.assertEqual(group_ids(jt_2, views), self.ids([2]))
         self.assertEqual(group_ids(not_jt_2, views), self.ids([0, 1]))
         self.assertEqual(group_ids(blank, views), [])
+
+        # Legacy filters on property columns match tax lots with a property that matches them all
+        self.assertEqual(group_ids({f"{self.pm_property_id}__exact": "pm-2"}), group_ids(jt_2))
+        not_pm_2 = {f"{self.pm_property_id}__ne": "pm-2", f"{self.address_line_1}__ne": ""}  # pm-1
+        self.assertEqual(group_ids(not_pm_2), [self.taxlot_views["jt-1"].id])
+        # jt-1's pm-0 has a blank address, and its pm-1 isn't pm-0
+        self.assertEqual(group_ids({f"{self.pm_property_id}__exact": "pm-0", f"{self.address_line_1}__ne": ""}), [])
+        # pm-0's tax lot is pm-1's too
+        self.assertEqual(group_ids({f"{self.gross_floor_area}__lt": "1001"}, views), self.ids([0, 1]))

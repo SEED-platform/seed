@@ -1,6 +1,6 @@
 import type { ColDef, GridApi } from 'ag-grid-community'
 import type { Column } from '@seed/api'
-import type { AgFilter, AgFilterModel, FilterSortChip, FilterType } from 'app/modules/inventory/inventory.types'
+import type { AgFilter, FilterSortChip, FilterType } from 'app/modules/inventory/inventory.types'
 
 type FilterArgs = { filter?: string | number; filterTo?: string | number }
 
@@ -18,6 +18,29 @@ const FILTER_DESCRIPTIONS: Record<FilterType, (args: FilterArgs) => string> = {
   lessThan: ({ filter }) => `< ${filter}`,
   lessThanOrEqual: ({ filter }) => `<= ${filter}`,
   inRange: ({ filter, filterTo }) => `is between ${filter} and ${filterTo}`,
+}
+
+// The lookups the legacy UI's filters use
+const LEGACY_FILTER_TYPES = new Map<string, FilterType>([
+  ['exact', 'equals'],
+  ['icontains', 'contains'],
+  ['gt', 'greaterThan'],
+  ['gte', 'greaterThanOrEqual'],
+  ['lt', 'lessThan'],
+  ['lte', 'lessThanOrEqual'],
+  ['ne', 'notEqual'],
+])
+
+/*
+ * A saved filter's column and ag-grid filter model. The legacy UI's filters (e.g., in its filter groups) are strings keyed
+ * by `{column}__{lookup}` (or just the column, for an exact match); those with other lookups are shown as is.
+ */
+const toColumnFilter = (key: string, model: unknown): [string, AgFilter] => {
+  if (typeof model !== 'string') return [key, model]
+
+  const [columnName, lookup = 'exact'] = key.split('__')
+  const type = LEGACY_FILTER_TYPES.get(lookup)
+  return type ? [columnName, { type, filter: model }] : [key, { type: 'equals', filter: model }]
 }
 
 /*
@@ -50,32 +73,33 @@ export const buildFilterDisplayName = (colDef: ColDef, filterModel: AgFilter): s
 }
 
 /*
- * Converts an ag-grid filter model (keyed by column id) into removable filter chips.
- * `columns` is an optional fallback for the names of filtered columns that aren't in `columnDefs` (e.g., access levels).
+ * Converts an ag-grid filter model (keyed by column id), which saved filters can mix with the legacy UI's, into removable
+ * filter chips. `columns` is an optional fallback for the names of filtered columns that aren't in `columnDefs` (e.g., access levels).
  */
 export const buildFilterChips = ({
   filterModel,
   columnDefs,
   columns = [],
 }: {
-  filterModel: AgFilterModel;
+  filterModel: Record<string, unknown>;
   columnDefs: ColDef[];
   columns?: Column[];
 }): FilterSortChip[] => {
-  return Object.keys(filterModel ?? {}).map((columnName) => {
+  return Object.entries(filterModel ?? {}).map(([key, model]) => {
+    const [columnName, filter] = toColumnFilter(key, model)
     const colDef = columnDefs.find(({ colId, field }) => field === columnName || colId === columnName)
     if (colDef) {
       return {
         field: colDef.field ?? columnName,
-        displayName: buildFilterDisplayName(colDef, filterModel[columnName]),
-        original: columnName,
+        displayName: buildFilterDisplayName(colDef, filter),
+        original: key,
       }
     }
     const column = columns.find((c) => c.name === columnName)
     return {
       field: columnName,
-      displayName: buildFilterDisplayName({ headerName: column?.display_name ?? columnName }, filterModel[columnName]),
-      original: columnName,
+      displayName: buildFilterDisplayName({ headerName: column?.display_name ?? columnName }, filter),
+      original: key,
     }
   })
 }

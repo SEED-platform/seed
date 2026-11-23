@@ -65,6 +65,19 @@ describe('filter-chips utils', () => {
       ])
     })
 
+    it("describes the legacy UI's filters by their keys' columns and lookups", () => {
+      const filterModel = { address_line_1__icontains: 'Main', gross_floor_area__gte: '100', missing_col: 'x', cycle_start__isnull: 'true' }
+      const columns = [{ name: 'missing_col', display_name: 'Missing Column' }] as Column[]
+
+      expect(buildFilterChips({ filterModel, columnDefs, columns })).toEqual([
+        { field: 'address_line_1', displayName: 'Address Line 1 contains Main', original: 'address_line_1__icontains' },
+        { field: 'gross_floor_area', displayName: 'Gross Floor Area >= 100', original: 'gross_floor_area__gte' },
+        { field: 'missing_col', displayName: 'Missing Column = x', original: 'missing_col' },
+        // A lookup the legacy UI doesn't use, as is
+        { field: 'cycle_start__isnull', displayName: 'cycle_start__isnull = true', original: 'cycle_start__isnull' },
+      ])
+    })
+
     it('returns no chips for an empty filter model', () => {
       expect(buildFilterChips({ filterModel: {}, columnDefs })).toEqual([])
     })

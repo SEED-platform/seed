@@ -1131,6 +1131,28 @@ class RelatedTests(AccessLevelBaseTestCase):
         different_records = {self.jtlid_name: self.get_filter("equals", "jt-2b"), address_name: self.get_filter("contains", "main")}
         self.assertEqual(self.get_property_results(different_records), ["pm-2"])
 
+    def test_legacy_related_filters(self):
+        # e.g., a legacy filter group's: pm-3 has no tax lots, and jt-3 no properties
+        def taxlots(filters):
+            return sorted(r[self.jtlid_name] for r in self.get_results("taxlot", filters))
+
+        self.assertEqual(self.get_property_results({f"{self.jtlid_name}__icontains": "jt-2"}), ["pm-2"])
+        self.assertEqual(self.get_property_results({f"{self.jtlid_name}__exact": ""}), ["pm-3"])
+        self.assertEqual(taxlots({f"{self.pmpid_name}__ne": "pm-1a", f"{self.seui_name}__lt": "20"}), ["jt-1"])
+        # One property must match them all (jt-1's pm-1a has a site EUI of 10, and its pm-1b is 11)
+        self.assertEqual(taxlots({f"{self.pmpid_name}__exact": "pm-1a", f"{self.seui_name}__gt": "10"}), [])
+        self.assertEqual(taxlots({f"{self.pmpid_name}__exact": ""}), ["jt-3"])
+        self.assertEqual(
+            taxlots({f"{self.seui_name}__gt": "10", self.jtlid_name: self.get_filter("contains", "jt")}), ["jt-1", "jt-2a", "jt-2b"]
+        )
+
+        # Values that a related column's field can't compare are invalid, as for a record's own (e.g., after a data type change)
+        Column.objects.filter(organization=self.org, table_name="PropertyState", column_name="site_eui").update(data_type="string")
+        query_string = {"cycle": self.cycle.id, "inventory_type": "taxlot", "organization_id": self.org.id}
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(query_string)
+        response = self.client.post(url, data={"filters": {f"{self.seui_name}__gt": "abc"}}, content_type="application/json")
+        self.assertEqual(response.status_code, 400)
+
     def test_related_extra_data_quantities_compare_as_shown(self):
         # Unlike its own quantities, a record's related extra data shows as stored, not in the display units
         self.org.display_units_area = "m**2"

@@ -162,7 +162,8 @@ class InventoryFilter:
         """
         A Q object and the annotations it needs for filters that can mix the grid's AG Grid filter models (dict values
         keyed by `{column_name}_{id}` or access level name) and legacy filters (`{column_name}_{id}__{lookup}` keys,
-        e.g., in filter groups the legacy UI saved). Raises FilterError for invalid filters.
+        e.g., in filter groups the legacy UI saved), on this or the related inventory type's columns. Raises FilterError
+        for invalid filters.
         """
         if not filters:
             return Q(), {}
@@ -172,8 +173,36 @@ class InventoryFilter:
         legacy_filters = QueryDict(mutable=True)
         legacy_filters.update({k: v for k, v in filters.items() if not isinstance(v, dict)})
         q, annotations, _ = build_view_filters_and_sorts(legacy_filters, columns, inventory_type, access_level_names, include_sorts=False)
+        q &= cls.legacy_related_q(legacy_filters, columns, inventory_type)
         filter_models = {k: v for k, v in filters.items() if isinstance(v, dict)}
         return q & cls.filter_model_to_q(filter_models, columns, inventory_type, access_level_names, organization), annotations
+
+    @staticmethod
+    def legacy_related_q(legacy_filters, columns, inventory_type):
+        """
+        A Q object for legacy filters on related columns, which `build_view_filters_and_sorts` ignores. As in the v3 API,
+        they match views with a related record that matches them all, and, if one is for blanks (`__exact` ""), views
+        without related records
+        """
+        other_type = "property" if inventory_type == "taxlot" else "taxlot"
+        # The other inventory type's columns, to which this type's are related
+        other_columns = [{**c, "related": not c["related"]} for c in columns]
+        q, annotations, _ = build_view_filters_and_sorts(legacy_filters, other_columns, other_type, include_sorts=False)
+        if not q:
+            return Q()
+
+        # Annotate the related views only, as their aliases can be this type's too (e.g., for extra data of the same name)
+        other_views = PropertyView.objects if other_type == "property" else TaxLotView.objects
+        try:
+            related = other_views.annotate(**annotations).filter(q, **{f"taxlotproperty__{inventory_type}_view": OuterRef("pk")})
+        except (ValueError, ValidationError) as e:
+            raise FilterError(f"Error filtering - your data might not match the column settings data type: {e!s}") from e
+        matches = Q(Exists(related))
+
+        related_names = {c["name"] for c in columns if c["related"]}
+        if any(k.endswith("__exact") and v == "" and k.split("__")[0] in related_names for k, v in legacy_filters.items()):
+            matches |= ~Q(Exists(TaxLotProperty.objects.filter(**{f"{inventory_type}_view": OuterRef("pk")})))
+        return matches
 
     def get_filtered_results(self):
         """Main method to get the filtered results"""

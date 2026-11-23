@@ -3,7 +3,6 @@ import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output
 import { FormsModule } from '@angular/forms'
 import { MatDialog } from '@angular/material/dialog'
 import { TranslocoDirective } from '@jsverse/transloco'
-import type { GridApi } from 'ag-grid-community'
 import { filter, Subject, take, takeUntil, tap } from 'rxjs'
 import type { CurrentUser, FilterGroup, FilterGroupInventoryType, Label } from '@seed/api'
 import { FilterGroupService } from '@seed/api'
@@ -34,7 +33,8 @@ export class FilterGroupSelectorComponent implements OnDestroy, OnInit {
   private _unsubscribeAll$ = new Subject<void>()
 
   @Input() currentUser: CurrentUser
-  @Input() gridApi: GridApi
+  // The page's filters, including those the grid can't show (e.g., the legacy UI's, or on columns outside the profile)
+  @Input() filters: Record<string, unknown>
   @Input() inventoryType: FilterGroupInventoryType = 'Property'
   @Input() labels: Label[] = []
   @Input() orgId: number
@@ -103,11 +103,10 @@ export class FilterGroupSelectorComponent implements OnDestroy, OnInit {
       .pipe(
         filter((name): name is string => !!name),
         tap((name) => {
-          const filters = this.gridApi?.getFilterModel() ?? {}
           const payload = {
             name,
             inventory_type: this.inventoryType,
-            query_dict: filters,
+            query_dict: this.filters ?? {},
             and_labels: this.andLabels,
             or_labels: this.orLabels,
             exclude_labels: this.excludeLabels,
@@ -134,11 +133,10 @@ export class FilterGroupSelectorComponent implements OnDestroy, OnInit {
     const selectedFilterGroup = this.selectedFilterGroup
     if (!selectedFilterGroup) return
 
-    const filters = this.gridApi?.getFilterModel() ?? {}
     const payload = {
       name: selectedFilterGroup.name,
       inventory_type: this.inventoryType,
-      query_dict: filters,
+      query_dict: this.filters ?? {},
       and_labels: this.andLabels,
       or_labels: this.orLabels,
       exclude_labels: this.excludeLabels,
@@ -258,16 +256,12 @@ export class FilterGroupSelectorComponent implements OnDestroy, OnInit {
   // --- Private ---
 
   private _applyFilterGroup(fg: FilterGroup): void {
-    // Apply column filters
-    if (this.gridApi && fg.query_dict) {
-      this.gridApi.setFilterModel(fg.query_dict)
-    }
-
     // Apply label selections
     this.andLabels = [...(fg.and_labels ?? [])]
     this.orLabels = [...(fg.or_labels ?? [])]
     this.excludeLabels = [...(fg.exclude_labels ?? [])]
 
+    // The page applies the column filters, which the grid may not all show (e.g., the legacy UI's)
     this.filterGroupApplied.emit(fg)
     this._emitLabelSelections()
   }
