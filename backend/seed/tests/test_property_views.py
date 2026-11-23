@@ -10,6 +10,7 @@ import pathlib
 import time
 import unittest
 from datetime import UTC, datetime
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 from django.conf import settings
@@ -427,6 +428,33 @@ class PropertyViewTests(DataMappingBaseTestCase):
 
         self.assertTrue("merged_indicator" in related)
         self.assertFalse(related["merged_indicator"])
+
+    def test_filter_endpoint_filters_and_sorts_by_derived_columns(self):
+        # -- Setup
+        derived_column = self.derived_col_factory.get_derived_column(expression="$a / 2", name="Derived EUI #1")
+        column = Column.objects.get(derived_column=derived_column)
+        column_key = f"{column.column_name}_{column.id}"
+        view_ids_by_value = {
+            value: self.property_view_factory.get_property_view(cycle=self.cycle, derived_data={derived_column.name: value}).id
+            for value in (5.0, 12.5, 40.0, None)
+        }
+
+        # -- Act
+        query = urlencode(
+            {
+                "cycle": self.cycle.pk,
+                "organization_id": self.org.pk,
+                "per_page": 10,
+                f"{column_key}__gt": 6,
+                "order_by": f"-{column_key}",
+            }
+        )
+        response = self.client.post(f"{reverse('api:v3:properties-filter')}?{query}", content_type="application/json")
+
+        # -- Assert
+        self.assertEqual(response.status_code, 200)
+        view_ids = [result["property_view_id"] for result in response.json()["results"]]
+        self.assertEqual(view_ids, [view_ids_by_value[40.0], view_ids_by_value[12.5]])
 
     def test_list_properties_with_profile_id(self):
         state = self.property_state_factory.get_property_state(extra_data={"field_1": "value_1"})
@@ -1196,6 +1224,23 @@ class PropertyViewTestsPermissions(AccessLevelBaseTestCase):
         resp = self.client.get(url, content_type="application/json")
         assert resp.status_code == 200
         assert resp.json()["pagination"]["total"] == 0
+
+    def test_property_list_invalid_cycle(self):
+        other_org, _, _ = create_organization(self.superuser, "other org")
+        other_cycle = FakeCycleFactory(organization=other_org, user=self.superuser).get_cycle()
+        self.login_as_root_member()
+
+        for method, url_name in [("get", "api:v3:properties-list"), ("post", "api:v3:properties-filter")]:
+            url = reverse(url_name) + f"?organization_id={self.org.pk}&per_page=1"
+            resp = getattr(self.client, method)(f"{url}&cycle={self.cycle.pk}", content_type="application/json")
+            assert resp.status_code == 200
+            assert resp.json()["pagination"]["total"] == 1
+
+            # another organization's cycle, or a malformed id
+            for cycle_id in [other_cycle.pk, "abc"]:
+                resp = getattr(self.client, method)(f"{url}&cycle={cycle_id}", content_type="application/json")
+                assert resp.status_code == 404
+                assert resp.json() == {"status": "error", "message": "No such cycle."}
 
     def test_property_filter_by_cycle(self):
         url = reverse("api:v3:properties-filter-by-cycle") + f"?organization_id={self.org.pk}"

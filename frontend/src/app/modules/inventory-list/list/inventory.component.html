@@ -51,7 +51,7 @@
       @if (gridApi) {
         <seed-filter-group-selector
           [currentUser]="currentUser"
-          [gridApi]="gridApi"
+          [filters]="userSettings?.filters?.[type]"
           [inventoryType]="filterGroupInventoryType"
           [labels]="labels"
           [orgId]="orgId"
@@ -77,7 +77,7 @@
       [type]="type"
       [userSettings]="userSettings"
       (pageChange)="onPageChange($event)"
-      (filterSortChange)="onFilterSortChange($event)"
+      (filterSortChange)="onGridFilterSortChange($event)"
       (gridReady)="onGridReady($event)"
       (selectionChanged)="onSelectionChanged()"
       (selectAllMatching)="selectAllMatching()"
@@ -93,6 +93,7 @@
           [type]="type"
           [userSettings]="userSettings"
           (labelRemoved)="onLabelChipRemoved($event)"
+          (savedFilterSortRemoved)="onFilterSortChange($event)"
         ></seed-inventory-filter-sort-chips>
       }
     </seed-inventory-grid>

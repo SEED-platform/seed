@@ -10,7 +10,7 @@ import re
 from dataclasses import dataclass
 from enum import Enum
 from functools import reduce
-from typing import Any
+from typing import Any, Literal
 
 from django.contrib.postgres.aggregates import BoolAnd
 from django.db import models
@@ -23,6 +23,7 @@ from seed.models.columns import Column
 
 SUFFIXES = ["__lt", "__gt", "__lte", "__gte", "__isnull"]
 DATE_FIELDS = ["year_ending"]
+PATTERN_LOOKUPS = frozenset({"icontains", "istartswith", "iendswith", "contains", "startswith", "endswith"})
 
 
 def strip_suffix(k, suffix):
@@ -272,7 +273,12 @@ def _strip_commas(expression):
     return _blank_to_null(Replace(expression, models.Value(","), models.Value("")))
 
 
-def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str, AnnotationDict]:
+def _build_extra_data_annotations(
+    column_name: str,
+    data_type: str,
+    json_field: Literal["extra_data", "derived_data"] = "extra_data",
+    alias: str | None = None,
+) -> tuple[str, AnnotationDict]:
     """Creates a dictionary of annotations which will cast the extra data column_name
     into the provided data_type, for usage like: `*View.annotate(**annotations)`
 
@@ -281,28 +287,32 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     behave as expected. Thus, we cast extra data to the defined column data_type
     at query time to make sure our filters and sorts will work.
 
-    :param column_name: the Column.column_name for a Column which is extra_data
+    :param column_name: the Column.column_name for a Column which is extra_data (or derived)
     :param data_type: the Column.data_type for the column
+    :param json_field: the state's JSON field with the value
+    :param alias: the base of the annotation names, `_{alias}_to_text` (the JSON text) and
+                  `_{alias}_final`, defaulting to the cleaned column_name
     :returns: the annotated field name which contains the casted result, along with
               a dict of annotations
     """
-    # annotations require a few characters to be removed...
-    cleaned_column_name = (
-        column_name.replace(" ", "_")
-        .replace("'", "-")
-        .replace('"', "-")
-        .replace("`", "-")
-        .replace(";", "-")
-        .replace("[", "_")
-        .replace("]", "_")
-        .replace("%", "_")
-    )
-    text_field_name = f"_{cleaned_column_name}_to_text"
-    final_field_name = f"_{cleaned_column_name}_final"
+    if alias is None:
+        # annotations require a few characters to be removed...
+        alias = (
+            column_name.replace(" ", "_")
+            .replace("'", "-")
+            .replace('"', "-")
+            .replace("`", "-")
+            .replace(";", "-")
+            .replace("[", "_")
+            .replace("]", "_")
+            .replace("%", "_")
+        )
+    text_field_name = f"_{alias}_to_text"
+    final_field_name = f"_{alias}_final"
 
     annotations: AnnotationDict = {
         # use postgresql json string operator `->>`
-        text_field_name: KeyTextTransform(column_name, "state__extra_data"),
+        text_field_name: KeyTextTransform(column_name, f"state__{json_field}"),
     }
     if data_type == "integer":
         annotations.update(
@@ -337,14 +347,16 @@ def _build_extra_data_annotations(column_name: str, data_type: str) -> tuple[str
     return final_field_name, annotations
 
 
-def _build_related_extra_data_expression(column_name: str, data_type: str, state_prefix: str):
+def _build_related_extra_data_expression(
+    column_name: str, data_type: str, state_prefix: str, json_field: Literal["extra_data", "derived_data"] = "extra_data"
+):
     """
-    Build a casted expression for a related column's extra_data field.
+    Build a casted expression for a related column's extra_data (or derived_data) field.
 
     This mirrors the conversions in `_build_extra_data_annotations`, but allows
     specifying which state relationship to traverse (property vs taxlot).
     """
-    json_path = f"{state_prefix}__extra_data"
+    json_path = f"{state_prefix}__{json_field}"
     expression = KeyTextTransform(column_name, json_path)
 
     if data_type == "integer":
@@ -402,7 +414,15 @@ def _parse_view_filter(
 
     column_name = column["column_name"]
     annotations: AnnotationDict = {}
-    if column["is_extra_data"]:
+    if column["derived_column"]:
+        # Alias by id, as column names can have characters that aliases can't (e.g., '#')
+        alias = f"derived_{column['id']}"
+        new_field_name, annotations = _build_extra_data_annotations(column_name, column["data_type"], "derived_data", alias)
+        if filter.operator and filter.operator.value in PATTERN_LOOKUPS:
+            # Match the JSON text, so "contains 12" matches 12.0 (whose float text is "12")
+            return QueryFilter(f"_{alias}_to_text", filter.operator, filter.is_negated).to_q(filter_value), annotations
+        updated_filter = QueryFilter(new_field_name, filter.operator, filter.is_negated)
+    elif column["is_extra_data"]:
         new_field_name, annotations = _build_extra_data_annotations(column["column_name"], column["data_type"])
         updated_filter = QueryFilter(new_field_name, filter.operator, filter.is_negated)
     else:
@@ -448,6 +468,11 @@ def _parse_view_sort(
         column_name = column["column_name"]
         if column["related"]:
             return None, {}
+        elif column["derived_column"]:
+            new_field_name, annotations = _build_extra_data_annotations(
+                column_name, column["data_type"], "derived_data", f"derived_{column['id']}"
+            )
+            return f"{direction}{new_field_name}", annotations
         elif column["is_extra_data"]:
             new_field_name, annotations = _build_extra_data_annotations(column_name, column["data_type"])
             if column["data_type"] in {"None", "string"}:
@@ -466,8 +491,9 @@ def _parse_view_sort(
         state_prefix = f"{related_prefix}state"
         annotation_name = _clean_annotation_alias(f"related_{column['name']}_sort")
 
-        if column["is_extra_data"]:
-            expression = _build_related_extra_data_expression(column["column_name"], column["data_type"], state_prefix)
+        if column["is_extra_data"] or column["derived_column"]:
+            json_field = "derived_data" if column["derived_column"] else "extra_data"
+            expression = _build_related_extra_data_expression(column["column_name"], column["data_type"], state_prefix, json_field)
         else:
             expression = models.F(f"{state_prefix}__{column['column_name']}")
 
@@ -520,7 +546,7 @@ def build_view_filters_and_sorts(
 
     This function basically does the following:
     - Ignore any filter/sort that doesn't have a corresponding column
-    - Handle cases for extra data
+    - Handle cases for extra data and derived data
     - Convert filtering values into their proper types (e.g., str -> int)
 
     :param filters: QueryDict from a request
@@ -532,10 +558,12 @@ def build_view_filters_and_sorts(
     columns_by_name = {}
     related_columns_by_name = {}
     for column in columns:
+        # Derived values are numbers (or null) whatever the data_type. Copy, as callers reuse the columns
+        indexed_column = {**column, "data_type": "number"} if column["derived_column"] else column
         if column["related"]:
-            related_columns_by_name[column["name"]] = column
+            related_columns_by_name[column["name"]] = indexed_column
         else:
-            columns_by_name[column["name"]] = column
+            columns_by_name[column["name"]] = indexed_column
 
     new_filters = Q()
     annotations = {}
@@ -562,6 +590,9 @@ def build_view_filters_and_sorts(
                 elif filter_expression.endswith("__exact"):
                     is_null_filter_expression = filter_expression.replace("__exact", "__isnull")
                     is_null_filter_value = True
+
+                else:
+                    continue
 
                 parsed_filters, parsed_annotations = _parse_view_filter(
                     is_null_filter_expression, is_null_filter_value, columns_by_name, inventory_type, access_level_names

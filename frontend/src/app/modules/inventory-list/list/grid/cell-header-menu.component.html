@@ -29,15 +29,18 @@
     (keydown)="onMenuKeyDown($event)"
     role="menu"
   >
-    <button class="menu-option text-left" (click)="sortCol('asc')" role="menuitem" type="button">
-      <mat-icon class="scale-50" svgIcon="fa-solid:arrow-up"></mat-icon>
-      <span>Sort Ascending</span>
-    </button>
+    <!-- Related (other inventory type) columns aren't sortable -->
+    @if (column.isSortable()) {
+      <button class="menu-option text-left" (click)="sortCol('asc')" role="menuitem" type="button">
+        <mat-icon class="scale-50" svgIcon="fa-solid:arrow-up"></mat-icon>
+        <span>Sort Ascending</span>
+      </button>
 
-    <button class="menu-option text-left" (click)="sortCol('desc')" role="menuitem" type="button">
-      <mat-icon class="scale-50" svgIcon="fa-solid:arrow-down"></mat-icon>
-      <span>Sort Descending</span>
-    </button>
+      <button class="menu-option text-left" (click)="sortCol('desc')" role="menuitem" type="button">
+        <mat-icon class="scale-50" svgIcon="fa-solid:arrow-down"></mat-icon>
+        <span>Sort Descending</span>
+      </button>
+    }
 
     @if (sortIcon) {
       <button class="menu-option text-left" (click)="sortCol(null)" role="menuitem" type="button">
@@ -46,7 +49,9 @@
       </button>
     }
 
-    <mat-divider></mat-divider>
+    @if (column.isSortable() || sortIcon) {
+      <mat-divider></mat-divider>
+    }
 
     <button class="menu-option text-left" (click)="pinCol('left')" role="menuitem" type="button">
       <mat-icon class="scale-50" [svgIcon]="'fa-solid:thumbtack'"></mat-icon>

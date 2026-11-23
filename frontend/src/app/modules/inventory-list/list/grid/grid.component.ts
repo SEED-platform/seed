@@ -38,6 +38,35 @@ export const LABEL_COLOR_MAP: Record<string, string> = {
   white: '#e5e7eb',
 }
 
+type ServerFilterType = 'text' | 'number' | 'date' | 'boolean'
+
+type ServerFilterColDef = Pick<ColDef, 'cellDataType' | 'filter' | 'filterParams'>
+
+/*
+ * Columns have the server's types, rather than ones AG Grid infers from the first row, which would format other values
+ * as that type (e.g., "Invalid Number" for "12", or times in date-only floating filters) and, until the grid has rows,
+ * defer restoring filters. Number and date columns show the values the server compares, and booleans show as
+ * checkboxes with true/false filter options.
+ */
+const SERVER_FILTERS: Record<ServerFilterType, ServerFilterColDef> = {
+  text: { cellDataType: 'text', filter: 'agTextColumnFilter' },
+  number: { cellDataType: false, filter: 'agNumberColumnFilter' },
+  // The server compares dates by day, and date-time columns would otherwise get a time picker
+  date: { cellDataType: false, filter: 'agDateColumnFilter', filterParams: { includeTime: false } },
+  boolean: { cellDataType: 'boolean', filter: 'agTextColumnFilter' },
+}
+
+/*
+ * The column filter for a server filter type, falling back to text. The grid's filters only build the model sent
+ * to the server, which filters each page, so the grid shows every row it receives (see `alwaysPassFilter`).
+ */
+export const serverFilterColDef = (filterType?: string): ServerFilterColDef => {
+  const type = Object.hasOwn(SERVER_FILTERS, filterType ?? '') ? (filterType as ServerFilterType) : 'text'
+  return structuredClone(SERVER_FILTERS[type])
+}
+
+type ApiColumnContext = { filterType?: string }
+
 @Component({
   selector: 'seed-inventory-grid',
   templateUrl: './grid.component.html',
@@ -86,16 +115,15 @@ export class InventoryGridComponent implements OnChanges {
 
   theme: string
 
-  defaultColDef = {
+  // Columns opt in to filtering with serverFilterColDef
+  defaultColDef: ColDef = {
     sortable: true,
-    filter: true,
     floatingFilter: true,
     resizable: true,
-    filterParams: {
-      suppressAndOrCondition: true,
-    },
   }
   gridOptions: GridOptions = {
+    // The server filters each page, so show every row it returns
+    alwaysPassFilter: () => true,
     rowSelection: {
       mode: 'multiRow',
       checkboxes: true,
@@ -195,7 +223,7 @@ export class InventoryGridComponent implements OnChanges {
       // Pinned left so user-pinned columns appear to the right of ALI columns
       pinned: 'left' as const,
       hide: !this.showAccessLevelInstances,
-      filter: true,
+      ...serverFilterColDef('text'),
       sortable: false,
       resizable: true,
       minWidth: 100,
@@ -229,16 +257,21 @@ export class InventoryGridComponent implements OnChanges {
       this.buildShortcutColumn('groups_indicator', 'Groups', SHORTCUT_COLUMN_WIDTH, 'workspaces'),
       this.buildLabelsCell(),
     ]
-    // Pin shortcuts so user-pinned columns land after them in the pinned area
-    return shortcutColumns.map((c) => ({ ...c, pinned: 'left' as const }))
+    // Pin shortcuts so user-pinned columns land after them in the pinned area. Their renderers show their values, which
+    // need no type (AG Grid would otherwise infer one, deferring restored filters until the grid has rows)
+    return shortcutColumns.map((c) => ({ ...c, cellDataType: false, pinned: 'left' as const }))
   }
 
   addHeaderMenu() {
     const stateColumns = this._apiColumnDefs.map((c) => ({
       ...c,
+      // The API sends `filter: false` for columns it can't filter (e.g., geometry)
+      ...(c.filter === false ? { cellDataType: 'text' } : serverFilterColDef((c.context as ApiColumnContext | undefined)?.filterType)),
       headerComponent: CellHeaderMenuComponent,
       headerComponentParams: {
         currentUser: this.currentUser,
+        // The page's settings which each save replaces
+        getUserSettings: () => this.userSettings,
         type: this.type,
       },
     }))

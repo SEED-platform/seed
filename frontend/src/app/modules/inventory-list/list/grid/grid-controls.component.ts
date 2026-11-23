@@ -1,4 +1,4 @@
-import type { OnChanges, OnInit, SimpleChanges } from '@angular/core'
+import type { OnInit } from '@angular/core'
 import { ChangeDetectionStrategy, Component, EventEmitter, inject, Input, Output } from '@angular/core'
 import { TranslocoDirective } from '@jsverse/transloco'
 import type { GridApi } from 'ag-grid-community'
@@ -17,18 +17,19 @@ type PageDirection = 'first' | 'previous' | 'next' | 'last'
   changeDetection: ChangeDetectionStrategy.Eager,
   imports: [MaterialImports, TranslocoDirective],
 })
-export class InventoryGridControlsComponent implements OnChanges, OnInit {
+export class InventoryGridControlsComponent implements OnInit {
   @Input() currentUser!: CurrentUser
   @Input() gridApi: GridApi
   @Input() pagination!: Pagination
   @Input() pageRowCount = 0
   @Input() selectedViewIds: number[]
+  // The page's settings which each save replaces
+  @Input() userSettings: OrganizationUserSettings
   @Output() pageChange = new EventEmitter<number>()
   @Output() selectAllMatching = new EventEmitter<void>()
   private _configService = inject(ConfigService)
   private _organizationService = inject(OrganizationService)
   scheme: 'dark' | 'light'
-  userSettings: OrganizationUserSettings
 
   get hasMorePages(): boolean {
     return !!this.pagination && this.pagination.total > this.pageRowCount
@@ -47,12 +48,6 @@ export class InventoryGridControlsComponent implements OnChanges, OnInit {
     this._configService.scheme$.subscribe((scheme) => {
       this.scheme = scheme
     })
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes.currentUser?.currentValue) {
-      this.userSettings = this.currentUser.settings
-    }
   }
 
   isPageButtonDisabled(direction: PageDirection): boolean {
@@ -84,21 +79,15 @@ export class InventoryGridControlsComponent implements OnChanges, OnInit {
 
   resetFilters() {
     this.gridApi.setFilterModel(null)
-    this.userSettings.filters = this.currentUser.settings.filters ?? {}
-    this.userSettings.filters.properties = {}
-    this.userSettings.filters.taxlots = {}
+    this.userSettings.filters = { ...this.userSettings.filters, properties: {}, taxlots: {} }
   }
 
   resetSorts() {
-    this.userSettings.sorts = this.currentUser.settings?.sorts ?? {}
-    this.userSettings.sorts.properties = []
-    this.userSettings.sorts.taxlots = []
+    this.userSettings.sorts = { ...this.userSettings.sorts, properties: [], taxlots: [] }
   }
 
   resetPins() {
-    this.userSettings.pins = this.currentUser.settings?.pins ?? {}
-    this.userSettings.pins.properties = { left: [], right: [] }
-    this.userSettings.pins.taxlots = { left: [], right: [] }
+    this.userSettings.pins = { ...this.userSettings.pins, properties: { left: [], right: [] }, taxlots: { left: [], right: [] } }
   }
 
   updateOrgUser() {
@@ -109,7 +98,8 @@ export class InventoryGridControlsComponent implements OnChanges, OnInit {
         take(1),
         tap(() => {
           this.gridApi.resetColumnState()
-          this.gridApi.applyColumnState({ defaultState: { pinned: null } })
+          // Including sorts and pins restored on column defs, which resetColumnState keeps
+          this.gridApi.applyColumnState({ defaultState: { pinned: null, sort: null } })
           this.gridApi.refreshClientSideRowModel()
           this.gridApi.refreshCells({ force: true })
           this.gridApi.onSortChanged()

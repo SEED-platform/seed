@@ -6,7 +6,7 @@ import type { ColDef, GridApi } from 'ag-grid-community'
 import type { Column, Label, OrganizationUserSettings } from '@seed/api'
 import { buildFilterChips, FilterChipsComponent, removeGridFilter } from '@seed/components/filter-chips'
 import { MaterialImports } from '@seed/materials'
-import type { FilterSortChip, InventoryType } from '../../../inventory/inventory.types'
+import type { FilterSortChip, FiltersSorts, InventoryType } from '../../../inventory/inventory.types'
 import type { LabelOperator, LabelSelections } from './filter-group/filter-group-selector.component'
 
 export type LabelChip = {
@@ -33,6 +33,8 @@ export class FilterSortChipsComponent implements OnChanges {
   @Input() labels: Label[] = []
   @Input() labelSelections: LabelSelections
   @Output() labelRemoved = new EventEmitter<LabelChip>()
+  // The saved filters and sorts without one the grid doesn't have (e.g., on a column outside the profile)
+  @Output() savedFilterSortRemoved = new EventEmitter<FiltersSorts>()
   filterChips: FilterSortChip[] = []
   labelChips: LabelChip[] = []
   sortChips: FilterSortChip[] = []
@@ -102,7 +104,12 @@ export class FilterSortChipsComponent implements OnChanges {
   }
 
   removeFilter(columnName: string): void {
-    removeGridFilter(this.gridApi, columnName)
+    if (Object.hasOwn(this.gridApi.getFilterModel(), columnName)) {
+      removeGridFilter(this.gridApi, columnName)
+    } else {
+      const filters = Object.fromEntries(Object.entries(this.filters).filter(([name]) => name !== columnName))
+      this.savedFilterSortRemoved.emit({ filters, sorts: this.sorts })
+    }
   }
 
   removeLabel(chip: LabelChip): void {
@@ -111,6 +118,11 @@ export class FilterSortChipsComponent implements OnChanges {
 
   removeSort(sortToRemove: string): void {
     const currentState = this.gridApi.getColumnState()
+    if (!currentState.some(({ colId, sort }) => colId === sortToRemove && sort)) {
+      const sorts = this.sorts.filter((sort) => sort.replace(/^-/, '') !== sortToRemove)
+      this.savedFilterSortRemoved.emit({ filters: this.filters, sorts })
+      return
+    }
     const updatedState = currentState.map((col) => {
       return col.colId === sortToRemove ? { ...col, sort: null } : col
     })

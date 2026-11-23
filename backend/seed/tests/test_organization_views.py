@@ -473,6 +473,54 @@ class TestOrganizationViewsWithFilters(AccessLevelBaseTestCase):
         resp = self.client.get(url, content_type="application/json")
         assert resp.json()["data"]["property_counts"][0]["num_properties"] == 1
 
+    def get_report(self, url_name, filter_group):
+        url = reverse(f"api:v3:organizations-{url_name}", args=[self.org.pk])
+        url += f"?x_var=building_count&y_var=gross_floor_area&x_label=x&y_label=y&cycle_ids={self.cycle1.id}"
+        return self.client.get(url + f"&filter_group_id={filter_group.id}&access_level_instance_id={self.org.root.id}")
+
+    def report_counts(self, query_dict, **labels):
+        """The number of properties in the report, aggregated report, and report export with a filter group"""
+        filter_group = FilterGroup.objects.create(
+            name=f"group {FilterGroup.objects.count()}", organization_id=self.org.id, inventory_type=0, query_dict=query_dict
+        )
+        for field, label_list in labels.items():
+            getattr(filter_group, field).set(label_list)
+
+        report = self.get_report("report", filter_group).json()["data"]
+        aggregated_report = self.get_report("report-aggregated", filter_group).json()["aggregated_data"]
+        export = open_workbook(file_contents=self.get_report("report-export", filter_group).content)
+        return (
+            report["property_counts"][0]["num_properties"],
+            aggregated_report["property_counts"][0]["num_properties"],
+            export.sheet_by_index(0).cell(1, 2).value,
+        )
+
+    def test_filtered_reports_with_grid_filters(self):
+        site_eui = f"site_eui_{self.site_eui.id}"
+        property_type = f"property_type_{Column.objects.get(table_name='PropertyState', column_name='property_type').id}"
+        site_eui_over_1 = {site_eui: {"filterType": "number", "type": "greaterThan", "filter": 1}}
+
+        assert self.report_counts(site_eui_over_1) == (1, 1, 1)
+        assert self.report_counts({property_type: {"filterType": "text", "type": "equals", "filter": "office"}}) == (2, 2, 2)
+        # with filters saved by the legacy UI
+        assert self.report_counts({f"{property_type}__exact": "office", **site_eui_over_1}) == (1, 1, 1)
+
+    def test_filtered_reports_count_properties_with_several_or_labels_once(self):
+        self.view10.labels.set([self.label1, self.label2])
+        self.view11.labels.set([self.label1])
+
+        assert self.report_counts({}, or_labels=[self.label1, self.label2]) == (2, 2, 2)
+
+    def test_filtered_reports_with_invalid_filters(self):
+        # A number filter's text that isn't a number
+        query_dict = {f"site_eui_{self.site_eui.id}": {"filterType": "number", "type": "equals", "filter": "abc"}}
+        filter_group = FilterGroup.objects.create(name="invalid", organization_id=self.org.id, inventory_type=0, query_dict=query_dict)
+
+        for url_name in ["report", "report-aggregated", "report-export"]:
+            resp = self.get_report(url_name, filter_group)
+            assert resp.status_code == 400
+            assert resp.json()["status"] == "error"
+
     def test_whole_org_match_merge_link_endpoint_properties(self):
         url = reverse("api:v3:organizations-match-merge-link", args=[self.org.id])
         post_params = json.dumps({"inventory_type": "properties"})

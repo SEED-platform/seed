@@ -1,9 +1,10 @@
 import type { OnDestroy, OnInit } from '@angular/core'
-import { ChangeDetectionStrategy, Component, inject, Input, ViewChild, ViewEncapsulation } from '@angular/core'
+import { afterNextRender, ChangeDetectionStrategy, Component, inject, Injector, Input, ViewChild, ViewEncapsulation } from '@angular/core'
 import { ActivatedRoute } from '@angular/router'
 import type { ColDef, GridApi } from 'ag-grid-community'
+import { isEqual } from 'lodash-es'
 import type { Observable } from 'rxjs'
-import { BehaviorSubject, catchError, combineLatest, filter, map, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs'
+import { BehaviorSubject, catchError, combineLatest, defer, filter, finalize, map, of, Subject, switchMap, take, takeUntil, tap } from 'rxjs'
 import type { Column, CurrentUser, Cycle, Label, OrganizationUserResponse, OrganizationUserSettings } from '@seed/api'
 import { ColumnService, CycleService, GroupsService, InventoryService, LabelService, OrganizationService, UserService } from '@seed/api'
 import { PageComponent } from '@seed/components'
@@ -44,6 +45,49 @@ export function applyColumnProfile(profile: Profile, columnDefs: ColDef[]): ColD
     })
 }
 
+/*
+ * The saved filters the grid can show: AG Grid filter models (rather than the legacy UI's filters, e.g., string values
+ * in its filter groups, which only the server applies) on filterable API columns and on access level columns, which are
+ * keyed by level name (skipping the root). Returns a copy, since AG Grid keeps references to the model objects.
+ */
+export function savedFilterModel({
+  filters,
+  columnDefs,
+  accessLevelNames,
+}: {
+  filters: Record<string, unknown>;
+  columnDefs: ColDef[];
+  accessLevelNames: string[];
+}): Record<string, unknown> {
+  const colIds = new Set([...columnDefs.filter((c) => c.filter !== false).map((c) => c.field), ...accessLevelNames.slice(1)])
+  const isFilterModel = (model: unknown) => typeof model === 'object' && model !== null && !Array.isArray(model)
+  return structuredClone(Object.fromEntries(Object.entries(filters).filter(([colId, model]) => colIds.has(colId) && isFilterModel(model))))
+}
+
+/*
+ * Wraps loads to show a grid's loading overlay, which AG Grid announces to screen readers, until every pending load
+ * ends (including by an error, or a newer load replacing it)
+ */
+export function withLoadingOverlay(getGridApi: () => GridApi | undefined) {
+  let pendingLoads = 0
+  // Not once the grid is destroyed, e.g., when leaving the page during a load
+  const setLoading = (loading: boolean) => {
+    const gridApi = getGridApi()
+    if (gridApi && !gridApi.isDestroyed()) gridApi.setGridOption('loading', loading)
+  }
+  return <T>(load$: Observable<T>): Observable<T> =>
+    defer(() => {
+      pendingLoads++
+      setLoading(true)
+      return load$.pipe(
+        finalize(() => {
+          pendingLoads--
+          setLoading(pendingLoads > 0)
+        }),
+      )
+    })
+}
+
 export function updatePageSelection(selectedViewIds: number[], pageViewIds: number[], selectedPageViewIds: number[]): number[] {
   const pageIds = new Set(pageViewIds)
   return [...new Set([...selectedViewIds.filter((id) => !pageIds.has(id)), ...selectedPageViewIds])]
@@ -70,6 +114,9 @@ export class InventoryComponent implements OnDestroy, OnInit {
   private _columnService = inject(ColumnService)
   private _cycleService = inject(CycleService)
   private _groupsService = inject(GroupsService)
+  private _injector = inject(Injector)
+  // Filters, sorts, and pages wait for the server
+  private _withLoadingOverlay = withLoadingOverlay(() => this.gridApi)
   private _inventoryService = inject(InventoryService)
   private _organizationService = inject(OrganizationService)
   private _labelService = inject(LabelService)
@@ -97,6 +144,8 @@ export class InventoryComponent implements OnDestroy, OnInit {
   appliedLabels: Label[] = []
   labelSelections: LabelSelections = { andLabels: [], orLabels: [], excludeLabels: [] }
   inventory: Record<string, unknown>[]
+  // The filters and sorts of the latest inventory request
+  requestedFilterSorts: FiltersSorts
   orgId: number = null
   orgUserId: number
   page = 1
@@ -138,7 +187,7 @@ export class InventoryComponent implements OnDestroy, OnInit {
         }),
         switchMap(() => this.loadInventory()),
         tap(() => {
-          this.setFilterSorts()
+          this.setPins()
           this.initStreams()
         }),
         takeUntil(this._unsubscribeAll$),
@@ -198,7 +247,7 @@ export class InventoryComponent implements OnDestroy, OnInit {
   }
 
   refreshInventory(newProfileId?: number | null) {
-    return this._inventoryService.getColumnListProfiles('List View Profile', 'properties', true).pipe(
+    const refresh$ = this._inventoryService.getColumnListProfiles('List View Profile', 'properties', true).pipe(
       tap((profiles) => {
         this.propertyProfiles = profiles.filter((p) => p.inventory_type === 0)
         this.taxlotProfiles = profiles.filter((p) => p.inventory_type === 1)
@@ -213,6 +262,7 @@ export class InventoryComponent implements OnDestroy, OnInit {
       switchMap(() => this.updateOrgUserSettings()),
       switchMap(() => this.loadInventory()),
     )
+    return this._withLoadingOverlay(refresh$)
   }
 
   /*
@@ -308,24 +358,28 @@ export class InventoryComponent implements OnDestroy, OnInit {
         )
       : of(null)
 
-    return groupIds$.pipe(
+    const load$ = groupIds$.pipe(
       switchMap(() => {
         const params = this._inventoryParams({ idsOnly: false })
         params.set('page', this.page.toString())
         params.set('per_page', this.chunk.toString())
+        this.requestedFilterSorts = structuredClone({ filters: this.filters, sorts: this.sorts })
 
         return this._inventoryService.getAgInventory(params.toString(), this._inventoryFilterData()).pipe(
           tap(({ pagination, results, column_defs }: AgFilterResponse) => {
+            const fields = new Set(this.columnDefs.map(({ field }) => field))
             this.pagination = pagination
             this.inventory = results
             this.columnDefs = this.applyProfileColumns(column_defs)
             this.rowData = results
+            if (!fields.size || this.columnDefs.some(({ field }) => !fields.has(field))) this.setFilterSorts()
           }),
           map(() => null),
           catchError(() => of(null)),
         )
       }),
     ) as Observable<null>
+    return this._withLoadingOverlay(load$)
   }
 
   validateCycleId() {
@@ -340,12 +394,18 @@ export class InventoryComponent implements OnDestroy, OnInit {
   }
 
   /*
-   * on initial page load, set any filters and sorts from the user settings
+   * Shows the saved filters and sorts on a load's new columns (e.g., on the first load, or a new profile's), since the
+   * grid keeps only those on the columns it had
    */
   setFilterSorts() {
-    this.setFilters()
+    // The grid gets this load's columns (and access level columns) on the next render, and setFilterModel ignores unknown columns
+    afterNextRender(
+      () => {
+        this.setFilters()
+      },
+      { injector: this._injector },
+    )
     this.setSorts()
-    this.setPins()
   }
 
   onGridReady(gridApi: GridApi) {
@@ -421,16 +481,13 @@ export class InventoryComponent implements OnDestroy, OnInit {
   setFilters() {
     if (Object.keys(this.filters).length === 0) return
 
-    const validFilters = {}
-    const colIds = new Set(this.columnDefs.map((c) => c.field))
-    // filter out any filters that are not in the current column definitions.
-    for (const colId in this.filters) {
-      if (colIds.has(colId)) validFilters[colId] = this.filters[colId]
-    }
-
-    this.gridApi.setFilterModel(validFilters)
+    this.gridApi.setFilterModel(savedFilterModel({ filters: this.filters, columnDefs: this.columnDefs, accessLevelNames: this.accessLevelNames }))
   }
 
+  /*
+   * On this load's column defs, which the grid gets on the next render, rather than reporting a sort change before the
+   * grid has this load's columns and filters
+   */
   setSorts() {
     if (!this.sorts.length) return
 
@@ -440,7 +497,6 @@ export class InventoryComponent implements OnDestroy, OnInit {
       const colDef = this.columnDefs.find((col) => col.field === colId)
       if (colDef) colDef.sort = direction
     }
-    this.gridApi.onSortChanged()
   }
 
   setPins() {
@@ -483,9 +539,11 @@ export class InventoryComponent implements OnDestroy, OnInit {
         ...this.userSettings,
         filters: { ...this.userSettings.filters, [this.type]: fg.query_dict as Record<string, Record<string, unknown>> },
       }
+      // The grid shows those it can, e.g., not the legacy UI's
+      this.gridApi?.setFilterModel(savedFilterModel({ filters: fg.query_dict, columnDefs: this.columnDefs, accessLevelNames: this.accessLevelNames }))
     } else {
-      // When deselecting a filter group, preserve whatever filters the grid currently has
-      const currentGridFilters = this.gridApi?.getFilterModel() ?? {}
+      // When deselecting a filter group, preserve whatever filters the grid currently has (and the saved ones it can't show)
+      const currentGridFilters = this._withHiddenFilters(this.gridApi?.getFilterModel() ?? {})
       this.userSettings = {
         ...this.userSettings,
         filters: { ...this.userSettings.filters, [this.type]: currentGridFilters as Record<string, Record<string, unknown>> },
@@ -509,7 +567,21 @@ export class InventoryComponent implements OnDestroy, OnInit {
     this.filterGroupSelector?.toggleLabel(id, operator)
   }
 
+  // The grid reports only the filters and sorts it can show, so this keeps the saved ones it can't
+  onGridFilterSortChange({ sorts, filters }: FiltersSorts) {
+    this.onFilterSortChange({ filters: this._withHiddenFilters(filters), sorts: this._withHiddenSorts(sorts) })
+  }
+
+  // Saves and loads exactly these filters and sorts, e.g., the saved ones without a removed chip's that the grid doesn't show
   onFilterSortChange({ sorts, filters }: FiltersSorts) {
+    /*
+     * The inventory has (or will have) these, e.g., when the grid shows the saved filters and sorts after the first load.
+     * This compares with the request, since other components change the saved filters and sorts before the grid's
+     * (asynchronous) events (e.g., resetting the grid).
+     */
+    if (isEqual({ filters, sorts }, this.requestedFilterSorts)) return
+    this.requestedFilterSorts = structuredClone({ filters, sorts })
+
     this._invalidateSelectAllRequest()
     this.page = 1
     this.userSettings.filters[this.type] = filters
@@ -534,6 +606,24 @@ export class InventoryComponent implements OnDestroy, OnInit {
 
   private _invalidateSelectAllRequest(): void {
     this._selectAllRequestId++
+  }
+
+  // The grid's filters and the saved ones it can't show (e.g., on columns outside the profile), which only the server applies
+  private _withHiddenFilters(gridFilters: Record<string, unknown>): Record<string, unknown> {
+    const shown = savedFilterModel({ filters: this.filters, columnDefs: this.columnDefs, accessLevelNames: this.accessLevelNames })
+    const hidden = Object.entries(this.filters).filter(([colId]) => !Object.hasOwn(shown, colId))
+    return { ...Object.fromEntries(hidden), ...gridFilters }
+  }
+
+  /*
+   * Grid sorts that are all saved ones (e.g., when the grid shows the saved sorts, or after removing one) keep the saved
+   * order and the saved sorts on columns the grid doesn't have, while a new sort replaces them, as the column menu's does
+   */
+  private _withHiddenSorts(gridSorts: string[]): string[] {
+    if (!gridSorts.every((sort) => this.sorts.includes(sort))) return gridSorts
+
+    const fields = new Set(this.columnDefs.map(({ field }) => field))
+    return this.sorts.filter((sort) => gridSorts.includes(sort) || !fields.has(sort.replace(/^-/, '')))
   }
 
   // Request body shared by the paged grid load and the ids-only "select all" so both honor the same filters
