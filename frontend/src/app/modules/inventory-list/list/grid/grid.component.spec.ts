@@ -15,13 +15,14 @@ import { InventoryGridComponent, serverFilterColDef } from './grid.component'
 
 describe('serverFilterColDef', () => {
   it('maps each server filter type to its filter', () => {
-    expect(serverFilterColDef('text')).toEqual({ filter: 'agTextColumnFilter' })
+    expect(serverFilterColDef('text')).toEqual({ cellDataType: 'text', filter: 'agTextColumnFilter' })
+    expect(serverFilterColDef('boolean')).toEqual({ cellDataType: 'boolean', filter: 'agTextColumnFilter' })
     expect(serverFilterColDef('number')).toEqual({ cellDataType: false, filter: 'agNumberColumnFilter' })
     expect(serverFilterColDef('date')).toEqual({ cellDataType: false, filter: 'agDateColumnFilter', filterParams: { includeTime: false } })
   })
 
   it('falls back to a text filter for a missing or unknown filter type', () => {
-    for (const filterType of [undefined, '', 'boolean', 'toString']) {
+    for (const filterType of [undefined, '', 'set', 'toString']) {
       expect(serverFilterColDef(filterType)).toEqual(serverFilterColDef('text'))
     }
   })
@@ -39,6 +40,7 @@ describe('InventoryGridComponent server-side filtering', () => {
     { field: 'gross_floor_area_2', headerName: 'Gross Floor Area', context: { filterType: 'number' } },
     { field: 'year_ending_3', headerName: 'Year Ending', context: { filterType: 'date' } },
     { field: 'long_lat_4', headerName: 'Longitude Latitude', filter: false },
+    { field: 'has_solar_5', headerName: 'Has Solar', context: { filterType: 'boolean' } },
   ]
   // Date-time strings, which AG Grid would otherwise give a time picker, and a number stored as text
   const rowData = [
@@ -69,7 +71,7 @@ describe('InventoryGridComponent server-side filtering', () => {
     await fixture.whenStable()
   }
 
-  beforeEach(async () => {
+  const createGrid = async (rows: Record<string, unknown>[]) => {
     await TestBed.configureTestingModule({
       imports: [InventoryGridComponent, MatIconTestingModule, getTranslocoTestingModule()],
       providers: [
@@ -91,15 +93,20 @@ describe('InventoryGridComponent server-side filtering', () => {
       inventoryType: 'properties',
       labelMap: {},
       pagination,
-      rowData,
+      rowData: rows,
       selectedViewIds: [],
       type: 'properties',
+      userSettings: {},
     }
     for (const [name, value] of Object.entries(inputs)) {
       fixture.componentRef.setInput(name, value)
     }
     fixture.detectChanges()
     await fixture.whenStable()
+  }
+
+  beforeEach(async () => {
+    await createGrid(rowData)
   })
 
   it('only offers the filters the server supports', () => {
@@ -112,6 +119,7 @@ describe('InventoryGridComponent server-side filtering', () => {
       'address_line_1_1',
       'gross_floor_area_2',
       'year_ending_3',
+      'has_solar_5',
     ])
   })
 
@@ -167,5 +175,15 @@ describe('InventoryGridComponent server-side filtering', () => {
       values.push(component.gridApi.getCellValue({ rowNode, colKey: 'gross_floor_area_2', useFormatter: true }))
     })
     expect(values).toEqual(['1000', '2,500', '4000'])
+  })
+
+  it('restores filters before it has rows', async () => {
+    // e.g., saved filters that the cycle's inventory doesn't match
+    TestBed.resetTestingModule()
+    await createGrid([])
+    component.gridApi.setFilterModel(excludingFilters)
+    await fixture.whenStable()
+
+    expect(component.gridApi.getFilterModel()).toEqual(excludingFilters)
   })
 })

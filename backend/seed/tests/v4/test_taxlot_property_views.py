@@ -4,17 +4,23 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import json
+import math
+import random
 from datetime import UTC, date, datetime
 from urllib.parse import urlencode
 
+from django.db.models import Value
+from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.timezone import (
     get_current_timezone,
 )
+from quantityfield.units import ureg
 
 from seed.data_importer.tasks import geocode_and_match_buildings_task
 from seed.landing.models import SEEDUser as User
+from seed.lib.superperms.orgs.models import Organization
 from seed.models import (
     DATA_STATE_MAPPING,
     VIEW_DETAIL,
@@ -26,6 +32,7 @@ from seed.models import (
     PropertyState,
     PropertyView,
     StatusLabel,
+    TaxLot,
     TaxLotProperty,
     TaxLotState,
     TaxLotView,
@@ -45,6 +52,7 @@ from seed.test_helpers.fake import (
 )
 from seed.tests.util import AccessLevelBaseTestCase, DataMappingBaseTestCase
 from seed.utils.organizations import create_organization
+from seed.utils.v4.inventory_filter import round_half_even
 
 # from seed.utils.v4.inventory_filter import generate_Q_filters
 
@@ -115,7 +123,7 @@ class TaxLotPropertyViewTests(DataMappingBaseTestCase):
         # with the server's filter types (the grid doesn't filter), and other inventory columns aren't sortable
         self.assertEqual(list(column_defs[0].keys()), ["field", "headerName", "context"])
         self.assertEqual(list(column_defs[-1].keys()), ["field", "headerName", "sortable", "context"])
-        self.assertIn(column_defs[0]["context"]["filterType"], {"text", "number", "date"})
+        self.assertIn(column_defs[0]["context"]["filterType"], {"text", "number", "date", "boolean"})
 
     def test_inventory_filter_column_defs_use_only_organization_profiles(self):
         url = (
@@ -624,6 +632,33 @@ class FilterTests(AccessLevelBaseTestCase):
         self.assertEqual(count("greaterThan", 100), sum(area > 100 for area in shown))
         self.assertEqual(count("lessThanOrEqual", 95), sum(area <= 95 for area in shown))
 
+    def test_number_filters_round_as_shown(self):
+        # Halfway values, including those stored just below or above halfway (e.g., 2.675 is 2.67499...), and one shown in m²
+        areas = [0.5, 1.5, 2.5, -0.5, -1.5, -2.5, 2.675, -2.675, 1.005, 12.345, 45.125, -0.125, 1234.565, 7812.5]
+        views = list(PropertyView.objects.filter(cycle=self.cycle).order_by("id")[: len(areas)])
+        for view, area in zip(views, areas, strict=True):
+            PropertyState.objects.filter(pk=view.state_id).update(gross_floor_area=area)
+
+        def matches(filter_type, value):
+            filters = {self.gfa_name: {"filterType": "number", "type": filter_type, "filter": value}}
+            return {row["property_view_id"] for row in self.get_request_results(filters)}
+
+        for units, places in [("ft**2", 0), ("ft**2", 2), ("m**2", 2)]:
+            self.org.display_units_area = units
+            self.org.display_decimal_places = places
+            self.org.save()
+            shown = {row["property_view_id"]: row[self.gfa_name] for row in self.get_request_results({})}
+            for view, area in zip(views, areas, strict=True):
+                value = shown[view.id]
+                # As the serializer rounds (half to even, on the stored binary value)
+                self.assertEqual(value, round((area * ureg("ft**2")).to(units).magnitude, places))
+                step = 10**-places
+                self.assertIn(view.id, matches("equals", value), (area, units, places))
+                self.assertNotIn(view.id, matches("equals", round(value + step, places)), (area, units, places))
+                self.assertNotIn(view.id, matches("equals", round(value - step, places)), (area, units, places))
+                self.assertNotIn(view.id, matches("greaterThan", value), (area, units, places))
+                self.assertIn(view.id, matches("lessThanOrEqual", value), (area, units, places))
+
     def test_json_keys_like_indexes_or_lookups(self):
         for column_name in ["2019", "a__b"]:
             Column.objects.create(table_name="PropertyState", column_name=column_name, organization=self.org, is_extra_data=True)
@@ -670,6 +705,11 @@ class FilterTests(AccessLevelBaseTestCase):
         self.assertEqual(count("true"), 34)
         self.assertEqual(count("false"), 33)
         self.assertEqual(count("empty"), 100)
+
+        # The grid's type for the column, which shows checkboxes and these options
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(self.query_string)
+        column_defs = self.client.post(url, content_type="application/json").json()["column_defs"]
+        self.assertEqual(next(c for c in column_defs if c["field"] == name)["context"], {"filterType": "boolean"})
 
     def test_filters_with_another_filter_types_values(self):
         # AG Grid keeps a filter's values when it changes its type, e.g., for a filter saved when the grid inferred it
@@ -977,6 +1017,66 @@ class RelatedTests(AccessLevelBaseTestCase):
         self.assertEqual(response.status_code, 200)
         return sorted(r[self.pmpid_name] for r in response.json()["results"])
 
+    def get_results(self, inventory_type, filters=None):
+        query_string = {"cycle": self.cycle.id, "inventory_type": inventory_type, "include_related": True, "organization_id": self.org.id}
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(query_string)
+        response = self.client.post(url, data={"filters": filters}, content_type="application/json")
+        self.assertEqual(response.status_code, 200)
+        return response.json()["results"]
+
+    def get_name(self, table_name, column_name):
+        return ColumnSerializer(Column.objects.get(organization=self.org, table_name=table_name, column_name=column_name)).data["name"]
+
+    def test_related_booleans_are_text(self):
+        # Related values show joined, e.g., "False; True"
+        Column.objects.create(
+            table_name="TaxLotState", column_name="Corner Lot", organization=self.org, is_extra_data=True, data_type="boolean"
+        )
+        query_string = {"cycle": self.cycle.id, "inventory_type": "property", "include_related": True, "organization_id": self.org.id}
+        url = reverse("api:v4:tax_lot_properties-filter") + "?" + urlencode(query_string)
+        column_defs = self.client.post(url, content_type="application/json").json()["column_defs"]
+        name = self.get_name("TaxLotState", "Corner Lot")
+        self.assertEqual(next(c for c in column_defs if c["field"] == name)["context"], {"filterType": "text"})
+
+    def test_related_dates_show_and_filter_as_shown(self):
+        # Tax lots, by their properties' year ending
+        name = self.get_name("PropertyState", "year_ending")
+        PropertyState.objects.filter(pm_property_id="pm-1a").update(year_ending=date(2001, 12, 31))
+        PropertyState.objects.filter(pm_property_id="pm-1b").update(year_ending=date(2002, 12, 31))
+
+        def taxlots(filters=None):
+            return {row[self.jtlid_name]: row.get(name) for row in self.get_results("taxlot", filters)}
+
+        self.assertEqual(taxlots()["jt-1"], "2001-12-31; 2002-12-31")
+        equals = {name: {"filterType": "date", "type": "equals", "dateFrom": "2002-12-31 00:00:00", "dateTo": None}}
+        self.assertEqual(list(taxlots(equals)), ["jt-1"])
+        self.assertEqual(sorted(taxlots({name: self.get_filter("blank")})), ["jt-2a", "jt-2b", "jt-3"])
+
+    def test_related_timestamps_are_the_related_records(self):
+        # As the grid shows them, the related Property's or TaxLot's time stamps, not their states'
+        def equals(name, day):
+            return {name: {"filterType": "date", "type": "equals", "dateFrom": f"{day} 00:00:00", "dateTo": None}}
+
+        updated_name = self.get_name("PropertyState", "updated")
+        Property.objects.filter(views__state__pm_property_id="pm-2").update(updated=datetime(2020, 6, 2, 3, tzinfo=UTC))
+        PropertyState.objects.filter(pm_property_id="pm-2").update(updated=datetime(2019, 1, 1, tzinfo=UTC))
+
+        def taxlots(filters=None):
+            return {row[self.jtlid_name]: row.get(updated_name) for row in self.get_results("taxlot", filters)}
+
+        self.assertEqual(taxlots()["jt-2a"], "2020-06-02T03:00:00Z")
+        self.assertEqual(sorted(taxlots(equals(updated_name, "2020-06-02"))), ["jt-2a", "jt-2b"])
+        self.assertEqual(taxlots(equals(updated_name, "2019-01-01")), {})
+
+        created_name = self.get_name("TaxLotState", "created")
+        TaxLot.objects.filter(views__state__jurisdiction_tax_lot_id="jt-1").update(created=datetime(2020, 6, 2, 3, tzinfo=UTC))
+        TaxLotState.objects.filter(jurisdiction_tax_lot_id="jt-1").update(created=datetime(2019, 1, 1, tzinfo=UTC))
+        properties = {
+            row[self.pmpid_name]: row.get(created_name) for row in self.get_results("property", equals(created_name, "2020-06-02"))
+        }
+        self.assertEqual(properties, {"pm-1a": "2020-06-02T03:00:00Z", "pm-1b": "2020-06-02T03:00:00Z"})
+        self.assertEqual(self.get_results("property", equals(created_name, "2019-01-01")), [])
+
     def test_related_derived_column_filter(self):
         derived_column = DerivedColumn.objects.create(
             name="Tax Lot EUI", expression="$a / 2", organization=self.org, inventory_type=DerivedColumn.TAXLOT_TYPE
@@ -1046,3 +1146,24 @@ class RelatedTests(AccessLevelBaseTestCase):
     def test_related_sort_is_ignored(self):
         # Related columns aren't sortable, and PropertyState has no jurisdiction_tax_lot_id
         self.assertEqual(self.get_property_results(sorts=[f"-{self.jtlid_name}"]), ["pm-1a", "pm-1b", "pm-2", "pm-3"])
+
+
+class RoundHalfEvenTests(TestCase):
+    def test_rounds_as_python(self):
+        org = Organization.objects.create(name="Rounding")
+        rng = random.Random(0)
+        for places in range(5):
+            values = []
+            for k in range(-60, 61):
+                half = (k + 0.5) / 10**places
+                values += [half, math.nextafter(half, -math.inf), math.nextafter(half, math.inf)]
+            values += [rng.uniform(-1e6, 1e6) for _ in range(100)]
+            values += [round(rng.uniform(-1e4, 1e4), places + 1) for _ in range(100)]
+            # Around where `round` leaves numbers as they are, and too large for the error term
+            limit = 2**53 / 10**places
+            values += [limit * factor for factor in [-4, -1.5, -1, -0.75, 0.75, 1, 1.5, 4]] + [1.5e300, -1e308]
+
+            annotations = {f"v{i}": round_half_even(Value(value), places) for i, value in enumerate(values)}
+            rounded = Organization.objects.filter(pk=org.pk).annotate(**annotations).values(*annotations).get()
+            for i, value in enumerate(values):
+                self.assertEqual(rounded[f"v{i}"], round(value, places), (value, places))

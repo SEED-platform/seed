@@ -84,6 +84,25 @@ describe('InventoryComponent saved filters', () => {
   })
 })
 
+describe('InventoryComponent saved sorts', () => {
+  it('sorts the next column defs without reporting a sort change', () => {
+    const columnDefs: ColDef[] = [{ field: 'address_line_1_1' }, { field: 'site_eui_2' }, { field: 'gross_floor_area_3' }]
+    const gridApi = jasmine.createSpyObj<GridApi>('GridApi', ['applyColumnState', 'onSortChanged'])
+    const component = Object.assign(Object.create(InventoryComponent.prototype) as InventoryComponent, {
+      type: 'properties',
+      columnDefs,
+      gridApi,
+      userSettings: { sorts: { properties: ['-site_eui_2', 'gross_floor_area_3', 'removed_column_4'] } },
+    })
+
+    component.setSorts()
+
+    expect(columnDefs.map(({ sort }) => sort)).toEqual([undefined, 'desc', 'asc'])
+    expect(gridApi.applyColumnState).not.toHaveBeenCalled()
+    expect(gridApi.onSortChanged).not.toHaveBeenCalled()
+  })
+})
+
 describe('InventoryComponent filter and sort changes', () => {
   const filters = {
     address_line_1_1: { filterType: 'text', type: 'contains', filter: 'Main' },
@@ -98,7 +117,8 @@ describe('InventoryComponent filter and sort changes', () => {
       type: 'properties',
       page: 3,
       refreshInventory$: new Subject<number | null>(),
-      userSettings: { filters: { properties: filters }, sorts: { properties: ['-site_eui_2'] } },
+      userSettings: { filters: { properties: structuredClone(filters) }, sorts: { properties: ['-site_eui_2'] } },
+      requestedFilterSorts: { filters: structuredClone(filters), sorts: ['-site_eui_2'] },
     })
     refresh = spyOn(component.refreshInventory$, 'next')
   })
@@ -120,6 +140,27 @@ describe('InventoryComponent filter and sort changes', () => {
     component.onFilterSortChange({ filters: {}, sorts: [] })
     expect(refresh).toHaveBeenCalledTimes(2)
     expect(component.userSettings.sorts.properties).toEqual([])
+  })
+
+  it('compares with the latest request, before its inventory loads', () => {
+    component.onFilterSortChange({ filters: {}, sorts: ['-site_eui_2'] })
+    // e.g., resetting the grid to the loaded filters before that reload
+    component.onFilterSortChange({ filters: structuredClone(filters), sorts: ['-site_eui_2'] })
+    component.onFilterSortChange({ filters: structuredClone(filters), sorts: ['-site_eui_2'] })
+    expect(refresh).toHaveBeenCalledTimes(2)
+  })
+
+  it('reloads for changes the saved filters and sorts already have', () => {
+    // A sort the shared saved settings already have when the grid's (asynchronous) event reports it
+    component.userSettings.sorts.properties = ['site_eui_2']
+    component.onFilterSortChange({ filters, sorts: ['site_eui_2'] })
+    expect(refresh).toHaveBeenCalledTimes(1)
+
+    // Resetting the grid, which clears the saved filters and sorts first
+    component.userSettings.filters.properties = {}
+    component.userSettings.sorts.properties = []
+    component.onFilterSortChange({ filters: {}, sorts: [] })
+    expect(refresh).toHaveBeenCalledTimes(2)
   })
 })
 

@@ -142,6 +142,8 @@ export class InventoryComponent implements OnDestroy, OnInit {
   appliedLabels: Label[] = []
   labelSelections: LabelSelections = { andLabels: [], orLabels: [], excludeLabels: [] }
   inventory: Record<string, unknown>[]
+  // The filters and sorts of the latest inventory request
+  requestedFilterSorts: FiltersSorts
   orgId: number = null
   orgUserId: number
   page = 1
@@ -359,6 +361,7 @@ export class InventoryComponent implements OnDestroy, OnInit {
         const params = this._inventoryParams({ idsOnly: false })
         params.set('page', this.page.toString())
         params.set('per_page', this.chunk.toString())
+        this.requestedFilterSorts = structuredClone({ filters: this.filters, sorts: this.sorts })
 
         return this._inventoryService.getAgInventory(params.toString(), this._inventoryFilterData()).pipe(
           tap(({ pagination, results, column_defs }: AgFilterResponse) => {
@@ -477,6 +480,10 @@ export class InventoryComponent implements OnDestroy, OnInit {
     this.gridApi.setFilterModel(savedFilterModel({ filters: this.filters, columnDefs: this.columnDefs, accessLevelNames: this.accessLevelNames }))
   }
 
+  /*
+   * On this load's column defs, which the grid gets on the next render, rather than reporting a sort change before the
+   * grid has this load's columns and filters
+   */
   setSorts() {
     if (!this.sorts.length) return
 
@@ -486,7 +493,6 @@ export class InventoryComponent implements OnDestroy, OnInit {
       const colDef = this.columnDefs.find((col) => col.field === colId)
       if (colDef) colDef.sort = direction
     }
-    this.gridApi.onSortChanged()
   }
 
   setPins() {
@@ -556,8 +562,13 @@ export class InventoryComponent implements OnDestroy, OnInit {
   }
 
   onFilterSortChange({ sorts, filters }: FiltersSorts) {
-    // The loaded inventory already has these, e.g., when the grid shows the saved filters and sorts after the first load
-    if (isEqual(filters, this.filters) && isEqual(sorts, this.sorts)) return
+    /*
+     * The inventory has (or will have) these, e.g., when the grid shows the saved filters and sorts after the first load.
+     * This compares with the request, since other components change the saved filters and sorts before the grid's
+     * (asynchronous) events (e.g., resetting the grid).
+     */
+    if (isEqual({ filters, sorts }, this.requestedFilterSorts)) return
+    this.requestedFilterSorts = structuredClone({ filters, sorts })
 
     this._invalidateSelectAllRequest()
     this.page = 1

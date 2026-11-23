@@ -38,18 +38,18 @@ export class CellHeaderMenuComponent implements IHeaderAngularComp, AfterViewIni
   scheme: 'dark' | 'light'
   sortIcon = ''
   type: InventoryType
-  userSettings: OrganizationUserSettings
+  private _getUserSettings: () => OrganizationUserSettings
   private _openedWithKeyboard = false
 
-  agInit(params: IHeaderParams & { currentUser: CurrentUser; type: InventoryType }): void {
+  agInit(params: IHeaderParams & { currentUser: CurrentUser; getUserSettings: () => OrganizationUserSettings; type: InventoryType }): void {
     this.params = params
     this.column = params.column
     this.gridApi = params.api
     this.type = params.type
-    const { org_id, org_user_id, settings } = params.currentUser
+    const { org_id, org_user_id } = params.currentUser
     this.orgId = org_id
     this.orgUserId = org_user_id
-    this.userSettings = settings
+    this._getUserSettings = params.getUserSettings
     // Before the first render, since the sort icon is in the header
     this.updateSortState()
     // ag-grid owns header focus, so listen on the header cell itself for the menu shortcut
@@ -149,22 +149,24 @@ export class CellHeaderMenuComponent implements IHeaderAngularComp, AfterViewIni
     }
   }
 
+  // Saves change the page's current settings, rather than a copy from when the header was created
+  get userSettings(): OrganizationUserSettings {
+    return this._getUserSettings()
+  }
+
+  // The grid's sort change event saves the sorts and reloads the inventory
   sortCol(direction: 'asc' | 'desc' | null): void {
     this.gridApi.applyColumnState({
       state: [{ colId: this.params.column.getColId(), sort: direction }],
       defaultState: { sort: null },
     })
-    const dir = direction === 'desc' ? '-' : ''
-    const colDef = this.column.getColDef()
-    const sort = `${dir}${colDef.field}`
-    this.userSettings.sorts?.[this.type].push(sort)
-
     this.detach()
   }
 
   pinCol(direction: 'left' | 'right' | null): void {
-    this.gridApi.setColumnsPinned([this.column], direction)
+    // Before pinning, which replaces this header (and its menu)
     this.detach()
+    this.gridApi.setColumnsPinned([this.column], direction)
     this.updatePins(direction)
   }
 

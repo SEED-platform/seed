@@ -4,15 +4,16 @@ See also https://github.com/SEED-platform/seed/blob/main/LICENSE.md
 """
 
 import re
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from functools import reduce
 from operator import and_, or_
 
 from django.apps import apps
 from django.core.exceptions import ValidationError
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Case, Exists, F, FloatField, Func, OuterRef, Q, TextField, Value, When
-from django.db.models.functions import Cast, Left, Replace, Round, TruncDate
+from django.db.models.functions import Abs, Cast, Floor, Left, Replace, Round, Sign, TruncDate
 from django.db.models.lookups import (
     Exact,
     GreaterThan,
@@ -80,6 +81,30 @@ DATE_PATTERN = r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])"
 def json_text(json_field, key):
     """A JSON object's value for `key` as text, or null if it's missing or null (`->>` would read numeric keys as indexes)"""
     return Func(json_field, Value(key), function="jsonb_extract_path_text", output_field=TextField())
+
+
+def round_half_even(number, places):
+    """
+    A float rounded as Python's `round` does (see `collapse_unit`): half to even, of its exact binary value. Django's
+    `Round` rounds a numeric cast instead, half away from zero. PostgreSQL's `round(double precision)` rounds half to even,
+    but of `number * 10^places`, which can round to a half itself (2.675 * 100 is 267.5, but 2.675 is 2.67499...), so a
+    half moves toward the product's exact value, by the sign of its rounding error (Dekker's product, splitting `number`;
+    10^places needs no split for places up to 11). Exact for places up to 11.
+    """
+    number = Cast(number, FloatField())  # not numeric, e.g., from a literal
+    if places > 11:
+        return Round(number, places)
+    scale = Value(float(10**places))
+    scaled = number * scale
+    split = number * Value(2.0**27 + 1)
+    high = split - (split - number)
+    error = (high * scale - scaled) + (number - high) * scale
+    # An exact half (`scaled - Floor(scaled)` can round to one, e.g., for -0.49999999999999994)
+    half = Exact(scaled, Floor(scaled) + Value(0.5))
+    nudge = Case(When(half, then=Sign(error) * Value(0.5)), default=Value(0.0))
+    rounded = Func(scaled + nudge, function="ROUND", output_field=FloatField()) / scale
+    # Python's `round` leaves larger numbers as they are, and their error terms could overflow
+    return Case(When(GreaterThanOrEqual(Abs(number), Value(2**53 / 10**places)), then=number), default=rounded)
 
 
 class InventoryFilterError(Exception):
@@ -377,9 +402,12 @@ class InventoryFilter:
         # Related columns match if any related record does, and negated conditions if none does
         other_type = "property" if self.inventory_type == "taxlot" else "taxlot"
         related = TaxLotProperty.objects.filter(**{f"{self.inventory_type}_view": OuterRef("pk")})
+        # Related time stamps are their Property's or TaxLot's (see `TaxLotProperty.get_related`), other values their state's
+        timestamp = column["column_name"] in {"created", "updated"} and self.get_field_type(column)
+        prefix = f"{other_type}_view__{other_type if timestamp else 'state'}__"
 
         def any_related(condition):
-            q = self.condition_q(column, f"{other_type}_view__state__", filter_type, condition, filter_dict)
+            q = self.condition_q(column, prefix, filter_type, condition, filter_dict)
             return Q(Exists(related.filter(q)))
 
         if condition == "blank":
@@ -391,7 +419,7 @@ class InventoryFilter:
         return any_related(condition)
 
     def condition_q(self, column, prefix, filter_type, condition, filter_dict):
-        """A filter condition on a column's value, as a Q object, through `prefix` to its state (ex: 'state__')"""
+        """A filter condition on a column's value, as a Q object, through `prefix` to its record (ex: 'state__')"""
         field_type = self.get_field_type(column)
         value = self.get_value(column, prefix)
         text = value if field_type in STRING_FIELD_TYPES else Cast(value, TextField())
@@ -433,7 +461,7 @@ class InventoryFilter:
         return Q(COMPARISONS[condition](value, start))
 
     def get_value(self, column, prefix):
-        """A column's stored value through `prefix` to its state: a model field, or JSON text (null if missing or null)"""
+        """A column's stored value through `prefix` to its record: a model field, or JSON text (null if missing or null)"""
         if column.get("access_level"):
             return json_text(F(f"{self.inventory_type}__access_level_instance__path"), column["column_name"])
         if column["is_extra_data"]:
@@ -454,7 +482,7 @@ class InventoryFilter:
         if self.org and (base_units := self.get_base_units(column, field_type)):
             quantity = 1 * ureg(base_units)
             factor = quantity.to(display_units(self.org, quantity)).magnitude
-            converted = Round(number * Value(factor), self.org.display_decimal_places)
+            converted = round_half_even(number * Value(factor), self.org.display_decimal_places)
             # but extra data with thousands separators shows as stored (see `TaxLotProperty.extra_data_to_dict_with_mapping`)
             number = converted if field_type else Case(When(Regex(text, NUMBER_PATTERN), then=converted), default=number)
         return number
@@ -518,20 +546,29 @@ class InventoryFilter:
         return getattr(apps.get_model("seed", column["table_name"])._meta.get_field(column["column_name"]), "base_units", None)
 
     def get_filter_type(self, column):
-        """The grid filter for a column: 'text', 'number', or 'date', or None if the server can't filter it"""
+        """
+        A column's type for the grid's filter and display: 'text', 'number', 'date', or 'boolean' (a text filter of true or
+        false), or None if the server can't filter it
+        """
         if column is None:
             return None
         field_type = self.get_field_type(column)
         if field_type is None:
             # Derived values are always numbers
             db_type = "float" if column["derived_column"] else Column.DB_TYPES.get(column["data_type"])
-            return {"float": "number", "integer": "number", "date": "date", "datetime": "date"}.get(db_type, "text")
-        if field_type in NUMBER_FIELD_TYPES:
-            return "number"
-        if field_type in {"DateField", "DateTimeField"}:
-            return "date"
-        # Not geometry, whose stored text isn't what the grid shows
-        return "text" if field_type in {"CharField", "TextField", "BooleanField"} else None
+            filter_types = {"float": "number", "integer": "number", "date": "date", "datetime": "date", "boolean": "boolean"}
+            filter_type = filter_types.get(db_type, "text")
+        elif field_type in NUMBER_FIELD_TYPES:
+            filter_type = "number"
+        elif field_type in {"DateField", "DateTimeField"}:
+            filter_type = "date"
+        elif field_type in {"CharField", "TextField", "BooleanField"}:
+            filter_type = "boolean" if field_type == "BooleanField" else "text"
+        else:
+            # Not geometry, whose stored text isn't what the grid shows
+            return None
+        # Related values show joined as text (see `parse_related_results`)
+        return "text" if filter_type == "boolean" and column["related"] else filter_type
 
     def get_lookup(self, column):
         """
@@ -683,7 +720,9 @@ class InventoryFilter:
             parsed_fields = {}
             for related in result.get("related", []):
                 # create a set of unique values for each valid field
-                for field, val in related.items():
+                for field, value in related.items():
+                    # Dates and date times (e.g., year_ending and created) as the response encodes this record's own
+                    val = DjangoJSONEncoder().default(value) if isinstance(value, date) else value
                     if self.valid_related_field(field, val):
                         parsed_fields.setdefault(field, set()).add(val)
 

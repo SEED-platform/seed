@@ -93,6 +93,7 @@
           [type]="type"
           [userSettings]="userSettings"
           (labelRemoved)="onLabelChipRemoved($event)"
+          (savedFilterSortRemoved)="onFilterSortChange($event)"
         ></seed-inventory-filter-sort-chips>
       }
     </seed-inventory-grid>

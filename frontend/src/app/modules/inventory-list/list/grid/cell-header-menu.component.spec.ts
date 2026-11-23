@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing'
 import { MatIconTestingModule } from '@angular/material/icon/testing'
 import type { IHeaderParams } from 'ag-grid-community'
 import { of } from 'rxjs'
-import type { CurrentUser } from '@seed/api'
+import type { CurrentUser, OrganizationUserSettings } from '@seed/api'
 import { OrganizationService } from '@seed/api'
 import { ConfigService } from '@seed/services'
 import { getTranslocoTestingModule } from 'app/core/transloco/transloco-testing'
@@ -35,8 +35,9 @@ describe('CellHeaderMenuComponent', () => {
       displayName: 'Address Line 1 (Tax Lot)',
       eGridHeader: document.createElement('div'),
       currentUser: { org_id: 1, org_user_id: 2, settings: {} } as CurrentUser,
+      getUserSettings: () => ({}),
       type: 'properties' as InventoryType,
-    } as unknown as IHeaderParams & { currentUser: CurrentUser; type: InventoryType })
+    } as unknown as IHeaderParams & { currentUser: CurrentUser; getUserSettings: () => OrganizationUserSettings; type: InventoryType })
     fixture.detectChanges()
 
     component.toggleMenu()

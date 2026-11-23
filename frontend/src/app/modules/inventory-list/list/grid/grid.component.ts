@@ -38,20 +38,22 @@ export const LABEL_COLOR_MAP: Record<string, string> = {
   white: '#e5e7eb',
 }
 
-type ServerFilterType = 'text' | 'number' | 'date'
+type ServerFilterType = 'text' | 'number' | 'date' | 'boolean'
 
 type ServerFilterColDef = Pick<ColDef, 'cellDataType' | 'filter' | 'filterParams'>
 
 /*
- * Number and date columns show the values the server compares, rather than formatting them as the type AG Grid infers
- * from the first row (e.g., "Invalid Number" for "12"), which would also put times in date-only floating filters.
- * Text columns keep that inference, which shows booleans as checkboxes with true/false filter options.
+ * Columns have the server's types, rather than ones AG Grid infers from the first row, which would format other values
+ * as that type (e.g., "Invalid Number" for "12", or times in date-only floating filters) and, until the grid has rows,
+ * defer restoring filters. Number and date columns show the values the server compares, and booleans show as
+ * checkboxes with true/false filter options.
  */
 const SERVER_FILTERS: Record<ServerFilterType, ServerFilterColDef> = {
-  text: { filter: 'agTextColumnFilter' },
+  text: { cellDataType: 'text', filter: 'agTextColumnFilter' },
   number: { cellDataType: false, filter: 'agNumberColumnFilter' },
   // The server compares dates by day, and date-time columns would otherwise get a time picker
   date: { cellDataType: false, filter: 'agDateColumnFilter', filterParams: { includeTime: false } },
+  boolean: { cellDataType: 'boolean', filter: 'agTextColumnFilter' },
 }
 
 /*
@@ -255,18 +257,21 @@ export class InventoryGridComponent implements OnChanges {
       this.buildShortcutColumn('groups_indicator', 'Groups', SHORTCUT_COLUMN_WIDTH, 'workspaces'),
       this.buildLabelsCell(),
     ]
-    // Pin shortcuts so user-pinned columns land after them in the pinned area
-    return shortcutColumns.map((c) => ({ ...c, pinned: 'left' as const }))
+    // Pin shortcuts so user-pinned columns land after them in the pinned area. Their renderers show their values, which
+    // need no type (AG Grid would otherwise infer one, deferring restored filters until the grid has rows)
+    return shortcutColumns.map((c) => ({ ...c, cellDataType: false, pinned: 'left' as const }))
   }
 
   addHeaderMenu() {
     const stateColumns = this._apiColumnDefs.map((c) => ({
       ...c,
       // The API sends `filter: false` for columns it can't filter (e.g., geometry)
-      ...(c.filter === false ? {} : serverFilterColDef((c.context as ApiColumnContext | undefined)?.filterType)),
+      ...(c.filter === false ? { cellDataType: 'text' } : serverFilterColDef((c.context as ApiColumnContext | undefined)?.filterType)),
       headerComponent: CellHeaderMenuComponent,
       headerComponentParams: {
         currentUser: this.currentUser,
+        // The page's settings which each save replaces
+        getUserSettings: () => this.userSettings,
         type: this.type,
       },
     }))
