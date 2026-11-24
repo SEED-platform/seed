@@ -64,6 +64,65 @@ class PortfolioManagerImportTest(TestCase):
         with pytest.raises(PMError, match="Could not find a matching template"):
             PortfolioManagerImport.get_template_by_name(template_set, "missing")
 
+    @staticmethod
+    def _notification(notification_id, code, url="/old"):
+        return {
+            "id": notification_id,
+            "notificationTypeCode": {"code": code},
+            "notificationParameters": [{"url": ""}, {"url": url}],
+        }
+
+    def _run_meter_download(self, notification_pages):
+        """Run generate_and_download_meter_data against mocked PM responses.
+
+        notification_pages: what each notifications.json call returns, in order (the first is the pre-submit baseline).
+        Returns (result or raised PMError, mocked requests.get).
+        """
+        csrf_page = mock.Mock(text='<meta name="_csrf_header" content="X-CSRF"/><meta name="_csrf" content="token"/>')
+        download = mock.Mock(status_code=200, content=b"excel")
+        notification_responses = iter(
+            mock.Mock(status_code=200, json=mock.Mock(return_value={"result": {"items": page}})) for page in notification_pages
+        )
+
+        def fake_post(url, **kwargs):
+            if url.endswith("notifications.json"):
+                # newest first is what lets accounts with more than one page of notices see the new download
+                assert '"ascending":false' in kwargs["data"]
+                return next(notification_responses)
+            return mock.Mock(status_code=200)  # createCustomDownloadSubmit
+
+        pm = PortfolioManagerImport("un", "pw")
+        pm.authenticated_headers = {"Cookie": "SESSION=x"}
+        with (
+            mock.patch("seed.views.v3.portfolio_manager.requests.get", side_effect=[csrf_page, download]) as get,
+            mock.patch("seed.views.v3.portfolio_manager.requests.post", side_effect=fake_post),
+            mock.patch("seed.views.v3.portfolio_manager.time.sleep"),
+        ):
+            try:
+                return pm.generate_and_download_meter_data([1], datetime(2023, 1, 1), datetime(2023, 12, 31)), get
+            except PMError as e:
+                return e, get
+
+    def test_meter_download_finds_new_notice_with_over_100_notifications(self):
+        # an account with a long history, whose newest notice is a download from an earlier request
+        history = [self._notification(i, "TRANSFERPROPERTYNOTIFICATION") for i in range(1, 101)]
+        history.insert(0, self._notification(500, "CUSTOMPORTFOLIODOWNLOAD", url="/stale"))
+        new_download = self._notification(600, "CUSTOMPORTFOLIODOWNLOAD", url="/new")
+
+        result, get = self._run_meter_download([history, history, [new_download, *history]])
+
+        assert result == b"excel"
+        assert get.call_args_list[-1].args[0] == "https://portfoliomanager.energystar.gov/pm/new"
+
+    def test_meter_download_raises_without_fetching_when_no_new_notice(self):
+        history = [self._notification(500, "CUSTOMPORTFOLIODOWNLOAD", url="/stale")]
+
+        result, get = self._run_meter_download([history] * 25)
+
+        assert isinstance(result, PMError)
+        assert "custom report not generated" in str(result)
+        assert get.call_count == 1  # only the csrf page; the stale download link is never fetched
+
 
 class PortfolioManagerTemplateListViewTestsFailure(TestCase):
     def setUp(self):

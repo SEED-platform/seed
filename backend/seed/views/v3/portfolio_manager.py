@@ -662,6 +662,30 @@ class PortfolioManagerImport:
         csrf_header = re.findall('(?<=meta name="_csrf_header" content=")(.*)(?="/>)', response.text)[0]
         csrf_token = re.findall('(?<=meta name="_csrf" content=")(.*)(?="/>)', response.text)[0]
 
+        def get_newest_notifications():
+            # newest first: accounts with more than one page of notices would otherwise never see the new download
+            try:
+                response = requests.post(
+                    "https://portfoliomanager.energystar.gov/pm/notifications.json",
+                    headers={
+                        **self.authenticated_headers,
+                        "Accept": "application/json",
+                        "Content-Type": "application/json",
+                        csrf_header: csrf_token,
+                    },
+                    timeout=300,
+                    data='{"page":1,"pageSize":100,"sort":{"column":"CREATE_DATE","ascending":false},"type":"Notices"}',
+                )
+            except requests.exceptions.SSLError as e:
+                raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
+            if not response.status_code == status.HTTP_200_OK:
+                raise PMError("Unsuccessful response from report template rows query; aborting.")
+            return response.json()["result"]["items"]
+
+        # notification ids increase, so anything at or below this id predates our request (e.g. a previous download)
+        existing_notifications = get_newest_notifications()
+        newest_existing_id = max((n["id"] for n in existing_notifications), default=0)
+
         # create custom download
         response = requests.post(
             "https://portfoliomanager.energystar.gov/pm/property/createCustomDownloadSubmit/",
@@ -696,47 +720,27 @@ class PortfolioManagerImport:
         )
 
         # Now we need to wait while the report is being generated
-        attempt_count = 0
-        custom_download_found = False
-        while attempt_count < 24:
-            attempt_count += 1
-
-            # get the report data
-            try:
-                response = requests.post(
-                    "https://portfoliomanager.energystar.gov/pm/notifications.json",
-                    headers={
-                        **self.authenticated_headers,
-                        "Accept": "application/json",
-                        "Content-Type": "application/json",
-                        csrf_header: csrf_token,
-                    },
-                    timeout=300,
-                    data='{"page":1,"pageSize":100,"sort":{"column":"CREATE_DATE","ascending":true},"type":"Notices"}',
-                )
-            except requests.exceptions.SSLError as e:
-                raise PMError("SSL Error in Portfolio Manager Query; check VPN/Network/Proxy.") from e
-            if not response.status_code == status.HTTP_200_OK:
-                raise PMError("Unsuccessful response from report template rows query; aborting.")
-
-            notifications = response.json()["result"]["items"]
-            if len(notifications) == 0:
-                time.sleep(5)
-                continue
-
-            latest_notification = notifications[-1]
-            if latest_notification["notificationTypeCode"]["code"] == "CUSTOMPORTFOLIODOWNLOAD":
-                custom_download_found = True
+        download_notification = None
+        for _ in range(24):
+            download_notification = next(
+                (
+                    n
+                    for n in get_newest_notifications()
+                    if n["id"] > newest_existing_id and n["notificationTypeCode"]["code"] == "CUSTOMPORTFOLIODOWNLOAD"
+                ),
+                None,
+            )
+            if download_notification:
                 break
+            time.sleep(5)
 
-            else:
-                time.sleep(5)
-                continue
+        if not download_notification:
+            raise PMError("custom report not generated successfully; aborting.")
 
         # Finally we can download the generated report
         try:
             response = requests.get(
-                f"https://portfoliomanager.energystar.gov/pm{latest_notification['notificationParameters'][1]['url']}",
+                f"https://portfoliomanager.energystar.gov/pm{download_notification['notificationParameters'][1]['url']}",
                 headers=self.authenticated_headers,
                 timeout=300,
             )
@@ -746,8 +750,6 @@ class PortfolioManagerImport:
             error_message = "Unsuccessful response from GET trying to download generated report;"
             error_message += f"Returned with a status code = {response.status_code};"
             raise PMError(error_message)
-        if not custom_download_found:
-            raise PMError("custom report not generated successfully; aborting.")
 
         return response.content
 
