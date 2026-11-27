@@ -99,10 +99,10 @@ dev = [
     "mock==5.2.0",
     "hypothesis>=6.170.15",
     # Coverage / reporting
-    "coverage>=7.17.2",
+    "coverage>=7.17.5",
     "coveralls==4.1.0",
     # Local/CI orchestration
-    "tox-uv-bare==1.37.7",
+    "tox-uv-bare==1.37.9",
     "psutil==7.2.2",
     # Static code analysis / hooks
     "pre-commit>=4.7.0",
@@ -116,7 +116,7 @@ dev = [
     "djangorestframework-stubs>=3.18.1",
     "types-Markdown>=3.10.2.20260408",
     "types-PyYAML>=6.0.12.20260408",
-    "types-python-dateutil>=2.9.0.20260716",
+    "types-python-dateutil>=2.9.0.20261122",
     "types-requests>=2.33.0.20260906",
 ]
 
